@@ -98,15 +98,76 @@ Closed in four places:
    width**, by design. Also fixes `modal`, which was a flat object and so silently ignored
    `activeStyle: 'wide'`; it is now a styles array with a `wide` entry (max-w-7xl).
 4. **`pages/npmrds-report.html`** is rebuilt on it: one band hosts the flush rail plus the whole
-   canvas, the header and the finding are canvas sections, and the **route controls are drawn at
-   the component's full capability** — add route / add route slot / add graph / dynamic-report
-   switch / search / collapse, and per row expand, reorder, inline rename, remove, TMC list,
-   date+time window, time-of-day presets, day-of-week mask, identity colour, graph-assignment
-   chips — plus the two modals the default buttons open (§ 04: `RouteTagBrowserModal` and
-   `AddGraphModal`, with their real vocabularies) and the panel's loading/empty/no-match/error/
-   dynamic-gate states. Two claims from earlier drafts are corrected there: route edits write
-   straight through to the report's own dataset row (publish/discard don't apply to route content),
-   and the mutation gate is two flags — `editPageMode` **and** the section's own edit pencil.
+   canvas, and the header and the finding are canvas sections. Two claims from earlier drafts are
+   corrected there: route edits write straight through to the report's own dataset row
+   (publish/discard don't apply to route content), and the mutation gate is two flags —
+   `editPageMode` **and** the section's own edit pencil.
+
+**This one page is interactive** (`pages/npmrds-report.js`, ~700 lines of plain browser JS, no
+build step — same contract as everything else here). It is the only page in the catalogue that
+needed to be: the rail is a control surface and the two modals are multi-step flows, and a first
+attempt that answered "what do these look like" with ~775 lines of drawn states below the fold was
+the wrong artifact. Live: edit-mode toggle (rail chrome + section toolbars + Measure Picker on the
+canvas), panel collapse, row expand, TMC "+N more", search with the real no-match copy, inline
+rename with the real duplicate-name refusal, date+time editing with the time-of-day presets and
+day-of-week mask, the colour picker, the assignment chips, the Dynamic Report switch, and both
+modals in full — tag-folder browsing with breadcrumbs and free-text tags, the four-value graph
+vocabulary with live guidance and the conditional Anchor Route select. Deliberately inert: the two
+confirm buttons, remove, duplicate and the Settings drawer — adding or removing would change the
+report, so the flow is what's designed, not the write; each says so when clicked.
+
+**Add Route and Add Graph are always available** — not gated behind edit mode, because they are the
+report's two jobs and a report with no routes has to offer the way out of that state. One
+always-present action row holds both plus the edit toggle, and the row carries the mode itself. This
+is an escalation for the component: its `canMutate` gate has to move from "hide the button" to "the
+button enters edit mode and opens the modal", which keeps the read-only guarantee (nothing writes
+until confirm).
+
+Both modals are on their **second pass**, and the interesting part is the prioritisation:
+
+- **Add Graph** had four identical dropdowns, which said "four settings" when the shape is one
+  decision plus two refinements. Now: **01 what shape** — four *cards* with glyphs, because picking
+  a chart type is a visual choice a closed select hides; **02 what value** — one select, grouped
+  Speed / Travel time / Delay / Emissions, with the measure's own sentence live under it; **03
+  routes** — checklist with select-all and an n/total count, in the secondary column; and
+  **refine** — resolution + comparison mode, muted and labelled optional, with the Anchor Route
+  select appearing only for Difference with exactly two routes. The cards made room for the type
+  that was missing — **Table**, which builds a Spreadsheet section (the real reports are full of
+  "Route Info Box" tables and the only way to get one was the long path this modal replaces); each
+  card names what it creates. Two shapes were missing and are now there: **Table** (builds a
+  Spreadsheet — the real reports are full of "Route Info Box" tables) and **Map** (builds a Map —
+  the only card that answers *where* on the corridor the value changes); for both, the only way in
+  was the long path this modal replaces, which made the row a chart menu rather than a card menu.
+  The default pick moved from the component's `BarGraph · speed · 5-minutes` to `Line · travel
+  time · hour`, since the former is the densest, least readable combination in the vocabulary and
+  it was what an author saw before touching anything.
+- **The route rail** dropped the TMC list from the open-out (the widest content in a 340-px panel,
+  for information nobody uses that way — the count stays in the meta line and the extent lives on
+  the map card), moved **identity colour into a popover on the row's own colour dot** (inline it was
+  doubly buried behind expand-then-change, for a control whose whole job is "this route is blue
+  everywhere"), and dropped its local *edit routes* button — the page header's Edit already owns the
+  mode, so the action row just shows the state.
+- **Add Route** now leads with search (largest element, focused on open, result count stated), puts
+  the three real tag axes in the header as pills so browsing isn't below the fold, demotes
+  Auto-generated and Other tags to text links beside them (a provenance flag and a free-text search
+  aren't axes), and gives every row its county/region/agency tags — name plus TMC count can't
+  separate "NY-9D NB (Beacon)" from "NY-9D NB · Main St to Verplanck". What's left below
+the fold is what interaction can't carry: the control inventory (what each control writes), the
+design rules, and the print state.
+
+Two more recorded deviations from the NPMRDS cross-page contract, both Alex, 2026-08-05, both
+written into `npmrds-home.html`'s canonical contract note as well as this page's own header:
+
+- **No breadcrumb band.** Layout consequence worth keeping: with no sticky chrome above it, the
+  flush rail's `sticky top-0 h-svh` is exact. A page that keeps a breadcrumb strip has to offset
+  both `top` and the height by its height, the way styles[0] does for the page header.
+- **The compact 64-px icon SideNav** instead of the 256-px expanded one — the second page in the
+  set to use it (npmrds-macro was the first). 256 + the 340-px route rail was 596 px of chrome,
+  which left the graph canvas narrower than the chrome beside it; compact reclaims 192 px and
+  loses no destination (same items, same order, same amber active rail, labels become `title`
+  tooltips). The extra width then exposed one thing: the freshness line is ~640 px of tracked
+  mono, and inside the `shrink-0` action stack it starved the h1 until the title wrapped, so it
+  is now the header card's full-width foot line.
 
 Open item, logged rather than invented: the style is chosen in the theme
 (`pages.sectionGroup.options.activeStyle`), so it is brand-wide. Page settings has a per-page
@@ -167,8 +228,11 @@ dms_design_system_v2/
     │                                the dialog on this page WORKS (57 real rows, live filter, URL-
     │                                bound query); § 04 drives the real component's states
     ├── npmrds-macro.html          · full-page map workbench (controls left, measure context right)
-    ├── npmrds-report.html         · the individual report canvas (flush content-sidebar route rail
-    │                                + graph-card grid; § 03 the route controls, § 04 their two modals)
+    ├── npmrds-report.html         · the individual report canvas (compact SideNav + flush
+    │                                content-sidebar route rail + graph-card grid) — the one
+    │                                INTERACTIVE page: live rail, live Add Route / Add Graph
+    │                                modals, inert confirms
+    ├── npmrds-report.js           · that page's behaviour layer (data + render + events)
     ├── map-21.html                ·  ⎫
     ├── map-21-system-performance.html ⎬ retrofitted into the NPMRDS category
     ├── map-21-lottr.html          ·  ⎪ (nav, header, breadcrumb, freshness, footer)

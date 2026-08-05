@@ -262,23 +262,23 @@
                 </div>
               </div>
 
-              <div class="col-span-12" data-dms-section="tpl-head-before-after">
+              <!-- SECTION · before-after group · ONE section = head + internal card grid (Rev 10).
+                   The three single/double groups share one row (3 + 6 + 3 = 12). Expressible as a
+                   Card with a header + `cardsGridSize`; the inner cards are NOT sections, so
+                   contract item 10 (no nested data-dms-section) still holds. -->
+              <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-group-before-after">
                 <div class="flex items-center gap-3 mb-1.5">
                   <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
                   <h3 class="font-display font-medium text-[15px] leading-[1.2] text-[#0F1722] shrink-0">Before &amp; after</h3>
                   <span class="flex-1 h-px bg-zinc-950/10"></span>
-                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">1 template · 1 route · 11 graphs</span>
                 </div>
-                <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-600 mt-0.5 truncate">Did the project change anything? One route, two date ranges, a difference graph on every measure.</p>
-              </div>
-
-              <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-221">
+                <div class="grid grid-cols-1 gap-4 mt-2.5">
                 <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
                   <div class="w-1/4 shrink-0">
                     <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 221 · 2 map · 4 bar · 1 line · 3 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="22.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="24.4" width="48.8" height="12.2" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="24.4" width="48.8" height="12.2" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="37.8" width="98.8" height="9.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="48.2" width="98.8" height="15.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.6" width="98.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="76.5" width="98.8" height="21.1" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="115.2" width="98.8" height="9.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Single Route</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
@@ -287,25 +287,92 @@
                     </div>
                   </div>
                 </a>
+                </div>
+              </div>
+
+              <!-- SECTION · floating-car group · ONE section = head + internal card grid (Rev 10).
+                   The three single/double groups share one row (3 + 6 + 3 = 12). Expressible as a
+                   Card with a header + `cardsGridSize`; the inner cards are NOT sections, so
+                   contract item 10 (no nested data-dms-section) still holds. -->
+              <div class="col-span-12 xl:col-span-6" data-dms-section="tpl-group-floating-car">
+                <div class="flex items-center gap-3 mb-1.5">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <h3 class="font-display font-medium text-[15px] leading-[1.2] text-[#0F1722] shrink-0">Floating car</h3>
+                  <span class="flex-1 h-px bg-zinc-950/10"></span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2.5">
+                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 276 · 2 map · 2 bar · 2 line · 1 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="23.8" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="0.6" width="48.8" height="23.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="25.6" width="48.8" height="23.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="25.6" width="48.8" height="23.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="50.6" width="98.8" height="21.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="72.8" width="98.8" height="21.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="95.0" width="48.8" height="29.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="95.0" width="48.8" height="29.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/></svg></div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">One Week Study</div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This template provides speed information for a route or corridor across a single week — the synthetic drive-through, at percentile speeds.</p>
+                    <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
+                      <span class="tabular-nums">1 route · 8 graphs</span>
+                      <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
+                    </div>
+                  </div>
+                </a>
+                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 278 · 1 map · 4 bar · 1 line · 1 grid · 2 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="16.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="17.8" width="48.8" height="20.4" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="17.8" width="48.8" height="20.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="39.4" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="56.6" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="73.9" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="91.1" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="108.4" width="48.8" height="16.0" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="108.4" width="48.8" height="16.0" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Annual Average Study</div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.</p>
+                    <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
+                      <span class="tabular-nums">1 route · 9 graphs</span>
+                      <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
+                    </div>
+                  </div>
+                </a>
+                </div>
+              </div>
+
+              <!-- SECTION · events group · ONE section = head + internal card grid (Rev 10).
+                   The three single/double groups share one row (3 + 6 + 3 = 12). Expressible as a
+                   Card with a header + `cardsGridSize`; the inner cards are NOT sections, so
+                   contract item 10 (no nested data-dms-section) still holds. -->
+              <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-group-events">
+                <div class="flex items-center gap-3 mb-1.5">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <h3 class="font-display font-medium text-[15px] leading-[1.2] text-[#0F1722] shrink-0">Events</h3>
+                  <span class="flex-1 h-px bg-zinc-950/10"></span>
+                </div>
+                <div class="grid grid-cols-1 gap-4 mt-2.5">
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 291 · 1 map · 1 bar · 1 line · 3 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="32.1" height="36.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="33.9" y="0.6" width="65.5" height="36.0" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="37.8" width="98.8" height="22.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="98.6" width="98.8" height="25.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span></div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Single Day (Advanced)</div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.</p>
+                    <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
+                      <span class="tabular-nums">1 route · 7 graphs</span>
+                      <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
+                    </div>
+                  </div>
+                </a>
+                </div>
               </div>
 
               <div class="col-span-12 mt-3" data-dms-section="tpl-head-change">
                 <div class="flex items-center gap-3 mb-1.5">
-                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
                   <h3 class="font-display font-medium text-[15px] leading-[1.2] text-[#0F1722] shrink-0">Change over time</h3>
                   <span class="flex-1 h-px bg-zinc-950/10"></span>
-                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">4 templates · 1 route</span>
                 </div>
-                <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-600 mt-0.5 truncate">Nothing was built — you want the trend: a route against itself, across years or the months of one year.</p>
               </div>
 
               <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-244">
                 <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
                   <div class="w-1/4 shrink-0">
                     <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 244 · 2 map · 14 bar · 1 line · 3 table · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="15.4" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="0.6" width="48.8" height="15.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="17.2" width="98.8" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="35.0" width="98.8" height="11.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="68.2" width="98.8" height="10.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="100.1" width="98.8" height="11.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="33.9" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="67.3" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Year Over Year</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report shows the travel time and average hours of delay for a single route across multiple years. The report is intended to give the analyst a year over year look at changes to average hours of delay and travel times.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
@@ -320,9 +387,9 @@
                 <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
                   <div class="w-1/4 shrink-0">
                     <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 239 · 2 map · 14 bar · 6 line · 3 grid · 1 table · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="13.8" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="15.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="33.9" y="15.6" width="32.1" height="6.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="15.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="23.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="33.9" y="23.6" width="32.1" height="6.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="23.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="31.6" width="98.8" height="9.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="42.6" width="98.8" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="50.6" width="98.8" height="11.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="63.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="63.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="63.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="69.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="69.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="69.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="75.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="75.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="75.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="81.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="81.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="81.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="87.6" width="98.8" height="17.8" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="106.6" width="32.1" height="8.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="106.6" width="32.1" height="8.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="106.6" width="32.1" height="8.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="116.6" width="98.8" height="7.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span></div>
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span></div>
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">This Month vs. Last Month vs. Last Year</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
@@ -337,9 +404,9 @@
                 <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
                   <div class="w-1/4 shrink-0">
                     <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 207 · 1 map · 12 bar · 2 line · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="65.5" height="20.6" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="67.3" y="0.6" width="32.1" height="20.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="22.4" width="98.8" height="27.9" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="51.5" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="51.5" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="51.5" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="64.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="64.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="77.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="77.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="77.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="90.7" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="90.7" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="90.7" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="103.8" width="98.8" height="20.6" rx="0.7" fill="#94C24E" fill-opacity=".38"/></svg></div>
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Monthly Congestion</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report is for analyzing congestion by comparing speed and travel time across all months of a single year. It is intended to give the analyst a monthly view of a particular route over a year.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
@@ -358,7 +425,6 @@
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Monthly Speed Comparisons</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">For route performance comparing the latest full year to all-time, and analyzing the performance by month for the latest year.</p>
-                    <span class="mt-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">stored as “single route default” · needs a rename</span>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
                       <span class="tabular-nums">1 route · 13 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
@@ -369,12 +435,10 @@
 
               <div class="col-span-12 mt-3" data-dms-section="tpl-head-behavioral">
                 <div class="flex items-center gap-3 mb-1.5">
-                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">05</span>
                   <h3 class="font-display font-medium text-[15px] leading-[1.2] text-[#0F1722] shrink-0">Behavioral</h3>
                   <span class="flex-1 h-px bg-zinc-950/10"></span>
-                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">4 templates · 1–3 routes</span>
                 </div>
-                <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-600 mt-0.5 truncate">How does the corridor behave when nothing unusual happens? Average day, season, peak, direction.</p>
               </div>
 
               <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-246">
@@ -385,7 +449,6 @@
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Snapshot</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.</p>
-                    <span class="mt-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">stored as “rochester inner loop” · a corridor name on a generic template</span>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
                       <span class="tabular-nums">3 routes · 17 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
@@ -398,9 +461,9 @@
                 <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
                   <div class="w-1/4 shrink-0">
                     <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 247 · 3 map · 9 bar · 2 line · 8 grid"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="7.9" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="0.6" width="48.8" height="7.9" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="9.7" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="9.7" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="18.2" width="48.8" height="6.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="18.2" width="48.8" height="6.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="25.3" width="98.8" height="8.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="35.1" width="98.8" height="4.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="40.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="40.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="53.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="53.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="66.4" width="48.8" height="7.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="66.4" width="48.8" height="7.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="75.5" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="75.5" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="83.9" width="98.8" height="6.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="91.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="91.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="104.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="104.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="117.1" width="98.8" height="7.3" rx="0.7" fill="#94C24E" fill-opacity=".38"/></svg></div>
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span></div>
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span></div>
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Seasonality</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report analyzes seasonal behavior of a selected route. It compares data for a season against the full year. The report looks at average speeds and congestion.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
@@ -415,12 +478,11 @@
                 <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
                   <div class="w-1/4 shrink-0">
                     <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 228 · 5 map · 6 bar · 4 line · 6 table · 2 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="9.9" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="11.7" width="48.8" height="9.1" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="11.7" width="48.8" height="9.1" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="22.0" width="48.8" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="22.0" width="48.8" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="28.0" width="98.8" height="9.9" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="39.1" width="98.8" height="10.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="51.1" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="51.1" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="57.1" width="98.8" height="5.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.0" width="98.8" height="7.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="72.5" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="72.5" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="78.5" width="98.8" height="5.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="85.4" width="98.8" height="8.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="94.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="94.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="101.6" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="101.6" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="110.2" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="110.2" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="118.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="118.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/></svg></div>
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span></div>
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span></div>
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Bi-directional</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report is designed to look at the behavior of two directions of a bi-directional corridor. It is set up to show yearly averages for each year of the NPMRDS.</p>
-                    <span class="mt-2 self-start inline-flex items-start gap-1.5 px-2 py-1 rounded-[4px] border border-[#E5A646]/40 bg-[#E5A646]/12 font-proxima text-[11.5px] leading-[1.4] text-[#8a5f03]"><!-- icon: AlertTriangle --><svg class="size-3.5 shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Needs two routes — the eastbound and westbound (or north and south) of one corridor, each starting where the other ends.</span>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
                       <span class="tabular-nums">2 routes · 23 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
@@ -437,79 +499,8 @@
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Weekly Average</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">No description recorded. Three graphs — an average weekday profile with the weekend separated out — but nothing written down about when to reach for it.</p>
-                    <span class="mt-2 self-start inline-flex items-center gap-1.5 px-2 py-1 rounded-[4px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">needs description</span>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
                       <span class="tabular-nums">2 routes · 3 graphs</span>
-                      <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
-                    </div>
-                  </div>
-                </a>
-              </div>
-
-              <div class="col-span-12 mt-3" data-dms-section="tpl-head-floating-car">
-                <div class="flex items-center gap-3 mb-1.5">
-                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
-                  <h3 class="font-display font-medium text-[15px] leading-[1.2] text-[#0F1722] shrink-0">Floating car</h3>
-                  <span class="flex-1 h-px bg-zinc-950/10"></span>
-                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">2 templates · 1 route</span>
-                </div>
-                <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-600 mt-0.5 truncate">Percentile speeds along the corridor as a synthetic drive-through — the profile without the run.</p>
-              </div>
-
-              <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-276">
-                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
-                  <div class="w-1/4 shrink-0">
-                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 276 · 2 map · 2 bar · 2 line · 1 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="23.8" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="0.6" width="48.8" height="23.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="25.6" width="48.8" height="23.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="25.6" width="48.8" height="23.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="50.6" width="98.8" height="21.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="72.8" width="98.8" height="21.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="95.0" width="48.8" height="29.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="95.0" width="48.8" height="29.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/></svg></div>
-                  </div>
-                  <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">One Week Study</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This template provides speed information for a route or corridor across a single week — the synthetic drive-through, at percentile speeds.</p>
-                    <span class="mt-2 self-start inline-flex items-start gap-1.5 px-2 py-1 rounded-[4px] border border-[#E5A646]/40 bg-[#E5A646]/12 font-proxima text-[11.5px] leading-[1.4] text-[#8a5f03]"><!-- icon: AlertTriangle --><svg class="size-3.5 shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>The first route's date must be a Monday.</span>
-                    <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 8 graphs</span>
-                      <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
-                    </div>
-                  </div>
-                </a>
-              </div>
-
-              <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-278">
-                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
-                  <div class="w-1/4 shrink-0">
-                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 278 · 1 map · 4 bar · 1 line · 1 grid · 2 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="16.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="17.8" width="48.8" height="20.4" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="17.8" width="48.8" height="20.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="39.4" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="56.6" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="73.9" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="91.1" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="108.4" width="48.8" height="16.0" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="108.4" width="48.8" height="16.0" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
-                  </div>
-                  <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Annual Average Study</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.</p>
-                    <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 9 graphs</span>
-                      <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
-                    </div>
-                  </div>
-                </a>
-              </div>
-
-              <div class="col-span-12 mt-3" data-dms-section="tpl-head-events">
-                <div class="flex items-center gap-3 mb-1.5">
-                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">05</span>
-                  <h3 class="font-display font-medium text-[15px] leading-[1.2] text-[#0F1722] shrink-0">Events</h3>
-                  <span class="flex-1 h-px bg-zinc-950/10"></span>
-                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">1 template · 1+ routes</span>
-                </div>
-                <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-600 mt-0.5 truncate">One day, one incident, five-minute bins. Queue growth and recovery against two baselines.</p>
-              </div>
-
-              <div class="col-span-12 sm:col-span-6 xl:col-span-3" data-dms-section="tpl-291">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-3 p-3.5 hover:border-[#37576B] transition-colors">
-                  <div class="w-1/4 shrink-0">
-                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 291 · 1 map · 1 bar · 1 line · 3 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="32.1" height="36.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="33.9" y="0.6" width="65.5" height="36.0" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="37.8" width="98.8" height="22.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="98.6" width="98.8" height="25.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
-                  </div>
-                  <div class="flex-1 min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span></div>
-                    <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Single Day (Advanced)</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.</p>
-                    <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 7 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
