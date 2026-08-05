@@ -41,6 +41,8 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit })
     });
     if (!applied) return null;
     reconcileComparisonSeriesColumnOnState(state);
+    const seriesCol = state.columns.find((c) => c.origin === 'comparison-series');
+    if (seriesCol && !seriesCol.customName) seriesCol.customName = 'Route';
 
     const trackingId = crypto.randomUUID();
     const sectionList = item.draft_sections || [];

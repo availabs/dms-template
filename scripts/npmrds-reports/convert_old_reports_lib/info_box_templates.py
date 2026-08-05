@@ -47,6 +47,7 @@ def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
+        series_col.setdefault("customName", "Route")
         columns = [series_col, lottr_col, tttr_col, freeflow_col]
     else:  # "tmc"
         tmc_src = next(c for c in base_state["externalSource"]["columns"]
@@ -170,6 +171,7 @@ def ensure_info_box_traveltime_template(grain, templates, dry_run):
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
+        series_col.setdefault("customName", "Route")
         columns = [series_col, avgtt_col]
     else:  # "tmc"
         tmc_src = next(c for c in base_state["externalSource"]["columns"]
@@ -257,6 +259,7 @@ def _ensure_static_info_box_template(name, grain, route_expr, tmc_expr, titles,
         value_col = {"type": "calculated", "show": True, "name": route_expr, "fn": "exempt"}
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
+        series_col.setdefault("customName", "Route")
         columns = [series_col, value_col]
     else:  # "tmc"
         value_col = {"type": "calculated", "show": True, "name": tmc_expr, "fn": "avg"}
@@ -375,6 +378,7 @@ def ensure_info_box_delay_template(grain, templates, dry_run):
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
+        series_col.setdefault("customName", "Route")
         columns = [series_col, delay_col]
     else:  # "tmc"
         tmc_src = next(c for c in base_state["externalSource"]["columns"]
@@ -442,6 +446,7 @@ def ensure_bar_graph_summary_pm3_template(year, templates, dry_run):
 
     series_col = next(c for c in base_state["columns"]
                       if c.get("name") == "__series")
+    series_col.setdefault("customName", "Route")
     x_col = {**series_col, "target": "xAxis"}
     freeflow_col = {"type": "calculated", "show": True,
                     "name": "pm3.speed_pctl_85 as freeflow", "target": "yAxis",

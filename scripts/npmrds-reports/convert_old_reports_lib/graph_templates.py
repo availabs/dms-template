@@ -176,6 +176,7 @@ def ensure_graph_templates(needed_names, templates, dry_run):
             # column carries a sort key).
             x_src = next(c for c in state["columns"]
                          if c.get("name") == "__series")
+            x_src.setdefault("customName", "Route")
             x_col = {**x_src, "target": "xAxis"}
         else:
             x_src = next(c for c in state["externalSource"]["columns"]
@@ -197,6 +198,7 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         elif cat_spec is None:
             cat_col = next(c for c in state["columns"]
                            if c.get("name") == "__series")
+            cat_col.setdefault("customName", "Route")
         elif isinstance(cat_spec, dict):
             cat_col = cat_spec
         else:

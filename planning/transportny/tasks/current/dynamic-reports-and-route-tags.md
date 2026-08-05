@@ -1460,6 +1460,29 @@ the read side) — not fixed, not needed for this task.
 single-year labels; expand any RRL route row to see its clean name and (for AM/PM/Off Peak) the
 narrowed time-of-day range.
 
+**Side finding on this same page, scoped + fixed, 2026-08-05: the two Route Compare Component
+(Spreadsheet/"Info Box"-style) sections on this page render their route-name column header as the
+literal `"__series"` string** — the internal comparison-series discriminator key, not a
+client-friendly label. Full scoping + implementation record in
+`research/npmrds-reports/comparison-series-column-label-scoping.md`. Root cause: `comparisonSeries`
+already has a `seriesLabel` field with its own author-facing UI input, but it's 100% write-only —
+`TableHeaderCell.jsx` (the real render path for these Spreadsheet sections) never reads it, falling
+through to the raw column key. Fixed with **zero changes to shared `src/dms/` platform code** —
+`customName` is a plain field the renderer already reads, so `MeasurePicker`/`CalloutStatPicker`/
+`useAddGraphSection.js` each call the shared mint function (`reconcileComparisonSeriesColumnOnState`)
+**unmodified**, already directly importable/exported, then set `customName: 'Route'` themselves on
+the resulting column in their own file. (A first pass added an optional param to the shared function
+instead — Ryan caught it: that's the same "NPMRDS term inside platform code" mistake as the rejected
+render-fallback idea, just one layer deeper, and unnecessary since nothing about setting a plain
+field required new platform capability.) Python side: `.setdefault("customName", "Route")` at every
+fresh-mint site (`info_box_templates.py` x5, `route_compare_template.py`, `graph_templates.py` x2) —
+plain, uniform placement, no special-casing to avoid old templates. **Correction on scope, Ryan,
+2026-08-05:** an earlier pass specifically engineered this to never touch an already-existing
+template's column, on the assumption that was the ask. It wasn't — every report/template in this
+arc is disposable demo data, not production, and the actual ask was "don't waste time
+patching/validating old stuff," not "guarantee old rows are never incidentally touched." Removed the
+special-casing; the fix is now the same shape everywhere.
+
 **Not yet done:** Mechanism A (`{recent-N}` wall-clock substitution) — separate follow-up, per
 Ryan's own build-order pick; converting the other 6 Mechanism-B-unblocked candidates
 (`246, 276, 279, 281, 283, 291`) into real pages (this pass built only 278, to prove the mechanism);
