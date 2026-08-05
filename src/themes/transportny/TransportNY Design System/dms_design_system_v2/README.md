@@ -1,7 +1,9 @@
 # TransportNY · DMS Design System v2
 
-**v0.2 · 2026-05-26** (last revised **2026-07-31** — NPMRDS Reports rebuilt around the template
-shelf; see `pages/npmrds-reports.html`) · A second-pass DMS-format implementation of the
+**v0.2 · 2026-05-26** (last revised **2026-08-05** — the **content sidebar (side content)** region is
+now documented as layout knowledge *and* as a component, with a second named style; the individual
+report page is rebuilt on it and its route controls redrawn at full capability. See
+[Content sidebar](#content-sidebar-2026-08-05) below.) · A second-pass DMS-format implementation of the
 TransportNY brand. Translates the high-fidelity HTML/JSX prototypes in
 `../design_handoff_transportny_design_system/` into the deliverable
 shape mandated by the up-to-date DMS authoring skills.
@@ -70,6 +72,50 @@ sets, and rules the skills now require:
 
 ---
 
+## Content sidebar (2026-08-05)
+
+The **side content** region — the rail beside the content column, switched on per page by the
+“Show Content Sidebar” setting (`item.sidebar` = left/right) and filled from the page's `sidebar`
+section group — had no entry in this catalogue: pages that used it drew it ad hoc, and
+`npmrds-report.html` drew it as a `col-span-3` grid column, which is not what the platform renders.
+Closed in four places:
+
+1. **`design-system/layouts.html` § 09 · Content sidebar.** The layout knowledge: the four moving
+   parts (toggle · `navLabel` nav items · the `sidebar` group · which band hosts it), the rendered
+   wrapper tree, the full `contentRow` / `contentCol` / `sideNavContainer1..3` class reference for
+   both styles, and the load-bearing rules (`items-stretch`, one sticky wrapper, hidden below `xl`).
+   States plainly that **the rail is not a grid column** — it is a fixed-width flex sibling outside
+   the 12-col grid, so the canvas keeps its own `grid-cols-12`.
+2. **`design-system/components.html` § Content Sidebar** (in Navigation, after SideNav). The
+   component: both styles drawn side by side, the key list, and the author controls.
+3. **`theme/theme.js`** gains `pages.sectionGroup` — which this theme never shipped, so every rail
+   on a TransportNY site was running the codebase's neutral defaults. Two named styles:
+   `styles[0] default` (302-px card rail, 40-px gutter, sticky under the header) and
+   **`styles[1] flush`** (340 px, **no padding, hugging the content area's left edge, `sticky top-0
+   h-svh`** — full height of the tab, panel-owned internal scroll). `flush` asks two things of the
+   page: the rail-hosting band must be Full Width, and the page header must be a section in the
+   content column rather than its own full-bleed band — so **on a flush rail the header is not full
+   width**, by design. Also fixes `modal`, which was a flat object and so silently ignored
+   `activeStyle: 'wide'`; it is now a styles array with a `wide` entry (max-w-7xl).
+4. **`pages/npmrds-report.html`** is rebuilt on it: one band hosts the flush rail plus the whole
+   canvas, the header and the finding are canvas sections, and the **route controls are drawn at
+   the component's full capability** — add route / add route slot / add graph / dynamic-report
+   switch / search / collapse, and per row expand, reorder, inline rename, remove, TMC list,
+   date+time window, time-of-day presets, day-of-week mask, identity colour, graph-assignment
+   chips — plus the two modals the default buttons open (§ 04: `RouteTagBrowserModal` and
+   `AddGraphModal`, with their real vocabularies) and the panel's loading/empty/no-match/error/
+   dynamic-gate states. Two claims from earlier drafts are corrected there: route edits write
+   straight through to the report's own dataset row (publish/discard don't apply to route content),
+   and the mutation gate is two flags — `editPageMode` **and** the section's own edit pencil.
+
+Open item, logged rather than invented: the style is chosen in the theme
+(`pages.sectionGroup.options.activeStyle`), so it is brand-wide. Page settings has a per-page
+picker for the app SideNav's style but none for the content sidebar's; a parallel **“Content
+Sidebar Style”** setting is the natural fix, since `flush` is right for report pages and wrong for
+docs pages on the same site.
+
+---
+
 ## Layout
 
 ```
@@ -85,7 +131,7 @@ dms_design_system_v2/
 ├── design-system/         ← FIVE pages documenting the brand
 │   ├── _shared.css            · mirror of theme/index.css.additions for mockup pages
 │   ├── theme.html             · color, type, icons, spacing — the foundational tokens
-│   ├── layouts.html           · Layout + LayoutGroup variants (page chrome shapes)
+│   ├── layouts.html           · Layout + LayoutGroup variants (page chrome shapes) + § 09 the content sidebar
 │   ├── grid.html              · the page-content column grid (sectionArray)
 │   ├── components.html        · every UI primitive THIS theme styles
 │   └── patterns.html          · multi-primitive compositions
@@ -121,7 +167,8 @@ dms_design_system_v2/
     │                                the dialog on this page WORKS (57 real rows, live filter, URL-
     │                                bound query); § 04 drives the real component's states
     ├── npmrds-macro.html          · full-page map workbench (controls left, measure context right)
-    ├── npmrds-report.html         · the individual report canvas (route rail + graph-card grid)
+    ├── npmrds-report.html         · the individual report canvas (flush content-sidebar route rail
+    │                                + graph-card grid; § 03 the route controls, § 04 their two modals)
     ├── map-21.html                ·  ⎫
     ├── map-21-system-performance.html ⎬ retrofitted into the NPMRDS category
     ├── map-21-lottr.html          ·  ⎪ (nav, header, breadcrumb, freshness, footer)

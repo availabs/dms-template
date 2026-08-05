@@ -1311,10 +1311,15 @@ const pages = {
         // jump links. The hairline + white surface are the rail's own — a flush
         // rail can't rely on card chrome to separate itself from the pane.
         sideNavContainer1: "w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10",
-        // top-0 + h-svh = full height of the tab. The panel inside owns the scroll
-        // (header/footer pinned, list region `flex-1 overflow-y-auto`), so this
-        // wrapper does not scroll and has no right padding to pull it off the edge.
-        sideNavContainer2: "sticky top-0 h-svh overflow-hidden",
+        // Full height of the tab MINUS the page's own sticky chrome — same `top`/height
+        // pairing styles[0] uses for the page header (top-[60px] / 100vh-68px), tuned
+        // here for the 41-px sticky breadcrumb strip a report page carries. Getting this
+        // wrong is visible: with a bare `top-0 h-svh` the rail hangs 41 px past the
+        // viewport at scroll 0 and its pinned footer sits below the fold until you
+        // scroll. The panel inside owns the scroll (head/toolbar/footer pinned, list
+        // region `flex-1 overflow-y-auto`), so this wrapper doesn't scroll and takes no
+        // right padding that would pull it off the content edge.
+        sideNavContainer2: "sticky top-[41px] h-[calc(100svh_-_41px)] overflow-hidden",
         sideNavContainer3: "flex flex-col h-full",
         // No card, no gutter — a rail block is a full-bleed panel with a hairline.
         navWrapper:    "border-b border-zinc-950/10 px-4 py-4",

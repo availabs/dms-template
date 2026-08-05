@@ -68,8 +68,45 @@
   of `page-header`, not a child; band heads are their own lexical sections. DMS has no
   container-section concept, so a wrapper that contains sections is a band.
 
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 9 (2026-08-05) — THE SIDE CONTENT REGION AND THE ROUTE CONTROLS
+  Three changes, all documented in design-system/layouts.html § 09 (layout knowledge) and
+  design-system/components.html § Content Sidebar (the component + its two styles):
+
+  1. THE RAIL IS THE PAGE'S SIDE CONTENT REGION, NOT A GRID COLUMN. Earlier drafts drew it as
+     `col-span-3` beside a `col-span-9` canvas. That mistranslates: `sectionGroup.jsx` renders
+     the rail as a fixed-width flex sibling of the content column, outside the 12-col grid,
+     toggled by the "Show Content Sidebar" page setting (`item.sidebar`) and filled from the
+     page's `sidebar` section group. Drawn as a grid column, the sections in it would belong to
+     the content band, the rail couldn't be side-swapped from settings, and every card's size
+     would silently mean ¾ of what it says. The canvas now keeps its own grid-cols-12 and the
+     card sizes below are unchanged (12 / 5 / 7 / 6 / 4).
+
+  2. THE RAIL USES THE NEW `flush` STYLE (`pages.sectionGroup` styles[1]): no padding, hugging
+     the content area's left edge, `sticky top-0 h-svh` — the full height of the tab, with the
+     panel pinning its own head/toolbar/footer and scrolling only the route list between them.
+     Two consequences, both intended: the band is Full Width (no `pl-12 pr-8`, or the band's
+     padding would sit between the pane edge and the rail), and THE PAGE HEADER IS NO LONGER
+     FULL WIDTH — it is a section in the content column, because a full-bleed header band above
+     the rail would stop the rail starting at the top of the tab. The finding moved out of the
+     rail into the canvas for the same reason: a control rail disappears below `xl`, so nothing
+     load-bearing can live only there.
+
+  3. THE ROUTE CONTROLS ARE DRAWN AT FULL CAPABILITY, from the component, not from memory:
+     add route · add route slot · add graph · dynamic-report switch · search · collapse · per-row
+     expand, reorder, rename (inline, save/cancel), remove, TMC list, date+time window,
+     time-of-day presets, day-of-week mask, identity colour, graph-assignment chips. § 03 draws
+     them; § 04 draws the two modals the default buttons open (RouteTagBrowserModal and
+     AddGraphModal) with their real content. Two corrections to earlier drafts: route edits do
+     NOT stage in the page draft (they write straight to the report's own dataset row; publish
+     and discard don't apply to route content), and the mutation gate is TWO flags —
+     `editPageMode` AND this section's own edit pencil — not one.
+
   CONTRACT: SideNav · header shape · breadcrumbs (deep page) · freshness line · route rows ·
-  download affordance — all per npmrds-home.html's header note.
+  download affordance — all per npmrds-home.html's header note. One documented deviation: the
+  header is a section in the content column rather than its own `header` band, which is what
+  contract item 2's shape requires on a flush rail (the shape itself — kicker + rule + meta →
+  h1 + purpose → action stack + freshness — is unchanged).
 -->
 
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
@@ -123,7 +160,7 @@
         <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
 
           <!-- ═════════ BREADCRUMBS · LayoutGroup `breadcrumbs` (deep page) ═════════ -->
-          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+          <div class="w-full bg-white border-b border-zinc-950/05 sticky top-0 z-20" data-dms-group="breadcrumbs">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
               <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
                 <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
@@ -135,152 +172,265 @@
             </div>
           </div>
 
-          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
-          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-8 grid grid-cols-12 gap-6">
-              <!-- ── SECTION · page header (size 12) ── report-summary is a SIBLING section
-                   below, not nested inside this one: DMS has no container-section concept. -->
-              <div class="col-span-12" data-dms-section="page-header">
-              <div class="flex items-center gap-3 mb-2">
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// before &amp; after</span>
-                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">region 8 · dutchess county · signal retiming</span>
-                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>published</span>
-              </div>
-              <div class="flex items-end justify-between gap-8 max-lg:flex-wrap">
-                <div class="flex-1 min-w-0 max-w-[780px]">
-                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">NY-9D Beacon Signal Study<span class="text-[#CA8A04]">.</span></h1>
-                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3">Travel-time comparison on NY-9D through the City of Beacon, before and after the January 2026 signal retiming. Both directions, weekday AM and PM peaks, hourly bins.</p>
-                </div>
-                <div class="flex flex-col items-start lg:items-end gap-3 shrink-0">
-                  <div class="flex items-center gap-2">
-                    <!-- Contract item 7 · download -->
-                    <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Download --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Data</span></button>
-                    <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Export --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Share</span></button>
-                    <!-- Open question 4 · these reports are client deliverables, so the header
-                         acknowledges the document. The print-shaped state is drawn in § 03. -->
-                    <a href="#print-state" class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: FileText --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Print</span></a>
-                    <a href="#edit-mode" class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: PencilEdit --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Edit</span></a>
-                  </div>
-                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
-                    <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
-                    <span class="text-slate-300">·</span><span>jul 2026 partial</span>
-                    <span class="text-slate-300">·</span><span>since jan 2017</span>
-                  </div>
-                </div>
-              </div>
-              </div>
+          <!-- ═════════ REPORT BODY · LayoutGroup `content` · THE RAIL HOST ═════════
+               ONE band holds this whole page: the route rail and every graph card. That is not a
+               drawing convenience — `sectionGroup.jsx` renders the rail INSIDE a single band (the
+               `railHost`), so anything that must sit beside the rail has to be a section of that
+               band. Two consequences, both deliberate and both visible here:
 
-              <!-- ── SECTION · report summary strip (size 12) ── what this report is made of,
-                   at a glance. A sibling of page-header, not nested inside it. -->
-              <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-slate-50 p-3 flex flex-wrap items-center gap-x-6 gap-y-2" data-dms-section="report-summary">
-                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">this report</span>
-                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: Road --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg><span class="font-mono tabular-nums font-medium">4</span>&nbsp;routes · <span class="font-mono tabular-nums font-medium">36</span>&nbsp;TMC · <span class="font-mono tabular-nums font-medium">7.8</span>&nbsp;mi</span>
-                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: History --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>Jan–Feb 2025 vs Jan–Feb 2026 · hourly</span>
-                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: ChartLine --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="font-mono tabular-nums font-medium">6</span>&nbsp;graphs · travel time, speed</span>
-                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700 ml-auto"><!-- icon: User --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>Alex Muro · updated <span class="font-mono tabular-nums">2026-07-27</span></span>
-              </div>
-            </div>
-          </div>
+                 · THE PAGE HEADER IS A SECTION IN THE CONTENT COLUMN, not its own full-bleed
+                   `header` band. A header band would sit above the rail and the rail could no
+                   longer start at the top of the tab. So the header is NOT full width: it begins
+                   at the rail's right edge and ends at the 1480 cap, and it reads as a card on the
+                   pane like everything else (brand rule: never bg-white on a section).
+                 · THE RAIL IS NOT A GRID COLUMN. It is a fixed-width flex sibling of the content
+                   column, outside the 12-col grid — `col-span-3` + `col-span-9` (what this page
+                   drew before) mistranslates: those sections would belong to the content band, the
+                   rail couldn't be toggled or side-swapped from page settings, and every card's
+                   size would silently mean ¾ of what it says. The canvas keeps its own
+                   grid-cols-12 at whatever width is left, which is why the cards below are
+                   unchanged sizes (12 / 5 / 7 / 6 / 4).
 
-          <!-- ═════════ REPORT CANVAS · LayoutGroup `content` ═════════
-               The rail↔canvas column split lives in the PAGES theme (pages.sectionGroup), not
-               in the shared layoutGroup — see adding-an-in-page-nav-rail.md.
-               STICKY, CORRECTED (Phase 8): the row must be `items-stretch`, NOT `items-start`.
-               The skill is explicit — "must be items-stretch so the rail column is full band
-               height and its inner sticky has room to pin (items-start collapses the column and
-               kills sticky)". This page previously asserted the opposite and its rail was
-               measurably inert (entirely off-screen by scrollY ≈ 1400). Both rail blocks now
-               share ONE sticky wrapper; two siblings each pinned at top-6 would overlap. -->
-          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
-              <div class="grid grid-cols-12 gap-6 items-stretch">
+               STYLE: `pages.sectionGroup` styles[1] `flush` — no padding, hugging the content
+               area's left edge, `sticky top-[41px] h-[calc(100svh-41px)]` so the panel is exactly
+               the height of the tab below the page's own sticky chrome (the breadcrumb strip is
+               `sticky top-0`; a bare `top-0 h-svh` hangs 41 px past the viewport at scroll 0 and
+               pushes the panel's pinned footer below the fold). The panel pins its own head, toolbar and footer and scrolls ONLY the route
+               list between them, so the rail never grows taller than the viewport and never
+               needs the outer `overflow-y-auto` the default style uses. The band is Full Width:
+               show (no `pl-12 pr-8`) or the band's padding would sit between the pane edge and
+               the rail; the content column supplies the inset instead. See
+               design-system/layouts.html § 09 and components.html § Content Sidebar.
+
+               STICKY, CORRECTED (Phase 8): the row is `items-stretch`, NOT `items-start` — that
+               stretches the rail column to full band height so its inner sticky has room to pin.
+               ONE sticky wrapper around the whole rail stack; two siblings pinned at the same
+               `top` overlap.
+
+               BELOW xl THE RAIL IS GONE (`hidden xl:block`) and the canvas fills the band. So
+               nothing load-bearing lives only in the rail: the finding is a canvas section, and
+               every graph legend names its own routes. -->
+          <div class="w-full bg-[#ECEEF2]" data-dms-group="content">
+            <div class="w-full">
+              <div class="flex flex-row gap-0 items-stretch">
 
                 <!-- ── RAIL · section group `sidebar` · the ReportRouteList component ──
-                     VIEW MODE: read-only. Every mutation and every mutating control is gated
-                     on PageContext.editPageMode — outside edit mode merely viewing must not be
-                     able to strip a route's graph assignments. -->
-                <div class="col-span-12 lg:col-span-3" data-dms-group="sidebar">
-                  <!-- ONE sticky wrapper around the whole rail stack — this is the
-                       sideNavContainer the pages theme owns. -->
-                  <div class="lg:sticky lg:top-6">
-                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" data-dms-section="route-list">
-                    <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/08 bg-[#12181F]">
-                      <!-- icon: Road --><svg class="size-4 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
-                      <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Routes</span>
-                      <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums">4</span>
-                    </div>
+                     VIEW MODE: read-only. Every mutation and every mutating control is gated on
+                     PageContext.editPageMode AND this section's own edit pencil — outside both,
+                     merely viewing a published report must not be able to strip a route's graph
+                     assignments. The controls themselves are drawn in § 03. -->
+                <div class="w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10" data-dms-group="sidebar">
+                  <div class="sticky top-[41px] h-[calc(100svh_-_41px)] overflow-hidden">
+                    <div class="flex flex-col h-full">
 
-                    <!-- Contract item 6 · the route row: colour dot · name (truncate + title
-                         attribute) · TMC count · length · date range. Truncation is load-bearing:
-                         route names are meant to be long and descriptive. -->
-                    <div class="divide-y divide-zinc-950/05">
-                      <div class="px-3 py-2.5">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span class="size-3 rounded-full bg-[#1F3F8F] shrink-0"></span>
-                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025">NY-9D NB · before</span>
+                      <div class="flex flex-col h-full min-h-0" data-dms-section="route-list">
+                        <!-- panel head · pinned. The count is the component's own
+                             `Routes (N)` + collapse toggle (isRoutesExpanded). -->
+                        <div class="h-12 px-3 flex items-center gap-2 bg-[#12181F] shrink-0">
+                          <!-- icon: Road --><svg class="size-4 text-[#FACC15] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
+                          <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Routes</span>
+                          <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums">4</span>
+                          <button title="Collapse routes" class="size-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10"><!-- icon: ChevronUp --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
                         </div>
-                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28</div>
-                        <div class="pl-5 mt-1.5 flex flex-wrap gap-1">
-                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 1</span>
-                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 2</span>
-                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 4</span>
-                        </div>
-                      </div>
-                      <div class="px-3 py-2.5">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span class="size-3 rounded-full bg-[#E5A646] shrink-0"></span>
-                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2026">NY-9D NB · after</span>
-                        </div>
-                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 2.0 mi · 2026-01-05 → 2026-02-27</div>
-                        <div class="pl-5 mt-1.5 flex flex-wrap gap-1">
-                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 1</span>
-                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 2</span>
-                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 4</span>
-                        </div>
-                      </div>
-                      <div class="px-3 py-2.5">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span class="size-3 rounded-full bg-[#10B981] shrink-0"></span>
-                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2025">NY-9D SB · before</span>
-                        </div>
-                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2025-01-06 → 2025-02-28</div>
-                        <div class="pl-5 mt-1.5 flex flex-wrap gap-1">
-                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 3</span>
-                        </div>
-                      </div>
-                      <div class="px-3 py-2.5">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span class="size-3 rounded-full bg-[#8B5CF6] shrink-0"></span>
-                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2026">NY-9D SB · after</span>
-                          <!-- unassigned badge · shrink-0 so the name truncates instead of the badge -->
-                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">unused</span>
-                        </div>
-                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2026-01-05 → 2026-02-27</div>
-                        <div class="pl-5 mt-1.5 font-proxima text-[11.5px] text-slate-500">Not on any graph yet.</div>
-                      </div>
-                    </div>
 
-                    <div class="px-3 py-2.5 border-t border-zinc-950/05 bg-slate-50">
-                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">view mode · read-only</div>
-                      <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-1">Open <span class="font-medium text-slate-600">Edit</span> to add, reorder, recolour or assign routes.</p>
-                    </div>
-                  </div>
+                        <!-- mode strip · says which mode you're in and offers the one way out of
+                             it. The real gate is two flags (page edit route + this section's own
+                             pencil), so "Edit routes" is a shortcut to both, not a third mode. -->
+                        <div class="px-3 py-2 border-b border-zinc-950/08 bg-slate-50 flex items-center gap-2 shrink-0">
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 flex-1">view mode · read-only</span>
+                          <a href="#edit-mode" class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[9.5px] uppercase tracking-wider text-slate-600"><!-- icon: PencilEdit --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg>edit routes</a>
+                        </div>
 
-                  <!-- Authored rail content · the `sidebar` group can host more than the
-                       component. Here: the finding, so a reader gets the answer without
-                       interpreting six charts. -->
-                  <div class="mt-6 rounded-[8px] border border-[#1F3F8F]/25 bg-[#1F3F8F]/5 p-4" data-dms-section="finding">
-                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1F3F8F]">// the finding</div>
-                    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-1.5">Northbound PM-peak travel time fell <span class="font-mono tabular-nums font-semibold text-[#0f1722]">42 s</span> (−11.4%) after retiming. Southbound is unchanged within noise. The gain concentrates on the two segments north of Main St.</p>
-                  </div>
+                        <!-- search · rendering-only filter (never touches the persisted array);
+                             the component renders it only once at least one route exists. -->
+                        <div class="px-3 py-2 border-b border-zinc-950/05 shrink-0">
+                          <div class="h-8 px-2 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white">
+                            <!-- icon: Search --><svg class="size-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                            <span class="flex-1 min-w-0 font-proxima text-[12.5px] text-slate-400 truncate">Search routes…</span>
+                          </div>
+                        </div>
+
+                        <!-- ROUTE ROWS · the only scrolling region in the panel.
+                             Contract item 6 · the route row: colour dot · name (truncate + title
+                             attribute) · TMC count · length · date range. Truncation is
+                             load-bearing: route names are meant to be long and descriptive. -->
+                        <div class="flex-1 min-h-0 overflow-y-auto divide-y divide-zinc-950/05">
+
+                          <!-- row · collapsed -->
+                          <div class="px-3 py-2.5">
+                            <div class="flex items-start gap-2 min-w-0">
+                              <button title="Expand" class="size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]">+</button>
+                              <span class="size-3 mt-1 rounded-full bg-[#1F3F8F] shrink-0" title="#1F3F8F"></span>
+                              <div class="min-w-0 flex-1">
+                                <div class="font-proxima text-[13px] font-semibold text-slate-700 truncate" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025">NY-9D NB · before</div>
+                                <div class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5">9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28</div>
+                                <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                                  <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mr-0.5">on</span>
+                                  <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 1</span>
+                                  <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 2</span>
+                                  <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 4</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- row · collapsed -->
+                          <div class="px-3 py-2.5">
+                            <div class="flex items-start gap-2 min-w-0">
+                              <button title="Expand" class="size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]">+</button>
+                              <span class="size-3 mt-1 rounded-full bg-[#E5A646] shrink-0" title="#E5A646"></span>
+                              <div class="min-w-0 flex-1">
+                                <div class="font-proxima text-[13px] font-semibold text-slate-700 truncate" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2026">NY-9D NB · after</div>
+                                <div class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5">9 TMC · 2.0 mi · 2026-01-05 → 2026-02-27</div>
+                                <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                                  <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mr-0.5">on</span>
+                                  <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 1</span>
+                                  <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 2</span>
+                                  <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 4</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- row · OPEN, view mode. The open-out is the same block in both modes;
+                               view mode simply loses every pencil, pill and button. Drawn open here
+                               so a reader can see what a route IS (its TMCs, its window, its
+                               day/time restriction) without entering edit mode. -->
+                          <div class="px-3 py-2.5 bg-slate-50/60">
+                            <div class="flex items-start gap-2 min-w-0">
+                              <button title="Collapse" class="size-5 mt-0.5 shrink-0 rounded border border-[#37576B]/40 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-[#37576B]">−</button>
+                              <span class="size-3 mt-1 rounded-full bg-[#10B981] shrink-0" title="#10B981"></span>
+                              <div class="min-w-0 flex-1">
+                                <div class="font-proxima text-[13px] font-semibold text-slate-700 truncate" title="NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2025">NY-9D SB · before</div>
+                                <div class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2025-01-06 → 2025-02-28</div>
+                              </div>
+                            </div>
+                            <!-- expanded body · inset to the name's left edge -->
+                            <div class="mt-2 ml-7 rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-2.5">
+                              <!-- TMCs · preview 6, then "+N more" -->
+                              <div>
+                                <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">tmcs (9)</div>
+                                <div class="mt-1 rounded-[4px] border border-zinc-950/05 bg-slate-50 p-1.5 font-mono text-[10.5px] leading-[1.5] text-slate-600">
+                                  120-29713, 120N29714, 120-29714, 120N29715, 120-29715, 120N29716<span class="font-semibold text-[#1F3F8F] ml-1 cursor-pointer">+3 more</span>
+                                </div>
+                              </div>
+                              <!-- date range · read-only -->
+                              <div>
+                                <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">date range</div>
+                                <div class="mt-1 grid grid-cols-2 gap-1.5">
+                                  <div>
+                                    <div class="font-proxima text-[10.5px] font-semibold text-slate-500">Start</div>
+                                    <div class="h-7 px-2 rounded-[4px] border border-zinc-950/08 bg-slate-50 flex items-center font-mono text-[11px] tabular-nums text-slate-500">2025-01-06 06:00</div>
+                                  </div>
+                                  <div>
+                                    <div class="font-proxima text-[10.5px] font-semibold text-slate-500">End</div>
+                                    <div class="h-7 px-2 rounded-[4px] border border-zinc-950/08 bg-slate-50 flex items-center font-mono text-[11px] tabular-nums text-slate-500">2025-02-28 10:00</div>
+                                  </div>
+                                </div>
+                                <div class="font-proxima text-[11px] italic text-slate-500 mt-1">Weekdays only · AM Peak window</div>
+                              </div>
+                              <!-- graph assignment · read-only chips -->
+                              <div class="pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-1">
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mr-0.5">on</span>
+                                <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 3</span>
+                                <span class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/12 bg-white text-slate-400 font-mono text-[9.5px] uppercase tracking-wider">graph 1</span>
+                                <span class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/12 bg-white text-slate-400 font-mono text-[9.5px] uppercase tracking-wider">graph 2</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- row · unassigned. Say it, don't hide it — an unused route is a
+                               half-finished report, not a tidy one. -->
+                          <div class="px-3 py-2.5">
+                            <div class="flex items-start gap-2 min-w-0">
+                              <button title="Expand" class="size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]">+</button>
+                              <span class="size-3 mt-1 rounded-full bg-[#8B5CF6] shrink-0" title="#8B5CF6"></span>
+                              <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                  <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate" title="NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2026">NY-9D SB · after</span>
+                                  <!-- unassigned badge · shrink-0 so the name truncates instead of the badge -->
+                                  <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">unused</span>
+                                </div>
+                                <div class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2026-01-05 → 2026-02-27</div>
+                                <div class="mt-1 font-proxima text-[11.5px] text-slate-500">Not on any graph yet.</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- panel foot · pinned. The report's own totals, so the numbers in the
+                             summary strip can be checked against the rail without scrolling. -->
+                        <div class="px-3 py-2 border-t border-zinc-950/08 bg-slate-50 shrink-0 flex items-center gap-2">
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums flex-1">4 routes · 36 TMC · 7.8 mi</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums">5 graphs</span>
+                        </div>
+                      </div>
+
+                    </div>
                   </div>
                 </div>
 
-                <!-- ── CANVAS · the graph sections ── -->
-                <div class="col-span-12 lg:col-span-9">
-                  <div class="grid grid-cols-12 gap-6">
+                <!-- ── CONTENT COLUMN · contentCol (flush: it owns the inset the band no longer
+                     supplies) → the band's ONE 12-col section grid. Header, summary, finding,
+                     band heads and every graph card are siblings on it. -->
+                <div class="flex-1 min-w-0 px-8 py-8">
+                  <div class="max-w-[1480px] mr-auto grid grid-cols-12 gap-6">
+
+                    <!-- ── SECTION · page header (size 12) ── no longer a full-bleed band: on a
+                         flush rail the header is a section in the content column, so it starts at
+                         the rail's edge and reads as a card on the pane. -->
+                    <div class="col-span-12" data-dms-section="page-header">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-6 py-6">
+                        <div class="flex items-center gap-3 mb-2 flex-wrap">
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// before &amp; after</span>
+                          <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">region 8 · dutchess county · signal retiming</span>
+                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>published</span>
+                        </div>
+                        <div class="flex items-end justify-between gap-6 flex-wrap">
+                          <div class="flex-1 min-w-[360px] max-w-[780px]">
+                            <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">NY-9D Beacon Signal Study<span class="text-[#CA8A04]">.</span></h1>
+                            <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3">Travel-time comparison on NY-9D through the City of Beacon, before and after the January 2026 signal retiming. Both directions, weekday AM and PM peaks, hourly bins.</p>
+                          </div>
+                          <div class="flex flex-col items-start gap-3 shrink-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                              <!-- Contract item 7 · download -->
+                              <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Download --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Data</span></button>
+                              <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Export --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Share</span></button>
+                              <!-- Open question 4 · these reports are client deliverables, so the header
+                                   acknowledges the document. The print-shaped state is drawn in § 05. -->
+                              <a href="#print-state" class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: FileText --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Print</span></a>
+                              <a href="#edit-mode" class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: PencilEdit --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Edit</span></a>
+                            </div>
+                            <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                              <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                              <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                              <span class="text-slate-300">·</span><span>since jan 2017</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · report summary strip (size 12) ── what this report is made of,
+                         at a glance. A sibling of page-header, not nested inside it. -->
+                    <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-slate-50 p-3 flex flex-wrap items-center gap-x-6 gap-y-2" data-dms-section="report-summary">
+                      <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">this report</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: Road --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg><span class="font-mono tabular-nums font-medium">4</span>&nbsp;routes · <span class="font-mono tabular-nums font-medium">36</span>&nbsp;TMC · <span class="font-mono tabular-nums font-medium">7.8</span>&nbsp;mi</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: History --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>Jan–Feb 2025 vs Jan–Feb 2026 · hourly</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: ChartLine --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="font-mono tabular-nums font-medium">6</span>&nbsp;graphs · travel time, speed</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700 ml-auto"><!-- icon: User --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>Alex Muro · updated <span class="font-mono tabular-nums">2026-07-27</span></span>
+                    </div>
+
+                    <!-- ── SECTION · the finding (size 12) ── MOVED OUT OF THE RAIL (Phase 9).
+                         A flush rail is a control surface that disappears below xl; the report's
+                         answer can't live there. It leads the canvas instead, which is also where
+                         the print state promotes it. -->
+                    <div class="col-span-12 rounded-[8px] border border-[#1F3F8F]/25 bg-[#1F3F8F]/5 p-4" data-dms-section="finding">
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1F3F8F]">// the finding</div>
+                      <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-1.5 max-w-[900px]">Northbound PM-peak travel time fell <span class="font-mono tabular-nums font-semibold text-[#0f1722]">42 s</span> (−11.4%) after retiming. Southbound is unchanged within noise. The gain concentrates on the two segments north of Main St.</p>
+                    </div>
 
                     <!-- BAND 1 · the question: did travel time change?
                          Fused lexical head, not a section title (feedback_deprecate_section_title) -->
@@ -669,171 +819,782 @@
             </div>
           </div>
 
-          <!-- ═════════ EDIT MODE · LayoutGroup `content_tint` ═════════
-               The same page with editPageMode on. Two things change: the rail gains its
-               mutating controls, and each section gains the toolbar + the Measure Picker. -->
+          <!-- ═════════ § 03 · ROUTE CONTROLS, EDITING · LayoutGroup `content_tint` ═════════
+               The same rail with both edit gates open. Every control below exists in
+               `ReportRouteList` / `RouteRow` today — this section designs their appearance, it
+               does not propose new behaviour. Read
+               src/themes/transportny/components/ReportRouteList/README.md first.
+
+               THE GATE IS TWO FLAGS, not one (fixed in the component 2026-08-03):
+                 · `PageContext.editPageMode` — the page is open at /edit/…; decides which
+                   sections array siblings render from and whether a viewer sees resolved routes
+                   or raw Dynamic-Report slots.
+                 · `props.isEdit` — THIS section's own Settings → Edit pencil is open, exactly how
+                   Card and Spreadsheet gate row CRUD.
+               `canMutate = both`. Every button, pill, pencil and switch drawn here is unreachable
+               until both are true; with only the first, the rail is the read-only panel in § 01.
+
+               WHAT THE FOOTER USED TO SAY, AND WHY IT WAS WRONG: an earlier draft of this page
+               labelled the edit rail "changes save to the draft". Routes don't live in
+               `draft_sections` — they live in the report's own dataset row (`reports_snap_2`,
+               one row per report), written straight through on every edit like Card/Spreadsheet
+               row CRUD. Publish and Discard do not apply to route content, so the footer must not
+               imply a staging step that doesn't exist. -->
           <div class="w-full bg-[#E4E8EE] border-y border-zinc-950/05 py-12" data-dms-group="content_tint" id="edit-mode">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
               <!-- ── SECTION · band head · lexical (size 12) ── -->
               <div class="col-span-12" data-dms-section="edit-mode-head">
-              <div class="flex items-end justify-between gap-6 flex-wrap">
-                <div>
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// edit mode</span>
-                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">PageContext.editPageMode · mutations gated here, not on props.isEdit</span>
+                <div class="flex items-end justify-between gap-6 flex-wrap">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">editPageMode <span class="text-slate-300">+</span> this section's own pencil · both required</span>
+                    </div>
+                    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The route controls, open.</h2>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 max-w-[760px]">The rail is drawn at its real 340-px width. <strong>Add Route</strong> and <strong>Add Graph</strong> ship by default and each opens a modal (§ 04); everything else is per-route and lives in the row's open-out.</p>
                   </div>
-                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Same page, editing.</h2>
                 </div>
               </div>
 
-              </div>
+              <!-- ── SECTION · the rail in edit mode (size 4) ── -->
+              <div class="col-span-12 xl:col-span-4" data-dms-section="route-list-edit">
+                <div class="w-[340px] max-w-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
 
-                <!-- RAIL · edit mode -->
-                <div class="col-span-12 lg:col-span-3" data-dms-section="route-list-edit">
-                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
-                    <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/08 bg-[#12181F]">
-                      <!-- icon: Road --><svg class="size-4 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
-                      <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Routes</span>
-                      <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] bg-[#FACC15] text-[#0F1722] font-mono text-[10px] uppercase tracking-wider font-semibold"><!-- icon: Plus --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>add</button>
+                  <!-- panel head -->
+                  <div class="h-12 px-3 flex items-center gap-2 bg-[#12181F]">
+                    <!-- icon: Road --><svg class="size-4 text-[#FACC15] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
+                    <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Routes</span>
+                    <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums">4</span>
+                    <button title="Collapse routes" class="size-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10"><!-- icon: ChevronUp --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                  </div>
+
+                  <!-- mode strip · amber, because this is the mutating state -->
+                  <div class="px-3 py-1.5 bg-[#FACC15]/15 border-b border-[#FACC15]/40 flex items-center gap-2">
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#8a5f03] flex-1">edit mode · pencil open</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#8a5f03]">saves live</span>
+                  </div>
+
+                  <!-- ADD CONTROLS · the component's two default buttons. Add Route is the
+                       primary (a report with no routes shows nothing else useful); Add Graph is
+                       secondary but always present, because a route with nowhere to draw is the
+                       other half of the same job. -->
+                  <div class="px-3 py-2.5 border-b border-zinc-950/08 flex items-center gap-2">
+                    <a href="#modal-add-routes" class="tny-press h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: Plus --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[11.5px] tracking-wide">Add route</span></a>
+                    <a href="#modal-add-graph" class="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Plus --><svg class="size-3.5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[11.5px] tracking-wide">Add graph</span></a>
+                    <button title="Panel settings" class="size-8 ml-auto rounded-[6px] flex items-center justify-center text-slate-400 hover:bg-slate-100"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                  </div>
+
+                  <!-- DYNAMIC REPORT · a page-filter registration, not a route property. On, the
+                       Add Route button becomes "Add Route Slot" (there is no catalogue to browse
+                       for a placeholder) and a viewer fills the slots from the URL. -->
+                  <div class="px-3 py-2.5 border-b border-zinc-950/08 bg-slate-50/60">
+                    <div class="flex items-center gap-2">
+                      <button role="switch" aria-checked="false" class="w-8 h-[18px] rounded-full bg-slate-300 relative shrink-0"><span class="absolute top-0.5 left-0.5 size-3.5 rounded-full bg-white shadow"></span></button>
+                      <span class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 flex-1">Dynamic report</span>
+                      <span class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/12 bg-white text-slate-500 font-mono text-[9px] uppercase tracking-wider">off</span>
                     </div>
-                    <div class="divide-y divide-zinc-950/05">
-                      <div class="px-2 py-2.5">
-                        <div class="flex items-center gap-1 min-w-0 h-8">
-                          <span class="flex flex-col shrink-0">
-                            <button class="size-4 flex items-center justify-center text-slate-300 hover:text-slate-600"><!-- icon: CaretUp --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
-                            <button class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-600"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                          </span>
-                          <button class="size-4 rounded-full bg-[#1F3F8F] ring-2 ring-white ring-offset-1 ring-offset-[#1F3F8F]/30 shrink-0" title="Change colour"></button>
-                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025">NY-9D NB · before</span>
-                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0" title="Rename"><!-- icon: PencilEdit --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></button>
-                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-rose-600 shrink-0" title="Remove"><!-- icon: Trash --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
-                        </div>
-                        <div class="pl-6 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums">9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28</div>
-                        <!-- graph-assignment chips · one per discovered $self-bound graph, toggled on click -->
-                        <div class="pl-6 mt-1.5 flex flex-wrap gap-1">
-                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 1</button>
-                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 2</button>
-                          <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider">graph 3</button>
-                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 4</button>
-                        </div>
-                      </div>
-                      <div class="px-2 py-2.5">
-                        <div class="flex items-center gap-1 min-w-0 h-8">
-                          <span class="flex flex-col shrink-0">
-                            <button class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-600"><!-- icon: CaretUp --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
-                            <button class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-600"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                          </span>
-                          <button class="size-4 rounded-full bg-[#E5A646] shrink-0" title="Change colour"></button>
-                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2026">NY-9D NB · after</span>
-                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: PencilEdit --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></button>
-                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-rose-600 shrink-0"><!-- icon: Trash --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
-                        </div>
-                        <div class="pl-6 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums">9 TMC · 2.0 mi · 2026-01-05 → 2026-02-27</div>
-                        <div class="pl-6 mt-1.5 flex flex-wrap gap-1">
-                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 1</button>
-                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 2</button>
-                          <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider">graph 3</button>
-                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 4</button>
-                        </div>
-                      </div>
-                      <!-- colour picker · open state -->
-                      <div class="px-2 py-2.5 bg-slate-50">
-                        <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">route colour</div>
-                        <div class="flex items-start gap-2">
-                          <div class="w-24 h-16 rounded-[4px] border border-zinc-950/10" style="background:linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), #1F3F8F"></div>
-                          <div class="w-3 h-16 rounded-[4px] border border-zinc-950/10" style="background:linear-gradient(to bottom,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"></div>
-                          <div class="flex-1 min-w-0">
-                            <div class="font-mono text-[12px] tabular-nums text-slate-600">#1F3F8F</div>
-                            <div class="flex flex-wrap gap-1 mt-1.5">
-                              <span class="size-4 rounded-full bg-[#1F3F8F] ring-1 ring-[#0f1722]/30"></span><span class="size-4 rounded-full bg-[#E5A646]"></span><span class="size-4 rounded-full bg-[#10B981]"></span><span class="size-4 rounded-full bg-[#8B5CF6]"></span><span class="size-4 rounded-full bg-[#EF4444]"></span><span class="size-4 rounded-full bg-[#37576B]"></span>
-                            </div>
+                    <p class="font-proxima text-[11px] leading-[1.45] text-slate-500 mt-1">Routes are filled at view time from the URL, not stored on this page. Start from an empty list — existing routes aren't converted.</p>
+                  </div>
+
+                  <!-- search -->
+                  <div class="px-3 py-2 border-b border-zinc-950/05">
+                    <div class="h-8 px-2 flex items-center gap-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15">
+                      <!-- icon: Search --><svg class="size-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                      <span class="flex-1 min-w-0 font-proxima text-[12.5px] text-slate-700 truncate">NY-9D</span>
+                      <button title="Clear search" class="size-5 rounded flex items-center justify-center text-slate-400 hover:text-slate-700"><!-- icon: CancelCircle --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg></button>
+                    </div>
+                  </div>
+
+                  <div class="divide-y divide-zinc-950/05">
+
+                    <!-- ROW · collapsed, every mutating affordance present.
+                         Reorder is a stacked caret pair (the list is short and ordering is
+                         meaningful: variant[0] of a difference graph is the anchor arm). -->
+                    <div class="px-2 py-2.5">
+                      <div class="flex items-start gap-1 min-w-0">
+                        <span class="flex flex-col shrink-0 mt-0.5">
+                          <button title="Move up" disabled class="size-4 flex items-center justify-center text-slate-200 cursor-not-allowed"><!-- icon: CaretUp --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                          <button title="Move down" class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-700"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </span>
+                        <button title="Expand" class="size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]">+</button>
+                        <button class="size-3.5 mt-1 rounded-full bg-[#1F3F8F] ring-1 ring-[#0f1722]/20 shrink-0" title="Identity colour · #1F3F8F"></button>
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1 min-w-0">
+                            <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025">NY-9D NB · before</span>
+                            <button title="Edit name" class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: PencilEdit --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></button>
+                            <button title="Remove route from report" class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 shrink-0"><!-- icon: Trash --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+                          </div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5">9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28</div>
+                          <!-- graph-assignment chips · one per discovered $self-bound graph, toggled
+                               on click. Checked = this route feeds that graph. -->
+                          <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 1</button>
+                            <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 2</button>
+                            <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider hover:border-[#37576B]">graph 3</button>
+                            <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 4</button>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <div class="px-3 py-2 border-t border-zinc-950/05 bg-[#FACC15]/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">edit mode · changes save to the draft</div>
+
+                    <!-- ROW · RENAMING. The row's other controls go away while the name is being
+                         typed (the expander is disabled in the component) so Enter/Escape have one
+                         obvious meaning. A collision is refused, not silently suffixed — unlike an
+                         add, a rename is something a human typed. -->
+                    <div class="px-2 py-2.5 bg-[#1F3F8F]/5">
+                      <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="size-3.5 rounded-full bg-[#E5A646] shrink-0"></span>
+                        <div class="flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 flex items-center">
+                          <span class="font-proxima text-[12.5px] text-slate-700 truncate">NY-9D NB · after</span><span class="w-px h-4 bg-[#1F3F8F] ml-0.5"></span>
+                        </div>
+                        <button title="Save" class="size-7 rounded-[6px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] shrink-0"><!-- icon: FloppyDisk --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h11l3 3v13H5z"/><path d="M9 4v5h6V4M8 20v-5h8v5"/></svg></button>
+                        <button title="Cancel" class="size-7 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c] shrink-0"><!-- icon: CancelCircle --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg></button>
+                      </div>
+                    </div>
+
+                    <!-- ROW · OPEN · the full open-out. This is the whole per-route control set:
+                         TMC list, date+time window, time-of-day presets, day-of-week mask,
+                         identity colour, graph assignment, remove. -->
+                    <div class="px-2 py-2.5 bg-slate-50/60">
+                      <div class="flex items-start gap-1 min-w-0">
+                        <span class="flex flex-col shrink-0 mt-0.5">
+                          <button title="Move up" class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-700"><!-- icon: CaretUp --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                          <button title="Move down" class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-700"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </span>
+                        <button title="Collapse" class="size-5 mt-0.5 shrink-0 rounded border border-[#37576B]/40 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-[#37576B]">−</button>
+                        <button class="size-3.5 mt-1 rounded-full bg-[#10B981] ring-1 ring-[#0f1722]/20 shrink-0" title="Identity colour · #10B981"></button>
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1 min-w-0">
+                            <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2025">NY-9D SB · before</span>
+                            <button title="Edit name" class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: PencilEdit --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></button>
+                            <button title="Remove route from report" class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 shrink-0"><!-- icon: Trash --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+                          </div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2025-01-06 → 2025-02-28</div>
+                        </div>
+                      </div>
+
+                      <div class="mt-2 ml-7 rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-3">
+                        <!-- TMCs -->
+                        <div>
+                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">tmcs (9)</div>
+                          <div class="mt-1 rounded-[4px] border border-zinc-950/05 bg-slate-50 p-1.5 font-mono text-[10.5px] leading-[1.5] text-slate-600">
+                            120+29713, 120P29714, 120+29714, 120P29715, 120+29715, 120P29716<span class="font-semibold text-[#1F3F8F] ml-1 cursor-pointer">+3 more</span>
+                          </div>
+                        </div>
+
+                        <!-- DATE RANGE · editing. Date and time are two inputs per bound because
+                             the stored value is one "YYYY-MM-DDTHH:mm" string and the time half
+                             is what feeds the epoch filter. Save/cancel, not live-commit: a
+                             half-typed window would refetch every graph on the page. -->
+                        <div class="pt-2.5 border-t border-zinc-950/05">
+                          <div class="flex items-center justify-between gap-2">
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">date range</div>
+                            <div class="flex items-center gap-1">
+                              <button title="Save dates" class="size-6 rounded-[4px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52]"><!-- icon: FloppyDisk --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h11l3 3v13H5z"/><path d="M9 4v5h6V4M8 20v-5h8v5"/></svg></button>
+                              <button title="Cancel" class="size-6 rounded-[4px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c]"><!-- icon: CancelCircle --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg></button>
+                            </div>
+                          </div>
+                          <div class="mt-1.5 space-y-1.5">
+                            <div>
+                              <div class="font-proxima text-[10.5px] font-semibold text-slate-600">Start date</div>
+                              <div class="flex gap-1 mt-0.5">
+                                <div class="flex-1 h-7 px-2 rounded-[4px] border border-zinc-950/15 bg-white flex items-center justify-between"><span class="font-mono text-[11px] tabular-nums text-[#0f1722]">2025-01-06</span><!-- icon: Calendar --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4"/></svg></div>
+                                <div class="w-[74px] h-7 px-2 rounded-[4px] border border-zinc-950/15 bg-white flex items-center justify-between"><span class="font-mono text-[11px] tabular-nums text-[#0f1722]">06:00</span><!-- icon: Clock --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg></div>
+                              </div>
+                            </div>
+                            <div>
+                              <div class="font-proxima text-[10.5px] font-semibold text-slate-600">End date</div>
+                              <div class="flex gap-1 mt-0.5">
+                                <div class="flex-1 h-7 px-2 rounded-[4px] border border-zinc-950/15 bg-white flex items-center justify-between"><span class="font-mono text-[11px] tabular-nums text-[#0f1722]">2025-02-28</span><!-- icon: Calendar --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4"/></svg></div>
+                                <div class="w-[74px] h-7 px-2 rounded-[4px] border border-zinc-950/15 bg-white flex items-center justify-between"><span class="font-mono text-[11px] tabular-nums text-[#0f1722]">10:00</span><!-- icon: Clock --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- TIME OF DAY · presets write only the time half, keeping the dates.
+                               Disabled until both dates are set (a dateless "T06:00" is not a
+                               value the epoch filter can use). OVN and FREEFLOW are deliberately
+                               absent: both wrap past midnight, which the epoch range can't say. -->
+                          <div class="mt-2 flex flex-wrap items-center gap-1">
+                            <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mr-0.5">time of day</span>
+                            <button class="h-5 px-1.5 rounded border border-[#1F3F8F] bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]" title="06:00–10:00">AM Peak</button>
+                            <button class="h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200" title="16:00–20:00">PM Peak</button>
+                            <button class="h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200" title="15:00–19:00">PM Peak (alt)</button>
+                            <button class="h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200" title="10:00–16:00">Midday</button>
+                            <button class="h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200" title="no time bound">All Day</button>
+                          </div>
+
+                          <!-- DAYS OF WEEK · a mask where only an explicit `false` excludes a day,
+                               so an untouched route stays "all days" instead of persisting a
+                               same-meaning-but-verbose object. Su/Sa off here = "Weekdays only". -->
+                          <div class="mt-2 flex flex-wrap items-center gap-1">
+                            <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mr-0.5">days</span>
+                            <button class="w-6 h-5 rounded border border-zinc-950/12 bg-slate-100 text-slate-400 font-mono text-[10px]" title="sunday excluded — click to include">Su</button>
+                            <button class="w-6 h-5 rounded border border-[#1F3F8F]/40 bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]" title="monday included — click to exclude">Mo</button>
+                            <button class="w-6 h-5 rounded border border-[#1F3F8F]/40 bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]">Tu</button>
+                            <button class="w-6 h-5 rounded border border-[#1F3F8F]/40 bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]">We</button>
+                            <button class="w-6 h-5 rounded border border-[#1F3F8F]/40 bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]">Th</button>
+                            <button class="w-6 h-5 rounded border border-[#1F3F8F]/40 bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]">Fr</button>
+                            <button class="w-6 h-5 rounded border border-zinc-950/12 bg-slate-100 text-slate-400 font-mono text-[10px]" title="saturday excluded — click to include">Sa</button>
+                          </div>
+                          <div class="mt-1 flex flex-wrap items-center gap-1">
+                            <button class="h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200">Weekdays</button>
+                            <button class="h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200">Weekends</button>
+                            <button class="h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200">All Days</button>
+                            <span class="font-proxima text-[11px] italic text-slate-500 ml-auto">Weekdays only</span>
+                          </div>
+                        </div>
+
+                        <!-- IDENTITY COLOUR · one colour per route, reused by every graph the
+                             route appears on, so a reader learns the key once. Palette is the
+                             component's own 20-step diverging range; the picker also takes a hex. -->
+                        <div class="pt-2.5 border-t border-zinc-950/05">
+                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">identity colour</div>
+                          <div class="mt-1.5 flex items-start gap-2">
+                            <div class="w-20 h-14 rounded-[4px] border border-zinc-950/10" style="background:linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), #10B981"></div>
+                            <div class="w-3 h-14 rounded-[4px] border border-zinc-950/10" style="background:linear-gradient(to bottom,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"></div>
+                            <div class="flex-1 min-w-0">
+                              <div class="h-6 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white flex items-center font-mono text-[11px] tabular-nums text-slate-700">#10B981</div>
+                              <div class="flex flex-wrap gap-1 mt-1.5">
+                                <span class="size-3.5 rounded-full bg-[#d73027]"></span><span class="size-3.5 rounded-full bg-[#f46d43]"></span><span class="size-3.5 rounded-full bg-[#fdae61]"></span><span class="size-3.5 rounded-full bg-[#fee08b]"></span><span class="size-3.5 rounded-full bg-[#d9ef8b]"></span><span class="size-3.5 rounded-full bg-[#a6d96a]"></span><span class="size-3.5 rounded-full bg-[#66bd63]"></span><span class="size-3.5 rounded-full bg-[#10B981] ring-2 ring-[#0f1722]/40"></span><span class="size-3.5 rounded-full bg-[#1a9850]"></span><span class="size-3.5 rounded-full bg-[#1F3F8F]"></span><span class="size-3.5 rounded-full bg-[#37576B]"></span><span class="size-3.5 rounded-full bg-[#8B5CF6]"></span>
+                              </div>
+                              <div class="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-400 mt-1">getColorRange(20, div7)</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- GRAPH ASSIGNMENT · a chip per graph discovered on the page (any section
+                             carrying a $self-bound comparison_series subscriber), labelled
+                             ordinally. A route feeds nothing until it is clicked onto a graph. -->
+                        <div class="pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-1">
+                          <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mr-0.5">on</span>
+                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider" title="Remove from Graph 3"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 3</button>
+                          <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider hover:border-[#37576B]" title="Add to Graph 1">graph 1</button>
+                          <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider hover:border-[#37576B]" title="Add to Graph 2">graph 2</button>
+                          <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider hover:border-[#37576B]" title="Add to Graph 4">graph 4</button>
+                        </div>
+
+                        <!-- REMOVE · full-width and named, at the bottom of the open-out. The
+                             icon-only trash in the row header is the same action; this one is for
+                             the reader who opened the route to decide. -->
+                        <div class="pt-2.5 border-t border-zinc-950/05 flex justify-end">
+                          <button class="h-7 px-2 inline-flex items-center gap-1.5 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/5 text-[#b91c1c] hover:bg-[#EF4444]/10"><!-- icon: Trash --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span class="font-display uppercase text-[10.5px] tracking-wide">Remove route from report</span></button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ROW · DERIVED DATES (Mechanism B). A converted report can carry a route
+                         whose window is computed from a sibling's ("same period, previous year").
+                         It renders read-only with a note instead of the usual pencil — editing it
+                         would be overwritten on the next render. -->
+                    <div class="px-2 py-2.5">
+                      <div class="flex items-start gap-1 min-w-0">
+                        <span class="w-4 shrink-0"></span>
+                        <button title="Expand" class="size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500">+</button>
+                        <button class="size-3.5 mt-1 rounded-full bg-[#8B5CF6] ring-1 ring-[#0f1722]/20 shrink-0" title="Identity colour · #8B5CF6"></button>
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1.5 min-w-0">
+                            <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate" title="NY-9D Southbound — Jan–Feb 2026">NY-9D SB · after</span>
+                            <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">unused</span>
+                          </div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2026-01-05 → 2026-02-27</div>
+                          <div class="font-proxima text-[11px] italic text-slate-500 mt-1">Derived from NY-9D SB · before — edit that route's dates instead.</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ROW · a Dynamic Report SLOT, shown for completeness: a placeholder with an
+                         identity colour and graph assignments but no TMCs or window yet. Its name
+                         is generated and marked meaningless until a human renames it. -->
+                    <div class="px-2 py-2.5 bg-[#FACC15]/5">
+                      <div class="flex items-start gap-1 min-w-0">
+                        <span class="w-4 shrink-0"></span>
+                        <button title="Expand" class="size-5 mt-0.5 shrink-0 rounded border border-dashed border-zinc-950/20 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500">+</button>
+                        <button class="size-3.5 mt-1 rounded-full bg-[#EF4444] ring-1 ring-[#0f1722]/20 shrink-0"></button>
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1.5 min-w-0">
+                            <span class="font-proxima text-[13px] font-semibold text-slate-500 italic truncate">Route Slot 1</span>
+                            <span class="h-5 px-1.5 inline-flex items-center rounded border border-dashed border-[#CA8A04]/50 bg-[#FACC15]/15 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">slot</span>
+                          </div>
+                          <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 mt-0.5">filled from the url at view time</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- error · the one place the panel talks back -->
+                  <div class="px-3 py-2 border-t border-[#EF4444]/20 bg-[#EF4444]/5 font-proxima text-[11.5px] text-[#b91c1c]">A route named “NY-9D NB · after” already exists.</div>
+
+                  <!-- panel foot · corrected: route edits are NOT page-draft staged -->
+                  <div class="px-3 py-2 border-t border-zinc-950/08 bg-[#FACC15]/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">route edits write through · publish/discard don't apply</div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · control inventory (size 4) ── every control in the rail, what it
+                   writes, and what it costs. Kept beside the drawing so the design can be checked
+                   against the component instead of guessed at. -->
+              <div class="col-span-12 xl:col-span-4" data-dms-section="control-inventory">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full overflow-hidden">
+                  <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// the control set</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Fourteen controls, two gates.</div>
+                  </div>
+                  <table class="w-full text-[12px]">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/08">
+                      <tr>
+                        <th class="text-left px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">control</th>
+                        <th class="text-left px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">where</th>
+                        <th class="text-left px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">writes</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-950/05 font-proxima text-slate-700">
+                      <tr><td class="px-4 py-1.5 font-medium">Add Route</td><td class="px-3 py-1.5 text-slate-500">toolbar</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] ← modal</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Add Route Slot</td><td class="px-3 py-1.5 text-slate-500">toolbar · dynamic only</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] placeholder</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Add Graph</td><td class="px-3 py-1.5 text-slate-500">toolbar</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">draft_sections + graphIds</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Dynamic Report</td><td class="px-3 py-1.5 text-slate-500">toolbar</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">page.filters routeSlots</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Search</td><td class="px-3 py-1.5 text-slate-500">toolbar</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · render only</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Collapse panel</td><td class="px-3 py-1.5 text-slate-500">panel head</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · local</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Expand row</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · local</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Reorder ↑ ↓</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] order</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Rename</td><td class="px-3 py-1.5 text-slate-500">row · inline</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.name</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Remove</td><td class="px-3 py-1.5 text-slate-500">row + open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] −1</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Date + time window</td><td class="px-3 py-1.5 text-slate-500">open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">startDate / endDate</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Time-of-day preset</td><td class="px-3 py-1.5 text-slate-500">open-out · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">time half only</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Day-of-week mask</td><td class="px-3 py-1.5 text-slate-500">open-out · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">weekdays{}</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Identity colour</td><td class="px-3 py-1.5 text-slate-500">open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.color</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Graph chips</td><td class="px-3 py-1.5 text-slate-500">row + open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.graphIds[]</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="px-5 py-4 border-t border-zinc-950/05 bg-slate-50/40">
+                    <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-1.5">Design rules this set forced</div>
+                    <ul class="font-proxima text-[12px] leading-[1.55] text-slate-600 space-y-1.5">
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Two affordances per row, never more.</span> Rename and remove sit in the row; everything else waits inside the open-out. At 340&nbsp;px a row with six icons is unreadable and the route's name — the thing you scan for — loses its width.</span></li>
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Editing is explicit, saving is not automatic.</span> Name and dates both take a save/cancel pair. Colour and graph chips commit on click — they're single, reversible, cheap.</span></li>
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">Presets before fields.</span> AM Peak / Weekdays are the real vocabulary; the raw time inputs stay, but nobody should have to type <span class="tny-mono">16:00</span> twice from memory.</span></li>
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">Destructive is the only coloured control.</span> Amber = you are editing; rose = removal; blue = the one primary action. Nothing else earns a colour.</span></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · panel states (size 4) ── the states the rail has to draw before
+                   there is anything in it. Shapes are patterns.html §states; content is this
+                   component's own copy, verbatim. -->
+              <div class="col-span-12 xl:col-span-4" data-dms-section="route-list-states">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full p-5">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// panel states</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Before there are routes.</div>
+
+                  <div class="mt-4 space-y-4">
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">loading · the report row hasn't resolved</div>
+                      <div class="space-y-2">
+                        <div class="h-11 rounded-[6px] bg-slate-100 border border-zinc-950/05 animate-pulse"></div>
+                        <div class="h-11 rounded-[6px] bg-slate-100 border border-zinc-950/05 animate-pulse"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">empty · a fresh report</div>
+                      <div class="rounded-[6px] border border-dashed border-zinc-950/15 bg-slate-50/60 px-3 py-4 text-center">
+                        <div class="font-proxima text-[12.5px] italic text-slate-500">No routes added — add one above.</div>
+                        <a href="#modal-add-routes" class="mt-2 tny-press h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: Plus --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[11.5px] tracking-wide">Add route</span></a>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">filtered to nothing</div>
+                      <div class="rounded-[6px] border border-zinc-950/08 bg-slate-50/60 px-3 py-2.5 font-proxima text-[12.5px] italic text-slate-500">No routes match “I-84”.</div>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">error · a refused write</div>
+                      <div class="rounded-[6px] border border-[#EF4444]/25 bg-[#EF4444]/5 px-3 py-2.5 font-proxima text-[12.5px] text-[#b91c1c]">A route named “NY-9D NB · after” already exists.</div>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">dynamic report · viewer hasn't picked yet</div>
+                      <div class="rounded-[6px] border border-[#CA8A04]/30 bg-[#FACC15]/10 px-3 py-2.5">
+                        <div class="font-proxima text-[12.5px] text-slate-700">Select routes to view this report.</div>
+                        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">The Add Routes modal opens as a <strong>blocking gate</strong> — no backdrop dismiss, Cancel disabled, and it wants an exact count: one route per slot group.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · a graph card in edit mode (size 7) ── the section toolbar and the
+                   Measure Picker, i.e. what the OTHER half of an edit session looks like. A graph
+                   added from the rail's Add Graph modal arrives already configured this way. -->
+              <div class="col-span-12 lg:col-span-7" data-dms-section="graph-edit">
+                  <!-- section toolbar · patterns.html §section-toolbar, above the card -->
+                  <div class="h-8 px-2 flex items-center gap-1.5 rounded-t-[8px] border border-b-0 border-[#FACC15] bg-[#FACC15]/15">
+                    <!-- drag handle --><svg class="size-3.5 text-[#8a5f03] cursor-grab" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03] flex-1">AVL Graph · size 7 · graph 1</span>
+                    <button class="h-5 px-1.5 inline-flex items-center rounded bg-white border border-[#E5A646]/40 font-mono text-[9.5px] uppercase tracking-wider text-[#8a5f03]">settings</button>
+                    <button class="h-5 px-1.5 inline-flex items-center rounded bg-white border border-[#E5A646]/40 font-mono text-[9.5px] uppercase tracking-wider text-[#8a5f03]">duplicate</button>
+                    <button class="size-5 rounded flex items-center justify-center text-[#8a5f03] hover:bg-white/60"><!-- icon: More --><svg class="size-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                  </div>
+                  <div class="rounded-b-[8px] border border-[#FACC15] bg-white shadow-sm overflow-hidden">
+                    <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                      <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Travel time by hour of day</span>
+                      <span class="flex-1"></span>
+                      <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-[#37576B] bg-[#37576B]/8 font-mono text-[10px] uppercase tracking-wider text-[#1f3450]">travel time <!-- icon: CaretUp --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                      <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600">overlay <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                    </div>
+                    <!-- Measure Picker · the four nested selects, open -->
+                    <div class="px-4 py-3 bg-slate-50 border-b border-zinc-950/05">
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">measure picker</div>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">graph type</div>
+                          <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Route Line Graph</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </div>
+                        <div>
+                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">measure</div>
+                          <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-[#37576B] bg-white ring-2 ring-[#37576B]/15"><span class="font-proxima text-[12px] text-[#0f1722] font-medium">Travel Time</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </div>
+                        <div>
+                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">resolution</div>
+                          <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Hourly</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </div>
+                        <div>
+                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">comparison mode</div>
+                          <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Overlay</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-2">Each pick composes <span class="tny-mono">columns</span>, <span class="tny-mono">join</span> and <span class="tny-mono">display</span> into this section's draft state — the same path a spec-built report takes, so both produce identical config.</p>
+                    </div>
+                    <div class="px-4 py-4">
+                      <!-- decorative --><svg viewBox="0 0 560 140" class="w-full h-[140px] block">
+                        <line x1="34" y1="8" x2="34" y2="116" stroke="#e2e8f0" stroke-width="1"/>
+                        <line x1="34" y1="116" x2="552" y2="116" stroke="#cbd5e1" stroke-width="1"/>
+                        <line x1="34" y1="62" x2="552" y2="62" stroke="#f1f5f9" stroke-width="1"/>
+                        <path d="M 44 100 L 120 92 L 190 62 L 260 78 L 330 80 L 400 40 L 470 66 L 545 96" fill="none" stroke="#1F3F8F" stroke-width="2"/>
+                        <path d="M 44 102 L 120 96 L 190 74 L 260 84 L 330 86 L 400 58 L 470 78 L 545 100" fill="none" stroke="#E5A646" stroke-width="2"/>
+                      </svg>
+                    </div>
+                    <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#1F3F8F]"></span>NB · before</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#E5A646]"></span>NB · after</span>
+                    </div>
+                    <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · draft · unsaved changes</div>
                   </div>
                 </div>
 
-                <!-- CANVAS · one card in edit mode, with the toolbar and the Measure Picker -->
-                <div class="col-span-12 lg:col-span-9">
-                  <div class="grid grid-cols-12 gap-6">
-                    <div class="col-span-12 lg:col-span-7" data-dms-section="graph-edit">
-                      <!-- section toolbar · patterns.html §section-toolbar, above the card -->
-                      <div class="h-8 px-2 flex items-center gap-1.5 rounded-t-[8px] border border-b-0 border-[#FACC15] bg-[#FACC15]/15">
-                        <!-- drag handle --><svg class="size-3.5 text-[#8a5f03] cursor-grab" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
-                        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03] flex-1">AVL Graph · size 7 · graph 1</span>
-                        <button class="h-5 px-1.5 inline-flex items-center rounded bg-white border border-[#E5A646]/40 font-mono text-[9.5px] uppercase tracking-wider text-[#8a5f03]">settings</button>
-                        <button class="h-5 px-1.5 inline-flex items-center rounded bg-white border border-[#E5A646]/40 font-mono text-[9.5px] uppercase tracking-wider text-[#8a5f03]">duplicate</button>
-                        <button class="size-5 rounded flex items-center justify-center text-[#8a5f03] hover:bg-white/60"><!-- icon: More --><svg class="size-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
-                      </div>
-                      <div class="rounded-b-[8px] border border-[#FACC15] bg-white shadow-sm overflow-hidden">
-                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Travel time by hour of day</span>
-                          <span class="flex-1"></span>
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-[#37576B] bg-[#37576B]/8 font-mono text-[10px] uppercase tracking-wider text-[#1f3450]">travel time <!-- icon: CaretUp --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600">overlay <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                        </div>
-                        <!-- Measure Picker · the four nested selects, open -->
-                        <div class="px-4 py-3 bg-slate-50 border-b border-zinc-950/05">
-                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">measure picker</div>
-                          <div class="grid grid-cols-2 gap-2">
-                            <div>
-                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">graph type</div>
-                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Route Line Graph</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                            </div>
-                            <div>
-                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">measure</div>
-                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-[#37576B] bg-white ring-2 ring-[#37576B]/15"><span class="font-proxima text-[12px] text-[#0f1722] font-medium">Travel Time</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                            </div>
-                            <div>
-                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">resolution</div>
-                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Hourly</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                            </div>
-                            <div>
-                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">comparison mode</div>
-                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Overlay</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                            </div>
-                          </div>
-                          <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-2">Each pick composes <span class="tny-mono">columns</span>, <span class="tny-mono">join</span> and <span class="tny-mono">display</span> into this section's draft state — the same path a spec-built report takes, so both produce identical config.</p>
-                        </div>
-                        <div class="px-4 py-4">
-                          <!-- decorative --><svg viewBox="0 0 560 140" class="w-full h-[140px] block">
-                            <line x1="34" y1="8" x2="34" y2="116" stroke="#e2e8f0" stroke-width="1"/>
-                            <line x1="34" y1="116" x2="552" y2="116" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="34" y1="62" x2="552" y2="62" stroke="#f1f5f9" stroke-width="1"/>
-                            <path d="M 44 100 L 120 92 L 190 62 L 260 78 L 330 80 L 400 40 L 470 66 L 545 96" fill="none" stroke="#1F3F8F" stroke-width="2"/>
-                            <path d="M 44 102 L 120 96 L 190 74 L 260 84 L 330 86 L 400 58 L 470 78 L 545 100" fill="none" stroke="#E5A646" stroke-width="2"/>
-                          </svg>
-                        </div>
-                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#1F3F8F]"></span>NB · before</span>
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#E5A646]"></span>NB · after</span>
-                        </div>
-                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · draft · unsaved changes</div>
-                      </div>
-                    </div>
-
-                    <!-- the density rule, stated -->
-                    <div class="col-span-12 lg:col-span-5" data-dms-section="density-rule">
-                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
-                        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// the density rule</div>
-                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Twenty-one sections is a real page.</div>
-                        <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-2">“Year Over Year (Beginner)” carries two maps, thirteen bar graphs and four tables. The design has to survive that, not just the five-section case.</p>
-                        <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
-                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Break on question, not on count.</span> One band per question, with a fused lexical head naming it. Four bands maximum before the page earns an in-page nav rail.</span></li>
-                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Same question, different resolution → fuse.</span> Zero the shared edge's padding and coordinate the corners; two sections read as one card.</span></li>
-                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">Never below size 4.</span> At size 4 the y-axis drops to three ticks and the legend collapses to dots plus a count. Below that a chart is decoration.</span></li>
-                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">One attribution line, always.</span> Truncate rather than wrap — three wrapped lines of provenance on a size-4 card outweigh the chart.</span></li>
-                        </ul>
-                      </div>
-                    </div>
+                <!-- the density rule, stated -->
+                <div class="col-span-12 lg:col-span-5" data-dms-section="density-rule">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// the density rule</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Twenty-one sections is a real page.</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-2">“Year Over Year (Beginner)” carries two maps, thirteen bar graphs and four tables. The design has to survive that, not just the five-section case.</p>
+                    <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Break on question, not on count.</span> One band per question, with a fused lexical head naming it. Four bands maximum before the page earns an in-page nav rail.</span></li>
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Same question, different resolution → fuse.</span> Zero the shared edge's padding and coordinate the corners; two sections read as one card.</span></li>
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">Never below size 4.</span> At size 4 the y-axis drops to three ticks and the legend collapses to dots plus a count. Below that a chart is decoration.</span></li>
+                      <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">One attribution line, always.</span> Truncate rather than wrap — three wrapped lines of provenance on a size-4 card outweigh the chart.</span></li>
+                    </ul>
                   </div>
                 </div>
             </div>
           </div>
 
-          <!-- ═════════ § 03 · PRINT STATE · LayoutGroup `content` ═════════
+          <!-- ═════════ § 04 · THE TWO MODALS · LayoutGroup `content` ═════════
+               `Add Route` and `Add Graph` are the rail's two default buttons, and each opens a
+               real component: `RouteTagBrowserModal` and `AddGraphModal`. Both are drawn here in
+               brand dress, with their actual content — categories, measures, resolutions, copy —
+               not placeholder text. Both use Modal `activeStyle: 'wide'` (max-w-7xl); the brand's
+               `modal` theme now ships that style, which it previously didn't, so these were
+               rendering at max-w-lg and the two-pane bodies were unusable.
+
+               DESIGN RULES SHARED BY BOTH:
+                 1. HEAD, BODY, FOOT — the head names the job, the body is the only scrolling
+                    region, the foot holds the count and the two buttons. The confirm button
+                    counts what it will do ("Add 2 Routes"), never just "OK".
+                 2. SELECTION IS ALWAYS VISIBLE. Both modals can hide a chosen item behind a
+                    drill-down or a scroll, so the current selection is echoed as chips (routes)
+                    or a count (graphs) above the fold.
+                 3. NOTHING IS CREATED UNTIL CONFIRM. Both are pickers that hand a value back to
+                    the panel; neither writes. Cancel is always free — except in the Dynamic
+                    Report entry gate, where there is nothing to cancel back to and Cancel is
+                    drawn disabled. -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content" id="modals">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- ── SECTION · band head · lexical (size 12) ── -->
+              <div class="col-span-12" data-dms-section="modals-head">
+                <div class="flex items-end justify-between gap-6 flex-wrap">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">RouteTagBrowserModal · AddGraphModal · modal activeStyle wide</span>
+                    </div>
+                    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What the two buttons open.</h2>
+                  </div>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 max-w-[420px] text-right">drawn on the scrim · both are pickers, neither writes</span>
+                </div>
+              </div>
+
+              <!-- ── SECTION · Add Routes · the tag browser (size 7) ──
+                   The old tool organised routes in FOLDERS. The data model has none, so tags
+                   stand in: county:, region: and agency: prefixes are fixed, enumerable
+                   vocabularies (62 NY counties, NYSDOT's own 11 regions, 18 agency/MPO codes), and
+                   drilling into one reproduces the folder browser's organising effect without
+                   inventing a folder table. "Other tags" covers the free-text case (project
+                   numbers); "Auto-generated" is a provenance flag, not a value axis.
+                   NOTE the two list behaviours, which are deliberate and easy to get wrong:
+                     · the unscoped default list HIDES routes already on this report (it's a
+                       suggestion list);
+                     · any deliberate view — a name search, a drilled tag, a free-text tag —
+                       SHOWS them, flagged "already on report", because re-adding the same
+                       catalogue route with a different window is a normal thing to want. -->
+              <div class="col-span-12 lg:col-span-7" data-dms-section="modal-add-routes" id="modal-add-routes">
+                <div class="rounded-[8px] bg-zinc-950/40 p-6">
+                  <div class="rounded-[8px] bg-white ring-1 ring-zinc-950/10 shadow-2xl overflow-hidden flex flex-col h-[680px]">
+
+                    <!-- head -->
+                    <div class="px-6 pt-5 pb-3 shrink-0">
+                      <div class="flex items-start justify-between gap-4">
+                        <div>
+                          <div class="font-display uppercase text-[16px] tracking-wide text-[#0F1722]">Add Routes</div>
+                          <!-- breadcrumb · the drill-down path, always back-clickable -->
+                          <div class="flex items-center flex-wrap gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mt-1.5">
+                            <span class="text-slate-500 hover:text-[#1F3F8F] cursor-pointer">all routes</span>
+                          </div>
+                        </div>
+                        <button class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-[#0F1722] shrink-0"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+                      </div>
+
+                      <!-- selection · echoed as removable chips (rule 2) -->
+                      <div class="flex flex-wrap gap-1.5 mt-3">
+                        <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full border border-[#1F3F8F]/30 bg-[#1F3F8F]/8 max-w-[240px]">
+                          <span class="font-proxima text-[11.5px] text-[#16307A] truncate">NY-9D SB (Beacon) — full corridor</span>
+                          <button class="size-4 rounded-full flex items-center justify-center text-[#1F3F8F]/60 hover:text-[#1F3F8F]"><!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+                        </span>
+                        <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full border border-[#1F3F8F]/30 bg-[#1F3F8F]/8 max-w-[240px]">
+                          <span class="font-proxima text-[11.5px] text-[#16307A] truncate">NY-9D NB (Beacon) — full corridor</span>
+                          <button class="size-4 rounded-full flex items-center justify-center text-[#1F3F8F]/60 hover:text-[#1F3F8F]"><!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+                        </span>
+                      </div>
+
+                      <!-- search · one input, its placeholder scoped to the current view -->
+                      <div class="mt-3 h-10 px-3 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white">
+                        <!-- icon: Search --><svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                        <span class="flex-1 font-proxima text-[13.5px] text-slate-400">Search routes by name…</span>
+                      </div>
+                    </div>
+
+                    <!-- body · the only scrolling region -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-3">
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">recent routes</div>
+                      <div class="space-y-1">
+                        <button class="w-full flex items-center gap-2 px-2 py-2 rounded-[6px] border border-[#1F3F8F]/30 bg-[#1F3F8F]/8 text-left">
+                          <span class="size-3.5 rounded-[3px] bg-[#1F3F8F] flex items-center justify-center shrink-0"><!-- icon: Check --><svg class="size-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg></span>
+                          <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">NY-9D NB (Beacon) — full corridor</span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums shrink-0">9 TMCs</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 px-2 py-2 rounded-[6px] border border-[#1F3F8F]/30 bg-[#1F3F8F]/8 text-left">
+                          <span class="size-3.5 rounded-[3px] bg-[#1F3F8F] flex items-center justify-center shrink-0"><!-- icon: Check --><svg class="size-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg></span>
+                          <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">NY-9D SB (Beacon) — full corridor</span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums shrink-0">9 TMCs</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 px-2 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 text-left">
+                          <span class="size-3.5 rounded-[3px] border border-zinc-950/25 bg-white shrink-0"></span>
+                          <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">I-84 EB · Newburgh–Fishkill (Hudson crossing)</span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums shrink-0">24 TMCs</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 px-2 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 text-left">
+                          <span class="size-3.5 rounded-[3px] border border-zinc-950/25 bg-white shrink-0"></span>
+                          <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">US-9 NB · Wappingers Falls to Poughkeepsie</span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums shrink-0">17 TMCs</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 px-2 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 text-left">
+                          <span class="size-3.5 rounded-[3px] border border-zinc-950/25 bg-white shrink-0"></span>
+                          <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">NY-52 WB · Fishkill village</span>
+                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">already on report</span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums shrink-0">6 TMCs</span>
+                        </button>
+                      </div>
+
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mt-4 mb-1.5">browse by tag</div>
+                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <button class="flex flex-col items-start gap-0.5 p-3 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 hover:border-[#37576B] text-left">
+                          <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">County</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums">62 values</span>
+                        </button>
+                        <button class="flex flex-col items-start gap-0.5 p-3 rounded-[6px] border border-[#37576B] bg-[#37576B]/8 text-left">
+                          <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Region</span>
+                          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 tabular-nums">11 values</span>
+                        </button>
+                        <button class="flex flex-col items-start gap-0.5 p-3 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 hover:border-[#37576B] text-left">
+                          <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Agency</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums">18 values</span>
+                        </button>
+                        <button class="flex flex-col items-start gap-0.5 p-3 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 hover:border-[#37576B] text-left">
+                          <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Auto-generated</span>
+                          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">system-made routes</span>
+                        </button>
+                        <button class="flex flex-col items-start gap-0.5 p-3 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 hover:border-[#37576B] text-left">
+                          <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Other tags</span>
+                          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">project #s, custom</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- foot -->
+                    <div class="px-6 py-3 border-t border-zinc-950/10 flex items-center justify-between gap-3 shrink-0">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 tabular-nums">2 selected</span>
+                      <div class="flex items-center gap-2">
+                        <button class="h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 font-display uppercase text-[12.5px] tracking-wide hover:border-[#37576B]">Cancel</button>
+                        <button class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e] font-display uppercase text-[12.5px] tracking-wide">Add 2 Routes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- the drilled state · a "folder" opened. Values are a filterable list, not tiles:
+                     62 counties as tiles is a wall, and the list is what the old tool's folder
+                     pane looked like anyway. -->
+                <div class="mt-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
+                    <div class="font-display font-medium text-[15px] text-[#0F1722]">Drilled in · Region</div>
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mt-1">view: 'category' · the value list, client-filtered</div>
+                  </div>
+                  <div class="p-5">
+                    <div class="flex items-center flex-wrap gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3">
+                      <span class="text-slate-500 hover:text-[#1F3F8F] cursor-pointer">all routes</span>
+                      <span class="text-slate-300">/</span>
+                      <span class="text-[#0f1722] font-semibold">region</span>
+                    </div>
+                    <div class="h-9 px-3 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white mb-3">
+                      <!-- icon: Search --><svg class="size-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                      <span class="flex-1 font-proxima text-[13px] text-slate-400">Filter region…</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      <button class="w-full text-left px-2.5 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 font-proxima text-[13px] text-slate-700 truncate">Region 1 - Capital District</button>
+                      <button class="w-full text-left px-2.5 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 font-proxima text-[13px] text-slate-700 truncate">Region 2 - Mohawk Valley</button>
+                      <button class="w-full text-left px-2.5 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 font-proxima text-[13px] text-slate-700 truncate">Region 3 - Central New York</button>
+                      <button class="w-full text-left px-2.5 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 font-proxima text-[13px] text-slate-700 truncate">Region 4 - Genesee Valley</button>
+                      <button class="w-full text-left px-2.5 py-2 rounded-[6px] border border-[#37576B] bg-[#37576B]/8 font-proxima text-[13px] text-[#0f1722] font-medium truncate">Region 8 - Hudson Valley</button>
+                      <button class="w-full text-left px-2.5 py-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 font-proxima text-[13px] text-slate-700 truncate">Region 11 - New York City</button>
+                    </div>
+                    <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-3">Picking a value goes one level deeper — the routes carrying that tag, with their own “search within this tag” box. Free-text tags (a project number) get the same list from the <span class="tny-mono">Other tags</span> door, which searches tags rather than names.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · Add Graph (size 5) ──
+                   Collapses the old author path (+Add Component → blank AVL Graph → open the
+                   section menu → Measure Picker → configure) into one modal: pick the routes and
+                   the four vocabulary values, get a configured graph. The right pane is a STATIC
+                   illustration plus the guidance copy, not a live render — a real per-pick /graph
+                   fetch was considered and rejected as far too expensive for a preview. The
+                   Anchor Route select appears only for Difference mode with exactly two routes
+                   checked, because that is the only case where the sign of the answer depends on
+                   which arm is "Main". -->
+              <div class="col-span-12 lg:col-span-5" data-dms-section="modal-add-graph" id="modal-add-graph">
+                <div class="rounded-[8px] bg-zinc-950/40 p-6">
+                  <div class="rounded-[8px] bg-white ring-1 ring-zinc-950/10 shadow-2xl overflow-hidden flex flex-col">
+
+                    <div class="px-6 pt-5 pb-3 shrink-0">
+                      <div class="flex items-start justify-between gap-4">
+                        <div>
+                          <div class="font-display uppercase text-[16px] tracking-wide text-[#0F1722]">Add Graph</div>
+                          <div class="font-proxima text-[12.5px] text-slate-500 mt-1">Pick what the new graph should show, and which routes feed it.</div>
+                        </div>
+                        <button class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-[#0F1722] shrink-0"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+                      </div>
+                    </div>
+
+                    <div class="px-6 pb-3 space-y-4">
+                      <!-- routes for this graph -->
+                      <div>
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">routes for this graph</div>
+                        <div class="space-y-1">
+                          <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] border border-[#1F3F8F]/30 bg-[#1F3F8F]/8 text-left">
+                            <span class="size-3.5 rounded-[3px] bg-[#1F3F8F] flex items-center justify-center shrink-0"><!-- icon: Check --><svg class="size-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg></span>
+                            <span class="size-2.5 rounded-full bg-[#1F3F8F] shrink-0"></span>
+                            <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">NY-9D NB · before</span>
+                          </button>
+                          <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] border border-[#1F3F8F]/30 bg-[#1F3F8F]/8 text-left">
+                            <span class="size-3.5 rounded-[3px] bg-[#1F3F8F] flex items-center justify-center shrink-0"><!-- icon: Check --><svg class="size-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg></span>
+                            <span class="size-2.5 rounded-full bg-[#E5A646] shrink-0"></span>
+                            <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">NY-9D NB · after</span>
+                          </button>
+                          <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 text-left">
+                            <span class="size-3.5 rounded-[3px] border border-zinc-950/25 bg-white shrink-0"></span>
+                            <span class="size-2.5 rounded-full bg-[#10B981] shrink-0"></span>
+                            <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">NY-9D SB · before</span>
+                          </button>
+                          <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-slate-100 text-left">
+                            <span class="size-3.5 rounded-[3px] border border-zinc-950/25 bg-white shrink-0"></span>
+                            <span class="size-2.5 rounded-full bg-[#8B5CF6] shrink-0"></span>
+                            <span class="font-proxima text-[13px] text-slate-700 truncate flex-1 min-w-0">NY-9D SB · after</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- what to show · the four-value vocabulary -->
+                      <div>
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">what to show</div>
+                        <div class="grid grid-cols-2 gap-2">
+                          <div>
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">graph type</div>
+                            <button class="w-full h-9 px-2.5 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/15 bg-white"><span class="font-proxima text-[13px] text-[#0f1722]">Line Graph</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          </div>
+                          <div>
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">measure</div>
+                            <button class="w-full h-9 px-2.5 inline-flex items-center justify-between rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15"><span class="font-proxima text-[13px] text-[#0f1722] font-medium">Travel Time (min)</span><!-- icon: CaretUp --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                          </div>
+                          <div>
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">resolution</div>
+                            <button class="w-full h-9 px-2.5 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/15 bg-white"><span class="font-proxima text-[13px] text-[#0f1722]">Hour</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          </div>
+                          <div>
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">comparison mode</div>
+                            <button class="w-full h-9 px-2.5 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/15 bg-white"><span class="font-proxima text-[13px] text-[#0f1722]">Difference</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          </div>
+                          <!-- conditional · Difference + exactly 2 routes -->
+                          <div class="col-span-2">
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">anchor route · difference mode only</div>
+                            <button class="w-full h-9 px-2.5 inline-flex items-center justify-between rounded-[6px] border border-[#CA8A04]/40 bg-[#FACC15]/8"><span class="font-proxima text-[13px] text-[#0f1722]">NY-9D NB · before <span class="text-slate-500">(main arm)</span></span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- static preview + guidance copy -->
+                      <div class="flex items-start gap-3 p-3 rounded-[6px] border border-zinc-950/10 bg-slate-50">
+                        <!-- glyph · LineGraph --><svg class="size-10 shrink-0 text-[#1F3F8F]" viewBox="0 0 40 40" fill="none"><polyline points="4,30 14,14 24,22 36,6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="14" cy="14" r="2" fill="currentColor"/><circle cx="24" cy="22" r="2" fill="currentColor"/><circle cx="36" cy="6" r="2" fill="currentColor"/></svg>
+                        <div class="min-w-0">
+                          <div class="font-display font-medium text-[13.5px] text-[#0f1722]">Travel Time (min) — Line Graph</div>
+                          <div class="font-proxima text-[12px] text-slate-600 mt-0.5 leading-[1.5]">Average time to traverse the route, in minutes.</div>
+                          <div class="font-proxima text-[12px] text-slate-600 leading-[1.5]">A continuous line per route — good for seeing trends over time.</div>
+                          <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 mt-1">shown at hour resolution, difference mode</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="px-6 py-3 border-t border-zinc-950/10 flex items-center justify-between gap-3 shrink-0">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 tabular-nums">2 routes selected</span>
+                      <div class="flex items-center gap-2">
+                        <button class="h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 font-display uppercase text-[12.5px] tracking-wide hover:border-[#37576B]">Cancel</button>
+                        <button class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e] font-display uppercase text-[12.5px] tracking-wide">Add Graph</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- what the confirm does, in order -->
+                <div class="mt-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// on confirm</div>
+                  <ol class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-2 space-y-1.5">
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span>A new AVL Graph section is appended to the page's draft sections, already carrying the composed <span class="tny-mono">columns</span> / <span class="tny-mono">join</span> / <span class="tny-mono">display</span> for the four picks.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span>It self-binds: its <span class="tny-mono">comparison_series</span> subscriber carries <span class="tny-mono">paramKey:'$self'</span>, so it is uniquely addressable the moment it exists — no author wiring.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span>The checked routes get that graph's id appended to their own <span class="tny-mono">graphIds</span> — which is why it appears as a new chip on those rows in the rail, and why the rail never writes into a graph's row.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span>Removing the graph section strips its id from every route, so no row keeps a chip for a graph that's gone.</span></li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- ═════════ § 05 · PRINT STATE · LayoutGroup `content` ═════════
                Open question 4's recorded default: ONE print-shaped state, not a full print
                stylesheet. These reports are client deliverables — the real titles say so
                ("US-44/NY-55 Westbound Road Diet Impact Assessment") — so the design has to
@@ -849,7 +1610,7 @@
                 <div class="flex items-end justify-between gap-6 flex-wrap">
                   <div>
                     <div class="flex items-center gap-2 mb-1">
-                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
                       <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">the deliverable · letter portrait · chrome removed</span>
                     </div>
                     <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Printed, this is a document.</h2>
@@ -913,7 +1674,7 @@
                   <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Chrome is not content.</div>
                   <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Drop every affordance.</span> SideNav, the ds-nav widget, quick-control pills, kebabs, Edit, Share — none of it survives a PDF, so none of it prints.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Promote the finding.</span> On screen it sits in the rail; on paper it leads, because a printed report is read linearly and often only page one.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Promote the finding.</span> On screen it is a canvas section under the header (it left the rail when the rail became a control surface); on paper it leads, because a printed report is read linearly and often only page one.</span></li>
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">The rail becomes a legend.</span> Route colours still key the charts, so the rows persist as a static colour key — without the mutation controls.</span></li>
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">Provenance and pagination move to a page foot.</span> The per-card attribution lines collapse into one sheet-level line — the same facts, once.</span></li>
                   </ul>
