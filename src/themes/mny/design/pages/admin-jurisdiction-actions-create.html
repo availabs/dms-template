@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Admin — Create Action (Jurisdiction)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B', 'mny-org': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  ADMIN PANEL REDESIGN — pattern 566466 (app mitigat-ny-prod, base_url /admin), pulled live via
+  the DMS CLI/Falcor (2026-07-29). Phase 1 of planning/tasks/current/mny-admin-panel-redesign.md:
+  Actions ecosystem, JURISDICTION tier — one of 3 audience tiers (State / County / Jurisdiction),
+  each a full 5-page ecosystem (dashboard · spreadsheet · view · edit · create) per dataset.
+
+  Blank CREATE form — same layout/condensed 7-section grouping as
+  admin-jurisdiction-actions-edit.html, but every field is blank/placeholder and there is no
+  Delete button (nothing exists yet to delete). Content is the "Create New Action" quick-create
+  modal from actions-workspace.html (search that file for CREATE NEW ACTION), expanded from a
+  small modal into this full standalone page so all 7 sections — not just the modal's four
+  required fields — can be filled in at once. Uses the admin-panel TopNav (tier switcher) and
+  floating nav widget/footer from admin-jurisdiction-actions-dashboard.html.
+-->
+
+<!-- ================================================================
+     TOPNAV
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <span class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-y700 px-3">Admin Panel</span>
+          <span class="text-mny-200">/</span>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 border-b-2 border-mny-y700 h-full flex items-center">Actions</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-3">
+          <!-- Tier switcher -->
+          <div class="flex items-center bg-mny-50 rounded-full border border-mny-100 p-0.5">
+            <span class="px-3 py-1.5 rounded-full bg-mny-900 font-proxima text-[12px] font-[600] text-white">Jurisdiction</span>
+            <a href="admin-county-actions-create.html" class="px-3 py-1.5 rounded-full font-proxima text-[12px] font-[600] text-mny-700 hover:text-mny-900">County</a>
+            <a href="admin-state-actions-create.html" class="px-3 py-1.5 rounded-full font-proxima text-[12px] font-[600] text-mny-700 hover:text-mny-900">State</a>
+          </div>
+          <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+            <!-- icon: User -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default. pb-28 leaves room for the sticky "unsaved
+     changes" bar so it never overlaps the last section.
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-28">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+
+      <div class="grid grid-cols-12 gap-y-4">
+
+        <!-- ==========================================================
+             SECTION — RECORD HEADER (col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="record-header" class="col-span-12">
+          <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400 pb-1">
+            <a href="#" class="hover:text-mny-700">Admin Panel</a>
+            <span class="text-mny-200">/</span>
+            <a href="admin-jurisdiction-actions-dashboard.html" class="hover:text-mny-700">Actions</a>
+            <span class="text-mny-200">/</span>
+            <span class="text-mny-700">Create</span>
+          </div>
+
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="flex-1 min-w-[280px]">
+              <label class="block">
+                <span class="sr-only">Action name</span>
+                <input placeholder="e.g. Elevate County Road 14 Above Base Flood Elevation"
+                       class="w-full font-display text-[30px] font-[500] text-mny-900 uppercase leading-[1.1] tracking-[-0.01em] border-2 border-transparent hover:border-mny-100 focus:border-mny-y700 rounded-[8px] px-2 -ml-2 outline-none transition-colors bg-transparent placeholder:normal-case placeholder:text-mny-400">
+              </label>
+              <h1 class="sr-only">Create Action</h1>
+              <div class="flex flex-wrap items-center gap-2 mt-2 pl-0">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-50 border border-dashed border-mny-200 font-proxima text-[12px] font-[600] text-mny-400">Jurisdiction not yet set</span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-50 border border-mny-100 font-proxima text-[12px] font-[600] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed (default)</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <a href="admin-jurisdiction-actions-dashboard.html" class="px-5 py-2 bg-white border border-mny-200 hover:border-mny-400 rounded-full font-proxima font-[700] text-[12px] uppercase tracking-wider text-mny-700 hover:text-mny-900 transition-colors">Cancel</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             CONTENT + RAIL ROW (col-12)
+             ========================================================== -->
+        <div class="col-span-12 flex items-start gap-6 mt-2">
+
+          <!-- ============ CONTENT COLUMN ============ -->
+          <div class="flex-1 min-w-0 flex flex-col gap-3">
+
+            <!-- SECTION: SUMMARY (expanded) -->
+            <div data-dms="section" data-name="summary" id="summary" class="rounded-[12px] border border-mny-100 bg-white">
+              <button class="w-full flex items-center justify-between px-4 py-3 border-b border-mny-50">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-wide">Summary</span>
+                <span class="flex items-center gap-2">
+                  <span class="font-proxima text-[11px] text-mny-400">0/7 fields</span>
+                  <!-- icon: ChevronUp -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.78 11.78a.75.75 0 0 1-1.06 0L10 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd"/></svg>
+                </span>
+              </button>
+              <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Control #</span>
+                  <input placeholder="Assigned automatically" disabled class="w-full mt-1 font-proxima text-[14px] text-mny-400 border border-mny-100 bg-mny-50 rounded-[8px] px-3 py-2 outline-none placeholder:text-mny-400">
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Source ID</span>
+                  <div class="flex items-center gap-1.5 mt-1 border border-mny-200 rounded-[8px] px-2 py-1.5">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-mny-100 text-mny-900 font-proxima text-[12px] font-[600]">LOCAL <button class="text-mny-400 hover:text-mny-900">&times;</button></span>
+                  </div>
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Action Number</span>
+                  <input placeholder="e.g. SULL-CR14-01" class="w-full mt-1 font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[8px] px-3 py-2 outline-none focus:border-mny-y700 placeholder:text-mny-400">
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Lead Agency / Department*</span>
+                  <input placeholder="e.g. Sullivan County DPW" class="w-full mt-1 font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[8px] px-3 py-2 outline-none focus:border-mny-y700 placeholder:text-mny-400">
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">County*</span>
+                  <button class="w-full mt-1 flex items-center justify-between gap-2 border border-mny-200 rounded-[8px] px-3 py-2 hover:border-mny-400">
+                    <span class="font-proxima text-[14px] text-mny-400">Select county…</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Jurisdiction*</span>
+                  <button class="w-full mt-1 flex items-center justify-between gap-2 border border-mny-200 rounded-[8px] px-3 py-2 hover:border-mny-400">
+                    <span class="font-proxima text-[14px] text-mny-400">Select jurisdiction…</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </label>
+              </div>
+            </div>
+
+            <!-- SECTION: ACTION INFORMATION (expanded) -->
+            <div data-dms="section" data-name="action-information" id="action-information" class="rounded-[12px] border border-mny-100 bg-white">
+              <button class="w-full flex items-center justify-between px-4 py-3 border-b border-mny-50">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-wide">Action Information</span>
+                <span class="flex items-center gap-2">
+                  <span class="font-proxima text-[11px] text-mny-400">0/3 fields</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.78 11.78a.75.75 0 0 1-1.06 0L10 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd"/></svg>
+                </span>
+              </button>
+              <div class="p-4 grid grid-cols-1 gap-3">
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Category</span>
+                  <button class="w-full mt-1 flex items-center justify-between gap-2 border border-mny-200 rounded-[8px] px-3 py-2 hover:border-mny-400 max-w-md">
+                    <span class="font-proxima text-[14px] text-mny-400">Select category…</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Description of the Problem (Problem Statement)*</span>
+                  <textarea rows="3" placeholder="What hazard-driven problem does this action address?" class="w-full mt-1 font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[8px] px-3 py-2 outline-none focus:border-mny-y700 resize-none placeholder:text-mny-400"></textarea>
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Description of the Solution (Action Description)*</span>
+                  <textarea rows="3" placeholder="What will be done to solve it?" class="w-full mt-1 font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[8px] px-3 py-2 outline-none focus:border-mny-y700 resize-none placeholder:text-mny-400"></textarea>
+                </label>
+              </div>
+            </div>
+
+            <!-- SECTION: STATUS & PRIORITIZATION (merged, expanded) -->
+            <div data-dms="section" data-name="status-prioritization" id="status-prioritization" class="rounded-[12px] border border-mny-100 bg-white">
+              <button class="w-full flex items-center justify-between px-4 py-3 border-b border-mny-50">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-wide">Status &amp; Prioritization</span>
+                <span class="flex items-center gap-2">
+                  <span class="font-proxima text-[11px] text-mny-400">1/2 fields</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.78 11.78a.75.75 0 0 1-1.06 0L10 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd"/></svg>
+                </span>
+              </button>
+              <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Implementation Status*</span>
+                  <button class="w-full mt-1 flex items-center justify-between gap-2 border border-mny-200 rounded-[8px] px-3 py-2 hover:border-mny-400">
+                    <span class="inline-flex items-center gap-1.5 font-proxima text-[14px] text-mny-900"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </label>
+                <label class="block">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">County Priority</span>
+                  <button class="w-full mt-1 flex items-center justify-between gap-2 px-3 py-2 rounded-[8px] border border-dashed border-mny-200 hover:border-mny-400 transition-colors">
+                    <span class="font-proxima text-[14px] text-mny-400">Set after creation</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </label>
+                <label class="block sm:col-span-2">
+                  <span class="font-proxima text-[11px] font-[600] text-mny-700 uppercase tracking-wide">Priority Rationale</span>
+                  <textarea rows="2" placeholder="Why does this action deserve its priority ranking?" class="w-full mt-1 font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[8px] px-3 py-2 outline-none focus:border-mny-y700 resize-none placeholder:text-mny-400"></textarea>
+                </label>
+              </div>
+            </div>
+
+            <!-- SECTION: COST & TIMEFRAME (merged, collapsed) -->
+            <div data-dms="section" data-name="cost-timeframe" id="cost-timeframe" class="rounded-[12px] border border-mny-100 bg-white">
+              <button class="w-full flex items-center justify-between px-4 py-3">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-wide">Cost &amp; Timeframe</span>
+                <span class="flex items-center gap-2">
+                  <span class="font-proxima text-[11px] text-mny-400">0/2 fields</span>
+                  <!-- icon: ChevronDown -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                </span>
+              </button>
+            </div>
+
+            <!-- SECTION: LOCATION (collapsed) -->
+            <div data-dms="section" data-name="location" id="location" class="rounded-[12px] border border-mny-100 bg-white">
+              <button class="w-full flex items-center justify-between px-4 py-3">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-wide">Location</span>
+                <span class="flex items-center gap-2">
+                  <span class="font-proxima text-[11px] text-mny-400">0/2 fields</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                </span>
+              </button>
+            </div>
+
+            <!-- SECTION: HAZARDS & RISK ENVIRONMENT (merged, collapsed) -->
+            <div data-dms="section" data-name="hazards-risk" id="hazards-risk" class="rounded-[12px] border border-mny-100 bg-white">
+              <button class="w-full flex items-center justify-between px-4 py-3">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-wide">Hazards &amp; Risk Environment</span>
+                <span class="flex items-center gap-2">
+                  <span class="font-proxima text-[11px] text-mny-400">0/1 fields</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                </span>
+              </button>
+            </div>
+
+            <!-- SECTION: ADDITIONAL DETAILS (Agency/Contact + Goals + Technical, merged, collapsed) -->
+            <div data-dms="section" data-name="additional-details" id="additional-details" class="rounded-[12px] border border-mny-100 bg-white">
+              <button class="w-full flex items-center justify-between px-4 py-3">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-wide">Additional Details</span>
+                <span class="flex items-center gap-2">
+                  <span class="font-proxima text-[11px] text-mny-400">0/12 fields</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                </span>
+              </button>
+            </div>
+
+            <p class="font-proxima text-[11px] text-mny-400 leading-[1.5] px-1">Cost, location, goals, and technical detail can be filled in after creation — the Summary, Action Information, and Status &amp; Prioritization sections above are the minimum needed to save this record.</p>
+
+          </div>
+
+          <!-- ============ RAIL COLUMN — real in-page-nav, not custom ============ -->
+          <aside class="hidden xl:block w-[240px] shrink-0">
+            <div class="sticky top-[150px]">
+              <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-4">
+                <p class="font-display text-[11px] font-[500] uppercase tracking-wider text-mny-400 mb-3 pb-2 border-b border-mny-100">On This Page</p>
+                <nav class="flex flex-col gap-0.5">
+                  <a href="#summary" class="flex items-center justify-between px-2.5 py-2 rounded-[8px] bg-white mny-shadow-sm">
+                    <span class="font-proxima text-[13px] font-[600] text-mny-900">Summary</span>
+                    <span class="font-proxima text-[11px] text-mny-400 font-[700]">0/7</span>
+                  </a>
+                  <a href="#action-information" class="flex items-center justify-between px-2.5 py-2 rounded-[8px] hover:bg-white/60">
+                    <span class="font-proxima text-[13px] font-[600] text-mny-700">Action Information</span>
+                    <span class="font-proxima text-[11px] text-mny-400 font-[700]">0/3</span>
+                  </a>
+                  <a href="#status-prioritization" class="flex items-center justify-between px-2.5 py-2 rounded-[8px] hover:bg-white/60">
+                    <span class="font-proxima text-[13px] font-[600] text-mny-700">Status &amp; Prioritization</span>
+                    <span class="font-proxima text-[11px] text-mny-400 font-[700]">1/2</span>
+                  </a>
+                  <a href="#cost-timeframe" class="flex items-center justify-between px-2.5 py-2 rounded-[8px] hover:bg-white/60">
+                    <span class="font-proxima text-[13px] font-[600] text-mny-700">Cost &amp; Timeframe</span>
+                    <span class="font-proxima text-[11px] text-mny-400 font-[700]">0/2</span>
+                  </a>
+                  <a href="#location" class="flex items-center justify-between px-2.5 py-2 rounded-[8px] hover:bg-white/60">
+                    <span class="font-proxima text-[13px] font-[600] text-mny-700">Location</span>
+                    <span class="font-proxima text-[11px] text-mny-400 font-[700]">0/2</span>
+                  </a>
+                  <a href="#hazards-risk" class="flex items-center justify-between px-2.5 py-2 rounded-[8px] hover:bg-white/60">
+                    <span class="font-proxima text-[13px] font-[600] text-mny-700">Hazards &amp; Risk Env.</span>
+                    <span class="font-proxima text-[11px] text-mny-400 font-[700]">0/1</span>
+                  </a>
+                  <a href="#additional-details" class="flex items-center justify-between px-2.5 py-2 rounded-[8px] hover:bg-white/60">
+                    <span class="font-proxima text-[13px] font-[600] text-mny-700">Additional Details</span>
+                    <span class="font-proxima text-[11px] text-mny-400 font-[700]">0/12</span>
+                  </a>
+                </nav>
+              </div>
+
+              <a href="admin-jurisdiction-actions-dashboard.html" class="mt-3 flex items-center gap-2 rounded-[12px] border border-dashed border-mny-200 p-3 hover:border-mny-400 transition-colors">
+                <!-- icon: ArrowLeft -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+                <span class="font-proxima text-[12px] font-[600] text-mny-700">Back to dashboard</span>
+              </a>
+            </div>
+          </aside>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     STICKY SAVE BAR — same chrome as admin-jurisdiction-actions-edit.html,
+     labeled for creation rather than saving edits
+     ================================================================ -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-mny-900 px-6 py-4">
+  <div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+    <span class="flex items-center gap-2 font-proxima text-[13px] text-white/80">
+      <!-- icon: Information -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-y500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a1 1 0 0 0 0 2v3a1 1 0 0 0 1 1h1a1 1 0 1 0 0-2v-3a1 1 0 0 0-1-1H9Z" clip-rule="evenodd"/></svg>
+      New action — not yet saved
+    </span>
+    <div class="flex items-center gap-3">
+      <a href="admin-jurisdiction-actions-dashboard.html" class="px-5 py-2 rounded-full border border-white/20 text-white/80 hover:text-white hover:border-white/40 font-proxima font-[700] text-[12px] uppercase tracking-wider transition-colors">Discard</a>
+      <button class="px-4 py-2 rounded-full border border-white/20 text-white/80 hover:text-white hover:border-white/40 font-proxima font-[700] text-[12px] uppercase tracking-wider transition-colors">Save &amp; Add Another</button>
+      <a href="admin-jurisdiction-actions-view.html" class="px-6 py-2 rounded-full bg-mny-y700 hover:bg-mny-y500 text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider transition-colors">Create Action</a>
+    </div>
+  </div>
+</div>
+
+<!-- Floating admin-panel nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:76px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:230px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">Admin Panel — Actions</div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#EAAD43;padding:6px 16px 2px;">Jurisdiction</div>
+    <a href="admin-jurisdiction-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-jurisdiction-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-jurisdiction-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-jurisdiction-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-jurisdiction-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:700;color:#EAAD43;text-decoration:none;">Create (current)</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6D96AE;padding:8px 16px 2px;border-top:1px solid #E0EBF0;margin-top:4px;">County</div>
+    <a href="admin-county-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-county-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-county-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-county-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-county-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6D96AE;padding:8px 16px 2px;border-top:1px solid #E0EBF0;margin-top:4px;">State</div>
+    <a href="admin-state-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-state-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-state-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-state-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-state-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="border-top:1px solid #E0EBF0;margin:6px 0 0;padding-top:6px;">
+      <a href="actions-workspace.html" style="display:block;padding:5px 16px;font-size:12px;font-weight:600;color:#9BB5C2;text-decoration:none;">Original public-template ecosystem →</a>
+    </div>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Admin panel navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+<!-- Footer link block -->
+<div class="max-w-[1440px] mx-auto px-4 xl:px-[64px] pb-10">
+  <div class="border-t border-mny-200 pt-4 flex flex-wrap gap-x-6 gap-y-1 font-proxima text-[12px] text-mny-400">
+    <span class="font-[700] text-mny-700 uppercase tracking-wide">Jurisdiction:</span>
+    <a href="admin-jurisdiction-actions-dashboard.html" class="hover:text-mny-700">Dashboard</a>
+    <a href="admin-jurisdiction-actions-spreadsheet.html" class="hover:text-mny-700">Spreadsheet</a>
+    <a href="admin-jurisdiction-actions-view.html" class="hover:text-mny-700">View</a>
+    <a href="admin-jurisdiction-actions-edit.html" class="hover:text-mny-700">Edit</a>
+    <a href="admin-jurisdiction-actions-create.html" class="hover:text-mny-700">Create</a>
+    <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">County:</span>
+    <a href="admin-county-actions-dashboard.html" class="hover:text-mny-700">Dashboard</a>
+    <a href="admin-county-actions-spreadsheet.html" class="hover:text-mny-700">Spreadsheet</a>
+    <a href="admin-county-actions-view.html" class="hover:text-mny-700">View</a>
+    <a href="admin-county-actions-edit.html" class="hover:text-mny-700">Edit</a>
+    <a href="admin-county-actions-create.html" class="hover:text-mny-700">Create</a>
+    <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">State:</span>
+    <a href="admin-state-actions-dashboard.html" class="hover:text-mny-700">Dashboard</a>
+    <a href="admin-state-actions-spreadsheet.html" class="hover:text-mny-700">Spreadsheet</a>
+    <a href="admin-state-actions-view.html" class="hover:text-mny-700">View</a>
+    <a href="admin-state-actions-edit.html" class="hover:text-mny-700">Edit</a>
+    <a href="admin-state-actions-create.html" class="hover:text-mny-700">Create</a>
+  </div>
+</div>
+
+</body>
+</html>

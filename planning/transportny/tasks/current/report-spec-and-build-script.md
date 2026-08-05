@@ -69,7 +69,15 @@ that Phase B makes unnecessary.
 - **Anything in transportNY.** All code here lives in dms-template — user direction 2026-07-27,
   memory `feedback_all_code_in_dms_template`.
 
-<<<<<<< HEAD
+  **2026-07-29 update: transportNY is no longer needed for routes/reports work at all.** The
+  routecreation plugin (and macroview) have been ported natively into dms-template via
+  `theme.mapPlugins` (`planning/transportny/tasks/completed/port-transportny-map-plugins.md`) — the paragraph
+  below describing the manual cross-repo sync dance, submodule-path rewrites, and "is transportNY
+  currently byte-aligned" checks is now historical. It's kept for context (and because
+  `RouteComparison` was last confirmed to still be transportNY-only — check
+  `research/npmrds-reports/reportroutelist-cross-repo-sync.md` before assuming that's changed too),
+  but nothing in this task requires touching transportNY anymore.
+
   **Cross-repo state verified 2026-07-27 (after the user bumped transportNY's submodule twice):
   currently byte-aligned — but by MANUAL COPY ONLY, so this is a snapshot, not a guarantee.**
   Verified there is no auto-sync mechanism of any kind: `src/dms_themes/transportny` is a plain
@@ -84,16 +92,6 @@ that Phase B makes unnecessary.
   (`../../../../dms/` → `../../../../modules/dms/`). An earlier draft of this file warned that a
   spec-built report would render differently on transportNY — that is no longer true. Re-check
   with a `diff -rq` before repeating the claim either way.
-=======
-  **2026-07-29 update: transportNY is no longer needed for routes/reports work at all.** The
-  routecreation plugin (and macroview) have been ported natively into dms-template via
-  `theme.mapPlugins` (`planning/transportny/tasks/completed/port-transportny-map-plugins.md`) — the paragraphs
-  below describing the manual cross-repo sync dance, submodule-path rewrites, and "is transportNY
-  currently byte-aligned" checks are now historical. They're kept for context (and because
-  `RouteComparison` was last confirmed to still be transportNY-only — check
-  `research/npmrds-reports/reportroutelist-cross-repo-sync.md` before assuming that's changed too),
-  but nothing in this task requires touching transportNY anymore.
->>>>>>> 6fa3ccc1699680e13bc8d51ff0ea2e8ec5452628
 - Any change to `composeMeasureConfig.js` / `applyMeasurePick` behavior. This task *consumes*
   them. If a gap forces a change there, it affects the live UI too — isolate it
   (`feedback_isolate_shared_code_changes`).

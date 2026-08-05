@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Plan Status Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-ora': '#EA8954', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  PLAN STATUS DASHBOARD — the county emergency manager's "how is our plan doing" surface.
+  Distinct from actions-dashboard.html / actions-workspace.html (which track individual
+  mitigation actions): this page reports on the health of the Local Hazard Mitigation Plan
+  itself — adoption/approval lifecycle, jurisdictional coverage, hazard risk ranking,
+  FEMA §201.6(c)(3) capability assessment, NFIP standing, and HMA grant funding. Metrics
+  are shaped around the FEMA Local Mitigation Planning Handbook and NYS DHSES county HMP
+  guidance. Illustrative data for Sullivan County (FIPS 36105), consistent with the actions
+  ecosystem pages.
+-->
+
+<!-- ================================================================
+     TOPNAV — site chrome (fixed floating), same as every county page
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Local Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 cursor-pointer border-b-2 border-mny-y700 h-full flex items-center">The Plan</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">Track Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-1">
+          <div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <!-- icon: User -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-16">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+
+      <div class="grid grid-cols-12 gap-y-4">
+
+        <!-- ==========================================================
+             SECTION 1 — HEADER (col-12)
+             County selector + plan status pill + export action.
+             ========================================================== -->
+        <div data-dms="section" data-name="header" class="col-span-12">
+          <div class="flex flex-wrap items-start justify-between gap-4 pb-2">
+            <div>
+              <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
+                <a href="#" class="hover:text-mny-700">The Plan</a>
+                <span class="text-mny-200">/</span>
+                <span class="text-mny-700">Plan Status Dashboard</span>
+              </div>
+              <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1.05] tracking-[-0.01em] mt-1">Plan Status Dashboard</h1>
+              <p class="font-proxima text-[14px] text-mny-700 mt-1 max-w-[640px]">FEMA-approved Local Hazard Mitigation Plan status, risk profile, capability, and funding metrics — the numbers a county emergency manager checks first.</p>
+              <div class="flex items-center gap-3 mt-3">
+                <button class="flex items-center gap-2 px-4 py-2 bg-white border border-mny-100 rounded-full mny-shadow-sm hover:border-mny-200 transition-colors">
+                  <!-- icon: MapPin -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                  <span class="font-proxima text-[14px] font-[600] text-mny-900">Sullivan County</span>
+                  <!-- icon: ChevronDown -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                </button>
+                <span class="font-proxima text-[13px] text-mny-400">FIPS 36105</span>
+              </div>
+            </div>
+            <div class="shrink-0 flex flex-col items-end gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-mny-grn/15 border border-mny-grn rounded-full">
+                <span class="w-2 h-2 rounded-full bg-mny-grn"></span>
+                <span class="font-proxima text-[12px] font-[700] text-[#2E7D64] uppercase tracking-wider">Plan Approved</span>
+              </span>
+              <button class="flex items-center gap-2 px-4 py-2 border border-mny-200 hover:border-mny-400 text-mny-700 font-proxima font-[600] text-[13px] rounded-full transition-colors">
+                <!-- icon: Download -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Plan Status Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION 2 — KPI STRIP (col-12)
+             The six numbers a planner and their board check first.
+             ========================================================== -->
+        <div data-dms="section" data-name="kpi-strip" class="col-span-12 mt-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <div class="bg-mny-50 rounded-[10px] p-3 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[10px] text-mny-700 font-[700] uppercase tracking-wide">Plan Status</p>
+              <p class="font-display text-[20px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1">Approved</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-0.5">FEMA · Apr 3, 2023</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-3 border-l-4 border-mny-y700 mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Cycle Remaining</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">619 <span class="text-[13px] font-proxima font-[600] normal-case">days</span></p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-0.5">Expires Apr 3, 2028</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-3 border-l-4 border-mny-400 mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Jurisdictions Adopted</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">14 <span class="text-[13px] font-proxima font-[600] normal-case">of 15</span></p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-0.5">93% coverage</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-3 border-l-4 border-mny-200 mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Action Plan Progress</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">12%</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-0.5">57 of 473 complete</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-3 border-l-4 border-mny-grn mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">NFIP Good Standing</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">15 <span class="text-[13px] font-proxima font-[600] normal-case">of 15</span></p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-0.5">100% compliant</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-3 border-l-4 border-mny-red mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Disaster Declarations</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">4</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-0.5">since 2020</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION 3 — PLAN LIFECYCLE TIMELINE (col-12)
+             44 CFR 201.6(d)(3): plans must be reviewed/updated within
+             5 years of approval. Surfaces where the county sits in that
+             cycle and when the update process should begin.
+             ========================================================== -->
+        <div data-dms="section" data-name="lifecycle" class="col-span-12 mt-6">
+          <div class="flex items-baseline justify-between mb-4">
+            <div>
+              <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Plan Lifecycle</h3>
+              <p class="font-proxima text-[14px] text-mny-400">Five-year FEMA approval cycle — 44 CFR §201.6(d)(3)</p>
+            </div>
+          </div>
+
+          <div class="relative pt-2 pb-8">
+            <!-- Track -->
+            <div class="h-[8px] rounded-full bg-mny-50 overflow-hidden flex">
+              <div class="bg-mny-700 h-full" style="width:66%;"></div>
+              <div class="bg-mny-y500 h-full" style="width:34%;"></div>
+            </div>
+            <!-- Today marker -->
+            <div class="absolute top-0" style="left:66%;">
+              <div class="w-[2px] h-[22px] bg-mny-900 -translate-x-1/2"></div>
+              <div class="mt-1 -translate-x-1/2 whitespace-nowrap font-proxima text-[11px] font-[700] text-mny-900 uppercase tracking-wide">Today</div>
+            </div>
+            <!-- Milestone labels -->
+            <div class="flex justify-between mt-6">
+              <div class="text-left max-w-[140px]">
+                <p class="font-display text-[13px] font-[600] text-mny-900 uppercase">Adopted</p>
+                <p class="font-proxima text-[12px] text-mny-400">Mar 14, 2023</p>
+              </div>
+              <div class="text-left max-w-[140px]">
+                <p class="font-display text-[13px] font-[600] text-mny-900 uppercase">FEMA Approved</p>
+                <p class="font-proxima text-[12px] text-mny-400">Apr 3, 2023</p>
+              </div>
+              <div class="text-right max-w-[160px]">
+                <p class="font-display text-[13px] font-[600] text-mny-y700 uppercase">Update Window Opens</p>
+                <p class="font-proxima text-[12px] text-mny-400">Oct 3, 2026</p>
+              </div>
+              <div class="text-right max-w-[140px]">
+                <p class="font-display text-[13px] font-[600] text-mny-900 uppercase">Expires</p>
+                <p class="font-proxima text-[12px] text-mny-400">Apr 3, 2028</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 bg-mny-y50 border border-mny-y500 rounded-[10px] p-4">
+            <!-- icon: AlertTriangle -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-mny-y700 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <p class="font-proxima text-[14px] text-mny-900"><strong class="font-[700]">Begin the plan update process by October 2026</strong> — about 10 weeks from now. FEMA recommends starting the revision 18 months ahead of the April 3, 2028 expiration to allow time for risk re-assessment, public engagement, and state/FEMA review before the plan lapses and jurisdictions lose HMA grant eligibility.</p>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="col-span-12"><hr class="border-mny-100 my-6"></div>
+
+        <!-- ==========================================================
+             SECTION 4 — HAZARD RISK RANKING + CAPABILITY ASSESSMENT
+             (col-12, internal 2-up: FEMA-required plan elements)
+             ========================================================== -->
+        <div data-dms="section" data-name="risk-and-capability" class="col-span-12">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Left: Hazard Risk Ranking -->
+            <div class="lg:col-span-6">
+              <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Hazard Risk Ranking</h3>
+              <p class="font-proxima text-[14px] text-mny-400 mb-4">Risk = probability × impact, per the FEMA risk assessment methodology</p>
+
+              <div class="space-y-2.5">
+                <!-- Flooding -->
+                <div class="flex items-center gap-3">
+                  <img src="../assets/mny/Flooding - transparent.webp" alt="" class="w-6 h-6 object-contain shrink-0">
+                  <div class="w-[124px] shrink-0">
+                    <span class="font-proxima text-[13px] text-mny-900 font-[600]">Flooding</span>
+                  </div>
+                  <div class="flex-1 bg-mny-50 rounded-full h-[18px] overflow-hidden">
+                    <div class="bg-mny-red h-full rounded-full" style="width:92%;"></div>
+                  </div>
+                  <span class="w-[64px] shrink-0 text-right px-2 py-[2px] bg-mny-red/10 text-mny-redk font-proxima text-[10px] font-[700] uppercase rounded-full">High</span>
+                </div>
+                <!-- Severe Winter Storm -->
+                <div class="flex items-center gap-3">
+                  <img src="../assets/mny/Snowstorm - transparent.webp" alt="" class="w-6 h-6 object-contain shrink-0">
+                  <div class="w-[124px] shrink-0">
+                    <span class="font-proxima text-[13px] text-mny-900 font-[600]">Severe Winter Storm</span>
+                  </div>
+                  <div class="flex-1 bg-mny-50 rounded-full h-[18px] overflow-hidden">
+                    <div class="bg-mny-red h-full rounded-full" style="width:84%;"></div>
+                  </div>
+                  <span class="w-[64px] shrink-0 text-right px-2 py-[2px] bg-mny-red/10 text-mny-redk font-proxima text-[10px] font-[700] uppercase rounded-full">High</span>
+                </div>
+                <!-- Wind -->
+                <div class="flex items-center gap-3">
+                  <img src="../assets/mny/Wind - transparent.webp" alt="" class="w-6 h-6 object-contain shrink-0">
+                  <div class="w-[124px] shrink-0">
+                    <span class="font-proxima text-[13px] text-mny-900 font-[600]">Severe Wind</span>
+                  </div>
+                  <div class="flex-1 bg-mny-50 rounded-full h-[18px] overflow-hidden">
+                    <div class="bg-mny-ora h-full rounded-full" style="width:68%;"></div>
+                  </div>
+                  <span class="w-[64px] shrink-0 text-right px-2 py-[2px] bg-mny-ora/10 text-[#9A5A2C] font-proxima text-[10px] font-[700] uppercase rounded-full">Moderate</span>
+                </div>
+                <!-- Hurricane -->
+                <div class="flex items-center gap-3">
+                  <img src="../assets/mny/Hurricane - transparent.webp" alt="" class="w-6 h-6 object-contain shrink-0">
+                  <div class="w-[124px] shrink-0">
+                    <span class="font-proxima text-[13px] text-mny-900 font-[600]">Hurricane / Tropical</span>
+                  </div>
+                  <div class="flex-1 bg-mny-50 rounded-full h-[18px] overflow-hidden">
+                    <div class="bg-mny-ora h-full rounded-full" style="width:61%;"></div>
+                  </div>
+                  <span class="w-[64px] shrink-0 text-right px-2 py-[2px] bg-mny-ora/10 text-[#9A5A2C] font-proxima text-[10px] font-[700] uppercase rounded-full">Moderate</span>
+                </div>
+                <!-- Extreme Heat -->
+                <div class="flex items-center gap-3">
+                  <img src="../assets/mny/Extreme Heat - transparent.webp" alt="" class="w-6 h-6 object-contain shrink-0">
+                  <div class="w-[124px] shrink-0">
+                    <span class="font-proxima text-[13px] text-mny-900 font-[600]">Extreme Heat</span>
+                  </div>
+                  <div class="flex-1 bg-mny-50 rounded-full h-[18px] overflow-hidden">
+                    <div class="bg-mny-ora h-full rounded-full" style="width:54%;"></div>
+                  </div>
+                  <span class="w-[64px] shrink-0 text-right px-2 py-[2px] bg-mny-ora/10 text-[#9A5A2C] font-proxima text-[10px] font-[700] uppercase rounded-full">Moderate</span>
+                </div>
+                <!-- Wildfire -->
+                <div class="flex items-center gap-3">
+                  <img src="../assets/mny/Wildfire - transparent.webp" alt="" class="w-6 h-6 object-contain shrink-0">
+                  <div class="w-[124px] shrink-0">
+                    <span class="font-proxima text-[13px] text-mny-900 font-[600]">Wildfire</span>
+                  </div>
+                  <div class="flex-1 bg-mny-50 rounded-full h-[18px] overflow-hidden">
+                    <div class="bg-mny-200 h-full rounded-full" style="width:41%;"></div>
+                  </div>
+                  <span class="w-[64px] shrink-0 text-right px-2 py-[2px] bg-mny-200/40 text-mny-700 font-proxima text-[10px] font-[700] uppercase rounded-full">Low</span>
+                </div>
+              </div>
+              <a href="#" class="inline-flex items-center gap-1 mt-4 font-proxima text-[13px] font-[600] text-mny-700 hover:text-mny-900">
+                View full hazard risk assessment
+                <!-- icon: ArrowRight -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+            </div>
+
+            <!-- Right: Capability Assessment -->
+            <div class="lg:col-span-6">
+              <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Capability Assessment</h3>
+              <p class="font-proxima text-[14px] text-mny-400 mb-4">Required plan element — 44 CFR §201.6(c)(3)</p>
+
+              <div class="space-y-3">
+                <!-- Planning & Regulatory -->
+                <div class="bg-mny-50 rounded-[10px] p-3.5">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-proxima text-[13px] font-[700] text-mny-900">Planning &amp; Regulatory</span>
+                    <span class="flex gap-1">
+                      <span class="w-4 h-2 rounded-sm bg-mny-700"></span><span class="w-4 h-2 rounded-sm bg-mny-700"></span><span class="w-4 h-2 rounded-sm bg-mny-700"></span><span class="w-4 h-2 rounded-sm bg-mny-700"></span>
+                    </span>
+                    <span class="font-proxima text-[11px] font-[700] text-mny-700 uppercase w-[52px] text-right">High</span>
+                  </div>
+                  <p class="font-proxima text-[12px] text-mny-700 leading-[1.5]">Zoning, subdivision, and floodplain management ordinances adopted countywide.</p>
+                </div>
+                <!-- Administrative & Technical -->
+                <div class="bg-mny-50 rounded-[10px] p-3.5">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-proxima text-[13px] font-[700] text-mny-900">Administrative &amp; Technical</span>
+                    <span class="flex gap-1">
+                      <span class="w-4 h-2 rounded-sm bg-mny-400"></span><span class="w-4 h-2 rounded-sm bg-mny-400"></span><span class="w-4 h-2 rounded-sm bg-mny-400"></span><span class="w-4 h-2 rounded-sm bg-mny-100"></span>
+                    </span>
+                    <span class="font-proxima text-[11px] font-[700] text-mny-700 uppercase w-[52px] text-right">Moderate</span>
+                  </div>
+                  <p class="font-proxima text-[12px] text-mny-700 leading-[1.5]">GIS capacity centralized at the county; part-time floodplain administrators in 6 of 15 jurisdictions.</p>
+                </div>
+                <!-- Financial -->
+                <div class="bg-mny-50 rounded-[10px] p-3.5">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-proxima text-[13px] font-[700] text-mny-900">Financial</span>
+                    <span class="flex gap-1">
+                      <span class="w-4 h-2 rounded-sm bg-mny-400"></span><span class="w-4 h-2 rounded-sm bg-mny-400"></span><span class="w-4 h-2 rounded-sm bg-mny-100"></span><span class="w-4 h-2 rounded-sm bg-mny-100"></span>
+                    </span>
+                    <span class="font-proxima text-[11px] font-[700] text-mny-700 uppercase w-[52px] text-right">Moderate</span>
+                  </div>
+                  <p class="font-proxima text-[12px] text-mny-700 leading-[1.5]">Capital improvement plan in place; limited local match funding for large infrastructure actions.</p>
+                </div>
+                <!-- Education & Outreach -->
+                <div class="bg-mny-50 rounded-[10px] p-3.5">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-proxima text-[13px] font-[700] text-mny-900">Education &amp; Outreach</span>
+                    <span class="flex gap-1">
+                      <span class="w-4 h-2 rounded-sm bg-mny-y700"></span><span class="w-4 h-2 rounded-sm bg-mny-y700"></span><span class="w-4 h-2 rounded-sm bg-mny-100"></span><span class="w-4 h-2 rounded-sm bg-mny-100"></span>
+                    </span>
+                    <span class="font-proxima text-[11px] font-[700] text-mny-y700 uppercase w-[52px] text-right">Limited</span>
+                  </div>
+                  <p class="font-proxima text-[12px] text-mny-700 leading-[1.5]">StormReady designation in 3 jurisdictions; annual flood-safety campaign reaches ~40% of households.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="col-span-12"><hr class="border-mny-100 my-6"></div>
+
+        <!-- ==========================================================
+             SECTION 5 — NFIP STANDING + MITIGATION FUNDING
+             (col-12, internal 2-up)
+             ========================================================== -->
+        <div data-dms="section" data-name="nfip-and-funding" class="col-span-12">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Left: NFIP & Flood Insurance -->
+            <div class="lg:col-span-6">
+              <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">NFIP &amp; Flood Insurance</h3>
+              <p class="font-proxima text-[14px] text-mny-400 mb-4">National Flood Insurance Program standing, countywide</p>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-mny-50 rounded-[10px] p-4 border border-mny-100/50">
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] tabular-nums">1,842</p>
+                  <p class="font-proxima text-[13px] text-mny-700 font-[600] mt-1">Policies in Force</p>
+                </div>
+                <div class="bg-mny-50 rounded-[10px] p-4 border border-mny-100/50">
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] tabular-nums">$312.4M</p>
+                  <p class="font-proxima text-[13px] text-mny-700 font-[600] mt-1">Total Coverage</p>
+                </div>
+                <div class="bg-mny-50 rounded-[10px] p-4 border border-mny-100/50">
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] tabular-nums">$18.6M</p>
+                  <p class="font-proxima text-[13px] text-mny-700 font-[600] mt-1">Claims Paid (Lifetime)</p>
+                </div>
+                <div class="bg-mny-y50 rounded-[10px] p-4 border border-mny-y500/50">
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] tabular-nums">47</p>
+                  <p class="font-proxima text-[13px] text-mny-700 font-[600] mt-1">Repetitive Loss Properties</p>
+                </div>
+              </div>
+              <div class="flex items-center justify-between mt-3 bg-mny-50 rounded-[10px] p-3.5">
+                <span class="font-proxima text-[13px] font-[600] text-mny-900">CRS-participating communities</span>
+                <span class="font-proxima text-[13px] font-[700] text-mny-700 tabular-nums">3 of 15 · Class 7</span>
+              </div>
+            </div>
+
+            <!-- Right: Mitigation Funding & Grants -->
+            <div class="lg:col-span-6">
+              <div class="flex items-baseline justify-between mb-1">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Mitigation Funding</h3>
+                <span class="font-proxima text-[13px] text-mny-400">Secured this cycle: <span class="font-[700] text-mny-900 tabular-nums">$4.2M</span></span>
+              </div>
+              <p class="font-proxima text-[14px] text-mny-400 mb-4">HMA program tracker — BRIC · FMA · HMGP</p>
+
+              <div class="space-y-2">
+                <div class="flex items-center justify-between bg-mny-50 rounded-[10px] p-3">
+                  <div>
+                    <p class="font-proxima text-[13px] font-[700] text-mny-900">BRIC FY23 — Culvert Upsizing, County Roads</p>
+                    <p class="font-proxima text-[12px] text-mny-400">Building Resilient Infrastructure &amp; Communities</p>
+                  </div>
+                  <div class="text-right shrink-0 ml-4">
+                    <p class="font-display text-[16px] font-[500] text-mny-900 tabular-nums">$1.8M</p>
+                    <span class="px-2 py-[2px] bg-mny-grn/15 text-[#2E7D64] font-proxima text-[10px] font-[700] uppercase rounded-full">Awarded</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between bg-mny-50 rounded-[10px] p-3">
+                  <div>
+                    <p class="font-proxima text-[13px] font-[700] text-mny-900">HMGP DR-4695 — Critical Facility Generators</p>
+                    <p class="font-proxima text-[12px] text-mny-400">Hazard Mitigation Grant Program</p>
+                  </div>
+                  <div class="text-right shrink-0 ml-4">
+                    <p class="font-display text-[16px] font-[500] text-mny-900 tabular-nums">$1.75M</p>
+                    <span class="px-2 py-[2px] bg-mny-grn/15 text-[#2E7D64] font-proxima text-[10px] font-[700] uppercase rounded-full">Awarded</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between bg-mny-50 rounded-[10px] p-3">
+                  <div>
+                    <p class="font-proxima text-[13px] font-[700] text-mny-900">FMA FY24 — Repetitive-Loss Buyouts (6 properties)</p>
+                    <p class="font-proxima text-[12px] text-mny-400">Flood Mitigation Assistance</p>
+                  </div>
+                  <div class="text-right shrink-0 ml-4">
+                    <p class="font-display text-[16px] font-[500] text-mny-900 tabular-nums">$650K</p>
+                    <span class="px-2 py-[2px] bg-mny-grn/15 text-[#2E7D64] font-proxima text-[10px] font-[700] uppercase rounded-full">Awarded</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between bg-mny-y50 border border-mny-y500/50 rounded-[10px] p-3">
+                  <div>
+                    <p class="font-proxima text-[13px] font-[700] text-mny-900">BRIC FY26 — Floodplain Buyout, Phase 2</p>
+                    <p class="font-proxima text-[12px] text-mny-400">Application pending — submitted Jun 2026</p>
+                  </div>
+                  <div class="text-right shrink-0 ml-4">
+                    <p class="font-display text-[16px] font-[500] text-mny-900 tabular-nums">$2.1M</p>
+                    <span class="px-2 py-[2px] bg-mny-y700/15 text-[#8A6416] font-proxima text-[10px] font-[700] uppercase rounded-full">Under Review</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="col-span-12"><hr class="border-mny-100 my-6"></div>
+
+        <!-- ==========================================================
+             SECTION 6 — JURISDICTIONAL PARTICIPATION (col-12)
+             Each jurisdiction must individually adopt the plan by
+             resolution to retain HMA grant eligibility.
+             ========================================================== -->
+        <div data-dms="section" data-name="jurisdictions" class="col-span-12">
+          <div class="flex items-end justify-between mb-4">
+            <div>
+              <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Jurisdictional Participation</h3>
+              <p class="font-proxima text-[14px] text-mny-400">Plan adoption status by participating jurisdiction</p>
+            </div>
+            <span class="font-proxima text-[13px] text-mny-400">Showing 10 of 15</span>
+          </div>
+
+          <div class="overflow-x-auto rounded-[12px] border border-mny-100">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-mny-50">
+                  <th class="font-proxima text-[12px] text-mny-700 font-[600] uppercase tracking-wider px-4 py-3 border-b border-mny-100">Jurisdiction</th>
+                  <th class="font-proxima text-[12px] text-mny-700 font-[600] uppercase tracking-wider px-4 py-3 border-b border-mny-100">Type</th>
+                  <th class="font-proxima text-[12px] text-mny-700 font-[600] uppercase tracking-wider px-4 py-3 border-b border-mny-100">Adoption Status</th>
+                  <th class="font-proxima text-[12px] text-mny-700 font-[600] uppercase tracking-wider px-4 py-3 border-b border-mny-100">Resolution Date</th>
+                  <th class="font-proxima text-[12px] text-mny-700 font-[600] uppercase tracking-wider px-4 py-3 border-b border-mny-100 text-right">Actions Assigned</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Sullivan County</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">County</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Mar 14, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">38</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Town of Liberty</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Town</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Mar 21, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">62</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Village of Monticello</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Village</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Mar 28, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">41</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Town of Thompson</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Town</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Apr 4, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">55</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Town of Fallsburg</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Town</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Apr 4, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">47</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Town of Mamakating</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Town</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Apr 11, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">39</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Town of Bethel</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Town</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Apr 11, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">33</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Town of Neversink</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Town</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Apr 18, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">29</td>
+                </tr>
+                <tr class="hover:bg-mny-50/50 transition-colors">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-b border-mny-100">Town of Rockland</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Town</td>
+                  <td class="px-4 py-3 border-b border-mny-100"><span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Adopted</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100">Apr 18, 2023</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 border-b border-mny-100 text-right tabular-nums">44</td>
+                </tr>
+                <!-- Pending row — flagged -->
+                <tr class="bg-mny-y50/50 hover:bg-mny-y50">
+                  <td class="font-proxima text-[14px] text-mny-900 font-[600] px-4 py-3 border-l-4 border-mny-y700">Town of Highland</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3">Town</td>
+                  <td class="px-4 py-3"><span class="px-2.5 py-[3px] bg-mny-y700 text-mny-900 font-proxima font-[700] text-[11px] uppercase tracking-wider rounded-full whitespace-nowrap">Pending</span></td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3">Resolution scheduled Aug 2026</td>
+                  <td class="font-proxima text-[13px] text-mny-700 px-4 py-3 text-right tabular-nums">12</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex items-start gap-2.5 mt-3 px-1">
+            <!-- icon: Information -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-y700 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+            <p class="font-proxima text-[13px] text-mny-700">Town of Highland has not yet adopted the plan by resolution and is not currently eligible for HMA grant funding on its 12 assigned actions until adoption is complete.</p>
+          </div>
+        </div>
+
+        <p class="col-span-12 font-proxima text-[13px] text-mny-400/60 pt-6 text-right">Data: AVAIL MitigateNY Plan Records &middot; Sullivan County (FIPS 36105) &middot; Updated July 2026</p>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FOOTER — clearCentered layout (shared site footer, §7.0.3 nav block)
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div data-dms="layoutGroup" data-name="clearCentered">
+      <div class="w-full h-full flex-1 flex flex-row -mt-3">
+        <div class="max-w-[1440px] w-full xl:px-[48px] mx-auto">
+          <div class="flex flex-1 w-full flex-col relative h-full min-h-[200px]">
+            <div class="w-full grid grid-cols-6 md:grid-cols-12">
+              <div class="col-span-6 md:col-span-12 p-4">
+                <div class="my-2 flex flex-col gap-[8px] max-w-[1362px] mx-auto text-mny-700 overflow-hidden">
+                  <div class="p-[56px] md:h-[386px] md:max-h-[386px] md:min-h-[386px] bg-white flex flex-col md:flex-row flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md divide-x divide-mny-100 justify-center">
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Know the Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Built Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">People and Communities</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Environment</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Assess Risk</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Hazards</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Climate Change</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Presidentially Declared Disasters</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Plan to Act</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="plan-status-dashboard.html">Plan Status Dashboard</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Local Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Evaluate Capacity &amp; Discover Resources</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Develop Strategies</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Explore Progress</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="actions-workspace.html">Action Tracking</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Mitigation Matters</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Resources</a>
+                    </div>
+                  </div>
+                  <div class="p-[16px] md:px-[56px] flex flex-col md:flex-row items-center justify-between md:h-[70px] md:max-h-[70px] md:min-h-[70px] bg-white flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md">
+                    <div class="font-proxima text-[14px]">&copy; 2025 MitigateNY, All Rights Reserved.</div>
+                    <div class="flex gap-[24px]">
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Privacy Policy</a>
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Terms and Conditions</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:200px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;max-height:70vh;overflow-y:auto;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="home-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home v2</a>
+    <a href="section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;padding:0 16px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#C5D7E0;padding-top:4px;">Plan Status (this page)</div>
+    <a href="plan-status-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Plan Status Dashboard</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;padding:0 16px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#C5D7E0;padding-top:4px;">Actions Ecosystem</div>
+    <a href="actions-workspace.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Workspace</a>
+    <a href="action-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action View</a>
+    <a href="action-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action Edit</a>
+    <a href="actions-by-jurisdiction.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions by Jurisdiction</a>
+    <a href="actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Search <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List) <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (Cards) <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;padding:0 16px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#C5D7E0;padding-top:4px;">Reports</div>
+    <a href="../reports/actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="../reports/duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="../reports/boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="../reports/location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Admin — Home</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B', 'mny-org': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  ADMIN PANEL REDESIGN — pattern 566466 (app mitigat-ny-prod, base_url /admin). Landing page for
+  the whole admin panel, added per explicit user request (2026-07-29) after the IA report flagged
+  that no such page existed — the only entry point today is the flat, sprawling live "Forms" hub.
+
+  This page is tier-agnostic: it's the front door before a role/dataset is chosen, so it carries
+  no tier switcher (unlike the per-dataset pages). It links out to whatever actually exists today
+  (Actions' 15 tier-duplicated Phase-1 pages) and clearly marks the other 5 active datasets as not
+  yet built, plus Capacities as deferred — see reports/admin-panel-information-architecture.html
+  for the full rationale and the target 30-page IA.
+-->
+
+<!-- ================================================================
+     TOPNAV
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 border-b-2 border-mny-y700 h-full flex items-center">Admin Panel</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-3">
+          <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+            <!-- icon: User -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-16">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+
+      <div class="grid grid-cols-12 gap-y-4">
+
+        <!-- ==========================================================
+             SECTION 1 — HEADER (col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="header" class="col-span-12">
+          <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400 pb-1">
+            <span class="text-mny-700">Admin Panel</span>
+          </div>
+          <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1.05] tracking-[-0.01em] mt-1">Admin Panel</h1>
+          <p class="font-proxima text-[14px] text-mny-700 mt-1 max-w-[720px]">
+            View, add, and manage MitigateNY's internal data. Pick a dataset below — what you see is
+            scoped to your role (jurisdiction, county, or state).
+          </p>
+        </div>
+
+        <!-- ==========================================================
+             SECTION 2 — MINI STAT STRIP (col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="stat-strip" class="col-span-12 mt-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="bg-mny-50 rounded-[10px] p-2.5 border-l-4 border-mny-900">
+              <p class="font-proxima text-[10px] text-mny-900 font-[700] uppercase tracking-wide">Active datasets</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-0.5 tabular-nums">6</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-2.5 border-l-4 border-mny-grn mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Live now</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-0.5 tabular-nums">1</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-2.5 border-l-4 border-mny-200 mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Not yet built</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-0.5 tabular-nums">5</p>
+            </div>
+            <a href="../reports/admin-panel-information-architecture.html" class="bg-mny-y50 rounded-[10px] p-2.5 border-l-4 border-mny-y700 mny-shadow-sm hover:ring-1 hover:ring-mny-y500 transition-all">
+              <p class="font-proxima text-[10px] text-mny-900 font-[700] uppercase tracking-wide">Full IA &amp; rationale</p>
+              <p class="font-proxima text-[13px] text-mny-900 font-[600] mt-1">Read the report &rarr;</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION 3 — DATASET GRID (col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="dataset-grid" class="col-span-12 mt-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <!-- ACTIONS — live -->
+            <div class="rounded-[12px] border-2 border-mny-y700/50 bg-mny-y50/30 p-5 flex flex-col">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <p class="font-display text-[18px] font-[500] text-mny-900 uppercase leading-tight">Actions</p>
+                <span class="px-2 py-0.5 rounded-full bg-mny-y700 text-mny-900 font-proxima text-[10px] font-[700] uppercase tracking-wide whitespace-nowrap">Live (Phase 1)</span>
+              </div>
+              <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] flex-1">Mitigation actions each jurisdiction is tracking — status, priority, cost, hazards.</p>
+              <div class="mt-4 flex items-center justify-between gap-2">
+                <a href="admin-jurisdiction-actions-dashboard.html" class="px-4 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors">Open Dashboard</a>
+                <span class="font-proxima text-[11px] text-mny-700">
+                  <a href="admin-county-actions-dashboard.html" class="underline decoration-mny-y500 hover:decoration-mny-y700">County</a> &middot;
+                  <a href="admin-state-actions-dashboard.html" class="underline decoration-mny-y500 hover:decoration-mny-y700">State</a>
+                </span>
+              </div>
+              <p class="font-proxima text-[11px] text-mny-400 mt-2">Shipped as 15 tier-duplicated pages, pending consolidation to 5 role-adaptive pages.</p>
+            </div>
+
+            <!-- CAPABILITIES — not yet built -->
+            <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-5 flex flex-col opacity-90">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <p class="font-display text-[18px] font-[500] text-mny-900 uppercase leading-tight">Capabilities</p>
+                <span class="px-2 py-0.5 rounded-full bg-mny-200 text-mny-700 font-proxima text-[10px] font-[700] uppercase tracking-wide whitespace-nowrap">Not yet built</span>
+              </div>
+              <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] flex-1">Statewide catalog of mitigation programs — funding, training, and tools agencies offer.</p>
+              <div class="mt-4">
+                <span class="inline-flex px-4 py-2 bg-white border border-mny-200 text-mny-400 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Open Dashboard</span>
+              </div>
+              <p class="font-proxima text-[11px] text-mny-400 mt-2">Planned: 5-page ecosystem, role-adaptive. See the IA report for shape and rationale.</p>
+            </div>
+
+            <!-- HAZARDS OF CONCERN — not yet built -->
+            <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-5 flex flex-col opacity-90">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <p class="font-display text-[18px] font-[500] text-mny-900 uppercase leading-tight">Hazards of Concern</p>
+                <span class="px-2 py-0.5 rounded-full bg-mny-200 text-mny-700 font-proxima text-[10px] font-[700] uppercase tracking-wide whitespace-nowrap">Not yet built</span>
+              </div>
+              <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] flex-1">Each jurisdiction's hazard-by-hazard risk assessment — likelihood, vulnerability, exclusions.</p>
+              <div class="mt-4">
+                <span class="inline-flex px-4 py-2 bg-white border border-mny-200 text-mny-400 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Open Dashboard</span>
+              </div>
+              <p class="font-proxima text-[11px] text-mny-400 mt-2">Planned: 5-page ecosystem, role-adaptive. See the IA report for shape and rationale.</p>
+            </div>
+
+            <!-- HIGH HAZARD DAMS — not yet built -->
+            <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-5 flex flex-col opacity-90">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <p class="font-display text-[18px] font-[500] text-mny-900 uppercase leading-tight">High Hazard Dams</p>
+                <span class="px-2 py-0.5 rounded-full bg-mny-200 text-mny-700 font-proxima text-[10px] font-[700] uppercase tracking-wide whitespace-nowrap">Not yet built</span>
+              </div>
+              <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] flex-1">The state's fixed registry of high-hazard-potential dams, with local context notes.</p>
+              <div class="mt-4">
+                <span class="inline-flex px-4 py-2 bg-white border border-mny-200 text-mny-400 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Open Dashboard</span>
+              </div>
+              <p class="font-proxima text-[11px] text-mny-400 mt-2">Planned: 4-page ecosystem (no Create — fixed reference set). See the IA report.</p>
+            </div>
+
+            <!-- PARTICIPATION — not yet built -->
+            <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-5 flex flex-col opacity-90">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <p class="font-display text-[18px] font-[500] text-mny-900 uppercase leading-tight">Participation</p>
+                <span class="px-2 py-0.5 rounded-full bg-mny-200 text-mny-700 font-proxima text-[10px] font-[700] uppercase tracking-wide whitespace-nowrap">Not yet built</span>
+              </div>
+              <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] flex-1">Public-participation meetings and events each jurisdiction holds during planning.</p>
+              <div class="mt-4">
+                <span class="inline-flex px-4 py-2 bg-white border border-mny-200 text-mny-400 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Open Dashboard</span>
+              </div>
+              <p class="font-proxima text-[11px] text-mny-400 mt-2">Planned: 5-page ecosystem, role-adaptive. See the IA report for shape and rationale.</p>
+            </div>
+
+            <!-- ROLES — not yet built -->
+            <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-5 flex flex-col opacity-90">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <p class="font-display text-[18px] font-[500] text-mny-900 uppercase leading-tight">Roles</p>
+                <span class="px-2 py-0.5 rounded-full bg-mny-200 text-mny-700 font-proxima text-[10px] font-[700] uppercase tracking-wide whitespace-nowrap">Not yet built</span>
+              </div>
+              <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] flex-1">Stakeholders and committee members involved in each jurisdiction's mitigation plan.</p>
+              <div class="mt-4">
+                <span class="inline-flex px-4 py-2 bg-white border border-mny-200 text-mny-400 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Open Dashboard</span>
+              </div>
+              <p class="font-proxima text-[11px] text-mny-400 mt-2">Planned: 5-page ecosystem, role-adaptive. See the IA report for shape and rationale.</p>
+            </div>
+
+          </div>
+
+          <!-- CAPACITIES — deferred, shown separately and visually de-emphasized -->
+          <div class="mt-4 rounded-[10px] border border-dashed border-mny-200 bg-mny-50/50 px-4 py-3 flex items-center justify-between gap-3">
+            <div>
+              <span class="font-display text-[13px] font-[600] text-mny-400 uppercase tracking-wide">Capacities</span>
+              <span class="font-proxima text-[12px] text-mny-400 ml-2">Deferred — expected to be scrapped and merged into Capabilities. No ecosystem built.</span>
+            </div>
+            <a href="../reports/admin-panel-information-architecture.html" class="font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-200 hover:decoration-mny-700 whitespace-nowrap">Why &rarr;</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating admin-panel nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:230px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">Admin Panel</div>
+    <a href="admin-home.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:700;color:#EAAD43;text-decoration:none;">Home (current)</a>
+    <a href="../reports/admin-panel-information-architecture.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">IA Report &amp; rationale</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#EAAD43;padding:8px 16px 2px;border-top:1px solid #E0EBF0;margin-top:4px;">Actions — Jurisdiction</div>
+    <a href="admin-jurisdiction-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-jurisdiction-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-jurisdiction-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-jurisdiction-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-jurisdiction-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6D96AE;padding:8px 16px 2px;border-top:1px solid #E0EBF0;margin-top:4px;">Actions — County</div>
+    <a href="admin-county-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-county-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-county-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-county-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-county-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6D96AE;padding:8px 16px 2px;border-top:1px solid #E0EBF0;margin-top:4px;">Actions — State</div>
+    <a href="admin-state-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-state-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-state-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-state-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-state-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="border-top:1px solid #E0EBF0;margin:6px 0 0;padding-top:6px;">
+      <a href="actions-workspace.html" style="display:block;padding:5px 16px;font-size:12px;font-weight:600;color:#9BB5C2;text-decoration:none;">Original public-template ecosystem &rarr;</a>
+    </div>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Admin panel navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+<!-- Footer link block -->
+<div class="max-w-[1440px] mx-auto px-4 xl:px-[64px] pb-10">
+  <div class="border-t border-mny-200 pt-4 flex flex-wrap gap-x-6 gap-y-1 font-proxima text-[12px] text-mny-400">
+    <span class="font-[700] text-mny-700 uppercase tracking-wide">Admin Panel:</span>
+    <a href="admin-home.html" class="hover:text-mny-700">Home</a>
+    <a href="../reports/admin-panel-information-architecture.html" class="hover:text-mny-700">IA Report</a>
+    <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">Actions:</span>
+    <a href="admin-jurisdiction-actions-dashboard.html" class="hover:text-mny-700">Jurisdiction</a>
+    <a href="admin-county-actions-dashboard.html" class="hover:text-mny-700">County</a>
+    <a href="admin-state-actions-dashboard.html" class="hover:text-mny-700">State</a>
+  </div>
+</div>
+
+</body>
+</html>

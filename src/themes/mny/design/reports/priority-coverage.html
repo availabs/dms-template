@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Local Priority Coverage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Local<br>Priority
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    Locals answered the priority question on nine of every ten actions &mdash; in 255 different
+                    spellings. What&rsquo;s in the column, why it can&rsquo;t be compared, and the dropdown that fixes it.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">18,378 actions</span>
+                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-mny-900">89.2% filled &middot; 255 spellings</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">Actions_Revised &middot; source 1029065 / v1074456</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Filled in</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">89.2%</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">16,390 of 18,378 actions</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">County-plan actions</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">93.2%</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">16,096 of 17,266 local rows</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Distinct answers</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">255</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">for a three-word question</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Normalizes cleanly</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">88.1%</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">14,436 rows map to High / Med / Low</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Needs a legend</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">1,954</p>
+              <p class="font-proxima text-[11px] text-mny-y700 font-[600] mt-1">scores, tiers &amp; N/A to review</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Field type today</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1">Free text</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">0 dropdown options defined</p>
+            </div>
+          </div>
+
+          <!-- what's actually in the column bar -->
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-red" style="width:48.7%;" title="Maps to High — 8,941"></div>
+            <div class="bg-mny-y700" style="width:21.3%;" title="Maps to Medium — 3,919"></div>
+            <div class="bg-mny-400" style="width:8.6%;" title="Maps to Low — 1,576"></div>
+            <div class="bg-mny-200" style="width:10.6%;" title="Filled, but scores / tiers / N/A — 1,954"></div>
+            <div class="bg-[#DDDDDD]" style="width:10.8%;" title="Blank — 1,988"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-red"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">High (8,941)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Medium (3,919)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-400"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Low (1,576)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-200"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Filled, non-standard (1,954)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-[#DDDDDD]"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Blank (1,988)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- VERDICT -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    Well answered.<br>Never standardized.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">Coverage is not the problem.</strong> 16,390 of 18,378 actions &mdash; 89.2% &mdash;
+                      carry a local priority, and among county-plan actions it&rsquo;s 93.2%. Communities <em>do</em> answer this
+                      question. Most of the blank tenth isn&rsquo;t local reluctance either: 818 of the 1,988 blanks are
+                      state-level or unattributed import rows, and two county pools (New York City, 498; Sullivan, 265)
+                      account for most of the rest.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">The problem is that &ldquo;Priority&rdquo; is a free-text box.</strong> The source schema
+                      defines it as <code class="text-[13px] bg-mny-50 px-1 rounded">type: "text"</code> with no options &mdash; so 16,390 answers
+                      arrived in 255 spellings. &ldquo;High&rdquo; alone shows up as <em>High, high, HIgh, H, High Priority,
+                      High&nbsp;-&nbsp;1&hellip;</em> Meanwhile sibling fields like Action Status are already dropdowns. This column
+                      just never got one.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">Underneath the mess, everyone is saying the same thing.</strong> 85% of filled
+                      values are literally High/Medium/Low or a one-letter abbreviation of it, and a mechanical cleanup maps
+                      88.1% of answers onto three buckets. The stubborn residue is per-plan machinery: numeric STAPLEE-style
+                      scores (1,332 rows), tier vocabularies, in-plan rankings &mdash; each meaningful <em>inside</em> its county&rsquo;s
+                      plan and meaningless beside its neighbors&rsquo;.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Like duplication and boilerplate, the conventions are a fingerprint of who prepared the annex:
+                      Ontario writes letters, Allegany writes rubric scores, Wayne writes &ldquo;Low&nbsp;(14.5),&rdquo; Madison ranks
+                      every action &ldquo;High&nbsp;-&nbsp;1&rdquo; through &ldquo;Low&nbsp;-&nbsp;21.&rdquo; The fix is a controlled vocabulary that keeps
+                      the local signal &mdash; without throwing away the plan-specific science.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">One question</p>
+                      <div class="flex items-baseline gap-3 mb-2">
+                        <span class="font-display text-[72px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">255</span>
+                        <span class="font-display text-[18px] text-mny-y700 font-[500] leading-tight uppercase">distinct<br>answers</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-1">
+                        to a question whose answer is almost always one of <strong class="text-white font-[600]">three words</strong>.
+                        8,486 rows say &ldquo;High&rdquo; &mdash; plus 53 &ldquo;high,&rdquo; 17 &ldquo;HIgh,&rdquo; and 134 lone &ldquo;H&rdquo;s.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <div class="flex items-baseline gap-3">
+                        <span class="font-display text-[48px] text-white font-[500] leading-[0.9] tracking-[-0.03em] tabular-nums">$400,000</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-2">
+                        is not a priority &mdash; but a dollar figure lives in the column anyway, alongside
+                        &ldquo;Staff time,&rdquo; &ldquo;Yes,&rdquo; &ldquo;Varies by culvert&rdquo; and the typo &ldquo;Lown&nbsp;(19.5).&rdquo;
+                        Free-text fields collect whatever the nearest spreadsheet column held.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- THE VALUE ZOO -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">The Value Zoo</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Every filled value classified into a convention family. Four-fifths of the column is already the
+                  canonical three words; the long tail is nine other ways plans have expressed the same judgment.
+                  &ldquo;Maps cleanly&rdquo; = a mechanical rule can assign High/Medium/Low without seeing the source plan.
+                </p>
+                <div class="overflow-x-auto rounded-[10px] border border-mny-100">
+                  <table class="w-full border-collapse font-proxima text-[13px]">
+                    <thead>
+                      <tr class="bg-mny-50 text-left">
+                        <th class="px-4 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500]">Family</th>
+                        <th class="px-4 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500]">As written</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Rows</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Share</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Spellings</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Maps cleanly</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-mny-900">
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Canonical labels</td><td class="px-4 py-2 text-mny-700">High &middot; Medium &middot; Low &middot; Med. &middot; Moderate &middot; high &middot; HIgh</td><td class="px-3 py-2 text-right tabular-nums">13,145</td><td class="px-3 py-2 text-right tabular-nums font-[600]">80.2%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">12</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn font-[600]">yes</td></tr>
+                      <tr class="border-t border-mny-100 bg-mny-50/40"><td class="px-4 py-2 font-[600]">Bare numbers</td><td class="px-4 py-2 text-mny-700">15 &middot; 13 &middot; 12 &middot; 11 &middot; 1 &middot; 400000</td><td class="px-3 py-2 text-right tabular-nums">1,332</td><td class="px-3 py-2 text-right tabular-nums font-[600]">8.1%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">22</td><td class="px-3 py-2 text-right tabular-nums text-mny-red font-[600]">needs legend</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">One-letter abbreviations</td><td class="px-4 py-2 text-mny-700">L &middot; M &middot; H</td><td class="px-3 py-2 text-right tabular-nums">796</td><td class="px-3 py-2 text-right tabular-nums font-[600]">4.9%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">3</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn font-[600]">yes</td></tr>
+                      <tr class="border-t border-mny-100 bg-mny-50/40"><td class="px-4 py-2 font-[600]">Explicit non-answers</td><td class="px-4 py-2 text-mny-700">N/A (417) &middot; TBD &middot; To be determined &middot; &ldquo;-&rdquo;</td><td class="px-3 py-2 text-right tabular-nums">434</td><td class="px-3 py-2 text-right tabular-nums font-[600]">2.6%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">5</td><td class="px-3 py-2 text-right tabular-nums text-mny-y700 font-[600]">= not set</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Label + rank</td><td class="px-4 py-2 text-mny-700">High - 1 &middot; Medium - 2 &middot; High (Priority 4) &middot; Priority #1</td><td class="px-3 py-2 text-right tabular-nums">350</td><td class="px-3 py-2 text-right tabular-nums font-[600]">2.1%</td><td class="px-3 py-2 text-right tabular-nums font-[700] text-mny-y700">105</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn font-[600]">mostly</td></tr>
+                      <tr class="border-t border-mny-100 bg-mny-50/40"><td class="px-4 py-2 font-[600]">Label + score</td><td class="px-4 py-2 text-mny-700">Low (14.5) &middot; Medium (33.5) &middot; 15/High &middot; 11 (Medium)</td><td class="px-3 py-2 text-right tabular-nums">129</td><td class="px-3 py-2 text-right tabular-nums font-[600]">0.8%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">46</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn font-[600]">yes</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Ranges</td><td class="px-4 py-2 text-mny-700">(dependent) M-H (48) &middot; Medium - High &middot; Low to Medium</td><td class="px-3 py-2 text-right tabular-nums">116</td><td class="px-3 py-2 text-right tabular-nums font-[600]">0.7%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">15</td><td class="px-3 py-2 text-right tabular-nums text-mny-red font-[600]">ambiguous</td></tr>
+                      <tr class="border-t border-mny-100 bg-mny-50/40"><td class="px-4 py-2 font-[600]">Tier vocabularies</td><td class="px-4 py-2 text-mny-700">Tier 1 &middot; Tier I-B- 13 &middot; Tier 1 - Top Priority &middot; Tier #2</td><td class="px-3 py-2 text-right tabular-nums">43</td><td class="px-3 py-2 text-right tabular-nums font-[600]">0.3%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">20</td><td class="px-3 py-2 text-right tabular-nums text-mny-red font-[600]">needs legend</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Label + narrative</td><td class="px-4 py-2 text-mny-700">High (ongoing) &middot; High &ndash; land is for sale now &middot; Medium - DOF</td><td class="px-3 py-2 text-right tabular-nums">27</td><td class="px-3 py-2 text-right tabular-nums font-[600]">0.2%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">14</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn font-[600]">yes</td></tr>
+                      <tr class="border-t border-mny-100 bg-mny-50/40"><td class="px-4 py-2 font-[600]">Everything else</td><td class="px-4 py-2 text-mny-700">Yes &middot; Staff time &middot; Varies by culvert &middot; Fish Creek &ndash; Low / Mud Creek &ndash; High</td><td class="px-3 py-2 text-right tabular-nums">18</td><td class="px-3 py-2 text-right tabular-nums font-[600]">0.1%</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">13</td><td class="px-3 py-2 text-right tabular-nums text-mny-red font-[600]">no</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="font-proxima text-[12px] text-mny-400 mt-3 max-w-[820px]">
+                  &ldquo;Label + rank&rdquo; is the most fragmented family: 105 spellings for 350 rows, because every rank is its own
+                  string (&ldquo;High&nbsp;-&nbsp;1,&rdquo; &ldquo;High&nbsp;-&nbsp;2,&rdquo; &hellip;). The label half compares statewide; the rank half is
+                  an ordering <em>within one plan</em> masquerading as a category.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- WHERE + INSTRUMENTS -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <!-- WHERE -->
+                <div class="lg:col-span-5">
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Who Answers It</h3>
+                  <p class="font-proxima text-[14px] text-mny-400 mb-4">
+                    Share of each county&rsquo;s actions with a priority. Most plans answer nearly everything;
+                    the gaps are a handful of specific pools, not a statewide habit.
+                  </p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Broome</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:100%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-grn font-[600] tabular-nums">100%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Chautauqua</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:99.7%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">99.7%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Allegany</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:96.3%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">96.3%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">New York City</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:76.1%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">76.1%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Montgomery</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:65.3%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">65.3%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Oneida</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:58.7%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">58.7%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Sullivan</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-red" style="width:44.2%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">44.2%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Delaware</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-red" style="width:28.7%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">28.7%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Schenectady</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-red" style="width:21.8%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">21.8%</div></div>
+                    <div class="flex items-center gap-3 pt-1"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-400 font-[600]">State-level</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-400" style="width:27.4%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">27.4%</div></div>
+                  </div>
+                  <p class="font-proxima text-[12px] text-mny-400 mt-4 leading-[1.5]">
+                    35 counties answer at 99&ndash;100%. The state-level rows are a different animal &mdash; &ldquo;local
+                    priority&rdquo; isn&rsquo;t really their field &mdash; and Sullivan&rsquo;s 265 blanks are already being addressed:
+                    it&rsquo;s the pilot county for the new tier-based prioritization workflow.
+                  </p>
+                </div>
+
+                <!-- INSTRUMENTS -->
+                <div class="lg:col-span-7">
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">One Column, Five Instruments</h3>
+                  <p class="font-proxima text-[14px] text-mny-400 mb-4">
+                    The non-standard values aren&rsquo;t noise &mdash; they&rsquo;re five different measuring instruments, each internally
+                    consistent, each a fingerprint of one plan&rsquo;s methodology.
+                  </p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="bg-mny-50 rounded-[10px] p-4">
+                      <p class="font-display text-[14px] text-mny-900 uppercase mb-1">Rubric scores &middot; Allegany, Chemung, Delaware, Schuyler, Niagara</p>
+                      <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                        Bare numbers &mdash; Allegany&rsquo;s 554 cluster tightly at <strong class="text-mny-900">11&ndash;16</strong>, values repeating
+                        (125 actions score &ldquo;12&rdquo;), so they&rsquo;re rubric <em>scores</em>, not ranks. Comparable inside the plan;
+                        unreadable outside it. Is 15 high? Only the plan knows.
+                      </p>
+                    </div>
+                    <div class="bg-mny-50 rounded-[10px] p-4">
+                      <p class="font-display text-[14px] text-mny-900 uppercase mb-1">Label + STAPLEE score &middot; Wayne</p>
+                      <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                        &ldquo;Low&nbsp;(14.5),&rdquo; &ldquo;Medium&nbsp;(33.5)&rdquo; &mdash; the label <em>and</em> the arithmetic behind it, down to
+                        &ldquo;Low&nbsp;(19.6153).&rdquo; 150 actions produce <strong class="text-mny-900">55 distinct values</strong>, the most fragmented
+                        county in the state. The best data, in the worst format.
+                      </p>
+                    </div>
+                    <div class="bg-mny-50 rounded-[10px] p-4">
+                      <p class="font-display text-[14px] text-mny-900 uppercase mb-1">Ranked lists &middot; Madison, Chautauqua, Herkimer</p>
+                      <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                        &ldquo;High&nbsp;-&nbsp;1&rdquo; through &ldquo;Low&nbsp;-&nbsp;21&rdquo;: a category plus an ordering within it. Madison&rsquo;s
+                        entire annex (149 rows) is written this way. Two facts jammed into one string &mdash; each useful,
+                        neither queryable.
+                      </p>
+                    </div>
+                    <div class="bg-mny-50 rounded-[10px] p-4">
+                      <p class="font-display text-[14px] text-mny-900 uppercase mb-1">Tiers &middot; Herkimer, Orange, Albany</p>
+                      <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                        &ldquo;Tier&nbsp;1&nbsp;-&nbsp;Top Priority,&rdquo; &ldquo;Tier&nbsp;I-B-&nbsp;13&rdquo; &mdash; 20 spellings across 43 rows. The same
+                        idea the new county workflow formalizes properly, appearing here in free-text embryo.
+                      </p>
+                    </div>
+                    <div class="bg-mny-50 rounded-[10px] p-4 md:col-span-2">
+                      <p class="font-display text-[14px] text-mny-900 uppercase mb-1">Hedges &middot; Saratoga and others</p>
+                      <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                        Saratoga answered &ldquo;(dependent)&nbsp;M-H&rdquo; on 48 actions &mdash; priority contingent on something the string
+                        doesn&rsquo;t say. Add ranges (&ldquo;Medium&nbsp;-&nbsp;High&rdquo;), conditions (&ldquo;High after flood events&rdquo;), and
+                        split verdicts (&ldquo;Fish Creek &ndash; Low / Mud Creek &ndash; High&rdquo;): honest answers that a single text box
+                        forced into ambiguity. A dropdown plus a notes field captures both halves cleanly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- NORMALIZATION FUNNEL -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">What Normalization Gets You</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  A mechanical mapping &mdash; case-folding, abbreviations, stripping ranks/scores/narratives off a leading
+                  label &mdash; resolves 14,436 rows onto three buckets with no human review. That&rsquo;s 88.1% of every answer
+                  ever given, and 78.6% of the whole dataset.
+                </p>
+                <div class="space-y-2 max-w-[860px]">
+                  <div class="flex items-center gap-3">
+                    <div class="w-[190px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">All actions</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-900" style="width:100%;"></div></div>
+                    <div class="w-[110px] font-proxima text-[11px] text-mny-400 tabular-nums">18,378</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[190px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Priority filled</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-700" style="width:89.2%;"></div></div>
+                    <div class="w-[110px] font-proxima text-[11px] text-mny-400 tabular-nums">16,390 &middot; 89.2%</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[190px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Maps to High / Med / Low</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full overflow-hidden border border-mny-100">
+                      <div class="h-full flex" style="width:78.6%;">
+                        <div class="bg-mny-red h-full" style="width:61.9%;" title="High — 8,941"></div>
+                        <div class="bg-mny-y700 h-full" style="width:27.1%;" title="Medium — 3,919"></div>
+                        <div class="bg-mny-400 h-full" style="width:11%;" title="Low — 1,576"></div>
+                      </div>
+                    </div>
+                    <div class="w-[110px] font-proxima text-[11px] text-mny-400 tabular-nums">14,436 &middot; 78.6%</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[190px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-700 font-[600]">Left for review</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-200" style="width:10.6%;"></div></div>
+                    <div class="w-[110px] font-proxima text-[11px] text-mny-400 tabular-nums">1,954 &middot; 10.6%</div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5 max-w-[860px]">
+                  <div class="bg-white border border-mny-100 rounded-[10px] p-4">
+                    <p class="font-display text-[22px] text-mny-900 font-[500] tabular-nums">8,941 <span class="text-[13px] text-mny-red uppercase">High</span></p>
+                    <p class="font-proxima text-[12px] text-mny-400 mt-1">61.9% of mapped rows &mdash; locals overwhelmingly call their actions high priority, which is itself a finding: an uncalibrated scale saturates at the top.</p>
+                  </div>
+                  <div class="bg-white border border-mny-100 rounded-[10px] p-4">
+                    <p class="font-display text-[22px] text-mny-900 font-[500] tabular-nums">3,919 <span class="text-[13px] text-mny-y700 uppercase">Medium</span></p>
+                    <p class="font-proxima text-[12px] text-mny-400 mt-1">27.1% of mapped rows, folding in &ldquo;Moderate,&rdquo; &ldquo;Med.,&rdquo; &ldquo;M,&rdquo; and every medium-with-rank variant.</p>
+                  </div>
+                  <div class="bg-white border border-mny-100 rounded-[10px] p-4">
+                    <p class="font-display text-[22px] text-mny-900 font-[500] tabular-nums">1,576 <span class="text-[13px] text-mny-400 uppercase">Low</span></p>
+                    <p class="font-proxima text-[12px] text-mny-400 mt-1">10.9% of mapped rows. The review residue: 1,332 bare numbers, 434 explicit N/A-style non-answers, 116 ranges, 43 tiers, 29 misc.</p>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- RECOMMENDATIONS -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Recommendations</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-2">Give locals a real control</h3>
+                <p class="font-proxima text-[14px] text-mny-700 mb-6 max-w-[860px]">
+                  The data shows locals want to answer this question &mdash; and want to say more than one word. The fix is to
+                  make the easy answer structured and give the extra detail somewhere legitimate to live. Four moves,
+                  in leverage order:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Make it a dropdown</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55] mb-3">
+                      Change the <code class="text-[12px] bg-mny-50 px-1 rounded">priority</code> attribute from
+                      <code class="text-[12px] bg-mny-50 px-1 rounded">type: "text"</code> to
+                      <code class="text-[12px] bg-mny-50 px-1 rounded">type: "select"</code> &mdash; the same one-attribute config
+                      Action Status already uses. Every edit surface becomes a pick-list; the 255-spelling problem can&rsquo;t recur.
+                    </p>
+                    <div class="border border-mny-100 rounded-[8px] p-2.5 bg-mny-50/50">
+                      <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mb-1.5">Proposed options</p>
+                      <div class="flex flex-wrap gap-1.5">
+                        <span class="px-2.5 py-1 rounded-full font-proxima text-[12px] font-[600] bg-mny-red/10 text-mny-redk border border-mny-red/30">High</span>
+                        <span class="px-2.5 py-1 rounded-full font-proxima text-[12px] font-[600] bg-mny-y50 text-mny-900 border border-mny-y500">Medium</span>
+                        <span class="px-2.5 py-1 rounded-full font-proxima text-[12px] font-[600] bg-mny-100 text-mny-700 border border-mny-200">Low</span>
+                        <span class="px-2.5 py-1 rounded-full font-proxima text-[12px] font-[600] bg-white text-mny-400 border border-mny-200 border-dashed">Not Yet Prioritized</span>
+                      </div>
+                      <p class="font-proxima text-[11px] text-mny-400 mt-2 leading-[1.5]">
+                        Exactly four. 85% of existing answers are already the first three words; every extra option
+                        (&ldquo;Very High,&rdquo; &ldquo;Medium-High&rdquo;) reopens the ambiguity a dropdown exists to close. &ldquo;Not Yet
+                        Prioritized&rdquo; replaces the 434 N/A-style entries with an intentional state.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Migrate, don&rsquo;t overwrite</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      Auto-map the 14,436 clean rows; copy every original string to a
+                      <code class="text-[12px] bg-mny-50 px-1 rounded">priority_original</code> field first so no plan&rsquo;s
+                      language is lost. The 1,954 leftovers become a per-county review queue worked with each plan&rsquo;s
+                      legend &mdash; Allegany&rsquo;s 11&ndash;16 rubric converts with two thresholds, Herkimer&rsquo;s tiers with a
+                      five-line lookup. Rows whose owners never answer stay &ldquo;Not Yet Prioritized&rdquo; &mdash; visible,
+                      not silently blank.
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Let the plan&rsquo;s math live somewhere</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      Wayne&rsquo;s STAPLEE decimals, Allegany&rsquo;s rubric points and Madison&rsquo;s rankings are the <em>best</em>
+                      prioritization evidence in the dataset &mdash; they just don&rsquo;t belong in a category label. Add optional
+                      companions: <code class="text-[12px] bg-mny-50 px-1 rounded">priority_score</code> (number),
+                      <code class="text-[12px] bg-mny-50 px-1 rounded">priority_rank</code> (integer), and notes for the
+                      hedges (&ldquo;dependent,&rdquo; &ldquo;after flood events&rdquo;). The label compares across plans; the score keeps
+                      its precision within one.
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">4 &middot; Two lenses: local and county</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      A second priority field already exists: <code class="text-[12px] bg-mny-50 px-1 rounded">county_priority</code>,
+                      a proper dropdown with five implementation tiers, live in the Sullivan county-workflow pilot (2 rows so
+                      far). Keep the two as different lenses &mdash; <strong class="text-mny-900">local priority</strong> is the jurisdiction&rsquo;s
+                      own judgment; the <strong class="text-mny-900">county tier</strong> is the county&rsquo;s implementation ordering. Don&rsquo;t
+                      merge them; show both. Herkimer and Orange inventing tiers in free text proves the demand was
+                      always there.
+                    </p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 mt-5 max-w-[860px] leading-[1.6]">
+                  <strong class="text-mny-900 font-[600]">In the product,</strong> the select unlocks what free text never can: priority as an
+                  editable pill in every actions table, blanks surfaced per county with a one-click &ldquo;show
+                  un-prioritized&rdquo; filter, and dashboards that finally answer &ldquo;how many high-priority flood actions does
+                  this county have?&rdquo; without a 255-branch translation step.
+                </p>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: <code>references/actions/scripts/17_priority_coverage.mjs</code> over the actions export
+                (source 1029065 / view 1074456, 18,378 rows; live check 2026-08-05 matched: 16,390 filled, 255 distinct).
+                Schema facts from the source config on <code>dms-mercury-3</code>: <code>priority</code> is
+                <code>type:"text"</code>, no options; <code>county_priority</code> is <code>type:"select"</code> with 5 tier
+                options. See the
+                <a href="actions-qa.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Actions Data Quality</a> audit,
+                <a href="duplicate-actions.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Duplicate Actions</a>, and
+                <a href="boilerplate-actions.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Boilerplate Actions</a> for the sibling analyses.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<script src="../ds-nav.js"></script>
+
+</body>
+</html>
