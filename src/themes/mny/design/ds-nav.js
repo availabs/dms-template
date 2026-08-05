@@ -60,6 +60,7 @@
       { f: 'duplicate-actions.html', t: 'duplicate actions' },
       { f: 'boilerplate-actions.html', t: 'boilerplate actions' },
       { f: 'location-from-text.html', t: 'locating from text' },
+      { f: 'priority-coverage.html', t: 'local priority coverage' },
     ]},
   ];
 
