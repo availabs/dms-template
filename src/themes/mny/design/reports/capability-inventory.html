@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Capability Inventory</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Capability<br>Inventory
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    What seven counties&rsquo; capability tables actually contain &mdash; and how unevenly
+                    the record runs.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">2,354 capability rows</span>
+                    <span class="px-3 py-1.5 bg-mny-700 border border-mny-700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">169 jurisdictions</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">7 counties combined</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Capability rows</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">2,354</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">across 7 counties</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Jurisdictions</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">169</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">9&ndash;48 per county</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Capability labels</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">261</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">252 once case is folded</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Full-breadth jurisdictions</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">1</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">of 169 &mdash; touches all 5 domains</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Single-domain jurisdictions</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">21</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">12% &mdash; 16 report P&amp;R only</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Most-used label</p>
+              <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1">&ldquo;Other&rdquo; &times;107</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">a catch-all, not a category</p>
+            </div>
+          </div>
+
+          <!-- Capability Type concentration bar -->
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-900" style="width:45.1%;" title="Planning and Regulatory — 1,062 rows"></div>
+            <div class="bg-mny-700" style="width:26.6%;" title="Administrative and Technical — 625 rows"></div>
+            <div class="bg-mny-y700" style="width:22.6%;" title="Financial — 533 rows"></div>
+            <div class="bg-mny-400" style="width:4.7%;" title="Education and Outreach — 110 rows"></div>
+            <div class="bg-mny-200" style="width:0.9%;" title="Asset (3 rows) and multi-type / unclassified rows (18 rows)"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-900"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Planning and Regulatory (1,062)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Administrative and Technical (625)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Financial (533)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-400"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Education and Outreach (110)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-200"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Asset + multi-type/unclassified (21)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- VERDICT -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    Broad across the state.<br>Shallow within most towns.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Combined, the seven county exports carry <strong class="text-mny-900 font-[600]">2,354 capability rows across
+                      169 jurisdictions</strong>. The vocabulary is largely under control &mdash; 261 raw
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">Capability</code> labels fold to 252 once case is
+                      normalized &mdash; but that control masks a bigger gap: the single most common label in the
+                      whole dataset isn&rsquo;t a real capability at all. It&rsquo;s <strong class="text-mny-900 font-[600]">&ldquo;Other,&rdquo;
+                      used 107 times</strong> as a write-in catch-all.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Coverage is heavily weighted toward <strong class="text-mny-900 font-[600]">Planning and Regulatory</strong>
+                      (1,062 rows, 45% of the dataset) &mdash; plans, codes, and ordinances that every jurisdiction was
+                      likely asked about directly. <strong class="text-mny-900 font-[600]">Asset</strong> capabilities, by contrast,
+                      appear on just 3 of 2,354 rows. That is almost certainly not because these counties own no public
+                      assets worth tracking &mdash; it reads as a category the intake process rarely reached.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The deeper problem isn&rsquo;t the vocabulary, though &mdash; it&rsquo;s <strong class="text-mny-900 font-[600]">how unevenly the
+                      record runs across jurisdictions</strong>. One town&rsquo;s capability table can run 26 rows deep across
+                      every domain; another&rsquo;s is a single line. Both look identical in a simple row count, but they
+                      mean very different things.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">Where the weight sits</p>
+                      <div class="flex items-baseline gap-3 mb-2">
+                        <span class="font-display text-[72px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">45%</span>
+                        <span class="font-display text-[16px] text-mny-y700 font-[500] leading-tight uppercase">of all rows are<br>Planning &amp; Regulatory</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-2">
+                        Asset capabilities sit at the opposite extreme &mdash; just <strong class="text-white font-[600]">3 rows</strong>
+                        in the entire combined dataset.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <div class="flex items-baseline gap-4">
+                        <div>
+                          <span class="font-display text-[30px] text-mny-400 font-[500] leading-none tracking-[-0.03em] tabular-nums">261</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">raw labels</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-700 self-center" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                        <div>
+                          <span class="font-display text-[48px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">252</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">case-folded</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- BREADTH -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Where The Depth Isn&rsquo;t</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  &ldquo;Breadth&rdquo; here means how many of the five main capability domains (Planning &amp; Regulatory,
+                  Administrative &amp; Technical, Financial, Education &amp; Outreach, Asset) a jurisdiction has at least
+                  one row in. Most jurisdictions land in the middle &mdash; almost none reach the ends.
+                </p>
+                <div class="space-y-2.5 max-w-[900px]">
+                  <div class="flex items-center gap-3">
+                    <div class="w-[170px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">1 of 5 domains</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full flex items-center" style="width:12.4%;min-width:34px;"><span class="pl-3 font-proxima text-[11px] text-white font-[700]">21</span></div>
+                    </div>
+                    <div class="w-[190px] flex-shrink-0 font-proxima text-[12px] text-mny-400">12% &mdash; 16 are P&amp;R only</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[170px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">2 of 5 domains</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:13.0%;min-width:34px;"><span class="pl-3 font-proxima text-[11px] text-mny-900 font-[700]">22</span></div>
+                    </div>
+                    <div class="w-[190px] flex-shrink-0 font-proxima text-[12px] text-mny-400">13%</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[170px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">3 of 5 domains</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-400 rounded-full flex items-center" style="width:40.2%;"><span class="pl-3 font-proxima text-[11px] text-white font-[700]">68</span></div>
+                    </div>
+                    <div class="w-[190px] flex-shrink-0 font-proxima text-[12px] text-mny-400">40% &mdash; the mode</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[170px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">4 of 5 domains</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full flex items-center" style="width:33.7%;"><span class="pl-3 font-proxima text-[11px] text-white font-[700]">57</span></div>
+                    </div>
+                    <div class="w-[190px] flex-shrink-0 font-proxima text-[12px] text-mny-400">34%</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[170px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">5 of 5 domains</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-grn rounded-full flex items-center" style="width:0.6%;min-width:26px;"><span class="pl-2 font-proxima text-[11px] text-white font-[700]">1</span></div>
+                    </div>
+                    <div class="w-[190px] flex-shrink-0 font-proxima text-[12px] text-mny-400">Mamakating (Town), Sullivan</div>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-4 max-w-[820px]">
+                  Of the 21 single-domain jurisdictions, <strong class="text-mny-900 font-[600]">16 report Planning &amp; Regulatory
+                  and nothing else</strong> &mdash; for those towns, the entire capability record is one line: adoption of the
+                  county Hazard Mitigation Plan. A count of 1 is genuinely ambiguous here: it could mean the jurisdiction
+                  truly has no other capability worth logging, or that the intake process never asked past the plan
+                  adoption. This inventory can&rsquo;t tell those two apart &mdash; see the
+                  <a href="capabilities-vs-capacity.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Capabilities vs. Capacity</a>
+                  report for why that distinction matters.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- COUNTY COMPARISON -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">County Comparison</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Raw row counts by county mostly reflect how many jurisdictions each county has, and how each county
+                  chose to report &mdash; not necessarily how capable its towns are.
+                </p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse min-w-[720px]">
+                    <thead>
+                      <tr class="border-b-2 border-mny-100">
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2 pr-4">County</th>
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2 pr-4 text-right">Jurisdictions</th>
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2 pr-4 text-right">Rows</th>
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2 pr-4 text-right">Avg rows / jurisdiction</th>
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2 text-right">Avg breadth (of 5)</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-[14px] text-mny-900">
+                      <tr class="border-b border-mny-50 bg-mny-y50">
+                        <td class="py-2.5 pr-4 font-[600]">Schenectady</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">9</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">350</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums font-[700] text-mny-y700">38.9</td>
+                        <td class="py-2.5 text-right tabular-nums font-[700] text-mny-y700">3.89</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="py-2.5 pr-4 font-[600]">Hamilton</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">11</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">141</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">12.8</td>
+                        <td class="py-2.5 text-right tabular-nums">3.27</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="py-2.5 pr-4 font-[600]">Niagara</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">21</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">461</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">22.0</td>
+                        <td class="py-2.5 text-right tabular-nums">3.24</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="py-2.5 pr-4 font-[600]">Fulton</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">17</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">201</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">11.8</td>
+                        <td class="py-2.5 text-right tabular-nums">2.94</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="py-2.5 pr-4 font-[600]">Delaware</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">37</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">458</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">12.4</td>
+                        <td class="py-2.5 text-right tabular-nums">2.78</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="py-2.5 pr-4 font-[600]">Sullivan</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">26</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">314</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">12.1</td>
+                        <td class="py-2.5 text-right tabular-nums">2.77</td>
+                      </tr>
+                      <tr class="bg-mny-50">
+                        <td class="py-2.5 pr-4 font-[600]">Allegany</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">48</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums">429</td>
+                        <td class="py-2.5 pr-4 text-right tabular-nums text-mny-400">8.9</td>
+                        <td class="py-2.5 text-right tabular-nums text-mny-400">2.88</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-4 max-w-[820px]">
+                  <strong class="text-mny-900 font-[600]">Read the Schenectady row carefully.</strong> Its lead in rows-per-jurisdiction
+                  and average breadth is driven substantially by a single 60-row &ldquo;Countywide&rdquo; entry &mdash; not by its
+                  9 towns individually out-reporting Allegany&rsquo;s 48. Before treating breadth as a capability signal
+                  across counties, confirm whether each county reported at the town level or rolled entries up
+                  county-wide; right now those two reporting styles are mixed together in the same table.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- VOCABULARY -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">The Vocabulary</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Most-used <code class="text-[12px] bg-mny-50 px-1 rounded">Capability</code> labels across all 2,354 rows.
+                </p>
+                <div class="space-y-2 max-w-[720px]">
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-900 font-[600]">Other</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full" style="width:100%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[700] tabular-nums">107</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-700">Comprehensive/Master Plan</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full" style="width:90.7%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">97</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-700">Building code</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full" style="width:84.1%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">90</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-700">Mutual Aid Agreements</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full" style="width:83.2%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">89</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-700">Floodplain Administrator</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full" style="width:76.6%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">82</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-700">Authority to Levy Taxes for Specific Purposes</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full" style="width:72.0%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">77</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-700">Chief Building Official</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full" style="width:67.3%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">72</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[260px] flex-shrink-0 font-proxima text-[13px] text-mny-700">Hazard Mitigation Plan</div>
+                    <div class="flex-1 h-[20px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-700 rounded-full" style="width:63.6%;"></div>
+                    </div>
+                    <div class="w-[40px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">68</div>
+                  </div>
+                </div>
+                <div class="mt-5 bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red max-w-[820px]">
+                  <p class="font-proxima text-[13px] text-mny-900 leading-[1.6]">
+                    <strong class="font-[600]">&ldquo;Other&rdquo; outranks every real category.</strong> It shows up as a write-in
+                    catch-all under Administrative and Technical (50 rows), Planning and Regulatory (47), and Education
+                    and Outreach (10). This is the same normalization gap a prior pass over this dataset already
+                    mapped &mdash; that pass reduced the vocabulary to roughly 104 standardized values. The fix is coding
+                    these 107 write-ins into specific values, not adding more open-text room.
+                  </p>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- RECOMMENDATION -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Recommended path</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-4">Normalize before you scale to more counties</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Fold case duplicates</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">261 &rarr; 252 labels in one mechanical pass &mdash; cheap, and it doesn&rsquo;t require touching a single row&rsquo;s meaning.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Code the &ldquo;Other&rdquo; rows</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">107 rows across 3 capability types &mdash; almost certainly land on values already in the normalized list from the earlier pass.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Fix the reporting unit</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Decide once whether county-level or per-jurisdiction rows are the standard unit, so breadth comparisons across counties mean the same thing.</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-5 pt-5 border-t border-mny-y500">
+                  <strong class="text-mny-900 font-[600]">Net effect:</strong> a cleaner 250-value vocabulary, no &ldquo;Other&rdquo; catch-all
+                  left standing, and county comparisons that reflect actual capability differences instead of reporting-style
+                  artifacts. None of this closes the bigger gap, though &mdash; see the
+                  <a href="capabilities-vs-capacity.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Capabilities vs. Capacity</a> report for what this inventory still can&rsquo;t tell you.
+                </p>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: <code>combined_capa.csv</code> &mdash; 7-county capability export (Hamilton, Niagara, Schenectady,
+                Sullivan, Allegany, Delaware, Fulton), 2,354 rows / 169 jurisdictions. Analyzed via
+                <code>scratchpad/mny-capabilities/analyze_capa.ps1</code>. Companion to the
+                <a href="capabilities-vs-capacity.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Capabilities vs. Capacity</a> report.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <a href="capability-inventory.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capability Inventory</a>
+    <a href="capabilities-vs-capacity.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capabilities vs. Capacity</a>
+    <a href="state-capability-catalog.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> State Capability Catalog</a>
+    <a href="capacity-assessment-architecture.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capacity Assessment Architecture</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Mockups</div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard</a>
+    <a href="../pages/actions-workspace.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Workspace</a>
+    <a href="../pages/action-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action View</a>
+    <a href="../pages/action-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action Edit</a>
+    <a href="../pages/actions-by-jurisdiction.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions by Jurisdiction</a>
+    <a href="../pages/actions-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Search</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
