@@ -368,6 +368,62 @@ adding a write path in front of fields the runtime already consumes correctly.
    than any small preset set), but flagging since it's a real judgment call, not a slam-dunk either
    way.
 
+## Implemented, 2026-08-05 — Mechanism B only, per Ryan's explicit call on Q5
+
+Ryan's answer to the one open question this doc flagged as his to make (Q5): build for Mechanism B
+only. Mechanism A stays exactly as this doc left it — a documented gap, no resolver on either side
+of the stack, not started.
+
+Built as recommended: `RouteRow.jsx`'s date-edit panel gained a Fixed/Derived mode switch (no new
+modal), a new pure `relativeDatePresets.js` module (peer to `relativeDateResolution.js`) implementing
+the curated preset table from Q2 plus an Advanced raw-formula escape hatch (open question 4 resolved:
+included), and `ReportRouteList.jsx` computes the eligible-bases/reverse-lookup plumbing from Q7's
+Workstream 1. Q3's single-hop/atomicity requirements and Q4's "generalizes cleanly to Dynamic
+Reports" claim both hold as predicted — implemented with zero divergence between normal reports and
+Dynamic Report route slots, confirmed by wiring both through the same `updateRoute` call.
+
+Two open questions resolved during the build, not left for later:
+- **Open question 3** (auto-write the last-resolved date when un-deriving) — turned out to need *no
+  new code*: `onStartEditDates` already seeds the Fixed-mode inputs from `effectiveRoutes`' live-
+  resolved value (RouteRow always renders off the resolved array), so switching a derived row back
+  to Fixed and saving already carries the last-resolved date forward for free.
+- **Open question 4** (Advanced escape hatch) — included, per this doc's own lean.
+
+**Not resolved, carried forward as an explicit gap:** open question 2 (cross-`route_slot_group`
+derive-from on Dynamic Reports) — the shipped "Derive From" picker does NOT restrict candidates by
+group; it allows any non-derived sibling on the report, the simpler default, still unconfirmed
+against any real report exercising that specific shape. See the task file's new "Not yet done" list.
+
+**Verified so far: unit-level only** (formula round-tripping against real corpus shapes, and a full
+simulated save → resolve → edit-base-cascades → un-derive → no-longer-cascades flow against the real
+`resolveRouteDates`/`buildFormula`/`parseFormula` functions, no DB or browser involved). A live
+interactive click-through in the browser has not happened yet — flagged for a follow-up pass, not
+claimed as done.
+
+**Real UX finding caught live by Ryan, 2026-08-05, fixed same day: RRL's actual column width is
+much narrower than this doc's UI recommendation assumed.** Screenshot from a real report showed the
+RRL panel occupying roughly a 220-260px sidebar column, not the width of a modal or a full page
+pane — every other UI precedent this doc cited (`AddGraphModal`, `RouteTagBrowserModal`) renders in
+a modal overlay, which is why the width mismatch wasn't caught during scoping. Two real problems in
+the first build, both fixed without changing the underlying design (Fixed/Derived mode still lives
+in `RouteRow.jsx`'s existing panel, no new modal):
+
+1. **The Fixed/Derived mode switch was two full-text pill buttons ("Fixed dates" / "Derived from
+   another route") side by side — impractical at this width.** Replaced with the same compact
+   `Switch` primitive `ReportRouteList.jsx` already uses one panel up for the "Dynamic Report"
+   toggle (proven to fit this exact column) plus a short text label showing the current mode next
+   to it — one small knob instead of two button-sized chrome elements.
+2. **The Pattern+Span and Direction+Amount control pairs were laid out side-by-side
+   (`dateInputFlex`), which crushes each `Select` into roughly half the already-narrow column.**
+   Restacked every derive sub-control to one-per-row, matching how Start Date/End Date already
+   stack vertically in this same panel.
+3. **Discoverability, a separate but related finding**: a Fixed row showed nothing at rest — only a
+   Derived row's "Derived from X" note was ever visible without opening the editor, so there was no
+   hint the feature existed at all until an author happened to click the date-range pencil. Fixed by
+   always showing a one-line status ("Fixed dates." / "Derived from X — edit to change." / "Fixed
+   dates — base for Y.") regardless of edit state — symmetric between both modes now, not just
+   derived.
+
 ## Cross-references
 
 - `planning/transportny/tasks/current/dynamic-reports-and-route-tags.md` — item 3, the Mechanism B

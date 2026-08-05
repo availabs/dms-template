@@ -42,7 +42,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Input, Icon, ColorPicker, Switch } = UI || {};
+  const { Button, Input, Select, Icon, ColorPicker, Switch } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
@@ -52,6 +52,13 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
   const [editWeekdaysValue, setEditWeekdaysValue] = useState({});
+  // Mechanism B authoring buffer (relativeDateResolution.js) — mirrors the editStartDateValue/
+  // editEndDateValue pattern above: parent owns the edit-buffer state, RouteRow is presentational.
+  // 'fixed' | 'derived'; editDeriveFromValue is the picked base's route_comp_id; editDeriveFormulaValue
+  // is the composed (or hand-typed, via the Advanced pattern) formula string.
+  const [editDateMode, setEditDateMode] = useState('fixed');
+  const [editDeriveFromValue, setEditDeriveFromValue] = useState('');
+  const [editDeriveFormulaValue, setEditDeriveFormulaValue] = useState('');
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,6 +188,32 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
       .map((r, i) => ({ r, i }))
       .filter(({ r }) => !q || (r.name || '').toLowerCase().includes(q));
   }, [effectiveRoutes, searchQuery]);
+
+  // Mechanism B (relativeDateResolution.js) authoring support. Eligible "Derive From" bases are
+  // every route that isn't itself already derived — single-hop only, matches the resolver's own
+  // constraint (a base is never itself derived by construction). RouteRow further excludes the row
+  // being edited from this same list (it can't derive from itself). Carries startDate/endDate too
+  // so RouteRow can show a live "resolves to" preview without a second lookup.
+  const derivableSiblings = useMemo(
+    () => effectiveRoutes
+      .filter((rt) => !rt.dateFormula)
+      .map((rt) => ({ route_comp_id: rt.route_comp_id, name: rt.name, startDate: rt.startDate, endDate: rt.endDate })),
+    [effectiveRoutes]
+  );
+  // Per-row "used as a base for: ..." lookup — purely a render-time convenience so an author
+  // editing a route can see it has dependents before switching it TO a derived row itself (the
+  // eligibility filter above already prevents deriving FROM an already-derived row, but doesn't by
+  // itself warn a would-be base about who's relying on it).
+  const baseForNamesByCompId = useMemo(() => {
+    const map = new Map();
+    effectiveRoutes.forEach((rt) => {
+      if (!rt.dateFormula || !rt.derivedFromRoute) return;
+      const list = map.get(rt.derivedFromRoute) || [];
+      list.push(rt.name);
+      map.set(rt.derivedFromRoute, list);
+    });
+    return map;
+  }, [effectiveRoutes]);
 
   // `id` (the row's own DMS id) is the universal identity — every catalog row has one
   // regardless of provenance. `route_id` only ever existed on legacy-imported rows, kept as a
@@ -315,6 +348,8 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                 theme={t}
                 Button={Button}
                 Input={Input}
+                Select={Select}
+                Switch={Switch}
                 Icon={Icon}
                 ColorPicker={ColorPicker}
                 onChangeColor={(c) => updateRoute({ index: i, updates: { color: c } })}
@@ -344,6 +379,8 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                 }}
                 onCancelEditName={() => setEditingRouteNameIndex(null)}
                 derivedFromRouteName={r.dateFormula ? effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name : null}
+                baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
+                derivableSiblings={derivableSiblings}
                 isEditingDates={editingRouteDatesIndex === i}
                 editStartDateValue={editStartDateValue}
                 editEndDateValue={editEndDateValue}
@@ -351,22 +388,60 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                 onEditEndDateValueChange={setEditEndDateValue}
                 editWeekdaysValue={editWeekdaysValue}
                 onEditWeekdaysValueChange={setEditWeekdaysValue}
-                onStartEditDates={() => { setEditingRouteDatesIndex(i); setEditStartDateValue(r.startDate); setEditEndDateValue(r.endDate); setEditWeekdaysValue(r.weekdays || {}); }}
+                editDateMode={editDateMode}
+                onEditDateModeChange={setEditDateMode}
+                editDeriveFromValue={editDeriveFromValue}
+                onEditDeriveFromValueChange={setEditDeriveFromValue}
+                editDeriveFormulaValue={editDeriveFormulaValue}
+                onEditDeriveFormulaValueChange={setEditDeriveFormulaValue}
+                onStartEditDates={() => {
+                  setEditingRouteDatesIndex(i);
+                  // Seeded from `r` (effectiveRoutes' already-resolved entry, see the
+                  // resolveRouteDates wiring above) — a row currently deriving its dates shows the
+                  // real current resolved value here, not a stale/frozen literal, so switching to
+                  // Fixed mode starts from the right dates instead of blank or stale ones.
+                  setEditStartDateValue(r.startDate);
+                  setEditEndDateValue(r.endDate);
+                  setEditWeekdaysValue(r.weekdays || {});
+                  setEditDateMode(r.dateFormula ? 'derived' : 'fixed');
+                  setEditDeriveFromValue(r.derivedFromRoute || '');
+                  setEditDeriveFormulaValue(r.dateFormula || '');
+                }}
                 onSaveEditDates={() => {
-                  // Only explicit `false` entries are meaningful (see useGraphPublish.js's
-                  // generateDateRange) — stripping `true`/absent keys keeps storage matching
-                  // the existing convention (e.g. converted old reports' `{saturday:false,
-                  // sunday:false}`) and collapses back to `undefined` (all days) when every
-                  // toggle is back on, instead of persisting a same-meaning-but-verbose object.
-                  const excluded = Object.fromEntries(Object.entries(editWeekdaysValue).filter(([, v]) => v === false));
-                  updateRoute({
-                    index: i,
-                    updates: {
-                      startDate: editStartDateValue,
-                      endDate: editEndDateValue,
-                      weekdays: Object.keys(excluded).length ? excluded : undefined,
-                    },
-                  });
+                  if (editDateMode === 'derived') {
+                    // Atomic: both fields together in one updateRoute call, matching the
+                    // resolver's own requirement (relativeDateResolution.js only resolves when
+                    // BOTH dateFormula and derivedFromRoute are present) — never persist one
+                    // without the other. startDate/endDate are deliberately left as whatever's
+                    // already stored: resolveRouteDates recomputes the displayed value live on
+                    // every read, and the untouched literal becomes a safe frozen fallback if the
+                    // base or formula is ever removed later — the same convention
+                    // convert_old_reports.py's own resolver uses.
+                    updateRoute({
+                      index: i,
+                      updates: { dateFormula: editDeriveFormulaValue, derivedFromRoute: editDeriveFromValue },
+                    });
+                  } else {
+                    // Only explicit `false` entries are meaningful (see useGraphPublish.js's
+                    // generateDateRange) — stripping `true`/absent keys keeps storage matching
+                    // the existing convention (e.g. converted old reports' `{saturday:false,
+                    // sunday:false}`) and collapses back to `undefined` (all days) when every
+                    // toggle is back on, instead of persisting a same-meaning-but-verbose object.
+                    const excluded = Object.fromEntries(Object.entries(editWeekdaysValue).filter(([, v]) => v === false));
+                    updateRoute({
+                      index: i,
+                      updates: {
+                        startDate: editStartDateValue,
+                        endDate: editEndDateValue,
+                        weekdays: Object.keys(excluded).length ? excluded : undefined,
+                        // Switching back to Fixed removes the relationship — editStartDateValue/
+                        // editEndDateValue above were seeded from the live-resolved value (see
+                        // onStartEditDates), so nothing goes blank.
+                        dateFormula: undefined,
+                        derivedFromRoute: undefined,
+                      },
+                    });
+                  }
                   setEditingRouteDatesIndex(null);
                 }}
                 onCancelEditDates={() => setEditingRouteDatesIndex(null)}
