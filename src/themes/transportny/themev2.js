@@ -2485,8 +2485,17 @@ const pageComponents = {
 // keyed by ComponentRegistry component name. See sectionMenuExtensions.js /
 // sectionMenu.jsx in the dms submodule for the generic extension point.
 // ─────────────────────────────────────────────────────────────────────────────
+// Keyed by the resolved component's `.name`, which differs by element-type
+// despite both resolving to the same graph_new component (see
+// ComponentRegistry/index.jsx): legacy-migrated sections keep `.name: 'Graph'`,
+// but the "AVL Graph" registry entry force-overrides `.name` back to
+// 'AVL Graph' — which is what virtually every real report graph (RRL's
+// "+ Add Graph", the Report Page template's starter graph, every converted
+// report) actually resolves to. Both keys must be registered or these
+// extensions silently stop firing for real graphs.
 const sectionMenuExtensions = {
   "Graph": [npmrdsMeasureMenu],
+  "AVL Graph": [npmrdsMeasureMenu],
   "Card": [calloutStatMenu],
 };
 
@@ -2501,6 +2510,7 @@ const sectionMenuExtensions = {
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionHeaderExtensions = {
   "Graph": [npmrdsQuickControls],
+  "AVL Graph": [npmrdsQuickControls],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
