@@ -85,8 +85,9 @@
               </div>
               <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1] tracking-[-0.05em] mt-1.5">Where do you want to work?</h1>
               <p class="font-proxima text-[16px] text-mny-700 leading-[140%] mt-2 max-w-[600px]">
-                Pick a jurisdiction to open its worklist, or take the whole county at once.
-                Every tile shows how much of that jurisdiction's work is still unprioritized.
+                Pick a jurisdiction to rank its own actions and close its data gaps. Every tile
+                shows how much of that jurisdiction's work is still unprioritized. County tiers
+                are a separate pass — that's the county workspace, on the right.
               </p>
             </div>
 
@@ -99,7 +100,7 @@
               <a href="workspace.html?scope=county" class="flex items-center gap-2 px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
                 <!-- icon: List -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"/></svg>
-                Work all 475 in one list
+                Tier all 475 in one list
               </a>
             </div>
           </div>
@@ -110,9 +111,14 @@
              Sullivan (County) is not a municipality — it's the county's
              own 61 actions. Given its own row so it isn't mistaken for
              one town among many.
+
+             It is still a jurisdiction VALUE in the data, so it opens the
+             same jurisdiction worklist every other tile does — the county
+             ranking its own actions. The all-475 button in the header is
+             the different job: tiering across jurisdictions.
              ======================================================== -->
         <div data-dms="section" data-name="county-level" class="col-span-12 pb-5">
-          <a href="workspace.html?jurisdiction=Sullivan%20(County)" class="group block rounded-[12px] border-l-4 border-mny-900 border-y border-r border-mny-100 bg-mny-50 p-4 hover:border-r-mny-400 hover:border-y-mny-400 transition-colors">
+          <a href="jurisdiction-prioritization.html?jurisdiction=Sullivan%20(County)" class="group block rounded-[12px] border-l-4 border-mny-900 border-y border-r border-mny-100 bg-mny-50 p-4 hover:border-r-mny-400 hover:border-y-mny-400 transition-colors">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div class="flex items-start gap-4">
                 <div class="size-11 shrink-0 rounded-[10px] bg-mny-900 flex items-center justify-center">
@@ -179,7 +185,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
 
             <!-- TILE — Fallsburg (Town) 30 -->
-            <a href="workspace.html?jurisdiction=Fallsburg%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Fallsburg%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Fallsburg</h3>
@@ -197,7 +203,7 @@
             </a>
 
             <!-- TILE — Rockland (Town) 27 -->
-            <a href="workspace.html?jurisdiction=Rockland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Rockland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Rockland</h3>
@@ -215,7 +221,7 @@
             </a>
 
             <!-- TILE — Callicoon (Town) 25 -->
-            <a href="workspace.html?jurisdiction=Callicoon%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Callicoon%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Callicoon</h3>
@@ -233,7 +239,7 @@
             </a>
 
             <!-- TILE — Bethel (Town) 25 · all proposed -->
-            <a href="workspace.html?jurisdiction=Bethel%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Bethel%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Bethel</h3>
@@ -251,7 +257,7 @@
             </a>
 
             <!-- TILE — Woodridge (Village) 23 -->
-            <a href="workspace.html?jurisdiction=Woodridge%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Woodridge%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Woodridge</h3>
@@ -269,7 +275,7 @@
             </a>
 
             <!-- TILE — Tusten (Town) 23 · most progressed -->
-            <a href="workspace.html?jurisdiction=Tusten%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Tusten%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Tusten</h3>
@@ -287,7 +293,7 @@
             </a>
 
             <!-- TILE — Neversink (Town) 21 -->
-            <a href="workspace.html?jurisdiction=Neversink%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Neversink%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Neversink</h3>
@@ -305,7 +311,7 @@
             </a>
 
             <!-- TILE — Forestburgh (Town) 21 -->
-            <a href="workspace.html?jurisdiction=Forestburgh%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Forestburgh%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Forestburgh</h3>
@@ -323,7 +329,7 @@
             </a>
 
             <!-- TILE — Delaware (Town) 20 -->
-            <a href="workspace.html?jurisdiction=Delaware%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Delaware%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Delaware</h3>
@@ -341,7 +347,7 @@
             </a>
 
             <!-- TILE — Liberty (Village) 20 -->
-            <a href="workspace.html?jurisdiction=Liberty%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Liberty%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Liberty</h3>
@@ -359,7 +365,7 @@
             </a>
 
             <!-- TILE — Monticello (Village) 19 -->
-            <a href="workspace.html?jurisdiction=Monticello%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Monticello%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Monticello</h3>
@@ -377,7 +383,7 @@
             </a>
 
             <!-- TILE — Fremont (Town) 19 -->
-            <a href="workspace.html?jurisdiction=Fremont%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Fremont%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Fremont</h3>
@@ -395,7 +401,7 @@
             </a>
 
             <!-- TILE — Thompson (Town) 17 -->
-            <a href="workspace.html?jurisdiction=Thompson%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Thompson%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Thompson</h3>
@@ -413,7 +419,7 @@
             </a>
 
             <!-- TILE — Liberty (Town) 17 -->
-            <a href="workspace.html?jurisdiction=Liberty%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Liberty%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Liberty</h3>
@@ -431,7 +437,7 @@
             </a>
 
             <!-- TILE — Mamakating (Town) 16 -->
-            <a href="workspace.html?jurisdiction=Mamakating%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Mamakating%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Mamakating</h3>
@@ -449,7 +455,7 @@
             </a>
 
             <!-- TILE — Lumberland (Town) 16 -->
-            <a href="workspace.html?jurisdiction=Lumberland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Lumberland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Lumberland</h3>
@@ -467,7 +473,7 @@
             </a>
 
             <!-- TILE — Jeffersonville (Village) 13 -->
-            <a href="workspace.html?jurisdiction=Jeffersonville%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Jeffersonville%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Jeffersonville</h3>
@@ -485,7 +491,7 @@
             </a>
 
             <!-- TILE — Wurtsboro (Village) 13 -->
-            <a href="workspace.html?jurisdiction=Wurtsboro%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Wurtsboro%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Wurtsboro</h3>
@@ -503,7 +509,7 @@
             </a>
 
             <!-- TILE — Highland (Town) 13 -->
-            <a href="workspace.html?jurisdiction=Highland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Highland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Highland</h3>
@@ -521,7 +527,7 @@
             </a>
 
             <!-- TILE — Bloomingburg (Village) 12 -->
-            <a href="workspace.html?jurisdiction=Bloomingburg%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Bloomingburg%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Bloomingburg</h3>
@@ -539,7 +545,7 @@
             </a>
 
             <!-- TILE — Ateres (Village) 11 · NO BOUNDARY -->
-            <a href="workspace.html?jurisdiction=Ateres%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Ateres%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Ateres</h3>
@@ -564,7 +570,7 @@
             </a>
 
             <!-- TILE — Cochecton (Town) 9 -->
-            <a href="workspace.html?jurisdiction=Cochecton%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+            <a href="jurisdiction-prioritization.html?jurisdiction=Cochecton%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Cochecton</h3>
@@ -620,9 +626,10 @@
             <span class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-400">County Actions Workflow</span>
             <a href="dashboard.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">1 · Dashboard</a>
             <span class="font-proxima text-[13px] font-[700] text-mny-y700">2 · Jurisdictions</span>
-            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Workspace</a>
-            <a href="action-view.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · Action View</a>
-            <a href="action-edit.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">5 · Action Edit</a>
+            <a href="jurisdiction-prioritization.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Jurisdiction Prioritization</a>
+            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · County Workspace</a>
+            <a href="action-view.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">5 · Action View</a>
+            <a href="action-edit.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">6 · Action Edit</a>
             <span class="ml-auto font-proxima text-[12px] text-mny-400">Sullivan County · 23 jurisdictions · 475 actions</span>
           </div>
         </div>

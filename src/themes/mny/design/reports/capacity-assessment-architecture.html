@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Capacity Assessment: Data Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Capacity Assessment:<br>Data Architecture
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    Two datasets, deliberately &mdash; why capacity can&rsquo;t live as extra columns on the
+                    capability table, and how the two join without exploding.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">2,354 + 649 rows reviewed</span>
+                    <span class="px-3 py-1.5 bg-mny-700 border border-mny-700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">Recommendation: 2 datasets</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">joined on a shared jurisdiction key</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">1.0 capability rows</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">2,354</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">169 jurisdictions, 7 counties</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">2.0 catalog rows</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">649</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">402 real, 245 placeholders</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Breadth range (1.0 data)</p>
+              <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1">1 &ndash; 5 domains</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">21 jurisdictions at 1, only 1 at 5</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-redk">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Placeholder-row precedent</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">38%</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">of the 2.0 catalog is already empty shells</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Proposed capacity items</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">~30</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">rated on 3 scales, every jurisdiction</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Recommendation</p>
+              <p class="font-display text-[22px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1">2 joined datasets</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">not 1 wide table</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- THE QUESTION -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The question</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    One wide table,<br>or two that talk to each other?
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Two datasets are now in view: the <strong class="text-mny-900 font-[600]">1.0 county capability
+                      self-reports</strong> (2,354 rows, 169 jurisdictions, irregular coverage per town) and the
+                      <strong class="text-mny-900 font-[600]">2.0 statewide capability catalog</strong> (649 rows, 402
+                      real programs). Both are being folded toward one 2.0 schema. Before that conversion locks in a
+                      shape, the capacity assessment needs a home &mdash; and there are exactly two candidate designs:
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">Option A &mdash; extra columns.</strong> Add Availability /
+                      Adequacy / Interest-Need fields directly onto the existing capability rows.
+                      <strong class="text-mny-900 font-[600]">Option B &mdash; a separate dataset.</strong> A dedicated
+                      capacity table, one row per jurisdiction per capacity item, joined to the capability data when a
+                      report needs both.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The two prior reports already contain the evidence to answer this. This report walks through
+                      that evidence, then grounds the answer in how DMS actually models datasets and joins &mdash;
+                      per <code class="text-[13px] bg-mny-50 px-1 rounded">src/dms/skills/live-cross-view-joined-section.md</code>
+                      and <code class="text-[13px] bg-mny-50 px-1 rounded">uploading-gis-and-tabular-datasets.md</code>.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">The short answer</p>
+                      <p class="font-display text-[42px] text-white font-[500] leading-[1.05] tracking-[-0.02em] mb-3">Two datasets.<br>One shared key.</p>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-2">
+                        Capability data is <strong class="text-white font-[600]">sparse and event-sourced</strong> &mdash;
+                        rows appear when something is reported. Capacity needs to be
+                        <strong class="text-white font-[600]">dense and complete</strong> &mdash; one row per
+                        jurisdiction per item, always. Those are two different table shapes, not one with a few
+                        extra columns.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <p class="font-proxima text-[13px] text-mny-400 leading-[1.6]">
+                        Join them live at report time on <span class="text-white font-[600]">(jurisdiction, capability/capacity-type name)</span> &mdash;
+                        never merge them into one table.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- WHY NOT COLUMNS -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Why Capability Rows Can&rsquo;t Host Capacity Columns</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Three pieces of evidence, all already verified in the prior reports.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <p class="font-proxima text-[13px] text-mny-900 font-[600] mb-2">1 &middot; No reliable row to attach to</p>
+                    <p class="font-proxima text-[12px] text-mny-700 leading-[1.55]">
+                      Breadth per jurisdiction runs 1 to 5 domains (of 5). 21 of 169 jurisdictions touch only one
+                      domain; even the single jurisdiction that reaches all 5 (Mamakating, Sullivan) has just 26
+                      capability rows &mdash; nowhere near the ~30 discrete items a capacity assessment rates. There is
+                      no row sitting there waiting for capacity columns in the other 4 domains.
+                    </p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <p class="font-proxima text-[13px] text-mny-900 font-[600] mb-2">2 &middot; The failure mode already happened</p>
+                    <p class="font-proxima text-[12px] text-mny-700 leading-[1.55]">
+                      The 2.0 catalog shows exactly what happens when a fixed, complete vocabulary gets merged into a
+                      table built for irregular real entries: <strong class="text-mny-900 font-[600]">245 of 649 rows
+                      (38%)</strong> are bare placeholders carrying a name and nothing else. Forcing a capacity grid
+                      onto the capability table reproduces that same shape &mdash; at a much larger scale.
+                    </p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <p class="font-proxima text-[13px] text-mny-900 font-[600] mb-2">3 &middot; Capacity must cover silence, not just presence</p>
+                    <p class="font-proxima text-[12px] text-mny-700 leading-[1.55]">
+                      The <a href="capabilities-vs-capacity.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Capabilities vs. Capacity</a>
+                      report's core finding: a jurisdiction with zero capability rows in a domain is exactly the case
+                      capacity assessment needs to resolve. Columns on capability rows can only ever describe
+                      jurisdictions that already have a row &mdash; the opposite of what&rsquo;s needed.
+                    </p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[15px] leading-[1.65] text-mny-700 max-w-[820px]">
+                  Put numerically: a complete capacity grid needs <strong class="text-mny-900 font-[600]">169
+                  jurisdictions &times; ~30 items &asymp; 5,070 rows</strong>. The capability table currently holds
+                  2,354 rows, unevenly spread, with 21 jurisdictions contributing a single row each. Even ignoring
+                  everything else, the row counts alone don&rsquo;t line up &mdash; because they&rsquo;re answering two
+                  different questions with two different shapes.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- TABLE SHAPE COMPARISON -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Two Different Table Shapes</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse min-w-[640px]">
+                    <thead>
+                      <tr class="border-b-2 border-mny-100">
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2 pr-4"></th>
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2 pr-4">Capability dataset</th>
+                        <th class="font-proxima text-[12px] text-mny-400 font-[600] uppercase py-2">Capacity dataset</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-[14px] text-mny-900">
+                      <tr class="border-b border-mny-50">
+                        <td class="py-2.5 pr-4 font-[600] text-mny-400">Row shape</td>
+                        <td class="py-2.5 pr-4">Irregular &mdash; a row exists only when a jurisdiction reports one</td>
+                        <td class="py-2.5">Complete &mdash; one row per jurisdiction &times; per fixed capacity item</td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-50">
+                        <td class="py-2.5 pr-4 font-[600] text-mny-400">Cardinality today</td>
+                        <td class="py-2.5 pr-4">2,354 rows across 169 jurisdictions (1&ndash;26 rows each)</td>
+                        <td class="py-2.5">169 &times; ~30 &asymp; 5,070 rows (target, once built)</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="py-2.5 pr-4 font-[600] text-mny-400">What a missing row means</td>
+                        <td class="py-2.5 pr-4">Nothing reported yet &mdash; genuinely ambiguous (absence vs. not asked)</td>
+                        <td class="py-2.5">Shouldn&rsquo;t happen &mdash; every cell gets a value, incl. &ldquo;Not Reported&rdquo;</td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-50">
+                        <td class="py-2.5 pr-4 font-[600] text-mny-400">Update trigger</td>
+                        <td class="py-2.5 pr-4">Event-sourced &mdash; a new plan, program, or role is adopted</td>
+                        <td class="py-2.5">Cyclical &mdash; a rapid self-report survey, re-run on a cadence</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2.5 pr-4 font-[600] text-mny-400">Value shape</td>
+                        <td class="py-2.5 pr-4">Free text + a handful of optional narrative fields</td>
+                        <td class="py-2.5">3 fixed enums per item (Availability &times; Adequacy &times; Interest/Need)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-4 max-w-[820px]">
+                  This is the same distinction the <strong class="text-mny-900 font-[600]">HoC 1.0&rarr;2.0 conversion work</strong>
+                  already solved once, for a different hazard grid: build the master jurisdiction list once, then
+                  expand it into a complete jurisdiction &times; item grid, with an explicit &ldquo;Not Reported&rdquo; placeholder
+                  rather than a missing row. The same technique &mdash; not the same table &mdash; is the right model here.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- HOW THEY JOIN -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">How The Two Join Without Exploding</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  DMS can bind a single Card/Spreadsheet section to two views joined live, in-engine &mdash; no
+                  duplication, no manual sync. The mechanics come straight from
+                  <code class="text-[12px] bg-mny-50 px-1 rounded">live-cross-view-joined-section.md</code>, with one
+                  gotcha that applies directly here.
+                </p>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div class="lg:col-span-7">
+                    <div class="space-y-3">
+                      <div class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-mny-900 text-white font-proxima text-[12px] font-[700] flex items-center justify-center">1</span>
+                        <p class="font-proxima text-[14px] text-mny-700 leading-[1.6]"><strong class="text-mny-900 font-[600]">Same query engine.</strong> The join compiles to one SQL statement against a single backend &mdash; both the capability and capacity tables need to live in the same engine (e.g. both Postgres) to be joined live at all.</p>
+                      </div>
+                      <div class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-mny-900 text-white font-proxima text-[12px] font-[700] flex items-center justify-center">2</span>
+                        <p class="font-proxima text-[14px] text-mny-700 leading-[1.6]"><strong class="text-mny-900 font-[600]">Pin the composite key, or it fans out.</strong> The skill's core gotcha: an unpinned join key multiplies every base row by however many matching rows exist on the other side. Joining on jurisdiction alone would multiply <em>every</em> capability row by all ~30 capacity items for that jurisdiction &mdash; a 12-row town would explode to 360 joined rows. Pin the key to <strong class="text-mny-900 font-[600]">(jurisdiction, capability/capacity-type name)</strong> instead, so each capability row matches exactly its one corresponding capacity rating.</p>
+                      </div>
+                      <div class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-mny-900 text-white font-proxima text-[12px] font-[700] flex items-center justify-center">3</span>
+                        <p class="font-proxima text-[14px] text-mny-700 leading-[1.6]"><strong class="text-mny-900 font-[600]">Declare the joined source's schema.</strong> <code class="text-[12px] bg-mny-50 px-1 rounded">sourceInfo.columns</code> is required on the joined view or the section's edit mode crashes outright &mdash; a real schema array, not left implicit.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="lg:col-span-5">
+                    <div class="h-full bg-white border border-mny-100 rounded-[12px] p-6 shadow-sm">
+                      <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-3">Composite join key</p>
+                      <div class="space-y-2 font-proxima text-[13px]">
+                        <div class="flex justify-between gap-2 border-b border-mny-50 pb-2"><span class="text-mny-400">capability.jurisdiction</span><span class="text-mny-900 font-[600]">=</span><span class="text-mny-900 font-[600]">capacity.jurisdiction</span></div>
+                        <div class="flex justify-between gap-2"><span class="text-mny-400">capability.type_name</span><span class="text-mny-900 font-[600]">=</span><span class="text-mny-900 font-[600]">capacity.item_name</span></div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-4 leading-[1.5]">
+                        e.g. a &ldquo;Hazard Mitigation Plan&rdquo; capability row joins only to the &ldquo;Hazard Mitigation Plan&rdquo;
+                        capacity row for that same jurisdiction &mdash; not to the other 29 capacity items.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- SHARED JURISDICTION KEY -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">One Jurisdiction Identity, Not Two</h3>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[1.65] max-w-[820px]">
+                  The Hazards-of-Concern 1.0&rarr;2.0 conversion already resolves every county + jurisdiction to a
+                  canonical GeoID via a <code class="text-[13px] bg-mny-50 px-1 rounded">geoid-crosswalk</code> reference
+                  sheet &mdash; including the gnarly cases (villages straddling two counties, NYC&rsquo;s five boroughs,
+                  duplicate/mis-cased jurisdiction rows). <strong class="text-mny-900 font-[600]">Capability and capacity
+                  should key off that same crosswalk</strong>, not a second identity system built from whatever county
+                  text happens to appear in each CSV. Get this right once and all three 2.0 datasets &mdash; Hazards of
+                  Concern, Capability, Capacity &mdash; join cleanly on the same jurisdiction key forever after; get it
+                  wrong and every future join needs its own one-off name-matching pass.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- RECOMMENDATION -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Recommended path</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-4">Build capacity as its own dataset, joined by key</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Build the full grid</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Every jurisdiction &times; every one of the ~30 capacity items, always present &mdash; &ldquo;Not Reported&rdquo; is a value, never a missing row.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Key it to the crosswalk</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Same GeoID crosswalk as the Hazards-of-Concern conversion, so jurisdiction identity is consistent across all three 2.0 datasets.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Join, don&rsquo;t merge</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Bind reports to both views live via a pinned (jurisdiction, type) composite key &mdash; two datasets, one query, no fan-out.</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-5 pt-5 border-t border-mny-y500">
+                  <strong class="text-mny-900 font-[600]">Net effect:</strong> the capability table keeps its natural
+                  sparse, event-sourced shape; the capacity table gets the complete, uniform coverage the assessment
+                  actually needs; and a report that wants both side by side &mdash; a capability row next to its
+                  capacity rating &mdash; gets it from a live join, not a fragile shared row. See
+                  <a href="capability-inventory.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Capability Inventory</a>,
+                  <a href="capabilities-vs-capacity.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Capabilities vs. Capacity</a>, and
+                  <a href="state-capability-catalog.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">State Capability Catalog</a>
+                  for the underlying evidence this recommendation is built on.
+                </p>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Sources: <code>combined_capa.csv</code> (2,354 rows) and <code>capcat.csv</code> (649 rows), per the
+                companion reports. Architecture grounded in
+                <code>src/dms/skills/live-cross-view-joined-section.md</code>,
+                <code>src/dms/skills/uploading-gis-and-tabular-datasets.md</code>, and the GeoID-crosswalk /
+                jurisdiction-grid pattern from the HoC 1.0&rarr;2.0 conversion skill. No dataset has been created yet
+                &mdash; this report recommends an approach for the next implementation step.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <a href="capability-inventory.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capability Inventory</a>
+    <a href="capabilities-vs-capacity.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capabilities vs. Capacity</a>
+    <a href="state-capability-catalog.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> State Capability Catalog</a>
+    <a href="capacity-assessment-architecture.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capacity Assessment Architecture</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Mockups</div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard</a>
+    <a href="../pages/actions-workspace.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Workspace</a>
+    <a href="../pages/action-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action View</a>
+    <a href="../pages/action-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action Edit</a>
+    <a href="../pages/actions-by-jurisdiction.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions by Jurisdiction</a>
+    <a href="../pages/actions-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Search</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
