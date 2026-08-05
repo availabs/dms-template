@@ -141,6 +141,33 @@ Both modals are on their **second pass**, and the interesting part is the priori
   The default pick moved from the component's `BarGraph · speed · 5-minutes` to `Line · travel
   time · hour`, since the former is the densest, least readable combination in the vocabulary and
   it was what an author saw before touching anything.
+- **The window controls were saying something the tool doesn't do**, in the component as well as
+  in the drawing. "Start date + start time / end date + end time" claims one continuous stretch
+  between two instants; what `useGraphPublish` builds is a list of *days* (start date → end date,
+  minus the weekday mask) and, separately, a band of *hours applied to every one of those days* —
+  it averages the same hours across days. The controls are now three facets in the engine's own
+  order — **dates** (which days) → **days** (which of those count) → **time of day** (which hours
+  of each) — and the time block says so outright. Two silent engine behaviours are surfaced from
+  the code: a backwards time window empties the epoch list and an empty list means the filter is
+  never sent, so it silently returns all-day data (the same reason the midnight-crossing presets
+  don't exist), and a time on only one bound is ignored. A window can also now be **copied and
+  pasted** between routes, with the bulk case ("paste into all") offered first, because a
+  before/after report is four routes with one window and retyping four fields per route is a
+  transcription-error generator; derived-date routes are skipped and say why. Two more selection
+  aids: **shift ± 1 year**, which moves a span without changing its length (the before/after move,
+  and where hand-typed dates reliably go wrong), and preset pills that carry their own hours —
+  "AM Peak" alone makes you hover to learn this brand means 06:00–10:00, and two of the five
+  presets differ only by hours.
+- **Every per-route control is live** — window, colour, name, order, assignment. They briefly sat
+  behind page edit mode, which (once the rail's own edit toggle was gone) meant opening a route
+  showed a read-only summary with no way in. Page edit mode now governs only the *page*: section
+  toolbars, the Measure Picker, the Dynamic Report switch.
+- **The graph cards deliberately don't move.** In the product a window/colour/assignment change
+  publishes to every graph the route feeds and those cards refetch. A version of this page
+  simulated a slice of that (legends rebuilt from assignment, series recoloured, attribution
+  rewritten, an "updating" flash) and it was reverted at Alex's direction: with no data behind the
+  page, anything that made a card look refreshed implied numbers that hadn't changed. The binding is
+  documented instead of faked; the page's job is the controls.
 - **The route rail** dropped the TMC list from the open-out (the widest content in a 340-px panel,
   for information nobody uses that way — the count stays in the meta line and the extent lives on
   the map card), moved **identity colour into a popover on the row's own colour dot** (inline it was

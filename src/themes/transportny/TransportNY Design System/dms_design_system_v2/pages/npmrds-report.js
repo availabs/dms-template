@@ -21,7 +21,12 @@
  *   · panel collapse · row expand/collapse · TMC "+N more"
  *   · search (filters rows live, with the real no-match copy)
  *   · rename, inline, with the real duplicate-name refusal
- *   · date + time window editing, time-of-day presets, day-of-week mask
+ *   · the window, as three facets: DATES (which days) → DAYS (which of those
+ *     count) → TIME OF DAY (which hours of each), with the time-of-day presets,
+ *     the day mask, the day count the engine will really enumerate, and the
+ *     validation for the two silent engine failures (a backwards time window is
+ *     dropped rather than erroring; a time on one bound only is ignored)
+ *   · copy a window and paste it onto another route, or into all of them
  *   · identity colour picker · graph-assignment chips
  *   · Dynamic Report switch (Add Route becomes Add Route Slot)
  *   · Add Routes in full: name search (the lead path), the three tag doors as
@@ -264,6 +269,11 @@
     editingDates: null,      // routeId
     dateDraft: null,         // { start, end, weekdays }
     picking: null,           // routeId whose colour popover is open
+    // A window copied from one route, waiting to be pasted onto others. In-app, not the
+    // OS clipboard: the value is a shape ({start,end,weekdays}), not text, and the whole
+    // point is to hand it to sibling routes — the common case being "make them all use
+    // the same window", which is why the copied-strip offers apply-to-all directly.
+    clip: null,              // { from, fromName, start, end, weekdays }
     error: ''
   };
 
@@ -284,6 +294,87 @@
     if (same(WEEKEND_KEYS)) return 'Weekends only';
     return 'Excludes ' + off.join(', ');
   }
+  // ── THE WINDOW MODEL (this is what the engine actually does) ─────────────────
+  // useGraphPublish builds TWO independent IN-lists from one stored pair of
+  // "YYYY-MM-DDTHH:mm" strings:
+  //   · `date`  = every date from the start date to the end date, minus the days the
+  //               weekday mask excludes (generateDateRange)
+  //   · `epoch` = every 5-minute epoch from the start TIME to the end TIME, a
+  //               WITHIN-DAY band applied to every one of those dates
+  //               (generateEpochRange, inclusive of the end epoch)
+  // So the values are averaged across days at the same hours — it is NOT one
+  // continuous stretch from the start instant to the end instant. Presenting the
+  // controls as "start date + start time / end date + end time" claimed the opposite,
+  // which is the whole reason these controls were rebuilt as three facets:
+  // DATES (which days) → DAYS (which of them count) → TIME OF DAY (which hours of each).
+  //
+  // Two engine behaviours the UI now has to state, because both are silent:
+  //   · a backwards time window makes `epochs` empty, and an empty epoch array means
+  //     the filter is never pushed at all — so it silently becomes ALL DAY rather than
+  //     erroring. Same for a window that would cross midnight, which is why OVN and
+  //     FREEFLOW are absent from the presets.
+  //   · times only apply if BOTH bounds carry a time; one bound alone is ignored.
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function fmtDate(ymd) {
+    var p = (ymd || '').split('-');
+    if (p.length !== 3) return ymd || '—';
+    return MONTHS[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0];
+  }
+  function fmtDateRange(a, b) {
+    var pa = datePart(a).split('-'), pb = datePart(b).split('-');
+    if (pa.length !== 3 || pb.length !== 3) return fmtDate(datePart(a)) + ' → ' + fmtDate(datePart(b));
+    // same year reads better without repeating it
+    if (pa[0] === pb[0]) return MONTHS[+pa[1] - 1] + ' ' + (+pa[2]) + ' – ' + MONTHS[+pb[1] - 1] + ' ' + (+pb[2]) + ', ' + pa[0];
+    return fmtDate(datePart(a)) + ' – ' + fmtDate(datePart(b));
+  }
+  // Counts the days the engine will actually enumerate — the same day-by-day loop
+  // generateDateRange runs, mask included, so the number in the UI is the number of
+  // days in the query rather than a calendar subtraction.
+  function countDays(a, b, mask) {
+    var pa = datePart(a).split('-'), pb = datePart(b).split('-');
+    if (pa.length !== 3 || pb.length !== 3) return null;
+    var d = new Date(+pa[0], +pa[1] - 1, +pa[2]), end = new Date(+pb[0], +pb[1] - 1, +pb[2]);
+    if (isNaN(d) || isNaN(end) || d > end) return null;
+    var all = 0, kept = 0, names = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    while (d <= end && all < 4000) {
+      all++;
+      if (!mask || mask[names[d.getDay()]] !== false) kept++;
+      d.setDate(d.getDate() + 1);
+    }
+    return { all: all, kept: kept };
+  }
+  function shiftYMD(ymd, years) {
+    var p = (ymd || '').split('-');
+    if (p.length !== 3) return ymd;
+    var d = new Date(+p[0] + years, +p[1] - 1, +p[2]);
+    if (isNaN(d)) return ymd;
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function timeOfDayLabel(d) {
+    var s = timePart(d.start), e = timePart(d.end);
+    if (!s || !e) return 'All day';
+    var hit = PEAK_PRESETS.filter(function (p) { return p.s === s && p.e === e; })[0];
+    return s + ' – ' + e + (hit && hit.label !== 'All Day' ? ' · ' + hit.label : '');
+  }
+  function daysLabel(mask) {
+    var on = DOW.filter(function (dd) { return dayOn(mask, dd[0]); });
+    if (on.length === 7) return 'All days';
+    return (summarizeWeekdays(mask) || on.length + ' days') + ' · ' + on.length + ' of 7';
+  }
+  // Every problem the stored shape can carry, in the words of what the engine will do
+  // with it. `level` drives the colour: rose = the query is wrong, amber = the query is
+  // legal but not what the control implies.
+  function windowIssues(d) {
+    var out = [];
+    var s = datePart(d.start), e = datePart(d.end);
+    if (!s || !e) { out.push({ level: 'error', text: 'Both dates are needed — without them the route has no date filter at all.' }); return out; }
+    if (s > e) out.push({ level: 'error', text: 'The end date is before the start date, so no days are enumerated and the route returns nothing.' });
+    var ts = timePart(d.start), te = timePart(d.end);
+    if ((ts && !te) || (!ts && te)) out.push({ level: 'warn', text: 'A time of day needs both bounds — with one, the time filter is dropped and every hour is included.' });
+    if (ts && te && ts > te) out.push({ level: 'warn', text: 'This window runs backwards (and a window can’t cross midnight). The epoch filter would be dropped, silently giving all-day data.' });
+    return out;
+  }
+
   function windowLabel(r) {
     var s = timePart(r.start), e = timePart(r.end);
     if (!s && !e) return null;
@@ -306,7 +397,9 @@
     calendar: '<svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4"/></svg>',
     clock: '<svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>',
     more: '<svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>',
-    x: '<svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>'
+    x: '<svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+    copy: '<svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>',
+    paste: '<svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="4" width="10" height="16" rx="2"/><path d="M10 4V3h4v1"/><path d="M10 11h4M10 15h4"/></svg>'
   };
 
   // ── Rail: one route row ──────────────────────────────────────────────────
@@ -349,72 +442,144 @@
     return out.join('');
   }
 
+  // ── THE WINDOW BLOCK · three facets in the order the engine applies them ──────
+  // DATES (which days) → DAYS (which of those count) → TIME OF DAY (which hours of
+  // each one). Read that top to bottom and it describes the query; the old
+  // "start date + start time / end date + end time" pairing described something the
+  // tool has never done.
   function datesHtml(r, edit) {
     var editing = S.editingDates === r.id;
     var d = editing ? S.dateDraft : { start: r.start, end: r.end, weekdays: r.weekdays };
     var derived = !!r.derivedFrom;
-    var head = '<div class="flex items-center justify-between gap-2"><div class="' + C.label + '">date range</div>' +
-      (derived || !edit ? '' : editing
-        ? '<div class="flex items-center gap-1">' +
-          '<button class="size-6 rounded-[4px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52]" data-act="dates-save" data-route="' + r.id + '" title="Save dates">' + I.save + '</button>' +
-          '<button class="size-6 rounded-[4px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c]" data-act="dates-cancel" title="Cancel">' + I.cancel + '</button></div>'
-        : '<button class="' + C.iconBtn + '" data-act="dates-edit" data-route="' + r.id + '" title="Edit dates">' + I.pencil + '</button>') +
-      '</div>';
+    var copied = S.clip;
 
-    var note = derived && edit
-      ? '<div class="font-proxima text-[11px] italic text-slate-500 mt-1">Derived from ' + esc((byId(r.derivedFrom) || {}).name || 'another route') + ' — edit that route\'s dates instead.</div>'
-      : '';
-
-    function bound(which, label) {
-      var v = d[which] || '';
-      if (!editing) {
-        return '<div><div class="font-proxima text-[10.5px] font-semibold text-slate-600">' + label + '</div>' +
-          '<div class="' + C.fieldRO + ' mt-0.5">' + esc(datePart(v) + (timePart(v) ? ' ' + timePart(v) : '')) + '</div></div>';
-      }
-      return '<div><div class="font-proxima text-[10.5px] font-semibold text-slate-600">' + label + '</div>' +
-        '<div class="flex gap-1 mt-0.5">' +
-        '<input type="date" value="' + esc(datePart(v)) + '" data-act="date-in" data-route="' + r.id + '" data-which="' + which + '" class="flex-1 min-w-0 h-7 px-2 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums text-[#0f1722] focus:outline-none focus:border-[#1F3F8F]"/>' +
-        '<input type="time" value="' + esc(timePart(v)) + '" data-act="time-in" data-route="' + r.id + '" data-which="' + which + '" class="w-[86px] h-7 px-2 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums text-[#0f1722] focus:outline-none focus:border-[#1F3F8F]"/>' +
-        '</div></div>';
+    var actions = '';
+    if (edit && !derived) {
+      actions = editing
+        ? '<button class="size-6 rounded-[4px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52]" data-act="dates-save" data-route="' + r.id + '" title="Save window">' + I.save + '</button>' +
+          '<button class="size-6 rounded-[4px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c]" data-act="dates-cancel" title="Cancel">' + I.cancel + '</button>'
+        : '<button class="' + C.iconBtn + '" data-act="win-copy" data-route="' + r.id + '" title="Copy this window">' + I.copy + '</button>' +
+          (copied && copied.from !== r.id
+            ? '<button class="size-6 rounded flex items-center justify-center text-[#1F3F8F] hover:bg-[#1F3F8F]/10 shrink-0" data-act="win-paste" data-route="' + r.id + '" title="Paste the window copied from ' + esc(copied.fromName) + '">' + I.paste + '</button>'
+            : '<button class="size-6 rounded flex items-center justify-center text-slate-200 cursor-not-allowed shrink-0" title="Copy a window from another route first" disabled>' + I.paste + '</button>') +
+          '<button class="' + C.iconBtn + '" data-act="dates-edit" data-route="' + r.id + '" title="Edit window">' + I.pencil + '</button>';
+    } else if (edit && derived && copied) {
+      actions = '<span class="font-mono text-[9px] uppercase tracking-wider text-slate-400">derived</span>';
     }
 
-    var presets = '', days = '', summary = '';
-    if (editing) {
-      var canPreset = !!datePart(d.start) && !!datePart(d.end);
-      presets = '<div class="mt-2 flex flex-wrap items-center gap-1"><span class="' + C.label + ' mr-0.5">time of day</span>' +
-        PEAK_PRESETS.map(function (p) {
-          var on = timePart(d.start) === p.s && timePart(d.end) === p.e;
-          return '<button class="' + (on ? C.pillOn : C.pill) + (canPreset ? '' : ' opacity-40 cursor-not-allowed') + '" data-act="preset" data-route="' + r.id + '" data-preset="' + esc(p.label) + '"' + (canPreset ? '' : ' disabled') +
-            ' title="' + (canPreset ? esc((p.s || 'start') + '–' + (p.e || 'end')) : 'Set a start and end date first') + '">' + esc(p.label) + '</button>';
-        }).join('') + '</div>';
-      days = '<div class="mt-2 flex flex-wrap items-center gap-1"><span class="' + C.label + ' mr-0.5">days</span>' +
-        DOW.map(function (dd) {
-          var on = dayOn(d.weekdays, dd[0]);
-          return '<button class="' + (on ? C.dayOn : C.dayOff) + '" data-act="dow" data-route="' + r.id + '" data-day="' + dd[0] + '" title="' + dd[0] + (on ? ' included — click to exclude' : ' excluded — click to include') + '">' + dd[1] + '</button>';
+    var head = '<div class="flex items-center justify-between gap-2">' +
+      '<div class="' + C.label + '">window</div>' +
+      '<div class="flex items-center gap-1">' + actions + '</div></div>' +
+      (derived && edit ? '<div class="font-proxima text-[11px] italic text-slate-500 mt-1">Derived from ' + esc((byId(r.derivedFrom) || {}).name || 'another route') + ' — edit that route\'s window instead.</div>' : '');
+
+    // ── read-only · three labelled lines, not four disabled inputs ──
+    if (!editing) {
+      var c = countDays(d.start, d.end, d.weekdays);
+      var rows = [
+        ['dates', fmtDateRange(d.start, d.end), c ? c.kept + ' of ' + c.all + ' days' : null],
+        ['days', daysLabel(d.weekdays), null],
+        ['time', timeOfDayLabel(d), timePart(d.start) && timePart(d.end) ? 'each day' : 'no filter']
+      ];
+      // the summary is also the affordance: clicking it opens the editor, so the pencil
+      // is a shortcut rather than the only door
+      var opener = edit && !derived;
+      return '<div>' + head +
+        '<div class="mt-1.5 space-y-1' + (opener ? ' cursor-pointer group/win rounded-[4px] -mx-1 px-1 py-0.5 hover:bg-[#1F3F8F]/5' : '') + '"' +
+        (opener ? ' data-act="dates-edit" data-route="' + r.id + '" title="Edit this window"' : '') + '>' + rows.map(function (row) {
+          return '<div class="flex items-baseline gap-2">' +
+            '<span class="w-[34px] shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-400">' + row[0] + '</span>' +
+            '<span class="font-proxima text-[12px] text-slate-700 flex-1 min-w-0">' + esc(row[1]) +
+            (row[2] ? '<span class="text-slate-400"> · ' + esc(row[2]) + '</span>' : '') + '</span>' +
+            '</div>';
         }).join('') + '</div>' +
-        '<div class="mt-1 flex flex-wrap items-center gap-1">' +
-        '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="weekdays">Weekdays</button>' +
-        '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="weekends">Weekends</button>' +
-        '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="all">All Days</button>' +
-        '<span class="font-proxima text-[11px] italic text-slate-500 ml-auto">' + esc(summarizeWeekdays(d.weekdays) || 'All days') + '</span></div>';
-    } else {
-      var bits = [summarizeWeekdays(r.weekdays), windowLabel(r)].filter(Boolean);
-      if (bits.length) summary = '<div class="font-proxima text-[11px] italic text-slate-500 mt-1">' + esc(bits.join(' · ')) + '</div>';
+        (timePart(d.start) && timePart(d.end)
+          ? '<div class="mt-1.5 font-proxima text-[11px] leading-[1.4] text-slate-500">Every day’s ' + esc(timePart(d.start) + '–' + timePart(d.end)) + ' is averaged together.</div>'
+          : '') +
+        '</div>';
     }
 
-    return '<div>' + head + note +
-      '<div class="mt-1.5 space-y-1.5">' + bound('start', 'Start date') + bound('end', 'End date') + '</div>' +
-      presets + days + summary + '</div>';
+    // ── editing · one facet per sub-block ──
+    var c2 = countDays(d.start, d.end, d.weekdays);
+    var issues = windowIssues(d);
+    var dateField = function (which, label) {
+      return '<div class="flex-1 min-w-0"><label class="font-proxima text-[10px] font-semibold text-slate-500 block mb-0.5">' + label + '</label>' +
+        '<input type="date" value="' + esc(datePart(d[which])) + '" data-act="date-in" data-route="' + r.id + '" data-which="' + which + '" class="w-full h-7 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums text-[#0f1722] focus:outline-none focus:border-[#1F3F8F]"/></div>';
+    };
+    var timeField = function (which, label) {
+      return '<div class="flex-1 min-w-0"><label class="font-proxima text-[10px] font-semibold text-slate-500 block mb-0.5">' + label + '</label>' +
+        '<input type="time" value="' + esc(timePart(d[which])) + '" data-act="time-in" data-route="' + r.id + '" data-which="' + which + '" class="w-full h-7 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums text-[#0f1722] focus:outline-none focus:border-[#1F3F8F]"/></div>';
+    };
+
+    return '<div>' + head +
+
+      // 1 · DATES
+      '<div class="mt-2">' +
+      '<div class="flex items-baseline gap-2 mb-1"><span class="' + C.label + '">dates</span>' +
+      '<span class="font-proxima text-[10.5px] text-slate-400 flex-1">which days</span>' +
+      (c2 ? '<span class="font-mono text-[9.5px] uppercase tracking-[0.12em] text-slate-400 tabular-nums">' + c2.kept + ' of ' + c2.all + ' days</span>' : '') + '</div>' +
+      '<div class="flex items-end gap-1.5">' + dateField('start', 'From') +
+      '<span class="pb-1.5 text-slate-300">→</span>' + dateField('end', 'To') + '</div>' +
+      // shift the whole span, keeping its length — the before/after move, and the one
+      // place a hand-typed date range reliably goes wrong (off-by-a-day, wrong leap year)
+      '<div class="mt-1.5 flex items-center gap-1">' +
+      '<span class="font-proxima text-[10.5px] text-slate-400 mr-0.5">shift</span>' +
+      '<button class="' + C.pill + '" data-act="shift" data-route="' + r.id + '" data-years="-1" title="Same span, one year earlier">− 1 year</button>' +
+      '<button class="' + C.pill + '" data-act="shift" data-route="' + r.id + '" data-years="1" title="Same span, one year later">+ 1 year</button>' +
+      '<span class="font-proxima text-[10.5px] text-slate-400 ml-auto">keeps the length</span>' +
+      '</div></div>' +
+
+      // 2 · DAYS
+      '<div class="mt-2.5">' +
+      '<div class="flex items-baseline gap-2 mb-1"><span class="' + C.label + '">days</span>' +
+      '<span class="font-proxima text-[10.5px] text-slate-400 flex-1">which of those count</span></div>' +
+      '<div class="flex flex-wrap items-center gap-1">' +
+      DOW.map(function (dd) {
+        var on = dayOn(d.weekdays, dd[0]);
+        return '<button class="' + (on ? C.dayOn : C.dayOff) + '" data-act="dow" data-route="' + r.id + '" data-day="' + dd[0] + '" title="' + dd[0] + (on ? ' included — click to exclude' : ' excluded — click to include') + '">' + dd[1] + '</button>';
+      }).join('') +
+      '<span class="w-1"></span>' +
+      '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="weekdays">Weekdays</button>' +
+      '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="weekends">Weekends</button>' +
+      '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="all">All</button>' +
+      '</div></div>' +
+
+      // 3 · TIME OF DAY — the facet the old pairing misrepresented, so it says what it does
+      '<div class="mt-2.5 pt-2.5 border-t border-zinc-950/05">' +
+      '<div class="flex items-baseline gap-2 mb-1"><span class="' + C.label + '">time of day</span>' +
+      '<span class="font-proxima text-[10.5px] text-slate-400 flex-1">which hours of each day</span></div>' +
+      '<div class="flex items-end gap-1.5">' + timeField('start', 'From') +
+      '<span class="pb-1.5 text-slate-300">→</span>' + timeField('end', 'To') + '</div>' +
+      '<div class="mt-1.5 flex flex-wrap items-center gap-1">' +
+      PEAK_PRESETS.map(function (p) {
+        var on = timePart(d.start) === p.s && timePart(d.end) === p.e;
+        // the hours are ON the pill: "AM Peak" alone makes you hover to learn that this
+        // brand means 06:00–10:00, and two of the five presets differ only by their hours
+        return '<button class="' + (on ? C.pillOn : C.pill) + ' inline-flex items-baseline gap-1" data-act="preset" data-route="' + r.id + '" data-preset="' + esc(p.label) + '" title="' + esc(p.s ? p.s + '–' + p.e : 'no time filter') + '">' + esc(p.label) +
+          '<span class="' + (on ? 'text-[#1F3F8F]/70' : 'text-slate-400') + ' text-[9px] tabular-nums">' + esc(p.s ? p.s.replace(':00', '') + '–' + p.e.replace(':00', '') : '·') + '</span></button>';
+      }).join('') + '</div>' +
+      '<div class="mt-1.5 font-proxima text-[11px] leading-[1.4] text-slate-500">' +
+      (timePart(d.start) && timePart(d.end)
+        ? 'Applied to <strong>every day</strong> in the range and averaged together — not one continuous stretch from the first day to the last.'
+        : 'No time filter: every hour of every day in the range is included.') +
+      '</div></div>' +
+
+      (issues.length
+        ? '<div class="mt-2 space-y-1">' + issues.map(function (i) {
+          return '<div data-issue="' + i.level + '" class="rounded-[4px] px-2 py-1.5 font-proxima text-[11px] leading-[1.4] ' +
+            (i.level === 'error' ? 'bg-[#EF4444]/8 border border-[#EF4444]/25 text-[#b91c1c]' : 'bg-[#FACC15]/12 border border-[#CA8A04]/25 text-[#8a5f03]') + '">' + i.text + '</div>';
+        }).join('') + '</div>'
+        : '') +
+      '</div>';
   }
 
   // IDENTITY COLOUR · a popover on the row's own dot, not a block inside the open-out.
-  // Inline, it was doubly buried — you had to expand the route AND click "change" —
-  // for a control whose whole job is "this route is blue everywhere". Anchored to the
-  // dot it is one click from a collapsed row, which is where you are when you notice
-  // two routes are hard to tell apart on a chart.
-  // Rendered into a FIXED element outside the rail: the rows region scrolls and the
-  // sticky wrapper is overflow-hidden, so anything absolutely positioned inside a row
-  // gets clipped. Same reason the shared Popup primitive portals.
+  // Inline, it was doubly buried — you had to expand the route AND click "change" — for a
+  // control whose whole job is "this route is blue everywhere". Anchored to the dot it is
+  // one click from a collapsed row, which is where you are when you notice two routes are
+  // hard to tell apart on a chart.
+  // Rendered into a FIXED element outside the rail: the rows region scrolls and the sticky
+  // wrapper is overflow-hidden, so anything absolutely positioned inside a row gets
+  // clipped. Same reason the shared Popup primitive portals.
   function colourPop() {
     var el = $('#colour-pop');
     var r = S.picking ? byId(S.picking) : null;
@@ -452,7 +617,11 @@
     // useful part and the map card is where the extent actually lives.
     // NO INLINE COLOUR either — it is a popover on the row's own dot now, so it is
     // reachable without opening the route at all. See colourPop().
-    return '<div class="mt-2 ' + (S.mode === 'edit' ? 'ml-[52px]' : 'ml-7') + ' rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-3">' +
+    // FULL WIDTH of the row (2026-08-05). The open-out used to be indented to the route
+    // name's left edge — a nice alignment cue that cost ~52 of 340 px, which is most of
+    // what the date and time fields were short of. The block is a bordered card, so it
+    // doesn't need the indent to read as belonging to the row above it.
+    return '<div class="mt-2 rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-3">' +
       datesHtml(r, edit) +
       '<div class="pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-1">' + chipsHtml(r, edit) + '</div>' +
       (edit ? '<div class="pt-2.5 border-t border-zinc-950/05 flex justify-end">' +
@@ -462,7 +631,7 @@
   }
 
   function rowHtml(r) {
-    var edit = S.mode === 'edit';
+    var edit = LIVE;                     // per-route controls: always
     var open = !!S.expanded[r.id];
     var renaming = S.editingName === r.id;
     var unused = !r.graphs.length;
@@ -487,9 +656,11 @@
       ? '<button class="size-3.5 mt-1 rounded-full ring-1 ring-[#0f1722]/20 shrink-0 hover:ring-2 hover:ring-[#1F3F8F]/40" style="background:' + esc(r.color) + '" data-act="pick-toggle" data-route="' + r.id + '" title="Identity colour ' + esc(r.color) + ' — click to change"></button>'
       : '<span class="size-3 mt-1 rounded-full shrink-0" style="background:' + esc(r.color) + '" title="' + esc(r.color) + '"></span>';
 
-    // the open-out and the meta line both align to the name's left edge, which
-    // moves when the reorder column appears
-    var indent = edit ? 'pl-[52px]' : 'pl-7';
+    // The meta line and chips keep a small indent so the row still reads name-first,
+    // but no longer align to the name's left edge: at 52px the meta ("9 TMC · 2.0 mi ·
+    // 2025-01-06 → 2025-02-28") wrapped its last two characters, and now that the
+    // open-out below it is full width there is nothing left to align to anyway.
+    var indent = 'pl-7';
     var rowActions = edit
       ? '<button class="' + C.iconBtn + '" data-act="name-edit" data-route="' + r.id + '" title="Edit name">' + I.pencil + '</button>' +
         '<button class="' + C.dangerBtn + '" data-act="inert" data-what="remove" title="Remove route from report">' + I.trash + '</button>'
@@ -520,6 +691,22 @@
     return routes.filter(function (r) { return !q || r.name.toLowerCase().indexOf(q) > -1; });
   }
 
+  // THE RAIL'S PER-ROUTE CONTROLS ARE ALWAYS LIVE (Alex, 2026-08-05). They used to
+  // follow page edit mode, which — once the rail's own edit toggle was removed — meant
+  // opening a route showed a read-only summary with no way in: the window, the colour,
+  // the assignment and the name were all there and none of them could be touched
+  // without finding the Edit button in the page header first. Same argument as the two
+  // Add buttons: this panel IS the report's control surface, so its controls are
+  // controls. `LIVE` marks every place that decision is applied.
+  //   What page edit mode still governs: the canvas chrome (section toolbars + the
+  //   Measure Picker) and the Dynamic Report switch — those change the PAGE, not the
+  //   report's routes.
+  //   Component escalation, same shape as the Add buttons: the gate moves from "hide the
+  //   control" to "the first edit enters edit mode". A reader without edit permission
+  //   still gets the read-only rail the component renders for them — that state exists,
+  //   it just isn't what an author with the pencil sees.
+  var LIVE = true;
+
   function renderRail() {
     var edit = S.mode === 'edit';
     document.documentElement.setAttribute('data-report-mode', S.mode);
@@ -529,13 +716,30 @@
     $('#rail-actions').className = edit
       ? 'px-3 py-2.5 border-b border-[#FACC15]/40 bg-[#FACC15]/15 flex items-center gap-2 shrink-0'
       : 'px-3 py-2.5 border-b border-zinc-950/08 bg-slate-50 flex items-center gap-2 shrink-0';
-    // state, not a second control: the header's Edit button owns the mode
-    $('#rail-mode-note').textContent = edit ? 'editing' : '';
+    // page edit mode, not route editing — the routes are always editable now
+    $('#rail-mode-note').textContent = edit ? 'page edit' : '';
     $('#rail-mode-note').className = edit
       ? 'ml-auto font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#8a5f03] shrink-0'
       : 'ml-auto font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400 shrink-0';
     // Dynamic Report stays edit-only: it reconfigures the page, not the route list.
     $('#rail-dynamic').classList.toggle('hidden', !edit);
+
+    // the copied-window strip · follows the clipboard, not page edit mode: windows are
+    // always editable now, so gating the strip left a copied window with nowhere to go
+    var clipOn = !!S.clip;
+    $('#rail-clip').classList.toggle('hidden', !clipOn);
+    if (clipOn) {
+      var d = S.clip;
+      var others = routes.filter(function (r) { return r.id !== d.from && !r.derivedFrom; }).length;
+      $('#rail-clip').innerHTML =
+        '<div class="flex items-center gap-2">' +
+        '<span class="text-[#1F3F8F] shrink-0">' + I.copy + '</span>' +
+        '<span class="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500 flex-1 min-w-0 truncate">window copied · ' + esc(d.fromName) + '</span>' +
+        '<button class="size-5 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 shrink-0" data-act="win-clip-clear" title="Forget the copied window">' + I.x + '</button>' +
+        '</div>' +
+        '<div class="font-proxima text-[11.5px] text-slate-700 mt-1">' + esc(fmtDateRange(d.start, d.end)) + ' · ' + esc(daysLabel(d.weekdays).split(' · ')[0]) + ' · ' + esc(timeOfDayLabel(d)) + '</div>' +
+        (others ? '<button class="mt-1.5 h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-[#1F3F8F]/30 bg-white hover:bg-[#1F3F8F]/5 font-mono text-[9.5px] uppercase tracking-wider text-[#1F3F8F]" data-act="win-paste-all">' + I.paste + 'paste into all (' + others + ')</button>' : '');
+    }
     $('#rail-body').classList.toggle('hidden', S.collapsed);
     $('#rail-collapse').innerHTML = S.collapsed
       ? '<svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>'
@@ -575,6 +779,16 @@
 
     renderCanvasChrome();
   }
+
+  // THE CARDS DELIBERATELY DO NOT MOVE (Alex, 2026-08-05). In the product a route's
+  // window, colour and assignment publish to every graph it feeds (setActionParam → the
+  // graph refetches) and the cards redraw. An earlier version of this file simulated a
+  // slice of that — legends built from assignment, plotted series recoloured, each card's
+  // attribution rewritten to the new window, a brief "updating" flash. It was reverted:
+  // this page has no data behind it, so anything that made a card look refreshed implied
+  // numbers that had not changed and could not change. The graphs here stay the drawings
+  // they are; what this page is for is the CONTROLS — how a window actually gets chosen.
+  // The binding itself is documented in § 03 and in the page's header comment.
 
   // Edit-mode canvas chrome: the section toolbar over every canvas section, and
   // the Measure Picker inside the graph card that owns it. Injected rather than
@@ -891,6 +1105,18 @@
     return opts.map(function (o) { return '<option value="' + o.value + '"' + (o.value === value ? ' selected' : '') + '>' + esc(o.label) + '</option>'; }).join('');
   }
 
+  // Copies the whole window shape — dates, day mask and time of day together. Splitting
+  // it into "paste dates" / "paste times" was considered and dropped: the three facets
+  // only mean something as a set ("the same window as that route"), and two buttons per
+  // row at 340px buys nothing.
+  function pasteWindow(target) {
+    var d = S.clip;
+    target.start = d.start;
+    target.end = d.end;
+    target.weekdays = d.weekdays ? Object.assign({}, d.weekdays) : undefined;
+    if (S.editingDates === target.id) S.dateDraft = { start: target.start, end: target.end, weekdays: Object.assign({}, target.weekdays || {}) };
+  }
+
   // ── The one thing that is deliberately inert ──────────────────────────────
   var INERT_COPY = {
     add_routes: 'Adding is switched off in this design mockup — the browsing and selection flow is what’s being designed, not the write.',
@@ -953,6 +1179,39 @@
         r.start = S.dateDraft.start; r.end = S.dateDraft.end;
         r.weekdays = Object.keys(excluded).length ? excluded : undefined;
         S.editingDates = null; S.dateDraft = null; renderRail(); return;
+      }
+      // ── copy / paste a window ──
+      case 'win-copy':
+        S.clip = { from: r.id, fromName: r.name, start: r.start, end: r.end, weekdays: r.weekdays ? Object.assign({}, r.weekdays) : undefined };
+        renderRail();
+        toast('Window copied from ' + r.name + ' — paste it onto another route, or into all of them from the strip at the top of the rail.');
+        return;
+      case 'win-paste': {
+        if (!S.clip || r.derivedFrom) return;
+        pasteWindow(r);
+        // pasting is a real edit, so it lands on the row you can see change
+        S.expanded[r.id] = true;
+       
+        renderRail();
+        return;
+      }
+      case 'win-paste-all': {
+        var n = 0;
+        routes.forEach(function (x) {
+          if (x.id === S.clip.from || x.derivedFrom) return;
+          pasteWindow(x); n++;
+        });
+        renderRail();
+        toast(n + (n === 1 ? ' route' : ' routes') + ' now use ' + S.clip.fromName + '’s window. Derived routes were skipped — their dates are computed from another route.');
+        return;
+      }
+      case 'win-clip-clear': S.clip = null; renderRail(); return;
+
+      case 'shift': {
+        var yrs = +t.getAttribute('data-years');
+        S.dateDraft.start = joinDT(shiftYMD(datePart(S.dateDraft.start), yrs), timePart(S.dateDraft.start));
+        S.dateDraft.end = joinDT(shiftYMD(datePart(S.dateDraft.end), yrs), timePart(S.dateDraft.end));
+        renderRail(); return;
       }
       case 'preset': {
         var p = PEAK_PRESETS.filter(function (x) { return x.label === t.getAttribute('data-preset'); })[0];
@@ -1050,6 +1309,10 @@
     if (act === 'rail-search') { S.query = t.value; renderRail(); $('#rail-search').focus(); return; }
     if (act === 'name-in') { S.nameDraft = t.value; return; }
     if (act === 'date-in' || act === 'time-in') {
+      // state only on `input` — re-rendering on every keystroke would fight the native
+      // date/time field's own segment-by-segment editing. The derived numbers (day
+      // count, active preset, the validation notes) refresh on `change`, i.e. when the
+      // field is committed, which is also when they can be right.
       var which = t.getAttribute('data-which');
       var cur = S.dateDraft[which] || '';
       S.dateDraft[which] = act === 'date-in' ? joinDT(t.value, timePart(cur)) : joinDT(datePart(cur), t.value);
@@ -1067,6 +1330,16 @@
     var t = e.target.closest('[data-act]');
     if (!t) return;
     var act = t.getAttribute('data-act');
+    if (act === 'date-in' || act === 'time-in') {
+      var which = t.getAttribute('data-which'), kind = act;
+      var cur = S.dateDraft[which] || '';
+      S.dateDraft[which] = act === 'date-in' ? joinDT(t.value, timePart(cur)) : joinDT(datePart(cur), t.value);
+      renderRail();
+      // hand focus back to the field that was just committed so tabbing still works
+      var again = $('[data-act="' + kind + '"][data-which="' + which + '"]');
+      if (again) again.focus();
+      return;
+    }
     if (act.indexOf('m2-') === 0) {
       var key = act.slice(3);
       if (key === 'anchor') M2.pick.anchorInvert = t.value === 'second';

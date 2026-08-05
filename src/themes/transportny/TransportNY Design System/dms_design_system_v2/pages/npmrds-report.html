@@ -195,6 +195,75 @@
     stopped needing a mode, a second button for one piece of state was redundant. The action
     row shows the state instead: white when reading, amber + "editing" when the page is.
 
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 13 (2026-08-05, same day) — THE WINDOW CONTROLS DESCRIBED SOMETHING THE TOOL DOESN'T DO
+
+  THE BUG WAS SEMANTIC, and it was in the component as well as in this drawing. The controls
+  read "Start date [date][time] / End date [date][time]", which claims one continuous stretch
+  from a start instant to an end instant. What `useGraphPublish` actually builds from that
+  single stored pair of "YYYY-MM-DDTHH:mm" strings is TWO INDEPENDENT IN-LISTS:
+    · `date`  = every date from the start date to the end date, minus the days the weekday
+                mask excludes (generateDateRange — a literal day-by-day loop)
+    · `epoch` = every 5-minute epoch from the start TIME to the end TIME — a WITHIN-DAY band
+                applied to every one of those dates (generateEpochRange, end-inclusive)
+  So the tool averages the same hours ACROSS days. It never reads from the start instant
+  through to the end instant. The controls now say that, as three facets in the order the
+  engine applies them:
+      DATES (which days) → DAYS (which of those count) → TIME OF DAY (which hours of each)
+  and the time block carries the sentence outright: "applied to every day in the range and
+  averaged together — not one continuous stretch."
+
+  TWO SILENT ENGINE BEHAVIOURS ARE NOW SURFACED, both read out of the code rather than
+  guessed: a backwards time window makes the epoch array empty, and an empty epoch array
+  means the filter is never pushed — so it silently becomes ALL DAY instead of erroring (same
+  reason OVN and FREEFLOW are absent from the presets: they cross midnight). And a time on
+  only one bound is ignored entirely. Both are amber notes on the control; an end date before
+  the start date is a rose one, because that query returns nothing.
+
+  COPY / PASTE A WINDOW (Alex). Every route on a before/after report wants the same window,
+  and retyping four fields per route was the tool asking for transcription errors. Each
+  window block gets copy and paste; copying raises a strip at the top of the rail that offers
+  the bulk case directly ("paste into all (N)"), because "make them all use the same window"
+  is what copying a window is usually for. Derived-date routes are skipped and say so — their
+  dates are computed from a sibling. The whole window travels as one shape (dates + days +
+  time): the three facets only mean anything as a set, and two buttons per row at 340px buys
+  nothing.
+
+  ALSO in this pass: the read-only window is three summary lines with the day count the
+  engine will actually enumerate ("40 of 54 days" — the mask applied), not four disabled
+  inputs; the day counts and the validation refresh on `change`, not on every keystroke,
+  because a native date field edits itself segment by segment.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 14 (2026-08-05, same day) — THE ROUTES ARE EDITABLE, AND THE GRAPHS STAY PUT (Alex)
+
+  · PER-ROUTE CONTROLS ARE ALWAYS LIVE. Removing the rail's own edit toggle in Phase 12 left
+    the window, colour, name, assignment and order behind the page header's Edit button, so
+    opening a route showed a read-only summary with no way in — the controls were there and
+    none of them could be touched. Same argument as the two Add buttons: this panel IS the
+    report's control surface. The window's summary is itself the way in (click the three
+    lines, not just the pencil). What page edit mode still governs is the PAGE: the section
+    toolbars, the Measure Picker, the Dynamic Report switch. Escalation, same shape as
+    before — the component's gate moves from "hide the control" to "the first edit enters
+    edit mode", and a reader without edit permission still gets the read-only rail the
+    component renders for them.
+
+  · THE GRAPHS ON THIS PAGE DO NOT MOVE, ON PURPOSE (Alex, explicitly). In the product a
+    window/colour/assignment change publishes to every graph the route feeds
+    (setActionParam → refetch) and the cards redraw. A version of this page simulated a
+    slice of that — legends rebuilt from assignment, plotted series recoloured, each card's
+    attribution rewritten to the new window, a brief "updating" flash — and it was reverted:
+    with no data behind the page, anything that made a card look refreshed implied numbers
+    that had not changed and could not change. The cards are drawings; the binding is
+    documented instead of faked. What this page is for is the CONTROLS.
+
+  · SO THE SELECTION ITSELF GOT THE ATTENTION: the three facets (dates → days → time of
+    day), the day count the engine will really enumerate, the two silent-failure warnings,
+    copy/paste of a whole window, a "shift ± 1 year" pair that moves a span without
+    changing its length (the before/after move, and the one place hand-typed dates reliably
+    go wrong), and preset pills that carry their own hours — "AM Peak" alone makes you hover
+    to learn this brand means 06:00–10:00, and two of the five presets differ only by hours.
+
   CONTRACT: SideNav · header shape · freshness line · route rows · download affordance — all
   per npmrds-home.html's header note, where all three of this page's deviations are recorded:
     · COMPACT 64px icon SideNav instead of the 256px expanded one (Alex, 2026-08-05). Same items,
@@ -353,6 +422,13 @@
                             <p class="font-proxima text-[11px] leading-[1.45] text-slate-500 mt-1">Routes are filled at view time from the URL, not stored on this page. Start from an empty list — existing routes aren't converted.</p>
                             <p id="rail-dyn-note" class="hidden font-proxima text-[11px] leading-[1.45] text-[#8a5f03] mt-1.5 pt-1.5 border-t border-[#CA8A04]/20">On: the button above adds an empty <strong>route slot</strong>, and a viewer is met by the Add Routes modal as a blocking gate — one route per slot, exact count.</p>
                           </div>
+
+                          <!-- COPIED WINDOW · appears when a route's window has been copied, and
+                               offers the bulk case directly ("paste into N other routes"),
+                               because "make them all use the same window" is what copying a
+                               window is usually for. Per-route paste lives in each window
+                               block. Rendered by npmrds-report.js. -->
+                          <div id="rail-clip" class="hidden px-3 py-2.5 border-b border-[#1F3F8F]/20 bg-[#1F3F8F]/5 shrink-0"></div>
 
                           <!-- search · rendering-only filter, never touches the routes array -->
                           <div class="px-3 py-2 border-b border-zinc-950/05 shrink-0">
@@ -867,16 +943,17 @@
               <div class="col-span-12 xl:col-span-4" data-dms-section="try-this">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full p-5">
                   <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// try this</div>
-                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Every state, in eight clicks.</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Every state, in nine clicks.</div>
                   <ol class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span>Type <span class="tny-mono">I-84</span> in the rail's search — the <strong>no-match</strong> state, then clear it.</span></li>
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><strong>+</strong> on any route — the open-out: the window, the day/time restriction, the graph chips.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><strong>Edit</strong> (page header) → the same rail gains reorder, rename, remove, the colour dot and the Dynamic Report switch, and the canvas gains a section toolbar per card. <em>The two Add buttons are already there</em> — they don't hide behind the mode.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><em>Nothing in the rail is behind a mode</em> — reorder, rename, remove, colour, window and assignment are always live. <strong>Edit</strong> in the page header adds the <em>page</em> chrome instead: a section toolbar per card, the Measure Picker, the Dynamic Report switch. The graph cards deliberately don't move — see the note below.</span></li>
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span>Rename a route to a name another route already has — the refusal is real copy, not a placeholder.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span>Pencil beside <strong>date range</strong> → the editing state: date + time per bound, <strong>AM Peak / PM Peak / Midday</strong>, the seven day pills and their three presets. Save and the summary line rewrites itself.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span>The colour dot on any row → the colour <strong>popover</strong>, no need to open the route; a chip → assignment on/off. Open <strong>NY-9D SB · after</strong>: its dates are <em>derived</em>, so it says so instead of offering a pencil.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><strong>Add route</strong> → search leads; the County / Region / Agency doors sit beside it. Drill in, come back on the breadcrumb, search inside a tag, watch already-added routes get flagged. Every row carries its own tags, so two routes with the same name stem are still tellable apart.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><strong>Add graph</strong> → pick a <strong>shape</strong> from the five cards (Bar · Line · Grid · <strong>Table</strong> · <strong>Map</strong>), then a value from the grouped measure list; resolution and comparison mode are demoted to <em>refine</em>. Set <em>Difference</em> and check exactly two routes to make the <strong>Anchor Route</strong> select appear. The footer names what will be built — including whether it's an AVL Graph, a Spreadsheet or a Map.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span>Pencil beside <strong>window</strong> → three facets in the order the engine applies them: <strong>dates</strong> (which days, with the count it will really enumerate), <strong>days</strong> (which of those count), <strong>time of day</strong> (which hours of <em>each</em> one). Set the end time earlier than the start to see the silent-failure warning.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span><strong>Copy</strong> a window, then <strong>paste into all</strong> from the strip that appears at the top of the rail — or paste it route by route. Derived-date routes are skipped and say why.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span>The colour dot on any row → the colour <strong>popover</strong>, no need to open the route; a chip → assignment on/off. Open <strong>NY-9D SB · after</strong>: its dates are <em>derived</em>, so it says so instead of offering a pencil.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><strong>Add route</strong> → search leads; the County / Region / Agency doors sit beside it. Drill in, come back on the breadcrumb, search inside a tag, watch already-added routes get flagged. Every row carries its own tags, so two routes with the same name stem are still tellable apart.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><strong>Add graph</strong> → pick a <strong>shape</strong> from the five cards (Bar · Line · Grid · <strong>Table</strong> · <strong>Map</strong>), then a value from the grouped measure list; resolution and comparison mode are demoted to <em>refine</em>. Set <em>Difference</em> and check exactly two routes to make the <strong>Anchor Route</strong> select appear. The footer names what will be built — including whether it's an AVL Graph, a Spreadsheet or a Map.</span></li>
                   </ol>
                   <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05"><strong>Inert on purpose:</strong> the two confirm buttons, remove, duplicate and the section Settings drawer. Adding or removing would change the report; this page designs the flow, not the write. Colour and assignment edits move the rail's own chrome — the plots are still drawings and don't redraw.</p>
                 </div>
@@ -889,7 +966,7 @@
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full overflow-hidden">
                   <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
                     <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// the control set</div>
-                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Fourteen controls, two gates.</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Eighteen controls, two gates.</div>
                     <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1.5">In the product every mutation needs <strong>both</strong> <span class="tny-mono">editPageMode</span> and this section's own edit pencil — conflating them once let every control go live the moment a page opened at <span class="tny-mono">/edit/…</span>. Here that pair is the one edit toggle.</p>
                   </div>
                   <table class="w-full text-[12px]">
@@ -911,9 +988,12 @@
                       <tr><td class="px-4 py-1.5 font-medium">Reorder ↑ ↓</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] order</td></tr>
                       <tr><td class="px-4 py-1.5 font-medium">Rename</td><td class="px-3 py-1.5 text-slate-500">row · inline</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.name</td></tr>
                       <tr><td class="px-4 py-1.5 font-medium">Remove</td><td class="px-3 py-1.5 text-slate-500">row + open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] −1</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Date + time window</td><td class="px-3 py-1.5 text-slate-500">open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">startDate / endDate</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Time-of-day preset</td><td class="px-3 py-1.5 text-slate-500">open-out · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">time half only</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Day-of-week mask</td><td class="px-3 py-1.5 text-slate-500">open-out · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">weekdays{}</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Dates <span class="font-normal text-slate-400">which days</span></td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">date half of both</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Days <span class="font-normal text-slate-400">of those, which count</span></td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">weekdays{}</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Time of day <span class="font-normal text-slate-400">hours of each</span></td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">time half of both</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Time-of-day preset</td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">time half only</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Copy window</td><td class="px-3 py-1.5 text-slate-500">window</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · holds a shape</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Paste window</td><td class="px-3 py-1.5 text-slate-500">window + rail strip</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">dates + days + time</td></tr>
                       <tr><td class="px-4 py-1.5 font-medium">Identity colour</td><td class="px-3 py-1.5 text-slate-500">row · popover</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.color</td></tr>
                       <tr><td class="px-4 py-1.5 font-medium">Graph chips</td><td class="px-3 py-1.5 text-slate-500">row + open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.graphIds[]</td></tr>
                     </tbody>
@@ -930,14 +1010,18 @@
                   <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// rules this set forced</div>
                   <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">A 340-px control surface.</div>
                   <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2.5">
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Two affordances per row, never more.</span> Rename and remove sit in the row; everything else waits inside the open-out. At 340&nbsp;px a row with six icons is unreadable and the route's name — the thing you scan for — loses its width.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Editing is explicit; saving isn't automatic.</span> Name and dates each take a save/cancel pair, because a half-typed window would refetch every graph on the page. Colour and chips commit on click — single, reversible, cheap.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">Presets before fields.</span> <em>AM Peak</em> and <em>Weekdays</em> are the real vocabulary; the raw inputs stay, but nobody should have to type <span class="tny-mono">16:00</span> twice from memory. The two windows that wrap past midnight are absent on purpose — the epoch range can't express them.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">Destructive is the only coloured control.</span> Amber = you are editing; rose = removal; blue = the one primary action. Nothing else earns a colour, which is what keeps the route colours themselves legible.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span><span class="font-medium text-slate-700">Colour is a popover on the dot, not a block in the open-out.</span> Inline it was doubly buried — expand the route, then click “change” — for a control whose whole job is “this route is blue everywhere”. You notice two routes are hard to tell apart while looking at a chart, and from there it's one click on the dot. The TMC list left the open-out for the opposite reason: nobody identifies a route by reading <span class="tny-mono">120P29714</span> off a rail, so the count in the meta line is the useful part.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span><span class="font-medium text-slate-700">Say “unused”.</span> A route on no graph is a half-finished report, not a tidy one, so the row says so and the empty-state card in the canvas repeats it by name.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><span class="font-medium text-slate-700">The two jobs are never hidden.</span> Add Route and Add Graph sit in an always-present action row, not behind edit mode: a report with no routes has to offer the way out of that state, and a mode you have to discover first is not an offer. The row itself carries the mode, so nothing is lost.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><span class="font-medium text-slate-700">The panel scrolls once.</span> Head, mode strip, toolbar and totals are pinned; only the rows move. A rail that scrolls as a whole loses its Add buttons exactly when a long list makes you want them.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">A control has to describe the query it builds.</span> The window read “start date + start time / end date + end time”, which claims a continuous stretch between two instants. The engine builds a list of <em>days</em> and, separately, a band of <em>hours applied to every one of them</em> — it averages the same hours across days. Three facets in the engine's own order (dates → days → time of day) say that; the old pairing said the opposite, and no amount of polish fixes a control that lies about its result.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Name the silent failures.</span> A backwards time window empties the epoch list, and an empty list means the filter is never sent — so it silently returns all-day data. The control says so, in those words, rather than letting a plausible-looking window produce a wrong chart.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">If every route wants the same value, make it copyable.</span> A before/after report is four routes with one window. Retyping four fields per route is a transcription-error generator, so the window copies as one shape and the copied strip offers the bulk case first.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">Two affordances per row, never more.</span> Rename and remove sit in the row; everything else waits inside the open-out. At 340&nbsp;px a row with six icons is unreadable and the route's name — the thing you scan for — loses its width.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span><span class="font-medium text-slate-700">Editing is explicit; saving isn't automatic.</span> The name and the window each take a save/cancel pair, because a half-typed window would refetch every graph on the page. Colour and chips commit on click — single, reversible, cheap.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span><span class="font-medium text-slate-700">Presets before fields.</span> <em>AM Peak</em> and <em>Weekdays</em> are the real vocabulary; the raw inputs stay, but nobody should have to type <span class="tny-mono">16:00</span> twice from memory. The two windows that wrap past midnight are absent on purpose — the epoch range can't express them.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><span class="font-medium text-slate-700">Destructive is the only coloured control.</span> Amber = you are editing; rose = removal; blue = the one primary action. Nothing else earns a colour, which is what keeps the route colours themselves legible.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><span class="font-medium text-slate-700">Colour is a popover on the dot, not a block in the open-out.</span> Inline it was doubly buried — expand the route, then click “change” — for a control whose whole job is “this route is blue everywhere”. You notice two routes are hard to tell apart while looking at a chart, and from there it's one click on the dot. The TMC list left the open-out for the opposite reason: nobody identifies a route by reading <span class="tny-mono">120P29714</span> off a rail, so the count in the meta line is the useful part.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><span class="font-medium text-slate-700">Say “unused”.</span> A route on no graph is a half-finished report, not a tidy one, so the row says so and the empty-state card in the canvas repeats it by name.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">10</span><span><span class="font-medium text-slate-700">Nothing in the rail hides behind a mode.</span> Add Route and Add Graph sit in an always-present action row, and every per-route control — window, colour, name, order, assignment — is live: a report with no routes has to offer the way out of that state, and a mode you have to discover first is not an offer. Page edit mode still governs the <em>page</em>: section toolbars, the Measure Picker, Dynamic Report.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">11</span><span><span class="font-medium text-slate-700">Don't fake the refetch.</span> A route's window, colour and assignment do publish to every card the route feeds, and in the product those cards redraw. This page has no data behind it, so it doesn't pretend: the cards stay the drawings they are, and the binding is written down rather than simulated. A version that rebuilt legends and flashed “updating” was reverted — it made cards look refreshed while the numbers underneath hadn't moved, which teaches the wrong thing more effectively than saying nothing.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">12</span><span><span class="font-medium text-slate-700">The panel scrolls once.</span> The head, the action row and the totals are pinned; only the rows move. A rail that scrolls as a whole loses its Add buttons exactly when a long list makes you want them.</span></li>
                   </ul>
                   <div class="mt-4 pt-3 border-t border-zinc-950/05">
                     <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">// the density rule still holds</div>
