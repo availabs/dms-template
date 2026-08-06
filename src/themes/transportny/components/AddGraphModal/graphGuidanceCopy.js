@@ -23,4 +23,6 @@ export const GRAPH_TYPE_DESCRIPTIONS = {
   BarGraph: 'One bar per time bucket — good for comparing values across routes at a glance.',
   LineGraph: 'A continuous line per route — good for seeing trends over time.',
   GridGraph: 'A heatmap of value by time-of-day and route — good for spotting patterns across many time buckets at once.',
+  Table: 'The same measure/resolution data as a chart, in rows and columns — good for reading exact values.',
+  Map: 'The selected routes drawn on a map, colored by the current measure — good for seeing where a value is high or low.',
 };

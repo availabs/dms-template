@@ -5,7 +5,7 @@
 > that plugin (and therefore the only end-to-end "create a route → add it to a
 > report" path) existed. `routecreation` (and `macroview`) have since been ported
 > natively into dms-template via `theme.mapPlugins`
-> (`planning/tasks/completed/port-transportny-map-plugins.md`) and now run on
+> (`planning/transportny/tasks/completed/port-transportny-map-plugins.md`) and now run on
 > dms-template's own dev server. **For routes/reports development, transportNY is no
 > longer necessary at all** — this whole manual-sync discipline is obsolete for that
 > purpose. The doc below is kept as historical record of how the two repos drifted and
@@ -171,7 +171,7 @@ in-flight work.
 
 **Do not** treat this as "reports parity is broken." Route Comparison is a distinct page type
 (Batch Reports), not a section of a report page, and is explicitly out of scope for the report-spec
-work (`planning/tasks/current/report-spec-and-build-script.md`).
+work (`planning/transportny/tasks/current/report-spec-and-build-script.md`).
 
 ### Verified in sync (2026-07-28)
 

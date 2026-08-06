@@ -6,7 +6,7 @@ Reimplements the old tool's corridor generator
 (avail-falcor `tasks/folders/create_and_load_corridors.py`) against a
 year-matched current source instead of the old tool's frozen `tmc_metadata_2022`
 snapshot. Same grouping key, same road_order sort — see
-`planning/tasks/current/dynamic-reports-and-route-tags.md` (Route Tags section)
+`planning/transportny/tasks/current/dynamic-reports-and-route-tags.md` (Route Tags section)
 for the full trace of how this was derived and sanity-checked against the old
 DB's real 2022 output.
 

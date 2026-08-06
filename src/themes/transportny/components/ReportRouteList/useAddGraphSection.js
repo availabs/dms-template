@@ -5,16 +5,31 @@ import { applyMeasurePickToState } from '../MeasurePicker';
 import { BASE_SOURCE } from '../MeasurePicker/composeMeasureConfig';
 
 const AVL_GRAPH_ELEMENT_TYPE = 'AVL Graph';
+const SPREADSHEET_ELEMENT_TYPE = 'Spreadsheet';
 
-// Which `group` a freshly composed graph section should join — the same group as this report's
-// existing AVL Graph sections (Ryan's decision, 2026-08-03: append after existing graphs). Every
-// SectionArray instance renders `value.filter(v => v.group === group.name || (!v.group &&
-// group.name === 'default'))` in array order (sectionArray.jsx ~line 423) — pushing to the END of
-// the full flat `draft_sections` array is therefore sufficient to render last within whichever
-// group it's tagged with; no splice-index math needed. `undefined` (no existing AVL Graph section
-// yet) falls through to that same 'default' bucket, matching a section that's never set `group`.
-function findAvlGraphGroup(sectionList) {
-  return (sectionList || []).find((s) => s?.element?.['element-type'] === AVL_GRAPH_ELEMENT_TYPE)?.group;
+// Which registered component a pick's shape actually creates. Table rides the exact same
+// composeMeasureConfig/applyMeasurePickToState machinery as every chart shape — Spreadsheet's
+// defaultState has the identical filters/display/columns/data/externalSource shape AVL Graph's
+// does, and composeMeasureConfig already treats any non-GridGraph graphType as a plain 'yAxis'
+// column, so 'Table' needs no special-casing there. Map is NOT here: it has no columns/join
+// shape at all (no `defaultState` on its own registry entry — its layers are built interactively
+// through its own edit UI), so it needs a genuinely separate compose path — see the "Map" note
+// in the phased plan; not yet built.
+const ELEMENT_TYPE_BY_GRAPH_TYPE = {
+  Table: SPREADSHEET_ELEMENT_TYPE,
+};
+
+// Which `group` a freshly composed section should join — the same group as this report's
+// existing sections of the SAME element type (Ryan's decision, 2026-08-03: append after existing
+// graphs — extended here to "existing sections of this new one's own type" now that a pick can
+// create something other than an AVL Graph). Every SectionArray instance renders `value.filter(v
+// => v.group === group.name || (!v.group && group.name === 'default'))` in array order
+// (sectionArray.jsx ~line 423) — pushing to the END of the full flat `draft_sections` array is
+// therefore sufficient to render last within whichever group it's tagged with; no splice-index
+// math needed. `undefined` (no existing section of this type yet) falls through to that same
+// 'default' bucket, matching a section that's never set `group`.
+function findGroupForElementType(sectionList, elementType) {
+  return (sectionList || []).find((s) => s?.element?.['element-type'] === elementType)?.group;
 }
 
 // Composes a brand-new "AVL Graph" section from an Add-Graph modal pick and pushes it into the
@@ -26,9 +41,14 @@ function findAvlGraphGroup(sectionList) {
 export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit }) {
   const addGraphSection = async (pick) => {
     if (!isEdit || !apiUpdate || !item?.id) return null;
+    // Map has no compose path yet (its registry entry has no `defaultState` at all — layers/
+    // symbology are built interactively through the map's own edit UI, not a JSON shape this
+    // picker could compose against). Fail closed rather than create a broken, empty Map section.
+    if (pick.graphType === 'Map') return null;
 
+    const elementType = ELEMENT_TYPE_BY_GRAPH_TYPE[pick.graphType] || AVL_GRAPH_ELEMENT_TYPE;
     const RegisteredComponents = getRegisteredComponents();
-    const graphComponent = RegisteredComponents[AVL_GRAPH_ELEMENT_TYPE];
+    const graphComponent = RegisteredComponents[elementType];
     const state = cloneDeep(graphComponent.defaultState);
     // A brand-new section never has an existing Dataset to preserve — unlike
     // applyMeasurePickToState's own `if (!state.externalSource?.source_id)` guard, which exists
@@ -41,16 +61,18 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit })
     });
     if (!applied) return null;
     reconcileComparisonSeriesColumnOnState(state);
+    const seriesCol = state.columns.find((c) => c.origin === 'comparison-series');
+    if (seriesCol && !seriesCol.customName) seriesCol.customName = 'Route';
 
     const trackingId = crypto.randomUUID();
     const sectionList = item.draft_sections || [];
     const newSection = {
       trackingId,
-      group: findAvlGraphGroup(sectionList),
+      group: findGroupForElementType(sectionList, elementType),
       is_draft: true,
       // Same shape sectionArray.jsx's own save() stamps onto every newly-created section.
       parent: JSON.stringify({ id: item.id, ref: `${item.app}+${item.type}` }),
-      element: { 'element-type': AVL_GRAPH_ELEMENT_TYPE, 'element-data': JSON.stringify(state) },
+      element: { 'element-type': elementType, 'element-data': JSON.stringify(state) },
     };
     const nextSections = [...sectionList, newSection];
 

@@ -40,7 +40,8 @@
     ]},
     { key: 'county', label: 'County Actions Workflow', dir: 'pages/county-actions', landing: 'dashboard.html', pages: [
       { f: 'dashboard.html', t: 'county dashboard' }, { f: 'jurisdictions.html', t: 'jurisdictions' },
-      { f: 'workspace.html', t: 'workspace' }, { f: 'action-view.html', t: 'action view' },
+      { f: 'jurisdiction-prioritization.html', t: 'jurisdiction prioritization' },
+      { f: 'workspace.html', t: 'county workspace' }, { f: 'action-view.html', t: 'action view' },
       { f: 'action-edit.html', t: 'action edit' },
     ]},
     { key: 'admin', label: 'Site Management', dir: 'pages', landing: 'site-management-v2.html', pages: [
@@ -60,6 +61,7 @@
       { f: 'duplicate-actions.html', t: 'duplicate actions' },
       { f: 'boilerplate-actions.html', t: 'boilerplate actions' },
       { f: 'location-from-text.html', t: 'locating from text' },
+      { f: 'priority-coverage.html', t: 'local priority coverage' },
     ]},
   ];
 

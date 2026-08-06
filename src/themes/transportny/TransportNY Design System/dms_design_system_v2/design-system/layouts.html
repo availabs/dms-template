@@ -557,7 +557,7 @@
                     </p>
                   </div>
 
-                  <div class="mt-5 pt-4 border-t border-zinc-950/05">
+                  <div class="mt-5 pt-4 border-t border-zinc-950/05" id="equal-height">
                     <div class="font-display uppercase text-[12px] tracking-wide text-[#CA8A04] mb-2">// Equal-height rows</div>
                     <p class="font-proxima text-[12.5px] text-slate-600 max-w-[820px] leading-[1.55]">
                       For a <strong>row of more than one card</strong> (KPI strip, tile/feature grid, a tall card beside a short
@@ -565,6 +565,187 @@
                       height and read as an even set instead of ragged, content-shrunk boxes. Leave <code class="tny-mono">height</code>
                       <strong>unset (auto)</strong> — the default — for a full-width section or a card that's alone in its row.
                       (Author UI: section toolbar → Settings → Layout → Height.)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Content sidebar · the side-content rail (size 12) ── -->
+              <div class="col-span-12" id="content-sidebar" data-dms-section="content-sidebar">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">09</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Content sidebar — the side-content rail</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="p-6 pb-4">
+                    <p class="font-proxima text-[13.5px] text-slate-600 max-w-[860px] leading-[1.6]">
+                      A page can carry a <strong>side content</strong> region — a rail beside the content column that
+                      holds the generated “on this page” nav and any sections an author assigns to the page's
+                      <code class="tny-mono">sidebar</code> group. The author turns it on in page settings →
+                      <strong>“Show Content Sidebar”</strong> (<em>None</em> / <em>Left</em> / <em>Right</em>), which writes
+                      <code class="tny-mono">item.sidebar</code>. Nothing else is needed: no per-page code, no custom band.
+                    </p>
+                    <div class="mt-4 rounded-[6px] border border-[#1F3F8F]/25 bg-[#1F3F8F]/5 p-4">
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1F3F8F]">// the one thing to get right</div>
+                      <p class="font-proxima text-[13px] text-slate-700 mt-1.5 leading-[1.6] max-w-[860px]">
+                        <strong>The rail is not a grid column.</strong> It is a fixed-width flex sibling of the content
+                        column, rendered <em>outside</em> the 12-col section grid — so the canvas keeps its own
+                        <code class="tny-mono">grid-cols-12</code> across whatever width is left, and a size-12 chart is still
+                        size 12. Modelling a rail as <code class="tny-mono">col-span-3</code> + <code class="tny-mono">col-span-9</code>
+                        looks the same in a mockup and is a different, un-authorable thing: the sections in it would belong to
+                        the content band, the rail couldn't be toggled or side-swapped from settings, and every section's size
+                        would silently mean ¾ of what it says.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- the four moving parts -->
+                  <table class="w-full text-[12.5px] border-t border-zinc-950/05">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Moving part</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Where it lives</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">What it does</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">Toggle</td><td class="px-3 py-2"><code class="tny-mono">item.sidebar</code> = left / right / unset</td><td class="px-3 py-2">Turns the rail on and picks the side. Page settings → “Show Content Sidebar”.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">Nav items</td><td class="px-3 py-2">per-section <code class="tny-mono">navLabel</code> (+ <code class="tny-mono">anchorId</code>)</td><td class="px-3 py-2">A section with a nav label appears in the rail's jump list and gets a clean anchor id. Scroll-spy is automatic.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">Rail content</td><td class="px-3 py-2">section group <code class="tny-mono">sidebar</code> (<code class="tny-mono">position:'sidebar'</code>)</td><td class="px-3 py-2">Ordinary sections — lexical, Card, or a theme component like <code class="tny-mono">ReportRouteList</code> — render in the rail <em>below</em> the nav. Every page is seeded with this group.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">Which band hosts it</td><td class="px-3 py-2"><code class="tny-mono">group.railHost</code> → first <code class="tny-mono">navLabel</code>'s band → first content band</td><td class="px-3 py-2">The rail renders inside <strong>one</strong> band, not beside the whole page. Set <code class="tny-mono">railHost</code> on the band that is the real content when band 1 is a breadcrumb/header strip.</td></tr>
+                      <tr><td class="px-3 py-2 font-medium text-[#0F1722]">Styling</td><td class="px-3 py-2"><code class="tny-mono">theme.pages.sectionGroup</code></td><td class="px-3 py-2">The two-column split <em>and</em> the nav card. Lives in the <strong>pages</strong> theme, not in the shared <code class="tny-mono">layoutGroup</code> — a band that doesn't opt in is byte-identical to before.</td></tr>
+                    </tbody>
+                  </table>
+
+                  <!-- the two styles, drawn -->
+                  <div class="p-6 border-t border-zinc-950/05 bg-slate-50/40">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-1">Two named styles</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-4">pages.sectionGroup.options.activeStyle · styles[1+] inherit every key they don't override</div>
+                    <div class="grid grid-cols-2 gap-6">
+
+                      <!-- default -->
+                      <div>
+                        <div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722] mb-1">styles[0] · default</div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mb-2">card rail · 302 · gutter 40 · sticky under the header</div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-[#ECEEF2] overflow-hidden">
+                          <div class="h-6 bg-white border-b border-zinc-950/10 flex items-center px-2 font-mono text-[8.5px] uppercase tracking-[0.18em] text-slate-400">header band · full width</div>
+                          <div class="p-3 flex gap-3 items-stretch">
+                            <div class="flex-1 min-w-0 grid grid-cols-3 gap-1.5">
+                              <div class="col-span-3 h-6 rounded bg-white border border-zinc-950/10"></div>
+                              <div class="col-span-2 h-10 rounded bg-white border border-zinc-950/10"></div>
+                              <div class="col-span-1 h-10 rounded bg-white border border-zinc-950/10"></div>
+                            </div>
+                            <div class="w-[74px] shrink-0 flex flex-col gap-1.5">
+                              <div class="h-12 rounded bg-white border border-zinc-950/10 p-1"><div class="h-1 w-8 bg-slate-200 rounded mb-1"></div><div class="h-1 w-10 bg-[#FACC15]/60 rounded mb-1"></div><div class="h-1 w-9 bg-slate-200 rounded"></div></div>
+                              <div class="h-8 rounded bg-white border border-zinc-950/10"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <p class="font-proxima text-[12.5px] text-slate-600 mt-3 leading-[1.55]">
+                          The reading-page rail: a card of jump links plus optional authored cards, sitting inside the band's
+                          1480 cap with a <code class="tny-mono">gap-10</code> gutter. Rail and canvas both float on the pane.
+                          Used by <a href="../pages/docs-overview.html" class="tny-link">docs-overview</a> and
+                          <a href="../pages/npmrds-home.html" class="tny-link">npmrds-home</a>.
+                        </p>
+                      </div>
+
+                      <!-- flush -->
+                      <div>
+                        <div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722] mb-1">styles[1] · flush <span class="font-mono text-[9.5px] normal-case tracking-normal text-[#CA8A04] ml-1">// active style on report pages</span></div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mb-2">control surface · 340 · no padding · full tab height</div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-[#ECEEF2] overflow-hidden">
+                          <div class="h-6 bg-white border-b border-zinc-950/10 flex items-center px-2 font-mono text-[8.5px] uppercase tracking-[0.18em] text-slate-400">no chrome above the rail</div>
+                          <div class="flex gap-0 items-stretch">
+                            <div class="w-[74px] shrink-0 bg-white border-r border-zinc-950/10 flex flex-col">
+                              <div class="h-4 bg-[#12181F]"></div>
+                              <div class="flex-1 p-1 space-y-1"><div class="h-3 rounded bg-slate-100"></div><div class="h-3 rounded bg-slate-100"></div><div class="h-3 rounded bg-slate-100"></div><div class="h-3 rounded bg-slate-100"></div></div>
+                              <div class="h-3 bg-slate-50 border-t border-zinc-950/05"></div>
+                            </div>
+                            <div class="flex-1 min-w-0 p-3 grid grid-cols-3 gap-1.5">
+                              <div class="col-span-3 h-6 rounded bg-white border border-zinc-950/10"></div>
+                              <div class="col-span-3 h-8 rounded bg-white border border-zinc-950/10"></div>
+                              <div class="col-span-2 h-8 rounded bg-white border border-zinc-950/10"></div>
+                              <div class="col-span-1 h-8 rounded bg-white border border-zinc-950/10"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <p class="font-proxima text-[12.5px] text-slate-600 mt-3 leading-[1.55]">
+                          For a rail that <em>drives</em> the canvas rather than indexing it. Zero padding, hugging the content
+                          area's left edge, running the full height of the tab (less whatever sticky chrome sits above it — tune <code class="tny-mono">top</code> and the height together, exactly as styles[0] does for the page header) with its own internal scroll — the panel pins its
+                          own header and footer and scrolls only the list between them. Live on
+                          <a href="../pages/npmrds-report.html" class="tny-link">npmrds-report</a> (the route controls).
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- flush's two requirements -->
+                    <div class="mt-5 rounded-[6px] border border-[#CA8A04]/30 bg-amber-50/40 p-4">
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// flush asks two things of the page</div>
+                      <ol class="font-proxima text-[12.5px] text-slate-700 mt-2 space-y-2 leading-[1.55] max-w-[860px]">
+                        <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><strong>The rail-hosting band must be Full Width: show.</strong> Otherwise the band's own <code class="tny-mono">pl-12 pr-8</code> sits between the pane edge and the rail and “flush” is a lie. The content column supplies the inset instead (<code class="tny-mono">px-8 py-8</code>), and the section grid's <code class="tny-mono">layouts.centered</code> still caps it at 1480 inside that column.</span></li>
+                        <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><strong>The page header becomes a section in the content column</strong>, not its own full-bleed <code class="tny-mono">header</code> band. A band above the rail would cover the top of it, and the rail would no longer start at the top of the tab. <em>Consequence: the header is no longer full width</em> — it starts at the rail's right edge and ends at the 1480 cap. That is the intended look.</span></li>
+                      </ol>
+                    </div>
+                  </div>
+
+                  <!-- wrapper class reference -->
+                  <table class="w-full text-[12.5px] border-t border-zinc-950/05">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Key</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">styles[0] · default</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">styles[1] · flush</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-mono text-[11px] text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">contentRow</td><td class="px-3 py-2">flex flex-row gap-10 items-stretch min-h-screen</td><td class="px-3 py-2">flex flex-row gap-0 items-stretch</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">contentCol</td><td class="px-3 py-2">flex-1 min-w-0</td><td class="px-3 py-2">flex-1 min-w-0 px-8 py-8</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">sideNavContainer1</td><td class="px-3 py-2">w-[302px] shrink-0 hidden xl:block</td><td class="px-3 py-2">w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">sideNavContainer2</td><td class="px-3 py-2">sticky top-[60px] h-[calc(100vh-68px)] overflow-y-auto pr-2</td><td class="px-3 py-2">sticky top-0 h-svh overflow-hidden <span class="font-proxima text-[10.5px] text-slate-500">(offset both against sticky chrome above)</span></td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium text-[#0F1722]">sideNavContainer3</td><td class="px-3 py-2">flex flex-col gap-4</td><td class="px-3 py-2">flex flex-col h-full</td></tr>
+                      <tr><td class="px-3 py-2 font-medium text-[#0F1722]">navWrapper</td><td class="px-3 py-2">rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4</td><td class="px-3 py-2">border-b border-zinc-950/10 px-4 py-4</td></tr>
+                    </tbody>
+                  </table>
+
+                  <div class="p-6 border-t border-zinc-950/05">
+                    <pre class="font-mono text-[11.5px] leading-[1.55] text-slate-700 bg-slate-50 p-4 rounded border border-zinc-950/05 overflow-x-auto">LayoutGroup (the rail-host band)
+└── contentRow                          ← flex row · items-stretch (NOT items-start)
+    ├── contentCol                      ← flex-1 min-w-0 · holds the 12-col section grid
+    │   └── sectionArray grid-cols-12
+    │       ├── Section page-header  (12)   ← on a flush rail, the header lives HERE
+    │       ├── Section band-head    (12)
+    │       └── Section graph-card   ( 6)
+    └── sideNavContainer1               ← fixed width · hidden below xl · `order-2` when sidebar='right'
+        └── sideNavContainer2           ← the ONE sticky wrapper (two pinned siblings would overlap)
+            └── sideNavContainer3       ← the stack of rail blocks
+                ├── InPageNav           ← generated from every section's navLabel
+                └── sections in the `sidebar` group</pre>
+                    <div class="mt-4 grid grid-cols-3 gap-4 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">
+                      <div>
+                        <div class="font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1">items-stretch is load-bearing</div>
+                        It stretches the rail column to the band's full height so the inner <code class="tny-mono">sticky</code> has
+                        room to pin. <code class="tny-mono">items-start</code> collapses the column to content height and the rail
+                        is inert — it scrolls away and is off-screen by the second band.
+                      </div>
+                      <div>
+                        <div class="font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1">One sticky wrapper, always</div>
+                        Every rail block goes inside <code class="tny-mono">sideNavContainer2</code>. Two siblings each pinned at
+                        the same <code class="tny-mono">top</code> stack on top of each other.
+                      </div>
+                      <div>
+                        <div class="font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1">Below <code class="tny-mono">xl</code> the rail is gone</div>
+                        <code class="tny-mono">hidden xl:block</code>. The content column then fills the band, so every page must
+                        read without the rail — anything load-bearing (a finding, a legend) belongs in the canvas.
+                      </div>
+                    </div>
+                    <p class="font-proxima text-[12px] text-slate-500 mt-4 leading-[1.5] max-w-[860px]">
+                      <strong>Escalation:</strong> the style is picked in the theme
+                      (<code class="tny-mono">pages.sectionGroup.options.activeStyle</code>), so it is currently a brand-wide
+                      choice. Page settings has a per-page picker for the app SideNav's style (“Sidenav Style”) but none for the
+                      content sidebar's — the parallel <em>“Content Sidebar Style”</em> setting is the natural fix and is worth a
+                      library ticket, since <code class="tny-mono">flush</code> is right for report pages and wrong for docs pages
+                      on the same site.
                     </p>
                   </div>
                 </div>

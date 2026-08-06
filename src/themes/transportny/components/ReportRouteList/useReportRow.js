@@ -405,6 +405,32 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     }
   };
 
+  // Batched "paste into all" for the copy/paste-a-window feature: one persistRoutes call for
+  // every target route, same reasoning as assignRoutesToGraph (looping updateRoute per route
+  // would race a stale `routes` closure and drop all but the last write). Callers are
+  // responsible for excluding derived-date routes and the copy source from `routeIndexes` —
+  // this function just applies the window uniformly to whatever indexes it's given.
+  const pasteWindowToRoutes = async (routeIndexes, { startDate, endDate, weekdays }) => {
+    if (!apiUpdate || !item?.id || saving || !reportRow || !routeIndexes?.length) return;
+    setSaving(true);
+    setError('');
+    try {
+      const newRoutes = cloneDeep(routes);
+      routeIndexes.forEach((i) => {
+        if (!newRoutes[i]) return;
+        newRoutes[i].startDate = startDate;
+        newRoutes[i].endDate = endDate;
+        newRoutes[i].weekdays = weekdays ? { ...weekdays } : undefined;
+      });
+      await persistRoutes(newRoutes);
+    } catch (e) {
+      console.error('<ReportRouteList:pasteWindowToRoutes>', e);
+      setError('Could not paste the window.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     reportRow,
     routes,
@@ -418,5 +444,6 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     updateRoute,
     toggleRouteGraph,
     assignRoutesToGraph,
+    pasteWindowToRoutes,
   };
 }

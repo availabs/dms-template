@@ -43,7 +43,7 @@
  * built yet — see the task file's deferred `--expect` note for the trigger.
  *
  * See research/npmrds-reports/report-spec.md for the spec format, and
- * planning/tasks/current/report-spec-and-build-script.md for the design record.
+ * planning/transportny/tasks/current/report-spec-and-build-script.md for the design record.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -759,7 +759,7 @@ try {
 // choropleth machinery that exists (template-minting + per-report CH
 // quantile-break baking, built for old-report conversion rounds 47-50) —
 // reusing it exactly rather than reimplementing it a second time in JS. See
-// planning/tasks/current/client-request-to-report-skill.md's 2026-07-27
+// planning/transportny/tasks/current/client-request-to-report-skill.md's 2026-07-27
 // correction for why this wiring, not a from-scratch Map builder, was the
 // actual gap. `opts.tmcs`/`startDate`/`endDate` are omitted for a --dry-run
 // preview (year/shape only, placeholder paint); a real build calls this again
@@ -967,11 +967,15 @@ for (const [i, g] of spec.graphs.entries()) {
 const pageTemplate = (dms(['raw', 'get', String(PAGE_TEMPLATE_ID)]))?.data;
 if (!pageTemplate) fail(`could not load the Report Page template (row ${PAGE_TEMPLATE_ID}).`);
 
-function templateSectionByType(elementType) {
-  const found = (pageTemplate.draft_sections || [])
-    .find(s => s?.element?.['element-type'] === elementType);
-  if (!found) fail(`Report Page template has no "${elementType}" section.`);
-  return found;
+function templateFrameworkSections() {
+  // Every draft_section on the Report Page template flagged templateRole=='framework'
+  // (ReportRouteList, ReportPageHeader, and whatever else joins that list later) —
+  // cloned/reconciled into every programmatically-built report, in template order.
+  // A new structural component joins this list by flagging its own template section,
+  // not by editing this function or either of its two call sites.
+  const sections = (pageTemplate.draft_sections || []).filter(s => s?.templateRole === 'framework');
+  if (!sections.length) fail(`Report Page template has no section flagged templateRole=='framework' (expected at least ReportRouteList).`);
+  return sections;
 }
 
 let pageId, slug, parentRef, graphTrackingIds, sectionDatas, titleBlockTrackingId;
@@ -1073,18 +1077,35 @@ if (updateCtx) {
   titleBlockTrackingId = updateCtx.oldKeyMap['title_block'] || randomUUID();
   const keptTrackingIds = new Set([...graphTrackingIds, titleBlockTrackingId]);
 
-  // RRL isn't in the key map — a Report Page always has exactly one, so find it
-  // live rather than tracking it separately. An Info Box graph is ALSO
-  // element-type "Spreadsheet" (unlike AVL Graph/Map, which are unambiguous):
-  // exclude any Spreadsheet section this revision's OLD key map already tracks
-  // as a graph key, so the sweep below doesn't misidentify a pre-existing page's
-  // own frozen Add-a-Route-to-Report section (a page built/reconciled before
-  // the standalone catalog section was retired — see
+  // An Info Box graph is ALSO element-type "Spreadsheet" (unlike AVL Graph/Map,
+  // which are unambiguous): exclude any Spreadsheet section this revision's OLD
+  // key map already tracks as a graph key, so the sweep below doesn't misidentify
+  // a pre-existing page's own frozen Add-a-Route-to-Report section (a page
+  // built/reconciled before the standalone catalog section was retired — see
   // add-route-flow-improvements.md) as an Info Box graph.
   const trackedGraphTrackingIds = new Set(
     Object.entries(updateCtx.oldKeyMap).filter(([k]) => k !== 'title_block').map(([, v]) => v));
-  const rrlSection = updateCtx.sections.find(s => s.data.element['element-type'] === 'ReportRouteList');
-  if (!rrlSection) fail(`page ${pageId} has no ReportRouteList section — can't reconcile (hand-deleted?).`);
+
+  // Framework sections (RRL, ReportPageHeader, whatever else the template later
+  // flags templateRole=='framework') are matched to the existing page by
+  // element-type and updated in place, reusing the page's own trackingId for
+  // that type — same as RRL always did. A framework type the page doesn't have
+  // yet (an older page reconciled after the template grows a new structural
+  // component) is created fresh rather than failing: that's the expected,
+  // normal case now that the template can gain framework sections over time,
+  // not the hand-deleted-corruption signal a missing RRL section used to be
+  // when RRL was the only framework type that could ever exist.
+  const frameworkTmpls = templateFrameworkSections();
+  const frameworkEntries = frameworkTmpls.map(tmpl => {
+    const elementType = tmpl.element['element-type'];
+    // Optional chaining on s.data: an id in page.sections/draft_sections can be
+    // dangling (fetchByIds returns a null-data placeholder for a deleted row —
+    // the same class of debris the app's own orphan-cleanup handling elsewhere
+    // already treats as harmless) — don't let a stale reference crash the whole
+    // reconcile when the real answer is just "not found, create fresh".
+    const existing = updateCtx.sections.find(s => s.data?.element?.['element-type'] === elementType);
+    return { data: clonedSection(tmpl, existing?.data.trackingId || randomUUID()), existingId: existing?.id, elementType };
+  });
 
   // No Add-a-Route Spreadsheet section is created or re-synced here on purpose:
   // the Report Page template no longer has one to clone from (RRL's own inline
@@ -1092,26 +1113,35 @@ if (updateCtx) {
   // that change still carries its own frozen copy — untouched by this reconcile
   // (it's excluded from the deletion sweep below the same way it always was),
   // per that task's explicit "don't retroactively touch existing pages" decision.
-  sectionDatas = [
-    clonedSection(templateSectionByType('ReportRouteList'), rrlSection.data.trackingId),
-    titleBlockSectionData(titleBlockTrackingId),
-    ...spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i])),
-  ];
+  const titleBlockData = titleBlockSectionData(titleBlockTrackingId);
+  const graphSectionDatasList = spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i]));
+  sectionDatas = [...frameworkEntries.map(e => e.data), titleBlockData, ...graphSectionDatasList];
 
   let created = 0, updated = 0, deleted = 0;
-  const titleBlockExisting = updateCtx.sections.find(s => s.data.trackingId === titleBlockTrackingId);
+  for (const entry of frameworkEntries) {
+    if (entry.existingId) {
+      dms(['section', 'update', String(entry.existingId)], entry.data);
+      updated++;
+    } else {
+      console.warn(`  note: page ${pageId} has no "${entry.elementType}" section yet — creating one from the template.`);
+      const res = dms(['section', 'create', String(pageId), '--pattern', PATTERN], entry.data);
+      if (!res?.id) fail(`failed to create the "${entry.elementType}" framework section.`);
+      created++;
+    }
+  }
+  const titleBlockExisting = updateCtx.sections.find(s => s.data?.trackingId === titleBlockTrackingId);
   if (titleBlockExisting) {
-    dms(['section', 'update', String(titleBlockExisting.id)], sectionDatas[1]);
+    dms(['section', 'update', String(titleBlockExisting.id)], titleBlockData);
     updated++;
   } else {
-    const res = dms(['section', 'create', String(pageId), '--pattern', PATTERN], sectionDatas[1]);
+    const res = dms(['section', 'create', String(pageId), '--pattern', PATTERN], titleBlockData);
     if (!res?.id) fail('failed to create the title-block section.');
     created++;
   }
   for (const [i, g] of spec.graphs.entries()) {
     const tid = graphTrackingIds[i];
-    const existing = updateCtx.sections.find(s => s.data.trackingId === tid);
-    const payload = { ...sectionDatas[i + 2], size: g.size ? String(g.size) : '' }; // explicit '' clears a size dropped by this revision (shallow-merge --data would otherwise leave a stale one)
+    const existing = updateCtx.sections.find(s => s.data?.trackingId === tid);
+    const payload = { ...graphSectionDatasList[i], size: g.size ? String(g.size) : '' }; // explicit '' clears a size dropped by this revision (shallow-merge --data would otherwise leave a stale one)
     if (existing) {
       dms(['section', 'update', String(existing.id)], payload);
       updated++;
@@ -1133,6 +1163,7 @@ if (updateCtx) {
   // if it was actually tracked as one (an Info Box graph a PRIOR build/update
   // minted), never the untracked Add-a-Route sheet.
   for (const s of updateCtx.sections) {
+    if (!s.data?.element) continue; // dangling reference (deleted row) — nothing to sweep
     const type = s.data.element['element-type'];
     const isGraphSection = ['AVL Graph', 'Map'].includes(type)
       || (type === 'Spreadsheet' && trackedGraphTrackingIds.has(s.data.trackingId));
@@ -1167,7 +1198,7 @@ if (updateCtx) {
   graphTrackingIds = spec.graphs.map(() => randomUUID());
   titleBlockTrackingId = randomUUID();
   sectionDatas = [
-    clonedSection(templateSectionByType('ReportRouteList'), randomUUID()),
+    ...templateFrameworkSections().map(tmpl => clonedSection(tmpl, randomUUID())),
     titleBlockSectionData(titleBlockTrackingId),
     ...spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i])),
   ];

@@ -32,6 +32,7 @@ import {
     BASE_SOURCE,
 } from './composeMeasureConfig';
 import { selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
+import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 
 // Every target this picker can ever assign to a column (xAxis always;
 // yAxis/color depending on graph type). Any existing column carrying one of
@@ -85,7 +86,7 @@ export function isReportPage(siblingSections = []) {
 // Pure mutation body shared by `applyMeasurePick` (below, runs against a live section's immer
 // draft via dwAPI) and NPMRDS's Add-Graph modal (composes a brand-new section's state before any
 // dataWrapper/dwAPI exists for it — see
-// planning/tasks/current/dynamic-reports-and-route-tags.md's "Workstream 0"). No immer-specific
+// planning/transportny/tasks/current/dynamic-reports-and-route-tags.md's "Workstream 0"). No immer-specific
 // API is used here, only plain mutation syntax, so the identical body works against a plain
 // mutable object just as well as an immer draft — this is what lets a from-scratch composed
 // section and a live-edited one produce byte-identical shape. `pick` is the FULL resolved pick
@@ -211,8 +212,15 @@ export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
     // both in place (reconcileComparisonSeriesColumn's own hasVariants
     // check treats an enabled comparison_series subscriber as "variants
     // pending," so the column is added even before any route is
-    // actually assigned yet).
-    dwAPI.reconcileComparisonSeriesColumn();
+    // actually assigned yet). Calls the shared mint function directly
+    // (not dwAPI.reconcileComparisonSeriesColumn(), which forwards no
+    // extra args) so this NPMRDS-specific label stays entirely in this
+    // file, not in core `src/dms/` code.
+    dwAPI.setState(draft => {
+        reconcileComparisonSeriesColumnOnState(draft);
+        const col = draft.columns.find(c => c.origin === 'comparison-series');
+        if (col && !col.customName) col.customName = 'Route';
+    });
 }
 
 // Difference graphs return `anchor - other`; the server treats

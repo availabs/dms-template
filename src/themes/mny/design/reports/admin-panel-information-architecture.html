@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Admin Panel Information Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  DATA REPORT — companion to planning/tasks/current/mny-admin-panel-redesign.md. Every number and
+  page id on this report was pulled live from the DMS server (app mitigat-ny-prod, pattern 566466,
+  the "admin" pattern behind /admin) via the CLI's Falcor endpoint on 2026-07-29, authenticated with
+  user-provided credentials. Not placeholder copy — see the source citation at the bottom.
+
+  This report documents (a) the AS-IS information architecture found on the live server — a flat,
+  single-tier "Forms" hub with an inconsistent, organically-grown page set per dataset — and
+  (b) the PROPOSED target IA: ONE page per page-type per dataset (not three tier-duplicated pages),
+  role-adaptive by who's logged in. Phase 1 (Actions) shipped 15 tier-duplicated mockups in ../pages/
+  before this collapse was assessed — flagged below as pending consolidation, not the target shape.
+-->
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Admin Panel Redesign &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[64px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Admin Panel<br>Information<br>Architecture
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    The live admin panel is one flat "Forms" hub with a different, incomplete page set
+                    per dataset. Here's what's actually there — and why the fix is <em>one</em>
+                    role-adaptive page per page-type, not three tier-duplicated ones.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">112 live admin pages today</span>
+                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-mny-900">1 page per type, not 3</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">mitigat-ny-prod &middot; pattern 566466 ("admin")</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Datasets assessed</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">7</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">6 active, 1 deferred (Capacities)</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Roles, not page-copies</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">3</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">State &middot; County &middot; Jurisdiction — same page, different scope</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Ecosystem shapes</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">2</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">5-page (5 datasets) &middot; 4-page, no Create (High Hazard Dams)</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Phase 1 shipped</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">15</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">Actions &mdash; pending consolidation to 5, see below</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Target pages, once complete</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">30</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">1 Home + 29 across datasets, vs. 112 today</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-200">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Datasets missing a dashboard</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">5</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">of the 7, today</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- VERDICT -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    Geography scoping already exists in the data.<br>It's just not exposed as a page tier.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Pattern <code class="text-[13px] bg-mny-50 px-1 rounded">566466</code> ("admin", app
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">mitigat-ny-prod</code>) has a single flat
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">Forms</code> hub (page 1336681) with one subtree per
+                      dataset. There is <strong class="text-mny-900 font-[600]">no audience-tier concept anywhere in the page
+                      tree</strong> — every user who reaches <code class="text-[13px] bg-mny-50 px-1 rounded">/admin/forms</code>
+                      sees the same flat list, regardless of whether they work for the state, a county, or a single
+                      municipality.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Yet the underlying <strong class="text-mny-900 font-[600]">Actions_Revised</strong> source (the live
+                      Spreadsheet bound to page 1686224, ~90 columns) already carries <code class="text-[13px] bg-mny-50 px-1 rounded">geoid_juris</code>
+                      and <code class="text-[13px] bg-mny-50 px-1 rounded">county_geoid</code> — the exact fields a
+                      jurisdiction/county/state split would filter on — plus <code class="text-[13px] bg-mny-50 px-1 rounded">dhses_comments</code>,
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">fema_comments</code>, and <code class="text-[13px] bg-mny-50 px-1 rounded">approvable</code>,
+                      which is a state-level QA/approval workflow with no page anywhere to work it from.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Instead, each dataset evolved its own ad-hoc, incomplete page set. Some ship 10+ variants of the same
+                      page-type (<code class="text-[13px] bg-mny-50 px-1 rounded">single_edit</code>,
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">single_edit_simple</code>,
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">single_edit_new</code> …) with no indication which is
+                      current. Five of the seven target datasets have <strong class="text-mny-900 font-[600]">no dashboard or
+                      filterable list at all</strong> — an author has to already know a record's id to find it.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The proposed fix doesn't invent new capability — it <strong class="text-mny-900 font-[600]">surfaces the
+                      tiering the data already supports</strong> as role-adaptive scope on one consistently-shaped page per
+                      page-type, and fills the gaps (dashboard, spreadsheet-bulk-edit, standalone view) that today's
+                      ad-hoc growth skipped. See the "tiers are not pages" callout below for why this is one page per
+                      type, not three.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">Fields that already exist</p>
+                      <div class="space-y-3 font-proxima text-[13px]">
+                        <div class="flex justify-between gap-3 border-b border-mny-700 pb-2"><code class="text-mny-y500">geoid_juris</code><span class="text-mny-200 text-right">drives Jurisdiction-role scope</span></div>
+                        <div class="flex justify-between gap-3 border-b border-mny-700 pb-2"><code class="text-mny-y500">county_geoid</code><span class="text-mny-200 text-right">drives County-role scope</span></div>
+                        <div class="flex justify-between gap-3 border-b border-mny-700 pb-2"><code class="text-mny-y500">approvable</code><span class="text-mny-200 text-right">drives State Review</span></div>
+                        <div class="flex justify-between gap-3 border-b border-mny-700 pb-2"><code class="text-mny-y500">dhses_comments</code><span class="text-mny-200 text-right">drives State Review</span></div>
+                        <div class="flex justify-between gap-3"><code class="text-mny-y500">fema_comments</code><span class="text-mny-200 text-right">drives State Review</span></div>
+                      </div>
+                      <hr class="border-mny-700 my-5">
+                      <p class="font-proxima text-[13px] leading-[1.6] text-mny-200">
+                        None of these fields have a page today. The State tier's new
+                        <strong class="text-white font-[600]">"State Review"</strong> section (Phase 1, shipped) is the first
+                        UI to read or write them.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- SECOND VERDICT — collapse tiers into roles -->
+              <div class="bg-mny-900 rounded-[12px] p-6 lg:p-8 mb-10 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-[0.05] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:450px;"></div>
+                <div class="relative">
+                  <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Second look — tiers are not pages</p>
+                  <h3 class="font-display font-[500] text-[26px] text-white uppercase leading-tight mb-4 max-w-[720px]">
+                    A record doesn't change shape depending on who's looking at it. Only the scope, and a handful of
+                    sections, do.
+                  </h3>
+                  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-5">
+                    <div>
+                      <p class="font-proxima text-[12px] text-mny-y500 font-[700] uppercase tracking-wide mb-1">Evidence 1</p>
+                      <p class="font-proxima text-[13px] text-mny-200 leading-[1.55]">Pattern 566466's own <code class="text-[11px] bg-white/10 px-1 rounded text-mny-y500">authPermissions</code> already gate by group (<code class="text-[11px] bg-white/10 px-1 rounded text-mny-y500">AVAIL</code>, <code class="text-[11px] bg-white/10 px-1 rounded text-mny-y500">DHSES</code>, <code class="text-[11px] bg-white/10 px-1 rounded text-mny-y500">LHMP Admin Group</code>…), and the session token carries per-user geography (<code class="text-[11px] bg-white/10 px-1 rounded text-mny-y500">county_codes</code>). Who-sees-what is already a login-time concern in this platform.</p>
+                    </div>
+                    <div>
+                      <p class="font-proxima text-[12px] text-mny-y500 font-[700] uppercase tracking-wide mb-1">Evidence 2</p>
+                      <p class="font-proxima text-[13px] text-mny-200 leading-[1.55]"><code class="text-[11px] bg-white/10 px-1 rounded text-mny-y500">actions-database.html</code>'s own build note: the live page is "filtered to Sullivan County (page param <code class="text-[11px] bg-white/10 px-1 rounded text-mny-y500">county=36105</code>)... County scope is set at the site level by the page filter param." One template, many counties, via a param — the platform's existing convention.</p>
+                    </div>
+                    <div>
+                      <p class="font-proxima text-[12px] text-mny-y500 font-[700] uppercase tracking-wide mb-1">Evidence 3</p>
+                      <p class="font-proxima text-[13px] text-mny-200 leading-[1.55]">An Action's 90 fields are the same 90 fields whether a jurisdiction clerk, a county planner, or a state reviewer opens it. What differs is (a) which records they may see, and (b) whether the State Review section is visible/editable — both role checks, not different content.</p>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white/5 border border-white/10 rounded-[10px] p-4">
+                      <p class="font-display text-[13px] text-mny-y500 uppercase mb-2">Collapses to one page</p>
+                      <ul class="font-proxima text-[13px] text-mny-200 leading-[1.6] list-disc pl-4 space-y-1">
+                        <li><strong class="text-white">View / Edit / Create</strong> — record shape never changes by role</li>
+                        <li><strong class="text-white">Dashboard / Spreadsheet</strong> — row <em>scope</em> changes by role/geography; the page doesn't</li>
+                      </ul>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-[10px] p-4">
+                      <p class="font-display text-[13px] text-mny-y500 uppercase mb-2">Stays role-gated <em>within</em> that page</p>
+                      <ul class="font-proxima text-[13px] text-mny-200 leading-[1.6] list-disc pl-4 space-y-1">
+                        <li>Which records are visible (geography/role filter)</li>
+                        <li>Extra columns (Jurisdiction, County) for broader-scope roles</li>
+                        <li>The State Review section; a jurisdiction-picker field on Create for state-role users</li>
+                        <li>Aggregate/rollup sections (e.g. actions-by-county) — a section that's simply empty for narrow scope, not a reason to fork the page</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <p class="font-proxima text-[13px] leading-[1.6] text-mny-200 mt-5 pt-5 border-t border-white/10">
+                    <strong class="text-white font-[600]">For a static design mockup</strong> (no real auth yet), the honest way to show this is a single file per page-type with an in-page
+                    <strong class="text-white font-[600]">"Viewing as: [Jurisdiction / County / State]"</strong> toggle that shows/hides the role-gated bits live — not three separate HTML files. This is more useful for review, too: a reviewer sees what changes by flipping one control, instead of diffing three tabs.
+                  </p>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- AS-IS -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">As-Is — What's Actually On The Live Server</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[900px]">
+                  Pulled from pattern 566466's <code class="text-[12px] bg-mny-50 px-1 rounded">Forms</code> hub (page 1336681),
+                  112 pages total. Each dataset subtree grew independently — no two look alike.
+                </p>
+                <div class="overflow-x-auto rounded-[12px] border border-mny-100">
+                  <table class="w-full border-collapse text-left">
+                    <thead>
+                      <tr class="bg-mny-50">
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Dataset</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Live page id</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Existing pages today</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Gap vs. target ecosystem (see below)</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-[13px] text-mny-700">
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Actions</td>
+                        <td class="px-3 py-2.5 tabular-nums text-mny-400">1686109</td>
+                        <td class="px-3 py-2.5">list_search &times;2, card_search, card, view, single_edit &times;3, edit (Spreadsheet) &times;2, create &times;3</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 text-mny-y700 font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-y700"></span>nothing missing — 5+ redundant variants per type</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-50/40">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Capabilities</td>
+                        <td class="px-3 py-2.5 tabular-nums text-mny-400">1690288</td>
+                        <td class="px-3 py-2.5">card, view &times;2, single_edit &times;3, edit &times;2, create &times;2</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 text-mny-y700 font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-y700"></span>same redundancy problem as Actions</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Hazards of Concern</td>
+                        <td class="px-3 py-2.5 tabular-nums text-mny-400">1444290</td>
+                        <td class="px-3 py-2.5">create, edit, single_edit</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 text-mny-red font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-red"></span>no dashboard/list, no standalone view</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-50/40">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">High Hazard Dams</td>
+                        <td class="px-3 py-2.5 tabular-nums text-mny-400">1444479</td>
+                        <td class="px-3 py-2.5">single_edit only</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 text-mny-red font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-red"></span>no dashboard, spreadsheet, or view (create intentionally excluded — fixed reference set)</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Participation</td>
+                        <td class="px-3 py-2.5 tabular-nums text-mny-400">1444280</td>
+                        <td class="px-3 py-2.5">single_edit, edit, create, view</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 text-mny-red font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-red"></span>no dashboard/list</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-50/40">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Capacities</td>
+                        <td class="px-3 py-2.5 tabular-nums text-mny-400">1923305</td>
+                        <td class="px-3 py-2.5">create, single_edit, edit</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 text-mny-red font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-red"></span>no view, no dashboard/list</span></td>
+                      </tr>
+                      <tr>
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Roles</td>
+                        <td class="px-3 py-2.5 tabular-nums text-mny-400">1444244</td>
+                        <td class="px-3 py-2.5">single_edit, view, edit, create</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 text-mny-red font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-red"></span>no dashboard/list</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="font-proxima text-[12px] text-mny-400 mt-3">
+                  Also present but out of scope for this redesign: a legacy <code class="text-[11px] bg-mny-50 px-1 rounded">Actions (old)</code> /
+                  <code class="text-[11px] bg-mny-50 px-1 rounded">Capabilities (old)</code> tree (which, notably, has genuine
+                  dashboard+spreadsheet pairs — the template this redesign should have followed the first time), and an
+                  <code class="text-[11px] bg-mny-50 px-1 rounded">Other Forms</code> grab-bag (Policies, Hazard Events, County
+                  Plan Status, etc.).
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- PROPOSED IA -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Proposed — One Ecosystem Per Dataset, Role-Adaptive</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[900px]">
+                  Each dataset's ecosystem was assessed independently against its live field structure — not assumed
+                  uniform. Five datasets fit the full 5-page shape naturally; one (High Hazard Dams) is a fixed
+                  reference registry that drops Create; one (Capacities) is deferred pending a separate architectural
+                  merge into Capabilities. Within each page-type, the three roles below are <strong class="text-mny-900 font-[600]">scope +
+                  section visibility, not separate pages</strong> — see the "tiers are not pages" callout above.
+                </p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                  <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-5">
+                    <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-700 mb-1">Jurisdiction role</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Sees only one municipality's records. Scoped by <code class="text-[11px] bg-white px-1 rounded">geoid_juris</code> — same Dashboard page, filtered.</p>
+                  </div>
+                  <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-5">
+                    <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-700 mb-1">County role</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Sees every jurisdiction in one county. Scoped by <code class="text-[11px] bg-white px-1 rounded">county_geoid</code> — same page, a Jurisdiction column/filter simply becomes relevant and renders.</p>
+                  </div>
+                  <div class="rounded-[12px] border border-mny-y700/40 bg-mny-y50 p-5">
+                    <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-900 mb-1">State role</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Sees statewide, all counties. Same page, plus a County column/filter and (Actions only, so far) the "State Review" section (<code class="text-[11px] bg-white px-1 rounded">approvable</code> / <code class="text-[11px] bg-white px-1 rounded">dhses_comments</code> / <code class="text-[11px] bg-white px-1 rounded">fema_comments</code>) becoming visible.</p>
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-[12px] border border-mny-100 mb-3">
+                  <table class="w-full border-collapse text-left">
+                    <thead>
+                      <tr class="bg-mny-50">
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Dataset</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Dash.</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Sheet</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">View</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Edit</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Create</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Why</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-[13px] text-mny-700">
+                      <tr class="border-b border-mny-50 bg-mny-y50/50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Actions <span class="text-mny-y700 font-[700] text-[11px] uppercase">15 built, pending consolidation</span></td>
+                        <td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td>
+                        <td class="px-3 py-2.5">Full 5-page ecosystem, role-adaptive. Phase 1 shipped this as 15 tier-duplicated files, built <em>before</em> the tiers-vs-roles distinction above was assessed — target is 5 files with an in-page role toggle; consolidation held for a later pass (2026-07-29 decision).</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Capabilities</td>
+                        <td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td>
+                        <td class="px-3 py-2.5">Full 5-page ecosystem for UI consistency, even though it's actually a centrally-maintained statewide catalog (no <code class="text-[11px] bg-mny-50 px-1 rounded">geoid</code> field live today) — see the <a href="capacity-assessment-architecture.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Capacity Assessment Architecture</a> report. Role differences here are mostly read-vs-write, not scope.</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Hazards of Concern</td>
+                        <td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td>
+                        <td class="px-3 py-2.5">Full 5-page ecosystem. A dense ~16-hazard-per-jurisdiction grid, so Spreadsheet is the primary bulk-fill workflow; Create adds "Other" hazards.</td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-y50/40">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">High Hazard Dams</td>
+                        <td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-400">—</td>
+                        <td class="px-3 py-2.5"><strong class="text-mny-900">4-page ecosystem, no Create for any role</strong> — a fixed, state-owned registry. County/Jurisdiction roles get Edit to add local context (not to add/remove dams); every role gets Spreadsheet.</td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Participation</td>
+                        <td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td>
+                        <td class="px-3 py-2.5">Full 5-page ecosystem. One row per meeting/event, created as meetings occur; Spreadsheet is most useful for County/State rollup review.</td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-100/50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Capacities</td>
+                        <td class="px-3 py-2.5 text-mny-400">—</td><td class="px-3 py-2.5 text-mny-400">—</td><td class="px-3 py-2.5 text-mny-400">—</td><td class="px-3 py-2.5 text-mny-400">—</td><td class="px-3 py-2.5 text-mny-400">—</td>
+                        <td class="px-3 py-2.5"><strong class="text-mny-900">Deferred.</strong> Expected to be scrapped and merged into Capabilities — no pages built this pass. Revisit once that merge is decided.</td>
+                      </tr>
+                      <tr>
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Roles</td>
+                        <td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td><td class="px-3 py-2.5 text-mny-grn">✓</td>
+                        <td class="px-3 py-2.5">Full 5-page ecosystem. One row per stakeholder/contact, maintained on an ongoing basis.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="font-proxima text-[12px] text-mny-400 mb-6">
+                  Every decision above (Capabilities kept full-ecosystem, Hazards of Concern's shape, High Hazard Dams'
+                  Create exception + Spreadsheet-for-every-role, Capacities deferred) was confirmed directly with the
+                  product owner — this is not a default, it's a per-dataset judgment call informed by the live field
+                  data and the existing capability-vs-capacity architecture analysis. The role-vs-page collapse itself
+                  (this table's columns = page-types, not tiers) was a separate, later correction — see the "tiers are
+                  not pages" callout above.
+                </p>
+
+                <div class="overflow-x-auto rounded-[12px] border border-mny-100">
+                  <table class="w-full border-collapse text-left">
+                    <thead>
+                      <tr class="bg-mny-50">
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Page type</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Purpose</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Filename pattern (no tier in the name)</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-[13px] text-mny-700">
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Dashboard</td>
+                        <td class="px-3 py-2.5">Filterable list — the entry point. Search + status/hazard facets + a table linking to View/Edit. Row scope + extra columns adapt by the logged-in role.</td>
+                        <td class="px-3 py-2.5"><code class="text-[12px] bg-mny-50 px-1.5 py-0.5 rounded">admin-{dataset}-dashboard.html</code></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-50/40">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Spreadsheet</td>
+                        <td class="px-3 py-2.5">Bulk-edit grid — every cell inline-editable. Same role-adaptive row scope as Dashboard.</td>
+                        <td class="px-3 py-2.5"><code class="text-[12px] bg-mny-50 px-1.5 py-0.5 rounded">admin-{dataset}-spreadsheet.html</code></td>
+                      </tr>
+                      <tr class="border-b border-mny-50">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">View</td>
+                        <td class="px-3 py-2.5">Single record, read-only. Collapsible sections + in-page nav rail. Identical for every role except role-gated sections (e.g. State Review).</td>
+                        <td class="px-3 py-2.5"><code class="text-[12px] bg-mny-50 px-1.5 py-0.5 rounded">admin-{dataset}-view.html</code></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 bg-mny-50/40">
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Edit</td>
+                        <td class="px-3 py-2.5">Single record, full editable form. Sticky "unsaved changes" save bar. Same record shape for every role; role-gated sections may be read-only or hidden.</td>
+                        <td class="px-3 py-2.5"><code class="text-[12px] bg-mny-50 px-1.5 py-0.5 rounded">admin-{dataset}-edit.html</code></td>
+                      </tr>
+                      <tr>
+                        <td class="px-3 py-2.5 font-[600] text-mny-900">Create</td>
+                        <td class="px-3 py-2.5">Same layout as Edit, blank. Skipped entirely for High Hazard Dams (fixed reference set) and not yet applicable to Capacities (deferred). A state-role user gets an open jurisdiction/county picker; a jurisdiction-role user gets it pre-filled and hidden.</td>
+                        <td class="px-3 py-2.5"><code class="text-[12px] bg-mny-50 px-1.5 py-0.5 rounded">admin-{dataset}-create.html</code></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- FULL IA SITEMAP -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Full Information Architecture — Every Page</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[900px]">
+                  The complete target sitemap: one Admin Panel Home, then one 5-page (or 4-page) ecosystem per active
+                  dataset — 30 pages total. <span class="inline-flex items-center gap-1 text-mny-y700 font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-y700"></span>amber</span> = live today,
+                  <span class="inline-flex items-center gap-1 text-mny-400 font-[600]"><span class="w-1.5 h-1.5 rounded-full bg-mny-200"></span>gray</span> = planned, not yet built.
+                </p>
+                <ul class="font-proxima text-[14px] text-mny-900 space-y-2.5 pl-1">
+                  <li>
+                    <span class="inline-flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-mny-y700"></span>
+                      <a href="../pages/admin-home.html" class="font-[700] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-y700">Admin Panel Home</a>
+                      <span class="text-mny-400 font-normal">— landing page, links into every dataset below, scoped to the viewer's role</span>
+                    </span>
+                  </li>
+                  <li class="pl-5">
+                    <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-mny-y700"></span><strong>Actions</strong><span class="text-mny-400 font-normal">— 5 pages (shipped as 15 tier-duplicated files; pending consolidation)</span></span>
+                    <ul class="pl-7 mt-1 space-y-0.5 text-mny-700">
+                      <li>Dashboard <span class="text-mny-400">— filterable list</span></li>
+                      <li>Spreadsheet <span class="text-mny-400">— bulk-edit grid</span></li>
+                      <li>View <span class="text-mny-400">— single record, read-only</span></li>
+                      <li>Edit <span class="text-mny-400">— single record, editable (+ State Review section)</span></li>
+                      <li>Create <span class="text-mny-400">— blank Edit</span></li>
+                    </ul>
+                  </li>
+                  <li class="pl-5">
+                    <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-mny-200"></span><strong>Capabilities</strong><span class="text-mny-400 font-normal">— 5 pages (not yet built)</span></span>
+                    <ul class="pl-7 mt-1 space-y-0.5 text-mny-400">
+                      <li>Dashboard</li><li>Spreadsheet</li><li>View</li><li>Edit</li><li>Create</li>
+                    </ul>
+                  </li>
+                  <li class="pl-5">
+                    <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-mny-200"></span><strong>Hazards of Concern</strong><span class="text-mny-400 font-normal">— 5 pages (not yet built)</span></span>
+                    <ul class="pl-7 mt-1 space-y-0.5 text-mny-400">
+                      <li>Dashboard</li><li>Spreadsheet</li><li>View</li><li>Edit</li><li>Create <span class="text-mny-400">(adds "Other" hazards)</span></li>
+                    </ul>
+                  </li>
+                  <li class="pl-5">
+                    <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-mny-200"></span><strong>High Hazard Dams</strong><span class="text-mny-400 font-normal">— 4 pages (not yet built, no Create)</span></span>
+                    <ul class="pl-7 mt-1 space-y-0.5 text-mny-400">
+                      <li>Dashboard</li><li>Spreadsheet</li><li>View</li><li>Edit</li>
+                    </ul>
+                  </li>
+                  <li class="pl-5">
+                    <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-mny-200"></span><strong>Participation</strong><span class="text-mny-400 font-normal">— 5 pages (not yet built)</span></span>
+                    <ul class="pl-7 mt-1 space-y-0.5 text-mny-400">
+                      <li>Dashboard</li><li>Spreadsheet</li><li>View</li><li>Edit</li><li>Create</li>
+                    </ul>
+                  </li>
+                  <li class="pl-5">
+                    <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-mny-200"></span><strong>Roles</strong><span class="text-mny-400 font-normal">— 5 pages (not yet built)</span></span>
+                    <ul class="pl-7 mt-1 space-y-0.5 text-mny-400">
+                      <li>Dashboard</li><li>Spreadsheet</li><li>View</li><li>Edit</li><li>Create</li>
+                    </ul>
+                  </li>
+                  <li class="pl-5">
+                    <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-mny-100 border border-mny-200"></span><strong class="text-mny-400">Capacities</strong><span class="text-mny-400 font-normal">— deferred, no pages (expected to merge into Capabilities)</span></span>
+                  </li>
+                </ul>
+                <p class="font-proxima text-[12px] text-mny-400 mt-4">
+                  30 pages (1 home + 29 across 6 active datasets) vs. 112 inconsistent live pages today. Not shown: the
+                  15 already-built Actions files' real names — see the Phase 1 mockups link in the source citation below.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- RECOMMENDATION -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Status &amp; recommended path</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-4">Build the other 5 collapsed from the start; reconcile Actions later</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Shipped, flagged</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">15 Actions pages exist in <code class="text-[11px] bg-white px-1 rounded">../pages/admin-*-actions-*.html</code>, built before the tiers-vs-roles collapse was assessed — left as-is, a known follow-up. <a href="../pages/admin-home.html" class="font-[600] underline decoration-mny-y500 hover:decoration-mny-700">Admin Panel Home</a> is also shipped and links into it.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Review</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Human review of the Actions field grouping and section content (still valid) separately from the page-count question (now superseded).</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Build collapsed</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Capabilities, Hazards of Concern, Participation, Roles as 5 role-adaptive pages each (not 15); High Hazard Dams as 4 (no Create). One file per page-type, with an in-page "Viewing as" role toggle.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">4 &middot; Hold / later</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Capacities stays deferred. Actions' 15 files get consolidated to 5 in a later pass, using the other 5 datasets' collapsed build as the template.</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-5 pt-5 border-t border-mny-y500">
+                  <strong class="text-mny-900 font-[600]">Net effect once complete:</strong> 112 inconsistent live pages become
+                  <strong class="text-mny-900 font-[600]">30 pages</strong> — one <a href="../pages/admin-home.html" class="text-mny-900 font-[600] underline decoration-mny-y500 hover:decoration-mny-700">Admin Panel Home</a> (built), plus 29
+                  role-adaptive pages across 6 active datasets (5 datasets &times; 5 page-types + High Hazard Dams
+                  &times; 4 page-types — no tier multiplier) — Capacities excluded pending its merge into Capabilities.
+                  That's fewer pages than exist today, each one purposeful, every active dataset with the dashboard and
+                  bulk-edit capability most currently lack, one clear front door instead of the flat Forms hub, and no
+                  per-tier duplicate-maintenance burden.
+                </p>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: live Falcor query against <code>https://dmsserver.availabs.org/graph</code>, app
+                <code>mitigat-ny-prod</code>, pattern 566466 (type <code>prod|admin:pattern</code>), 2026-07-29 — page tree
+                under the <code>Forms</code> hub (id 1336681, 112 pages), field inventories from each dataset's live edit
+                section: <code>Actions_Revised</code> (page 1686224, ~90 cols), Capabilities (page 1696938, 84 cols),
+                <code>Hazards_of_Concern</code> (page 1702741, 25 cols), High Hazard Dams (page 1444469, 6 sections
+                incl. a hand-repeated <code>hhpd_1..4</code> sub-record), Participation (page 1714399, 16 cols),
+                <code>Capacities V2</code> (page 1923342, 15 cols), Roles (page 1715553, 20 cols). Per-dataset ecosystem
+                shape confirmed with the product owner 2026-07-29; the Capabilities-as-statewide-catalog framing is
+                drawn from the existing
+                <a href="capacity-assessment-architecture.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Capacity Assessment Architecture</a> report. The
+                tiers-are-roles-not-pages collapse was a second-pass correction, also confirmed with the product owner
+                2026-07-29, prompted by a direct question about whether the 3-tier page duplication was warranted at
+                all. The Admin Panel Home landing page (added 2026-07-29, per explicit request after this report
+                flagged that no such page existed) is
+                <a href="../pages/admin-home.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">admin-home.html</a>.
+                Full task record: <code>planning/tasks/current/mny-admin-panel-redesign.md</code>. Phase 1 mockups
+                (pre-collapse, flagged for consolidation):
+                <a href="../pages/admin-jurisdiction-actions-dashboard.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">admin-jurisdiction-actions-dashboard.html</a>
+                and its 14 siblings under <code>../pages/</code>.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:230px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <a href="admin-panel-information-architecture.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Admin Panel IA (current)</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Admin Panel — Actions (Phase 1)</div>
+    <a href="../pages/admin-jurisdiction-actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Jurisdiction &middot; Dashboard</a>
+    <a href="../pages/admin-county-actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> County &middot; Dashboard</a>
+    <a href="../pages/admin-state-actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> State &middot; Dashboard</a>
+    <a href="../pages/admin-state-actions-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> State &middot; Edit (State Review)</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Mockups</div>
+    <a href="../pages/admin-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:700;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Admin Panel Home</a>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/actions-workspace.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Workspace</a>
+    <a href="../pages/site-management-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Site Management v2</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+<!-- Footer link block -->
+<div class="max-w-[1440px] mx-auto px-4 xl:px-[64px] pb-10">
+  <div class="border-t border-mny-200 pt-4 flex flex-wrap gap-x-6 gap-y-1 font-proxima text-[12px] text-mny-400">
+    <span class="font-[700] text-mny-700 uppercase tracking-wide">Data Reports:</span>
+    <a href="actions-qa.html" class="hover:text-mny-700">Actions QA</a>
+    <a href="duplicate-actions.html" class="hover:text-mny-700">Duplicate Actions</a>
+    <a href="boilerplate-actions.html" class="hover:text-mny-700">Boilerplate Actions</a>
+    <a href="location-from-text.html" class="hover:text-mny-700">Locating From Text</a>
+    <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">Admin Panel:</span>
+    <a href="../pages/admin-home.html" class="hover:text-mny-700">Home</a>
+    <a href="../pages/admin-jurisdiction-actions-dashboard.html" class="hover:text-mny-700">Actions (Jurisdiction)</a>
+    <a href="../pages/admin-county-actions-dashboard.html" class="hover:text-mny-700">Actions (County)</a>
+    <a href="../pages/admin-state-actions-dashboard.html" class="hover:text-mny-700">Actions (State)</a>
+  </div>
+</div>
+
+</body>
+</html>

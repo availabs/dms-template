@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Admin — Actions Bulk Edit (State)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B', 'mny-org': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  ADMIN PANEL REDESIGN — STATE tier, Actions "Bulk Edit" (spreadsheet) page. See
+  admin-state-actions-dashboard.html's header comment for the full ecosystem map. Grounded in
+  the "BULK INLINE-EDIT demo" row pattern in actions-workspace.html, but here the WHOLE grid is
+  editable (every cell), spans multiple counties (statewide rollup, matching the dashboard's
+  scope), and adds an "Approvable" column — the state-only QA/approval field (approvable, on
+  the live Actions_Revised source) that lets a state reviewer triage many records' review status
+  in one pass without opening each record individually.
+-->
+
+<!-- ================================================================
+     TOPNAV
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <span class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-y700 px-3">Admin Panel</span>
+          <span class="text-mny-200">/</span>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 border-b-2 border-mny-y700 h-full flex items-center">Actions</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-3">
+          <!-- Tier switcher -->
+          <div class="flex items-center bg-mny-50 rounded-full border border-mny-100 p-0.5">
+            <a href="admin-jurisdiction-actions-spreadsheet.html" class="px-3 py-1.5 rounded-full font-proxima text-[12px] font-[600] text-mny-700 hover:text-mny-900">Jurisdiction</a>
+            <a href="admin-county-actions-spreadsheet.html" class="px-3 py-1.5 rounded-full font-proxima text-[12px] font-[600] text-mny-700 hover:text-mny-900">County</a>
+            <span class="px-3 py-1.5 rounded-full bg-mny-900 font-proxima text-[12px] font-[600] text-white">State</span>
+          </div>
+          <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+            <!-- icon: User -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default. pb-28 leaves room for the sticky "unsaved
+     changes" bar so it never overlaps the last row.
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-28">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+
+      <div class="grid grid-cols-12 gap-y-4">
+
+        <!-- ==========================================================
+             SECTION 1 — HEADER (col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="header" class="col-span-12">
+          <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400 pb-1">
+            <a href="#" class="hover:text-mny-700">Admin Panel</a>
+            <span class="text-mny-200">/</span>
+            <span class="text-mny-700">Actions</span>
+            <span class="text-mny-200">/</span>
+            <a href="admin-state-actions-dashboard.html" class="hover:text-mny-700">Dashboard</a>
+            <span class="text-mny-200">/</span>
+            <span class="text-mny-700">Bulk Edit</span>
+          </div>
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1.05] tracking-[-0.01em]">Bulk Edit — Actions (Statewide)</h1>
+              <p class="font-proxima text-[14px] text-mny-700 mt-1">Every cell below is directly editable — including the state-review "Approvable" column, for fast QA triage across counties.</p>
+            </div>
+            <a href="admin-state-actions-dashboard.html" class="flex items-center gap-2 px-4 py-2.5 bg-white border border-mny-200 hover:border-mny-400 text-mny-700 hover:text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors shrink-0">
+              <!-- icon: ArrowLeft -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+              Back to Dashboard
+            </a>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION 2 — BULK-EDIT GRID (col-12) — every cell editable
+             ========================================================== -->
+        <div data-dms="section" data-name="bulk-grid" class="col-span-12 mt-4">
+          <div class="rounded-[12px] border border-mny-100 overflow-hidden overflow-x-auto">
+            <table class="w-full border-collapse min-w-[1100px]">
+              <thead>
+                <tr class="bg-mny-50">
+                  <th class="px-3 py-2.5 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[280px]">Action Name</th>
+                  <th class="px-3 py-2.5 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[130px]">County</th>
+                  <th class="px-3 py-2.5 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[190px]">Jurisdiction</th>
+                  <th class="px-3 py-2.5 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[140px]">Hazard</th>
+                  <th class="px-3 py-2.5 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[140px]">Status</th>
+                  <th class="px-3 py-2.5 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[160px]">Approvable</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <!-- ROW 1 -->
+                <tr class="border-b border-mny-50 bg-mny-100/30">
+                  <td class="p-1.5">
+                    <input value="Elevate County Road 14 Above Base Flood Elevation" class="w-full font-proxima text-[14px] font-[600] text-mny-900 border-2 border-mny-900 rounded-[6px] px-2 py-1.5 outline-none">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Sullivan</option><option>Ulster</option><option>Delaware</option><option>Orange</option><option>Broome</option><option>Greene</option><option>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="Village of Bloomingburg" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Flooding</option><option>Wind</option><option>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Proposed</option><option>In-Progress</option><option>Completed</option><option>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-y700 bg-mny-y50 text-mny-900">
+                      <option selected>Pending Review</option><option>Approved</option><option>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <!-- ROW 2 -->
+                <tr class="border-b border-mny-50 hover:bg-mny-50/40">
+                  <td class="p-1.5">
+                    <input value="Floodproof Wastewater Treatment Plant Critical Facility" class="w-full font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Sullivan</option><option>Ulster</option><option>Delaware</option><option>Orange</option><option>Broome</option><option>Greene</option><option>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="Town of Thompson" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Flooding</option><option>Wind</option><option>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Proposed</option><option>In-Progress</option><option>Completed</option><option>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-red bg-[#FBEAE9] text-mny-redk">
+                      <option>Pending Review</option><option>Approved</option><option selected>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <!-- ROW 3 -->
+                <tr class="border-b border-mny-50 hover:bg-mny-50/40">
+                  <td class="p-1.5">
+                    <input value="Install Backup Generator at Village Pump Station" class="w-full font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Sullivan</option><option selected>Ulster</option><option>Delaware</option><option>Orange</option><option>Broome</option><option>Greene</option><option>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="Village of Ellenville" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Flooding</option><option>Wind</option><option>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Proposed</option><option selected>In-Progress</option><option>Completed</option><option>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-grn bg-[#EAF7F3] text-mny-900">
+                      <option>Pending Review</option><option selected>Approved</option><option>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <!-- ROW 4 -->
+                <tr class="border-b border-mny-50 hover:bg-mny-50/40">
+                  <td class="p-1.5">
+                    <input value="Distribute Information on Building Homes to Withstand High Winds" class="w-full font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Sullivan</option><option>Ulster</option><option selected>Delaware</option><option>Orange</option><option>Broome</option><option>Greene</option><option>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="Town of Sidney" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Flooding</option><option selected>Wind</option><option>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Proposed</option><option>In-Progress</option><option>Completed</option><option selected>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-grn bg-[#EAF7F3] text-mny-900">
+                      <option>Pending Review</option><option selected>Approved</option><option>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <!-- ROW 5 -->
+                <tr class="border-b border-mny-50 hover:bg-mny-50/40">
+                  <td class="p-1.5">
+                    <input value="Upsize Undersized Culvert on Route 97" class="w-full font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Sullivan</option><option>Ulster</option><option>Delaware</option><option selected>Orange</option><option>Broome</option><option>Greene</option><option>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="Town of Deerpark" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Flooding</option><option>Wind</option><option>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Proposed</option><option>In-Progress</option><option>Completed</option><option>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-y700 bg-mny-y50 text-mny-900">
+                      <option selected>Pending Review</option><option>Approved</option><option>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <!-- ROW 6 -->
+                <tr class="border-b border-mny-50 hover:bg-mny-50/40">
+                  <td class="p-1.5">
+                    <input value="Reinforce Municipal Building Roof Against Snow Load" class="w-full font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Sullivan</option><option>Ulster</option><option>Delaware</option><option>Orange</option><option selected>Broome</option><option>Greene</option><option>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="City of Binghamton" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Flooding</option><option>Wind</option><option selected>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Proposed</option><option>In-Progress</option><option selected>Completed</option><option>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-grn bg-[#EAF7F3] text-mny-900">
+                      <option>Pending Review</option><option selected>Approved</option><option>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <!-- ROW 7 -->
+                <tr class="border-b border-mny-50 hover:bg-mny-50/40">
+                  <td class="p-1.5">
+                    <input value="Relocate Emergency Generator Above Flood Elevation" class="w-full font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Sullivan</option><option>Ulster</option><option>Delaware</option><option>Orange</option><option>Broome</option><option selected>Greene</option><option>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="Town of Catskill" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Flooding</option><option>Wind</option><option>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Proposed</option><option>In-Progress</option><option>Completed</option><option>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-red bg-[#FBEAE9] text-mny-redk">
+                      <option>Pending Review</option><option>Approved</option><option selected>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <!-- ROW 8 -->
+                <tr class="hover:bg-mny-50/40">
+                  <td class="p-1.5">
+                    <input value="Stabilize Streambank Along Route 12" class="w-full font-proxima text-[14px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option>Sullivan</option><option>Ulster</option><option>Delaware</option><option>Orange</option><option>Broome</option><option>Greene</option><option selected>Chenango</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <input value="Village of Norwich" class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700">
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Flooding</option><option>Wind</option><option>Severe Winter Weather</option><option>Wildfire</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] text-mny-900 border border-mny-200 rounded-[6px] px-2 py-1.5 outline-none focus:border-mny-y700 bg-white">
+                      <option selected>Proposed</option><option>In-Progress</option><option>Completed</option><option>Discontinued</option>
+                    </select>
+                  </td>
+                  <td class="p-1.5">
+                    <select class="w-full font-proxima text-[13px] font-[600] rounded-[6px] px-2 py-1.5 outline-none border border-mny-y700 bg-mny-y50 text-mny-900">
+                      <option selected>Pending Review</option><option>Approved</option><option>Needs Revision</option>
+                    </select>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+          <p class="font-proxima text-[12px] text-mny-400 pt-4 mt-4 border-t border-mny-50">
+            Showing <span class="tabular-nums text-mny-700 font-[600]">8</span> of <span class="tabular-nums text-mny-700 font-[600]">2,143</span> statewide actions. Attribution: <a href="#" class="underline underline-offset-2 hover:text-mny-700">Actions_Revised (Full Actions 2-25-2025) (February 25, 2025 at 11:33 AM)</a>.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     STICKY SAVE BAR — mirrors action-edit.html's "Unsaved changes" bar
+     ================================================================ -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-mny-900 px-6 py-4">
+  <div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+    <span class="flex items-center gap-2 font-proxima text-[13px] text-white/80">
+      <!-- icon: Information -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-y500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a1 1 0 0 0 0 2v3a1 1 0 0 0 1 1h1a1 1 0 1 0 0-2v-3a1 1 0 0 0-1-1H9Z" clip-rule="evenodd"/></svg>
+      Unsaved changes — 1 row edited
+    </span>
+    <div class="flex items-center gap-3">
+      <button class="px-5 py-2 rounded-full border border-white/20 text-white/80 hover:text-white hover:border-white/40 font-proxima font-[700] text-[12px] uppercase tracking-wider transition-colors">Discard</button>
+      <button class="px-6 py-2 rounded-full bg-mny-y700 hover:bg-mny-y500 text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider transition-colors">Save All</button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating admin-panel nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:76px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:230px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">Admin Panel — Actions</div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6D96AE;padding:6px 16px 2px;">Jurisdiction</div>
+    <a href="admin-jurisdiction-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-jurisdiction-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-jurisdiction-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-jurisdiction-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-jurisdiction-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6D96AE;padding:8px 16px 2px;border-top:1px solid #E0EBF0;margin-top:4px;">County</div>
+    <a href="admin-county-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-county-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Spreadsheet</a>
+    <a href="admin-county-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-county-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-county-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#EAAD43;padding:8px 16px 2px;border-top:1px solid #E0EBF0;margin-top:4px;">State</div>
+    <a href="admin-state-actions-dashboard.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Dashboard</a>
+    <a href="admin-state-actions-spreadsheet.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:700;color:#EAAD43;text-decoration:none;">Spreadsheet (current)</a>
+    <a href="admin-state-actions-view.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">View</a>
+    <a href="admin-state-actions-edit.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Edit</a>
+    <a href="admin-state-actions-create.html" style="display:block;padding:5px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Create</a>
+    <div style="border-top:1px solid #E0EBF0;margin:6px 0 0;padding-top:6px;">
+      <a href="actions-workspace.html" style="display:block;padding:5px 16px;font-size:12px;font-weight:600;color:#9BB5C2;text-decoration:none;">Original public-template ecosystem →</a>
+    </div>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Admin panel navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+<!-- Footer link block -->
+<div class="max-w-[1440px] mx-auto px-4 xl:px-[64px] pb-10">
+  <div class="border-t border-mny-200 pt-4 flex flex-wrap gap-x-6 gap-y-1 font-proxima text-[12px] text-mny-400">
+    <span class="font-[700] text-mny-700 uppercase tracking-wide">Jurisdiction:</span>
+    <a href="admin-jurisdiction-actions-dashboard.html" class="hover:text-mny-700">Dashboard</a>
+    <a href="admin-jurisdiction-actions-spreadsheet.html" class="hover:text-mny-700">Spreadsheet</a>
+    <a href="admin-jurisdiction-actions-view.html" class="hover:text-mny-700">View</a>
+    <a href="admin-jurisdiction-actions-edit.html" class="hover:text-mny-700">Edit</a>
+    <a href="admin-jurisdiction-actions-create.html" class="hover:text-mny-700">Create</a>
+    <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">County:</span>
+    <a href="admin-county-actions-dashboard.html" class="hover:text-mny-700">Dashboard</a>
+    <a href="admin-county-actions-spreadsheet.html" class="hover:text-mny-700">Spreadsheet</a>
+    <a href="admin-county-actions-view.html" class="hover:text-mny-700">View</a>
+    <a href="admin-county-actions-edit.html" class="hover:text-mny-700">Edit</a>
+    <a href="admin-county-actions-create.html" class="hover:text-mny-700">Create</a>
+    <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">State:</span>
+    <a href="admin-state-actions-dashboard.html" class="hover:text-mny-700">Dashboard</a>
+    <a href="admin-state-actions-spreadsheet.html" class="font-[700] text-mny-900 underline underline-offset-2">Spreadsheet</a>
+    <a href="admin-state-actions-view.html" class="hover:text-mny-700">View</a>
+    <a href="admin-state-actions-edit.html" class="hover:text-mny-700">Edit</a>
+    <a href="admin-state-actions-create.html" class="hover:text-mny-700">Create</a>
+  </div>
+</div>
+
+</body>
+</html>

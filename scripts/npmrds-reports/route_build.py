@@ -495,7 +495,7 @@ def cmd_build(args):
         if r.get("tags"):
             # Same JSON-array-string convention as tmc_array — matches how the
             # routecreation tool's own `tags` multiselect column is written
-            # (planning/tasks/current/dynamic-reports-and-route-tags.md,
+            # (planning/transportny/tasks/current/dynamic-reports-and-route-tags.md,
             # Route Tags Phase 1, 2026-07-31).
             payload["tags"] = json.dumps(r["tags"], separators=(",", ":"))
         payloads.append(payload)

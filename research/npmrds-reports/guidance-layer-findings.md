@@ -25,7 +25,7 @@ to surface:
 
 | Axis | Question | Where tracked |
 |---|---|---|
-| Capability / parity | Does the mechanism work? | `planning/tasks/current/report-route-ui-parity-gaps.md` |
+| Capability / parity | Does the mechanism work? | `planning/transportny/tasks/current/report-route-ui-parity-gaps.md` |
 | First-touch authoring | Can an author get in the door? | `cold-open-ux-findings.md` (same day) |
 | **Guidance / feedback** | **Does the tool or page tell the user anything?** | **this doc** |
 
@@ -303,8 +303,8 @@ vector-tile data layers. Verified against Ryan's own screenshot of the same page
 ## Cross-references
 
 - `cold-open-ux-findings.md` — the first-touch authoring axis (same day, different axis)
-- `planning/tasks/current/report-route-ui-parity-gaps.md` — the capability/parity axis
-- `planning/tasks/current/route-creation-tool.md` — route arc orientation; `points` persistence gap
+- `planning/transportny/tasks/current/report-route-ui-parity-gaps.md` — the capability/parity axis
+- `planning/transportny/tasks/current/route-creation-tool.md` — route arc orientation; `points` persistence gap
 - `research/route-creation/findings.md` — full route-creation investigative trail
 - `src/dms/planning/tasks/completed/map21-single-page-dms-build.md` — how PM3 was built, and the
   primitive ledger it shipped

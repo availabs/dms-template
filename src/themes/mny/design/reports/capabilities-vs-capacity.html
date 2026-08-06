@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Capabilities vs. Capacity</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Capabilities<br>vs. Capacity
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    The inventory says what a jurisdiction has. It almost never says whether that
+                    jurisdiction can actually use it.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">2,354 capability rows</span>
+                    <span class="px-3 py-1.5 bg-mny-red border border-mny-red rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">3.2% carry real capacity context</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">~30-item capacity framework (planned)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Pure checkbox rows</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">82.1%</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">no status, utilization, or integration</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Fully documented</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">3.2%</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">75 rows &mdash; both fields filled</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Zero-context counties</p>
+              <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1">Niagara &amp; Allegany</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">890 rows, 38% &mdash; 0% either field</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Best-documented county</p>
+              <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1">Delaware</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">17.7% / 11.8%</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Single-domain jurisdictions</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">21</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">of 169 &mdash; capability or blind spot?</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Planned capacity items</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">~30</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">Availability &times; Adequacy &times; Interest/Need</p>
+            </div>
+          </div>
+
+          <!-- Checkbox vs documented bar -->
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-red" style="width:82.1%;" title="Pure checkbox — 1,933 rows"></div>
+            <div class="bg-mny-y700" style="width:14.7%;" title="Partially documented — 346 rows"></div>
+            <div class="bg-mny-grn" style="width:3.2%;" title="Fully documented — 75 rows"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-red"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Pure checkbox &mdash; no context (1,933)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Partial context &mdash; one field (346)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-grn"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Full context &mdash; both fields (75)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- VERDICT / DEFINITIONS -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    A checked box isn&rsquo;t evidence<br>of a working capacity.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">Capability</strong> is a discrete resource, tool, plan, staff
+                      role, or funding mechanism a jurisdiction possesses &mdash; the inventory item. <strong class="text-mny-900 font-[600]">Capacity</strong>
+                      is the jurisdiction&rsquo;s actual functional ability to leverage that resource: staffing depth,
+                      funding adequacy, technical expertise, political will, public support. A jurisdiction can check
+                      &ldquo;Hazard Mitigation Plan&rdquo; and still have near-zero capacity to act on it if the plan was adopted
+                      and never enforced.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The current capability table already has room for that distinction &mdash; the
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">Description of Status</code>,
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">Utilization</code>, and
+                      <code class="text-[13px] bg-mny-50 px-1 rounded">Integration</code> columns exist precisely to
+                      capture how a capability is actually used and what it contributes. But across 2,354 rows they are
+                      answered <strong class="text-mny-900 font-[600]">14.4%, 6.6%, and 4.0%</strong> of the time, respectively.
+                      <strong class="text-mny-900 font-[600]">82.1% of rows answer none of the three</strong> &mdash; they exist
+                      only as a checked box.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      That is not a flaw in these seven counties&rsquo; planning &mdash; it&rsquo;s what happens when one table is
+                      asked to do two jobs. A capability inventory is built to answer <em>does it exist</em>; a capacity
+                      assessment is built to answer <em>can this jurisdiction actually use it</em>. Bolting the second
+                      question onto the first, as three optional free-text columns, predictably gets skipped.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">What the free-text columns caught</p>
+                      <div class="flex items-baseline gap-3 mb-2">
+                        <span class="font-display text-[72px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">82%</span>
+                        <span class="font-display text-[16px] text-mny-y700 font-[500] leading-tight uppercase">of rows are<br>bare checkboxes</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-2">
+                        <strong class="text-white font-[600]">1,933</strong> of 2,354 rows carry no status, utilization,
+                        or integration text at all.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <div class="flex items-baseline gap-4">
+                        <div>
+                          <span class="font-display text-[30px] text-mny-400 font-[500] leading-none tracking-[-0.03em] tabular-nums">2,354</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">capability rows</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-700 self-center" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                        <div>
+                          <span class="font-display text-[48px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">75</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">with real capacity evidence</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- WHERE THE GAP IS WORST -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Where The Gap Is Worst</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Utilization and Integration fill rates by capability type. Even the best-covered type is answered on
+                  barely 1 row in 10.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-900">
+                    <p class="font-proxima text-[12px] text-mny-900 font-[600] leading-tight">Planning &amp; Regulatory</p>
+                    <p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-2">9.2%</p>
+                    <p class="font-proxima text-[11px] text-mny-400 mt-1">utilization &middot; 5.4% integration</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-700">
+                    <p class="font-proxima text-[12px] text-mny-900 font-[600] leading-tight">Administrative &amp; Technical</p>
+                    <p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-2">5.1%</p>
+                    <p class="font-proxima text-[11px] text-mny-400 mt-1">utilization &middot; 4.3% integration</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-y700">
+                    <p class="font-proxima text-[12px] text-mny-900 font-[600] leading-tight">Financial</p>
+                    <p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-2">3.2%</p>
+                    <p class="font-proxima text-[11px] text-mny-400 mt-1">utilization &middot; 1.1% integration</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-400">
+                    <p class="font-proxima text-[12px] text-mny-900 font-[600] leading-tight">Education &amp; Outreach</p>
+                    <p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-2">3.6%</p>
+                    <p class="font-proxima text-[11px] text-mny-400 mt-1">utilization &middot; 1.8% integration</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-red">
+                    <p class="font-proxima text-[12px] text-mny-900 font-[600] leading-tight">Asset</p>
+                    <p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-2">0%</p>
+                    <p class="font-proxima text-[11px] text-mny-400 mt-1">utilization &middot; 0% integration</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[15px] leading-[1.65] text-mny-700 max-w-[820px] mb-6">
+                  <strong class="text-mny-900 font-[600]">Financial capabilities are the largest blind spot.</strong> Taxing
+                  authority, bonding, fees, and grants make up 23% of all rows in the dataset, but only 3.2% say how
+                  they&rsquo;re used and 1.1% say what mitigation planning gets from them. A county can look financially
+                  well-equipped on paper while the record says nothing about whether any of those mechanisms are
+                  actually exercised.
+                </p>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  The same gap by county &mdash; two counties (38% of the dataset) show zero narrative context anywhere.
+                </p>
+                <div class="space-y-2.5 max-w-[900px]">
+                  <div class="flex items-center gap-3">
+                    <div class="w-[110px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Delaware</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-grn rounded-full flex items-center" style="width:17.7%;min-width:50px;"><span class="pl-2 font-proxima text-[11px] text-white font-[700]">17.7%</span></div>
+                    </div>
+                    <div class="w-[130px] flex-shrink-0 font-proxima text-[12px] text-mny-400">11.8% integration</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[110px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Sullivan</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:11.5%;min-width:44px;"><span class="pl-2 font-proxima text-[11px] text-mny-900 font-[700]">11.5%</span></div>
+                    </div>
+                    <div class="w-[130px] flex-shrink-0 font-proxima text-[12px] text-mny-400">2.9% integration</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[110px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Schenectady</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:6.6%;min-width:40px;"><span class="pl-2 font-proxima text-[11px] text-mny-900 font-[700]">6.6%</span></div>
+                    </div>
+                    <div class="w-[130px] flex-shrink-0 font-proxima text-[12px] text-mny-400">6.3% integration</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[110px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Hamilton</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:6.4%;min-width:40px;"><span class="pl-2 font-proxima text-[11px] text-mny-900 font-[700]">6.4%</span></div>
+                    </div>
+                    <div class="w-[130px] flex-shrink-0 font-proxima text-[12px] text-mny-400">3.5% integration</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[110px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Fulton</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:3%;min-width:34px;"><span class="pl-2 font-proxima text-[11px] text-mny-900 font-[700]">3%</span></div>
+                    </div>
+                    <div class="w-[130px] flex-shrink-0 font-proxima text-[12px] text-mny-400">1.5% integration</div>
+                  </div>
+                  <div class="flex items-center gap-3 opacity-80">
+                    <div class="w-[110px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Niagara</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full" style="width:1.5%;min-width:8px;"></div>
+                    </div>
+                    <div class="w-[130px] flex-shrink-0 font-proxima text-[12px] text-mny-red font-[600]">0% / 0% &mdash; 461 rows</div>
+                  </div>
+                  <div class="flex items-center gap-3 opacity-80">
+                    <div class="w-[110px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Allegany</div>
+                    <div class="flex-1 h-[22px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full" style="width:1.5%;min-width:8px;"></div>
+                    </div>
+                    <div class="w-[130px] flex-shrink-0 font-proxima text-[12px] text-mny-red font-[600]">0% / 0% &mdash; 429 rows</div>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-4 max-w-[820px]">
+                  <strong class="text-mny-900 font-[600]">Delaware proves the current form can capture capacity signal</strong> &mdash;
+                  its rate is more than four times the statewide average. Niagara and Allegany prove it usually doesn&rsquo;t:
+                  combined, they carry <strong class="text-mny-900 font-[600]">890 rows, 38% of the entire dataset</strong>, with not
+                  one utilization or integration note between them.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- BREADTH BLIND SPOT -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">The Breadth Blind Spot</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  21 of 169 jurisdictions (12%) show a capability in exactly one of the five domains &mdash; 16 of those
+                  in Planning &amp; Regulatory only, which for most of them means a single row: adoption of the county
+                  Hazard Mitigation Plan.
+                </p>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div class="lg:col-span-7">
+                    <p class="font-proxima text-[15px] leading-[1.65] text-mny-700">
+                      A capability count of 1 is genuinely ambiguous, and it&rsquo;s ambiguous in a way the inventory has no
+                      way to resolve on its own. It could mean the jurisdiction truly has no other capability worth
+                      logging &mdash; no staff role, no funding mechanism, no ordinance beyond the plan. Or it could mean
+                      the county&rsquo;s intake process reached that jurisdiction once, for the plan adoption, and never
+                      circled back to ask about anything else. Both produce the exact same row count.
+                    </p>
+                    <p class="font-proxima text-[15px] leading-[1.65] text-mny-700 mt-4">
+                      That is the structural reason a capability inventory can&rsquo;t double as a capacity assessment,
+                      even a well-completed one. An inventory only speaks when something exists to report; it stays
+                      silent everywhere else, and silence doesn&rsquo;t distinguish &ldquo;this jurisdiction lacks the capability&rdquo;
+                      from &ldquo;this jurisdiction was never asked.&rdquo; See the
+                      <a href="capability-inventory.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Capability Inventory</a>
+                      report for the full breadth breakdown.
+                    </p>
+                  </div>
+                  <div class="lg:col-span-5">
+                    <div class="h-full bg-white border border-mny-100 rounded-[12px] p-6 shadow-sm">
+                      <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-3">Same name, different question</p>
+                      <p class="font-proxima text-[15px] text-mny-900 font-[600] leading-tight">&ldquo;Hazard Mitigation Plan&rdquo;</p>
+                      <p class="font-proxima text-[12px] text-mny-400 mb-4">appears on 68 capability rows today</p>
+                      <div class="space-y-3 font-proxima text-[13px]">
+                        <div class="border-b border-mny-50 pb-3">
+                          <span class="block text-mny-400 text-[11px] uppercase tracking-wider mb-1">As a Capability</span>
+                          <span class="text-mny-900">Does the plan exist and carry an adoption date?</span>
+                        </div>
+                        <div>
+                          <span class="block text-mny-400 text-[11px] uppercase tracking-wider mb-1">As a Capacity item</span>
+                          <span class="text-mny-900">Can this jurisdiction actually staff, fund, and enforce it &mdash; rated on Availability, Adequacy, and Interest/Need?</span>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-4 leading-[1.5]">
+                        Not a duplicate field &mdash; a different axis entirely. Both are needed; neither substitutes for
+                        the other.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- BRIDGE TO PLANNED CAPACITY ASSESSMENT -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Bridging To The Planned Capacity Assessment</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  The proposed rapid self-report tool asks jurisdictions directly, item by item, rather than inferring
+                  capacity from what a capability row happens to say. ~30 discrete, rateable items across the same five
+                  domains this inventory already uses:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
+                  <div class="bg-mny-50 rounded-[10px] p-4">
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Admin &amp; Technical</p>
+                    <p class="font-proxima text-[13px] text-mny-900 leading-[1.5]">GIS Coordinator, Floodplain Administrator, Chief Building Official, Emergency Manager, Grant Writer &hellip;</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4">
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Planning &amp; Regulatory</p>
+                    <p class="font-proxima text-[13px] text-mny-900 leading-[1.5]">Hazard Mitigation Plan, Comprehensive/Master Plan, Building Code, Zoning &amp; Subdivision Ordinances &hellip;</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4">
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Financial</p>
+                    <p class="font-proxima text-[13px] text-mny-900 leading-[1.5]">Tax levy authority, bonding authority, impact/stormwater fees, grant management capacity &hellip;</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4">
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Technical / Infrastructure</p>
+                    <p class="font-proxima text-[13px] text-mny-900 leading-[1.5]">GIS/mapping system, HAZUS or risk modeling, asset inventory, warning systems &hellip;</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4">
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Outreach &amp; Coordination</p>
+                    <p class="font-proxima text-[13px] text-mny-900 leading-[1.5]">Public education program, CRS participation, mutual aid agreements, citizen/CERT groups &hellip;</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[15px] leading-[1.65] text-mny-700 max-w-[820px]">
+                  Each item is rated on three independent scales &mdash; <strong class="text-mny-900 font-[600]">Availability</strong>
+                  (Not Reported / None / Internal / Shared / County-Level / Community Supported),
+                  <strong class="text-mny-900 font-[600]">Adequacy</strong> (Not Reported / Insufficient / Limited / Adequate /
+                  Strong), and <strong class="text-mny-900 font-[600]">Interest/Need</strong> (Not Reported / None / Low / Moderate /
+                  High) &mdash; every time, for every jurisdiction, whether or not a matching capability happens to be
+                  checked in this table. That&rsquo;s what turns the silence documented above into an actual answer.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- RECOMMENDATION -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Recommended path</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-4">Pilot the capacity assessment where the capability table is blind</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Start with the zeroes</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Niagara and Allegany &mdash; 890 rows, 38% of the current dataset, currently zero capacity signal of any kind.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Ask everyone the same ~30 items</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Regardless of what&rsquo;s checked in the capability table &mdash; so a jurisdiction&rsquo;s silence stops being ambiguous.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Key it to the same jurisdiction</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">So a future join can place a capability row next to its capacity rating, closing the loop this report opened.</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-5 pt-5 border-t border-mny-y500">
+                  <strong class="text-mny-900 font-[600]">Net effect:</strong> the capability table keeps doing the job it&rsquo;s
+                  good at &mdash; a clean inventory of what exists &mdash; while the capacity assessment does the job it can&rsquo;t:
+                  telling you, jurisdiction by jurisdiction, whether that existence means anything yet. See the
+                  <a href="capability-inventory.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Capability Inventory</a> report for the underlying data audit this analysis builds on.
+                </p>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: <code>combined_capa.csv</code> &mdash; 7-county capability export (Hamilton, Niagara, Schenectady,
+                Sullivan, Allegany, Delaware, Fulton), 2,354 rows / 169 jurisdictions. Analyzed via
+                <code>scratchpad/mny-capabilities/analyze_capa.ps1</code>. Companion to the
+                <a href="capability-inventory.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Capability Inventory</a> report.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <a href="capability-inventory.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capability Inventory</a>
+    <a href="capabilities-vs-capacity.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capabilities vs. Capacity</a>
+    <a href="state-capability-catalog.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> State Capability Catalog</a>
+    <a href="capacity-assessment-architecture.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capacity Assessment Architecture</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Mockups</div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard</a>
+    <a href="../pages/actions-workspace.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Workspace</a>
+    <a href="../pages/action-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action View</a>
+    <a href="../pages/action-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action Edit</a>
+    <a href="../pages/actions-by-jurisdiction.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions by Jurisdiction</a>
+    <a href="../pages/actions-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Search</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

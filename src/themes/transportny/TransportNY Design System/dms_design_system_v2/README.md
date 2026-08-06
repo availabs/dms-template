@@ -1,7 +1,9 @@
 # TransportNY · DMS Design System v2
 
-**v0.2 · 2026-05-26** (last revised **2026-07-31** — NPMRDS Reports rebuilt around the template
-shelf; see `pages/npmrds-reports.html`) · A second-pass DMS-format implementation of the
+**v0.2 · 2026-05-26** (last revised **2026-08-05** — the **content sidebar (side content)** region is
+now documented as layout knowledge *and* as a component, with a second named style; the individual
+report page is rebuilt on it and its route controls redrawn at full capability. See
+[Content sidebar](#content-sidebar-2026-08-05) below.) · A second-pass DMS-format implementation of the
 TransportNY brand. Translates the high-fidelity HTML/JSX prototypes in
 `../design_handoff_transportny_design_system/` into the deliverable
 shape mandated by the up-to-date DMS authoring skills.
@@ -70,6 +72,138 @@ sets, and rules the skills now require:
 
 ---
 
+## Content sidebar (2026-08-05)
+
+The **side content** region — the rail beside the content column, switched on per page by the
+“Show Content Sidebar” setting (`item.sidebar` = left/right) and filled from the page's `sidebar`
+section group — had no entry in this catalogue: pages that used it drew it ad hoc, and
+`npmrds-report.html` drew it as a `col-span-3` grid column, which is not what the platform renders.
+Closed in four places:
+
+1. **`design-system/layouts.html` § 09 · Content sidebar.** The layout knowledge: the four moving
+   parts (toggle · `navLabel` nav items · the `sidebar` group · which band hosts it), the rendered
+   wrapper tree, the full `contentRow` / `contentCol` / `sideNavContainer1..3` class reference for
+   both styles, and the load-bearing rules (`items-stretch`, one sticky wrapper, hidden below `xl`).
+   States plainly that **the rail is not a grid column** — it is a fixed-width flex sibling outside
+   the 12-col grid, so the canvas keeps its own `grid-cols-12`.
+2. **`design-system/components.html` § Content Sidebar** (in Navigation, after SideNav). The
+   component: both styles drawn side by side, the key list, and the author controls.
+3. **`theme/theme.js`** gains `pages.sectionGroup` — which this theme never shipped, so every rail
+   on a TransportNY site was running the codebase's neutral defaults. Two named styles:
+   `styles[0] default` (302-px card rail, 40-px gutter, sticky under the header) and
+   **`styles[1] flush`** (340 px, **no padding, hugging the content area's left edge, `sticky top-0
+   h-svh`** — full height of the tab, panel-owned internal scroll). `flush` asks two things of the
+   page: the rail-hosting band must be Full Width, and the page header must be a section in the
+   content column rather than its own full-bleed band — so **on a flush rail the header is not full
+   width**, by design. Also fixes `modal`, which was a flat object and so silently ignored
+   `activeStyle: 'wide'`; it is now a styles array with a `wide` entry (max-w-7xl).
+4. **`pages/npmrds-report.html`** is rebuilt on it: one band hosts the flush rail plus the whole
+   canvas, and the header and the finding are canvas sections. Two claims from earlier drafts are
+   corrected there: route edits write straight through to the report's own dataset row
+   (publish/discard don't apply to route content), and the mutation gate is two flags —
+   `editPageMode` **and** the section's own edit pencil.
+
+**This one page is interactive** (`pages/npmrds-report.js`, ~700 lines of plain browser JS, no
+build step — same contract as everything else here). It is the only page in the catalogue that
+needed to be: the rail is a control surface and the two modals are multi-step flows, and a first
+attempt that answered "what do these look like" with ~775 lines of drawn states below the fold was
+the wrong artifact. Live: edit-mode toggle (rail chrome + section toolbars + Measure Picker on the
+canvas), panel collapse, row expand, TMC "+N more", search with the real no-match copy, inline
+rename with the real duplicate-name refusal, date+time editing with the time-of-day presets and
+day-of-week mask, the colour picker, the assignment chips, the Dynamic Report switch, and both
+modals in full — tag-folder browsing with breadcrumbs and free-text tags, the four-value graph
+vocabulary with live guidance and the conditional Anchor Route select. Deliberately inert: the two
+confirm buttons, remove, duplicate and the Settings drawer — adding or removing would change the
+report, so the flow is what's designed, not the write; each says so when clicked.
+
+**Add Route and Add Graph are always available** — not gated behind edit mode, because they are the
+report's two jobs and a report with no routes has to offer the way out of that state. One
+always-present action row holds both plus the edit toggle, and the row carries the mode itself. This
+is an escalation for the component: its `canMutate` gate has to move from "hide the button" to "the
+button enters edit mode and opens the modal", which keeps the read-only guarantee (nothing writes
+until confirm).
+
+Both modals are on their **second pass**, and the interesting part is the prioritisation:
+
+- **Add Graph** had four identical dropdowns, which said "four settings" when the shape is one
+  decision plus two refinements. Now: **01 what shape** — four *cards* with glyphs, because picking
+  a chart type is a visual choice a closed select hides; **02 what value** — one select, grouped
+  Speed / Travel time / Delay / Emissions, with the measure's own sentence live under it; **03
+  routes** — checklist with select-all and an n/total count, in the secondary column; and
+  **refine** — resolution + comparison mode, muted and labelled optional, with the Anchor Route
+  select appearing only for Difference with exactly two routes. The cards made room for the type
+  that was missing — **Table**, which builds a Spreadsheet section (the real reports are full of
+  "Route Info Box" tables and the only way to get one was the long path this modal replaces); each
+  card names what it creates. Two shapes were missing and are now there: **Table** (builds a
+  Spreadsheet — the real reports are full of "Route Info Box" tables) and **Map** (builds a Map —
+  the only card that answers *where* on the corridor the value changes); for both, the only way in
+  was the long path this modal replaces, which made the row a chart menu rather than a card menu.
+  The default pick moved from the component's `BarGraph · speed · 5-minutes` to `Line · travel
+  time · hour`, since the former is the densest, least readable combination in the vocabulary and
+  it was what an author saw before touching anything.
+- **The window controls were saying something the tool doesn't do**, in the component as well as
+  in the drawing. "Start date + start time / end date + end time" claims one continuous stretch
+  between two instants; what `useGraphPublish` builds is a list of *days* (start date → end date,
+  minus the weekday mask) and, separately, a band of *hours applied to every one of those days* —
+  it averages the same hours across days. The controls are now three facets in the engine's own
+  order — **dates** (which days) → **days** (which of those count) → **time of day** (which hours
+  of each) — and the time block says so outright. Two silent engine behaviours are surfaced from
+  the code: a backwards time window empties the epoch list and an empty list means the filter is
+  never sent, so it silently returns all-day data (the same reason the midnight-crossing presets
+  don't exist), and a time on only one bound is ignored. A window can also now be **copied and
+  pasted** between routes, with the bulk case ("paste into all") offered first, because a
+  before/after report is four routes with one window and retyping four fields per route is a
+  transcription-error generator; derived-date routes are skipped and say why. Two more selection
+  aids: **shift ± 1 year**, which moves a span without changing its length (the before/after move,
+  and where hand-typed dates reliably go wrong), and preset pills that carry their own hours —
+  "AM Peak" alone makes you hover to learn this brand means 06:00–10:00, and two of the five
+  presets differ only by hours.
+- **Every per-route control is live** — window, colour, name, order, assignment. They briefly sat
+  behind page edit mode, which (once the rail's own edit toggle was gone) meant opening a route
+  showed a read-only summary with no way in. Page edit mode now governs only the *page*: section
+  toolbars, the Measure Picker, the Dynamic Report switch.
+- **The graph cards deliberately don't move.** In the product a window/colour/assignment change
+  publishes to every graph the route feeds and those cards refetch. A version of this page
+  simulated a slice of that (legends rebuilt from assignment, series recoloured, attribution
+  rewritten, an "updating" flash) and it was reverted at Alex's direction: with no data behind the
+  page, anything that made a card look refreshed implied numbers that hadn't changed. The binding is
+  documented instead of faked; the page's job is the controls.
+- **The route rail** dropped the TMC list from the open-out (the widest content in a 340-px panel,
+  for information nobody uses that way — the count stays in the meta line and the extent lives on
+  the map card), moved **identity colour into a popover on the row's own colour dot** (inline it was
+  doubly buried behind expand-then-change, for a control whose whole job is "this route is blue
+  everywhere"), and dropped its local *edit routes* button — the page header's Edit already owns the
+  mode, so the action row just shows the state.
+- **Add Route** now leads with search (largest element, focused on open, result count stated), puts
+  the three real tag axes in the header as pills so browsing isn't below the fold, demotes
+  Auto-generated and Other tags to text links beside them (a provenance flag and a free-text search
+  aren't axes), and gives every row its county/region/agency tags — name plus TMC count can't
+  separate "NY-9D NB (Beacon)" from "NY-9D NB · Main St to Verplanck". What's left below
+the fold is what interaction can't carry: the control inventory (what each control writes), the
+design rules, and the print state.
+
+Two more recorded deviations from the NPMRDS cross-page contract, both Alex, 2026-08-05, both
+written into `npmrds-home.html`'s canonical contract note as well as this page's own header:
+
+- **No breadcrumb band.** Layout consequence worth keeping: with no sticky chrome above it, the
+  flush rail's `sticky top-0 h-svh` is exact. A page that keeps a breadcrumb strip has to offset
+  both `top` and the height by its height, the way styles[0] does for the page header.
+- **The compact 64-px icon SideNav** instead of the 256-px expanded one — the second page in the
+  set to use it (npmrds-macro was the first). 256 + the 340-px route rail was 596 px of chrome,
+  which left the graph canvas narrower than the chrome beside it; compact reclaims 192 px and
+  loses no destination (same items, same order, same amber active rail, labels become `title`
+  tooltips). The extra width then exposed one thing: the freshness line is ~640 px of tracked
+  mono, and inside the `shrink-0` action stack it starved the h1 until the title wrapped, so it
+  is now the header card's full-width foot line.
+
+Open item, logged rather than invented: the style is chosen in the theme
+(`pages.sectionGroup.options.activeStyle`), so it is brand-wide. Page settings has a per-page
+picker for the app SideNav's style but none for the content sidebar's; a parallel **“Content
+Sidebar Style”** setting is the natural fix, since `flush` is right for report pages and wrong for
+docs pages on the same site.
+
+---
+
 ## Layout
 
 ```
@@ -85,7 +219,7 @@ dms_design_system_v2/
 ├── design-system/         ← FIVE pages documenting the brand
 │   ├── _shared.css            · mirror of theme/index.css.additions for mockup pages
 │   ├── theme.html             · color, type, icons, spacing — the foundational tokens
-│   ├── layouts.html           · Layout + LayoutGroup variants (page chrome shapes)
+│   ├── layouts.html           · Layout + LayoutGroup variants (page chrome shapes) + § 09 the content sidebar
 │   ├── grid.html              · the page-content column grid (sectionArray)
 │   ├── components.html        · every UI primitive THIS theme styles
 │   └── patterns.html          · multi-primitive compositions
@@ -121,7 +255,11 @@ dms_design_system_v2/
     │                                the dialog on this page WORKS (57 real rows, live filter, URL-
     │                                bound query); § 04 drives the real component's states
     ├── npmrds-macro.html          · full-page map workbench (controls left, measure context right)
-    ├── npmrds-report.html         · the individual report canvas (route rail + graph-card grid)
+    ├── npmrds-report.html         · the individual report canvas (compact SideNav + flush
+    │                                content-sidebar route rail + graph-card grid) — the one
+    │                                INTERACTIVE page: live rail, live Add Route / Add Graph
+    │                                modals, inert confirms
+    ├── npmrds-report.js           · that page's behaviour layer (data + render + events)
     ├── map-21.html                ·  ⎫
     ├── map-21-system-performance.html ⎬ retrofitted into the NPMRDS category
     ├── map-21-lottr.html          ·  ⎪ (nav, header, breadcrumb, freshness, footer)

@@ -3,7 +3,7 @@
 // without real folders in the data model — routes carry `county:`/`region:`/`agency:`-prefixed
 // tags, and this file supplies the folder SHELLS to drill into. Deliberately hardcoded rather than
 // discovered live: the UDA query engine has no groupBy-unnest path for multiselect columns (see
-// planning/tasks/current/dynamic-reports-and-route-tags.md), and these three axes are genuinely
+// planning/transportny/tasks/current/dynamic-reports-and-route-tags.md), and these three axes are genuinely
 // fixed/enumerable (NY's counties, NYSDOT's 11 regions, a known agency/MPO code list) — no
 // discovery query is needed to know what values CAN exist, only `array_contains` to find routes
 // that have one.
@@ -70,3 +70,31 @@ export const TAG_CATEGORIES = [
   { key: 'region', label: 'Region', tagPrefix: 'region:', values: NYSDOT_REGIONS.map(r => ({ value: `region:${r.number}`, label: r.label })) },
   { key: 'agency', label: 'Agency', tagPrefix: 'agency:', values: AGENCY_CODES.map(a => ({ value: `agency:${a.code}`, label: a.label })) },
 ];
+
+// A result row's raw `tags` column arrives as a JSON-array string from most sources but can
+// already be a real array — same shape/parsing need as ReportRouteList/utils.js's
+// parseTmcArray, kept as its own small copy here since these are conceptually distinct fields
+// (route tags vs. a route's TMC list), not one generic "parse this multiselect column" utility
+// worth sharing across both.
+export function parseTags(tags) {
+  if (!tags) return [];
+  if (Array.isArray(tags)) return tags;
+  try {
+    return JSON.parse(tags);
+  } catch (e) {
+    return [];
+  }
+}
+
+// Every known tag value → its human label, so a result row's tag chips read as "Dutchess" /
+// "Region 8 - Hudson Valley" rather than the raw "county:Dutchess" storage string. Falls back to
+// the raw tag for anything not in a fixed vocabulary (auto_generated has its own entry; a
+// free-text project/custom tag has no entry and displays as-typed).
+const TAG_LABEL_BY_VALUE = new Map(
+  TAG_CATEGORIES.flatMap((c) => c.values.map((v) => [v.value, v.label]))
+);
+TAG_LABEL_BY_VALUE.set(AUTO_GENERATED_TAG, 'Auto-generated');
+
+export function tagToLabel(tag) {
+  return TAG_LABEL_BY_VALUE.get(tag) || tag;
+}
