@@ -264,6 +264,136 @@
     go wrong), and preset pills that carry their own hours — "AM Peak" alone makes you hover
     to learn this brand means 06:00–10:00, and two of the five presets differ only by hours.
 
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 15 (2026-08-06) — QUICK CONTROLS, AND THE WINDOW MOVES FROM THE ROUTE TO THE CARD
+
+  1 · QUICK CONTROLS ARE THE REAL MECHANISM, not drawn pills. `theme.sectionHeaderExtensions
+      = { "AVL Graph": [npmrdsQuickControls] }` registers a builder that `section.jsx`
+      renders INLINE IN THE SECTION'S HEADER BAND — the row already holding the title and the
+      ⋮ Settings trigger — with the same ctx the Settings-drawer extensions get (state,
+      dwAPI, currentComponent, isEdit, canEditSection, siblingSections). Today it ships two
+      pills, Measure and Comparison Mode, both writing through the shared `applyMeasurePick`
+      so the header and the drawer can't drift; Graph Type and Resolution were deliberately
+      out of scope. This page now draws that row for real, live, on every card — and extends
+      it to everything below.
+
+  2 · TIME OF DAY, DAYS OF WEEK AND THE AGGREGATE MOVED OFF THE ROUTE (Alex). They describe
+      the QUESTION a card asks, not the route: "NY-9D NB, Jan 6 – Feb 28 2025" is a stretch
+      of road over a span of dates; "weekday PM peak, hourly" is one of many ways to read it.
+      On the route they forced a duplicate route to ask a second question of the same road,
+      and they silently applied to every card that route fed.
+        A ROUTE now carries: name · colour · TMCs · DATE SPAN.
+        A CARD now carries: shape · measure · aggregate · time of day · days · mode · ROUTES.
+      They are set in the Add Graph modal (§ WHEN) and editable afterwards in the card's own
+      Quick Controls — in the controls, not behind a modal, which is what the row is for.
+      ESCALATION for the component: storage moves with them. `useGraphPublish` would build
+      the date IN-list from each route's span minus the CARD's weekday mask, and the epoch
+      IN-list from the CARD's time window; today both read off the route
+      (generateDateRange/generateEpochRange take route.weekdays and route.start/end).
+
+  3 · ROUTE SELECTION IS A CARD CONTROL. The Routes pill is the row's first and widest
+      control, and its mode follows the shape: a Map draws ONE route (single-select, radio
+      dots, picking another replaces it); charts and tables take any number. Difference mode
+      still wants exactly two, and says so in the popover when it doesn't have them.
+
+  4 · THE PER-GRAPH CHIPS ARE GONE FROM THE ROUTE ROWS. A chip per discovered graph was fine
+      at five and unusable at twenty — and reports reach twenty easily ("Year Over Year
+      (Beginner)" has 21 sections). Assignment now happens on the card side, so a row only
+      answers "is this route used, and where": a count that scrolls to the first card it
+      feeds, and the "unused" warning that was the reason the chips existed.
+
+  5 · THE ROW COMPRESSES. Size 12 shows every pill; below size 6 there is no room, so the
+      card keeps Routes and folds the rest into one "⋯" pill with the same popover contents —
+      the "button that opens the controls" fallback, but only where the row genuinely can't
+      fit. Time of day and days share ONE pill ("AM Peak · weekdays") because they are one
+      thought, and splitting them doubled the pill count for nothing.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 16 (2026-08-06) — MAKING THE CONTROL ROW FIT, AND ONE EDIT MODE PER ROUTE (Alex)
+
+  · THE "GRAPH N" CHIPS ARE GONE from the card headers. They existed so a route row's chips
+    could point at a card; assignment lives in the card's own Routes control now, so the
+    chip is a label nothing reads — and it was taking the width the controls needed.
+
+  · SET VALUES BECOME TOKENS so five controls fit where three did: an aggregate is "1h", not
+    "Hour"; a when is "06–10 · Wd", not "AM Peak · weekdays"; a mode is a GLYPH (overlapping
+    series vs bars against a zero line), because overlay/difference is a two-state flip an
+    icon can carry. Every full word is still one click away in the popover, and every pill
+    keeps the long form in its tooltip.
+
+  · THE ROW MEASURES ITSELF instead of trusting a size threshold — the same card is wide at
+    1600px and narrow at 1280, and a size-7 table beside a size-5 map has a different budget
+    again. What's left after tokenising collapses by priority, lowest first: mode →
+    aggregate → when → measure. Routes never collapses; it is why the row exists. Anything
+    dropped goes into the "⋯" pill, which opens the same contents, so nothing is unreachable.
+    THREE MEASUREMENT BUGS worth not repeating, all found by driving it:
+      1. `scrollWidth > clientWidth` never fires on a `justify-end` row — overflow spills
+         LEFT and scrollWidth only counts overflow to the right. A size-4 card was silently
+         clipping its Routes and Measure pills while reporting that everything fit.
+      2. Shedding one pill at a time and re-checking thrashes: dropping a 28-px mode icon to
+         add a 40-px "⋯" makes the row WIDER, so a card with room for four showed two. The
+         "⋯" has to be reserved up front, in one greedy pass.
+      3. The budget is what the HEADER can spare — its width minus padding, the title's
+         floor and the ⋮ — not what the slot currently occupies. Measuring the slot hid the
+         title's slack, and a card missed its fourth pill by three pixels.
+    The title is the flexible element now (it truncates to a 112-px floor and carries a
+    `title` tooltip); the controls claim the spare width first. 84 px was tried and rejected:
+    "Travel time b…" is too much to trade for one more pill.
+
+  · ONE EDIT MODE PER ROUTE. The row's single pencil now opens the name AND the dates with
+    one save/cancel pair, and forces the open-out so both are visible. A pencil on the row
+    for the name plus a second one inside the open-out for the dates made two edit modes out
+    of one object. The line telling you where the other facets live went too — the card
+    headers say it themselves now.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 17 (2026-08-06) — THE CHARTS MATCH THE COMPONENT, AND THE ROUTE ROW LOSES ITS "+"
+
+  · THE CHARTS ARE THE AVL GRAPH'S OWN SHAPE NOW, drawn by npmrds-report.js against the
+    real DOM (ui/components/graph_new): a `w-full h-fit` wrapper, then
+    `div.avl-graph-container` → `svg.w-full.h-full.block.avl-graph` with **no viewBox** —
+    the chart is laid out in px against a measured container and FILLS it. Inside:
+    `g.animated-group > g.axis-group > g.axis.axis-left` with `path.domain` (2px) and
+    `g.tick > line + text`, then a plot `<g>` translated by the margin holding
+    `rect.avl-rect` / `path.graph-line` / `rect.avl-grid`. Defaults taken from the source:
+    margins 20/20/50/100, height 300 (config default, floored at top+bottom+100), ticks at
+    0.75rem, gridlines currentColor @ 0.25, bars at fill-opacity 0.75, y-gridlines on and
+    x off. The legend now matches Legend.jsx too — a 16-px rounded swatch with a truncating
+    label, not a hairline dash.
+    WHY THIS MATTERED BEYOND FIDELITY: the old drawings were `viewBox` SVGs, so they SCALED.
+    On a size-4 card that meant 9-px axis text and a plot with the wrong proportions; the
+    real component keeps its type size and re-lays-out instead. Small cards now do what an
+    authored small section would: a tighter margin (44/34/12 under 420 px) and three y-ticks.
+    A GridGraph's left axis is BAND — its index is the row (a TMC/segment), which is also
+    why its tooltip reads the row via `keyFormat` — so it draws row labels, not numbers.
+    Chart SHAPE follows the card's config (series count and colour follow its Routes
+    control); the VALUES stay fixed sample arrays. Layout and structure are live here, and
+    numbers are not.
+
+  · WHERE THE COMPONENT'S OWN DEFAULTS WERE LOOSE, THIS DESIGN FIXES THEM — and the fix is a
+    theme block, not a library change, because `chartDefaults` already exposes every key
+    (it merges UNDER a section's `display`, so authors still override per section). The brand
+    never shipped one, so every TransportNY chart was running library defaults. Now in
+    `theme/theme.js` under `avlGraph.chartDefaults`:
+      margin 20/20/50/100 → 12/12/30/48   a 100-px left gutter is a third of a size-6 card
+      ticks 0.75rem inherited → 9px mono  ticks are chrome, and they now match the meta
+                                          rows and attribution lines they sit beside
+      strokeWidth 1 → 2                   1 disappears against a pale card
+      bar fill-opacity 0.75 → 1 (solid)   the route colour IS the comparison; translucency
+                                          mudded two series at small sizes
+      height 300 → 260                     plus a smaller container on the size-4 card
+      axis/gridline colour → zinc-950/15   instead of `currentColor`, which followed the
+                                          text colour and drew near-black axes
+    The second line also drops the `.secondary` class the component would dash: on a
+    before/after chart the identity colour is already the difference.
+
+  · THE ROUTE ROW HAS NO "+" (Alex). Once the TMC list left and the window became one line,
+    the expander guarded nothing: everything a row has is on the row. Editing is the pencil,
+    which is the only thing the open-out ever held.
+
+  · "ON N CARDS" IS A PILL beside the name, where the "unused" badge already sat, so a row
+    is one line of identity and one line of meta instead of three lines.
+
   CONTRACT: SideNav · header shape · freshness line · route rows · download affordance — all
   per npmrds-home.html's header note, where all three of this page's deviations are recorded:
     · COMPACT 64px icon SideNav instead of the 256px expanded one (Alex, 2026-08-05). Same items,
@@ -544,53 +674,28 @@
                     </div>
 
                     <!-- CARD · Route Line Graph, Travel Time · size 12 · the overview chart -->
-                    <div class="col-span-12" data-dms-section="graph-1-line" data-edit-kind="AVL Graph · LineGraph · graph 1" data-edit-size="12" data-measure>
+                    <div class="col-span-12" data-dms-section="graph-1-line" data-graph="g1" data-edit-kind="AVL Graph · LineGraph · graph 1" data-edit-size="12" data-measure>
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <!-- graph-card contract 1 · header h-10, one line -->
                         <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Travel time by hour of day</span>
-                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 1</span>
-                          <span class="flex-1"></span>
-                          <!-- inline quick controls · sectionHeaderExtensions (already shipped) -->
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">travel time <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">overlay <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Travel time by hour of day</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g1"></div>
                           <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                         </div>
                         <!-- plot · contract 4 · padding is the card's -->
-                        <div class="px-4 pt-4">
-                          <!-- decorative --><svg viewBox="0 0 900 220" class="w-full h-[220px] block">
-                            <line x1="46" y1="10" x2="46" y2="190" stroke="#e2e8f0" stroke-width="1"/>
-                            <line x1="46" y1="190" x2="890" y2="190" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="46" y1="145" x2="890" y2="145" stroke="#f1f5f9" stroke-width="1"/>
-                            <line x1="46" y1="100" x2="890" y2="100" stroke="#f1f5f9" stroke-width="1"/>
-                            <line x1="46" y1="55"  x2="890" y2="55"  stroke="#f1f5f9" stroke-width="1"/>
-                            <text x="40" y="193" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">3:00</text>
-                            <text x="40" y="148" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">4:00</text>
-                            <text x="40" y="103" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">5:00</text>
-                            <text x="40" y="58"  text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">6:00</text>
-                            <!-- peak shading -->
-                            <rect x="250" y="10" width="105" height="180" fill="#0F1722" opacity="0.03"/>
-                            <rect x="600" y="10" width="140" height="180" fill="#0F1722" opacity="0.03"/>
-                            <text x="302" y="24" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">AM PEAK</text>
-                            <text x="670" y="24" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">PM PEAK</text>
-                            <!-- before · #1F3F8F -->
-                            <path d="M 60 168 L 130 165 L 200 152 L 270 108 L 320 82 L 390 128 L 460 132 L 530 122 L 600 78 L 670 52 L 740 96 L 810 140 L 880 158" fill="none" stroke="#1F3F8F" stroke-width="2"/>
-                            <!-- after · #E5A646 -->
-                            <path d="M 60 170 L 130 167 L 200 158 L 270 122 L 320 100 L 390 136 L 460 138 L 530 130 L 600 100 L 670 86 L 740 118 L 810 148 L 880 162" fill="none" stroke="#E5A646" stroke-width="2"/>
-                            <!-- axis labels -->
-                            <text x="60"  y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">00</text>
-                            <text x="200" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">04</text>
-                            <text x="320" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">08</text>
-                            <text x="460" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">12</text>
-                            <text x="600" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">16</text>
-                            <text x="740" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">20</text>
-                            <text x="880" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">23</text>
-                          </svg>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g1" data-sample="hourly"></div>
                         </div>
                         <!-- graph-card contract 2 · legend BELOW the plot, left-aligned -->
                         <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#1F3F8F]"></span>NY-9D NB · before</span>
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#E5A646]"></span>NY-9D NB · after</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#1F3F8F]"></span>NY-9D NB · before</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#E5A646]"></span>NY-9D NB · after</span>
                         </div>
                         <!-- graph-card contract 3 · ONE muted attribution line -->
                         <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · source 583 / view 982 · travel_time_all_vehicles · as of 2026-07-29</div>
@@ -607,12 +712,14 @@
                          bottom borders and a floating orphan strip. Each card now closes
                          itself and carries its own one-line attribution.
                          Real compound cards arrive with the gap-0 conversion (contract item 9). -->
-                    <div class="col-span-12 lg:col-span-5" data-dms-section="graph-2-map" data-edit-kind="Map · Route Map, Speed" data-edit-size="5">
+                    <div class="col-span-12 lg:col-span-5" data-dms-section="graph-2-map" data-graph="gm" data-edit-kind="Map · Route Map, Speed" data-edit-size="5">
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Route map</span>
-                          <span class="flex-1"></span>
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">speed <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Route map</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="gm"></div>
                           <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                         </div>
                         <div class="relative h-[224px] tny-map">
@@ -639,12 +746,14 @@
                       </div>
                     </div>
 
-                    <div class="col-span-12 lg:col-span-7" data-dms-section="graph-3-info" data-edit-kind="Spreadsheet · Route Info Box" data-edit-size="7">
+                    <div class="col-span-12 lg:col-span-7" data-dms-section="graph-3-info" data-graph="gt" data-edit-kind="Spreadsheet · Route Info Box" data-edit-size="7">
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Route summary · peak periods</span>
-                          <span class="flex-1"></span>
-                          <button class="h-6 px-2 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600"><!-- icon: Download --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>csv</button>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Route summary · peak periods</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="gt"></div>
                           <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                         </div>
                         <div class="overflow-x-auto">
@@ -710,47 +819,25 @@
                     </div>
 
                     <!-- CARD · Route Bar Graph · size 6 · demonstrates the size-6 legend rule -->
-                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-4-bar" data-edit-kind="AVL Graph · BarGraph · graph 2" data-edit-size="6" data-measure>
+                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-4-bar" data-graph="g2" data-edit-kind="AVL Graph · BarGraph · graph 2" data-edit-size="6" data-measure>
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Travel time by segment</span>
-                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 2</span>
-                          <span class="flex-1"></span>
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">travel time <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Travel time by segment</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g2"></div>
                           <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                         </div>
-                        <div class="px-4 pt-4">
-                          <!-- decorative --><svg viewBox="0 0 420 180" class="w-full h-[180px] block">
-                            <line x1="34" y1="8" x2="34" y2="152" stroke="#e2e8f0" stroke-width="1"/>
-                            <line x1="34" y1="152" x2="412" y2="152" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="34" y1="104" x2="412" y2="104" stroke="#f1f5f9" stroke-width="1"/>
-                            <line x1="34" y1="56" x2="412" y2="56" stroke="#f1f5f9" stroke-width="1"/>
-                            <text x="28" y="155" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">0</text>
-                            <text x="28" y="107" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">40</text>
-                            <text x="28" y="59"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">80</text>
-                            <g>
-                              <rect x="46"  y="88"  width="17" height="64" fill="#1F3F8F"/><rect x="64"  y="96"  width="17" height="56" fill="#E5A646"/>
-                              <rect x="88"  y="70"  width="17" height="82" fill="#1F3F8F"/><rect x="106" y="86"  width="17" height="66" fill="#E5A646"/>
-                              <rect x="130" y="34"  width="17" height="118" fill="#1F3F8F"/><rect x="148" y="62"  width="17" height="90" fill="#E5A646"/>
-                              <rect x="172" y="52"  width="17" height="100" fill="#1F3F8F"/><rect x="190" y="74"  width="17" height="78" fill="#E5A646"/>
-                              <rect x="214" y="100" width="17" height="52" fill="#1F3F8F"/><rect x="232" y="104" width="17" height="48" fill="#E5A646"/>
-                              <rect x="256" y="112" width="17" height="40" fill="#1F3F8F"/><rect x="274" y="114" width="17" height="38" fill="#E5A646"/>
-                              <rect x="298" y="120" width="17" height="32" fill="#1F3F8F"/><rect x="316" y="122" width="17" height="30" fill="#E5A646"/>
-                              <rect x="340" y="126" width="17" height="26" fill="#1F3F8F"/><rect x="358" y="128" width="17" height="24" fill="#E5A646"/>
-                            </g>
-                            <text x="64"  y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S1</text>
-                            <text x="106" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S2</text>
-                            <text x="148" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S3</text>
-                            <text x="190" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S4</text>
-                            <text x="232" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S5</text>
-                            <text x="274" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S6</text>
-                            <text x="316" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S7</text>
-                            <text x="358" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S8</text>
-                          </svg>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g2" data-sample="segment"></div>
                         </div>
                         <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#1F3F8F]"></span>before</span>
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#E5A646]"></span>after</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#1F3F8F]"></span>before</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#E5A646]"></span>after</span>
                           <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 ml-auto">seconds · pm peak</span>
                         </div>
                         <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · pm peak weekdays · as of 2026-07-29</div>
@@ -758,45 +845,25 @@
                     </div>
 
                     <!-- CARD · Route Difference Graph · size 6 · diverging bars, zero-centred -->
-                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-5-diff" data-edit-kind="AVL Graph · BarGraph, difference · graph 3" data-edit-size="6" data-measure>
+                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-5-diff" data-graph="g3" data-edit-kind="AVL Graph · BarGraph, difference · graph 3" data-edit-size="6" data-measure>
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Difference · after − before</span>
-                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 3</span>
-                          <span class="flex-1"></span>
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-[#37576B] bg-[#37576B]/8 font-mono text-[10px] uppercase tracking-wider text-[#1f3450]">difference <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Difference · after − before</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g3"></div>
                           <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                         </div>
-                        <div class="px-4 pt-4">
-                          <!-- decorative --><svg viewBox="0 0 420 180" class="w-full h-[180px] block">
-                            <line x1="34" y1="80" x2="412" y2="80" stroke="#0F1722" stroke-width="1"/>
-                            <line x1="34" y1="8" x2="34" y2="152" stroke="#e2e8f0" stroke-width="1"/>
-                            <line x1="34" y1="30" x2="412" y2="30" stroke="#f1f5f9" stroke-width="1"/>
-                            <line x1="34" y1="130" x2="412" y2="130" stroke="#f1f5f9" stroke-width="1"/>
-                            <text x="28" y="33"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">+20</text>
-                            <text x="28" y="83"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">0</text>
-                            <text x="28" y="133" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">−20</text>
-                            <rect x="50"  y="80" width="30" height="20" fill="#1a9850"/>
-                            <rect x="94"  y="80" width="30" height="40" fill="#1a9850"/>
-                            <rect x="138" y="80" width="30" height="70" fill="#1a9850"/>
-                            <rect x="182" y="80" width="30" height="55" fill="#1a9850"/>
-                            <rect x="226" y="80" width="30" height="10" fill="#1a9850"/>
-                            <rect x="270" y="75" width="30" height="5"  fill="#d73027"/>
-                            <rect x="314" y="80" width="30" height="5"  fill="#1a9850"/>
-                            <rect x="358" y="80" width="30" height="5"  fill="#1a9850"/>
-                            <text x="65"  y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S1</text>
-                            <text x="109" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S2</text>
-                            <text x="153" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S3</text>
-                            <text x="197" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S4</text>
-                            <text x="241" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S5</text>
-                            <text x="285" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S6</text>
-                            <text x="329" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S7</text>
-                            <text x="373" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S8</text>
-                          </svg>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g3" data-sample="diff"></div>
                         </div>
                         <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#1a9850]"></span>faster after</span>
-                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#d73027]"></span>slower after</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#1a9850]"></span>faster after</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#d73027]"></span>slower after</span>
                           <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 ml-auto">main → NB · zero-centred</span>
                         </div>
                         <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · comparison_series difference mode · as of 2026-07-29</div>
@@ -804,39 +871,21 @@
                     </div>
 
                     <!-- CARD · TMC Difference Grid · size 12 · segment × hour heat grid -->
-                    <div class="col-span-12" data-dms-section="graph-6-grid" data-edit-kind="AVL Graph · GridGraph · graph 4" data-edit-size="12" data-measure>
+                    <div class="col-span-12" data-dms-section="graph-6-grid" data-graph="g4" data-edit-kind="AVL Graph · GridGraph · graph 4" data-edit-size="12" data-measure>
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Segment × hour · speed difference</span>
-                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 4</span>
-                          <span class="flex-1"></span>
-                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">speed <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Segment × hour · speed difference</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g4"></div>
                           <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                         </div>
-                        <div class="px-4 pt-4 overflow-x-auto">
-                          <!-- decorative --><svg viewBox="0 0 900 200" class="w-full min-w-[720px] h-[200px] block">
-                            <g font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">
-                              <text x="46" y="26"  text-anchor="end">S1</text><text x="46" y="48"  text-anchor="end">S2</text>
-                              <text x="46" y="70"  text-anchor="end">S3</text><text x="46" y="92"  text-anchor="end">S4</text>
-                              <text x="46" y="114" text-anchor="end">S5</text><text x="46" y="136" text-anchor="end">S6</text>
-                              <text x="46" y="158" text-anchor="end">S7</text><text x="46" y="180" text-anchor="end">S8</text>
-                            </g>
-                            <g>
-                              <rect x="54" y="12" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="12" width="33" height="18" fill="#e3efe8"/><rect x="124" y="12" width="33" height="18" fill="#cbe5d6"/><rect x="159" y="12" width="33" height="18" fill="#a8d5bd"/><rect x="194" y="12" width="33" height="18" fill="#8bc9ab"/><rect x="229" y="12" width="33" height="18" fill="#cbe5d6"/><rect x="264" y="12" width="33" height="18" fill="#e3efe8"/><rect x="299" y="12" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="12" width="33" height="18" fill="#f7f2ea"/><rect x="369" y="12" width="33" height="18" fill="#a8d5bd"/><rect x="404" y="12" width="33" height="18" fill="#8bc9ab"/><rect x="439" y="12" width="33" height="18" fill="#6dbb96"/><rect x="474" y="12" width="33" height="18" fill="#8bc9ab"/><rect x="509" y="12" width="33" height="18" fill="#cbe5d6"/><rect x="544" y="12" width="33" height="18" fill="#e3efe8"/><rect x="579" y="12" width="33" height="18" fill="#f0f5f2"/>
-                              <rect x="54" y="34" width="33" height="18" fill="#e3efe8"/><rect x="89" y="34" width="33" height="18" fill="#cbe5d6"/><rect x="124" y="34" width="33" height="18" fill="#a8d5bd"/><rect x="159" y="34" width="33" height="18" fill="#6dbb96"/><rect x="194" y="34" width="33" height="18" fill="#4faa80"/><rect x="229" y="34" width="33" height="18" fill="#8bc9ab"/><rect x="264" y="34" width="33" height="18" fill="#cbe5d6"/><rect x="299" y="34" width="33" height="18" fill="#e3efe8"/><rect x="334" y="34" width="33" height="18" fill="#e3efe8"/><rect x="369" y="34" width="33" height="18" fill="#6dbb96"/><rect x="404" y="34" width="33" height="18" fill="#4faa80"/><rect x="439" y="34" width="33" height="18" fill="#2e9464"/><rect x="474" y="34" width="33" height="18" fill="#4faa80"/><rect x="509" y="34" width="33" height="18" fill="#a8d5bd"/><rect x="544" y="34" width="33" height="18" fill="#cbe5d6"/><rect x="579" y="34" width="33" height="18" fill="#e3efe8"/>
-                              <rect x="54" y="56" width="33" height="18" fill="#cbe5d6"/><rect x="89" y="56" width="33" height="18" fill="#a8d5bd"/><rect x="124" y="56" width="33" height="18" fill="#6dbb96"/><rect x="159" y="56" width="33" height="18" fill="#2e9464"/><rect x="194" y="56" width="33" height="18" fill="#1a7f52"/><rect x="229" y="56" width="33" height="18" fill="#4faa80"/><rect x="264" y="56" width="33" height="18" fill="#a8d5bd"/><rect x="299" y="56" width="33" height="18" fill="#cbe5d6"/><rect x="334" y="56" width="33" height="18" fill="#cbe5d6"/><rect x="369" y="56" width="33" height="18" fill="#2e9464"/><rect x="404" y="56" width="33" height="18" fill="#1a7f52"/><rect x="439" y="56" width="33" height="18" fill="#0f6b42"/><rect x="474" y="56" width="33" height="18" fill="#1a7f52"/><rect x="509" y="56" width="33" height="18" fill="#6dbb96"/><rect x="544" y="56" width="33" height="18" fill="#a8d5bd"/><rect x="579" y="56" width="33" height="18" fill="#cbe5d6"/>
-                              <rect x="54" y="78" width="33" height="18" fill="#e3efe8"/><rect x="89" y="78" width="33" height="18" fill="#cbe5d6"/><rect x="124" y="78" width="33" height="18" fill="#8bc9ab"/><rect x="159" y="78" width="33" height="18" fill="#4faa80"/><rect x="194" y="78" width="33" height="18" fill="#2e9464"/><rect x="229" y="78" width="33" height="18" fill="#6dbb96"/><rect x="264" y="78" width="33" height="18" fill="#a8d5bd"/><rect x="299" y="78" width="33" height="18" fill="#e3efe8"/><rect x="334" y="78" width="33" height="18" fill="#f0f5f2"/><rect x="369" y="78" width="33" height="18" fill="#4faa80"/><rect x="404" y="78" width="33" height="18" fill="#2e9464"/><rect x="439" y="78" width="33" height="18" fill="#1a7f52"/><rect x="474" y="78" width="33" height="18" fill="#2e9464"/><rect x="509" y="78" width="33" height="18" fill="#8bc9ab"/><rect x="544" y="78" width="33" height="18" fill="#cbe5d6"/><rect x="579" y="78" width="33" height="18" fill="#e3efe8"/>
-                              <rect x="54" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="124" y="100" width="33" height="18" fill="#e3efe8"/><rect x="159" y="100" width="33" height="18" fill="#cbe5d6"/><rect x="194" y="100" width="33" height="18" fill="#a8d5bd"/><rect x="229" y="100" width="33" height="18" fill="#cbe5d6"/><rect x="264" y="100" width="33" height="18" fill="#e3efe8"/><rect x="299" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="100" width="33" height="18" fill="#f7f2ea"/><rect x="369" y="100" width="33" height="18" fill="#cbe5d6"/><rect x="404" y="100" width="33" height="18" fill="#a8d5bd"/><rect x="439" y="100" width="33" height="18" fill="#8bc9ab"/><rect x="474" y="100" width="33" height="18" fill="#a8d5bd"/><rect x="509" y="100" width="33" height="18" fill="#e3efe8"/><rect x="544" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="100" width="33" height="18" fill="#f0f5f2"/>
-                              <rect x="54" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="89" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="124" y="122" width="33" height="18" fill="#f0dcc3"/><rect x="159" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="194" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="229" y="122" width="33" height="18" fill="#f0f5f2"/><rect x="264" y="122" width="33" height="18" fill="#f0f5f2"/><rect x="299" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="334" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="369" y="122" width="33" height="18" fill="#f0dcc3"/><rect x="404" y="122" width="33" height="18" fill="#e8cba4"/><rect x="439" y="122" width="33" height="18" fill="#f0dcc3"/><rect x="474" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="509" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="544" y="122" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="122" width="33" height="18" fill="#f0f5f2"/>
-                              <rect x="54" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="124" y="144" width="33" height="18" fill="#e3efe8"/><rect x="159" y="144" width="33" height="18" fill="#e3efe8"/><rect x="194" y="144" width="33" height="18" fill="#cbe5d6"/><rect x="229" y="144" width="33" height="18" fill="#e3efe8"/><rect x="264" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="299" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="369" y="144" width="33" height="18" fill="#e3efe8"/><rect x="404" y="144" width="33" height="18" fill="#cbe5d6"/><rect x="439" y="144" width="33" height="18" fill="#a8d5bd"/><rect x="474" y="144" width="33" height="18" fill="#cbe5d6"/><rect x="509" y="144" width="33" height="18" fill="#e3efe8"/><rect x="544" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="144" width="33" height="18" fill="#f0f5f2"/>
-                              <rect x="54" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="124" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="159" y="166" width="33" height="18" fill="#e3efe8"/><rect x="194" y="166" width="33" height="18" fill="#e3efe8"/><rect x="229" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="264" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="299" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="369" y="166" width="33" height="18" fill="#e3efe8"/><rect x="404" y="166" width="33" height="18" fill="#e3efe8"/><rect x="439" y="166" width="33" height="18" fill="#cbe5d6"/><rect x="474" y="166" width="33" height="18" fill="#e3efe8"/><rect x="509" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="544" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="166" width="33" height="18" fill="#f0f5f2"/>
-                            </g>
-                            <g font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">
-                              <text x="70"  y="196" text-anchor="middle">06</text><text x="175" y="196" text-anchor="middle">09</text>
-                              <text x="280" y="196" text-anchor="middle">12</text><text x="385" y="196" text-anchor="middle">15</text>
-                              <text x="490" y="196" text-anchor="middle">18</text><text x="595" y="196" text-anchor="middle">21</text>
-                            </g>
-                          </svg>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g4" data-sample="hourly"></div>
                         </div>
                         <div class="px-4 pb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                           <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">mph faster after</span>
@@ -855,37 +904,22 @@
                          at size 4 the y-axis drops to THREE ticks and the legend collapses to
                          dots + a count. 21-section pages live or die on this rule, so the set
                          has to contain one. -->
-                    <div class="col-span-12 sm:col-span-6 lg:col-span-4" data-dms-section="graph-7-small" data-edit-kind="AVL Graph · BarGraph · graph 5" data-edit-size="4" data-measure>
+                    <div class="col-span-12 sm:col-span-6 lg:col-span-4" data-dms-section="graph-7-small" data-graph="g5" data-edit-kind="AVL Graph · BarGraph · graph 5" data-edit-size="4" data-measure>
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
-                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">AM peak · by segment</span>
-                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 5</span>
-                          <span class="flex-1"></span>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">AM peak · by segment</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g5"></div>
                           <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                         </div>
-                        <div class="px-4 pt-4">
-                          <!-- decorative · 3 y-ticks only (clause 5), no gridline crowding -->
-                          <svg viewBox="0 0 300 150" class="w-full h-[150px] block">
-                            <line x1="30" y1="8" x2="30" y2="126" stroke="#e2e8f0" stroke-width="1"/>
-                            <line x1="30" y1="126" x2="292" y2="126" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="30" y1="67" x2="292" y2="67" stroke="#f1f5f9" stroke-width="1"/>
-                            <text x="25" y="129" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">0</text>
-                            <text x="25" y="70"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">3</text>
-                            <text x="25" y="14"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">6</text>
-                            <rect x="42"  y="72"  width="12" height="54" fill="#1F3F8F"/><rect x="56"  y="80"  width="12" height="46" fill="#E5A646"/>
-                            <rect x="80"  y="60"  width="12" height="66" fill="#1F3F8F"/><rect x="94"  y="70"  width="12" height="56" fill="#E5A646"/>
-                            <rect x="118" y="44"  width="12" height="82" fill="#1F3F8F"/><rect x="132" y="58"  width="12" height="68" fill="#E5A646"/>
-                            <rect x="156" y="38"  width="12" height="88" fill="#1F3F8F"/><rect x="170" y="54"  width="12" height="72" fill="#E5A646"/>
-                            <rect x="194" y="66"  width="12" height="60" fill="#1F3F8F"/><rect x="208" y="74"  width="12" height="52" fill="#E5A646"/>
-                            <rect x="232" y="86"  width="12" height="40" fill="#1F3F8F"/><rect x="246" y="92"  width="12" height="34" fill="#E5A646"/>
-                            <g font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">
-                              <text x="55" y="141" text-anchor="middle">S1</text><text x="93" y="141" text-anchor="middle">S2</text>
-                              <text x="131" y="141" text-anchor="middle">S3</text><text x="169" y="141" text-anchor="middle">S4</text>
-                              <text x="207" y="141" text-anchor="middle">S5</text><text x="245" y="141" text-anchor="middle">S6</text>
-                            </g>
-                          </svg>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:180px" data-chart="g5" data-sample="small"></div>
                         </div>
-                        <!-- clause 5 · legend collapsed to dots + count, not named chips -->
                         <div class="px-4 pb-3 flex items-center gap-2">
                           <span class="inline-flex items-center gap-1">
                             <span class="size-2 rounded-full bg-[#1F3F8F]"></span><span class="size-2 rounded-full bg-[#E5A646]"></span>
@@ -943,17 +977,18 @@
               <div class="col-span-12 xl:col-span-4" data-dms-section="try-this">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full p-5">
                   <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// try this</div>
-                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Every state, in nine clicks.</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Every state, in ten clicks.</div>
                   <ol class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span>Type <span class="tny-mono">I-84</span> in the rail's search — the <strong>no-match</strong> state, then clear it.</span></li>
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><strong>+</strong> on any route — the open-out: the window, the day/time restriction, the graph chips.</span></li>
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><em>Nothing in the rail is behind a mode</em> — reorder, rename, remove, colour, window and assignment are always live. <strong>Edit</strong> in the page header adds the <em>page</em> chrome instead: a section toolbar per card, the Measure Picker, the Dynamic Report switch. The graph cards deliberately don't move — see the note below.</span></li>
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span>Rename a route to a name another route already has — the refusal is real copy, not a placeholder.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span>Pencil beside <strong>window</strong> → three facets in the order the engine applies them: <strong>dates</strong> (which days, with the count it will really enumerate), <strong>days</strong> (which of those count), <strong>time of day</strong> (which hours of <em>each</em> one). Set the end time earlier than the start to see the silent-failure warning.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span><strong>Copy</strong> a window, then <strong>paste into all</strong> from the strip that appears at the top of the rail — or paste it route by route. Derived-date routes are skipped and say why.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span>The colour dot on any row → the colour <strong>popover</strong>, no need to open the route; a chip → assignment on/off. Open <strong>NY-9D SB · after</strong>: its dates are <em>derived</em>, so it says so instead of offering a pencil.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><strong>Add route</strong> → search leads; the County / Region / Agency doors sit beside it. Drill in, come back on the breadcrumb, search inside a tag, watch already-added routes get flagged. Every row carries its own tags, so two routes with the same name stem are still tellable apart.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><strong>Add graph</strong> → pick a <strong>shape</strong> from the five cards (Bar · Line · Grid · <strong>Table</strong> · <strong>Map</strong>), then a value from the grouped measure list; resolution and comparison mode are demoted to <em>refine</em>. Set <em>Difference</em> and check exactly two routes to make the <strong>Anchor Route</strong> select appear. The footer names what will be built — including whether it's an AVL Graph, a Spreadsheet or a Map.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span>The row's <strong>pencil</strong> → name and dates together, one save/cancel, with the day count and <strong>shift ± 1 year</strong>. That is all a route carries now: which road, over which dates.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span>Now the card headers — <strong>Quick Controls</strong>. <strong>Routes</strong> on any card changes what it draws (the map is single-select); <strong>when</strong> holds time of day + days; measure, aggregate and mode sit beside them. The row measures itself — narrow the window and watch pills fold into the “⋯” by priority, lowest first. Set a backwards time window there to see the silent-failure warning.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><strong>Copy</strong> a date span, then <strong>paste into all</strong> from the strip that appears at the top of the rail — or paste it route by route. Derived-date routes are skipped and say why.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span>The colour dot on any row → the colour <strong>popover</strong>, no need to open the route; a chip → assignment on/off. Open <strong>NY-9D SB · after</strong>: its dates are <em>derived</em>, so it says so instead of offering a pencil.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><strong>Add route</strong> → search leads; the County / Region / Agency doors sit beside it. Drill in, come back on the breadcrumb, search inside a tag, watch already-added routes get flagged. Every row carries its own tags, so two routes with the same name stem are still tellable apart.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">10</span><span><strong>Add graph</strong> → pick a <strong>shape</strong> from the five cards (Bar · Line · Grid · <strong>Table</strong> · <strong>Map</strong>), then a measure, then <strong>when</strong> (time of day, days, aggregate — the facets that moved off the route), then routes. Pick <em>Map</em> and the route list turns single-select; set <em>Difference</em> with exactly two routes to make the <strong>Anchor Route</strong> select appear. The footer names what will be built — including whether it's an AVL Graph, a Spreadsheet or a Map.</span></li>
                   </ol>
                   <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05"><strong>Inert on purpose:</strong> the two confirm buttons, remove, duplicate and the section Settings drawer. Adding or removing would change the report; this page designs the flow, not the write. Colour and assignment edits move the rail's own chrome — the plots are still drawings and don't redraw.</p>
                 </div>
@@ -966,8 +1001,8 @@
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full overflow-hidden">
                   <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
                     <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// the control set</div>
-                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Eighteen controls, two gates.</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1.5">In the product every mutation needs <strong>both</strong> <span class="tny-mono">editPageMode</span> and this section's own edit pencil — conflating them once let every control go live the moment a page opened at <span class="tny-mono">/edit/…</span>. Here that pair is the one edit toggle.</p>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Two surfaces, one question each.</div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1.5">The rail answers <strong>what road, over what dates</strong>. A card's own Quick Controls answer <strong>what question of it</strong> — measure, aggregate, when, mode, and which routes. Everything below the second heading used to live on the route; moving it is a storage change for the component, not just a layout one.</p>
                   </div>
                   <table class="w-full text-[12px]">
                     <thead class="bg-slate-50/80 border-b border-zinc-950/08">
@@ -978,28 +1013,28 @@
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-950/05 font-proxima text-slate-700">
-                      <tr><td class="px-4 py-1.5 font-medium">Add Route</td><td class="px-3 py-1.5 text-slate-500">actions · <span class="text-[#0f1722]">always</span></td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] ← modal</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Add Route Slot</td><td class="px-3 py-1.5 text-slate-500">actions · dynamic only</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] placeholder</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Add Graph</td><td class="px-3 py-1.5 text-slate-500">actions · <span class="text-[#0f1722]">always</span></td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">draft_sections + graphIds</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Dynamic Report</td><td class="px-3 py-1.5 text-slate-500">rail · edit only</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">page.filters routeSlots</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Search</td><td class="px-3 py-1.5 text-slate-500">rail · always</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · render only</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Collapse panel</td><td class="px-3 py-1.5 text-slate-500">panel head</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · local</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Expand row</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · local</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Reorder ↑ ↓</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] order</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Rename</td><td class="px-3 py-1.5 text-slate-500">row · inline</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.name</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Remove</td><td class="px-3 py-1.5 text-slate-500">row + open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] −1</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Dates <span class="font-normal text-slate-400">which days</span></td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">date half of both</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Days <span class="font-normal text-slate-400">of those, which count</span></td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">weekdays{}</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Time of day <span class="font-normal text-slate-400">hours of each</span></td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">time half of both</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Time-of-day preset</td><td class="px-3 py-1.5 text-slate-500">window · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">time half only</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Copy window</td><td class="px-3 py-1.5 text-slate-500">window</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · holds a shape</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Paste window</td><td class="px-3 py-1.5 text-slate-500">window + rail strip</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">dates + days + time</td></tr>
+                      <tr class="bg-slate-50/60"><td colspan="3" class="px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">the rail · a route is a road and a span</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Add Route</td><td class="px-3 py-1.5 text-slate-500">actions · always</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] ← modal</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Add Graph</td><td class="px-3 py-1.5 text-slate-500">actions · always</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">a new card</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Dynamic Report</td><td class="px-3 py-1.5 text-slate-500">rail · page edit</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">page.filters routeSlots</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Search · collapse · expand</td><td class="px-3 py-1.5 text-slate-500">rail</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · local</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Reorder · remove</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[]</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Edit <span class="font-normal text-slate-400">name + dates, one mode</span></td><td class="px-3 py-1.5 text-slate-500">row · one pencil</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.name · start / end</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Shift ± 1 year</td><td class="px-3 py-1.5 text-slate-500">open-out · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.start / end</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Copy / paste span</td><td class="px-3 py-1.5 text-slate-500">open-out + rail strip</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.start / end</td></tr>
                       <tr><td class="px-4 py-1.5 font-medium">Identity colour</td><td class="px-3 py-1.5 text-slate-500">row · popover</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.color</td></tr>
-                      <tr><td class="px-4 py-1.5 font-medium">Graph chips</td><td class="px-3 py-1.5 text-slate-500">row + open-out</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.graphIds[]</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">“on N cards”</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · jumps to it</td></tr>
+                      <tr class="bg-slate-50/60"><td colspan="3" class="px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">quick controls · a card is a question</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Routes <span class="font-normal text-slate-400">single or multi</span></td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.routes[]</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Measure</td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.measure</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Aggregate</td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.resolution</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">When <span class="font-normal text-slate-400">time of day + days</span></td><td class="px-3 py-1.5 text-slate-500">card header · one pill</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.start/end · weekdays{}</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Comparison mode</td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.mode</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">“⋯” <span class="font-normal text-slate-400">whatever didn't fit</span></td><td class="px-3 py-1.5 text-slate-500">card header · measured</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">the same popover</td></tr>
                     </tbody>
                   </table>
                   <div class="px-5 py-3 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[11.5px] leading-[1.5] text-slate-500">
-                    Route content lives in the report's own dataset row, not in <span class="tny-mono">draft_sections</span> — it writes through on every edit, exactly like Card/Spreadsheet row CRUD, so <strong>publish and discard don't apply to it</strong>. An earlier draft of this page said “changes save to the draft”; that was wrong.
+                    Route content lives in the report's own dataset row, not in <span class="tny-mono">draft_sections</span> — it writes through on every edit, exactly like Card/Spreadsheet row CRUD, so <strong>publish and discard don't apply to it</strong>. Card state is section state, so it follows the page's own draft/publish cycle. <strong>Quick Controls are the real mechanism</strong> — <span class="tny-mono">theme.sectionHeaderExtensions</span> injects a builder into the section header band, with the same ctx the Settings-drawer extensions get; today it ships Measure and Comparison Mode, and this design extends the row.
                   </div>
                 </div>
               </div>
@@ -1011,17 +1046,20 @@
                   <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">A 340-px control surface.</div>
                   <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2.5">
                     <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">A control has to describe the query it builds.</span> The window read “start date + start time / end date + end time”, which claims a continuous stretch between two instants. The engine builds a list of <em>days</em> and, separately, a band of <em>hours applied to every one of them</em> — it averages the same hours across days. Three facets in the engine's own order (dates → days → time of day) say that; the old pairing said the opposite, and no amount of polish fixes a control that lies about its result.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Name the silent failures.</span> A backwards time window empties the epoch list, and an empty list means the filter is never sent — so it silently returns all-day data. The control says so, in those words, rather than letting a plausible-looking window produce a wrong chart.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">If every route wants the same value, make it copyable.</span> A before/after report is four routes with one window. Retyping four fields per route is a transcription-error generator, so the window copies as one shape and the copied strip offers the bulk case first.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">Two affordances per row, never more.</span> Rename and remove sit in the row; everything else waits inside the open-out. At 340&nbsp;px a row with six icons is unreadable and the route's name — the thing you scan for — loses its width.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span><span class="font-medium text-slate-700">Editing is explicit; saving isn't automatic.</span> The name and the window each take a save/cancel pair, because a half-typed window would refetch every graph on the page. Colour and chips commit on click — single, reversible, cheap.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span><span class="font-medium text-slate-700">Presets before fields.</span> <em>AM Peak</em> and <em>Weekdays</em> are the real vocabulary; the raw inputs stay, but nobody should have to type <span class="tny-mono">16:00</span> twice from memory. The two windows that wrap past midnight are absent on purpose — the epoch range can't express them.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><span class="font-medium text-slate-700">Destructive is the only coloured control.</span> Amber = you are editing; rose = removal; blue = the one primary action. Nothing else earns a colour, which is what keeps the route colours themselves legible.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><span class="font-medium text-slate-700">Colour is a popover on the dot, not a block in the open-out.</span> Inline it was doubly buried — expand the route, then click “change” — for a control whose whole job is “this route is blue everywhere”. You notice two routes are hard to tell apart while looking at a chart, and from there it's one click on the dot. The TMC list left the open-out for the opposite reason: nobody identifies a route by reading <span class="tny-mono">120P29714</span> off a rail, so the count in the meta line is the useful part.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><span class="font-medium text-slate-700">Say “unused”.</span> A route on no graph is a half-finished report, not a tidy one, so the row says so and the empty-state card in the canvas repeats it by name.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">10</span><span><span class="font-medium text-slate-700">Nothing in the rail hides behind a mode.</span> Add Route and Add Graph sit in an always-present action row, and every per-route control — window, colour, name, order, assignment — is live: a report with no routes has to offer the way out of that state, and a mode you have to discover first is not an offer. Page edit mode still governs the <em>page</em>: section toolbars, the Measure Picker, Dynamic Report.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">11</span><span><span class="font-medium text-slate-700">Don't fake the refetch.</span> A route's window, colour and assignment do publish to every card the route feeds, and in the product those cards redraw. This page has no data behind it, so it doesn't pretend: the cards stay the drawings they are, and the binding is written down rather than simulated. A version that rebuilt legends and flashed “updating” was reverted — it made cards look refreshed while the numbers underneath hadn't moved, which teaches the wrong thing more effectively than saying nothing.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">12</span><span><span class="font-medium text-slate-700">The panel scrolls once.</span> The head, the action row and the totals are pinned; only the rows move. A rail that scrolls as a whole loses its Add buttons exactly when a long list makes you want them.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Put a control where its subject lives.</span> Time of day, days and the aggregate sat on the route, so asking a second question of the same road meant a second route, and one window silently governed every card that route fed. They belong to the card — the card <em>is</em> the question — and they now sit in its header, in the row the platform already renders there. What's left on a route is what a route is: a road and a span of dates.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">A control row has to measure itself.</span> Five controls fit a size-12 header and not a size-5 one, and the same card is wide at 1600 px and narrow at 1280 — so a size threshold is the wrong tool. Set values shrink to tokens (<span class="tny-mono">1h</span>, <span class="tny-mono">06–10 · Wd</span>, a mode glyph), then what's left collapses by priority into one “⋯” that opens the same contents. The title truncates to a floor and keeps a tooltip: the controls claim the spare width first, because the title is legible from the plot and the controls aren't.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">A per-item control must survive twenty items.</span> A chip per graph on every route row was fine at five graphs and unusable at twenty, which these reports reach. A count plus a jump answers the same question in one line and doesn't grow.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span><span class="font-medium text-slate-700">Name the silent failures.</span> A backwards time window empties the epoch list, and an empty list means the filter is never sent — so it silently returns all-day data. The control says so, in those words, rather than letting a plausible-looking window produce a wrong chart.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span><span class="font-medium text-slate-700">If every route wants the same value, make it copyable.</span> A before/after report is four routes with one window. Retyping four fields per route is a transcription-error generator, so the window copies as one shape and the copied strip offers the bulk case first.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><span class="font-medium text-slate-700">Two affordances per row, never more.</span> Rename and remove sit in the row; everything else waits inside the open-out. At 340&nbsp;px a row with six icons is unreadable and the route's name — the thing you scan for — loses its width.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><span class="font-medium text-slate-700">Editing is explicit; saving isn't automatic.</span> The name and the window each take a save/cancel pair, because a half-typed window would refetch every graph on the page. Colour and chips commit on click — single, reversible, cheap.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><span class="font-medium text-slate-700">Presets before fields.</span> <em>AM Peak</em> and <em>Weekdays</em> are the real vocabulary; the raw inputs stay, but nobody should have to type <span class="tny-mono">16:00</span> twice from memory. The two windows that wrap past midnight are absent on purpose — the epoch range can't express them.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">10</span><span><span class="font-medium text-slate-700">Destructive is the only coloured control.</span> Amber = you are editing; rose = removal; blue = the one primary action. Nothing else earns a colour, which is what keeps the route colours themselves legible.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">11</span><span><span class="font-medium text-slate-700">Colour is a popover on the dot, not a block in the open-out.</span> Inline it was doubly buried — expand the route, then click “change” — for a control whose whole job is “this route is blue everywhere”. You notice two routes are hard to tell apart while looking at a chart, and from there it's one click on the dot. The TMC list left the open-out for the opposite reason: nobody identifies a route by reading <span class="tny-mono">120P29714</span> off a rail, so the count in the meta line is the useful part.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">12</span><span><span class="font-medium text-slate-700">Say “unused”.</span> A route on no graph is a half-finished report, not a tidy one, so the row says so and the empty-state card in the canvas repeats it by name.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">13</span><span><span class="font-medium text-slate-700">Nothing in the rail hides behind a mode.</span> Add Route and Add Graph sit in an always-present action row, and every per-route control — window, colour, name, order, assignment — is live: a report with no routes has to offer the way out of that state, and a mode you have to discover first is not an offer. Page edit mode still governs the <em>page</em>: section toolbars, the Measure Picker, Dynamic Report.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">14</span><span><span class="font-medium text-slate-700">Don't fake the refetch.</span> A route's window, colour and assignment do publish to every card the route feeds, and in the product those cards redraw. This page has no data behind it, so it doesn't pretend: the cards stay the drawings they are, and the binding is written down rather than simulated. A version that rebuilt legends and flashed “updating” was reverted — it made cards look refreshed while the numbers underneath hadn't moved, which teaches the wrong thing more effectively than saying nothing.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">15</span><span><span class="font-medium text-slate-700">The panel scrolls once.</span> The head, the action row and the totals are pinned; only the rows move. A rail that scrolls as a whole loses its Add buttons exactly when a long list makes you want them.</span></li>
                   </ul>
                   <div class="mt-4 pt-3 border-t border-zinc-950/05">
                     <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">// the density rule still holds</div>
@@ -1316,14 +1354,29 @@
                 <p id="m2-measure-help" class="font-proxima text-[12.5px] leading-[1.5] text-slate-600 mt-1.5"></p>
               </div>
 
+              <!-- 03 · WHEN · the facets that moved off the route (Alex, 2026-08-06): a route
+                   is a stretch of road over a span of DATES; which hours of those days, which
+                   weekdays and at what aggregate are properties of the QUESTION this card
+                   asks, so they are set here and live on the card. Every one of them is also
+                   in the card's own Quick Controls afterwards. -->
               <div class="pt-4 border-t border-zinc-950/05">
                 <div class="flex items-baseline gap-2 mb-2">
-                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">refine</span>
-                  <span class="font-proxima text-[11.5px] text-slate-400">optional — both have defaults</span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">When</span>
+                  <span class="font-proxima text-[11.5px] text-slate-400 flex-1">of each route's date span</span>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-x-3 gap-y-2.5">
+                  <div class="col-span-2">
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">time of day · which hours of each day</label>
+                    <div id="m2-tod" class="flex flex-wrap gap-1"></div>
+                    <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-1.5">Applied to <strong>every day</strong> in the span and averaged together — not one continuous stretch.</p>
+                  </div>
+                  <div class="col-span-2">
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">days of week</label>
+                    <div id="m2-dow" class="flex flex-wrap items-center gap-1"></div>
+                  </div>
                   <div>
-                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">resolution</label>
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">aggregate</label>
                     <select id="m2-resolution" data-act="m2-resolution" class="w-full h-9 px-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 font-proxima text-[13px] text-slate-700 focus:outline-none focus:border-[#1F3F8F] focus:bg-white"></select>
                   </div>
                   <div>
@@ -1342,7 +1395,7 @@
             <!-- secondary column · which routes feed it -->
             <div class="px-6 py-5 bg-slate-50/60">
               <div class="flex items-baseline gap-2 mb-2">
-                <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
                 <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Routes</span>
                 <span id="m2-route-count" class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums ml-auto">0/4</span>
               </div>
@@ -1351,7 +1404,7 @@
                 <button data-act="m2-all" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:text-[#16307A]">select all</button>
                 <button data-act="m2-none" class="font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-700">none</button>
               </div>
-              <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05">Each route keeps its identity colour, so the new card reads against the ones already on the report. A route can feed any number of cards.</p>
+              <p id="m2-routes-note" class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05"></p>
             </div>
           </div>
         </div>
@@ -1378,6 +1431,11 @@
      the rail's sticky wrapper is overflow-hidden, so an absolutely-positioned popover
      inside a row would be clipped — the same reason the shared Popup primitive portals. -->
 <div id="colour-pop" class="hidden fixed z-[55] w-[224px] p-2.5 rounded-[8px] bg-white border border-zinc-950/10 shadow-[0_10px_24px_-4px_rgba(0,0,0,0.18)]"></div>
+
+<!-- QUICK CONTROLS POPOVER · anchored to whichever header pill was clicked. Portalled
+     out of the card for the same reason as the colour picker: a card sits anywhere on a
+     scrolling page, and its header row is `overflow-hidden` by the card chrome. -->
+<div id="qc-pop" class="hidden fixed z-[55] w-[290px] p-2.5 rounded-[8px] bg-white border border-zinc-950/10 shadow-[0_10px_24px_-4px_rgba(0,0,0,0.18)]"></div>
 
 <!-- the one honest interruption: what this mockup won't do, said where you clicked -->
 <div id="inert-toast" class="hidden opacity-0 transition-opacity duration-300 fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] max-w-[560px] px-4 py-3 rounded-[6px] bg-[#0F1722] text-slate-100 shadow-2xl font-proxima text-[12.5px] leading-[1.5]"></div>

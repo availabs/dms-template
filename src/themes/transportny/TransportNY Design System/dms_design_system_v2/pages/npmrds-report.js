@@ -168,32 +168,52 @@
     nb: ['120+29713', '120P29714', '120+29714', '120P29715', '120+29715', '120P29716', '120+29716', '120P29717', '120+29717'],
     sb: ['120-29713', '120N29714', '120-29714', '120N29715', '120-29715', '120N29716', '120-29716', '120N29717', '120-29717']
   };
+  // ── WHAT LIVES ON A GRAPH NOW (Alex, 2026-08-06) ─────────────────────────────
+  // Time of day, day-of-week and the aggregate used to be per-ROUTE. They move here,
+  // to the card, because they are properties of the QUESTION the card asks, not of the
+  // route: "NY-9D NB, Jan–Feb 2025" is a stretch of road over a span of dates, and
+  // "weekday PM peak, hourly" is one of many ways to read it. Keeping them on the route
+  // meant a second copy of the route to ask a second question of it, and it meant the
+  // same window silently applied to every card the route fed.
+  // A ROUTE now carries: name · colour · TMCs · the DATE SPAN.
+  // A GRAPH now carries: shape · measure · aggregate · time of day · days · comparison
+  //   mode · and its own list of routes (the assignment moved to this side too).
+  // ESCALATION for the component: storage moves with it. `useGraphPublish` would build
+  // the date IN-list from each route's span minus the GRAPH's weekday mask, and the
+  // epoch IN-list from the GRAPH's time window — today both come off the route
+  // (generateDateRange/generateEpochRange read route.weekdays and route.start/end).
+  // `routeSelect` is per card: a Map draws one route, so it is single-select; the
+  // charts and the table take any number. Difference mode wants exactly two, which is
+  // the rule the Anchor control already followed.
   var GRAPHS = [
-    { id: 'g1', label: 'Graph 1' }, { id: 'g2', label: 'Graph 2' }, { id: 'g3', label: 'Graph 3' },
-    { id: 'g4', label: 'Graph 4' }, { id: 'g5', label: 'Graph 5' }
+    { id: 'g1', label: 'Graph 1', kind: 'LineGraph', routeSelect: 'multi', measure: 'travelTime', resolution: 'hour', mode: 'plain', start: '06:00', end: '10:00', weekdays: { saturday: false, sunday: false }, routes: ['comp-1', 'comp-2'] },
+    { id: 'g2', label: 'Graph 2', kind: 'BarGraph', routeSelect: 'multi', measure: 'travelTime', resolution: 'hour', mode: 'plain', start: '16:00', end: '20:00', weekdays: { saturday: false, sunday: false }, routes: ['comp-1', 'comp-2'] },
+    { id: 'g3', label: 'Graph 3', kind: 'BarGraph', routeSelect: 'multi', measure: 'travelTime', resolution: 'hour', mode: 'difference', start: '16:00', end: '20:00', weekdays: { saturday: false, sunday: false }, routes: ['comp-3', 'comp-4'] },
+    { id: 'g4', label: 'Graph 4', kind: 'GridGraph', routeSelect: 'multi', measure: 'speed', resolution: '15-minutes', mode: 'difference', start: '', end: '', weekdays: { saturday: false, sunday: false }, routes: ['comp-1', 'comp-2'] },
+    { id: 'g5', label: 'Graph 5', kind: 'BarGraph', routeSelect: 'multi', measure: 'travelTime', resolution: 'hour', mode: 'plain', start: '06:00', end: '10:00', weekdays: { saturday: false, sunday: false }, routes: ['comp-1', 'comp-2'] },
+    { id: 'gm', label: 'Map', kind: 'Map', routeSelect: 'single', measure: 'speed', resolution: 'day', mode: 'plain', start: '16:00', end: '20:00', weekdays: { saturday: false, sunday: false }, routes: ['comp-1'] },
+    { id: 'gt', label: 'Table', kind: 'Table', routeSelect: 'multi', measure: 'travelTime', resolution: 'hour', mode: 'plain', start: '', end: '', weekdays: { saturday: false, sunday: false }, routes: ['comp-1', 'comp-2', 'comp-3', 'comp-4'] }
   ];
+  function byGraph(gid) { for (var i = 0; i < GRAPHS.length; i++) if (GRAPHS[i].id === gid) return GRAPHS[i]; return null; }
+  function graphsOf(routeId) { return GRAPHS.filter(function (g) { return g.routes.indexOf(routeId) > -1; }); }
   var routes = [
     {
       id: 'comp-1', name: 'NY-9D NB · before', color: '#1F3F8F', tmcs: TMCS.nb, miles: '2.0',
-      start: '2025-01-06T06:00', end: '2025-02-28T10:00', weekdays: { saturday: false, sunday: false },
-      graphs: ['g1', 'g2', 'g4'], title: 'NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025'
+      start: '2025-01-06', end: '2025-02-28', title: 'NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025'
     },
     {
       id: 'comp-2', name: 'NY-9D NB · after', color: '#E5A646', tmcs: TMCS.nb, miles: '2.0',
-      start: '2026-01-05T06:00', end: '2026-02-27T10:00', weekdays: { saturday: false, sunday: false },
-      graphs: ['g1', 'g2', 'g4'], title: 'NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2026'
+      start: '2026-01-05', end: '2026-02-27', title: 'NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2026'
     },
     {
       id: 'comp-3', name: 'NY-9D SB · before', color: '#10B981', tmcs: TMCS.sb, miles: '1.9',
-      start: '2025-01-06T16:00', end: '2025-02-28T20:00', weekdays: { saturday: false, sunday: false },
-      graphs: ['g3'], title: 'NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2025'
+      start: '2025-01-06', end: '2025-02-28', title: 'NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2025'
     },
     {
       // Mechanism B: this row's window is COMPUTED from comp-3's, so its date
       // block renders read-only with a note instead of the pencil.
       id: 'comp-4', name: 'NY-9D SB · after', color: '#8B5CF6', tmcs: TMCS.sb, miles: '1.9',
-      start: '2026-01-05T16:00', end: '2026-02-27T20:00', weekdays: { saturday: false, sunday: false },
-      graphs: [], derivedFrom: 'comp-3', title: 'NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2026'
+      start: '2026-01-05', end: '2026-02-27', derivedFrom: 'comp-3', title: 'NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2026'
     }
   ];
 
@@ -263,17 +283,15 @@
     collapsed: false,
     dynamic: false,
     query: '',
-    expanded: {},            // routeId -> bool
-    editingName: null,       // routeId
-    nameDraft: '',
-    editingDates: null,      // routeId
-    dateDraft: null,         // { start, end, weekdays }
+    editRoute: null,         // routeId being edited — name AND dates, one mode
+    draft: null,             // { name, start, end }
     picking: null,           // routeId whose colour popover is open
     // A window copied from one route, waiting to be pasted onto others. In-app, not the
     // OS clipboard: the value is a shape ({start,end,weekdays}), not text, and the whole
     // point is to hand it to sibling routes — the common case being "make them all use
     // the same window", which is why the copied-strip offers apply-to-all directly.
-    clip: null,              // { from, fromName, start, end, weekdays }
+    clip: null,              // { from, fromName, start, end }
+    qc: null,                // { g, kind } — the open Quick Controls popover
     error: ''
   };
 
@@ -364,14 +382,13 @@
   // Every problem the stored shape can carry, in the words of what the engine will do
   // with it. `level` drives the colour: rose = the query is wrong, amber = the query is
   // legal but not what the control implies.
+  // Only the span can be wrong here now; the time-window failure modes moved to the
+  // graph's own controls with the times themselves.
   function windowIssues(d) {
     var out = [];
     var s = datePart(d.start), e = datePart(d.end);
     if (!s || !e) { out.push({ level: 'error', text: 'Both dates are needed — without them the route has no date filter at all.' }); return out; }
     if (s > e) out.push({ level: 'error', text: 'The end date is before the start date, so no days are enumerated and the route returns nothing.' });
-    var ts = timePart(d.start), te = timePart(d.end);
-    if ((ts && !te) || (!ts && te)) out.push({ level: 'warn', text: 'A time of day needs both bounds — with one, the time filter is dropped and every hour is included.' });
-    if (ts && te && ts > te) out.push({ level: 'warn', text: 'This window runs backwards (and a window can’t cross midnight). The epoch filter would be dropped, silently giving all-day data.' });
     return out;
   }
 
@@ -410,8 +427,6 @@
     meta: 'font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5',
     iconBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0',
     dangerBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 shrink-0',
-    expander: 'size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]',
-    expanderOpen: 'size-5 mt-0.5 shrink-0 rounded border border-[#37576B]/40 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-[#37576B]',
     label: 'font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500',
     chipOn: 'h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider',
     chipOff: 'h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider hover:border-[#37576B]',
@@ -424,145 +439,65 @@
     fieldRO: 'h-7 px-2 rounded-[4px] border border-zinc-950/08 bg-slate-50 flex items-center font-mono text-[11px] tabular-nums text-slate-500'
   };
 
-  // VIEW mode lists only the graphs a route actually feeds — a reader is being told
-  // where this route appears, and five chips per row (four of them off) buries that
-  // in noise at 340px. EDIT mode lists every discovered graph, because there the
-  // chips are the assignment control and an unassigned graph has to be clickable.
-  function chipsHtml(r, edit) {
-    var out = ['<span class="' + C.label + ' mr-0.5">on</span>'];
-    GRAPHS.filter(function (g) { return edit || r.graphs.indexOf(g.id) > -1; }).forEach(function (g) {
-      var on = r.graphs.indexOf(g.id) > -1;
-      var cls = on ? C.chipOn : (edit ? C.chipOff : C.chipOffRead);
-      var title = edit ? (on ? 'Remove from ' + g.label : 'Add to ' + g.label) : (on ? 'On ' + g.label : g.label + ' — not assigned');
-      // the check mark is a toggle state, so it only means something in edit mode —
-      // in view mode every chip shown is already an "on"
-      out.push('<button class="' + cls + '" data-act="chip" data-route="' + r.id + '" data-graph="' + g.id + '" title="' + esc(title) + '"' + (edit ? '' : ' disabled') + '>' +
-        (on && edit ? I.check : '') + g.label.toLowerCase() + '</button>');
-    });
-    return out.join('');
+  // NO PER-GRAPH CHIPS ON A ROUTE ROW (Alex, 2026-08-06). A chip per discovered graph
+  // was fine at five and unusable at twenty — and reports reach twenty easily. Assignment
+  // now happens on the graph side, in each card's Routes control, so the row only has to
+  // answer "is this route being used, and where": a count, and the "unused" warning that
+  // was the reason the chips existed at all. Click it to jump to the cards it feeds.
+  // A PILL BESIDE THE NAME, not a line of its own (Alex, 2026-08-06): "on 6 cards" was a
+  // whole row for one number. As a pill it sits where the "unused" badge already sat, so a
+  // row is one line of identity plus one line of meta.
+  function graphUseHtml(r) {
+    var gs = graphsOf(r.id);
+    if (!gs.length) return '<span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0" title="This route feeds no card yet">unused</span>';
+    return '<button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B]/10 border border-[#37576B]/20 text-[#37576B] hover:bg-[#37576B]/15 font-mono text-[9.5px] uppercase tracking-wider shrink-0" data-act="show-graphs" data-route="' + r.id + '" title="On ' + esc(gs.map(function (g) { return g.label; }).join(', ')) + ' — click to jump">' +
+      gs.length + (gs.length === 1 ? ' card' : ' cards') + '</button>';
   }
 
-  // ── THE WINDOW BLOCK · three facets in the order the engine applies them ──────
-  // DATES (which days) → DAYS (which of those count) → TIME OF DAY (which hours of
-  // each one). Read that top to bottom and it describes the query; the old
-  // "start date + start time / end date + end time" pairing described something the
-  // tool has never done.
+  // ── THE ROUTE'S DATE SPAN ─────────────────────────────────────────────────────
+  // Time of day, days and the aggregate moved to the card (see GRAPHS): they describe the
+  // question a card asks, not the route. What's left is the span — "NY-9D NB, Jan 6 – Feb
+  // 28 2025" — which is what a route IS.
+  // ONE EDIT MODE PER ROUTE (Alex, 2026-08-06): the row's single pencil opens the name AND
+  // the dates, with one save/cancel pair. A pencil on the row for the name plus a second
+  // one inside the open-out for the dates made two edit modes out of one object.
   function datesHtml(r, edit) {
-    var editing = S.editingDates === r.id;
-    var d = editing ? S.dateDraft : { start: r.start, end: r.end, weekdays: r.weekdays };
+    var editing = S.editRoute === r.id;
+    var d = editing ? S.draft : { start: r.start, end: r.end };
     var derived = !!r.derivedFrom;
     var copied = S.clip;
 
-    var actions = '';
-    if (edit && !derived) {
-      actions = editing
-        ? '<button class="size-6 rounded-[4px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52]" data-act="dates-save" data-route="' + r.id + '" title="Save window">' + I.save + '</button>' +
-          '<button class="size-6 rounded-[4px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c]" data-act="dates-cancel" title="Cancel">' + I.cancel + '</button>'
-        : '<button class="' + C.iconBtn + '" data-act="win-copy" data-route="' + r.id + '" title="Copy this window">' + I.copy + '</button>' +
-          (copied && copied.from !== r.id
-            ? '<button class="size-6 rounded flex items-center justify-center text-[#1F3F8F] hover:bg-[#1F3F8F]/10 shrink-0" data-act="win-paste" data-route="' + r.id + '" title="Paste the window copied from ' + esc(copied.fromName) + '">' + I.paste + '</button>'
-            : '<button class="size-6 rounded flex items-center justify-center text-slate-200 cursor-not-allowed shrink-0" title="Copy a window from another route first" disabled>' + I.paste + '</button>') +
-          '<button class="' + C.iconBtn + '" data-act="dates-edit" data-route="' + r.id + '" title="Edit window">' + I.pencil + '</button>';
-    } else if (edit && derived && copied) {
-      actions = '<span class="font-mono text-[9px] uppercase tracking-wider text-slate-400">derived</span>';
-    }
+    var actions = '';   // copy/paste live in the row now, reachable without entering edit
 
     var head = '<div class="flex items-center justify-between gap-2">' +
-      '<div class="' + C.label + '">window</div>' +
+      '<div class="' + C.label + '">dates</div>' +
       '<div class="flex items-center gap-1">' + actions + '</div></div>' +
-      (derived && edit ? '<div class="font-proxima text-[11px] italic text-slate-500 mt-1">Derived from ' + esc((byId(r.derivedFrom) || {}).name || 'another route') + ' — edit that route\'s window instead.</div>' : '');
+      (derived && edit ? '<div class="font-proxima text-[11px] italic text-slate-500 mt-1">Derived from ' + esc((byId(r.derivedFrom) || {}).name || 'another route') + ' — edit that route\'s dates instead.</div>' : '');
 
-    // ── read-only · three labelled lines, not four disabled inputs ──
+    var c = countDays(d.start, d.end);
     if (!editing) {
-      var c = countDays(d.start, d.end, d.weekdays);
-      var rows = [
-        ['dates', fmtDateRange(d.start, d.end), c ? c.kept + ' of ' + c.all + ' days' : null],
-        ['days', daysLabel(d.weekdays), null],
-        ['time', timeOfDayLabel(d), timePart(d.start) && timePart(d.end) ? 'each day' : 'no filter']
-      ];
-      // the summary is also the affordance: clicking it opens the editor, so the pencil
-      // is a shortcut rather than the only door
-      var opener = edit && !derived;
       return '<div>' + head +
-        '<div class="mt-1.5 space-y-1' + (opener ? ' cursor-pointer group/win rounded-[4px] -mx-1 px-1 py-0.5 hover:bg-[#1F3F8F]/5' : '') + '"' +
-        (opener ? ' data-act="dates-edit" data-route="' + r.id + '" title="Edit this window"' : '') + '>' + rows.map(function (row) {
-          return '<div class="flex items-baseline gap-2">' +
-            '<span class="w-[34px] shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-400">' + row[0] + '</span>' +
-            '<span class="font-proxima text-[12px] text-slate-700 flex-1 min-w-0">' + esc(row[1]) +
-            (row[2] ? '<span class="text-slate-400"> · ' + esc(row[2]) + '</span>' : '') + '</span>' +
-            '</div>';
-        }).join('') + '</div>' +
-        (timePart(d.start) && timePart(d.end)
-          ? '<div class="mt-1.5 font-proxima text-[11px] leading-[1.4] text-slate-500">Every day’s ' + esc(timePart(d.start) + '–' + timePart(d.end)) + ' is averaged together.</div>'
-          : '') +
-        '</div>';
+        '<div class="mt-1">' +
+        '<span class="font-proxima text-[13px] text-slate-700">' + esc(fmtDateRange(d.start, d.end)) + '</span>' +
+        (c ? '<span class="font-proxima text-[12px] text-slate-400"> · ' + c.all + ' days</span>' : '') +
+        '</div></div>';
     }
 
-    // ── editing · one facet per sub-block ──
-    var c2 = countDays(d.start, d.end, d.weekdays);
     var issues = windowIssues(d);
     var dateField = function (which, label) {
       return '<div class="flex-1 min-w-0"><label class="font-proxima text-[10px] font-semibold text-slate-500 block mb-0.5">' + label + '</label>' +
-        '<input type="date" value="' + esc(datePart(d[which])) + '" data-act="date-in" data-route="' + r.id + '" data-which="' + which + '" class="w-full h-7 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums text-[#0f1722] focus:outline-none focus:border-[#1F3F8F]"/></div>';
+        '<input type="date" value="' + esc(datePart(d[which])) + '" data-act="date-in" data-route="' + r.id + '" data-which="' + which + '" class="w-full h-7 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums text-[#0f1722] focus:outline-none focus:border-[#1F3F8F] disabled:bg-slate-50 disabled:text-slate-400"' + (derived ? ' disabled' : '') + '/></div>';
     };
-    var timeField = function (which, label) {
-      return '<div class="flex-1 min-w-0"><label class="font-proxima text-[10px] font-semibold text-slate-500 block mb-0.5">' + label + '</label>' +
-        '<input type="time" value="' + esc(timePart(d[which])) + '" data-act="time-in" data-route="' + r.id + '" data-which="' + which + '" class="w-full h-7 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums text-[#0f1722] focus:outline-none focus:border-[#1F3F8F]"/></div>';
-    };
-
     return '<div>' + head +
-
-      // 1 · DATES
-      '<div class="mt-2">' +
-      '<div class="flex items-baseline gap-2 mb-1"><span class="' + C.label + '">dates</span>' +
-      '<span class="font-proxima text-[10.5px] text-slate-400 flex-1">which days</span>' +
-      (c2 ? '<span class="font-mono text-[9.5px] uppercase tracking-[0.12em] text-slate-400 tabular-nums">' + c2.kept + ' of ' + c2.all + ' days</span>' : '') + '</div>' +
-      '<div class="flex items-end gap-1.5">' + dateField('start', 'From') +
+      '<div class="mt-1.5 flex items-end gap-1.5">' + dateField('start', 'From') +
       '<span class="pb-1.5 text-slate-300">→</span>' + dateField('end', 'To') + '</div>' +
-      // shift the whole span, keeping its length — the before/after move, and the one
-      // place a hand-typed date range reliably goes wrong (off-by-a-day, wrong leap year)
-      '<div class="mt-1.5 flex items-center gap-1">' +
-      '<span class="font-proxima text-[10.5px] text-slate-400 mr-0.5">shift</span>' +
-      '<button class="' + C.pill + '" data-act="shift" data-route="' + r.id + '" data-years="-1" title="Same span, one year earlier">− 1 year</button>' +
-      '<button class="' + C.pill + '" data-act="shift" data-route="' + r.id + '" data-years="1" title="Same span, one year later">+ 1 year</button>' +
-      '<span class="font-proxima text-[10.5px] text-slate-400 ml-auto">keeps the length</span>' +
-      '</div></div>' +
-
-      // 2 · DAYS
-      '<div class="mt-2.5">' +
-      '<div class="flex items-baseline gap-2 mb-1"><span class="' + C.label + '">days</span>' +
-      '<span class="font-proxima text-[10.5px] text-slate-400 flex-1">which of those count</span></div>' +
-      '<div class="flex flex-wrap items-center gap-1">' +
-      DOW.map(function (dd) {
-        var on = dayOn(d.weekdays, dd[0]);
-        return '<button class="' + (on ? C.dayOn : C.dayOff) + '" data-act="dow" data-route="' + r.id + '" data-day="' + dd[0] + '" title="' + dd[0] + (on ? ' included — click to exclude' : ' excluded — click to include') + '">' + dd[1] + '</button>';
-      }).join('') +
-      '<span class="w-1"></span>' +
-      '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="weekdays">Weekdays</button>' +
-      '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="weekends">Weekends</button>' +
-      '<button class="' + C.pill + '" data-act="dow-set" data-route="' + r.id + '" data-set="all">All</button>' +
-      '</div></div>' +
-
-      // 3 · TIME OF DAY — the facet the old pairing misrepresented, so it says what it does
-      '<div class="mt-2.5 pt-2.5 border-t border-zinc-950/05">' +
-      '<div class="flex items-baseline gap-2 mb-1"><span class="' + C.label + '">time of day</span>' +
-      '<span class="font-proxima text-[10.5px] text-slate-400 flex-1">which hours of each day</span></div>' +
-      '<div class="flex items-end gap-1.5">' + timeField('start', 'From') +
-      '<span class="pb-1.5 text-slate-300">→</span>' + timeField('end', 'To') + '</div>' +
-      '<div class="mt-1.5 flex flex-wrap items-center gap-1">' +
-      PEAK_PRESETS.map(function (p) {
-        var on = timePart(d.start) === p.s && timePart(d.end) === p.e;
-        // the hours are ON the pill: "AM Peak" alone makes you hover to learn that this
-        // brand means 06:00–10:00, and two of the five presets differ only by their hours
-        return '<button class="' + (on ? C.pillOn : C.pill) + ' inline-flex items-baseline gap-1" data-act="preset" data-route="' + r.id + '" data-preset="' + esc(p.label) + '" title="' + esc(p.s ? p.s + '–' + p.e : 'no time filter') + '">' + esc(p.label) +
-          '<span class="' + (on ? 'text-[#1F3F8F]/70' : 'text-slate-400') + ' text-[9px] tabular-nums">' + esc(p.s ? p.s.replace(':00', '') + '–' + p.e.replace(':00', '') : '·') + '</span></button>';
-      }).join('') + '</div>' +
-      '<div class="mt-1.5 font-proxima text-[11px] leading-[1.4] text-slate-500">' +
-      (timePart(d.start) && timePart(d.end)
-        ? 'Applied to <strong>every day</strong> in the range and averaged together — not one continuous stretch from the first day to the last.'
-        : 'No time filter: every hour of every day in the range is included.') +
-      '</div></div>' +
-
+      (derived ? '' :
+        '<div class="mt-1.5 flex items-center gap-1">' +
+        '<span class="font-proxima text-[10.5px] text-slate-400 mr-0.5">shift</span>' +
+        '<button class="' + C.pill + '" data-act="shift" data-route="' + r.id + '" data-years="-1" title="Same span, one year earlier">− 1 year</button>' +
+        '<button class="' + C.pill + '" data-act="shift" data-route="' + r.id + '" data-years="1" title="Same span, one year later">+ 1 year</button>' +
+        (c ? '<span class="font-mono text-[9.5px] uppercase tracking-[0.12em] text-slate-400 tabular-nums ml-auto">' + c.all + ' days</span>' : '') +
+        '</div>') +
       (issues.length
         ? '<div class="mt-2 space-y-1">' + issues.map(function (i) {
           return '<div data-issue="' + i.level + '" class="rounded-[4px] px-2 py-1.5 font-proxima text-[11px] leading-[1.4] ' +
@@ -621,29 +556,32 @@
     // name's left edge — a nice alignment cue that cost ~52 of 340 px, which is most of
     // what the date and time fields were short of. The block is a bordered card, so it
     // doesn't need the indent to read as belonging to the row above it.
-    return '<div class="mt-2 rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-3">' +
+    return '<div class="mt-2 rounded-[6px] border border-zinc-950/08 bg-white p-2.5">' +
       datesHtml(r, edit) +
-      '<div class="pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-1">' + chipsHtml(r, edit) + '</div>' +
-      (edit ? '<div class="pt-2.5 border-t border-zinc-950/05 flex justify-end">' +
-        '<button class="h-7 px-2 inline-flex items-center gap-1.5 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/5 text-[#b91c1c] hover:bg-[#EF4444]/10" data-act="inert" data-what="remove">' +
-        I.trash + '<span class="font-display uppercase text-[10.5px] tracking-wide">Remove route from report</span></button></div>' : '') +
       '</div>';
   }
 
   function rowHtml(r) {
     var edit = LIVE;                     // per-route controls: always
-    var open = !!S.expanded[r.id];
-    var renaming = S.editingName === r.id;
-    var unused = !r.graphs.length;
+    var open = false;   // no expander: a row shows everything it has
+    var renaming = S.editRoute === r.id;
+    var unused = !graphsOf(r.id).length;
 
+    // EDITING · the name input sits in the row and the dates open below it, under one
+    // save/cancel pair. The open-out is forced open so both halves are visible at once.
     if (renaming) {
       return '<div class="px-2 py-2.5 bg-[#1F3F8F]/5" data-row="' + r.id + '">' +
         '<div class="flex items-center gap-1.5 min-w-0">' +
         '<span class="size-3.5 rounded-full shrink-0" style="background:' + esc(r.color) + '"></span>' +
-        '<input value="' + esc(S.nameDraft) + '" data-act="name-in" class="flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 font-proxima text-[12.5px] text-slate-700 focus:outline-none" autofocus/>' +
-        '<button class="size-7 rounded-[6px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] shrink-0" data-act="name-save" data-route="' + r.id + '" title="Save">' + I.save + '</button>' +
-        '<button class="size-7 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c] shrink-0" data-act="name-cancel" title="Cancel">' + I.cancel + '</button>' +
-        '</div></div>';
+        '<input value="' + esc(S.draft.name) + '" data-act="name-in" class="flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 font-proxima text-[12.5px] text-slate-700 focus:outline-none" autofocus/>' +
+        '<button class="size-7 rounded-[6px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] shrink-0" data-act="route-save" data-route="' + r.id + '" title="Save name and dates">' + I.save + '</button>' +
+        '<button class="size-7 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c] shrink-0" data-act="route-cancel" title="Cancel">' + I.cancel + '</button>' +
+        '</div>' +
+        openOutHtml(r, true) +
+        '<div class="mt-2 flex justify-end">' +
+        '<button class="h-7 px-2 inline-flex items-center gap-1.5 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/5 text-[#b91c1c] hover:bg-[#EF4444]/10" data-act="inert" data-what="remove">' +
+        I.trash + '<span class="font-display uppercase text-[10.5px] tracking-wide">Remove route from report</span></button></div>' +
+        '</div>';
     }
 
     var reorder = edit
@@ -661,27 +599,28 @@
     // 2025-01-06 → 2025-02-28") wrapped its last two characters, and now that the
     // open-out below it is full width there is nothing left to align to anyway.
     var indent = 'pl-7';
+    var clip = S.clip;
     var rowActions = edit
-      ? '<button class="' + C.iconBtn + '" data-act="name-edit" data-route="' + r.id + '" title="Edit name">' + I.pencil + '</button>' +
+      ? '<button class="' + C.iconBtn + '" data-act="win-copy" data-route="' + r.id + '" title="Copy this date span">' + I.copy + '</button>' +
+        (clip && clip.from !== r.id && !r.derivedFrom
+          ? '<button class="size-6 rounded flex items-center justify-center text-[#1F3F8F] hover:bg-[#1F3F8F]/10 shrink-0" data-act="win-paste" data-route="' + r.id + '" title="Paste the span copied from ' + esc(clip.fromName) + '">' + I.paste + '</button>'
+          : '') +
+        '<button class="' + C.iconBtn + '" data-act="route-edit" data-route="' + r.id + '" title="Edit name and dates">' + I.pencil + '</button>' +
         '<button class="' + C.dangerBtn + '" data-act="inert" data-what="remove" title="Remove route from report">' + I.trash + '</button>'
       : '';
 
     return '<div class="' + (open ? C.rowOpen : C.rowBase) + '" data-row="' + r.id + '">' +
       '<div class="flex items-start gap-1 min-w-0">' + reorder +
-      '<button class="' + (open ? C.expanderOpen : C.expander) + '" data-act="expand" data-route="' + r.id + '" title="' + (open ? 'Collapse' : 'Expand') + '">' + (open ? '−' : '+') + '</button>' +
       dot +
       '<div class="min-w-0 flex-1 flex items-center gap-1">' +
       '<span class="' + C.name + ' flex-1 min-w-0" title="' + esc(r.title) + '">' + esc(r.name) + '</span>' +
-      (unused ? '<span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">unused</span>' : '') +
+      graphUseHtml(r) +
       rowActions + '</div></div>' +
       // Meta and chips sit at ROW level, not inside the name column: at 340px the
       // reorder carets + expander + dot ate enough width that "9 TMC · 2.0 mi ·
       // 2025-01-06 → 2025-02-28" wrapped onto a second line in edit mode. Indented
       // to the name's left edge instead, which reads the same and fits.
       '<div class="' + indent + ' ' + C.meta + '">' + esc(metaLine(r)) + '</div>' +
-      (open ? '' : '<div class="' + indent + ' mt-1.5 flex flex-wrap items-center gap-1">' +
-        (unused ? '<span class="font-proxima text-[11.5px] text-slate-500">Not on any graph yet.</span>' : chipsHtml(r, edit)) + '</div>') +
-      (open ? openOutHtml(r, edit) : '') +
       '</div>';
   }
 
@@ -734,10 +673,12 @@
       $('#rail-clip').innerHTML =
         '<div class="flex items-center gap-2">' +
         '<span class="text-[#1F3F8F] shrink-0">' + I.copy + '</span>' +
-        '<span class="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500 flex-1 min-w-0 truncate">window copied · ' + esc(d.fromName) + '</span>' +
+        '<span class="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500 flex-1 min-w-0 truncate">date span copied · ' + esc(d.fromName) + '</span>' +
         '<button class="size-5 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 shrink-0" data-act="win-clip-clear" title="Forget the copied window">' + I.x + '</button>' +
         '</div>' +
-        '<div class="font-proxima text-[11.5px] text-slate-700 mt-1">' + esc(fmtDateRange(d.start, d.end)) + ' · ' + esc(daysLabel(d.weekdays).split(' · ')[0]) + ' · ' + esc(timeOfDayLabel(d)) + '</div>' +
+        // days and time of day live on the cards now, so a copied span is just a span
+        '<div class="font-proxima text-[11.5px] text-slate-700 mt-1">' + esc(fmtDateRange(d.start, d.end)) +
+        (function () { var c = countDays(d.start, d.end); return c ? '<span class="text-slate-400"> · ' + c.all + ' days</span>' : ''; })() + '</div>' +
         (others ? '<button class="mt-1.5 h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-[#1F3F8F]/30 bg-white hover:bg-[#1F3F8F]/5 font-mono text-[9.5px] uppercase tracking-wider text-[#1F3F8F]" data-act="win-paste-all">' + I.paste + 'paste into all (' + others + ')</button>' : '');
     }
     $('#rail-body').classList.toggle('hidden', S.collapsed);
@@ -772,12 +713,456 @@
     $('#rail-clear').classList.toggle('hidden', !S.query);
 
     colourPop();
+    renderQuickControls();
+    drawCharts();
 
     var tmc = routes.reduce(function (a, r) { return a + r.tmcs.length; }, 0);
     var mi = routes.reduce(function (a, r) { return a + parseFloat(r.miles); }, 0);
     $('#rail-totals').textContent = routes.length + ' routes · ' + tmc + ' TMC · ' + mi.toFixed(1) + ' mi';
 
     renderCanvasChrome();
+  }
+
+  // ══ THE CHARTS ═══════════════════════════════════════════════════════════════
+  // Drawn to match what the AVL Graph section actually renders, and to fill whatever
+  // container it's in. The component's own shape (ui/components/graph_new):
+  //
+  //   <div class="w-full h-fit …">                         GraphComponent's wrapper
+  //     <GraphTitle/>                                      only when display.title is set
+  //     <div class="w-full h-full avl-graph-container relative">
+  //       <svg class="w-full h-full block avl-graph">      NO viewBox — px geometry
+  //         <g><g class="animated-group"><g class="axis-group"><g class="axis axis-left">
+  //              <path class="domain"/> <g class="tick"><line/><text/></g>…
+  //         <g style="transform: translate(marginLeft px, marginTop px)">   the plot
+  //            <rect class="avl-rect"/> | <path class="graph-line"/> | <rect class="avl-grid"/>
+  //
+  // WHAT IS AND ISN'T REAL HERE. The chart's SHAPE follows the card's own config — series
+  // count and colour follow its Routes control, tick density follows its width — because a
+  // chart that contradicted its own controls would teach the wrong thing. The VALUES are
+  // fixed sample arrays, the same numbers the drawings used, and a third or fourth series
+  // reuses a sample arm: this page has no data behind it, and the card's attribution line
+  // still names the window those numbers claim. That is the line this page holds — layout
+  // and structure are live, numbers are not.
+  //
+  // The facts that change how it LOOKS, all read out of the source rather than guessed:
+  //   · height comes from `display.height` (config default 300), floored at
+  //     margin.top + margin.bottom + 100; width is measured (ResizeObserver), so the
+  //     chart FILLS its container and never letterboxes. Our previous drawings used a
+  //     viewBox and scaled — which is why a size-4 card's "chart" had 9-px text.
+  //   · margins default 20 / 20 / 50 / 100 (top/right/bottom/left).
+  //   · axis ticks are `0.75rem` (avl-graph.css), tick lines/gridlines are currentColor
+  //     at 0.25 opacity, and `path.domain` is 2px.
+  //   · bars are `fill-opacity: 0.75`, hover 1 — the translucency is the default look
+  //     unless `barOpacity` is set.
+  //   · y gridlines are on by default, x gridlines off.
+  // Values stay the same sample numbers as before: this is layout, not data.
+  // THE BRAND'S chartDefaults, not the library's (Alex: fix a loose default here and we
+  // add the theme option). Every one of these is a key GraphComponent already reads, and
+  // they now ship in theme/theme.js's `avlGraph.chartDefaults` — the library needed nothing.
+  //   margin 20/20/50/100 → 12/12/30/48   a 100-px gutter is a third of a size-6 card
+  //   ticks 0.75rem inherited → 9px mono   ticks are chrome; they match the meta rows
+  //   strokeWidth 1 → 2                    1 disappears against a pale card
+  //   bar fill-opacity 0.75 → 1 (solid)    route colour IS the comparison
+  var GRAPH_MARGIN = { top: 12, right: 12, bottom: 30, left: 48 };
+  var TICK_STYLE = 'font-size:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:#94a3b8';
+  var AXIS_COLOR = 'rgba(15,23,42,0.15)';
+  var SAMPLE = {
+    // one array per series; the second is the "after" arm
+    hourly: [[3.6, 3.7, 3.9, 4.9, 5.4, 4.4, 4.3, 4.5, 5.5, 6.1, 4.8, 4.1, 3.8], [3.5, 3.6, 3.7, 4.6, 5.0, 4.2, 4.2, 4.3, 5.0, 5.3, 4.5, 3.9, 3.7]],
+    segment: [[64, 82, 118, 100, 52, 40, 32, 26], [56, 66, 90, 78, 48, 38, 30, 24]],
+    diff: [[-8, -16, -28, -22, -4, 2, -2, -2]],
+    small: [[54, 66, 82, 88, 60, 40], [46, 56, 68, 72, 52, 34]]
+  };
+  var X_TICKS = {
+    hourly: ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22', '23'],
+    segment: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'],
+    diff: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'],
+    small: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6']
+  };
+  function niceTicks(min, max, count) {
+    var span = max - min || 1, step = Math.pow(10, Math.floor(Math.log10(span / count)));
+    [1, 2, 2.5, 5, 10].some(function (m) { if (step * m >= span / count) { step = step * m; return true; } return false; });
+    var out = [], v = Math.ceil(min / step) * step;
+    for (; v <= max + 1e-9 && out.length < 20; v += step) out.push(Math.abs(v) < 1e-9 ? 0 : +v.toFixed(6));
+    return out;
+  }
+  function svgEl(name, attrs, cls) {
+    var e = document.createElementNS('http://www.w3.org/2000/svg', name);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (cls) e.setAttribute('class', cls);
+    return e;
+  }
+  function drawChart(host) {
+    var g = byGraph(host.getAttribute('data-chart'));
+    if (!g) return;
+    var kind = host.getAttribute('data-sample') || 'hourly';
+    var W = host.clientWidth, H = host.clientHeight;
+    if (!W || !H) return;
+    // the component floors the height the same way
+    var M = { top: GRAPH_MARGIN.top, right: GRAPH_MARGIN.right, bottom: GRAPH_MARGIN.bottom, left: GRAPH_MARGIN.left };
+    // small cards can't spend 100px on a y-axis label gutter; the real section would be
+    // authored with a smaller margin, so mirror that rather than clipping the plot
+    if (W < 420) { M.left = 34; M.bottom = 24; }   // a size-4 card earns even less gutter
+    var pw = Math.max(10, W - M.left - M.right), ph = Math.max(10, H - M.top - M.bottom);
+    var series = g.routes.map(byId).filter(Boolean);
+    var vals = SAMPLE[kind] || SAMPLE.hourly;
+    var ticksX = X_TICKS[kind] || [];
+    var n = ticksX.length;
+    var isDiff = kind === 'diff';
+    var flat = [];
+    vals.forEach(function (a) { flat = flat.concat(a); });
+    var lo = Math.min.apply(null, flat), hi = Math.max.apply(null, flat);
+    var min = isDiff ? Math.min(lo, 0) : 0, max = Math.max(hi, isDiff ? Math.max(hi, 0) : hi);
+    var yTicks = niceTicks(min, max, W < 420 ? 3 : 5);   // contract clause 5 · 3 ticks when small
+    var y = function (v) { return ph - ((v - min) / ((max - min) || 1)) * ph; };
+
+    var svg = svgEl('svg', {}, 'w-full h-full block avl-graph');
+    // axes, in the component's own nesting
+    var axes = svgEl('g');
+    var animated = svgEl('g', { style: 'transform: translate(' + M.left + 'px, ' + M.top + 'px)' }, 'animated-group');
+    var axisGroup = svgEl('g', {}, 'axis-group');
+    var axisLeft = svgEl('g', {}, 'axis axis-left');
+    axisLeft.appendChild(svgEl('path', { d: 'M0,0V' + ph, fill: 'none', stroke: AXIS_COLOR, 'stroke-width': '2' }, 'domain'));
+    // A GridGraph's left axis is BAND, not linear — its "index" is the row (a TMC or a
+    // segment), which is also why its tooltip reads the row via keyFormat rather than the
+    // x formatter. Numeric ticks there were the wrong axis type, not just the wrong labels.
+    var gridRows = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'];
+    if (g.kind === 'GridGraph') {
+      gridRows.forEach(function (label, i) {
+        var cy = (i + 0.5) * (ph / gridRows.length);
+        var tick = svgEl('g', { style: 'transform: translateY(' + cy + 'px)' }, 'tick');
+        tick.appendChild(svgEl('line', { x2: -4, stroke: AXIS_COLOR }));
+        var tx = svgEl('text', { x: -6, dy: '0.32em', 'text-anchor': 'end', style: TICK_STYLE });
+        tx.textContent = label;
+        tick.appendChild(tx);
+        axisLeft.appendChild(tick);
+      });
+    } else {
+      yTicks.forEach(function (v) {
+        var tick = svgEl('g', { style: 'transform: translateY(' + y(v) + 'px)' }, 'tick');
+        tick.appendChild(svgEl('line', { x2: pw, stroke: 'currentColor', 'stroke-opacity': '0.35' }));
+        var tx = svgEl('text', { x: -6, dy: '0.32em', 'text-anchor': 'end', style: TICK_STYLE });
+        tx.textContent = v;
+        tick.appendChild(tx);
+        axisLeft.appendChild(tick);
+      });
+    }
+    axisGroup.appendChild(axisLeft);
+    var axisBottom = svgEl('g', { style: 'transform: translateY(' + ph + 'px)' }, 'axis axis-bottom');
+    axisBottom.appendChild(svgEl('path', { d: 'M0,0H' + pw, fill: 'none', stroke: AXIS_COLOR, 'stroke-width': '2' }, 'domain'));
+    var every = Math.ceil(n / (W < 420 ? 4 : W < 700 ? 7 : 13));
+    ticksX.forEach(function (label, i) {
+      if (i % every) return;
+      var cx = n > 1 ? (i / (n - 1)) * pw : pw / 2;
+      var tick = svgEl('g', { style: 'transform: translateX(' + cx + 'px)' }, 'tick');
+      tick.appendChild(svgEl('line', { y2: 3, stroke: AXIS_COLOR }));
+      var tx = svgEl('text', { y: 6, dy: '0.71em', 'text-anchor': 'middle', style: TICK_STYLE });
+      tx.textContent = label;
+      tick.appendChild(tx);
+      axisBottom.appendChild(tick);
+    });
+    axisGroup.appendChild(axisBottom);
+    animated.appendChild(axisGroup);
+    axes.appendChild(animated);
+    svg.appendChild(axes);
+
+    // the plot, translated by the margin exactly like the component does
+    var plot = svgEl('g', { style: 'transform: translate(' + M.left + 'px, ' + M.top + 'px)' });
+    if (g.kind === 'LineGraph') {
+      series.forEach(function (r, si) {
+        var a = vals[si % vals.length];
+        var d = a.map(function (v, i) { return (i ? 'L' : 'M') + ((i / (a.length - 1)) * pw).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ');
+        // no `.secondary` on the second arm: that class dashes the line, and on a
+        // before/after chart the identity colour is already the difference
+        plot.appendChild(svgEl('path', { d: d, fill: 'none', stroke: r.color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, 'graph-line'));
+      });
+    } else if (g.kind === 'GridGraph') {
+      // one row per series-ish band; the real GridGraph is index (y) × key (x)
+      var rows = gridRows.length, cols = Math.min(16, Math.max(6, Math.round(pw / 34)));
+      var cw = pw / cols, chh = ph / rows;
+      for (var ri = 0; ri < rows; ri++) {
+        var rowG = svgEl('g', {}, 'avl-grid-horizontal');
+        for (var ci = 0; ci < cols; ci++) {
+          var mid = Math.abs(ri - 2.2) / 4 + Math.abs(ci - cols * 0.55) / cols;
+          var strength = Math.max(0, 1 - mid);
+          rowG.appendChild(svgEl('rect', {
+            x: (ci * cw).toFixed(1), y: (ri * chh).toFixed(1),
+            width: Math.max(1, cw - 1.5).toFixed(1), height: Math.max(1, chh - 1.5).toFixed(1),
+            fill: strength > 0.12 ? '#1a7f52' : '#e8cba4', 'fill-opacity': (0.12 + strength * 0.88).toFixed(2)
+          }, 'avl-grid'));
+        }
+        plot.appendChild(rowG);
+      }
+    } else {
+      // bars · grouped, which is what a two-route comparison uses
+      var groups = ticksX.length, band = pw / groups, inner = Math.max(1, band * 0.18);
+      var keys = isDiff ? 1 : Math.max(1, series.length);
+      for (var gi = 0; gi < groups; gi++) {
+        var stack = svgEl('g', {}, 'avl-stack-group');
+        for (var k = 0; k < keys; k++) {
+          var arr = vals[k % vals.length], v = arr[gi % arr.length];
+          var bw = (band - inner) / keys;
+          var top = isDiff ? Math.min(y(v), y(0)) : y(v);
+          var hgt = isDiff ? Math.abs(y(v) - y(0)) : ph - y(v);
+          var fill = isDiff ? (v <= 0 ? '#1a9850' : '#d73027') : ((series[k] || series[0] || {}).color || '#1F3F8F');
+          stack.appendChild(svgEl('rect', {
+            x: (gi * band + inner / 2 + k * bw).toFixed(1), y: top.toFixed(1),
+            width: Math.max(1, bw - 1).toFixed(1), height: Math.max(0.5, hgt).toFixed(1),
+            fill: fill, 'fill-opacity': 1
+          }, 'avl-rect'));
+        }
+        plot.appendChild(stack);
+      }
+      if (isDiff) plot.appendChild(svgEl('line', { x1: 0, x2: pw, y1: y(0), y2: y(0), stroke: '#0F1722', 'stroke-opacity': '0.45' }));
+    }
+    svg.appendChild(plot);
+    host.innerHTML = '';
+    host.appendChild(svg);
+  }
+  function drawCharts() { $$('[data-chart]').forEach(drawChart); }
+  var chartResizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(chartResizeTimer);
+    chartResizeTimer = setTimeout(drawCharts, 120);   // the component uses a ResizeObserver
+  });
+
+  // ══ QUICK CONTROLS ═══════════════════════════════════════════════════════════
+  // The real thing: `theme.sectionHeaderExtensions = { "AVL Graph": [npmrdsQuickControls] }`
+  // registers a builder that section.jsx renders INLINE IN THE SECTION'S HEADER BAND —
+  // the row that already holds the title and the ⋮ Settings trigger — with the same ctx
+  // the Settings-drawer extensions get (state, dwAPI, currentComponent, isEdit,
+  // canEditSection, siblingSections). Today it ships two pills, Measure and Comparison
+  // Mode, both writing through the shared `applyMeasurePick` so the header and the drawer
+  // can't drift. Graph Type and Resolution were deliberately left out.
+  //
+  // THIS DESIGN EXTENDS THAT ROW to everything a reader of the card would want to change
+  // without opening a drawer, which now includes the facets that moved off the route:
+  //   ROUTES · MEASURE · AGGREGATE · WHEN (time of day + days) · MODE
+  // Two design decisions worth keeping:
+  //   1. WHEN IS ONE PILL, not two. Time of day and day-of-week are one thought — "weekday
+  //      PM peak" — and splitting them doubled the pill count for no gain.
+  //   2. THE ROW COMPRESSES. A size-12 card shows every pill; below size 6 there isn't
+  //      room, so the card keeps Routes (the new primary control) and folds the rest into
+  //      one "⋯" pill that opens the same popover contents. That is the "button that pops
+  //      a modal" fallback — but only where the row genuinely doesn't fit.
+  // Everything writes to the GRAPH, not the route (see GRAPHS).
+  var QC_KIND_LABEL = { LineGraph: 'Line', BarGraph: 'Bar', GridGraph: 'Grid', Table: 'Table', Map: 'Map' };
+
+  function qcPill(g, kind, label, opts) {
+    opts = opts || {};
+    var on = S.qc && S.qc.g === g.id && S.qc.kind === kind;
+    return '<button data-act="qc-open" data-graph="' + g.id + '" data-kind="' + kind + '"' +
+      ' class="h-6 max-w-[150px] px-2 inline-flex items-center gap-1 rounded-[4px] border font-mono text-[10px] uppercase tracking-wider shrink-0 whitespace-nowrap ' +
+      (on ? 'border-[#1F3F8F] bg-[#1F3F8F]/8 text-[#16307A]' : (opts.strong ? 'border-[#37576B] bg-[#37576B]/8 text-[#1f3450]' : 'border-zinc-950/12 bg-white hover:border-[#37576B] text-slate-600')) + '"' +
+      ' title="' + esc(opts.title || label) + '">' +
+      '<span class="truncate">' + esc(label) + '</span>' +
+      '<svg class="size-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>';
+  }
+  function qcRouteLabel(g) {
+    var list = g.routes.map(byId).filter(Boolean);
+    if (!list.length) return 'no routes';
+    // one route names itself; several become a count, because "NY-9D NB · before +2"
+    // truncates to "NY-9D NB · BEFORE…" in a header this busy and says less than "3 routes"
+    return list.length === 1 ? list[0].name : list.length + ' routes';
+  }
+  // the unit is in the popover; the pill just needs the measure
+  function qcMeasureLabel(m) { return (m.label || 'measure').replace(/\s*\([^)]*\)/, '').replace(/\s*—.*$/, ''); }
+
+  // ── FITTING THE ROW ──────────────────────────────────────────────────────────
+  // Five pills plus a title don't fit a size-5 card, and a fixed size threshold was the
+  // wrong tool: the same card is wide on a 1600px screen and narrow on a 1280px one, and
+  // a size-7 table next to a size-5 map has a different budget again. So the row MEASURES
+  // itself. Two things make it fit more often before anything has to collapse:
+  //   · SET VALUES BECOME TOKENS. An aggregate is "1h", not "Hour"; a when is "06–10 · Wd",
+  //     not "AM Peak · weekdays"; a mode is a glyph (overlapping bars vs a delta), because
+  //     "overlay" and "difference" are a two-state flip whose value the icon can carry.
+  //     The full words are all still in the popover, one click away.
+  //   · WHAT'S LEFT COLLAPSES BY PRIORITY, lowest first: mode → aggregate → when →
+  //     measure. Routes never collapses; it is the control this row exists for. Anything
+  //     dropped goes into the "⋯" pill, which opens the same contents — so nothing is ever
+  //     unreachable, it just costs one more click on a narrow card.
+  // the long human form, for the pill's tooltip and the popover heading
+  function qcWhenLabel(g) {
+    var tod = (g.start && g.end) ? timeOfDayLabel({ start: 'x' + 'T' + g.start, end: 'x' + 'T' + g.end }) : 'all day';
+    var days = (summarizeWeekdays(g.weekdays) || 'all days');
+    return tod + ' · ' + days.toLowerCase();
+  }
+  var RES_TOKEN = { '5-minutes': '5m', '15-minutes': '15m', hour: '1h', day: '1d', weekday: 'wk', month: '1mo' };
+  function qcWhenToken(g) {
+    var hours = (g.start && g.end) ? g.start.replace(':00', '') + '–' + g.end.replace(':00', '') : 'all day';
+    var on = DOW.filter(function (dd) { return dayOn(g.weekdays, dd[0]); }).length;
+    var days = on === 7 ? 'all' : (summarizeWeekdays(g.weekdays) === 'Weekdays only' ? 'Wd' : (summarizeWeekdays(g.weekdays) === 'Weekends only' ? 'We' : on + 'd'));
+    return hours + ' · ' + days;
+  }
+  function qcIconPill(g, kind, svg, label, strong) {
+    var on = S.qc && S.qc.g === g.id && S.qc.kind === kind;
+    return '<button data-act="qc-open" data-graph="' + g.id + '" data-kind="' + kind + '"' +
+      ' class="size-6 shrink-0 rounded-[4px] border flex items-center justify-center ' +
+      (on ? 'border-[#1F3F8F] bg-[#1F3F8F]/8 text-[#16307A]' : (strong ? 'border-[#37576B] bg-[#37576B]/8 text-[#1f3450]' : 'border-zinc-950/12 bg-white hover:border-[#37576B] text-slate-600')) + '"' +
+      ' title="' + esc(label) + '">' + svg + '</button>';
+  }
+  var QC_MODE_ICONS = {
+    // overlay · two series drawn over each other
+    plain: '<svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16l5-6 4 4 5-8 4 5"/><path d="M3 20l5-4 4 3 5-5 4 3" opacity="0.45"/></svg>',
+    // difference · one series against a zero line
+    difference: '<svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h18"/><rect x="5" y="7" width="3" height="5" fill="currentColor" stroke="none"/><rect x="11" y="12" width="3" height="4" fill="currentColor" stroke="none"/><rect x="17" y="9" width="3" height="3" fill="currentColor" stroke="none"/></svg>'
+  };
+
+  function renderQuickControls() {
+    $$('#report-canvas [data-qc]').forEach(function (slot) {
+      // a truncated title has to stay recoverable on hover, since the controls now claim
+      // the header's spare width first
+      var ti = slot.parentElement && slot.parentElement.querySelector('span.truncate');
+      if (ti && !ti.title) ti.title = ti.textContent.trim();
+      var g = byGraph(slot.getAttribute('data-qc'));
+      if (!g) return;
+      var m = MEASURES.filter(function (o) { return o.value === g.measure; })[0] || {};
+      var hasMode = g.kind !== 'Map' && g.kind !== 'Table';
+
+      // lowest priority last — this is the order they get dropped in
+      var pills = [
+        { kind: 'routes', html: qcPill(g, 'routes', qcRouteLabel(g), { title: g.routeSelect === 'single' ? 'This card draws one route' : 'Routes on this card', strong: !g.routes.length }) },
+        { kind: 'measure', html: qcPill(g, 'measure', qcMeasureLabel(m), { title: 'Measure · ' + (m.label || '') }) },
+        { kind: 'when', html: qcPill(g, 'when', qcWhenToken(g), { title: 'When · ' + qcWhenLabel(g) }) },
+        { kind: 'aggregate', html: qcPill(g, 'aggregate', RES_TOKEN[g.resolution] || g.resolution, { title: 'Aggregate · ' + ((RESOLUTIONS.filter(function (o) { return o.value === g.resolution; })[0] || {}).label || '') }) }
+      ];
+      if (hasMode) pills.push({ kind: 'mode', html: qcIconPill(g, 'mode', QC_MODE_ICONS[g.mode] || QC_MODE_ICONS.plain, 'Comparison mode · ' + (g.mode === 'difference' ? 'difference' : 'overlay'), g.mode === 'difference') });
+
+      var more = qcIconPill(g, 'all',
+        '<svg class="size-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
+        'The rest of this card\'s controls');
+
+      // ONE MEASUREMENT PASS, then a greedy fit.
+      // Two things this has to get right, both learned the hard way:
+      //   · MEASURE THE PILLS, not the container's scrollWidth. The row is `justify-end`,
+      //     so overflow spills to the LEFT, and scrollWidth only counts overflow to the
+      //     right — it reported "fits" while a size-4 card was clipping its Routes and
+      //     Measure pills off the left edge.
+      //   · RESERVE THE "⋯" UP FRONT. Shedding pills one at a time and re-checking
+      //     thrashed: dropping the 28-px mode icon to add a 40-px "⋯" makes the row
+      //     WIDER, so the loop kept going and a card with room for four pills showed two.
+      var GAP = 6;   // gap-1.5
+      slot.innerHTML = pills.map(function (p) { return p.html; }).join('') + more;
+      var widths = Array.prototype.map.call(slot.children, function (c) { return c.offsetWidth; });
+      var moreW = widths.pop();
+      // The budget is what the HEADER can spare, not what the slot currently occupies:
+      // header width − its padding − the title's floor − the ⋮ − the gaps around them.
+      // Measuring the slot instead made the title's slack invisible, and a card with room
+      // for four pills showed two because the last one missed by three pixels.
+      var head = slot.parentElement;
+      var kebab = head.lastElementChild;
+      var cs = window.getComputedStyle(head);
+      var budget = head.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) -
+        112 /* the title's min-width floor — 84 let a size-6 title truncate to "Travel time b…",
+                which is too much to trade for one more pill */ -
+        (kebab && kebab !== slot ? kebab.offsetWidth : 0) - 8 * 2;
+      var totalAll = widths.reduce(function (a, w) { return a + w; }, 0) + GAP * Math.max(0, widths.length - 1);
+      var keep = pills.length;
+      if (totalAll > budget) {
+        var used = moreW; keep = 0;
+        for (var i = 0; i < widths.length; i++) {
+          if (used + widths[i] + GAP > budget) break;
+          used += widths[i] + GAP; keep++;
+        }
+        keep = Math.max(1, keep);   // Routes always survives — it's why the row exists
+      }
+      slot.innerHTML = pills.slice(0, keep).map(function (p) { return p.html; }).join('') + (keep < pills.length ? more : '');
+      slot.setAttribute('data-qc-shown', keep + (keep < pills.length ? '+more' : ''));
+    });
+    qcPop();
+  }
+
+  // One popover for every pill — same portal trick the colour picker uses, for the same
+  // reason (the card can sit anywhere on a scrolling page).
+  function qcPop() {
+    var el = $('#qc-pop');
+    if (!S.qc) { el.classList.add('hidden'); return; }
+    var g = byGraph(S.qc.g);
+    var trigger = $('[data-act="qc-open"][data-graph="' + S.qc.g + '"][data-kind="' + S.qc.kind + '"]');
+    if (!g || !trigger) { S.qc = null; el.classList.add('hidden'); return; }
+    var kind = S.qc.kind;
+    var body = '';
+
+    if (kind === 'routes' || kind === 'all') {
+      var single = g.routeSelect === 'single';
+      body += qcSection(single ? 'route · pick one' : 'routes · pick any',
+        '<div class="space-y-1">' + routes.map(function (r) {
+          var on = g.routes.indexOf(r.id) > -1;
+          return '<button class="w-full flex items-center gap-2 px-1.5 py-1 rounded-[4px] text-left ' +
+            (on ? 'bg-[#1F3F8F]/8 border border-[#1F3F8F]/25' : 'border border-transparent hover:bg-slate-50') + '" data-act="qc-route" data-graph="' + g.id + '" data-route="' + r.id + '">' +
+            '<span class="size-3.5 shrink-0 flex items-center justify-center ' + (single ? 'rounded-full' : 'rounded-[3px]') + ' ' + (on ? 'bg-[#1F3F8F] text-white' : 'border border-zinc-950/25 bg-white') + '">' + (on ? I.check : '') + '</span>' +
+            '<span class="size-2.5 rounded-full shrink-0" style="background:' + esc(r.color) + '"></span>' +
+            '<span class="font-proxima text-[12px] text-slate-700 truncate flex-1 min-w-0">' + esc(r.name) + '</span>' +
+            '<span class="font-mono text-[9px] uppercase tracking-wider text-slate-400 shrink-0">' + esc(fmtDateRange(r.start, r.end).replace(/, \d{4}$/, '')) + '</span>' +
+            '</button>';
+        }).join('') + '</div>' +
+        (single ? '<div class="mt-1.5 font-proxima text-[11px] text-slate-500">A map draws one route at a time — picking another replaces it.</div>' : '') +
+        (!single && g.mode === 'difference' && g.routes.length !== 2 ? '<div class="mt-1.5 font-proxima text-[11px] text-[#8a5f03]">Difference mode compares exactly two routes; this card has ' + g.routes.length + '.</div>' : ''));
+    }
+    if (kind === 'measure' || kind === 'all') {
+      body += qcSection('measure', '<div class="max-h-[150px] overflow-y-auto space-y-0.5">' + MEASURE_GROUPS.map(function (grp) {
+        return '<div class="font-mono text-[8.5px] uppercase tracking-[0.16em] text-slate-400 px-1.5 pt-1">' + esc(grp.label) + '</div>' +
+          grp.values.map(function (v) {
+            var o = MEASURES.filter(function (x) { return x.value === v; })[0];
+            var on = v === g.measure;
+            return '<button class="w-full text-left px-1.5 py-1 rounded-[4px] font-proxima text-[12px] ' + (on ? 'bg-[#1F3F8F]/8 text-[#16307A] font-medium' : 'text-slate-700 hover:bg-slate-50') + '" data-act="qc-set" data-graph="' + g.id + '" data-field="measure" data-value="' + v + '">' + esc(o.label) + '</button>';
+          }).join('');
+      }).join('') + '</div>');
+    }
+    if (kind === 'aggregate' || kind === 'all') {
+      body += qcSection('aggregate', '<div class="flex flex-wrap gap-1">' + RESOLUTIONS.map(function (o) {
+        var on = o.value === g.resolution;
+        return '<button class="' + (on ? C.pillOn : C.pill) + '" data-act="qc-set" data-graph="' + g.id + '" data-field="resolution" data-value="' + o.value + '">' + esc(o.label) + '</button>';
+      }).join('') + '</div>');
+    }
+    if (kind === 'when' || kind === 'all') {
+      body += qcSection('time of day · which hours of each day',
+        '<div class="flex flex-wrap gap-1">' + PEAK_PRESETS.map(function (pr) {
+          var on = g.start === pr.s && g.end === pr.e;
+          return '<button class="' + (on ? C.pillOn : C.pill) + ' inline-flex items-baseline gap-1" data-act="qc-tod" data-graph="' + g.id + '" data-preset="' + esc(pr.label) + '">' + esc(pr.label) +
+            '<span class="' + (on ? 'text-[#1F3F8F]/70' : 'text-slate-400') + ' text-[9px] tabular-nums">' + esc(pr.s ? pr.s.replace(':00', '') + '–' + pr.e.replace(':00', '') : '·') + '</span></button>';
+        }).join('') + '</div>' +
+        '<div class="mt-1.5 flex items-end gap-1.5">' +
+        '<div class="flex-1"><label class="font-proxima text-[10px] font-semibold text-slate-500 block mb-0.5">From</label><input type="time" value="' + esc(g.start) + '" data-act="qc-time" data-graph="' + g.id + '" data-which="start" class="w-full h-7 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums focus:outline-none focus:border-[#1F3F8F]"/></div>' +
+        '<span class="pb-1.5 text-slate-300">→</span>' +
+        '<div class="flex-1"><label class="font-proxima text-[10px] font-semibold text-slate-500 block mb-0.5">To</label><input type="time" value="' + esc(g.end) + '" data-act="qc-time" data-graph="' + g.id + '" data-which="end" class="w-full h-7 px-1.5 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[11px] tabular-nums focus:outline-none focus:border-[#1F3F8F]"/></div>' +
+        '</div>' +
+        '<div class="mt-1 font-proxima text-[11px] leading-[1.4] text-slate-500">Applied to <strong>every day</strong> in each route\'s span and averaged together — not one continuous stretch.</div>' +
+        (g.start && g.end && g.start > g.end ? '<div data-issue="warn" class="mt-1.5 rounded-[4px] px-2 py-1.5 bg-[#FACC15]/12 border border-[#CA8A04]/25 font-proxima text-[11px] text-[#8a5f03]">This window runs backwards (and can\'t cross midnight). The epoch filter would be dropped, silently giving all-day data.</div>' : ''));
+      body += qcSection('days of week',
+        '<div class="flex flex-wrap items-center gap-1">' + DOW.map(function (dd) {
+          var on = dayOn(g.weekdays, dd[0]);
+          return '<button class="' + (on ? C.dayOn : C.dayOff) + '" data-act="qc-dow" data-graph="' + g.id + '" data-day="' + dd[0] + '">' + dd[1] + '</button>';
+        }).join('') + '</div>' +
+        '<div class="mt-1 flex flex-wrap gap-1">' +
+        ['weekdays', 'weekends', 'all'].map(function (setName) {
+          return '<button class="' + C.pill + '" data-act="qc-dow-set" data-graph="' + g.id + '" data-set="' + setName + '">' + (setName === 'all' ? 'All' : setName.charAt(0).toUpperCase() + setName.slice(1)) + '</button>';
+        }).join('') + '</div>');
+    }
+    if ((kind === 'mode' || kind === 'all') && g.kind !== 'Map' && g.kind !== 'Table') {
+      body += qcSection('comparison mode', '<div class="flex gap-1">' + COMPARISON_MODES.map(function (o) {
+        var on = o.value === g.mode;
+        return '<button class="' + (on ? C.pillOn : C.pill) + '" data-act="qc-set" data-graph="' + g.id + '" data-field="mode" data-value="' + o.value + '">' + esc(o.label) + '</button>';
+      }).join('') + '</div>' +
+      (g.mode === 'difference' ? '<div class="mt-1 font-proxima text-[11px] text-slate-500">Drawn as <span class="tny-mono">main − other</span>; the anchor is the first route in the list.</div>' : ''));
+    }
+
+    el.innerHTML =
+      '<div class="flex items-center gap-2 pb-2 mb-2 border-b border-zinc-950/05">' +
+      '<span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 flex-1 truncate">' + esc(g.label + ' · ' + (QC_KIND_LABEL[g.kind] || g.kind)) + '</span>' +
+      '<span class="font-mono text-[9px] uppercase tracking-wider text-slate-400">writes to the card</span>' +
+      '<button class="size-4 rounded flex items-center justify-center text-slate-400 hover:text-slate-700" data-act="qc-close" title="Close">' + I.x + '</button></div>' +
+      body;
+    el.classList.remove('hidden');
+    var box = trigger.getBoundingClientRect();
+    var h = el.offsetHeight, w = el.offsetWidth;
+    var top = box.bottom + 6, left = Math.min(box.left, window.innerWidth - w - 8);
+    if (top + h > window.innerHeight - 8) top = Math.max(8, box.top - h - 6);
+    el.style.top = top + 'px';
+    el.style.left = Math.max(8, left) + 'px';
+  }
+  function qcSection(label, inner) {
+    return '<div class="mb-2.5 last:mb-0"><div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mb-1">' + esc(label) + '</div>' + inner + '</div>';
   }
 
   // THE CARDS DELIBERATELY DO NOT MOVE (Alex, 2026-08-05). In the product a route's
@@ -1023,7 +1408,10 @@
   // 5-minute bar chart of speed is the densest, least readable combination in the
   // vocabulary, and it is what an author sees before touching anything. Line · travel
   // time · hour is the report's own most common card and reads immediately.
-  var M2 = { open: false, pick: { graphType: 'LineGraph', measure: 'travelTime', resolution: 'hour', comparisonMode: 'plain', anchorInvert: false }, selected: {} };
+  var M2 = { open: false, pick: { graphType: 'LineGraph', measure: 'travelTime', resolution: 'hour', comparisonMode: 'plain', anchorInvert: false, start: '06:00', end: '10:00', weekdays: { saturday: false, sunday: false } }, selected: {} };
+  // A Map draws one route; everything else takes any number. Same rule the card's own
+  // Routes control follows afterwards (GRAPHS.routeSelect).
+  function m2SelectMode() { return M2.pick.graphType === 'Map' ? 'single' : 'multi'; }
 
   function renderM2() {
     $('#modal-graph').classList.toggle('hidden', !M2.open);
@@ -1057,16 +1445,34 @@
     $('#m2-resolution').innerHTML = optionsHtml(RESOLUTIONS, M2.pick.resolution);
     $('#m2-comparisonMode').innerHTML = optionsHtml(COMPARISON_MODES, M2.pick.comparisonMode);
 
-    // 03 · ROUTES
+    // 03 · WHEN — time of day, days and the aggregate, all of which live on the card
+    $('#m2-tod').innerHTML = PEAK_PRESETS.map(function (pr) {
+      var on = M2.pick.start === pr.s && M2.pick.end === pr.e;
+      return '<button class="' + (on ? C.pillOn : C.pill) + ' inline-flex items-baseline gap-1" data-act="m2-tod" data-preset="' + esc(pr.label) + '">' + esc(pr.label) +
+        '<span class="' + (on ? 'text-[#1F3F8F]/70' : 'text-slate-400') + ' text-[9px] tabular-nums">' + esc(pr.s ? pr.s.replace(':00', '') + '–' + pr.e.replace(':00', '') : '·') + '</span></button>';
+    }).join('');
+    $('#m2-dow').innerHTML = DOW.map(function (dd) {
+      var on = dayOn(M2.pick.weekdays, dd[0]);
+      return '<button class="' + (on ? C.dayOn : C.dayOff) + '" data-act="m2-dow" data-day="' + dd[0] + '">' + dd[1] + '</button>';
+    }).join('') + '<span class="w-1"></span>' +
+      ['weekdays', 'weekends', 'all'].map(function (s) {
+        return '<button class="' + C.pill + '" data-act="m2-dow-set" data-set="' + s + '">' + (s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)) + '</button>';
+      }).join('');
+
+    // 04 · ROUTES — single or multi, decided by the shape
+    var single = m2SelectMode() === 'single';
     $('#m2-routes').innerHTML = routes.length ? routes.map(function (r) {
       var on = !!M2.selected[r.id];
       return '<button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-left ' +
         (on ? 'border border-[#1F3F8F]/30 bg-[#1F3F8F]/8' : 'border border-zinc-950/10 bg-white hover:bg-slate-100') + '" data-act="m2-pick" data-id="' + r.id + '">' +
-        '<span class="size-3.5 rounded-[3px] shrink-0 flex items-center justify-center ' + (on ? 'bg-[#1F3F8F] text-white' : 'border border-zinc-950/25 bg-white') + '">' + (on ? I.check : '') + '</span>' +
+        '<span class="size-3.5 shrink-0 flex items-center justify-center ' + (single ? 'rounded-full' : 'rounded-[3px]') + ' ' + (on ? 'bg-[#1F3F8F] text-white' : 'border border-zinc-950/25 bg-white') + '">' + (on ? I.check : '') + '</span>' +
         '<span class="size-2.5 rounded-full shrink-0" style="background:' + esc(r.color) + '"></span>' +
         '<span class="font-proxima text-[12.5px] text-slate-700 truncate flex-1 min-w-0">' + esc(r.name) + '</span></button>';
     }).join('') : '<div class="font-proxima text-[12.5px] italic text-slate-500 px-2 py-3">No routes on this report yet — add a route first, then assign it here.</div>';
-    $('#m2-route-count').textContent = selIds.length + '/' + routes.length;
+    $('#m2-route-count').textContent = single ? (selIds.length ? '1 of 1' : 'pick one') : selIds.length + '/' + routes.length;
+    $('#m2-routes-note').innerHTML = single
+      ? 'A map draws <strong>one route</strong> at a time — picking another replaces it. Every route keeps its identity colour, so the card reads against the others on the report.'
+      : 'Each route keeps its identity colour, so the new card reads against the ones already on the report. A route can feed any number of cards.';
 
     // Anchor Route · difference mode with exactly two routes, the only case where the
     // sign of the answer depends on which arm is "Main"
@@ -1088,9 +1494,14 @@
     var cm = COMPARISON_MODES.filter(function (o) { return o.value === M2.pick.comparisonMode; })[0];
     $('#m2-glyph').innerHTML = glyph(M2.pick.graphType, 'size-10');
     $('#m2-preview-title').textContent = m.label + ' — ' + type.full;
+    var todLabel = (M2.pick.start && M2.pick.end)
+      ? (PEAK_PRESETS.filter(function (pr) { return pr.s === M2.pick.start && pr.e === M2.pick.end; })[0] || {}).label || (M2.pick.start + '–' + M2.pick.end)
+      : 'all day';
     $('#m2-preview-summary').textContent = [
       type.creates + ' section',
-      res.label.toLowerCase() + ' resolution',
+      res.label.toLowerCase() + ' aggregate',
+      todLabel.toLowerCase(),
+      (summarizeWeekdays(M2.pick.weekdays) || 'all days').toLowerCase(),
       cm.label.toLowerCase() + ' mode',
       selIds.length ? selIds.length + (selIds.length === 1 ? ' route' : ' routes') : 'no routes yet'
     ].join(' · ');
@@ -1113,8 +1524,7 @@
     var d = S.clip;
     target.start = d.start;
     target.end = d.end;
-    target.weekdays = d.weekdays ? Object.assign({}, d.weekdays) : undefined;
-    if (S.editingDates === target.id) S.dateDraft = { start: target.start, end: target.end, weekdays: Object.assign({}, target.weekdays || {}) };
+    if (S.editRoute === target.id && S.draft) { S.draft.start = target.start; S.draft.end = target.end; }
   }
 
   // ── The one thing that is deliberately inert ──────────────────────────────
@@ -1138,7 +1548,7 @@
   // ── Events ───────────────────────────────────────────────────────────────
   function setMode(mode) {
     S.mode = mode;
-    S.editingName = null; S.editingDates = null; S.picking = null; S.error = '';
+    S.editRoute = null; S.draft = null; S.picking = null; S.qc = null; S.error = '';
     var hdr = $('#btn-edit-label');
     if (hdr) hdr.textContent = mode === 'edit' ? 'Done' : 'Edit';
     renderRail();
@@ -1154,43 +1564,36 @@
     switch (act) {
       case 'mode': e.preventDefault(); setMode(S.mode === 'edit' ? 'view' : 'edit'); return;
       case 'collapse': S.collapsed = !S.collapsed; renderRail(); return;
-      case 'expand': S.expanded[id] = !S.expanded[id]; renderRail(); return;
       case 'search-clear': S.query = ''; $('#rail-search').value = ''; renderRail(); return;
 
-      case 'name-edit': S.editingName = id; S.nameDraft = r.name; S.error = ''; renderRail(); setTimeout(function () { var i = $('[data-act="name-in"]'); if (i) { i.focus(); i.select(); } }, 0); return;
-      case 'name-cancel': S.editingName = null; S.error = ''; renderRail(); return;
-      case 'name-save': {
-        var v = ($('[data-act="name-in"]') || {}).value || '';
-        // A rename is something a human typed, so a collision is refused
-        // rather than silently suffixed the way an add is.
-        var clash = routes.some(function (x) { return x.id !== id && x.name === v; });
-        if (clash) { S.error = 'A route named “' + v + '” already exists.'; renderRail(); return; }
+      // one pencil, one draft: name and dates commit or discard together
+      case 'route-edit':
+        S.editRoute = id; S.draft = { name: r.name, start: r.start, end: r.end };
+        S.error = '';
+        renderRail();
+        setTimeout(function () { var i = $('[data-act="name-in"]'); if (i) { i.focus(); i.select(); } }, 0);
+        return;
+      case 'route-cancel': S.editRoute = null; S.draft = null; S.error = ''; renderRail(); return;
+      case 'route-save': {
+        var v = ($('[data-act="name-in"]') || {}).value || S.draft.name || '';
+        // A rename is something a human typed, so a collision is refused rather than
+        // silently suffixed the way an add is.
+        var clash = routes.some(function (x) { return x.id !== id && x.name === v.trim(); });
+        if (clash) { S.error = 'A route named “' + v.trim() + '” already exists.'; renderRail(); return; }
         if (v.trim()) r.name = v.trim();
-        S.editingName = null; S.error = ''; renderRail(); return;
+        if (!r.derivedFrom) { r.start = S.draft.start; r.end = S.draft.end; }
+        S.editRoute = null; S.draft = null; S.error = ''; renderRail(); return;
       }
 
-      case 'dates-edit': S.editingDates = id; S.dateDraft = { start: r.start, end: r.end, weekdays: Object.assign({}, r.weekdays) }; renderRail(); return;
-      case 'dates-cancel': S.editingDates = null; S.dateDraft = null; renderRail(); return;
-      case 'dates-save': {
-        // Only an explicit `false` is meaningful, so an all-days mask collapses
-        // back to undefined instead of persisting a same-meaning object.
-        var excluded = {};
-        DOW.forEach(function (d) { if (S.dateDraft.weekdays[d[0]] === false) excluded[d[0]] = false; });
-        r.start = S.dateDraft.start; r.end = S.dateDraft.end;
-        r.weekdays = Object.keys(excluded).length ? excluded : undefined;
-        S.editingDates = null; S.dateDraft = null; renderRail(); return;
-      }
       // ── copy / paste a window ──
       case 'win-copy':
-        S.clip = { from: r.id, fromName: r.name, start: r.start, end: r.end, weekdays: r.weekdays ? Object.assign({}, r.weekdays) : undefined };
+        S.clip = { from: r.id, fromName: r.name, start: r.start, end: r.end };
         renderRail();
-        toast('Window copied from ' + r.name + ' — paste it onto another route, or into all of them from the strip at the top of the rail.');
+        toast('Date span copied from ' + r.name + ' — paste it onto another route, or into all of them from the strip at the top of the rail.');
         return;
       case 'win-paste': {
         if (!S.clip || r.derivedFrom) return;
         pasteWindow(r);
-        // pasting is a real edit, so it lands on the row you can see change
-        S.expanded[r.id] = true;
        
         renderRail();
         return;
@@ -1202,37 +1605,18 @@
           pasteWindow(x); n++;
         });
         renderRail();
-        toast(n + (n === 1 ? ' route' : ' routes') + ' now use ' + S.clip.fromName + '’s window. Derived routes were skipped — their dates are computed from another route.');
+        toast(n + (n === 1 ? ' route' : ' routes') + ' now use ' + S.clip.fromName + '’s date span. Derived routes were skipped — their dates are computed from another route.');
         return;
       }
       case 'win-clip-clear': S.clip = null; renderRail(); return;
 
       case 'shift': {
         var yrs = +t.getAttribute('data-years');
-        S.dateDraft.start = joinDT(shiftYMD(datePart(S.dateDraft.start), yrs), timePart(S.dateDraft.start));
-        S.dateDraft.end = joinDT(shiftYMD(datePart(S.dateDraft.end), yrs), timePart(S.dateDraft.end));
+        S.draft.start = shiftYMD(datePart(S.draft.start), yrs);
+        S.draft.end = shiftYMD(datePart(S.draft.end), yrs);
         renderRail(); return;
       }
-      case 'preset': {
-        var p = PEAK_PRESETS.filter(function (x) { return x.label === t.getAttribute('data-preset'); })[0];
-        S.dateDraft.start = joinDT(datePart(S.dateDraft.start), p.s);
-        S.dateDraft.end = joinDT(datePart(S.dateDraft.end), p.e);
-        renderRail(); return;
-      }
-      case 'dow': {
-        var k = t.getAttribute('data-day');
-        S.dateDraft.weekdays[k] = !dayOn(S.dateDraft.weekdays, k);
-        renderRail(); return;
-      }
-      case 'dow-set': {
-        var set = t.getAttribute('data-set');
-        var on = set === 'weekdays' ? WEEKDAY_KEYS : set === 'weekends' ? WEEKEND_KEYS : DOW.map(function (d) { return d[0]; });
-        S.dateDraft.weekdays = {};
-        DOW.forEach(function (d) { S.dateDraft.weekdays[d[0]] = on.indexOf(d[0]) > -1; });
-        renderRail(); return;
-      }
-
-      case 'pick-toggle': S.picking = S.picking === id ? null : id; renderRail(); return;
+      case 'pick-toggle': S.picking = S.picking === id ? null : id; S.qc = null; renderRail(); return;
       case 'pick-close': S.picking = null; renderRail(); return;
       // applies and STAYS open: trying two or three colours against the charts is the
       // actual behaviour, and closing on every click would make that a chore
@@ -1288,15 +1672,108 @@
         M2.pick.anchorInvert = false;
         renderM2(); return;
       case 'm2-close': M2.open = false; renderM2(); return;
-      case 'm2-type': M2.pick.graphType = t.getAttribute('data-type'); renderM2(); return;
-      case 'm2-all': routes.forEach(function (r) { M2.selected[r.id] = true; }); renderM2(); return;
+      case 'm2-type': {
+        M2.pick.graphType = t.getAttribute('data-type');
+        if (m2SelectMode() === 'single') {
+          // switching to a Map with three routes checked has to resolve to one
+          var keep = Object.keys(M2.selected)[0];
+          M2.selected = keep ? (function (o) { o[keep] = true; return o; })({}) : {};
+        }
+        renderM2(); return;
+      }
+      case 'm2-all':
+        if (m2SelectMode() === 'single') { toast('A map draws one route at a time.'); return; }
+        routes.forEach(function (r) { M2.selected[r.id] = true; }); renderM2(); return;
       case 'm2-none': M2.selected = {}; renderM2(); return;
       case 'm2-pick': {
         var rid = t.getAttribute('data-id');
-        if (M2.selected[rid]) delete M2.selected[rid]; else M2.selected[rid] = true;
+        if (m2SelectMode() === 'single') {
+          M2.selected = M2.selected[rid] ? {} : (function (o) { o[rid] = true; return o; })({});
+        } else if (M2.selected[rid]) { delete M2.selected[rid]; } else { M2.selected[rid] = true; }
+        renderM2(); return;
+      }
+      case 'm2-tod': {
+        var pr = PEAK_PRESETS.filter(function (x) { return x.label === t.getAttribute('data-preset'); })[0];
+        if (pr) { M2.pick.start = pr.s; M2.pick.end = pr.e; }
+        renderM2(); return;
+      }
+      case 'm2-dow': {
+        var dk = t.getAttribute('data-day');
+        M2.pick.weekdays = M2.pick.weekdays || {};
+        M2.pick.weekdays[dk] = !dayOn(M2.pick.weekdays, dk);
+        renderM2(); return;
+      }
+      case 'm2-dow-set': {
+        var sn = t.getAttribute('data-set');
+        var on = sn === 'weekdays' ? WEEKDAY_KEYS : sn === 'weekends' ? WEEKEND_KEYS : DOW.map(function (d) { return d[0]; });
+        M2.pick.weekdays = {};
+        DOW.forEach(function (d) { M2.pick.weekdays[d[0]] = on.indexOf(d[0]) > -1; });
         renderM2(); return;
       }
       case 'm2-confirm': toast(INERT_COPY.add_graph); return;
+
+      // ── Quick Controls · everything writes to the GRAPH ──
+      case 'qc-open': {
+        var gq = t.getAttribute('data-graph'), kq = t.getAttribute('data-kind');
+        S.qc = (S.qc && S.qc.g === gq && S.qc.kind === kq) ? null : { g: gq, kind: kq };
+        S.picking = null;
+        renderRail(); return;
+      }
+      case 'qc-close': S.qc = null; renderRail(); return;
+      case 'qc-route': {
+        var g = byGraph(t.getAttribute('data-graph')), rid = t.getAttribute('data-route');
+        if (!g) return;
+        if (g.routeSelect === 'single') {
+          g.routes = [rid];                       // a map draws one route
+        } else {
+          var at = g.routes.indexOf(rid);
+          if (at > -1) g.routes.splice(at, 1); else g.routes.push(rid);
+        }
+        renderRail(); return;
+      }
+      case 'qc-set': {
+        var g2 = byGraph(t.getAttribute('data-graph'));
+        if (g2) g2[t.getAttribute('data-field')] = t.getAttribute('data-value');
+        renderRail(); return;
+      }
+      case 'qc-tod': {
+        var g3 = byGraph(t.getAttribute('data-graph'));
+        var pr = PEAK_PRESETS.filter(function (x) { return x.label === t.getAttribute('data-preset'); })[0];
+        if (g3 && pr) { g3.start = pr.s; g3.end = pr.e; }
+        renderRail(); return;
+      }
+      case 'qc-dow': {
+        var g4 = byGraph(t.getAttribute('data-graph')), dk = t.getAttribute('data-day');
+        if (g4) {
+          g4.weekdays = g4.weekdays || {};
+          g4.weekdays[dk] = !dayOn(g4.weekdays, dk);
+        }
+        renderRail(); return;
+      }
+      case 'qc-dow-set': {
+        var g5 = byGraph(t.getAttribute('data-graph')), setName = t.getAttribute('data-set');
+        var on = setName === 'weekdays' ? WEEKDAY_KEYS : setName === 'weekends' ? WEEKEND_KEYS : DOW.map(function (d) { return d[0]; });
+        if (g5) { g5.weekdays = {}; DOW.forEach(function (d) { g5.weekdays[d[0]] = on.indexOf(d[0]) > -1; }); }
+        renderRail(); return;
+      }
+
+      case 'show-graphs': {
+        // the row says "on 3 cards"; this is the follow-through — scroll to the first
+        // one and flash it, which beats listing twenty chips to answer the same question
+        var gs = graphsOf(id);
+        if (!gs.length) return;
+        var sec = $('#report-canvas [data-graph="' + gs[0].id + '"]');
+        if (sec) {
+          sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          var card = cardOf(sec);
+          if (card) {
+            card.classList.add('ring-2', 'ring-[#1F3F8F]');
+            setTimeout(function () { card.classList.remove('ring-2', 'ring-[#1F3F8F]'); }, 1400);
+          }
+        }
+        if (gs.length > 1) toast(r.name + ' feeds ' + gs.map(function (g) { return g.label; }).join(', ') + '.');
+        return;
+      }
 
       case 'inert': toast(INERT_COPY[t.getAttribute('data-what')] || 'Switched off in this design mockup.'); return;
     }
@@ -1307,15 +1784,12 @@
     if (!t) return;
     var act = t.getAttribute('data-act');
     if (act === 'rail-search') { S.query = t.value; renderRail(); $('#rail-search').focus(); return; }
-    if (act === 'name-in') { S.nameDraft = t.value; return; }
-    if (act === 'date-in' || act === 'time-in') {
+    if (act === 'name-in') { S.draft.name = t.value; return; }
+    if (act === 'date-in') {
       // state only on `input` — re-rendering on every keystroke would fight the native
-      // date/time field's own segment-by-segment editing. The derived numbers (day
-      // count, active preset, the validation notes) refresh on `change`, i.e. when the
-      // field is committed, which is also when they can be right.
-      var which = t.getAttribute('data-which');
-      var cur = S.dateDraft[which] || '';
-      S.dateDraft[which] = act === 'date-in' ? joinDT(t.value, timePart(cur)) : joinDT(datePart(cur), t.value);
+      // date field's own segment-by-segment editing. The day count and the validation
+      // notes refresh on `change`, i.e. when the field is committed.
+      S.draft[t.getAttribute('data-which')] = t.value;
       return;
     }
     if (act === 'm1-search') {
@@ -1330,13 +1804,20 @@
     var t = e.target.closest('[data-act]');
     if (!t) return;
     var act = t.getAttribute('data-act');
-    if (act === 'date-in' || act === 'time-in') {
-      var which = t.getAttribute('data-which'), kind = act;
-      var cur = S.dateDraft[which] || '';
-      S.dateDraft[which] = act === 'date-in' ? joinDT(t.value, timePart(cur)) : joinDT(datePart(cur), t.value);
+    if (act === 'qc-time') {
+      var g = byGraph(t.getAttribute('data-graph'));
+      if (g) g[t.getAttribute('data-which')] = t.value;
+      renderRail();
+      var back = $('[data-act="qc-time"][data-which="' + t.getAttribute('data-which') + '"]');
+      if (back) back.focus();
+      return;
+    }
+    if (act === 'date-in') {
+      var which = t.getAttribute('data-which');
+      S.draft[which] = t.value;
       renderRail();
       // hand focus back to the field that was just committed so tabbing still works
-      var again = $('[data-act="' + kind + '"][data-which="' + which + '"]');
+      var again = $('[data-act="date-in"][data-which="' + which + '"]');
       if (again) again.focus();
       return;
     }
@@ -1350,25 +1831,30 @@
   });
 
   document.addEventListener('click', function (e) {
-    if (!S.picking) return;
-    if (e.target.closest('#colour-pop') || e.target.closest('[data-act="pick-toggle"]')) return;
-    S.picking = null; renderRail();
+    if (S.picking && !e.target.closest('#colour-pop') && !e.target.closest('[data-act="pick-toggle"]')) {
+      S.picking = null; renderRail(); return;
+    }
+    if (S.qc && !e.target.closest('#qc-pop') && !e.target.closest('[data-act="qc-open"]')) {
+      S.qc = null; renderRail();
+    }
   }, true);
 
   document.addEventListener('scroll', function () {
     if (S.picking) { S.picking = null; renderRail(); }
+    // the QC popover is anchored to a card header that scrolls with the page
+    if (S.qc) { S.qc = null; renderRail(); }
   }, true);
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
+      if (S.qc) { S.qc = null; renderRail(); return; }
       if (S.picking) { S.picking = null; renderRail(); return; }
       if (M1.open) { M1.open = false; renderM1(); return; }
       if (M2.open) { M2.open = false; renderM2(); return; }
-      if (S.editingName) { S.editingName = null; renderRail(); return; }
-      if (S.editingDates) { S.editingDates = null; S.dateDraft = null; renderRail(); return; }
+      if (S.editRoute) { S.editRoute = null; S.draft = null; S.error = ''; renderRail(); return; }
     }
-    if (e.key === 'Enter' && S.editingName) {
-      var btn = $('[data-act="name-save"]');
+    if (e.key === 'Enter' && S.editRoute) {
+      var btn = $('[data-act="route-save"]');
       if (btn) btn.click();
     }
   });
