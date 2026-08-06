@@ -8,6 +8,7 @@ import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
 import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
+import { useRouteMileage } from './useRouteMileage';
 import { resolveRouteDates } from './relativeDateResolution';
 import { formatDateShort, summarizeWeekdays } from './utils';
 import RouteRow from './RouteRow';
@@ -141,6 +142,8 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // "never persist a stale value" architecture as applyDerivedPageVariables. A no-op, identity-
   // stable pass-through for every route/slot without a formula.
   const effectiveRoutes = resolveRouteDates((isDynamicReport && !isEdit) ? resolvedRoutes : routes);
+
+  const { mileageByRouteCompId } = useRouteMileage({ apiLoad, routes: effectiveRoutes });
 
   const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
 
@@ -416,6 +419,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
               <RouteRow
                 key={r.route_comp_id ?? i}
                 route={r}
+                miles={mileageByRouteCompId.get(r.route_comp_id)}
                 theme={t}
                 Icon={Icon}
                 ColorPicker={ColorPicker}

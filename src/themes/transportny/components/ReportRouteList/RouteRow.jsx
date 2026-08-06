@@ -59,6 +59,7 @@ const PEAK_PRESETS = [
 // render, so it never needed to live in the parent.
 export default function RouteRow({
   route,
+  miles,
   theme: t,
   Icon,
   ColorPicker,
@@ -201,14 +202,18 @@ export default function RouteRow({
   const tmcCount = parseTmcArray(r.tmc_array).length;
   const isUnassigned = graphs.length > 0 && !(r.graphIds || []).length;
 
-  // One-line meta ("9 TMC · 2025-01-06 → 2025-02-28") — the count/range the engine
-  // will really enumerate, not four disabled inputs' worth of the same information.
+  // One-line meta ("9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28") — the count/range the engine
+  // will really enumerate, not four disabled inputs' worth of the same information. `miles` is
+  // computed by the parent's useRouteMileage (a live TMC->miles lookup, not a stored field) and
+  // arrives as undefined for the one render before that fetch resolves — omit the segment rather
+  // than show a misleading "0.0 mi" while loading.
   const metaText = [
     `${tmcCount} TMC${tmcCount === 1 ? '' : 's'}`,
+    miles != null ? `${miles.toFixed(1)} mi` : null,
     (formatDateShort(r.startDate) || formatDateShort(r.endDate))
       ? `${formatDateShort(r.startDate) || '?'} → ${formatDateShort(r.endDate) || '?'}`
       : 'No dates set',
-  ].join(' · ');
+  ].filter(Boolean).join(' · ');
 
   const assignedGraphs = graphs.filter((g) => (r.graphIds || []).includes(g.sectionId));
   const canMutateRow = isEdit;
