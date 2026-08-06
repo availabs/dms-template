@@ -13,7 +13,7 @@ from .graph_templates import ensure_graph_templates, graph_max_year, graph_relia
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
-from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, resolve_tmc_array, template_section_by_type
+from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, resolve_tmc_array, template_framework_sections
 from .pages import compute_report_slug, delete_converted_page, ensure_parent_page, ensure_route_in_catalog, find_page_by_old_report_id
 
 # ── Main conversion ──────────────────────────────────────────────────────────
@@ -498,12 +498,14 @@ def convert_report(old_id, dry_run=False, replace=False):
     page_id = res["id"]
     print(f"created page id={page_id} slug={slug}")
 
-    # -- draft sections (RRL first/sidebar, then graphs). No Add-a-Route
-    # Spreadsheet section is cloned anymore — the template no longer has one to
-    # clone from (RRL's own inline "Add a route" search replaces it, see
-    # dms-template's add-route-flow-improvements.md task).
-    rrl_tmpl = template_section_by_type(page_template, "ReportRouteList")
-    section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
+    # -- draft sections (every template section flagged templateRole=='framework'
+    # — RRL, ReportPageHeader, whatever else joins that list later — cloned first,
+    # in template order, then graphs). No Add-a-Route Spreadsheet section is
+    # cloned anymore — the template no longer has one to clone from (RRL's own
+    # inline "Add a route" search replaces it, see dms-template's
+    # add-route-flow-improvements.md task).
+    section_datas = [build_cloned_section_data(page_id, tmpl, str(uuid.uuid4()))
+                      for tmpl in template_framework_sections(page_template)]
     # Route-Map choropleth baking (M2) needs each graph's assigned comps'
     # TMCs/date ranges — all three pieces already computed above for the
     # reports_snap_2 route entries; bundle rather than widen every other
