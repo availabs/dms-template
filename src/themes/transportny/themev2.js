@@ -36,6 +36,7 @@ import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
+import ReportPageHeader from "./components/ReportPageHeader"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
 import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
@@ -433,6 +434,17 @@ const layoutGroup = {
       name: "workbench",
       wrapper1: "w-full bg-[#ECEEF2] py-6",
       wrapper2: "w-full px-0 flex flex-col gap-6",
+      wrapper3: "",
+    },
+    {
+      // flush — full-bleed band for a page whose rail is `pages.sectionGroup`
+      // styles[1] 'flush' (the report canvas's route rail), selected by the same
+      // group.theme name. No max-w cap, no pl-12/pr-8 gutter: the rail hugs the
+      // true page edge; the content column supplies its own inset instead
+      // (pages.sectionGroup styles[1].contentCol carries px-8 py-8 for this).
+      name: "flush",
+      wrapper1: "w-full bg-[#ECEEF2]",
+      wrapper2: "w-full",
       wrapper3: "",
     },
   ],
@@ -1853,28 +1865,60 @@ const pages = {
 
   // The sticky in-page-nav rail (the mockup's "on this page" <aside>). A distinct
   // layout region rendered as the content LayoutGroup's outerChildren, themed
-  // entirely here (flat shape — sectionGroup.jsx / InPageNav.jsx read it via
-  // getComponentTheme(theme,'pages.sectionGroup')). Rail = a nav card + any
-  // sidebar-group sections stacked below.
+  // entirely here. sectionGroup.jsx reads it via getComponentTheme(theme,
+  // 'pages.sectionGroup', group.theme) so a band's own theme name selects the style;
+  // InPageNav.jsx reads the same key with no selector (always styles[0]) but only
+  // ever renders when a band has navLabel'd sections, so this doesn't matter for a
+  // 'flush' rail band, which has none. Rail = a nav card + any sidebar-group sections
+  // stacked below.
+  // options.activeStyle + styles[] follows the standard getComponentTheme convention
+  // (see @availabs/dms/CLAUDE.md). sectionGroup.jsx passes the band's own `group.theme`
+  // as the selector — a band opts into "flush" by setting its theme name to 'flush';
+  // every other band's group.theme (undefined, 'default', 'content', ...) falls through
+  // to styles[0], so this is additive and doesn't touch any existing page's rendering.
   sectionGroup: {
-    // content ↔ rail row (inside the band's max-w-[1480px] content container).
-    // items-stretch keeps the rail column full-height so its inner sticky pins.
-    // min-h-screen: the band fills at least the viewport so a short results column
-    // doesn't leave the sidebar rail floating in a short area; the rail's own
-    // overflow-y-auto (sideNavContainer2) still scrolls only when its content
-    // genuinely exceeds the viewport. min-height is BC-safe — tall bands are unaffected.
-    contentRow: "flex flex-row gap-10 items-stretch min-h-screen",
-    contentCol: "flex-1 min-w-0",
-    sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
-    sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
-    sideNavContainer3: "flex flex-col gap-4",
-    // "On this page" nav card
-    navWrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-4",
-    navLabelText:  "On this page",
-    navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-3",
-    navList:       "flex flex-col gap-0.5",
-    navItem:       "block w-full text-left font-proxima text-[13px] text-slate-600 hover:text-[#0F2D4D] py-1.5 pl-3 border-l-2 border-transparent transition-colors cursor-pointer",
-    navItemActive: "block w-full text-left font-proxima text-[13px] text-[#0F2D4D] font-medium py-1.5 pl-3 border-l-2 border-[#EAAD43] bg-slate-50/60 transition-colors cursor-pointer",
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        name: "default",
+        // content ↔ rail row (inside the band's max-w-[1480px] content container).
+        // items-stretch keeps the rail column full-height so its inner sticky pins.
+        // min-h-screen: the band fills at least the viewport so a short results column
+        // doesn't leave the sidebar rail floating in a short area; the rail's own
+        // overflow-y-auto (sideNavContainer2) still scrolls only when its content
+        // genuinely exceeds the viewport. min-height is BC-safe — tall bands are unaffected.
+        contentRow: "flex flex-row gap-10 items-stretch min-h-screen",
+        contentCol: "flex-1 min-w-0",
+        sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
+        sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
+        sideNavContainer3: "flex flex-col gap-4",
+        // "On this page" nav card
+        navWrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-4",
+        navLabelText:  "On this page",
+        navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-3",
+        navList:       "flex flex-col gap-0.5",
+        navItem:       "block w-full text-left font-proxima text-[13px] text-slate-600 hover:text-[#0F2D4D] py-1.5 pl-3 border-l-2 border-transparent transition-colors cursor-pointer",
+        navItemActive: "block w-full text-left font-proxima text-[13px] text-[#0F2D4D] font-medium py-1.5 pl-3 border-l-2 border-[#EAAD43] bg-slate-50/60 transition-colors cursor-pointer",
+      },
+      {
+        // npmrds-report.html's rail: fixed 340px flex sibling of the content column,
+        // no padding (hugs the content area's left edge — the content column supplies
+        // the inset, not this container), sticky top-0 h-svh (exact tab height — safe
+        // only because this page carries no sticky chrome above the rail, e.g. no
+        // breadcrumb band; a page that keeps one needs its own top-offset variant).
+        // contentRow drops to gap-0 to match (no gap between rail and content column).
+        name: "flush",
+        contentRow: "flex flex-row gap-0 items-stretch min-h-screen",
+        // The band no longer supplies an inset (layoutGroup styles[1] 'flush' has no
+        // pl-12/pr-8), so the content column carries its own px-8 py-8 here, exactly
+        // per the mockup's content-column div. The rail stays flush at x=0 — only
+        // the content side gets the inset.
+        contentCol: "flex-1 min-w-0 px-8 py-8",
+        sideNavContainer1: "w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10",
+        sideNavContainer2: "sticky top-0 h-svh overflow-hidden",
+        sideNavContainer3: "flex flex-col h-full",
+      },
+    ],
   },
 
   sectionArray: {
@@ -2477,6 +2521,7 @@ const pageComponents = {
   AddPageButton,
   Header,
   ReportRouteList,
+  ReportPageHeader,
   RouteComparison,
 };
 
@@ -2485,8 +2530,17 @@ const pageComponents = {
 // keyed by ComponentRegistry component name. See sectionMenuExtensions.js /
 // sectionMenu.jsx in the dms submodule for the generic extension point.
 // ─────────────────────────────────────────────────────────────────────────────
+// Keyed by the resolved component's `.name`, which differs by element-type
+// despite both resolving to the same graph_new component (see
+// ComponentRegistry/index.jsx): legacy-migrated sections keep `.name: 'Graph'`,
+// but the "AVL Graph" registry entry force-overrides `.name` back to
+// 'AVL Graph' — which is what virtually every real report graph (RRL's
+// "+ Add Graph", the Report Page template's starter graph, every converted
+// report) actually resolves to. Both keys must be registered or these
+// extensions silently stop firing for real graphs.
 const sectionMenuExtensions = {
   "Graph": [npmrdsMeasureMenu],
+  "AVL Graph": [npmrdsMeasureMenu],
   "Card": [calloutStatMenu],
 };
 
@@ -2501,6 +2555,7 @@ const sectionMenuExtensions = {
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionHeaderExtensions = {
   "Graph": [npmrdsQuickControls],
+  "AVL Graph": [npmrdsQuickControls],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

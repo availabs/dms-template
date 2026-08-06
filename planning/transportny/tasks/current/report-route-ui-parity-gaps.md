@@ -35,6 +35,11 @@ opportunistically.
 scope here; this list stays about route-creation and report-building UI parity, not route
 organization.
 
+**Amended 2026-08-06:** report discovery/browsing is back in scope too. Ryan, asked directly
+whether to reopen it given the new design set's `npmrds-reports.html` report-library page: "we
+dont have one built yet but we will want one." See `npmrds-design-v2-implementation.md` for the
+scoping. Permissions/ACL is now the only piece of the original 2026-07-27 ruling still standing.
+
 ## Gaps
 
 ### Route creation (`creating-routes.md`)

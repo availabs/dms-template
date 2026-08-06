@@ -209,6 +209,114 @@
                 </div>
               </div>
 
+              <!-- Content Sidebar · side content rail (InPageNav + the `sidebar` group) -->
+              <div class="col-span-12" data-dms-section="content-sidebar">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-6 pt-5 pb-3 border-b border-zinc-950/05">
+                    <div class="font-display font-medium text-[16px] text-[#0F1722]">Content Sidebar · side content rail — <span class="font-mono text-[12px] normal-case tracking-normal text-slate-500">default</span> + <span class="font-mono text-[12px] normal-case tracking-normal text-[#CA8A04]">flush</span></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">theme.pages.sectionGroup · sectionGroup.jsx + InPageNav.jsx</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 mt-2 max-w-[820px]">
+                      The page's <strong>side content</strong> region: the generated “on this page” nav plus every section an
+                      author puts in the page's <code class="tny-mono">sidebar</code> group. Switched on per page in settings →
+                      <strong>“Show Content Sidebar”</strong> (None / Left / Right). It is a fixed-width flex sibling of the
+                      content column, <em>not</em> a grid column — the canvas keeps its own <code class="tny-mono">grid-cols-12</code>.
+                      Full layout rules, the wrapper reference and the two requirements <code class="tny-mono">flush</code> puts on a
+                      page: <a href="layouts.html#content-sidebar" class="tny-link">layouts § 09</a>.
+                    </p>
+                  </div>
+                  <div class="bg-slate-50/40 p-6 grid grid-cols-1 xl:grid-cols-[1fr_1fr_230px] gap-5">
+
+                    <!-- styles[0] · default -->
+                    <div>
+                      <div class="font-display uppercase text-[12px] tracking-wide text-[#0F1722] mb-1">styles[0] · default</div>
+                      <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mb-2">302 · card rail · gutter 40 · sticky top-60</div>
+                      <div class="rounded-[6px] border border-zinc-950/10 bg-[#ECEEF2] p-3 flex gap-4 items-stretch h-[300px] overflow-hidden">
+                        <div class="flex-1 min-w-0 space-y-2">
+                          <div class="rounded-[6px] border border-zinc-950/10 bg-white shadow-sm h-9 flex items-center px-3 font-display text-[12.5px] text-slate-500">content column · grid-cols-12</div>
+                          <div class="grid grid-cols-12 gap-2">
+                            <div class="col-span-7 h-20 rounded-[6px] border border-zinc-950/10 bg-white shadow-sm"></div>
+                            <div class="col-span-5 h-20 rounded-[6px] border border-zinc-950/10 bg-white shadow-sm"></div>
+                          </div>
+                          <div class="h-16 rounded-[6px] border border-zinc-950/10 bg-white shadow-sm"></div>
+                        </div>
+                        <!-- the rail · one sticky wrapper, two blocks stacked with gap-4 -->
+                        <div class="w-[112px] shrink-0 flex flex-col gap-4">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-3">
+                            <div class="font-mono uppercase text-[8px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                            <div class="font-proxima text-[10px] text-slate-600 py-1 pl-2 border-l-2 border-transparent">Overview</div>
+                            <div class="font-proxima text-[10px] text-[#0F2D4D] font-medium py-1 pl-2 border-l-2 border-[#FACC15] bg-slate-50/60">Findings</div>
+                            <div class="font-proxima text-[10px] text-slate-600 py-1 pl-2 border-l-2 border-transparent">Method</div>
+                          </div>
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-3">
+                            <div class="font-mono uppercase text-[8px] tracking-[0.16em] text-[#CA8A04]">// sidebar group</div>
+                            <div class="font-proxima text-[10px] text-slate-600 mt-1 leading-[1.4]">An authored card — lexical, Card, anything.</div>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-2.5 leading-[1.5]">Reading pages. Rail and canvas both float on the pane; the nav is a card with an amber active rail and automatic scroll-spy.</p>
+                    </div>
+
+                    <!-- styles[1] · flush -->
+                    <div>
+                      <div class="font-display uppercase text-[12px] tracking-wide text-[#0F1722] mb-1">styles[1] · flush</div>
+                      <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mb-2">340 · no padding · hugs the content's left edge · full tab height</div>
+                      <div class="rounded-[6px] border border-zinc-950/10 bg-[#ECEEF2] flex gap-0 items-stretch h-[300px] overflow-hidden">
+                        <!-- rail · zero padding, hairline instead of card chrome, panel owns its scroll -->
+                        <div class="w-[132px] shrink-0 bg-white border-r border-zinc-950/10 flex flex-col">
+                          <div class="h-8 px-2 flex items-center gap-1.5 bg-[#12181F] shrink-0">
+                            <span class="font-display uppercase text-white text-[10px] tracking-wide flex-1">Routes</span>
+                            <span class="px-1 h-4 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[8px] tabular-nums">4</span>
+                          </div>
+                          <div class="px-2 py-1.5 border-b border-zinc-950/05 flex gap-1 shrink-0">
+                            <span class="h-5 px-1.5 inline-flex items-center rounded-[4px] bg-[#1F3F8F] text-white font-mono text-[8px] uppercase tracking-wider">+ route</span>
+                            <span class="h-5 px-1.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 font-mono text-[8px] uppercase tracking-wider">+ graph</span>
+                          </div>
+                          <div class="flex-1 overflow-hidden divide-y divide-zinc-950/05">
+                            <div class="px-2 py-1.5 flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#1F3F8F]"></span><span class="font-proxima text-[10px] text-slate-700 truncate">NB · before</span></div>
+                            <div class="px-2 py-1.5 flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#E5A646]"></span><span class="font-proxima text-[10px] text-slate-700 truncate">NB · after</span></div>
+                            <div class="px-2 py-1.5 flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#10B981]"></span><span class="font-proxima text-[10px] text-slate-700 truncate">SB · before</span></div>
+                            <div class="px-2 py-1.5 flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#8B5CF6]"></span><span class="font-proxima text-[10px] text-slate-700 truncate">SB · after</span></div>
+                          </div>
+                          <div class="px-2 py-1 border-t border-zinc-950/05 bg-slate-50 font-mono text-[7.5px] uppercase tracking-[0.18em] text-slate-400 shrink-0">pinned footer</div>
+                        </div>
+                        <div class="flex-1 min-w-0 px-3 py-3 space-y-2">
+                          <div class="rounded-[6px] border border-zinc-950/10 bg-white shadow-sm h-11 flex items-center px-3 font-display text-[12.5px] text-slate-500">page header · a SECTION here, so it is not full width</div>
+                          <div class="grid grid-cols-12 gap-2">
+                            <div class="col-span-12 h-14 rounded-[6px] border border-zinc-950/10 bg-white shadow-sm"></div>
+                            <div class="col-span-5 h-16 rounded-[6px] border border-zinc-950/10 bg-white shadow-sm"></div>
+                            <div class="col-span-7 h-16 rounded-[6px] border border-zinc-950/10 bg-white shadow-sm"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-2.5 leading-[1.5]">Control rails. The panel pins its own header, toolbar and footer and scrolls only the list between them, so the rail is never taller than the tab. Live on <a href="../pages/npmrds-report.html" class="tny-link">npmrds-report</a>.</p>
+                    </div>
+
+                    <!-- key list -->
+                    <div class="text-[11.5px] text-slate-600 font-mono leading-[1.7]">
+                      <div class="font-display font-medium text-[12.5px] text-[#0F1722] mb-2 normal-case tracking-normal">Keys shipped</div>
+                      <div>options.activeStyle</div>
+                      <div>contentRow · contentCol</div>
+                      <div>sideNavContainer<span class="text-[#CA8A04]">1..3</span></div>
+                      <div>navWrapper · navLabelText</div>
+                      <div>navLabel · navList</div>
+                      <div>navItem · navItemActive</div>
+                      <div class="font-display font-medium text-[12.5px] text-[#0F1722] mb-2 mt-4 normal-case tracking-normal">Author controls</div>
+                      <div class="font-proxima text-[11.5px] leading-[1.5] tracking-normal">
+                        Page settings → <span class="font-medium text-slate-700">Show Content Sidebar</span> (None/Left/Right) ·
+                        section menu → <span class="font-medium text-slate-700">Page Nav Label</span> ·
+                        section group <span class="text-slate-700">sidebar</span> for rail content ·
+                        band → <span class="font-medium text-slate-700">Full Width: show</span> when the style is
+                        <span class="text-[#CA8A04]">flush</span>.
+                      </div>
+                      <div class="font-proxima text-[11.5px] leading-[1.5] tracking-normal mt-2 text-slate-500">
+                        <span class="text-[#CA8A04]">Gap:</span> the style itself is theme-level — there is no per-page
+                        “Content Sidebar Style” picker yet, unlike the app SideNav's.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Logo lockups -->
               <div class="col-span-12" data-dms-section="logo">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">

@@ -17,7 +17,9 @@
 // see convert_old_reports.py's Python port (resolve_relative_dates et al.) for
 // the conversion-time half of this same spec.
 
-const RELATIVE_DATE_REGEX = /^(?<anchor>startDate|endDate)=>(?<span>day|week|month|year)(?<isof>of)?(?:(?<sign>[+-])(?<amount>\d+)\k<span>->(?<duration>\d+)\k<span>)?$/;
+// Exported for relativeDatePresets.js — the authoring-side preset/validation module needs the
+// exact same grammar this resolver reads, not a hand-copied duplicate that could drift from it.
+export const RELATIVE_DATE_REGEX = /^(?<anchor>startDate|endDate)=>(?<span>day|week|month|year)(?<isof>of)?(?:(?<sign>[+-])(?<amount>\d+)\k<span>->(?<duration>\d+)\k<span>)?$/;
 
 function parseDateOnly(dateStr) {
   const [y, m, d] = (dateStr || '').split('T')[0].split('-').map(Number);
@@ -72,7 +74,9 @@ function shiftSpans(d, span, n) {
 // `amount` — the sign character in the string is cosmetic only, matching the
 // real old-tool implementation). `duration` extends forward `duration` spans
 // from the (already-offset) start, inclusive (minus 1 day).
-function resolveRelativeDateFormula(formula, baseStartDate, baseEndDate) {
+// Exported so the authoring UI can preview a candidate formula's resolved range against the
+// picked base's live dates, before the author saves anything.
+export function resolveRelativeDateFormula(formula, baseStartDate, baseEndDate) {
   const m = RELATIVE_DATE_REGEX.exec(formula || '');
   if (!m) return null;
   const { anchor, span, isof, amount, duration } = m.groups;

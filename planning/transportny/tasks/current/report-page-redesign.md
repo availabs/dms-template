@@ -43,6 +43,20 @@ second section's trigger while a different section already held edit focus (inte
 disallowed). Don't treat this as a known bug. See the archive's Gap 01 section for the full
 corrected reasoning if it resurfaces.
 
+**Regression found and fixed, 2026-08-05 — the pills silently stopped rendering on real reports.**
+The `migrate-legacy-graph-to-graph-new.md` library task (`src/dms/planning/tasks/current/`, shipped
+2026-08-03) renamed the theme-side `sectionMenuExtensions`/`sectionHeaderExtensions` registrations
+from key `"AVL Graph"` to `"Graph"` to follow a `.name` rename — but missed that
+`ComponentRegistry/index.jsx` force-overrides `.name` back to the literal `'AVL Graph'` for every
+section actually persisted with `element-type: "AVL Graph"`, which is virtually every real report
+graph (the Report Page template's starter graph, everything RRL's "+ Add Graph" modal creates,
+every converted old report). Net effect: both `npmrdsQuickControls` (these pills) and
+`npmrdsMeasureMenu` (the Settings-drawer Measure item-group) stopped firing for nearly all graphs —
+only bare legacy `element-type: "Graph"` sections still matched. Fixed by registering both keys
+(`"Graph"` and `"AVL Graph"`) in both `theme.js` and `themev2.js`. Live-verified via Chrome
+automation against `converted_reports/claude_scratch_tag_browser` — pills render again, Measure
+dropdown lists the full vocabulary. See the library task's "Post-ship bug + fix #3" for full detail.
+
 ## Gap 02 — Route/graph color assignment
 
 **Implemented and live-verified end-to-end** 2026-07-22. Split across two files: this repo's

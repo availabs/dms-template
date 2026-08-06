@@ -109,6 +109,7 @@ def ensure_route_compare_template(measure, templates, dry_run):
     base_state = json.loads(base["data"]["stateJson"])
     series_col = next(c for c in base_state["columns"]
                       if c.get("name") == "__series")
+    series_col.setdefault("customName", "Route")
     columns = [series_col, value_col, delta_col]
     state = {
         "externalSource": base_state["externalSource"],

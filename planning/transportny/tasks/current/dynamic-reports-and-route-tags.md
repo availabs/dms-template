@@ -2,7 +2,7 @@
 
 **Project:** TransportNY
 
-## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. **Dynamic Reports (item 3) — Ryan picked this as the next thread, 2026-08-03, with old-template porting explicitly carved out as a separate task. Core mechanism DONE + live-verified, 2026-08-03** — route slots filled via URL param, a "Dynamic Report" toggle in RRL, view-time resolution against the route catalog, all built and proven end-to-end (two different real routes rendering on the same shared page via different `?routes=` values). See item 3's "Implementation plan, 2026-08-03" section, including a pre-existing/unrelated platform finding (one LineGraph section that never renders a line, isolated away from Dynamic Reports and left for separate investigation) and old-template porting still deliberately out of scope. **Ryan then manually tested the mechanism and found a real bug, fixed same day, 2026-08-03**: an unresolved route (no `tmc_array`) made its graph run a full unfiltered network-wide query instead of showing nothing — see item 3's new manual-testing section. One related UX question (slot-count/URL-count mismatch re-triggering the blocking picker over already-rendered content) is flagged but not fixed, pending Ryan's steer — see "Open questions" item 2b. **Old-template porting — scoping DONE, 2026-08-03 (nothing built yet):** Ryan steered toward reusing the existing `convert_old_reports.py` pipeline against a curated, most-used subset of the 216 `admin2.templates` rows. Found real usage signal via `admin2.stuff_in_folders`'s `type='group'` (shared agency-account) folders — 28 deduped candidates (17 from the vendor's own AVAIL-account starter series, 11 real NYSDOT operational templates). `TEMPLATE_SPECS` coverage cross-checked (reused `analyze_report()` directly): 4 fully mapped today, 1 cheap, 23 hit a concentrated gap (mostly Route/TMC Info Box missing a "speed" measure bucket, plus Route Map/Info Box failing to resolve relative-date placeholders like `{recent-0}`). Mechanism design **unified 2026-08-03 per Ryan's own steer** ("treat all templates as if they have no routes, pull from `graph_comps` only") — all 28 build the same way via `convert_old_reports.py`'s existing `build_graph_section_data()` (confirmed already route-data-independent) + today's route-slot mechanism, no path split; the 4 candidates with real example routes become verification fixtures, not a different build path. Relative-date support explicitly deferred by Ryan ("eventually, not right now") — fixed author-set dates for this pass. **Template 244 ("Year Over Year (Beginner)") built + live-verified, 2026-08-03** — new `--template-id` mode in `convert_old_reports.py` (`convert_template()`, deliberately duplicated not refactored from `convert_report()`), plus a backward-compatible `route_slot_group` extension to the already-shipped `useDynamicReportRoutes.js`/`ReportRouteList.jsx` so 244's 11 date-window route rows (all one conceptual route) resolve against a single real route pick instead of 11. Full picker→resolve→render flow live-verified with real data (17/19 panels; Route Map deferred by design). See item 3's "Template 244 built + live-verified" section for the full record, including a live-caught correction (an old `admin2.routes` id is NOT a valid `?routes=` value — wrong id space from the new catalog) and two non-bugs recorded so they aren't re-investigated. **5 more candidates converted + live-verified, 2026-08-04** (`238`/`265`/`90`/`221`/`204`), picked by real dry-run gap reports rather than the static coverage table — which caught `278` silently failing the deferred-relative-dates check despite scoring "fully mapped." One small proven-shape `TEMPLATE_SPECS` addition made along the way (truck-speed Line Graph, unlocking `90`). 22 candidates remain, most now blocked on either the deferred relative-date feature or the (separately flagged, not started) Route Info Box "speed" measure gap. See item 3's "5 more candidates converted + live-verified" section. **Slot/URL-count mismatch UX (open question 2b) — resolved and built, 2026-08-04**: the entry-gate picker now pre-populates already-resolved routes and only asks for the still-missing slot(s), instead of discarding what the URL already resolved. See item 3's "Slot/URL-count mismatch — pre-populate fix" section. **TMC-linear auto-generation (item 2) — reconciled 2026-08-03: 2024 pilot DONE.** Found and reproduced the old tool's real 2022 generator (`avail-falcor/tasks/folders/create_and_load_corridors.py`, a one-off 2023 batch script, never run for any other year), ported it against the year-matched ClickHouse source `582/983` (new script `scripts/npmrds-reports/route_gen_corridors.py` + a `--tmc-year` extension to `route_build.py`), and generated+verified 2024: **8,660 auto-generated corridor routes, correctly tagged (`auto_generated`/`region:N`/`county:{Name}`), independently confirmed via direct SQL.** Along the way: confirmed the legacy migration is both incomplete (34% of the old 49,218 routes missing) and duplicated (32,194 inserted twice) — not fixed, flagged for a separate decision; confirmed a real, inherited-from-the-old-tool county-boundary gap in corridor continuity — shipped matching old behavior per Ryan's call, flagged for future revisit; caught and fixed a real county-tag casing bug (wrote lowercase, UI's `tagCategories.js` needs Title Case) that had already let 813 mistagged routes through — all deleted and regenerated clean. The other 10 years (2016, 2018-2026 excluding 2024) are not yet generated; the scripts are already generic over year, no further code work expected. See item 2's "Generation mechanism found" section onward for the full trace. **Both remaining-candidate blockers scoped, 2026-08-04 (nothing built yet)** — see item 3's new "Both flagged items scoped, 2026-08-04" note and `research/npmrds-reports/info-box-speed-and-relative-dates-scoping.md`: the Route Info Box "speed" gap is mostly the already-known bin-ambiguity data-coverage wall (round 21/40), not a missing bucket — only 1 candidate (`110`) has a genuine (and cheap) gap; relative dates are the bigger lever, blocking 13 of the 22 remaining candidates (not ~9), and should ride the existing `derived-page-variable` mechanism rather than a new one. **Mechanism B (`relativeDate`/`isRelativeDateBase`) — built + live-verified, 2026-08-04** (Ryan's build-order call: B before A): a shared Python resolver (`convert_old_reports.py`) plus a live-recompute JS module (`relativeDateResolution.js`, wired into `ReportRouteList.jsx`) unblocks all 7 Mechanism-B-blocked candidates (`246, 276, 278, 279, 281, 283, 291`) — verified via dry-run (zero `relative_date` gaps) and a real build of `278` with full live rendering. A real, unrelated pre-existing bug (`build_slot_entry` double-applying `compTitle` substitution) was found and fixed along the way. Mechanism A (`{recent-N}`) remains unbuilt — separate follow-up. See item 3's "Mechanism B — built + live-verified" section.
+## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. **Dynamic Reports (item 3) — Ryan picked this as the next thread, 2026-08-03, with old-template porting explicitly carved out as a separate task. Core mechanism DONE + live-verified, 2026-08-03** — route slots filled via URL param, a "Dynamic Report" toggle in RRL, view-time resolution against the route catalog, all built and proven end-to-end (two different real routes rendering on the same shared page via different `?routes=` values). See item 3's "Implementation plan, 2026-08-03" section, including a pre-existing/unrelated platform finding (one LineGraph section that never renders a line, isolated away from Dynamic Reports and left for separate investigation) and old-template porting still deliberately out of scope. **Ryan then manually tested the mechanism and found a real bug, fixed same day, 2026-08-03**: an unresolved route (no `tmc_array`) made its graph run a full unfiltered network-wide query instead of showing nothing — see item 3's new manual-testing section. One related UX question (slot-count/URL-count mismatch re-triggering the blocking picker over already-rendered content) is flagged but not fixed, pending Ryan's steer — see "Open questions" item 2b. **Old-template porting — scoping DONE, 2026-08-03 (nothing built yet):** Ryan steered toward reusing the existing `convert_old_reports.py` pipeline against a curated, most-used subset of the 216 `admin2.templates` rows. Found real usage signal via `admin2.stuff_in_folders`'s `type='group'` (shared agency-account) folders — 28 deduped candidates (17 from the vendor's own AVAIL-account starter series, 11 real NYSDOT operational templates). `TEMPLATE_SPECS` coverage cross-checked (reused `analyze_report()` directly): 4 fully mapped today, 1 cheap, 23 hit a concentrated gap (mostly Route/TMC Info Box missing a "speed" measure bucket, plus Route Map/Info Box failing to resolve relative-date placeholders like `{recent-0}`). Mechanism design **unified 2026-08-03 per Ryan's own steer** ("treat all templates as if they have no routes, pull from `graph_comps` only") — all 28 build the same way via `convert_old_reports.py`'s existing `build_graph_section_data()` (confirmed already route-data-independent) + today's route-slot mechanism, no path split; the 4 candidates with real example routes become verification fixtures, not a different build path. Relative-date support explicitly deferred by Ryan ("eventually, not right now") — fixed author-set dates for this pass. **Template 244 ("Year Over Year (Beginner)") built + live-verified, 2026-08-03** — new `--template-id` mode in `convert_old_reports.py` (`convert_template()`, deliberately duplicated not refactored from `convert_report()`), plus a backward-compatible `route_slot_group` extension to the already-shipped `useDynamicReportRoutes.js`/`ReportRouteList.jsx` so 244's 11 date-window route rows (all one conceptual route) resolve against a single real route pick instead of 11. Full picker→resolve→render flow live-verified with real data (17/19 panels; Route Map deferred by design). See item 3's "Template 244 built + live-verified" section for the full record, including a live-caught correction (an old `admin2.routes` id is NOT a valid `?routes=` value — wrong id space from the new catalog) and two non-bugs recorded so they aren't re-investigated. **5 more candidates converted + live-verified, 2026-08-04** (`238`/`265`/`90`/`221`/`204`), picked by real dry-run gap reports rather than the static coverage table — which caught `278` silently failing the deferred-relative-dates check despite scoring "fully mapped." One small proven-shape `TEMPLATE_SPECS` addition made along the way (truck-speed Line Graph, unlocking `90`). 22 candidates remain, most now blocked on either the deferred relative-date feature or the (separately flagged, not started) Route Info Box "speed" measure gap. See item 3's "5 more candidates converted + live-verified" section. **Slot/URL-count mismatch UX (open question 2b) — resolved and built, 2026-08-04**: the entry-gate picker now pre-populates already-resolved routes and only asks for the still-missing slot(s), instead of discarding what the URL already resolved. See item 3's "Slot/URL-count mismatch — pre-populate fix" section. **TMC-linear auto-generation (item 2) — reconciled 2026-08-03: 2024 pilot DONE.** Found and reproduced the old tool's real 2022 generator (`avail-falcor/tasks/folders/create_and_load_corridors.py`, a one-off 2023 batch script, never run for any other year), ported it against the year-matched ClickHouse source `582/983` (new script `scripts/npmrds-reports/route_gen_corridors.py` + a `--tmc-year` extension to `route_build.py`), and generated+verified 2024: **8,660 auto-generated corridor routes, correctly tagged (`auto_generated`/`region:N`/`county:{Name}`), independently confirmed via direct SQL.** Along the way: confirmed the legacy migration is both incomplete (34% of the old 49,218 routes missing) and duplicated (32,194 inserted twice) — not fixed, flagged for a separate decision; confirmed a real, inherited-from-the-old-tool county-boundary gap in corridor continuity — shipped matching old behavior per Ryan's call, flagged for future revisit; caught and fixed a real county-tag casing bug (wrote lowercase, UI's `tagCategories.js` needs Title Case) that had already let 813 mistagged routes through — all deleted and regenerated clean. The other 10 years (2016, 2018-2026 excluding 2024) are not yet generated; the scripts are already generic over year, no further code work expected. See item 2's "Generation mechanism found" section onward for the full trace. **Both remaining-candidate blockers scoped, 2026-08-04 (nothing built yet)** — see item 3's new "Both flagged items scoped, 2026-08-04" note and `research/npmrds-reports/info-box-speed-and-relative-dates-scoping.md`: the Route Info Box "speed" gap is mostly the already-known bin-ambiguity data-coverage wall (round 21/40), not a missing bucket — only 1 candidate (`110`) has a genuine (and cheap) gap; relative dates are the bigger lever, blocking 13 of the 22 remaining candidates (not ~9), and should ride the existing `derived-page-variable` mechanism rather than a new one. **Mechanism B (`relativeDate`/`isRelativeDateBase`) — built + live-verified, 2026-08-04** (Ryan's build-order call: B before A): a shared Python resolver (`convert_old_reports.py`) plus a live-recompute JS module (`relativeDateResolution.js`, wired into `ReportRouteList.jsx`) unblocks all 7 Mechanism-B-blocked candidates (`246, 276, 278, 279, 281, 283, 291`) — verified via dry-run (zero `relative_date` gaps) and a real build of `278` with full live rendering. A real, unrelated pre-existing bug (`build_slot_entry` double-applying `compTitle` substitution) was found and fixed along the way. Mechanism A (`{recent-N}`) remains unbuilt — separate follow-up. See item 3's "Mechanism B — built + live-verified" section. **Relative-dates authoring UI — built 2026-08-05, Mechanism B only per Ryan's explicit scope call.** `RouteRow.jsx` gained a Fixed/Derived mode switch (extending its existing date-edit panel, not a new modal) so an author can create/edit/remove a Mechanism-B derive relationship by hand for the first time — previously this only ever existed because the Python converter wrote it during a template port. Also fixed the `__series` comparison-series column header (a separate, smaller side-thread) — see the new section right above this one for that record. See item 3's new "Relative-dates authoring UI" section for the full build record; not yet click-verified live in the browser. **Route Row visual redesign — scoped (design critique + interactive Artifact mockup), then built + live-verified, 2026-08-05.** `RouteRow.jsx`'s expanded state restructured into collapsed-by-default subsections (Date Range, Base-for-N-routes, Appearance, Graphs) plus a "⋮" overflow menu (Rename + Remove) replacing a full-width danger button — see item 1's new "Route Row visual redesign" section, including two real bugs caught and fixed live (a kebab vertical-alignment bug; a "TMC list missing" report that turned out to be a Dynamic-Report-placeholder non-issue, not a regression). **Real architecture fix found in the same pass: `hideInView` doesn't work for Dynamic Reports.** The generic `hideInView` section flag correctly hides RRL from real viewers but also silently swallows the Dynamic Report's own blocking route-selection entry-gate modal (a first-time viewer would see a permanently blank page, no way to ever pick a route) — fixed by moving the hide-in-view-mode decision into `ReportRouteList.jsx` itself (keyed off `editPageMode`, unconditional, no per-report toggle needed), which no longer uses `hideInView` at all — see item 3's new "View-mode visibility" section and the component's own README. **A per-page sidebar-width lever was also prototyped in core `sectionGroup.jsx`** (`sidebarGroup.width`, whitelisted classes, opt-in, zero effect on any page that doesn't set it) and live-demoed at 380px on `year_over_year_beginner_0` — **Ryan stashed this core-library change, 2026-08-05; not merged, no decision made yet** on template-default vs. per-page vs. a real UI control (the Section Groups settings pane has no concept of the sidebar group at all today, confirmed by direct code read).
 
 **Priority directive (2026-07-31):** this arc (all items below) takes priority over every other
 currently-tracked gap/bug in the reports/routes space — `report-route-ui-parity-gaps.md`,
@@ -11,11 +11,22 @@ until re-triaged. Nothing below has been broken into an implementation plan yet;
 to get three related, somewhat-rambly ideas into one coherent, cross-referenced shape before the
 next round of back-and-forth on scope/priority/detail.
 
+**Re-triaged, 2026-08-06:** this arc's core mechanism work (items 1-3 below) is now DONE — see the
+top status line. Priority has shifted to
+[`npmrds-design-v2-implementation.md`](./npmrds-design-v2-implementation.md), which is now the
+top-priority reports/routes item. What remains below (old-template porting, a few flagged opens)
+continues, but no longer blocks other work in this space the way this directive originally meant.
+
 ## Context that applies to all three items
 
 - Ryan's coworker is doing visual/design work across these repos (still under construction). Don't
   block on it, don't tightly couple anything below to it, don't treat current in-progress design
   work as settled — it'll get applied on top of whatever gets built here, later.
+- **2026-08-06: "later" has arrived.** The coworker (Alex)'s `dms_design_system_v2` NPMRDS category
+  (9 pages, including a real second-pass redesign of the RRL/modals mechanism built here) is now
+  scoped against this arc's live implementation in
+  [`npmrds-design-v2-implementation.md`](./npmrds-design-v2-implementation.md) — read that file
+  before starting new route/report UI work, since it may change or supersede in-flight plans below.
 - Old-tool reference point Ryan gave: `https://npmrds.devtny.org/report/edit/1071` — intended as an
   `admin2.templates` row ("template" in the old tool's vocabulary), the direct conceptual ancestor
   of "Dynamic Report" below. **Corrected 2026-08-04: this specific id/URL combination was wrong.**
@@ -389,6 +400,69 @@ findings from implementation/live-testing worth recording:
   Comparison Mode combo, confirm a new graph section appears below the existing ones and the picked
   routes show as assigned (expand a route row to see its "Graph N" chips).
 
+**Route Row visual redesign — scoped, mocked, built + live-verified, 2026-08-05.** Started from Ryan's
+own design critique of a live screenshot (an expanded route acting as the base for 8 date-derived
+siblings — a wall of always-open controls: TMCs, a full disabled date block plus an italic run-on
+sentence naming every dependent, an always-open `ColorPicker`, a flat wrap of every graph chip, a
+full-width red "Remove Route from Report" button). Design pass done as an interactive Artifact mockup
+(before/after side-by-side at the real ~252px usable content width, plus a live Page-mode Edit/View
+toggle demonstrating hiding the panel) before touching code — see the artifact for the full callout
+list; not re-derived here.
+
+- **`RouteRow.jsx` restructured into collapsed-by-default subsections**, each its own local
+  `useState` disclosure (same convention as the pre-existing `showAllTmcs`): Date Range collapses to
+  a one-line summary; "Base for N routes" is a standing one-liner that expands into a pill list
+  (replaces the italic run-on sentence — the worst offender in the original critique); Appearance
+  collapses to a swatch + label, the real `ColorPicker` only mounting once opened; Graphs are grouped
+  into "On"/"Off" with a `"N of M graphs"` summary instead of one flat alphabetical wrap. See the
+  component's own README ("Expanded route row" section) for the full write-up.
+- **Remove moved into a "⋮" overflow menu** next to the reorder arrows, replacing the full-width
+  danger button. **Rename moved there too**, as a same-day follow-up once Ryan flagged it live —
+  smaller change than the mockup's split (mockup kept Rename on its own inline pencil; Ryan wanted
+  both actions consolidated).
+- **Two real bugs caught live during follow-up testing, both fixed same day:**
+  - The kebab's wrapper needed `relative flex items-center`, not just `relative` — a plain block
+    wrapper around an inline-block `Button` doesn't center the button inside it, landing it a few px
+    higher than the reorder arrows beside it.
+  - ~~TMC list disappeared~~ — investigated and confirmed **not a regression**: it was only ever
+    absent on `year_over_year_beginner_0` because that page is a Dynamic Report whose rows are
+    unresolved slot placeholders in edit mode (no `tmc_array` until a viewer's `?routes=` resolves
+    them), true before this pass too. Verified real TMC data still renders fine on
+    `claude_scratch_tag_browser`.
+- **Live-verified** on both `converted_reports/year_over_year_beginner_0` (Dynamic Report slot
+  placeholders, real derived-date siblings) and `converted_reports/claude_scratch_tag_browser` (real
+  TMC data, real dependents), in both the read-only (`editPageMode` true, section not individually
+  opened) and true-edit (`canMutate` true) states.
+- **Side-finding, not shipped: a per-page sidebar-width lever.** The redesign's usable content width
+  (~252px, measured live — `302px` rail minus padding/borders) was noticeably tighter than the
+  mockup's ~380px assumption. Prototyped a real, narrowly-scoped fix in core
+  `sectionGroup.jsx`/`sectionGroup.theme.js`: an optional `width` field (`narrow`/`default`/`wide`/
+  `xl`, whitelisted Tailwind classes, same pattern as the file's existing `modalWidthClass`) on a
+  page's own sidebar `section_group` object — opt-in per page, zero effect on any page that doesn't
+  set it. Live-demoed at `380px` on `year_over_year_beginner_0` (via a direct `dms page update`
+  write — no page in this arc has a persisted sidebar-group object today, they all fall through to a
+  hardcoded fallback in `sectionGroup.jsx`, so there was nothing to set this on without adding the
+  entry itself). **Confirmed no UI path exists to set this today** — the Section Groups settings
+  pane (`sectionGroupsPane.jsx`) has no concept of the sidebar group at all; it only manages
+  `top`/`content`/`bottom` bands via drag-and-drop, so the sidebar group never appears as a node in
+  that tree. **Ryan stashed this core-library change, 2026-08-05 — not merged, not decided.** Options
+  left open: bake `width: "wide"` into the "Report Page" template (future reports only), backfill
+  existing reports, and/or add a real `width` control to `sectionGroupsPane.jsx` (would also need to
+  teach that pane the sidebar group exists at all, since `'sidebar'` isn't one of its three drag
+  targets today).
+- **Unrelated platform bug found while chasing this, not fixed:** the Settings "⋮" trigger for any
+  component placed in the **sidebar** section group (not just `ReportRouteList`) renders at the wrong
+  screen position — its `position:absolute` escapes to a much wider containing block than its own
+  card, landing visually over unrelated main-content sections. The popup itself still opens in the
+  right place once clicked; only the trigger's hit target is misplaced. See
+  `src/dms/skills/traversing-dms-pages.md`'s Settings-menu section for the click-path workaround
+  (hover the card first to force `group-hover:flex`, or `.click()` the button directly via JS,
+  bypassing the visual coordinates entirely).
+- **Verify URL:** `http://npmrds.localhost:5173/edit/converted_reports/year_over_year_beginner_0` —
+  open Settings → pencil "Edit" on the Routes panel, expand "2024" (base for 8 siblings): one-line
+  Date Range summary, standing "Base for 8 routes" pill-list toggle, collapsed Appearance swatch,
+  grouped Graphs, and a "⋮" menu (Rename/Remove) flush with the reorder arrows.
+
 ---
 
 ## 2. Route Tags ("folder approximation")
@@ -701,6 +775,11 @@ was the right call rather than assuming either way (see memory
 **Confirmed, 2026-07-31:** the reversal covers route organization/tagging specifically (this item)
 only. Report discovery/index page work and the permissions/ACL model remain out of scope — that
 part of the original ruling still stands.
+
+**Amended 2026-08-06:** report discovery/index page work is back in scope as well — see
+`npmrds-design-v2-implementation.md`'s Open Question 1 (`npmrds-reports.html`, the report-library
+page): "we dont have one built yet but we will want one." Permissions/ACL remains the only
+still-standing exclusion from the original 2026-07-27 ruling.
 
 **Implementation Plan — Phase 1: manual tag storage + editing UI — DONE, live-verified
 2026-07-31.** Scope: get `tags` working end-to-end for manual/custom tagging on the existing
@@ -1403,11 +1482,151 @@ Peak", "Off Peak") at the **identical** height (~45mph) — independent, direct 
 was never actually configured with distinct time windows, and that the converted port faithfully
 reproduces the old tool's own live behavior, flaw included.
 
+**Ryan's follow-up ask, 2026-08-05: fix the AM/PM/Off-Peak authoring bug on this one live page for
+real** (not just document it) — "I want to see this feature really in action, so I want a nice
+dynamic report," explicitly OK with departing from a literal old-tool translation. Two content-level
+fixes applied directly to `floating_car_average_day` (page 2208008, `reports_snap_2` row 2208029):
+
+1. **Time-of-day fix.** comp-17/18/19 ("AM Peak"/"PM Peak"/"Off Peak") had `amPeak`/`pmPeak`/
+   `offPeak` all `false` and the same `06:00–20:00` window as the whole-year baseline row — the old
+   author never actually applied a peak filter, just named the rows as if they had (independently
+   confirmed against the real old tool, `npmrds.devtny.org/template/edit/278/route/163181`, which
+   shows the same 4-bars-identical-height flaw live). Fixed by editing each row's own time-of-day
+   suffix to `06:00–10:00` (AM)/`16:00–20:00` (PM)/`10:00–16:00` (Off, i.e. Midday) — matching
+   `RouteRow.jsx`'s own already-shipped peak presets, and summing cleanly to the report's existing
+   6am–8pm "whole day" window. This works because `relativeDateResolution.js`'s `resolveRouteDates`
+   recomputes only the **date** portion of a derived row from its base, always preserving that row's
+   **own** persisted time-of-day suffix (verified directly in code, not assumed) — so patching just
+   the time suffix on the stored row is sufficient; no JS changes were needed. Live-verified via
+   `report_probe.mjs` against `?routes=2198772`: the Bar Graph Summary now returns 4 genuinely
+   distinct speed values (whole-day 45.28, AM 45.57, PM 45.11, off-peak 45.69 mph) instead of 4
+   identical ones — a sensible ordering (off-peak fastest, PM peak slowest) for this real route.
+2. **Route-slot name fix, same day, Ryan caught it live-testing the first fix.** Several slot names
+   showed two *different* years, e.g. `"2024 - AM Peak - 2023 - AM Peak - Rochester Inner Loop 2"` —
+   confusing, not just redundant. Root cause: the old template's `compTitle` format
+   (`"{year} - AM Peak - {name}"`) concatenates the freshly-resolved `{year}` with the row's own raw
+   `name` field — and that raw name field was itself stale in the old author's data (still said
+   "2023" even though the row's actual configured window, and Mechanism B's resolved date, is 2024).
+   `build_slot_entry`'s earlier double-substitution fix (2026-08-04, see above) had already reduced a
+   *triple*-year case (comp-15) down to a same-year double (`"2024 - 2024 - ..."`) — genuinely
+   redundant but not misleading — but never touched the cases where the stale fragment held a
+   *different* year, which is the confusing case Ryan hit. Fixed by renaming all 10 slots directly
+   (e.g. `"2024 - AM Peak - Rochester Inner Loop 2"`, `"2023 - Rochester Inner Loop 2"`) — one clean
+   year per name, individually cross-checked against each row's own actual resolved
+   `startDate`/`endDate` before writing (not assumed from the label). Only the `name` field changed;
+   `dateFormula`/`derivedFromRoute`/`graphIds`/`_old_settings` etc. untouched. Live-verified via
+   `report_probe.mjs`: Bar Graph Summary x-axis now reads e.g. `"2024 - AM Peak - Rochester Inner
+   Loop 2"` — single year, unambiguous.
+   Checked whether this same double-different-year pattern exists on the other 5 already-converted
+   candidates (`238, 265, 90, 221, 204`) or elsewhere in the 216-template corpus — **Ryan's call:
+   don't check/fix the others, this one page was the only ask.**
+
+Both fixes were applied as direct data edits (not a Python-converter change) since this is a
+one-off correction of *this specific old template's* authoring error, not a systemic conversion gap.
+**Real CLI gap found and fixed along the way:** `dms raw update` silently no-ops on this app's split
+(`:data`-suffixed) dataset rows (already flagged in
+`reference_dms_section_create_cli_gaps` memory) — `dms.data.edit`'s server route only resolves the
+split table when given a 4th `type` arg (`dms.controller.js`'s `setDataById`), but the CLI's
+`raw update` never passed one. Added a `--row-type <type>` option (`cli/src/commands/raw.js` +
+`cli/bin/dms.js`) threading it through as that 4th arg — verified end-to-end via independent
+`dbq.py new` reads (not trusting the CLI's own echoed response) that both fixes above actually
+persisted. Only the `--data` (full-replacement) path is fixed; `--set` on a split row still can't
+read-before-merging (a deeper gap, `fetchById`/`dms.data.byId` has the same missing-type problem on
+the read side) — not fixed, not needed for this task.
+
+**Verify URL:** `http://npmrds.localhost:5173/converted_reports/floating_car_average_day?routes=2198772`
+— Bar Graph Summary's 4 bars ("2024", "AM Peak", "PM Peak", "Off Peak") now show distinct values and
+single-year labels; expand any RRL route row to see its clean name and (for AM/PM/Off Peak) the
+narrowed time-of-day range.
+
+**Side finding on this same page, scoped + fixed, 2026-08-05: the two Route Compare Component
+(Spreadsheet/"Info Box"-style) sections on this page render their route-name column header as the
+literal `"__series"` string** — the internal comparison-series discriminator key, not a
+client-friendly label. Full scoping + implementation record in
+`research/npmrds-reports/comparison-series-column-label-scoping.md`. Root cause: `comparisonSeries`
+already has a `seriesLabel` field with its own author-facing UI input, but it's 100% write-only —
+`TableHeaderCell.jsx` (the real render path for these Spreadsheet sections) never reads it, falling
+through to the raw column key. Fixed with **zero changes to shared `src/dms/` platform code** —
+`customName` is a plain field the renderer already reads, so `MeasurePicker`/`CalloutStatPicker`/
+`useAddGraphSection.js` each call the shared mint function (`reconcileComparisonSeriesColumnOnState`)
+**unmodified**, already directly importable/exported, then set `customName: 'Route'` themselves on
+the resulting column in their own file. (A first pass added an optional param to the shared function
+instead — Ryan caught it: that's the same "NPMRDS term inside platform code" mistake as the rejected
+render-fallback idea, just one layer deeper, and unnecessary since nothing about setting a plain
+field required new platform capability.) Python side: `.setdefault("customName", "Route")` at every
+fresh-mint site (`info_box_templates.py` x5, `route_compare_template.py`, `graph_templates.py` x2) —
+plain, uniform placement, no special-casing to avoid old templates. **Correction on scope, Ryan,
+2026-08-05:** an earlier pass specifically engineered this to never touch an already-existing
+template's column, on the assumption that was the ask. It wasn't — every report/template in this
+arc is disposable demo data, not production, and the actual ask was "don't waste time
+patching/validating old stuff," not "guarantee old rows are never incidentally touched." Removed the
+special-casing; the fix is now the same shape everywhere.
+
+**Relative-dates authoring UI — scoped 2026-08-05, built 2026-08-05 (Mechanism B only, per Ryan's
+explicit call — Mechanism A stays a documented gap).** Scoping doc:
+`research/npmrds-reports/relative-dates-authoring-ui-scoping.md`. Ryan's steer going in: build the
+UI on top of the mechanism that's actually real (B — a row's date derives from another row on the
+same report), not Mechanism A (relative to wall-clock today, still unbuilt on either side of the
+stack).
+
+Implementation, matching the scoping doc's Q1/Q3/Q6 recommendations: extended `RouteRow.jsx`'s
+existing date-edit panel with a Fixed/Derived mode switch, rather than a new modal — the read-only
+half of this UI (the "Derived from {name}" note) already existed; only the write path was missing.
+No new "+ Add Derived Route" action — deriving is a follow-up edit on a row added through the
+ordinary Add Route / Add Route Slot flow, identical for normal reports and Dynamic Report route
+slots (confirmed: both expose the same `route_comp_id`/`startDate`/`endDate`/`dateFormula`/
+`derivedFromRoute` fields through the same `updateRoute` call).
+
+- **New pure module** `relativeDatePresets.js` (peer to `relativeDateResolution.js`) — curated,
+  named presets (`buildFormula`/`parseFormula`/`isValidFormula`) covering the two formula shapes
+  actually verified against real corpus data: the "of" snap form (`startDate=>{span}of`) and the
+  whole-period shift form with duration fixed at 1 (`{startDate|endDate}=>{span}{+-}{n}{span}
+  ->1{span}`). An "Advanced" pattern exposes the raw formula string directly (validated against the
+  same regex the resolver uses — exported from `relativeDateResolution.js` for this reuse, no
+  duplicated grammar) for anything outside the two curated shapes, mirroring
+  `derived-page-variable.md`'s own "small named registry, not expressions" precedent. Direction
+  (before/after the base) exercises both of the resolver's own documented anchor behaviors even
+  though the real old-tool corpus only ever used "before" — real, intentional resolver behavior, not
+  an invented shape.
+- **Base-designation is implicit, per the scoping doc's Q3 finding** — no separate "mark as base"
+  toggle; a row becomes a base purely by having a sibling's `derivedFromRoute` point at it.
+  `ReportRouteList.jsx` computes `derivableSiblings` (every route without its own `dateFormula` —
+  single-hop enforced by construction, matching the resolver's own constraint) and a reverse
+  `baseForNamesByCompId` lookup (a "Base for: {names}" note on a row with dependents, so an author
+  editing a base sees who's relying on it before doing something confusing to it).
+  `RouteRow.jsx` further excludes the row being edited from its own eligible-bases list.
+- **Atomicity**: `dateFormula`/`derivedFromRoute` are written together in one `updateRoute` call
+  (Save is disabled until both a base and a valid formula are picked) — never one without the
+  other, which is what the resolver actually requires to attempt resolution.
+- **Un-deriving loses nothing**: switching a row back to Fixed seeds the Start/End inputs from the
+  row's current LIVE-RESOLVED value (already true of `onStartEditDates`'s existing seeding, since
+  `RouteRow` always renders off `effectiveRoutes`) — so a derived row switched back to Fixed shows
+  its last-resolved date, not blank, satisfying the scoping doc's open question 3 for free, no new
+  code needed for that specific behavior.
+- **Live preview**: while editing, shows the formula's resolved date range against the picked
+  base's current dates (`resolveRelativeDateFormula`, also newly exported from
+  `relativeDateResolution.js`), or a clear "can't resolve yet" message — client-side only, no live
+  fetch, same precedent as the Add-Graph modal's static preview.
+- **Verified**: unit tests (no DB, no browser) covering `buildFormula`/`parseFormula` round-tripping
+  against real corpus formula shapes (`startDate=>day-7day->1day`, `startDate=>yearof`), the
+  duration≠1 case correctly falling back to Advanced instead of being silently mis-curated, and a
+  full simulated save→resolve→edit-base→cascade→un-derive→no-longer-cascades flow against
+  `resolveRouteDates` directly. Not yet click-verified live in the browser this round — flagged for
+  a follow-up interactive pass.
+- **Verify URL:** open any report's `/edit/...` route, expand a route row with at least one other
+  route already on the report, click the date-range pencil, choose "Derived from another route" —
+  pick a base, a Pattern/Span/Direction/amount, confirm the "Resolves to ..." preview updates live,
+  Save, and confirm the row now shows "Derived from {base name}" read-only. Edit the base's own
+  date and confirm the derived row's displayed date moves with it on the next load. Switch back to
+  "Fixed dates" and Save — confirm the row keeps its last-resolved date instead of going blank.
+
 **Not yet done:** Mechanism A (`{recent-N}` wall-clock substitution) — separate follow-up, per
-Ryan's own build-order pick; converting the other 6 Mechanism-B-unblocked candidates
-(`246, 276, 279, 281, 283, 291`) into real pages (this pass built only 278, to prove the mechanism);
-any new authoring UI to CREATE a base/derived relationship from scratch for a brand-new,
-hand-authored Dynamic Report — v1 only surfaces relationships ported from old templates/reports.
+Ryan's own build-order pick, still entirely unbuilt (Python or JS); converting the other 6
+Mechanism-B-unblocked candidates (`246, 276, 279, 281, 283, 291`) into real pages (this pass built
+only 278, to prove the mechanism); a live interactive click-through of the new authoring UI above
+(unit-verified only so far); whether the "Derive From" picker should be restricted to the same
+`route_slot_group` on Dynamic Reports or allowed cross-group (scoping doc's open question 2 — this
+build allows cross-group, the simpler default, unconfirmed against any real report).
 **Ryan flagged separately, worth keeping in mind for later (not investigated this round, explicitly
 deferred):** the "13 of 22 remaining template candidates" count only reflects the curated
 28-candidate template subset — the relative-date gap (either mechanism) very likely also explains
@@ -1782,6 +2001,48 @@ discarding it.
 - **Verify URL:** `http://npmrds.localhost:5173/converted_reports/claude_scratch_dynamic_report_demo?routes=2195805`
   — blocking gate should show a pre-filled chip for the NY-9D route and read "Select 2 more (1/3)".
 
+**View-mode visibility: `hideInView` tried, then reconsidered — self-hiding built instead,
+2026-08-05.** Separate ask, not originally scoped in this doc: RRL should be hidden entirely when a
+page is in real view mode (mirrors the old tool, whose route sidebar never rendered outside
+authoring) — DMS already has a generic `hideInView` section flag for exactly this
+(`sectionMenu.jsx`'s "Hide Component" toggle, checked by `sectionArray.jsx`'s
+`hideSectionCondition`).
+
+- **First attempt: the generic flag, live-verified working for the general case.** Toggled
+  `hideInView` on via Settings → Display on `year_over_year_beginner_0`'s RRL section, Saved,
+  **Published**, then loaded the plain (non-`/edit/`) view route: the sidebar was completely gone,
+  main content reflowed full-width. At `/edit/...` the section still renders (with a "Hidden from
+  View" badge), so an author never loses the ability to re-open and manage it.
+- **Real gotcha found live, specific to Dynamic Reports: `hideInView` also swallows the entry-gate
+  modal.** `hideSectionCondition` filters the *entire* `ReportRouteList` component out of the tree
+  before it mounts — including the blocking `RouteTagBrowserModal` branch a Dynamic Report shows a
+  viewer with no (or a mismatched) `?routes=`. Confirmed live: a Dynamic Report with `hideInView` on
+  and no `?routes=` rendered nothing, forever, with zero UI path to ever pick a route. Fine for a
+  normal report (nothing to pick), a real conflict for a Dynamic Report specifically.
+- **Fix: moved the hide-in-view-mode decision into `ReportRouteList.jsx` itself, no longer uses
+  `hideInView` at all.** The component already reads `editPageMode` (destructured `isEdit`) for
+  everything else; it now also gates its own return value on it — `null` for a real viewer, or just
+  `routeSelectionModal` (the same blocking-gate JSX, now hoisted to a variable so it's not
+  duplicated) when one's still needed. This is strictly better than the flag it replaces: automatic
+  and unconditional (no per-report author toggle to remember, unlike `hideInView`), and the entry
+  gate survives because it's a deliberate exception in the component's own render logic rather than
+  something a generic section-hiding mechanism has to know to special-case. See
+  `ReportRouteList/README.md`'s new "View-mode visibility" section for the architecture write-up and
+  its Gotchas entry: **never set `hideInView` on this component going forward.**
+- **Reverted the demo toggle**: turned `hideInView` back off (Settings → Display → Save → Publish) on
+  `year_over_year_beginner_0` once the component-level fix shipped — leaving it on would have kept
+  filtering the section out of the tree, silently defeating the new self-hiding logic (including its
+  entry-gate exception) for that one page.
+- **Live-verified end-to-end** on `year_over_year_beginner_0`: no `?routes=` → the "Add Routes"
+  blocking modal shows (no sidebar chrome at all around it, confirming the portal-rendered modal
+  doesn't need this component's own wrapper to render correctly); picked a route → sidebar stays
+  fully hidden, graphs render real resolved data, content reflows full-width; `/edit/...` → full
+  panel, unaffected in either state.
+- **Verify URL:** `http://npmrds.localhost:5173/converted_reports/year_over_year_beginner_0` (no
+  `?routes=`) — should show the blocking "Add Routes" picker, no RRL sidebar visible anywhere. Pick
+  one route and confirm: sidebar stays hidden, `ROUTE MAP`/`ROUTE COMPARE`/bar-graph sections render
+  real data for the picked route.
+
 ---
 
 ## Open questions for triage
@@ -1924,3 +2185,11 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
   `knownSectionIds`'s discovery gate fixed 2026-08-03 (trackingId-or-id, not id-only) after a real
   orphan-cleanup race was found live-testing the Add-Graph modal; see item 1's implementation
   record for the full root-cause writeup
+- `src/themes/transportny/components/ReportRouteList/README.md` — "View-mode visibility" and
+  "Expanded route row" sections, added 2026-08-05, document the self-hiding architecture (supersedes
+  any assumption that `hideInView` is used) and the collapsed-subsection redesign
+- `src/dms/packages/dms/src/patterns/page/components/sections/sectionGroup.jsx` — the per-page
+  `sidebarGroup.width` lever prototyped 2026-08-05 (see item 1's redesign section); **stashed
+  locally by Ryan, not committed** — the working tree has no trace of it as of this writing
+- `src/dms/skills/traversing-dms-pages.md` — Settings-menu section now also covers the
+  sidebar-group-specific mispositioned-trigger bug found 2026-08-05 (see item 1's redesign section)

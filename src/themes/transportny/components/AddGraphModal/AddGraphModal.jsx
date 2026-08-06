@@ -4,6 +4,7 @@ import { addGraphModalTheme } from './AddGraphModal.theme';
 import {
   GRAPH_TYPE_OPTIONS,
   MEASURE_OPTIONS,
+  MEASURE_CATEGORIES,
   RESOLUTION_OPTIONS,
   COMPARISON_MODE_OPTIONS,
   DEFAULT_PICK,
@@ -44,11 +45,41 @@ function GridGraphGlyph(props) {
     </svg>
   );
 }
+function TableGlyph(props) {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" {...props}>
+      <rect x="4" y="6" width="32" height="28" rx="1.5" stroke="currentColor" strokeWidth="2" />
+      <line x1="4" y1="16" x2="36" y2="16" stroke="currentColor" strokeWidth="2" opacity="0.7" />
+      <line x1="4" y1="25" x2="36" y2="25" stroke="currentColor" strokeWidth="2" opacity="0.7" />
+      <line x1="17" y1="6" x2="17" y2="34" stroke="currentColor" strokeWidth="2" opacity="0.4" />
+    </svg>
+  );
+}
+function MapGlyph(props) {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" {...props}>
+      <path d="M6 10 L15 6 L25 10 L34 6 V30 L25 34 L15 30 L6 34 Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="15" y1="6" x2="15" y2="30" stroke="currentColor" strokeWidth="2" opacity="0.4" />
+      <line x1="25" y1="10" x2="25" y2="34" stroke="currentColor" strokeWidth="2" opacity="0.4" />
+    </svg>
+  );
+}
 const GRAPH_TYPE_GLYPHS = {
   BarGraph: BarGraphGlyph,
   LineGraph: LineGraphGlyph,
   GridGraph: GridGraphGlyph,
+  Table: TableGlyph,
+  Map: MapGlyph,
 };
+
+// This modal creates a brand-new section, so — unlike the shared chart-only
+// GRAPH_TYPE_OPTIONS (also used by the older in-place edit-bar surface, which re-composes an
+// already-created AVL Graph section and has no business offering "Table"/"Map" as a display
+// type) — it can offer Table/Map as real, distinct shapes to create. Map is included but
+// disabled: its compose path doesn't exist yet (see useAddGraphSection.js's note), so selecting
+// it would silently do nothing; better to show the roadmap than hide it.
+const SHAPE_OPTIONS = [...GRAPH_TYPE_OPTIONS, { value: 'Table', label: 'Table' }, { value: 'Map', label: 'Map' }];
+const DISABLED_SHAPES = { Map: "Map graphs aren't built yet." };
 
 // Guided "add a graph" flow — collapses the old two-step author path (+Add Component -> blank
 // AVL Graph -> open sectionMenu -> Measure Picker -> configure) into one modal. This component
@@ -65,11 +96,13 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
   const [pick, setPick] = useState(DEFAULT_PICK);
   const [selectedRouteIds, setSelectedRouteIds] = useState(new Set());
 
-  // Reset on open — a stale pick/selection from a previous open shouldn't persist across
-  // unrelated add-graph sessions (same convention as RouteTagBrowserModal).
+  // Route selection resets on open — a stale selection from a previous, unrelated add-graph
+  // session shouldn't carry over (same convention as RouteTagBrowserModal). `pick` deliberately
+  // does NOT reset: an author picking the same shape/measure for graph after graph is the common
+  // case, and re-defaulting to Line/Travel Time/Hour every single open just made them re-pick it
+  // every time.
   useEffect(() => {
     if (!open) return;
-    setPick(DEFAULT_PICK);
     setSelectedRouteIds(new Set());
   }, [open]);
 
@@ -105,7 +138,7 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
   const resolutionLabel = RESOLUTION_OPTIONS.find((o) => o.value === pick.resolution)?.label || pick.resolution;
   const comparisonLabel = COMPARISON_MODE_OPTIONS.find((o) => o.value === pick.comparisonMode)?.label || pick.comparisonMode;
 
-  const canConfirm = selectedRouteIds.size >= 1;
+  const canConfirm = selectedRouteIds.size >= 1 && !DISABLED_SHAPES[pick.graphType];
 
   const handleConfirm = () => {
     onConfirm?.({ pick, selectedRouteIds: Array.from(selectedRouteIds) });
@@ -145,14 +178,45 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
 
           <div>
             <div className={t.sectionLabel}>What to show</div>
+            <div className={t.shapeCardGrid}>
+              {SHAPE_OPTIONS.map((o) => {
+                const ShapeGlyph = GRAPH_TYPE_GLYPHS[o.value] || BarGraphGlyph;
+                const disabledReason = DISABLED_SHAPES[o.value];
+                return (
+                  <button
+                    key={o.value}
+                    type="button"
+                    className={pick.graphType === o.value ? t.shapeCardSelected : t.shapeCard}
+                    disabled={!!disabledReason}
+                    title={disabledReason}
+                    onClick={() => setPick((p) => ({ ...p, graphType: o.value }))}
+                  >
+                    <ShapeGlyph className={t.shapeCardGlyph} />
+                    <span className={t.shapeCardLabel}>{o.label}</span>
+                  </button>
+                );
+              })}
+            </div>
             <div className={t.pickerGrid}>
               <div className={t.pickerField}>
-                <label className={t.pickerLabel}>Graph Type</label>
-                <Select options={GRAPH_TYPE_OPTIONS} value={pick.graphType} onChange={(v) => setPick((p) => ({ ...p, graphType: v }))} />
-              </div>
-              <div className={t.pickerField}>
                 <label className={t.pickerLabel}>Measure</label>
-                <Select options={MEASURE_OPTIONS} value={pick.measure} onChange={(v) => setPick((p) => ({ ...p, measure: v }))} />
+                {/* Native <select>/<optgroup> — the shared Select/MultiSelect primitive has no
+                    grouped-option support, and adding one there is a bigger, separate change
+                    than this one field needs. */}
+                <select
+                  className={t.measureNativeSelect}
+                  value={pick.measure}
+                  onChange={(e) => setPick((p) => ({ ...p, measure: e.target.value }))}
+                >
+                  {MEASURE_CATEGORIES.map((cat) => (
+                    <optgroup key={cat.label} label={cat.label}>
+                      {cat.measures.map((m) => {
+                        const opt = MEASURE_OPTIONS.find((o) => o.value === m);
+                        return opt ? <option key={m} value={m}>{opt.label}</option> : null;
+                      })}
+                    </optgroup>
+                  ))}
+                </select>
               </div>
               <div className={t.pickerField}>
                 <label className={t.pickerLabel}>Resolution</label>
@@ -177,7 +241,7 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
             <div className={t.preview}>
               <Glyph className={t.previewGlyph} />
               <div className={t.previewTextWrap}>
-                <div className={t.previewTitle}>{measureLabel} — {GRAPH_TYPE_OPTIONS.find((o) => o.value === pick.graphType)?.label}</div>
+                <div className={t.previewTitle}>{measureLabel} — {SHAPE_OPTIONS.find((o) => o.value === pick.graphType)?.label}</div>
                 <div className={t.previewDescription}>{MEASURE_DESCRIPTIONS[pick.measure]}</div>
                 <div className={t.previewDescription}>{GRAPH_TYPE_DESCRIPTIONS[pick.graphType]}</div>
                 <div className={t.previewSummary}>
