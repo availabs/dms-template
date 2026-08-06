@@ -1,62 +1,11 @@
 import { useEffect, useMemo } from 'react';
 import { isEqual } from 'lodash-es';
 import { SELF_PARAM_KEY_SENTINEL, selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
+import { generateDateRange, generateEpochRange } from './utils';
 
 function transformReportRoutes(routes) {
   if (!routes || routes.length < 1) {
     return;
-  }
-  // Helper function to handle YYYY-MM-DD or YYYY-MM-DDTHH:mm strings safely
-  function parseYMD(dateStr) {
-    if (dateStr.includes('T')) {
-      return new Date(dateStr);
-    }
-    const [year, month, day] = dateStr.split('-');
-    // Month is 0-indexed in JS Dates (0 = January)
-    return new Date(year, month - 1, day);
-  }
-
-  const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-  // Helper function to generate an array of 'YYYY-MM-DD' dates. `weekdays` is an
-  // optional per-route mask ({monday: true, ..., sunday: false}) — only an explicit
-  // `false` excludes a day, so routes without the field keep every day (the shape
-  // converted old reports carry; see scripts/npmrds-reports/convert_old_reports.py). The date
-  // filter is already a literal IN-list, so day-of-week exclusion needs no new
-  // filter op — masked days are simply never enumerated.
-  function generateDateRange(startStr, endStr, weekdays) {
-    const startDate = parseYMD(startStr);
-    const endDate = parseYMD(endStr);
-    const dates = [];
-
-    // Loop day-by-day from start to end
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      if (weekdays && weekdays[DAY_NAMES[d.getDay()]] === false) continue;
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      dates.push(`${year}-${month}-${day}`);
-    }
-    return dates;
-  }
-
-  function timeToEpoch(timeStr) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 12 + Math.floor(minutes / 5);
-  }
-
-  function generateEpochRange(startStr, endStr) {
-    const startTime = startStr.includes('T') ? startStr.split('T')[1] : startStr;
-    const endTime = endStr.includes('T') ? endStr.split('T')[1] : endStr;
-
-    const startEpoch = timeToEpoch(startTime);
-    const endEpoch = timeToEpoch(endTime);
-
-    const epochs = [];
-    for (let e = startEpoch; e <= endEpoch; e++) {
-      epochs.push(e);
-    }
-    return epochs;
   }
 
   return routes

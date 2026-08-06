@@ -1,5 +1,15 @@
 import { useCallback, useRef, useState } from 'react';
-import { parseTmcArray } from './utils';
+import {
+  parseTmcArray,
+  generateDateRange,
+  getDateValue,
+  formatDateShort,
+  DOW_DEFS,
+  WEEKDAY_KEYS,
+  WEEKEND_KEYS,
+  isDayOn,
+  summarizeWeekdays,
+} from './utils';
 import { ROUTE_COLOR_PALETTE } from './useReportRow';
 import { resolveRelativeDateFormula } from './relativeDateResolution';
 import {
@@ -12,9 +22,6 @@ import {
   isValidFormula,
 } from './relativeDatePresets';
 
-const TMC_PREVIEW_COUNT = 6;
-
-const getDateValue = (val) => (val || '').split('T')[0];
 const getTimeValue = (val) => (val || '').split('T')[1] || '';
 const onDateChange = (e, currentValue, setter) => {
   const time = currentValue?.split('T')[1] || '';
@@ -23,14 +30,6 @@ const onDateChange = (e, currentValue, setter) => {
 const onTimeChange = (e, currentValue, setter) => {
   const date = currentValue?.split('T')[0] || '';
   setter(e.target.value ? `${date}T${e.target.value}` : date);
-};
-// Plain string slicing rather than `new Date(...)` — these are naive "YYYY-MM-DD"
-// values with no timezone, and a Date object would silently shift them a day near
-// midnight in whatever TZ the browser runs in.
-const formatDateShort = (val) => {
-  const d = getDateValue(val);
-  const [y, m, day] = d.split('-');
-  return (y && m && day) ? `${Number(m)}/${Number(day)}/${y}` : (d || null);
 };
 
 // Time-of-day presets an author can apply in one click instead of typing "HH:mm"
@@ -50,51 +49,20 @@ const PEAK_PRESETS = [
   { label: 'All Day', startTime: '', endTime: '' },
 ];
 
-// Same day-key ordering/semantics as useGraphPublish.js's DAY_NAMES: only an
-// explicit `false` excludes a day, an absent key means included.
-const DOW_DEFS = [
-  { key: 'sunday', label: 'Su' },
-  { key: 'monday', label: 'Mo' },
-  { key: 'tuesday', label: 'Tu' },
-  { key: 'wednesday', label: 'We' },
-  { key: 'thursday', label: 'Th' },
-  { key: 'friday', label: 'Fr' },
-  { key: 'saturday', label: 'Sa' },
-];
-const WEEKDAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const WEEKEND_KEYS = ['sunday', 'saturday'];
-const isDayOn = (weekdays, key) => weekdays?.[key] !== false;
-
-// Renders as null (no summary line) when the mask has no exclusions, so an
-// unrestricted route's date range block looks exactly as it did before this
-// control existed.
-function summarizeWeekdays(weekdays) {
-  const offLabels = DOW_DEFS.filter(({ key }) => weekdays?.[key] === false).map((d) => d.label);
-  if (offLabels.length === 0) return null;
-  const onKeys = DOW_DEFS.filter(({ key }) => isDayOn(weekdays, key)).map((d) => d.key);
-  if (onKeys.length === WEEKDAY_KEYS.length && WEEKDAY_KEYS.every((k) => onKeys.includes(k))) return 'Weekdays only';
-  if (onKeys.length === WEEKEND_KEYS.length && WEEKEND_KEYS.every((k) => onKeys.includes(k))) return 'Weekends only';
-  return `Excludes ${offLabels.join(', ')}`;
-}
-
-// One route's row: expand/collapse, name/date inline editing, TMC list, per-graph
-// assignment chips, remove. Purely presentational — every mutation is a callback
-// prop into the parent's `useReportRow`/`useGraphPublish`-backed handlers; this
-// component owns no persistence logic and no "which row is being edited" state
-// (that stays in the parent, since only one row can be in name/date edit mode at a
-// time across the whole list). It DOES own a handful of purely-local disclosure
-// toggles (TMC list, date detail, dependents list, color picker, overflow menu) —
-// none of that is meaningful outside this one row's own render, so it never needed
-// to live in the parent.
+// One route's row: expand/collapse, name/date inline editing, per-graph assignment
+// chips, remove. Purely presentational — every mutation is a callback prop into the
+// parent's `useReportRow`/`useGraphPublish`-backed handlers; this component owns no
+// persistence logic and no "which row is being edited" state (that stays in the
+// parent, since only one row can be in name/date edit mode at a time across the
+// whole list). It DOES own a handful of purely-local disclosure toggles (dependents
+// list, overflow menu) — none of that is meaningful outside this one row's own
+// render, so it never needed to live in the parent.
 export default function RouteRow({
   route,
   theme: t,
-  Button,
-  Input,
-  Select,
-  Switch,
   Icon,
   ColorPicker,
+  Popup,
   onChangeColor,
   isEdit,
   saving,
@@ -125,6 +93,9 @@ export default function RouteRow({
   onStartEditDates,
   onSaveEditDates,
   onCancelEditDates,
+  onCopyWindow,
+  onPasteWindow,
+  clipboard,
   graphs,
   onToggleGraph,
   canMoveUp,
@@ -133,14 +104,7 @@ export default function RouteRow({
   onReorderDown,
   onRemove,
 }) {
-  const [showAllTmcs, setShowAllTmcs] = useState(false);
-  // At-rest disclosures — collapsed by default so an expanded row reads as a scan of
-  // one-line summaries, not a wall of always-open controls. None of these affect
-  // ACTIVE editing (isEditingDates true always shows full controls regardless).
-  const [dateDetailsOpen, setDateDetailsOpen] = useState(false);
   const [depsOpen, setDepsOpen] = useState(false);
-  const [colorOpen, setColorOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // ColorPicker's own effect fires onChange whenever onChange's IDENTITY changes
   // (not just when the picked color changes) — see Colorpicker.jsx's
@@ -155,7 +119,7 @@ export default function RouteRow({
   const stableOnChangeColor = useCallback((c) => onChangeColorRef.current?.(c), []);
 
   // Presets only touch the time-of-day portion, keeping whatever date is already
-  // picked — same combined "YYYY-MM-DDTHH:mm" shape the raw time <Input>s write via
+  // picked — same combined "YYYY-MM-DDTHH:mm" shape the raw time <input>s write via
   // onTimeChange above. Requires both dates set first (buttons disabled otherwise)
   // rather than writing a dateless "THH:mm" string.
   const canApplyPreset = !!getDateValue(editStartDateValue) && !!getDateValue(editEndDateValue);
@@ -172,6 +136,45 @@ export default function RouteRow({
     DOW_DEFS.forEach(({ key }) => { next[key] = onKeys.includes(key); });
     onEditWeekdaysValueChange(next);
   };
+
+  // "N of M days" — the count the engine will actually enumerate (weekday mask
+  // applied) out of the calendar span, using the exact same day-loop as
+  // useGraphPublish.js's real query-building path (generateDateRange), not a
+  // separate diff calculation that could drift from it.
+  const enumeratedDayCount = (() => {
+    const start = getDateValue(editStartDateValue);
+    const end = getDateValue(editEndDateValue);
+    if (!start || !end) return null;
+    const total = generateDateRange(start, end, null).length;
+    const masked = generateDateRange(start, end, editWeekdaysValue).length;
+    return { masked, total };
+  })();
+
+  // Moves both dates by exactly one year, preserving the span's length and any
+  // time-of-day already set — plain string year substitution (not a Date object)
+  // so it never silently rolls Feb 29 into Mar 1 in a non-leap target year.
+  const shiftYear = (delta) => {
+    const shiftOne = (val) => {
+      if (!val) return val;
+      const [datePart, timePart] = val.split('T');
+      const [y, m, d] = datePart.split('-');
+      const shifted = `${Number(y) + delta}-${m}-${d}`;
+      return timePart ? `${shifted}T${timePart}` : shifted;
+    };
+    onEditStartDateValueChange(shiftOne(editStartDateValue));
+    onEditEndDateValueChange(shiftOne(editEndDateValue));
+  };
+
+  // "AM Peak" alone doesn't say what hours it means — print them on the pill
+  // itself rather than leaving it to a hover title.
+  const formatHour = (hhmm) => {
+    if (!hhmm) return null;
+    const [h] = hhmm.split(':').map(Number);
+    return h;
+  };
+  const presetHoursLabel = (preset) => (preset.startTime && preset.endTime)
+    ? `${formatHour(preset.startTime)}–${formatHour(preset.endTime)}`
+    : null;
 
   const r = route;
   // Mechanism B (relativeDate/isRelativeDateBase, see relativeDateResolution.js) — a row's
@@ -195,360 +198,414 @@ export default function RouteRow({
   const derivePreview = derivePreviewBase
     ? resolveRelativeDateFormula(editDeriveFormulaValue, derivePreviewBase.startDate, derivePreviewBase.endDate)
     : null;
-  const tmcArray = parseTmcArray(r.tmc_array);
+  const tmcCount = parseTmcArray(r.tmc_array).length;
   const isUnassigned = graphs.length > 0 && !(r.graphIds || []).length;
-  const visibleTmcs = showAllTmcs ? tmcArray : tmcArray.slice(0, TMC_PREVIEW_COUNT);
-  const hiddenTmcCount = tmcArray.length - visibleTmcs.length;
 
-  // One-line stand-in for what used to be a paragraph of italic prose — the range,
-  // then (mutually exclusive) either the derive relationship or the weekday mask.
-  const dateSummaryText = [
+  // One-line meta ("9 TMC · 2025-01-06 → 2025-02-28") — the count/range the engine
+  // will really enumerate, not four disabled inputs' worth of the same information.
+  const metaText = [
+    `${tmcCount} TMC${tmcCount === 1 ? '' : 's'}`,
     (formatDateShort(r.startDate) || formatDateShort(r.endDate))
-      ? `${formatDateShort(r.startDate) || '?'} – ${formatDateShort(r.endDate) || '?'}`
+      ? `${formatDateShort(r.startDate) || '?'} → ${formatDateShort(r.endDate) || '?'}`
       : 'No dates set',
-    isDerivedDate ? `Derived from ${derivedFromRouteName || 'another route'}` : summarizeWeekdays(r.weekdays),
-  ].filter(Boolean).join(' · ');
+  ].join(' · ');
 
   const assignedGraphs = graphs.filter((g) => (r.graphIds || []).includes(g.sectionId));
-  const unassignedGraphs = graphs.filter((g) => !(r.graphIds || []).includes(g.sectionId));
+  const canMutateRow = isEdit;
+
+  const rowClass = isEditingName ? t.rowRenaming : (isExpanded ? t.rowOpen : t.row);
+
+  if (isEditingName) {
+    return (
+      <div className={rowClass} data-row={r.route_comp_id}>
+        <div className={t.editContainer}>
+          <span className={t.colorDot} style={{ backgroundColor: r.color }} />
+          <input
+            autoFocus
+            value={editNameValue}
+            onChange={(e) => onEditNameValueChange(e.target.value)}
+            className={t.renameInput}
+          />
+          <button type="button" className={t.saveBtn} title="Save" onClick={onSaveEditName}>
+            <Icon icon="FloppyDisk" />
+          </button>
+          <button type="button" className={t.cancelBtn} title="Cancel" onClick={onCancelEditName}>
+            <Icon icon="CancelCircle" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={t.row}>
-      <div className={t.rowContainer}>
-        <div className={t.rowHeader}>
-          <div className={t.iconContainer}>
-            <Button disabled={isEditingName} themeOptions={{ size: "xs" }} onClick={onToggleExpand}>
-              {isExpanded ? '-' : '+'}
-            </Button>
-            {isEditingName ? (
-              <div className={t.editContainer}>
-                <div className={t.editInputWrapper}>
-                  <Input value={editNameValue} onChange={(e) => onEditNameValueChange(e.target.value)} />
+    <div className={rowClass} data-row={r.route_comp_id}>
+      <div className={t.rowHeaderWrapper}>
+        {canMutateRow && (
+          <span className={t.reorderButtons}>
+            <button type="button" className={t.reorderBtn} disabled={!canMoveUp || saving} onClick={onReorderUp} title="Move up">
+              <Icon icon="CaretUp" />
+            </button>
+            <button type="button" className={t.reorderBtn} disabled={!canMoveDown || saving} onClick={onReorderDown} title="Move down">
+              <Icon icon="CaretDown" />
+            </button>
+          </span>
+        )}
+        <button type="button" className={isExpanded ? t.expanderOpen : t.expander} onClick={onToggleExpand} title={isExpanded ? 'Collapse' : 'Expand'}>
+          {isExpanded ? '−' : '+'}
+        </button>
+        {canMutateRow && ColorPicker && Popup ? (
+          <Popup
+            button={<button type="button" className={t.colorDotButton} style={{ backgroundColor: r.color }} title={`Identity colour ${r.color} — click to change`} />}
+            preferredPosition="bottom"
+          >
+            {() => (
+              <div className={t.colorPopoverBody}>
+                <div className={t.colorPopoverHead}>
+                  <span className={t.colorPopoverLabel}>identity colour</span>
+                  <span className={t.colorPopoverHex}>{r.color}</span>
                 </div>
-                <Button themeOptions={{ size: "xs" }} title="save" onClick={onSaveEditName}>
-                  <Icon icon={"FloppyDisk"} />
-                </Button>
-                <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={onCancelEditName}>
-                  <Icon icon={"CancelCircle"} />
-                </Button>
-              </div>
-            ) : (
-              <div className={t.editContainer}>
-                {r.color && <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />}
-                <div className={t.routeTitle} title={r.name}>{r.name}</div>
-                {isUnassigned && <span className={t.unassignedBadge}>Unassigned</span>}
+                <div className={t.colorSwatchGrid}>
+                  {ROUTE_COLOR_PALETTE.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={c.toLowerCase() === (r.color || '').toLowerCase() ? t.colorSwatchActive : t.colorSwatch}
+                      style={{ backgroundColor: c }}
+                      title={c}
+                      onClick={() => stableOnChangeColor(c)}
+                    />
+                  ))}
+                </div>
+                <div className={t.colorPopoverFooter}>Used by every graph this route feeds, so a reader learns the key once.</div>
               </div>
             )}
-          </div>
-          {isEdit && (
-            <div className={t.reorderButtons}>
-              <Button themeOptions={{ size: "xs" }} disabled={!canMoveUp || saving} onClick={onReorderUp}>
-                <Icon icon={'ChevronUp'} />
-              </Button>
-              <Button themeOptions={{ size: "xs" }} disabled={!canMoveDown || saving} onClick={onReorderDown}>
-                <Icon icon={'ChevronDown'} />
-              </Button>
-              <div
-                className={t.kebabWrapper}
-                onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setMenuOpen(false); }}
-              >
-                <Button themeOptions={{ size: "xs" }} title="More actions" onClick={() => setMenuOpen((o) => !o)}>
-                  <Icon icon={'EllipsisVertical'} />
-                </Button>
-                {menuOpen && (
-                  <div className={t.kebabMenu}>
-                    <button
-                      type="button"
-                      className={t.kebabMenuItem}
-                      onClick={() => { setMenuOpen(false); onStartEditName(); }}
-                    >
-                      <Icon icon="PencilSquare" /> Rename
-                    </button>
-                    <button
-                      type="button"
-                      className={t.kebabMenuItemDanger}
-                      disabled={saving}
-                      onClick={() => { setMenuOpen(false); onRemove(); }}
-                    >
-                      <Icon icon="Trash" /> Remove from report
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+          </Popup>
+        ) : (
+          <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />
+        )}
+        <div className={t.iconContainer}>
+          <span className={t.routeTitle} title={r.name}>{r.name}</span>
+          {isUnassigned && <span className={t.unassignedBadge}>unused</span>}
+          {canMutateRow && (
+            <>
+              <button type="button" className={t.iconBtn} title="Edit name" onClick={onStartEditName}>
+                <Icon icon="PencilSquare" />
+              </button>
+              <button type="button" className={t.dangerBtn} title="Remove route from report" onClick={onRemove} disabled={saving}>
+                <Icon icon="Trash" />
+              </button>
+            </>
           )}
         </div>
-        {isExpanded && (
-          <div className={t.expandedContainer}>
-            {tmcArray.length > 0 && (
-              <div className={t.tmcWrapper}>
-                <div className={t.tmcLabel}>TMCs ({tmcArray.length}):</div>
-                <div className={t.tmcList}>
-                  {visibleTmcs.join(", ")}
-                  {hiddenTmcCount > 0 && (
-                    <span className={t.tmcMoreToggle} onClick={() => setShowAllTmcs(true)}>+{hiddenTmcCount} more</span>
-                  )}
-                  {showAllTmcs && tmcArray.length > TMC_PREVIEW_COUNT && (
-                    <span className={t.tmcMoreToggle} onClick={() => setShowAllTmcs(false)}>show less</span>
-                  )}
-                </div>
-              </div>
-            )}
-            <div className={t.dateInputsContainer}>
-              <div className={t.rowHeaderWrapper}>
-                <div className={t.dateRangeLabel}>Date Range</div>
-                {isEditingDates ? (
-                  <div className={t.editContainer}>
-                    <Button
-                      themeOptions={{ size: "xs" }}
-                      title="save"
-                      disabled={editDateMode === 'derived' && (!editDeriveFromValue || !isValidFormula(editDeriveFormulaValue))}
-                      onClick={onSaveEditDates}
-                    >
-                      <Icon icon={"FloppyDisk"} />
-                    </Button>
-                    <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={onCancelEditDates}>
-                      <Icon icon={"CancelCircle"} />
-                    </Button>
-                  </div>
-                ) : isEdit ? (
-                  <Button themeOptions={{ size: "xs" }} title="Edit Dates" onClick={onStartEditDates}>
-                    <Icon icon={'PencilSquare'} />
-                  </Button>
-                ) : null}
-              </div>
+      </div>
 
-              {/* Collapsed by default — one line, click to see the full range/weekday
-                  detail. Not shown while actively editing; the controls below already
-                  make that state obvious. */}
-              {!isEditingDates && (
-                <button type="button" className={t.dateSummaryRow} onClick={() => setDateDetailsOpen((o) => !o)}>
-                  <span className={t.dateSummaryText}>{dateSummaryText}</span>
-                  <Icon icon={dateDetailsOpen ? 'ChevronUp' : 'ChevronDown'} className={t.sectionToggleChevron} />
-                </button>
-              )}
+      <div className={`${t.metaIndent} ${t.meta}`}>{metaText}</div>
 
-              {isEditingDates && (
-                <div className={t.dateModeWrapper}>
-                  <Switch
-                    enabled={editDateMode === 'derived'}
-                    setEnabled={(v) => (v ? startDeriveMode() : onEditDateModeChange('fixed'))}
-                    label="Derive dates from another route"
-                    size="small"
-                    disabled={editDateMode !== 'derived' && eligibleBases.length === 0}
-                  />
-                  <span
-                    className={t.dateModeLabel}
-                    title={editDateMode !== 'derived' && eligibleBases.length === 0
-                      ? "No other route is eligible to derive from yet (add another route, or note that an already-derived route can't itself be a base)"
-                      : undefined}
-                  >
-                    {editDateMode === 'derived' ? 'Derived from another route' : 'Fixed dates'}
-                  </span>
-                </div>
-              )}
+      {!isExpanded && (
+        <div className={`${t.metaIndent} ${t.chipsWrapper}`}>
+          {graphs.length === 0 ? null : isUnassigned ? (
+            <span className={t.notOnAnyGraph}>Not on any graph yet.</span>
+          ) : (
+            <>
+              <span className={t.chipsLabel}>on</span>
+              {assignedGraphs.map((g) => (
+                <span key={g.sectionId} className={t.chipOffRead}>{g.label.toLowerCase()}</span>
+              ))}
+            </>
+          )}
+        </div>
+      )}
 
-              {isEditingDates && editDateMode === 'derived' ? (
-                <div className={t.deriveControlsWrapper}>
-                  <div className={t.dateInputWrapper}>
-                    <label className={t.dateLabel}>Derive From:</label>
-                    <Select
-                      options={eligibleBases.map((s) => ({ value: s.route_comp_id, label: s.name }))}
-                      value={editDeriveFromValue || ''}
-                      onChange={onEditDeriveFromValueChange}
-                    />
-                  </div>
-                  <div className={t.dateInputWrapper}>
-                    <label className={t.dateLabel}>Pattern:</label>
-                    <Select
-                      options={PATTERN_OPTIONS}
-                      value={derivePreset.pattern}
-                      onChange={(v) => setDerivePresetField({ pattern: v })}
-                    />
-                  </div>
-                  {derivePreset.pattern !== 'advanced' && (
-                    <div className={t.dateInputWrapper}>
-                      <label className={t.dateLabel}>Span:</label>
-                      <Select options={SPAN_OPTIONS} value={derivePreset.span} onChange={(v) => setDerivePresetField({ span: v })} />
-                    </div>
-                  )}
-                  {derivePreset.pattern === 'offset' && (
-                    <div className={t.dateInputWrapper}>
-                      <label className={t.dateLabel}>Direction:</label>
-                      <Select
-                        options={DIRECTION_OPTIONS}
-                        value={derivePreset.direction}
-                        onChange={(v) => setDerivePresetField({ direction: v })}
-                      />
-                    </div>
-                  )}
-                  {derivePreset.pattern === 'offset' && (
-                    <div className={t.dateInputWrapper}>
-                      <label className={t.dateLabel}>How many:</label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={derivePreset.amount}
-                        onChange={(e) => setDerivePresetField({ amount: e.target.value })}
-                      />
-                    </div>
-                  )}
-                  {derivePreset.pattern === 'advanced' && (
-                    <div className={t.dateInputWrapper}>
-                      <label className={t.dateLabel}>Formula:</label>
-                      <Input
-                        value={editDeriveFormulaValue || ''}
-                        onChange={(e) => onEditDeriveFormulaValueChange(e.target.value)}
-                      />
-                    </div>
-                  )}
-                  {!editDeriveFromValue ? (
-                    <div className={t.dowSummary}>Pick a route to derive from.</div>
-                  ) : !isValidFormula(editDeriveFormulaValue) ? (
-                    <div className={t.deriveFormulaError}>Not a recognized date formula.</div>
-                  ) : derivePreview ? (
-                    <div className={t.dowSummary}>
-                      Resolves to {derivePreview.start} → {derivePreview.end} (based on {derivePreviewBase?.name}'s current dates)
-                    </div>
+      {isExpanded && (
+        <div className={t.expandedContainer}>
+          {/* ── WINDOW: three facets in the engine's own order — dates (which days) →
+              days (which of those count) → time of day (which hours of each). ── */}
+          <div>
+            <div className={t.windowHead}>
+              <div className={t.facetLabel}>window</div>
+              {canMutateRow && !isDerivedDate && (
+                <div className={t.windowActionsRow}>
+                  {isEditingDates ? (
+                    <>
+                      <button
+                        type="button"
+                        className={t.saveBtn}
+                        title="Save window"
+                        disabled={editDateMode === 'derived' && (!editDeriveFromValue || !isValidFormula(editDeriveFormulaValue))}
+                        onClick={onSaveEditDates}
+                      >
+                        <Icon icon="FloppyDisk" />
+                      </button>
+                      <button type="button" className={t.cancelBtn} title="Cancel" onClick={onCancelEditDates}>
+                        <Icon icon="CancelCircle" />
+                      </button>
+                    </>
                   ) : (
-                    <div className={t.deriveFormulaError}>Can't resolve yet — {derivePreviewBase?.name} needs its own dates set first.</div>
+                    <>
+                      <button type="button" className={t.iconBtn} title="Copy this window" onClick={onCopyWindow}>
+                        <Icon icon="Copy" />
+                      </button>
+                      <button
+                        type="button"
+                        className={t.iconBtn}
+                        title={clipboard && clipboard.from !== r.route_comp_id ? `Paste the window copied from ${clipboard.fromName}` : 'Copy a window from another route first'}
+                        disabled={!clipboard || clipboard.from === r.route_comp_id}
+                        onClick={onPasteWindow}
+                      >
+                        <Icon icon="Paste" />
+                      </button>
+                      <button type="button" className={t.iconBtn} title="Edit window" onClick={onStartEditDates}>
+                        <Icon icon="PencilSquare" />
+                      </button>
+                    </>
                   )}
                 </div>
-              ) : (isEditingDates || dateDetailsOpen) ? (
-                <>
-                  <div className={t.dateInputWrapper}>
-                    <label className={t.dateLabel}>Start Date:</label>
-                    <div className={t.dateInputFlex}>
-                      <Input type="date" value={getDateValue(isEditingDates ? editStartDateValue : r.startDate)} disabled={!isEditingDates} onChange={(e) => onDateChange(e, isEditingDates ? editStartDateValue : r.startDate || '', onEditStartDateValueChange)} />
-                      <Input type="time" value={getTimeValue(isEditingDates ? editStartDateValue : r.startDate)} disabled={!isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editStartDateValue : r.startDate || '', onEditStartDateValueChange)} />
+              )}
+              {isDerivedDate && canMutateRow && <span className={t.facetLabel}>derived</span>}
+            </div>
+
+            {isDerivedDate && !isEditingDates && (
+              <div className={t.derivedNote}>Derived from {derivedFromRouteName || 'another route'} — edit that route's window instead.</div>
+            )}
+
+            {!isEditingDates ? (
+              (() => {
+                const rows = [
+                  ['dates', formatDateShort(r.startDate) ? `${formatDateShort(r.startDate)} → ${formatDateShort(r.endDate)}` : 'No dates set',
+                    enumeratedDayCountFor(r) ? `${enumeratedDayCountFor(r).masked} of ${enumeratedDayCountFor(r).total} days` : null],
+                  ['days', summarizeWeekdays(r.weekdays) || 'All days', null],
+                  ['time', timeOfDayLabel(r), getTimeValue(r.startDate) && getTimeValue(r.endDate) ? 'each day' : 'no filter'],
+                ];
+                const opener = canMutateRow && !isDerivedDate;
+                return (
+                  <div
+                    className={opener ? t.windowReadWrapperOpener : t.windowReadWrapper}
+                    onClick={opener ? onStartEditDates : undefined}
+                    title={opener ? 'Edit this window' : undefined}
+                  >
+                    {rows.map(([label, value, sub]) => (
+                      <div key={label} className={t.windowReadRow}>
+                        <span className={t.windowReadRowLabel}>{label}</span>
+                        <span className={t.windowReadRowValue}>{value}{sub ? <span className={t.windowReadRowSub}> · {sub}</span> : null}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()
+            ) : editDateMode === 'derived' ? (
+              <div className={t.deriveControlsWrapper}>
+                <div className={t.dateModeWrapper}>
+                  <label className={t.dateModeLabel}>Derive From:</label>
+                  <select className={t.dateFieldInput} value={editDeriveFromValue || ''} onChange={(e) => onEditDeriveFromValueChange(e.target.value)}>
+                    <option value="" disabled>Pick a route…</option>
+                    {eligibleBases.map((s) => <option key={s.route_comp_id} value={s.route_comp_id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className={t.dateModeWrapper}>
+                  <label className={t.dateModeLabel}>Pattern:</label>
+                  <select className={t.dateFieldInput} value={derivePreset.pattern} onChange={(e) => setDerivePresetField({ pattern: e.target.value })}>
+                    {PATTERN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                {derivePreset.pattern !== 'advanced' && (
+                  <div className={t.dateModeWrapper}>
+                    <label className={t.dateModeLabel}>Span:</label>
+                    <select className={t.dateFieldInput} value={derivePreset.span} onChange={(e) => setDerivePresetField({ span: e.target.value })}>
+                      {SPAN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                )}
+                {derivePreset.pattern === 'offset' && (
+                  <div className={t.dateModeWrapper}>
+                    <label className={t.dateModeLabel}>Direction:</label>
+                    <select className={t.dateFieldInput} value={derivePreset.direction} onChange={(e) => setDerivePresetField({ direction: e.target.value })}>
+                      {DIRECTION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                )}
+                {derivePreset.pattern === 'offset' && (
+                  <div className={t.dateModeWrapper}>
+                    <label className={t.dateModeLabel}>How many:</label>
+                    <input type="number" min="0" className={t.dateFieldInput} value={derivePreset.amount} onChange={(e) => setDerivePresetField({ amount: e.target.value })} />
+                  </div>
+                )}
+                {derivePreset.pattern === 'advanced' && (
+                  <div className={t.dateModeWrapper}>
+                    <label className={t.dateModeLabel}>Formula:</label>
+                    <input className={t.dateFieldInput} value={editDeriveFormulaValue || ''} onChange={(e) => onEditDeriveFormulaValueChange(e.target.value)} />
+                  </div>
+                )}
+                {!editDeriveFromValue ? (
+                  <div className={t.dowSummary}>Pick a route to derive from.</div>
+                ) : !isValidFormula(editDeriveFormulaValue) ? (
+                  <div className={t.deriveFormulaError}>Not a recognized date formula.</div>
+                ) : derivePreview ? (
+                  <div className={t.dowSummary}>Resolves to {derivePreview.start} → {derivePreview.end} (based on {derivePreviewBase?.name}'s current dates)</div>
+                ) : (
+                  <div className={t.deriveFormulaError}>Can't resolve yet — {derivePreviewBase?.name} needs its own dates set first.</div>
+                )}
+                <button type="button" className={t.pill} onClick={() => onEditDateModeChange('fixed')}>Use fixed dates instead</button>
+              </div>
+            ) : (
+              <>
+                {/* 1 · DATES */}
+                <div className={t.facetBlockFirst}>
+                  <div className={t.facetHeadRow}>
+                    <span className={t.facetLabel}>dates</span>
+                    <span className={t.facetHeadHint}>which days</span>
+                    {enumeratedDayCount && <span className={t.facetHeadCount}>{enumeratedDayCount.masked} of {enumeratedDayCount.total} days</span>}
+                  </div>
+                  <div className={t.dateFieldRow}>
+                    <div className={t.dateFieldWrapper}>
+                      <label className={t.dateFieldLabel}>From</label>
+                      <input type="date" className={t.dateFieldInput} value={getDateValue(editStartDateValue)} onChange={(e) => onDateChange(e, editStartDateValue, onEditStartDateValueChange)} />
+                    </div>
+                    <span className={t.dateFieldArrow}>→</span>
+                    <div className={t.dateFieldWrapper}>
+                      <label className={t.dateFieldLabel}>To</label>
+                      <input type="date" className={t.dateFieldInput} value={getDateValue(editEndDateValue)} onChange={(e) => onDateChange(e, editEndDateValue, onEditEndDateValueChange)} />
                     </div>
                   </div>
-                  <div className={t.dateInputWrapper}>
-                    <label className={t.dateLabel}>End Date:</label>
-                    <div className={t.dateInputFlex}>
-                      <Input type="date" value={getDateValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={!isEditingDates} onChange={(e) => onDateChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
-                      <Input type="time" value={getTimeValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={!isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
-                    </div>
+                  <div className={t.shiftRow}>
+                    <span className={t.shiftLabel}>shift</span>
+                    <button type="button" className={t.pill} title="Same span, one year earlier" onClick={() => shiftYear(-1)}>− 1 year</button>
+                    <button type="button" className={t.pill} title="Same span, one year later" onClick={() => shiftYear(1)}>+ 1 year</button>
+                    <span className={t.shiftKeepsLength}>keeps the length</span>
                   </div>
-                  {!isEditingDates && summarizeWeekdays(r.weekdays) && (
-                    <div className={t.dowSummary}>{summarizeWeekdays(r.weekdays)}</div>
+                  {eligibleBases.length > 0 && (
+                    <button type="button" className={`${t.pill} mt-1.5`} onClick={startDeriveMode}>Derive from another route instead</button>
                   )}
-                  {isEditingDates && (
-                    <div className={t.peakPresetsWrapper}>
-                      <span className={t.peakPresetLabel}>Time of Day:</span>
-                      {PEAK_PRESETS.map((preset) => (
+                </div>
+
+                {/* 2 · DAYS */}
+                <div className={t.facetBlock}>
+                  <div className={t.facetHeadRow}>
+                    <span className={t.facetLabel}>days</span>
+                    <span className={t.facetHeadHint}>which of those count</span>
+                  </div>
+                  <div className={t.dowRow}>
+                    {DOW_DEFS.map(({ key, label }) => {
+                      const on = isDayOn(editWeekdaysValue, key);
+                      return (
+                        <button key={key} type="button" className={on ? t.dayOn : t.dayOff} title={on ? `${key} included — click to exclude` : `${key} excluded — click to include`} onClick={() => toggleDow(key)}>
+                          {label}
+                        </button>
+                      );
+                    })}
+                    <span className={t.daySpacer} />
+                    <button type="button" className={t.pill} onClick={() => applyDowPreset(WEEKDAY_KEYS)}>Weekdays</button>
+                    <button type="button" className={t.pill} onClick={() => applyDowPreset(WEEKEND_KEYS)}>Weekends</button>
+                    <button type="button" className={t.pill} onClick={() => applyDowPreset(DOW_DEFS.map((d) => d.key))}>All</button>
+                  </div>
+                </div>
+
+                {/* 3 · TIME OF DAY */}
+                <div className={t.facetBlockTimeOfDay}>
+                  <div className={t.facetHeadRow}>
+                    <span className={t.facetLabel}>time of day</span>
+                    <span className={t.facetHeadHint}>which hours of each day</span>
+                  </div>
+                  <div className={t.dateFieldRow}>
+                    <div className={t.dateFieldWrapper}>
+                      <label className={t.dateFieldLabel}>From</label>
+                      <input type="time" className={t.dateFieldInput} value={getTimeValue(editStartDateValue)} onChange={(e) => onTimeChange(e, editStartDateValue, onEditStartDateValueChange)} />
+                    </div>
+                    <span className={t.dateFieldArrow}>→</span>
+                    <div className={t.dateFieldWrapper}>
+                      <label className={t.dateFieldLabel}>To</label>
+                      <input type="time" className={t.dateFieldInput} value={getTimeValue(editEndDateValue)} onChange={(e) => onTimeChange(e, editEndDateValue, onEditEndDateValueChange)} />
+                    </div>
+                  </div>
+                  <div className={t.peakRow}>
+                    {PEAK_PRESETS.map((preset) => {
+                      const on = canApplyPreset && getTimeValue(editStartDateValue) === preset.startTime && getTimeValue(editEndDateValue) === preset.endTime;
+                      return (
                         <button
                           key={preset.label}
                           type="button"
-                          className={t.peakPresetPill}
+                          className={on ? t.pillOn : t.pill}
                           disabled={!canApplyPreset}
-                          title={canApplyPreset ? `${preset.startTime || 'start'}–${preset.endTime || 'end'}` : 'Set a start and end date first'}
+                          title={canApplyPreset ? undefined : 'Set a start and end date first'}
                           onClick={() => applyPeakPreset(preset)}
                         >
                           {preset.label}
+                          {presetHoursLabel(preset) ? <span className={t.peakHours}> {presetHoursLabel(preset)}</span> : null}
                         </button>
-                      ))}
-                    </div>
-                  )}
-                  {isEditingDates && (
-                    <div className={t.dowWrapper}>
-                      <span className={t.peakPresetLabel}>Days of Week:</span>
-                      {DOW_DEFS.map(({ key, label }) => {
-                        const on = isDayOn(editWeekdaysValue, key);
-                        return (
-                          <button
-                            key={key}
-                            type="button"
-                            className={`${t.dowDayPill} ${on ? t.dowDayPillActive : t.dowDayPillIdle}`}
-                            title={on ? `${key} included — click to exclude` : `${key} excluded — click to include`}
-                            onClick={() => toggleDow(key)}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                      <button type="button" className={t.peakPresetPill} onClick={() => applyDowPreset(WEEKDAY_KEYS)}>Weekdays</button>
-                      <button type="button" className={t.peakPresetPill} onClick={() => applyDowPreset(WEEKEND_KEYS)}>Weekends</button>
-                      <button type="button" className={t.peakPresetPill} onClick={() => applyDowPreset(DOW_DEFS.map((d) => d.key))}>All Days</button>
-                    </div>
-                  )}
-                </>
-              ) : null}
+                      );
+                    })}
+                  </div>
+                  <div className={t.timeAveragedNote}>
+                    {getTimeValue(editStartDateValue) && getTimeValue(editEndDateValue)
+                      ? 'Applied to every day in the range and averaged together — not one continuous stretch from the first day to the last.'
+                      : 'No time filter: every hour of every day in the range is included.'}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
 
-              {/* Standing info, independent of whether the date detail above is open —
-                  an author editing a base route should see who depends on it without
-                  having to open the date detail first. */}
-              {isEdit && !isEditingDates && baseForNames?.length > 0 && (
-                <div className={t.dependentsRow}>
-                  <button type="button" className={t.dependentsToggle} onClick={() => setDepsOpen((o) => !o)}>
-                    Base for <b>{baseForNames.length}</b> route{baseForNames.length === 1 ? '' : 's'}
-                    <Icon icon={depsOpen ? 'ChevronUp' : 'ChevronDown'} className={t.sectionToggleChevron} />
-                  </button>
-                  {depsOpen && (
-                    <div className={t.dependentsPillList}>
-                      {baseForNames.map((name) => <span key={name} className={t.miniPill}>{name}</span>)}
-                    </div>
-                  )}
+          {/* "Base for N routes" — a standing fact, independent of window edit state. */}
+          {canMutateRow && baseForNames?.length > 0 && (
+            <div className={t.dependentsRow}>
+              <button type="button" className={t.dependentsToggle} onClick={() => setDepsOpen((o) => !o)}>
+                base for {baseForNames.length} route{baseForNames.length === 1 ? '' : 's'}
+                <Icon icon={depsOpen ? 'ChevronUp' : 'ChevronDown'} className={t.sectionToggleChevron} />
+              </button>
+              {depsOpen && (
+                <div className={t.dependentsPillList}>
+                  {baseForNames.map((name) => <span key={name} className={t.miniPill}>{name}</span>)}
                 </div>
               )}
             </div>
-            {isEdit && ColorPicker && (
-              <div className={t.colorSection}>
-                <button type="button" className={t.colorSwatchToggle} onClick={() => setColorOpen((o) => !o)}>
-                  <span className={t.colorSwatchDot} style={{ backgroundColor: r.color || '#000000' }} />
-                  <span className={t.colorSwatchLabel}>Appearance</span>
-                  <Icon icon={colorOpen ? 'ChevronUp' : 'ChevronDown'} className={t.sectionToggleChevron} />
-                </button>
-                {colorOpen && (
-                  <div className={t.colorPickerBody}>
-                    <ColorPicker
-                      color={r.color || '#000000'}
-                      onChange={stableOnChangeColor}
-                      colors={ROUTE_COLOR_PALETTE}
-                      showColorPicker={true}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-            {graphs.length > 0 && (
-              <div className={t.graphChipsWrapper}>
-                <div className={t.graphsSummaryLine}><b>{assignedGraphs.length}</b> of {graphs.length} graphs</div>
-                {assignedGraphs.length > 0 && (
-                  <div className={t.graphGroup}>
-                    <span className={t.graphGroupLabel}>On</span>
-                    {assignedGraphs.map((g) => (
-                      <span
-                        key={g.sectionId}
-                        className={`${t.graphChipActive} ${isEdit ? 'cursor-pointer' : 'cursor-default'}`}
-                        onClick={() => isEdit && !saving && onToggleGraph(g.sectionId)}
-                        title={isEdit ? `Remove from ${g.label}` : `On ${g.label}`}
-                      >
-                        {g.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {unassignedGraphs.length > 0 && (
-                  <div className={t.graphGroup}>
-                    <span className={t.graphGroupLabel}>Off</span>
-                    {unassignedGraphs.map((g) => (
-                      <span
-                        key={g.sectionId}
-                        className={`${t.graphChip} ${isEdit ? 'cursor-pointer' : 'cursor-default'}`}
-                        onClick={() => isEdit && !saving && onToggleGraph(g.sectionId)}
-                        title={isEdit ? `Add to ${g.label}` : undefined}
-                      >
-                        {g.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+
+          {graphs.length > 0 && (
+            <div className={t.openOutChipsRow}>
+              <span className={t.chipsLabel}>on</span>
+              {graphs.map((g) => {
+                const on = (r.graphIds || []).includes(g.sectionId);
+                const cls = on ? t.chipOn : (canMutateRow ? t.chipOff : t.chipOffRead);
+                return (
+                  <button
+                    key={g.sectionId}
+                    type="button"
+                    className={cls}
+                    disabled={!canMutateRow}
+                    title={canMutateRow ? (on ? `Remove from ${g.label}` : `Add to ${g.label}`) : (on ? `On ${g.label}` : `${g.label} — not assigned`)}
+                    onClick={() => canMutateRow && !saving && onToggleGraph(g.sectionId)}
+                  >
+                    {g.label.toLowerCase()}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {canMutateRow && (
+            <div className={t.openOutRemoveRow}>
+              <button type="button" className={t.openOutRemoveBtn} onClick={onRemove} disabled={saving}>
+                <Icon icon="Trash" /><span className={t.openOutRemoveLabel}>Remove route from report</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
+}
+
+// Day-count preview for the READ-ONLY summary — same day-loop as the editing facet's
+// own enumeratedDayCount above, just against the route's persisted (not draft) dates.
+function enumeratedDayCountFor(r) {
+  const start = getDateValue(r.startDate);
+  const end = getDateValue(r.endDate);
+  if (!start || !end) return null;
+  return { masked: generateDateRange(start, end, r.weekdays).length, total: generateDateRange(start, end, null).length };
+}
+
+function timeOfDayLabel(r) {
+  const st = getTimeValue(r.startDate);
+  const et = getTimeValue(r.endDate);
+  if (!st || !et) return 'All hours';
+  return `${st}–${et}`;
 }

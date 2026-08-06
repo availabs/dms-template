@@ -13,6 +13,15 @@ export const addGraphModalTheme = {
   routeName: 'text-sm text-slate-700 truncate flex-1 min-w-0',
   empty: 'text-gray-400 italic text-sm p-2',
 
+  // 5 shape cards (Bar/Line/Grid/Table/Map) replacing a plain "Graph Type" dropdown — picking
+  // what a graph looks like is the modal's primary decision, worth more visual weight than a
+  // <select>. Map renders disabled (grayed, cursor-not-allowed) until its compose path exists.
+  shapeCardGrid: 'grid grid-cols-5 gap-1.5 mb-3',
+  shapeCard: 'flex flex-col items-center gap-1 p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-50',
+  shapeCardSelected: 'flex flex-col items-center gap-1 p-2 rounded-lg border border-blue-300 bg-blue-50 text-blue-700',
+  shapeCardGlyph: 'w-6 h-6',
+  shapeCardLabel: 'text-[10px] font-semibold uppercase tracking-wide',
+  measureNativeSelect: 'w-full h-9 px-2 rounded-[6px] border border-zinc-950/15 bg-white text-[13px] text-slate-700 focus:outline-none focus:border-blue-400',
   pickerGrid: 'grid grid-cols-2 gap-3 content-start',
   pickerField: 'flex flex-col gap-1',
   pickerLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider',
