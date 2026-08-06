@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { fetchCatalogRows } from '../RouteTagBrowserModal/fetchCatalogRows';
 
 // A Dynamic Report's persisted `routes` (from useReportRow) are SLOT PLACEHOLDERS — each carries
-// a stable route_comp_id/graphIds/color (assigned once, at authoring time, via the same
-// addRoutes/toggleRouteGraph flow a normal report uses) but no concrete tmc_array/dates. This hook
+// a stable route_comp_id/color (assigned once, at authoring time, via the same addRoutes flow a
+// normal report uses) but no concrete tmc_array/dates. This hook
 // resolves those slots against the REAL route ids supplied via the page's `routeSlots`-typed URL
 // param, at VIEW TIME ONLY — never persisted, a pure in-memory overlay recomputed on every
 // navigation.
@@ -75,10 +75,11 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
   }, [enabled, apiLoad, routeSourceInfo?.source_id, routeSourceInfo?.view_id, idsKey]);
 
   // Concrete fields (tmc_array/dates/...) come from the resolved catalog row; identity and
-  // authoring fields (route_comp_id/graphIds/color) stay from the slot regardless of which real
-  // route fills it, so graph assignments made once at authoring time keep working no matter who's
-  // viewing or which route the URL currently supplies. Every slot in the same group resolves
-  // against the SAME real route (one URL id can fill many date/settings-view rows).
+  // authoring fields (route_comp_id/color) stay from the slot regardless of which real route
+  // fills it. Every slot in the same group resolves against the SAME real route (one URL id can
+  // fill many date/settings-view rows). Graph assignment is no longer a route-side field at all
+  // (design push #2, 2026-08-06 — see useGraphPublish.js) so there's nothing to carry over here
+  // anymore.
   //
   // `name` is the one field that does NOT simply take the catalog row's value — only a genuinely
   // meaningless placeholder name should ever be replaced by the resolved route's real name.
@@ -101,7 +102,6 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
         ...slot,
         ...catalogRow,
         route_comp_id: slot.route_comp_id,
-        graphIds: slot.graphIds,
         color: slot.color,
         name: slot.isPlaceholderName ? (catalogRow.name ?? slot.name) : slot.name,
       };

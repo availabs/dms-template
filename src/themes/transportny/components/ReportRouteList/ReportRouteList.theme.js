@@ -38,7 +38,6 @@ export const reportRouteListTheme = {
   row: 'px-2 py-2.5',
   rowOpen: 'px-2 py-2.5 bg-slate-50/60 rounded-[6px]',
   rowRenaming: 'px-2 py-2.5 bg-[#1F3F8F]/5 rounded-[6px]',
-  rowContainer: 'flex flex-col w-full',
   rowHeaderWrapper: 'flex items-start gap-1 min-w-0',
   reorderButtons: 'flex flex-col shrink-0 mt-0.5',
   reorderBtn: 'size-4 flex items-center justify-center text-slate-400 hover:text-slate-700 disabled:text-slate-200 disabled:cursor-not-allowed',
@@ -51,12 +50,10 @@ export const reportRouteListTheme = {
   colorDotButton: 'size-3.5 mt-1 rounded-full ring-1 ring-[#0f1722]/20 shrink-0 hover:ring-2 hover:ring-[#1F3F8F]/40 cursor-pointer',
   iconContainer: 'min-w-0 flex-1 flex items-center gap-1',
   routeTitle: 'font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0',
-  unassignedBadge: 'h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0',
   // Row-level actions (rename/remove) — transparent icon buttons, background only on hover.
   iconBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0',
   dangerBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 shrink-0',
   editContainer: 'flex items-center gap-1.5 min-w-0',
-  editInputWrapper: 'flex-1 min-w-0 h-8',
   renameInput: 'flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 font-proxima text-[12.5px] text-slate-700 focus:outline-none',
   saveBtn: 'size-7 rounded-[6px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] shrink-0',
   cancelBtn: 'size-7 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c] shrink-0',
@@ -66,43 +63,26 @@ export const reportRouteListTheme = {
   metaIndent: 'pl-7',
   meta: 'font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5',
 
-  // ── Graph chips (collapsed-row summary; also reused inside the open-out) ──
-  chipsWrapper: 'mt-1.5 flex flex-wrap items-center gap-1',
-  chipsLabel: 'font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mr-0.5',
-  chipOn: 'h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider',
-  chipOff: 'h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider hover:border-[#37576B]',
-  chipOffRead: 'h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/12 bg-white text-slate-400 font-mono text-[9.5px] uppercase tracking-wider',
-  notOnAnyGraph: 'font-proxima text-[11.5px] text-slate-500',
-
   // ── Open-out · full row width (no indent), a bordered white card. NO TMC list —
   //     the count already lives in the meta line; nobody reads codes off a 340px rail. ──
   expandedContainer: 'mt-2 rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-3',
-  openOutChipsRow: 'pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-1',
   openOutRemoveRow: 'pt-2.5 border-t border-zinc-950/05 flex justify-end',
   openOutRemoveBtn: 'h-7 px-2 inline-flex items-center gap-1.5 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/5 text-[#b91c1c] hover:bg-[#EF4444]/10',
   openOutRemoveLabel: 'font-display uppercase text-[10.5px] tracking-wide',
 
-  // ── Window block (dates/days/time-of-day) ──
+  // ── Date-span block · the one window facet a route still owns (design push #2, 2026-08-06 —
+  //     weekday mask/time-of-day moved to the graph, see QuickControls). ──
   facetLabel: 'font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500',
   windowHead: 'flex items-center justify-between gap-2',
   windowActionsRow: 'flex items-center gap-1',
   derivedNote: 'font-proxima text-[11px] italic text-slate-500 mt-1',
-  // Read-only: three labelled rows, clickable as a whole to enter edit mode.
+  // Read-only: a single row, clickable as a whole to enter edit mode.
   windowReadWrapper: 'mt-1.5 space-y-1',
   windowReadWrapperOpener: 'mt-1.5 space-y-1 cursor-pointer group/win rounded-[4px] -mx-1 px-1 py-0.5 hover:bg-[#1F3F8F]/5',
   windowReadRow: 'flex items-baseline gap-2',
-  windowReadRowLabel: 'w-[34px] shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-400',
   windowReadRowValue: 'font-proxima text-[12px] text-slate-700 flex-1 min-w-0',
-  windowReadRowSub: 'text-slate-400',
-  windowAveragedNote: 'mt-1.5 font-proxima text-[11px] leading-[1.4] text-slate-500',
 
-  // Editing — one sub-block per facet.
-  facetBlock: 'mt-2.5',
   facetBlockFirst: 'mt-2',
-  facetBlockTimeOfDay: 'mt-2.5 pt-2.5 border-t border-zinc-950/05',
-  facetHeadRow: 'flex items-baseline gap-2 mb-1',
-  facetHeadHint: 'font-proxima text-[10.5px] text-slate-400 flex-1',
-  facetHeadCount: 'font-mono text-[9.5px] uppercase tracking-[0.12em] text-slate-400 tabular-nums',
   dateFieldRow: 'flex items-end gap-1.5',
   dateFieldWrapper: 'flex-1 min-w-0',
   dateFieldLabel: 'font-proxima text-[10px] font-semibold text-slate-500 block mb-0.5',
@@ -111,21 +91,9 @@ export const reportRouteListTheme = {
   shiftRow: 'mt-1.5 flex items-center gap-1',
   shiftLabel: 'font-proxima text-[10.5px] text-slate-400 mr-0.5',
   shiftKeepsLength: 'font-proxima text-[10.5px] text-slate-400 ml-auto',
-  dowRow: 'flex flex-wrap items-center gap-1',
-  daySpacer: 'w-1',
-  peakRow: 'mt-1.5 flex flex-wrap items-center gap-1',
-  peakHours: 'text-[9px] tabular-nums',
-  timeAveragedNote: 'mt-1.5 font-proxima text-[11px] leading-[1.4] text-slate-500',
 
-  // Shared pill/day-toggle/field vocabulary (matches the design file's C.pill/dayOn/etc.).
+  // Shared pill vocabulary (matches the design file's C.pill).
   pill: 'h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200',
-  pillOn: 'h-5 px-1.5 rounded border border-[#1F3F8F] bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]',
-  dayOn: 'w-6 h-5 rounded border border-[#1F3F8F]/40 bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]',
-  dayOff: 'w-6 h-5 rounded border border-zinc-950/12 bg-slate-100 text-slate-400 font-mono text-[10px]',
-
-  issueList: 'mt-2 space-y-1',
-  issueError: 'rounded-[4px] px-2 py-1.5 font-proxima text-[11px] leading-[1.4] bg-[#EF4444]/8 border border-[#EF4444]/25 text-[#b91c1c]',
-  issueWarning: 'rounded-[4px] px-2 py-1.5 font-proxima text-[11px] leading-[1.4] bg-[#FACC15]/12 border border-[#CA8A04]/25 text-[#8a5f03]',
 
   // Derive-mode (Mechanism B) controls — kept from before, restyled to the same vocabulary.
   dateModeWrapper: 'flex items-center gap-1.5',
@@ -146,7 +114,6 @@ export const reportRouteListTheme = {
   colorPopoverHead: 'flex items-center gap-2 mb-2',
   colorPopoverLabel: 'font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 flex-1',
   colorPopoverHex: 'font-mono text-[10.5px] tabular-nums text-slate-500',
-  colorPopoverClose: 'size-4 rounded flex items-center justify-center text-slate-400 hover:text-slate-700',
   colorSwatchGrid: 'grid grid-cols-9 gap-1',
   colorSwatch: 'size-4 rounded-full hover:ring-2 hover:ring-offset-1 hover:ring-[#0f1722]/20',
   colorSwatchActive: 'size-4 rounded-full ring-2 ring-offset-1 ring-[#0f1722]/50',
@@ -157,7 +124,6 @@ export const reportRouteListTheme = {
   skeletonRow: 'h-11 rounded-[6px] bg-slate-100 animate-pulse',
   empty: 'font-proxima text-[11.5px] text-slate-400 italic p-2',
   error: 'font-proxima text-[11px] text-[#b91c1c] px-3 pb-2',
-  loading: 'font-proxima text-[11.5px] text-slate-400 p-2',
 
   // ── Rail-top clipboard strip ──
   clipboardStrip: 'px-3 py-2.5 border-b border-[#1F3F8F]/20 bg-[#1F3F8F]/5 shrink-0',

@@ -171,9 +171,13 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
         subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
     }
 
-    // Bookkeeping only (mirrors display._functions) — remembers the
-    // last pick so reopening the menu shows the right checkmarks/
-    // summary. Never read by the render/query pipeline.
+    // Remembers the full pick so reopening the menu/Quick Controls shows the right checkmarks/
+    // summary. `graphType`/`measure`/`resolution`/`comparisonMode`/`anchorInvert` are pure
+    // bookkeeping (already reflected in the composed columns/display above) — but
+    // `weekdays`/`start`/`end`/`routeIds` (design push #2, 2026-08-06) are NOT: those are read
+    // straight back out of this same field by useGraphPublish.js's per-graph transformReportRoutes
+    // to build the actual query filters, making this object functionally load-bearing for those
+    // three fields, not just cosmetic.
     state.display._measurePick = pick;
     return true;
 }

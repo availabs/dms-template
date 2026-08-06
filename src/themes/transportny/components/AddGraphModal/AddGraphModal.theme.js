@@ -12,6 +12,7 @@ export const addGraphModalTheme = {
   routeColorSwatch: 'w-2.5 h-2.5 rounded-full shrink-0 border border-black/10',
   routeName: 'text-sm text-slate-700 truncate flex-1 min-w-0',
   empty: 'text-gray-400 italic text-sm p-2',
+  routesNote: 'mt-1.5 text-[11px] text-slate-500',
 
   // 5 shape cards (Bar/Line/Grid/Table/Map) replacing a plain "Graph Type" dropdown — picking
   // what a graph looks like is the modal's primary decision, worth more visual weight than a
@@ -25,6 +26,18 @@ export const addGraphModalTheme = {
   pickerGrid: 'grid grid-cols-2 gap-3 content-start',
   pickerField: 'flex flex-col gap-1',
   pickerLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider',
+
+  // "When" — time-of-day + day-of-week, the facets that moved off the route (design push #2,
+  // 2026-08-06). Same slate/blue vocabulary as the rest of this not-yet-reskinned modal (see
+  // RouteTagBrowserModal/AddGraphModal note in the task file — a navy pass here is a separate,
+  // deferred piece of work, not part of this structural change).
+  whenPresetRow: 'flex flex-wrap items-center gap-1',
+  whenPreset: 'h-6 px-2 inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 text-slate-600 text-[11px] font-medium hover:bg-slate-100',
+  whenPresetSelected: 'h-6 px-2 inline-flex items-center gap-1 rounded border border-blue-300 bg-blue-50 text-blue-700 text-[11px] font-medium',
+  dowRow: 'flex flex-wrap items-center gap-1 mt-1.5',
+  dayToggle: 'w-6 h-6 rounded border border-slate-200 bg-slate-50 text-slate-500 text-[11px] font-medium hover:bg-slate-100',
+  dayToggleSelected: 'w-6 h-6 rounded border border-blue-300 bg-blue-50 text-blue-700 text-[11px] font-medium',
+  daySetBtn: 'h-6 px-2 inline-flex items-center rounded border border-slate-200 bg-slate-50 text-slate-600 text-[10.5px] font-semibold uppercase tracking-wide hover:bg-slate-100',
 
   preview: 'mt-3 flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg',
   previewGlyph: 'w-10 h-10 shrink-0 text-blue-500',
