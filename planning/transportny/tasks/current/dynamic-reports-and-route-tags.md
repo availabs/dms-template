@@ -11,11 +11,22 @@ until re-triaged. Nothing below has been broken into an implementation plan yet;
 to get three related, somewhat-rambly ideas into one coherent, cross-referenced shape before the
 next round of back-and-forth on scope/priority/detail.
 
+**Re-triaged, 2026-08-06:** this arc's core mechanism work (items 1-3 below) is now DONE — see the
+top status line. Priority has shifted to
+[`npmrds-design-v2-implementation.md`](./npmrds-design-v2-implementation.md), which is now the
+top-priority reports/routes item. What remains below (old-template porting, a few flagged opens)
+continues, but no longer blocks other work in this space the way this directive originally meant.
+
 ## Context that applies to all three items
 
 - Ryan's coworker is doing visual/design work across these repos (still under construction). Don't
   block on it, don't tightly couple anything below to it, don't treat current in-progress design
   work as settled — it'll get applied on top of whatever gets built here, later.
+- **2026-08-06: "later" has arrived.** The coworker (Alex)'s `dms_design_system_v2` NPMRDS category
+  (9 pages, including a real second-pass redesign of the RRL/modals mechanism built here) is now
+  scoped against this arc's live implementation in
+  [`npmrds-design-v2-implementation.md`](./npmrds-design-v2-implementation.md) — read that file
+  before starting new route/report UI work, since it may change or supersede in-flight plans below.
 - Old-tool reference point Ryan gave: `https://npmrds.devtny.org/report/edit/1071` — intended as an
   `admin2.templates` row ("template" in the old tool's vocabulary), the direct conceptual ancestor
   of "Dynamic Report" below. **Corrected 2026-08-04: this specific id/URL combination was wrong.**
@@ -764,6 +775,11 @@ was the right call rather than assuming either way (see memory
 **Confirmed, 2026-07-31:** the reversal covers route organization/tagging specifically (this item)
 only. Report discovery/index page work and the permissions/ACL model remain out of scope — that
 part of the original ruling still stands.
+
+**Amended 2026-08-06:** report discovery/index page work is back in scope as well — see
+`npmrds-design-v2-implementation.md`'s Open Question 1 (`npmrds-reports.html`, the report-library
+page): "we dont have one built yet but we will want one." Permissions/ACL remains the only
+still-standing exclusion from the original 2026-07-27 ruling.
 
 **Implementation Plan — Phase 1: manual tag storage + editing UI — DONE, live-verified
 2026-07-31.** Scope: get `tags` working end-to-end for manual/custom tagging on the existing
