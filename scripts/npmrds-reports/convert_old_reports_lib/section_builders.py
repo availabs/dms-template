@@ -242,11 +242,19 @@ def load_page_template():
     return row["data"]
 
 
-def template_section_by_type(page_template, element_type):
-    for s in page_template.get("draft_sections") or []:
-        if (s.get("element") or {}).get("element-type") == element_type:
-            return s
-    raise RuntimeError(f"Report Page template has no '{element_type}' section")
+def template_framework_sections(page_template):
+    """Every Report Page template draft_section flagged templateRole=='framework'
+    (ReportRouteList, ReportPageHeader, and whatever else the template picks up
+    later), in template order — cloned verbatim into every programmatically-created
+    report. A new structural component joins this list by flagging its own
+    section on the template row; this function (and its two callers) never
+    needs to change again."""
+    sections = [s for s in page_template.get("draft_sections") or []
+                if s.get("templateRole") == "framework"]
+    if not sections:
+        raise RuntimeError("Report Page template has no section flagged "
+                            "templateRole=='framework' (expected at least ReportRouteList)")
+    return sections
 
 
 def applied_template_stamp(tmpl):
