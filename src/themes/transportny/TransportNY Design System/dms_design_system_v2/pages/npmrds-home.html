@@ -72,13 +72,18 @@
       the NPMRDS pages that are flat. Flattening also cost the MAP-21 group its four children
       in the nav, which left `map-21.html` a dead end for its siblings — replaced by a
       `family-nav` pill row in the breadcrumbs band on all four MAP-21 pages.
-      EXCEPTION — the workbench page (npmrds-macro) uses the documented COMPACT 64px icon
-      SideNav, as freight-atlas-map.html does: a full-page map cannot spend 240px on nav.
+      EXCEPTION — TWO pages use the documented COMPACT 64px icon SideNav, as
+      freight-atlas-map.html does: npmrds-macro (a full-page map cannot spend 240px on nav) and
+      npmrds-report (2026-08-05 — it already spends 340px on its route rail, and 256 + 340 = 596px
+      of chrome left the graph canvas narrower than the chrome beside it). Neither loses a
+      destination: same items, same order, same amber active rail, labels becoming `title`
+      tooltips. Both are leaf/deep surfaces you arrive at with the nav already understood.
    2. Page header shape: breadcrumb (deep pages only) → kicker + rule + meta → h1 + purpose
       → right-aligned control/action stack + freshness line.
       EXCEPTION — the workbench page has no page header at all; its chrome is map-owned
       (floating panels), again per freight-atlas-map.html.
-   3. Breadcrumbs on pages 4/5/6 only. Pages 1–3 are category roots. Use the dedicated
+   3. Breadcrumbs on pages 4/5/6 only — EXCEPT npmrds-report, which drops its breadcrumb band
+      (Alex, 2026-08-05); that page's note records the layout consequence for its full-height rail. Pages 1–3 are category roots. Use the dedicated
       `breadcrumbs` LayoutGroup (the datasets-source model), NOT a <nav> inlined into
       page-header — they are different DMS structures and translate differently.
    4. Freshness strip: "NPMRDS speeds · complete through Jun 2026 · Jul 2026 partial ·

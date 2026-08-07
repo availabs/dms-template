@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Actions by Jurisdiction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  ECOSYSTEM NOTE — part of the actions-workspace.html ecosystem (see that file's header
+  comment for the full map). Matches the live page 2265531. No local reference screenshot
+  exists for this one, so its content is inferred from the County + Jurisdiction field pair
+  visible on every other page in this set (Summary section of action-view/edit.html): a
+  county contains several jurisdictions (town/village/city, plus the county itself), each
+  with its own action set. This page is the directory a planner uses to jump straight to
+  one jurisdiction's slice of actions-workspace.html, rather than filtering by hand every
+  time — reached from the "By Jurisdiction" button on actions-workspace.html.
+
+  DATA MODEL: the Actions dataset has no separate municipality-type column — "jurisdiction"
+  is one field, already formatted with the type in parentheses ("Bloomingburg (Village)",
+  "Sullivan (County)"), same as it's used everywhere else in this ecosystem. So this table
+  is a single GROUP BY jurisdiction over the Actions dataset (count(*), count(*) where
+  county_priority is null), not a join against a separate jurisdictions/type table — see
+  the jurisdiction-list section below.
+-->
+
+<!-- ================================================================
+     TOPNAV
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Local Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Plan</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 cursor-pointer border-b-2 border-mny-y700 h-full flex items-center">Track Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-1">
+          <div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <!-- icon: User -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-16">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+
+      <div class="grid grid-cols-12 gap-y-4">
+
+        <!-- ==========================================================
+             SECTION 1 — HEADER + SEARCH (col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="header-search" class="col-span-12">
+          <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
+            <a href="#" class="hover:text-mny-700">Track Progress</a>
+            <span class="text-mny-200">/</span>
+            <a href="actions-workspace.html" class="hover:text-mny-700">Actions</a>
+            <span class="text-mny-200">/</span>
+            <span class="text-mny-700">By Jurisdiction</span>
+          </div>
+          <div class="flex flex-wrap items-end justify-between gap-4 mt-1 mb-4">
+            <div>
+              <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1.05] tracking-[-0.01em]">Actions by Jurisdiction</h1>
+              <p class="font-proxima text-[14px] text-mny-700 mt-1">Jump straight to one town, village, or the county's own action list.</p>
+            </div>
+            <a href="actions-workspace.html" class="shrink-0 flex items-center gap-1.5 px-4 py-2 bg-white border border-mny-200 hover:border-mny-400 rounded-full font-proxima text-[13px] font-[700] text-mny-700 hover:text-mny-900 uppercase tracking-wider transition-colors">
+              <!-- icon: ArrowLeft -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+              All Actions
+            </a>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION 2 — COUNTY-LEVEL ROW (col-12)
+             Sullivan County itself is a jurisdiction too — pulled out
+             as its own row above the town/village list, since it's
+             usually the largest single bucket of actions.
+             ========================================================== -->
+        <div data-dms="section" data-name="county-row" class="col-span-12 mt-2">
+          <a href="actions-workspace.html?jurisdiction=sullivan-county" class="group flex items-center justify-between gap-4 bg-mny-y50 border border-mny-y500/50 rounded-[12px] px-5 py-4 hover:border-mny-y700 transition-colors">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="size-10 rounded-full bg-mny-y700 flex items-center justify-center shrink-0">
+                <!-- icon: EarthFilled -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-mny-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 5.05a.75.75 0 0 1 1.5 0v.786a4.5 4.5 0 0 1 2.05 1.286.75.75 0 0 1-1.1 1.02A3 3 0 0 0 10 6.75a3 3 0 0 0-2.19 5.05.75.75 0 1 1-1.098 1.023A4.5 4.5 0 0 1 9 5.836v-.786z" clip-rule="evenodd"/></svg>
+              </span>
+              <div class="min-w-0">
+                <p class="font-display text-[18px] font-[500] text-mny-900 uppercase leading-none">Sullivan (County)</p>
+                <p class="font-proxima text-[12px] text-mny-700 mt-1">County-level actions — not attributed to a single town or village</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 shrink-0">
+              <div class="text-right">
+                <p class="font-display text-[22px] font-[500] text-mny-900 tabular-nums leading-none">86</p>
+                <p class="font-proxima text-[10px] text-mny-700 uppercase tracking-wide mt-0.5">Actions</p>
+              </div>
+              <div class="text-right">
+                <p class="font-display text-[22px] font-[500] text-mny-900 tabular-nums leading-none">41</p>
+                <p class="font-proxima text-[10px] text-mny-700 uppercase tracking-wide mt-0.5">Needs priority</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-mny-700 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+            </div>
+          </a>
+        </div>
+
+        <!-- ==========================================================
+             SECTION 3 — JURISDICTION LIST (col-12)
+             One column, not name+type: the Actions dataset has no
+             separate municipality-type field. "Jurisdiction" is a single
+             formatted string ("Bloomingburg (Village)") already, same
+             as everywhere else in this ecosystem (Summary section of
+             action-view/edit.html). This table is a GROUP BY that column
+             over the Actions dataset — count(*) and count(*) where
+             county_priority is null — not a join against a separate
+             jurisdictions/municipality-type table.
+             Tight and scannable: name, two counts, chevron. No per-row
+             detail beyond the counts; clicking hands off entirely to
+             the (already filterable) actions-workspace.html.
+             ========================================================== -->
+        <div data-dms="section" data-name="jurisdiction-list" class="col-span-12 mt-2">
+          <div class="rounded-[12px] border border-mny-100 overflow-hidden">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-mny-50">
+                  <th class="px-4 py-2.5 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Jurisdiction</th>
+                  <th class="px-4 py-2.5 text-right font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[100px]">Actions</th>
+                  <th class="px-4 py-2.5 text-right font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[130px]">Needs Priority</th>
+                  <th class="w-[40px] border-b border-mny-100"></th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=bloomingburg-village" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Bloomingburg (Village)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">64</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-y700 tabular-nums">28</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=bloomingburg-village" aria-label="Open Bloomingburg (Village) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=mamakating-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Mamakating (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">52</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-y700 tabular-nums">19</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=mamakating-town" aria-label="Open Mamakating (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=monticello-village" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Monticello (Village)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">47</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-y700 tabular-nums">12</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=monticello-village" aria-label="Open Monticello (Village) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=fallsburg-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">38</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">9</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=fallsburg-town" aria-label="Open Fallsburg (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=liberty-village" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Liberty (Village)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">31</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">6</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=liberty-village" aria-label="Open Liberty (Village) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=wurtsboro-village" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Wurtsboro (Village)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">24</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">4</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=wurtsboro-village" aria-label="Open Wurtsboro (Village) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=forestburgh-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Forestburgh (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">17</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">2</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=forestburgh-town" aria-label="Open Forestburgh (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=thompson-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Thompson (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">20</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">5</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=thompson-town" aria-label="Open Thompson (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=callicoon-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Callicoon (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">16</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">4</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=callicoon-town" aria-label="Open Callicoon (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=delaware-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Delaware (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">14</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">3</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=delaware-town" aria-label="Open Delaware (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=cochecton-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Cochecton (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">12</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">2</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=cochecton-town" aria-label="Open Cochecton (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=bethel-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Bethel (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">11</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-700 tabular-nums">3</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=bethel-town" aria-label="Open Bethel (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=highland-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Highland (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">9</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">1</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=highland-town" aria-label="Open Highland (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=neversink-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Neversink (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">8</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">1</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=neversink-town" aria-label="Open Neversink (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=rockland-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Rockland (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">7</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">1</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=rockland-town" aria-label="Open Rockland (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=tusten-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Tusten (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">6</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">1</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=tusten-town" aria-label="Open Tusten (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=fremont-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fremont (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">5</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">1</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=fremont-town" aria-label="Open Fremont (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=liberty-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Liberty (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">4</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">0</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=liberty-town" aria-label="Open Liberty (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=lumberland-town" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Lumberland (Town)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">3</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">0</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=lumberland-town" aria-label="Open Lumberland (Town) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=jeffersonville-village" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Jeffersonville (Village)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">2</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">0</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=jeffersonville-village" aria-label="Open Jeffersonville (Village) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+                <tr class="hover:bg-mny-50/60">
+                  <td class="px-4 py-3"><a href="actions-workspace.html?jurisdiction=woodridge-village" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Woodridge (Village)</a></td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-900 tabular-nums">2</td>
+                  <td class="px-4 py-3 text-right font-proxima text-[14px] font-[600] text-mny-400 tabular-nums">0</td>
+                  <td class="pr-4"><a href="actions-workspace.html?jurisdiction=woodridge-village" aria-label="Open Woodridge (Village) actions"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></a></td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:200px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="home-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home v2</a>
+    <a href="section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;padding-top:4px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#C5D7E0;padding-left:16px;">Actions Ecosystem (condensed)</div>
+    <a href="actions-workspace.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Workspace</a>
+    <a href="action-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action View</a>
+    <a href="action-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Action Edit</a>
+    <a href="actions-by-jurisdiction.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions by Jurisdiction</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Search <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List) <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (Cards) <span style="font-size:10px;color:#C5D7E0;">(prior)</span></a>
+    <a href="actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+    <a href="../reports/actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="../reports/duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="../reports/boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="../reports/location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

@@ -13,7 +13,7 @@ from .graph_templates import ensure_graph_templates, graph_max_year, graph_relia
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
-from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, template_section_by_type
+from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, template_framework_sections
 from .pages import compute_report_slug, delete_converted_page, ensure_parent_page, find_page_by_old_template_id
 
 def finish_template(old_id, old, page_id, gaps, dry_run, slug=None):
@@ -371,9 +371,11 @@ def convert_template(old_id, dry_run=False, replace=False):
                            "type": "routeSlots"}]})
     print("set page as Dynamic Report (routeSlots filter)")
 
-    # -- draft sections (RRL first/sidebar, then graphs)
-    rrl_tmpl = template_section_by_type(page_template, "ReportRouteList")
-    section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
+    # -- draft sections (every template section flagged templateRole=='framework'
+    # — RRL, ReportPageHeader, whatever else joins that list later — cloned first,
+    # in template order, then graphs)
+    section_datas = [build_cloned_section_data(page_id, tmpl, str(uuid.uuid4()))
+                      for tmpl in template_framework_sections(page_template)]
     for (g, info, tmpl), tid in zip(convertible, graph_tracking_ids):
         bin_year = info_box_bin_year.get(g.get("id"))
         if bin_year:

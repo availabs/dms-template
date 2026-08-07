@@ -699,20 +699,42 @@ const dialog = {
   },
 };
 
+// STYLES SHAPE, not flat (fixed 2026-08-05): `Modal.jsx` resolves its panel with
+// getComponentTheme(theme, 'modal', activeStyle) — a FLAT brand `modal` object is
+// returned as-is and the requested style name is silently ignored, so every
+// `<Modal activeStyle="wide">` caller (the report page's Add Routes + Add Graph
+// modals — RouteTagBrowserModal / AddGraphModal both pass it) collapsed back to
+// the narrow max-w-lg panel. styles[1] `wide` mirrors the codebase default's own
+// wide entry (max-w-7xl) in brand dress. Non-panel keys (the `useModal` hook's
+// header/title/closeButton, and the SizedDialog shape) are inherited from
+// styles[0] by getComponentTheme, so they only need writing once.
 const modal = {
-  // Outer wrapper + backdrop + panel (the keys useModal reads).
-  wrapper:     "fixed inset-0 z-50 flex items-center justify-center p-4",
-  backdrop:    "absolute inset-0 bg-zinc-950/40",
-  panel:       "relative bg-white border border-zinc-950/10 shadow-2xl rounded-[8px] p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto",
-  header:      "flex items-center justify-between mb-4 pb-4 border-b border-zinc-950/10",
-  title:       "font-display uppercase text-[16px] tracking-wide text-[#0F1722]",
-  closeButton: "cursor-pointer p-1 text-slate-500 hover:text-[#0F1722]",
-  // Plus the dialog shape (for the SizedDialog flow):
-  backdropDialog:   dialog.backdrop,
-  dialogContainer:  dialog.dialogContainer,
-  dialogContainer2: dialog.dialogContainer2,
-  dialogPanel:      dialog.dialogPanel,
-  sizes:            dialog.sizes,
+  options: { activeStyle: 0 },
+  styles: [
+    {
+      name: "default",
+      // Outer wrapper + backdrop + panel (the keys useModal reads).
+      wrapper:     "fixed inset-0 z-50 flex items-center justify-center p-4",
+      backdrop:    "absolute inset-0 bg-zinc-950/40",
+      panel:       "relative bg-white border border-zinc-950/10 shadow-2xl rounded-[8px] p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto",
+      header:      "flex items-center justify-between mb-4 pb-4 border-b border-zinc-950/10",
+      title:       "font-display uppercase text-[16px] tracking-wide text-[#0F1722]",
+      closeButton: "cursor-pointer p-1 text-slate-500 hover:text-[#0F1722]",
+      // Plus the dialog shape (for the SizedDialog flow):
+      backdropDialog:   dialog.backdrop,
+      dialogContainer:  dialog.dialogContainer,
+      dialogContainer2: dialog.dialogContainer2,
+      dialogPanel:      dialog.dialogPanel,
+      sizes:            dialog.sizes,
+    },
+    {
+      name: "wide",
+      // Browser/picker modals (Add Routes, Add Graph): a two-pane body needs the
+      // width, and both own their internal scroll region, so the panel itself is
+      // height-capped rather than scrolling.
+      panel: "relative bg-white border border-zinc-950/10 shadow-2xl rounded-[8px] p-6 max-w-7xl w-full max-h-[90vh] overflow-hidden",
+    },
+  ],
 };
 
 const drawer = {
@@ -1144,7 +1166,54 @@ const graph = {
   }],
 };
 
-const avlGraph = graph;
+// ─────────────────────────────────────────────────────────────────────────────
+// avlGraph.chartDefaults — THE BRAND'S CHART GEOMETRY AND AXIS TYPE
+//
+// This block was missing (2026-08-06), so every TransportNY chart was running the
+// codebase's own defaults — `margin: {top:20,right:20,bottom:50,left:100}`, 0.75rem
+// inherited-family ticks, `strokeWidth: 1`, and bars at the CSS `fill-opacity: 0.75`.
+// Those are reasonable library defaults and wrong for this brand: a 100-px left gutter
+// is a third of a size-6 card, 12-px sans ticks fight the mono chrome everywhere else on
+// the page, and translucent bars mud two-series comparisons at small sizes.
+//
+// `chartDefaults` merges UNDER a section's own `display`, so these are defaults an author
+// can still override per section (graph_new/index.jsx's mergeChartDefaults). Every key
+// here is one GraphComponent already reads — nothing new was needed in the library.
+const chartDefaults = {
+  // tighter than 20/20/50/100: enough for a 4-character tick and one row of labels
+  margin: { top: 12, right: 12, bottom: 30, left: 48 },
+  height: 260,
+  // 1 disappears against a pale card; 2 is the weight the drawn cards used
+  strokeWidth: 2,
+  // solid bars — the knob exists for exactly this ("Set to 1 for solid, design-matching
+  // bars"), and the route colours are the comparison, so they must not be washed out
+  barOpacity: 1,
+  interpolation: "catmullrom",
+  area: false,
+  // ticks are CHROME: the same 9-px mono the attribution lines and meta rows use
+  xAxis: {
+    show: true, showGridLines: false, rotateLabels: false, tickDensity: 2,
+    gridLineOpacity: 0.25, axisColor: "rgba(15,23,42,0.15)",
+    tickFontSize: "9px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    tickFontWeight: "400", tickColor: "#94a3b8",
+    labelFontSize: "9px", labelFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    labelFontWeight: "400", labelColor: "#94a3b8",
+  },
+  yAxis: {
+    show: true, showGridLines: true, format: "Integer",
+    gridLineOpacity: 0.35, axisColor: "rgba(15,23,42,0.15)",
+    tickFontSize: "9px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    tickFontWeight: "400", tickColor: "#94a3b8",
+    labelFontSize: "9px", labelFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    labelFontWeight: "400", labelColor: "#94a3b8",
+  },
+  legend: { show: true },
+};
+
+const avlGraph = {
+  ...graph,
+  styles: graph.styles.map(function (s) { return { ...s, chartDefaults: chartDefaults }; }),
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // map — MapLibre wrapper
@@ -1217,6 +1286,94 @@ const pages = {
       editIcon:      "hover:text-[#1F3F8F] size-5",
       contentWrapper:"h-full",
     }],
+  },
+
+  // ── Content sidebar / side content (the rail beside the content column) ──
+  //
+  // Turned on per page by the "Show Content Sidebar" page setting
+  // (`item.sidebar` = 'left' | 'right' | unset — settingsPane.jsx). When it's on,
+  // `sectionGroup.jsx` wraps the rail-hosting band as
+  //   contentRow → [ contentCol | sideNavContainer1 > 2 > 3 ]
+  // and puts the generated in-page nav + every section in the page's `sidebar`
+  // group inside the rail. `sidebar: 'left'` flips the order (the rail loses the
+  // `order-2`, the content col gains it) — same two class strings either way.
+  //
+  // THIS SPLIT IS NOT A GRID COLUMN. The rail is a fixed-width flex sibling of the
+  // content column, OUTSIDE the 12-col section grid; the canvas keeps its own
+  // `grid-cols-12` at full width of whatever's left. Don't model a rail as
+  // `col-span-3` + `col-span-9` — that's a different (and un-authorable) thing.
+  //
+  // STYLES, not a flat map: `getComponentTheme(theme, 'pages.sectionGroup')`
+  // resolves `options.activeStyle`, and styles[1+] inherit every key they don't
+  // override from styles[0] — so `flush` only states what differs.
+  sectionGroup: {
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        // ── styles[0] · default · a floating rail of cards, inside the band's
+        // 1480-cap container, with a gutter between rail and content. Docs pages,
+        // npmrds-home's "on this page" + documentation card.
+        name: "default",
+        // items-stretch (NOT items-start) is load-bearing: it stretches the rail
+        // column to full band height so its inner `sticky` has room to pin.
+        // min-h-screen keeps a short band from leaving the rail floating in a
+        // stub of height.
+        contentRow:        "flex flex-row gap-10 items-stretch min-h-screen",
+        contentCol:        "flex-1 min-w-0",
+        // container1 = width + responsive visibility · container2 = the ONE sticky
+        // wrapper (two separately-pinned siblings at the same `top` overlap) ·
+        // container3 = the vertical stack of rail blocks.
+        sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
+        sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
+        sideNavContainer3: "flex flex-col gap-4",
+        // The "On this page" nav card (InPageNav.jsx)
+        navWrapper:    "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4",
+        navLabelText:  "On this page",
+        navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-3",
+        navList:       "flex flex-col gap-0.5",
+        navItem:       "block w-full text-left font-proxima text-[13px] text-slate-600 hover:text-[#0F2D4D] py-1.5 pl-3 border-l-2 border-transparent transition-colors cursor-pointer",
+        navItemActive: "block w-full text-left font-proxima text-[13px] text-[#0F2D4D] font-medium py-1.5 pl-3 border-l-2 border-[#FACC15] bg-slate-50/60 transition-colors cursor-pointer",
+      },
+      {
+        // ── styles[1] · flush · the rail is a CONTROL SURFACE, not a card: no
+        // padding anywhere, hugging the content area's left edge, full tab height
+        // with its own internal scroll. For pages whose rail drives the whole
+        // canvas (npmrds-report.html's ReportRouteList).
+        //
+        // TWO REQUIREMENTS on a page that picks this style, both author-side:
+        //   1. the rail-hosting band must be Full Width: show (`full_width:'show'`)
+        //      — otherwise the band's own `pl-12 pr-8` sits between the pane edge
+        //      and the rail, and "flush" is a lie. The content column supplies the
+        //      inset instead (px-8 py-8 below), and sectionArray's
+        //      `layouts.centered` still caps the grid at 1480 inside it.
+        //   2. the page header belongs to a SECTION IN THE CONTENT COLUMN, not to
+        //      its own full-bleed `header` band — a band above the rail would sit
+        //      over the top of it and the rail would no longer start at the top of
+        //      the tab. Consequence: the header is no longer full width. That is
+        //      the intended look, not a regression.
+        name: "flush",
+        contentRow:        "flex flex-row gap-0 items-stretch",
+        contentCol:        "flex-1 min-w-0 px-8 py-8",
+        // Wider than the default rail (340 vs 302): this one holds controls, not
+        // jump links. The hairline + white surface are the rail's own — a flush
+        // rail can't rely on card chrome to separate itself from the pane.
+        sideNavContainer1: "w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10",
+        // Full height of the TAB. The panel inside owns the scroll (head/toolbar/footer
+        // pinned, list region `flex-1 overflow-y-auto`), so this wrapper doesn't scroll
+        // and takes no right padding that would pull it off the content edge.
+        // OFFSET RULE: `top` and the height must be tuned TOGETHER against whatever
+        // sticky chrome sits above the rail — exactly as styles[0] does for the page
+        // header (top-[60px] / 100vh-68px). A bare `top-0 h-svh` under a 41-px sticky
+        // breadcrumb strip hangs 41 px past the viewport at scroll 0 and pushes the
+        // panel's pinned footer below the fold. npmrds-report carries no sticky chrome
+        // (its breadcrumb band was removed), so it uses the bare pair.
+        sideNavContainer2: "sticky top-0 h-svh overflow-hidden",
+        sideNavContainer3: "flex flex-col h-full",
+        // No card, no gutter — a rail block is a full-bleed panel with a hairline.
+        navWrapper:    "border-b border-zinc-950/10 px-4 py-4",
+        navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-2",
+      },
+    ],
   },
 
   // Section group (the column grid every Section sits on)

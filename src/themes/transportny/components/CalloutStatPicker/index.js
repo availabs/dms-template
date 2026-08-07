@@ -26,6 +26,7 @@
 
 import { composeMeasureConfig, MEASURE_OPTIONS, BASE_SOURCE } from '../MeasurePicker/composeMeasureConfig';
 import { isReportPage } from '../MeasurePicker';
+import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 
 const REPORT_SUBSCRIBER_ARGS = { labelKey: 'label', valueKey: 'filters' };
 
@@ -105,7 +106,15 @@ export function applyCalloutStatPick({ state, dwAPI }, partial) {
 
         draft.display._calloutStatPick = nextPick;
     });
-    dwAPI.reconcileComparisonSeriesColumn();
+    // Calls the shared mint function directly (not
+    // dwAPI.reconcileComparisonSeriesColumn(), which forwards no extra args)
+    // so this NPMRDS-specific label stays entirely in this file, not in core
+    // `src/dms/` code — same pattern as MeasurePicker's applyMeasurePick.
+    dwAPI.setState(draft => {
+        reconcileComparisonSeriesColumnOnState(draft);
+        const col = draft.columns.find(c => c.origin === 'comparison-series');
+        if (col && !col.customName) col.customName = 'Route';
+    });
 }
 
 export function calloutStatMenu({ state, dwAPI, currentComponent, isEdit, canEditSection, siblingSections = [] }) {

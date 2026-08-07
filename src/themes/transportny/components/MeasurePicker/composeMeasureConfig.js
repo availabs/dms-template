@@ -33,7 +33,13 @@ export const GRAPH_VOCAB = vocab;
 export const BASE_SOURCE = vocab.baseSource;
 
 // Only the graph types the vocabulary's measures/resolutions actually target
-// (Pie/Sunburst/Treemap have no xAxis/yAxis semantics defined here).
+// (Pie/Sunburst/Treemap have no xAxis/yAxis semantics defined here). Deliberately chart-only —
+// this list is ALSO used by the older in-place edit-bar surface (MeasurePicker/index.js's
+// `measure_graph_type` selectItem, which re-composes an ALREADY-CREATED AVL Graph section's own
+// display.graphType) where a value like 'Table'/'Map' would be nonsensical: graph_new's renderer
+// has no such graphType. AddGraphModal.jsx (which creates a brand-new section, and can create a
+// Spreadsheet/Map instead of an AVL Graph) keeps its own separate shape-card list layered on top
+// of this one, specifically for that reason.
 export const GRAPH_TYPE_OPTIONS = [
     { value: 'BarGraph', label: 'Bar Graph' },
     { value: 'LineGraph', label: 'Line Graph' },
@@ -43,6 +49,19 @@ export const GRAPH_TYPE_OPTIONS = [
 export const MEASURE_OPTIONS = Object.entries(vocab.measures).map(([value, m]) => ({
     value, label: m.label,
 }));
+
+// Grouping for the Add-Graph modal's Measure <optgroup> — a flat 9-item list read top-to-bottom
+// asked an author to already know which measure they wanted; grouped by what it's actually
+// measuring makes the list scannable. Deliberately NOT added to vocabulary.json's own measure
+// entries — that file is a cross-language SQL/composition contract shared with the Python
+// converter (convert_old_reports.py), not UI-organization metadata (same reasoning
+// graphGuidanceCopy.js's own header comment already gives for keeping guidance copy out of it).
+export const MEASURE_CATEGORIES = [
+    { label: 'Speed', measures: ['speed', 'speedTruck'] },
+    { label: 'Travel time', measures: ['travelTime'] },
+    { label: 'Delay', measures: ['hoursOfDelay', 'avgHoursOfDelay'] },
+    { label: 'Emissions', measures: ['co2Emissions_passenger', 'avgCo2Emissions_passenger', 'co2Emissions_truck', 'avgCo2Emissions_truck'] },
+];
 
 const RESOLUTION_LABELS = {
     '5-minutes': '5 Minutes',
@@ -68,9 +87,9 @@ export const COMPARISON_MODE_OPTIONS = [
 // "Resolution/axis investigation findings" note in the task file confirming
 // GridGraph/BarGraph are already axis-target-agnostic.
 export const DEFAULT_PICK = {
-    graphType: 'BarGraph',
-    measure: 'speed',
-    resolution: '5-minutes',
+    graphType: 'LineGraph',
+    measure: 'travelTime',
+    resolution: 'hour',
     comparisonMode: 'plain',
     // Difference-only: which of the two assigned routes is the anchor
     // ("Main") arm. false (default) = the first-assigned route, matching the

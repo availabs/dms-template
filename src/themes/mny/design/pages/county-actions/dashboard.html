@@ -97,7 +97,7 @@
             </p>
           </div>
 
-          <div class="flex flex-wrap items-center gap-3">
+          <div class="flex flex-wrap items-center gap-3 flex-1">
             <!-- county chip: doubles as the county switcher -->
             <button class="flex items-center gap-2 px-4 py-2 bg-mny-50 border border-mny-200 rounded-full hover:border-mny-400 transition-colors">
               <!-- icon: Location -->
@@ -107,13 +107,20 @@
               <!-- icon: ChevronDown -->
               <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
             </button>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-grn/15 border border-mny-grn/40 font-proxima text-[12px] font-[600] text-mny-900">
-              <span class="w-2 h-2 rounded-full bg-mny-grn"></span>Plan Approved
-            </span>
-            <a href="jurisdictions.html" class="flex items-center gap-2 px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
+            <!-- border-transparent, not no-border: the outlined Prioritize button beside
+                 this one is 2px taller without it, and the pair sits on one row. -->
+            <a href="jurisdictions.html" class="ml-auto flex items-center gap-2 px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] border border-transparent text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
               <!-- icon: Edit -->
               <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
               Edit Actions
+            </a>
+            <!-- The county-priority route. Outlined rather than a second amber pill: two
+                 filled CTAs side by side read as one action split in half, and Edit Actions
+                 is the one that opens the jurisdiction chooser. -->
+            <a href="workspace.html" class="flex items-center gap-2 px-5 py-2.5 bg-mny-50 border border-mny-200 hover:border-mny-400 text-mny-700 hover:text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
+              <!-- icon: List -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"/></svg>
+              Prioritize Actions
             </a>
           </div>
         </div>
@@ -172,131 +179,11 @@
         </div>
       </div>
 
-        <!-- ========================================================
-             SECTION — NEEDS ATTENTION (Card, col-12)
-
-             IMPLEMENTATION CONTRACT — read before rebuilding this live.
-
-             Every tile is (a) a live count and (b) a deep link that turns
-             ONE filter on in the workspace. Nothing here is generated
-             prose: the label states the RULE and the number states the
-             STATE, so the copy stays true at any count. That is
-             deliberate — an earlier draft said "Not one action has been
-             tiered yet", which goes stale the moment someone tiers one
-             and no author would remember to edit it.
-
-             COUNTS come from comma-free 0/1 calculated columns with
-             fn:sum. Commas inside a calc column on a DMS-internal
-             (isDms) source silently fragment the SQL and the cell renders
-             0 with no error — this exact counter hit that bug on page
-             2262755 (rendered 0, should have been 473). So: no COALESCE,
-             no NULLIF, no concat(), no IN (...). Use LIKE, =, IS NULL,
-             ~ regex, nested CASE.
-
-             LINKS drive viewer-facing filters through page state. Two
-             shapes, picked by whether a third state carries meaning:
-
-               · Unary `empty` leaf + usePageFilters + searchParamKey.
-                 ExternalFilters renders these as a TOGGLE chip and reads
-                 ON/OFF from the URL ("the URL is the source of truth"),
-                 pushing values:['1']. Used where the gap is simply
-                 "blank": ?needs_priority=1 · ?needs_cost=1 ·
-                 ?needs_action_type=1
-               · A `<dim>_state` calc column + value filter, where an
-                 explicit non-blank answer is also a gap. Used for
-                 cost_state=invalid (a status string sitting in the cost
-                 field) and critical_facility_state=unanswered (blank OR
-                 "Not Reported"): ?cost_state=invalid ·
-                 ?critical_facility_state=unanswered
-
-             The state columns, comma-free (see the task doc for all four):
-               cost_state:
-                 CASE WHEN data->>'cost_range' ~ '^[<>]?\$' THEN 'ok'
-                      WHEN data->>'cost_range' IS NULL THEN 'missing'
-                      WHEN data->>'cost_range' = 'Not Reported' THEN 'not_reported'
-                      ELSE 'invalid' END AS cost_state
-             ======================================================== -->
-        <div data-dms="section" data-name="needs-attention" class="col-span-12 pb-6">
-          <div class="rounded-[12px] border-l-4 border-mny-y700 border-y border-r border-mny-y500/40 bg-mny-y50 p-4">
-            <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
-              <div>
-                <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Needs your attention</h2>
-                <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-1.5 max-w-[640px]">
-                  Fields plan review will send back. Each tile opens the workspace with that one
-                  filter switched on.
-                </p>
-              </div>
-              <a href="workspace.html" class="font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900 flex items-center gap-1">
-                Open the workspace
-                <!-- icon: ChevronRight -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-              </a>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-
-              <!-- TILE — county tier · unary empty toggle on county_priority -->
-              <a href="workspace.html?needs_priority=1" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
-                <div class="flex items-baseline gap-1.5">
-                  <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">475</span>
-                  <span class="font-display text-[14px] text-mny-400 font-[500] leading-[1] tabular-nums">/ 475</span>
-                </div>
-                <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">No county tier assigned</p>
-                <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  Every action needs a tier before the plan can go to review.
-                </p>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Set tiers →</p>
-              </a>
-
-              <!-- TILE — cost · empty toggle for missing, state column for invalid -->
-              <a href="workspace.html?needs_cost=1" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
-                <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">227</span>
-                <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">No cost range</p>
-                <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  Grant scoring needs a dollar band on every action.
-                </p>
-                <!-- the second cost state, as its own count + link rather than prose -->
-                <span class="inline-flex items-center gap-1 mt-2 font-proxima text-[11px] font-[600] text-mny-redk">
-                  <!-- icon: Warning -->
-                  <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
-                  64 hold a status note, not a cost
-                </span>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Fix cost data →</p>
-              </a>
-
-              <!-- TILE — action type · unary empty toggle -->
-              <a href="workspace.html?needs_action_type=1" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
-                <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">226</span>
-                <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">No action type</p>
-                <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  Without one, an action can't roll up by mitigation category.
-                </p>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Classify actions →</p>
-              </a>
-
-              <!-- TILE — critical facility · state column (blank OR "Not Reported") -->
-              <a href="workspace.html?critical_facility_state=unanswered" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
-                <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">196</span>
-                <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">Critical facility unanswered</p>
-                <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  Blank or “Not Reported”. Required for BRIC and HMGP scoring.
-                </p>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Answer these →</p>
-              </a>
-
-            </div>
-
-            <!-- Secondary gaps: real, but not review blockers. Counts + links only —
-                 each is a plain unary `empty` toggle on its own column. -->
-            <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3 pt-3 border-t border-mny-y500/40">
-              <span class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-700">Also missing</span>
-              <a href="workspace.html?needs_solution=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">60</strong> no solution description</a>
-              <a href="workspace.html?needs_hazard=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">30</strong> no hazard type</a>
-              <a href="workspace.html?needs_problem=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">17</strong> no problem statement</a>
-              <a href="workspace.html?needs_location=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">3</strong> unmapped</a>
-            </div>
-          </div>
-        </div>
+        <!-- The "Needs your attention" band used to sit here, between the status
+             strip and the map. It moved to jurisdiction-prioritization.html, where
+             the four fields it counts are actually editable — a gap tile that lands
+             somewhere read-only is a dead end. Nothing replaces it: the dashboard
+             reports, and the two hero buttons are the routes into the work. -->
 
         <!-- ========================================================
              SECTION — MAP (Map, col-6 · ROW-SPAN 2)
@@ -341,21 +228,6 @@
               </div>
             </div>
 
-            <!-- precision caveat — the honest note, same as the statewide map -->
-            <div class="mt-3 flex items-start gap-2.5 bg-mny-50 border border-mny-100 rounded-[10px] p-3">
-              <!-- icon: Information -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-              <div>
-                <p class="font-proxima text-[13px] text-mny-900 font-[600] leading-[1.5]">Read the borders, not the pins.</p>
-                <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">
-                  All 472 mapped actions sit on just
-                  <strong class="text-mny-900 font-[600]">26 coordinates</strong> — 395 a town centroid,
-                  73 the county centroid, 4 geocoded. A donut says <em>which jurisdiction</em> owns the
-                  work, never where the project is; the polygon is the real unit of precision. See
-                  <a href="../../reports/actions-qa.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Actions Data Quality</a>.
-                </p>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -409,7 +281,7 @@
         </div>
 
         <div data-dms="section" data-name="action-type-mix" class="col-span-12 lg:col-span-6 pb-6 lg:pl-3">
-          <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Mitigation approach</h2>
+          <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Mitigation category</h2>
           <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5 mb-4">Primary action type — 226 unclassified</p>
           <div class="space-y-2.5">
             <div class="flex items-center gap-3">
@@ -486,16 +358,15 @@
             </div>
           </div>
 
+          <!-- The five trailing columns are fixed-width, so Action Name is the one that
+               flexes. Below ~1000px that squeezed it to ~126px and the names wrapped to
+               three lines, so the table scrolls inside its own container instead —
+               the same treatment the two worklist tables in this section use. -->
           <div class="rounded-[12px] border border-mny-100 overflow-hidden">
-            <table class="w-full border-collapse">
+            <div class="overflow-x-auto">
+            <table class="w-full border-collapse min-w-[980px]">
               <thead>
                 <tr class="bg-mny-50">
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[150px]">
-                    <span class="inline-flex items-center gap-1 cursor-pointer hover:text-mny-900">Action #
-                      <!-- icon: ArrowsVertical -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 20V4m0 0L4.5 7.5M8 4l3.5 3.5M16 4v16m0 0 3.5-3.5M16 20l-3.5-3.5"/></svg>
-                    </span>
-                  </th>
                   <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[178px]">
                     <span class="inline-flex items-center gap-1 cursor-pointer hover:text-mny-900">Jurisdiction
                       <!-- icon: ArrowsVertical -->
@@ -512,9 +383,8 @@
               <tbody>
 
                 <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer">
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 tabular-nums">2026-DelawareT-03</td>
                   <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Delaware (Town)</td>
-                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Delaware - Kohlertown Route 52, Culvert Issues</a></td>
+                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Delaware - Kohlertown Route 52, Culvert Issues</a></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>In-Progress</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$50k – $150k</td>
@@ -522,9 +392,8 @@
                 </tr>
 
                 <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer">
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 tabular-nums">36105-0029</td>
                   <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Fallsburg (Town)</td>
-                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Maplewood Ave Flooding/Culvert Issues</a></td>
+                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Maplewood Ave Flooding/Culvert Issues</a></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$150k – $500k</td>
@@ -532,9 +401,8 @@
                 </tr>
 
                 <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer">
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 tabular-nums">36105-0079</td>
                   <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Rockland (Town)</td>
-                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Rockland - Acquire Generators for Critical Facilities</a></td>
+                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Rockland - Acquire Generators for Critical Facilities</a></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Most / all</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$150k – $500k</td>
@@ -542,9 +410,8 @@
                 </tr>
 
                 <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer">
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 tabular-nums">2026-JeffersonvilleV-02</td>
                   <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Jeffersonville (Village)</td>
-                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Jeffersonville - Laundry Brook and Callicoon Creek Intersection Flooding</a></td>
+                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Jeffersonville - Laundry Brook and Callicoon Creek Intersection Flooding</a></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$50k – $150k</td>
@@ -553,9 +420,8 @@
 
                 <!-- a row carrying the real cost-field fault, flagged inline -->
                 <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer">
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 tabular-nums">—</td>
                   <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Bethel (Town)</td>
-                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Bethel - Stormwater System Assessment</a></td>
+                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Bethel - Stormwater System Assessment</a></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
                   <td class="px-3 py-3">
@@ -569,9 +435,8 @@
                 </tr>
 
                 <tr class="hover:bg-mny-50/60 cursor-pointer">
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 tabular-nums">36105-0112</td>
                   <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Sullivan (County)</td>
-                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Sullivan County - County Road 164 Mitigation</a></td>
+                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Sullivan County - County Road 164 Mitigation</a></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 italic">Not set</td>
@@ -580,8 +445,10 @@
 
               </tbody>
             </table>
+            </div>
 
-            <!-- pagination -->
+            <!-- pagination — outside the scroll container, so it stays put while the
+                 columns scroll under it -->
             <div class="flex flex-wrap items-center justify-between gap-3 bg-mny-50 border-t border-mny-100 px-3 py-2.5">
               <span class="font-proxima text-[12px] text-mny-400">Showing <span class="font-[700] text-mny-700 tabular-nums">1–6</span> of <span class="font-[700] text-mny-700 tabular-nums">475</span> actions</span>
               <div class="flex items-center gap-1">
@@ -614,9 +481,10 @@
             <span class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-400">County Actions Workflow</span>
             <span class="font-proxima text-[13px] font-[700] text-mny-y700">1 · Dashboard</span>
             <a href="jurisdictions.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">2 · Jurisdictions</a>
-            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Workspace</a>
-            <a href="action-view.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · Action View</a>
-            <a href="action-edit.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">5 · Action Edit</a>
+            <a href="jurisdiction-prioritization.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Jurisdiction Prioritization</a>
+            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · County Workspace</a>
+            <a href="action-view.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">5 · Action View</a>
+            <a href="action-edit.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">6 · Action Edit</a>
             <span class="ml-auto font-proxima text-[12px] text-mny-400">Sullivan County · 475 actions · data as of 2025-02-25</span>
           </div>
         </div>
@@ -761,7 +629,8 @@
     });
     map.on('click', 'juris-fill', (e) => {
       const p = e.features[0].properties;
-      if (p.n) window.location.href = `workspace.html?jurisdiction=${encodeURIComponent(p.name)}`;
+      // a town on the map is a jurisdiction, so it opens the jurisdiction worklist
+      if (p.n) window.location.href = `jurisdiction-prioritization.html?jurisdiction=${encodeURIComponent(p.name)}`;
     });
 
     // ── single-action popup ──────────────────────────────────────────────
