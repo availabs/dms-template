@@ -844,7 +844,33 @@ const dialogActions = {
 /* ---------- dataCard — the workhorse Card section (card.theme.jsx keys) -----
    Default: metaSM mist headers over display-ink values, hairline cell
    borders, 6px radius, sky link color. `kpi` = the border-t accent stat
-   tile from components.html §04.                                           */
+   tile from components.html §04. Four accent variants (kpi_sky/kpi_field/
+   kpi_amber/kpi_ink) let an author give each tile in a KPI row a distinct
+   top-border color from the existing style dropdown — no per-section border
+   override needed (G2).                                                     */
+
+// The stat-tile recipe, parameterized by top-accent color. Named dataCard
+// styles inherit only from styles[0] (not from each other), so each KPI
+// variant must carry the full treatment — this keeps them in lockstep.
+const mkKpi = (accent) => ({
+  header: `w-full ${FONT_META} text-[9.5px] leading-[1.3] font-medium uppercase tracking-[0.14em] text-[${C.mist}]`,
+  // Layout-only, NO font spec — the numeral's size comes from the cell's
+  // valueFontStyle token (use `displayXL` for the 38px KPI figure). Baking a
+  // font here lands text-[38px] on EVERY cell in the card (captions included),
+  // which is exactly the collision the default dataCard `value` avoids.
+  value: `w-full`,
+  description: `w-full ${FONT_PROSE} text-[12px] leading-[1.5] font-normal text-[${C.slate}]`,
+  // Per-side colors, NOT the `border-[ink]/10` shorthand: the shorthand sets
+  // border-top-color too and (by Tailwind's stylesheet order) overrides
+  // border-t-[accent], so the accent never shows. Coloring r/b/l individually
+  // leaves the top color owned solely by the accent.
+  itemBorder: `bg-white border border-r-[${C.ink}]/10 border-b-[${C.ink}]/10 border-l-[${C.ink}]/10 border-t-2 border-t-[${accent}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
+  cardBorder: `bg-white border border-r-[${C.ink}]/10 border-b-[${C.ink}]/10 border-l-[${C.ink}]/10 border-t-2 border-t-[${accent}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
+  // v2 (inherited from default): gutter is data, not a class — 16px
+  // ambient, overridable per section/cell (was `p-4`).
+  cellGutter: 16,
+  headerValueWrapper: `w-full rounded-md flex flex-col items-start justify-center gap-1`,
+});
 
 const dataCard = {
   options: { activeStyle: 0 },
@@ -938,19 +964,16 @@ const dataCard = {
     {
       // The stat tile — white card with a 2px status-color top accent,
       // metaXS mist header over a big display numeral (KPI = displayXL +
-      // tabular-nums per theme.html). Swap the accent color per card via
-      // the section border controls when needed.
+      // tabular-nums per theme.html). `kpi` is the field-green default;
+      // pick kpi_sky/kpi_field/kpi_amber/kpi_ink to accent a tile per its
+      // meaning (held=sky, for-sale=field, pending=amber, sold=ink).
       name: 'kpi',
-      header: `w-full ${FONT_META} text-[9.5px] leading-[1.3] font-medium uppercase tracking-[0.14em] text-[${C.mist}]`,
-      value: `w-full ${FONT_DISPLAY} font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-[${C.ink}] tabular-nums`,
-      description: `w-full ${FONT_PROSE} text-[12px] leading-[1.5] font-normal text-[${C.slate}]`,
-      itemBorder: `bg-white border ${BORDER} border-t-2 border-t-[${C.field}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
-      cardBorder: `bg-white border ${BORDER} border-t-2 border-t-[${C.field}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
-      // v2 (inherited from default): gutter is data, not a class — 16px
-      // ambient, overridable per section/cell (was `p-4`).
-      cellGutter: 16,
-      headerValueWrapper: `w-full rounded-md flex flex-col items-start justify-center gap-1`,
+      ...mkKpi(C.field),
     },
+    { name: 'kpi_sky',   ...mkKpi(C.sky) },
+    { name: 'kpi_field', ...mkKpi(C.field) },
+    { name: 'kpi_amber', ...mkKpi(C.amber) },
+    { name: 'kpi_ink',   ...mkKpi(C.ink) },
   ],
 };
 
@@ -1682,6 +1705,37 @@ const landbankTheme = {
       sky: `bg-[${C.sky}]`,
       field: `bg-[${C.field}]`,
       muted: `bg-[${C.steel}]/45`,
+    },
+  },
+
+  // stacked_bar: single-track multi-segment proportional bar (the disposition
+  // pipeline, G6). Papertint track matching dataBar; `fills` keyed by the seven
+  // canonical status names so a segment's `color` reads the same hue as its
+  // status pill and map pin. `showLegend` renders the counts line beneath.
+  stackedBar: {
+    wrapper: 'w-full',
+    track: `w-full flex h-2.5 rounded-sm bg-[${C.papertint}] overflow-hidden`,
+    segment: 'h-full shrink-0',
+    legend: `pt-1.5 ${FONT_META} text-[11px] font-medium tabular-nums text-[${C.slate}]`,
+    empty: `pt-1.5 ${FONT_META} text-[11px] font-medium text-[${C.mist}]`,
+    fills: {
+      // Canonical status keys (mirror the pill / map-pin system).
+      for_sale:       `bg-[${C.field}]`,
+      aclb_rehab:     `bg-[${C.sky}]`,
+      sale_pending:   `bg-[${C.amber}]`,
+      co_development: `bg-[${C.violet}]`,
+      in_process:     `bg-[${C.steel}]`,
+      on_hold:        `bg-[${C.rose}]`,
+      sold:           `bg-[${C.ink}]`,
+      // Brand-name aliases for non-status pipelines.
+      primary: `bg-[${C.sky}]`,
+      sky:     `bg-[${C.sky}]`,
+      field:   `bg-[${C.field}]`,
+      amber:   `bg-[${C.amber}]`,
+      violet:  `bg-[${C.violet}]`,
+      rose:    `bg-[${C.rose}]`,
+      ink:     `bg-[${C.ink}]`,
+      muted:   `bg-[${C.steel}]/45`,
     },
   },
   parcelPlate: parcelPlateTheme,
