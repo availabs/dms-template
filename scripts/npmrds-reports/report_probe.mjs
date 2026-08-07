@@ -40,12 +40,26 @@
 //   --out <dir>       output dir (default scratchpad/npmrds-sub/tmp)
 //   --no-shot         skip screenshot
 //   --no-json         skip JSON dump
+//   --expect <spec>   assert the live page matches a report_build.mjs spec (see
+//                      research/npmrds-reports/report-spec.md for the format): every AVL Graph/
+//                      Map/Info Box graph fired a real /graph request carrying exactly its
+//                      assigned routes as seriesVariants, and no console/page errors. Prints
+//                      PASS/FAIL per assertion and exits 1 on any failure (exit 0 otherwise) —
+//                      the only flag that turns this script's normally report-only output into
+//                      a gate. Matches a spec graph to a live query by checking that every one of
+//                      its assigned routes' `name` appears in the query's decoded seriesVariants
+//                      labels, not by any structural id — see the "--verify decision" in
+//                      planning/transportny/tasks/current/report-spec-and-build-script.md for why
+//                      this lives here instead of on report_build.mjs itself. RouteCompare graphs
+//                      are skipped (no seriesVariants-shaped query); Map/Info Box are included
+//                      (confirmed 2026-07-28 to ride the same comparisonSeries query path as AVL
+//                      Graph — see report-spec.md's "startTime/endTime" section).
 //
 // For a truly novel probe, prefer --eval with a tiny probe file over forking this script.
 // If the same --eval probe gets written twice, promote it to a flag here.
 
 import { chromium } from 'playwright';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -72,6 +86,7 @@ const opts = {
   json: true,
   auth: null,
   block: [], // substrings of request URLs to abort — for isolating connection-pool/waterfall effects
+  expect: null,
 };
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -82,6 +97,7 @@ for (let i = 1; i < argv.length; i++) {
   else if (a === '--bodies') opts.bodies = true;
   else if (a === '--section') opts.section = next();
   else if (a === '--eval') opts.eval = next();
+  else if (a === '--expect') opts.expect = next();
   else if (a === '--host') opts.host = next();
   else if (a === '--api') opts.api = next();
   else if (a === '--viewport') {
@@ -105,7 +121,6 @@ mkdirSync(opts.out, { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: opts.viewport });
 if (opts.auth) {
-  const { readFileSync } = await import('fs');
   const token = readFileSync(opts.auth, 'utf8').trim();
   await page.addInitScript(t => localStorage.setItem('userToken', t), token);
   console.log(`auth: injecting userToken from ${opts.auth}`);
@@ -179,7 +194,11 @@ const sections = await page.evaluate(() => {
     .filter(el => !el.parentElement.closest('div.relative.group')); // outermost only
   const out = cells
     .map(el => ({
-      title: (el.querySelector('.font-display')?.textContent || '').trim().slice(0, 80),
+      // In edit mode, every section cell's FIRST .font-display match is the hover
+      // "Add Section" control's own label ("Add"), not the section's real title — take
+      // the first match that isn't literally that placeholder (found live 2026-08-07
+      // building --expect: every census title came back "Add", silently).
+      title: ([...el.querySelectorAll('.font-display')].map(e => e.textContent.trim()).find(t => t !== 'Add') || '').slice(0, 80),
       svgs: graphSvgs(el),
     }))
     .filter(s => s.title || s.svgs.length);
@@ -268,12 +287,58 @@ if (evalResult !== undefined) console.log('eval result:', JSON.stringify(evalRes
 if (shotPath) console.log(`screenshot: ${shotPath}`);
 if (sectionShot) console.log(`section screenshot: ${sectionShot}`);
 
+// ---- --expect: assert the live page matches a report_build.mjs spec ------
+let expectResult = null;
+if (opts.expect) {
+  const spec = JSON.parse(readFileSync(path.resolve(opts.expect), 'utf8'));
+  const checks = [];
+  const record = (name, ok, detail) => checks.push({ name, ok, detail });
+
+  for (const g of spec.graphs) {
+    if (g.graphType === 'RouteCompare') continue; // no seriesVariants-shaped query — see header note
+    const assignedNames = spec.routes.filter(r => (r.graphs || []).includes(g.key)).map(r => r.name);
+    if (!assignedNames.length) continue; // report_build.mjs's own structural check already fails builds with no routes assigned
+
+    const matches = graphCaptures.filter(c => assignedNames.every(n => c.decoded.includes(n)));
+    record(`graph "${g.key}": fired a /graph request`, matches.length > 0,
+      matches.length ? `${matches.length} matching capture(s)` : `no capture's seriesVariants contained all of: ${assignedNames.join(', ')}`);
+
+    if (matches.length) {
+      // Count `\"label\":\"` occurrences inside the matched capture's own seriesVariants array —
+      // cheap and sufficient (route names are the only thing that produces this key shape in the
+      // decoded query text), rather than re-parsing the nested stringified JSON options key. The
+      // backslash-escaped quotes are real: the Falcor path segment is itself a JSON-stringified
+      // object, so decodeURIComponent leaves its literal embedded `\"` untouched.
+      const labelCount = (matches[0].decoded.match(/\\"label\\":\\"/g) || []).length;
+      record(`graph "${g.key}": series count matches assigned routes`, labelCount === assignedNames.length,
+        `expected ${assignedNames.length}, query carried ${labelCount}`);
+    }
+
+    if (g.title) {
+      const section = sections.find(s => s.title === g.title);
+      const rendered = section && section.svgs.length && section.svgs.some(v => v.paths + v.rects + v.circles > 0);
+      record(`graph "${g.key}": section "${g.title}" rendered non-empty`, Boolean(rendered),
+        !section ? 'no census section with this title' : rendered ? 'has non-empty SVG content' : 'NO SVG or EMPTY SVG');
+    }
+  }
+  record('no console errors', consoleErrors.length === 0, `${consoleErrors.length} error(s)`);
+  record('no page errors', pageErrors.length === 0, `${pageErrors.length} error(s)`);
+
+  const failed = checks.filter(c => !c.ok);
+  expectResult = { pass: failed.length === 0, checks };
+  console.log(`\n== --expect ${path.basename(opts.expect)} ==`);
+  for (const c of checks) console.log(`  [${c.ok ? 'PASS' : 'FAIL'}] ${c.name}${c.ok ? '' : ` — ${c.detail}`}`);
+  console.log(failed.length ? `${failed.length}/${checks.length} check(s) FAILED` : `all ${checks.length} check(s) passed`);
+}
+
 if (opts.json) {
   const jsonPath = path.join(opts.out, `probe_${slug}.json`);
   writeFileSync(jsonPath, JSON.stringify({
     url, when: new Date().toISOString(), opts: { ...opts, out: undefined },
     consoleErrors, pageErrors, badResponses, stillPending, sections, bodyText,
-    graphTotal, graphCaptures, evalResult,
+    graphTotal, graphCaptures, evalResult, expectResult,
   }, null, 1));
   console.log(`json: ${jsonPath}`);
 }
+
+if (expectResult && !expectResult.pass) process.exit(1);

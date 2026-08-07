@@ -607,7 +607,7 @@ def convert_report(old_id, dry_run=False, replace=False):
         published_refs.append({"id": str(r["id"]),
                                "ref": f"npmrdsv5+{COMPONENT_TYPE}"})
     groups = page_template.get("draft_section_groups") or [
-        {"name": "default", "index": 0, "theme": "content", "position": "content"}]
+        {"name": "default", "index": 0, "theme": "flush", "position": "content"}]
     dms(["raw", "update", str(page_id)],
         data={"sections": published_refs, "section_groups": groups,
               "draft_section_groups": groups, "published": "", "has_changes": False})

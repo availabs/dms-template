@@ -1,0 +1,34 @@
+{
+  "title": "Golden Corpus - Line Graph",
+  "slug": "converted_reports/golden_corpus_linegraph",
+  "description": "Golden-corpus representative page for LineGraph (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.",
+  "graphs": [
+    {
+      "key": "overview",
+      "title": "Travel Time Comparison",
+      "graphType": "LineGraph",
+      "measure": "travelTime",
+      "resolution": "hour",
+      "comparisonMode": "plain",
+      "why": "Golden-corpus representative for the LineGraph code path."
+    }
+  ],
+  "routes": [
+    {
+      "id": "nb",
+      "route_id": 2195805,
+      "name": "NY-9D Northbound",
+      "startDate": "2025-01-01",
+      "endDate": "2025-02-28",
+      "graphs": ["overview"]
+    },
+    {
+      "id": "sb",
+      "route_id": 2195804,
+      "name": "NY-9D Southbound",
+      "startDate": "2025-01-01",
+      "endDate": "2025-02-28",
+      "graphs": ["overview"]
+    }
+  ]
+}
