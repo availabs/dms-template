@@ -1,15 +1,117 @@
 # Reports page — § 01 template catalog
 
-**Project:** TransportNY · **Topic:** themes · **Status:** DONE, live-verified · **Started/finished:** 2026-08-06
+**Project:** TransportNY · **Topic:** themes · **Status:** DONE, live-verified · **Started/finished:** 2026-08-06 · follow-up bugs split into separate task files, see below.
+
+## Follow-up, same day: more staleness found post-hotfix, split into separate task files (2026-08-06)
+
+Ryan spot-checked the live catalog and found several more things wrong, on top of the hotfix below.
+Triaged and root-caused; work items split out into their own task files (this doc stays about the
+catalog build itself, which is DONE) per Ryan's request to keep each fix/phase in its own document:
+
+- **[`../current/catalog-page-slug-naming-fix.md`](../current/catalog-page-slug-naming-fix.md)** —
+  the "Snapshot" card links to `/converted_reports/rochester_inner_loop_0` (and vice versa); page
+  slugs are generated from the OLD system's internal template name, not the catalog's curated
+  title. Also carries the header `purpose`/`metaLine` placeholder-text fix (both found in the same
+  triage pass, both small/cheap).
+- **[Dynamic-Report non-graph section binding](../../../../src/dms/planning/tasks/current/dynamic-report-nongraph-section-binding.md)** —
+  the keystone finding: Map/Route Compare Component/TMC Info Box sections don't reliably fill from
+  Dynamic-Report route picks the way AVL Graph sections do (live-reproduced by picking routes
+  through the Add Routes modal and watching which sections actually rendered). Filed as a DMS
+  library task since the root causes are in shared library code, not converter-specific.
+- **[`report_probe.mjs --expect` + golden corpus](../current/report-probe-expect-and-golden-corpus.md)**
+  and **[converter vocabulary unit tests](../current/converter-vocabulary-unit-tests.md)** — the
+  broader testing-structure ask that came out of this same conversation (the converter/vocabulary
+  tooling is large and load-bearing, and regressions in it get caught by hand, repeatedly — see
+  those files for the full reasoning).
+- Two findings from the same triage did NOT need their own task: relative-dates handling was
+  checked and found solid (no action needed — see the binding-gap task file for the pointer), and
+  junk placeholder route-name content (e.g. one route literally named "Long Long Long Long Long
+  Name Here") is data debt from the old system, not a code bug — noted, not scheduled.
+
+## Hotfix, same day: converted templates were broken by Design Push #2
+
+Ryan caught this live, right after the catalog shipped: the 12 templates' own pages had (1) a
+stale white/blank rail-width gap in view mode, and (2) — the serious one — **adding routes via
+the Dynamic Report entry-gate modal never updated any graph.**
+
+**Root cause, both:** `scripts/npmrds-reports/convert_old_reports_lib/` (the Python converter
+used by `--template-id`/`--report-id`) was never updated for two page-model changes that shipped
+earlier the same day (see `npmrds-design-v2-implementation.md`'s "Design push #2" and the flush-rail
+work above it):
+1. `sidebarHideInView` (the flag that collapses the 340px rail in view mode once RRL renders
+   nothing) was added to the **Report Page template** (`2187021`) but never copied onto pages the
+   converter creates — every converted page inherited `sidebar` from the template but not this flag.
+2. Design Push #2 moved route↔graph binding from the route's own `graphIds` to the graph's own
+   `display._measurePick.routeIds` — but `build_graph_section_data` (the function that clones a
+   graph template's state onto a new page) was never updated to set it. Every converted graph came
+   out with `_measurePick` entirely absent, so `useGraphPublish.js`'s publish effect always resolved
+   **zero** routes for it — regardless of what a viewer picked in the modal. Confirmed by tracing
+   `useGraphPublish.js`'s `findSelfBoundGraphs`/`transformReportRoutes` directly, then reproducing
+   live in a real browser (clicked through the Add-Routes modal on `converted_reports/snapshot`,
+   confirmed both graphs went from blank to real rendered data with the fix, blank without it).
+
+Ryan's own framing, worth keeping as a standing practice: he'd explicitly asked, right after the
+flush-rail/`ReportPageHeader` work landed, "does the converter also need updating so every new
+report going forward gets this" (see this doc's own `npmrds-design-v2-implementation.md`
+cross-reference, the `templateRole:"framework"` fix) — that question was answered for THAT change,
+but Design Push #2 shipped later the same day and never got the same check. **Whenever a report/graph
+data-shape or model change ships, explicitly check whether `convert_old_reports_lib/` needs the
+matching update — don't let a later change in the same session skip the check a similar earlier
+change got.**
+
+**Fixed:**
+- `convert_template.py`/`convert_report.py`: copy `sidebarHideInView` from the page template (same
+  line as the existing `sidebar` copy).
+- `section_builders.py`'s `build_graph_section_data`: when the cloned graph template already wires
+  the `$self` comparison_series subscriber, set `display._measurePick = {weekdays:{}, start:'',
+  end:'', routeIds: info["assigned"]}` — `info["assigned"]` is already the exact route_comp_id list
+  (the inverse of the old per-route `graphIds`), no new computation needed.
+
+**Rolled out:** re-ran `--replace` for all 12 catalog templates against the fixed converter (slugs —
+and therefore the catalog's `page_path` values — stayed identical, no relink needed; graph/route
+counts stayed identical too, confirmed by re-counting sections before publishing this doc). Catalog
+metadata (name/description/tags/difficulty/counts_label/graph_count/page_path) re-applied to the 12
+fresh `reports_snap_2` rows the replace created (the old ones were deleted along with the old pages).
+**Page ids changed** — the ones cited in the "Done" section below are now stale; current ids are in
+`reports_snap_2` via the `_converted_from_old_template_id` marker, not worth re-copying into this doc.
+
+**Verified live, interactively, in a real browser** (not just data-level): loaded
+`converted_reports/snapshot`, the entry-gate "Add Routes" modal correctly appeared (2 route slots
+after grouping), picked 2 real routes, clicked "Add 2 Routes" — both graphs rendered real data
+immediately. URL param format for direct testing is `?routes=<id>|||<id>` (pipe-delimited), not
+comma-separated — the modal's own `?routes=` builder uses `|||`, confirmed by reading the resulting
+URL after clicking through.
+
+**The other 4 non-catalog templates — DONE too, 2026-08-06 (Ryan asked right after the above).**
+Old ids `90`/`204`/`238`/`265` (`covid_comparison`/`bottleneck_examples`/
+`change_over_time_analysis_month_v1`/`weekly_averages`) had the identical bug — converted after
+Design Push #2 shipped, by the same not-yet-fixed converter. Re-ran `--replace` for all 4 against the
+fixed converter; slugs stayed identical (no other references to update — these aren't part of the
+catalog, no `reports_snap_2` metadata to re-apply). Verified directly against the DB:
+`sidebarHideInView: true` on all 4 pages, `_measurePick` set on every self-bound graph/map section
+(6/6, 4/4, 21/21, 20/20 across the 4 pages) — not re-verified interactively in the browser (the
+catalog's own `converted_reports/snapshot` click-through already proved the mechanism; these 4 are
+the same code path, same fix, just different content).
+
+Any `--report-id` (regular, non-template) report converted between Design Push #2 landing and this
+fix would have the same bug — none identified as having been converted in that window, and none
+were searched for/fixed here (would need a corpus-wide sweep, not attempted).
 
 ## Done — live-verified 2026-08-06
 
-Built and shipped. **Verify URL:** `http://npmrds.localhost:5173/reports` (public, no auth needed) — also
-`/edit/reports` for the authenring view. Page id `2208581`, section group UUID
-`b77dbc82-4485-4e9a-8046-cc3a7eedf5b4`. All 12 templates render, correctly grouped into the 5
-categories (1/2/1/4/4 cards), each showing name/description/difficulty/route+graph counts and a real
-working link to its converted report page. Verified both the authenticated draft/edit view and the
-plain public view via `report_probe.mjs` (0 console/page errors both times) — screenshots match.
+Built and shipped. **Moved 2026-08-06, later same day** (Ryan: "stay out of prod") from `/reports`
+to **`/converted_reports/reports`** — `url_slug` + `parent` set to `2188366` ("Converted Reports"),
+matching every other converted page's convention. **Verify URL:**
+`http://npmrds.localhost:5173/converted_reports/reports` (public, no auth needed) — also
+`/edit/converted_reports/reports` for the authoring view. Page id `2208581`, section group UUID
+`b77dbc82-4485-4e9a-8046-cc3a7eedf5b4`. The old `/reports` URL no longer matches any page (confirmed
+— no page has that slug anymore); it now silently falls through to an unrelated pre-existing MAP-21
+PM3 page, a known platform quirk (slug fallback when nothing matches exactly, not something this
+move caused) documented in `traversing-dms-pages.md`'s gotcha list. All 12 templates render,
+correctly grouped into the 5 categories (1/2/1/4/4 cards), each showing name/description/difficulty/
+route+graph counts and a real working link to its converted report page. Verified both the
+authenticated draft/edit view and the plain public view via `report_probe.mjs` (0 console/page
+errors both times) — screenshots match.
 
 **What shipped:**
 - `reports_snap_2` extended with `tags`/`graph_count`/`page_path`/`difficulty`/`counts_label` columns
@@ -79,6 +181,15 @@ plain public view via `report_probe.mjs` (0 console/page errors both times) — 
    UUID land in `draft_sections` but have nowhere to render. Fixed via `dms page update --data
    '{"draft_section_groups":[...]}'` (never `--set`, which corrupted the array into a bare number on
    the first attempt) with a real UUID `name`, matching that same UUID on every section's own `group`.
+
+**Stale as of 2026-08-07 — route-slot counts below predate the converter's route-comp merge/dedup
+pass.** `../completed/converter-route-comp-redesign.md` collapsed old comps that shared a routeId +
+calendar date range (differing only in peak/weekday/resolution, now expressed per-graph) into one
+route entry — Snapshot's route-slot count dropped 11→4, Monthly Speed Comparisons 7→2, This Month
+vs... 8→4, etc. `graph_count` is unaffected (the merge only touches `routes[]`). Left the table below
+as originally written per this repo's "don't rewrite history you didn't write" convention — treat
+its **route slots** column as historical, not current; re-measure from the live page/`reports_snap_2`
+row if you need today's number.
 
 **Real measured counts vs. the mockup's illustrative ones** (used the former — real page section
 counts, not the mockup's numbers off the old template's raw, pre-conversion `graph_comps`):

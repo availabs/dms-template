@@ -162,7 +162,18 @@ export function useGraphPublish({ item, isEdit, routes, pageState, setActionPara
   // comparison-series resolver).
   useEffect(() => {
     if (!setActionParam) return;
-    const routesByCompId = new Map(routes.map(r => [r.route_comp_id, r]));
+    // A merged route entry (converter-route-comp-redesign.md — several old comps sharing the
+    // same routeId+calendar dates collapsed into one entry) carries `route_comp_ids`, the FULL
+    // list of every comp id it absorbed — each graph's own `_measurePick.routeIds` was frozen at
+    // conversion time against the ORIGINAL per-comp ids, so a graph fed by a since-merged-away
+    // comp must still resolve to the one entry that now represents it. Falls back to the single
+    // `route_comp_id` for any entry with no `route_comp_ids` (every entry from before this fix,
+    // and every never-merged entry) — same result as before, not a behavior change there.
+    const routesByCompId = new Map();
+    routes.forEach((r) => {
+      const ids = Array.isArray(r.route_comp_ids) && r.route_comp_ids.length ? r.route_comp_ids : [r.route_comp_id];
+      ids.forEach((id) => { if (id != null) routesByCompId.set(id, r); });
+    });
     graphs.forEach(({ sectionId, paramKey, routeIds, weekdays, start, end }) => {
       // A `routeIds` entry whose route was removed from the report simply resolves to nothing
       // here and is silently dropped — no cleanup effect, no rewrite of the graph's own stored

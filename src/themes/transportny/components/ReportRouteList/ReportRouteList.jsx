@@ -144,11 +144,17 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
 
   const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
 
-  // Design push #2 (2026-08-06): `graphs` (the discovered self-bound sibling graphs) is no longer
-  // consumed here — a route no longer shows per-graph assignment chips (see RouteRow.jsx), and
-  // graph assignment itself is now a QuickControls-owned field on each graph's own state, not a
-  // route-side toggle. useGraphPublish still needs calling for its publish/broadcast effects.
-  useGraphPublish({
+  // Design push #2 (2026-08-06) removed the per-graph assignment CHIPS a route used to show
+  // (see RouteRow.jsx) — that's still gone, graph assignment is a QuickControls-owned field on
+  // each graph's own state, not a route-side toggle. But `graphs` (the discovered self-bound
+  // sibling graphs, already computed here for the publish/broadcast effects below) is exactly
+  // the live source of truth for a lighter ask: how many graphs does each route feed, right now
+  // — found live 2026-08-07, Ryan: "I don't see the number of graphs each route feeds, it should
+  // be in the RRL." `routes[].graphIds` (the old per-route field the Python converter still
+  // writes) is NOT used for this — it's write-once at conversion time and never updated when an
+  // author reassigns a route via QuickControls' Routes pill (which only ever writes the GRAPH's
+  // own `_measurePick.routeIds`), so it goes stale the moment anyone touches Quick Controls.
+  const { graphs } = useGraphPublish({
     item,
     isEdit,
     routes: effectiveRoutes,
@@ -156,6 +162,11 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
     setActionParam,
     clearActionParam,
   });
+  const graphCountByCompId = useMemo(() => {
+    const counts = new Map();
+    graphs.forEach((g) => (g.routeIds || []).forEach((id) => counts.set(id, (counts.get(id) || 0) + 1)));
+    return counts;
+  }, [graphs]);
 
   // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
   // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
@@ -415,6 +426,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                 key={r.route_comp_id ?? i}
                 route={r}
                 miles={mileageByRouteCompId.get(r.route_comp_id)}
+                graphCount={graphCountByCompId.get(r.route_comp_id) || 0}
                 theme={t}
                 Icon={Icon}
                 ColorPicker={ColorPicker}

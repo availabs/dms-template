@@ -10,6 +10,7 @@ import {
   DEFAULT_PICK,
 } from '../MeasurePicker/composeMeasureConfig';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
+import { SELF_PARAM_KEY_SENTINEL } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_PRESETS, timeOfDayToken, formatDateShort } from '../ReportRouteList/utils';
 
 /**
@@ -32,15 +33,22 @@ import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_
  *      never drops — it's the reason this row exists.
  */
 export function npmrdsQuickControls({ state, dwAPI, currentComponent, isEdit, canEditSection, siblingSections = [], pageState }) {
-  // `state?.comparisonSeries?.enabled` (set unconditionally by applyMeasurePickToState) is the
-  // real signal this section was actually composed by the measure picker — required in addition
-  // to `useDataSource`/isReportPage now that Quick Controls is registered for the whole
-  // "Spreadsheet"/"Map" component types (design push #2), not just "AVL Graph": a report page can
-  // carry an incidental Spreadsheet for an unrelated purpose (e.g. this report's own
-  // "Add a Route to Your Report" search grid), and that section has no comparisonSeries/
-  // _measurePick at all — found live 2026-08-06, Quick Controls was rendering a meaningless
-  // "no routes / travel time / all day" pill row on it before this check was added.
-  if (!(isEdit && canEditSection && currentComponent?.useDataSource && state?.comparisonSeries?.enabled && isReportPage(siblingSections))) return null;
+  // Gate on the actual self-binding mechanism (an enabled `$self` comparison_series subscriber —
+  // the same test `useGraphPublish.js`'s `findSelfBoundGraphs` uses to decide whether a section
+  // receives a published route list at all) rather than `state?.comparisonSeries?.enabled`, a
+  // Graph/Spreadsheet-only convenience flag `route_map.py`'s Map template builders never set
+  // (Map has its own `symbologies`/series-template layer mechanism — see
+  // `dynamic-report-nongraph-section-binding.md` item 1). Checking `comparisonSeries.enabled`
+  // meant the "Routes" pill structurally could never render for a Map section in edit mode, even
+  // though `_measurePick`/`routeIds` resolve and publish correctly for Map exactly like any other
+  // self-bound section. Still correctly excludes an incidental Spreadsheet with no self-binding at
+  // all (e.g. this report's own "Add a Route to Your Report" search grid — found live 2026-08-06,
+  // Quick Controls was rendering a meaningless "no routes / travel time / all day" pill row on it
+  // before this check was added) since that section carries no such subscriber either.
+  const isSelfBound = (state?.display?._functions?.subscribers || []).some(
+    (s) => s?.functionId === 'comparison_series' && s?.enabled && s?.paramKey === SELF_PARAM_KEY_SENTINEL
+  );
+  if (!(isEdit && canEditSection && currentComponent?.useDataSource && isSelfBound && isReportPage(siblingSections))) return null;
   return <QuickControlsRow state={state} dwAPI={dwAPI} currentComponent={currentComponent} pageState={pageState} />;
 }
 
@@ -68,8 +76,17 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
   const { Popup, Icon } = UI || {};
   const t = { ...quickControlsTheme, ...getComponentTheme(themeFromContext, 'quickControls') };
   const pick = { ...DEFAULT_PICK, ...(state?.display?._measurePick || {}) };
-  const graphType = state?.display?.graphType || pick.graphType;
+  // currentComponent?.type (the ComponentRegistry's own identity), not state.display.graphType /
+  // pick.graphType — a Map section's stored state never carries either field (confirmed live
+  // 2026-08-07: _measurePick only ever has weekdays/start/end/routeIds), so both would silently
+  // fall back to DEFAULT_PICK's 'LineGraph' and show AVL-Graph-only pills (Measure/Aggregate/Mode)
+  // on a Map card — one of which (Measure) would corrupt the Map's real `symbologies` config if
+  // clicked, via applyMeasurePick's now-Map-aware short-circuit. See
+  // dynamic-report-nongraph-section-binding.md item 9.
+  const isMapCard = currentComponent?.type === 'Map';
+  const graphType = isMapCard ? 'Map' : (state?.display?.graphType || pick.graphType);
   const hasMode = graphType !== 'Map' && graphType !== 'Table';
+  const hasMeasureAggregate = !isMapCard;
   const single = graphType === 'Map';
 
   const routeCatalog = useMemo(() => {
@@ -118,10 +135,13 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
   const pillDefs = useMemo(() => {
     const defs = [
       { kind: 'routes', label: routeLabel, title: single ? 'This card draws one route' : 'Routes on this card', strong: routeIds.length === 0 },
-      { kind: 'measure', label: measureLabel, title: `Measure · ${MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || ''}` },
-      { kind: 'when', label: whenToken, title: whenTitle },
-      { kind: 'aggregate', label: aggregateLabel, title: `Aggregate · ${RESOLUTION_OPTIONS.find((o) => o.value === pick.resolution)?.label || ''}` },
     ];
+    // Measure/Aggregate are AVL-Graph-only concepts — a Map card has no measure/resolution pick of
+    // its own (its choropleth measure is fixed at conversion/build time, not author-editable via
+    // this row), and composeMeasureConfig has no Map-shaped output for either to compose anyway.
+    if (hasMeasureAggregate) defs.push({ kind: 'measure', label: measureLabel, title: `Measure · ${MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || ''}` });
+    defs.push({ kind: 'when', label: whenToken, title: whenTitle });
+    if (hasMeasureAggregate) defs.push({ kind: 'aggregate', label: aggregateLabel, title: `Aggregate · ${RESOLUTION_OPTIONS.find((o) => o.value === pick.resolution)?.label || ''}` });
     // Short text, not the mockup's own glyph — building/maintaining a plain-vs-difference SVG
     // pair for one pill wasn't worth it next to the existing short-token convention every other
     // pill already uses (found live 2026-08-06: an earlier icon-only-sized version of this pill
@@ -129,7 +149,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
     if (hasMode) defs.push({ kind: 'mode', label: modeIsDifference ? 'Diff' : 'Overlay', title: `Comparison mode · ${modeIsDifference ? 'difference' : 'overlay'}`, strong: modeIsDifference });
     return defs;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeLabel, measureLabel, whenToken, whenTitle, aggregateLabel, modeIsDifference, hasMode, single, routeIds.length, pick.measure, pick.resolution]);
+  }, [routeLabel, measureLabel, whenToken, whenTitle, aggregateLabel, modeIsDifference, hasMode, hasMeasureAggregate, single, routeIds.length, pick.measure, pick.resolution]);
 
   // ── Row-fit: measure the real rendered width of every pill (in an off-screen shadow copy,
   // so widths stay accurate for pills currently trimmed from the visible row) against the

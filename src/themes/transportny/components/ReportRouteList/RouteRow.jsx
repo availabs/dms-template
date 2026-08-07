@@ -36,6 +36,7 @@ import {
 export default function RouteRow({
   route,
   miles,
+  graphCount,
   theme: t,
   Icon,
   ColorPicker,
@@ -128,17 +129,23 @@ export default function RouteRow({
     : null;
   const tmcCount = parseTmcArray(r.tmc_array).length;
 
-  // One-line meta ("9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28") — the count/range the engine
-  // will really enumerate, not four disabled inputs' worth of the same information. `miles` is
-  // computed by the parent's useRouteMileage (a live TMC->miles lookup, not a stored field) and
-  // arrives as undefined for the one render before that fetch resolves — omit the segment rather
-  // than show a misleading "0.0 mi" while loading.
+  // One-line meta ("9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28 · 3 graphs") — the count/range the
+  // engine will really enumerate, not four disabled inputs' worth of the same information.
+  // `miles` is computed by the parent's useRouteMileage (a live TMC->miles lookup, not a stored
+  // field) and arrives as undefined for the one render before that fetch resolves — omit the
+  // segment rather than show a misleading "0.0 mi" while loading. `graphCount` is likewise
+  // computed live by the parent from `useGraphPublish`'s self-bound-graph discovery (each
+  // graph's own `_measurePick.routeIds`) — NOT from this route's stored `graphIds` field, which
+  // is write-once at conversion time and goes stale the moment a graph's Routes pill reassigns
+  // anything. "0 graphs" is a real, useful signal (a route sitting in the list feeding nothing),
+  // so it's never omitted the way a still-loading `miles` is.
   const metaText = [
     `${tmcCount} TMC${tmcCount === 1 ? '' : 's'}`,
     miles != null ? `${miles.toFixed(1)} mi` : null,
     (formatDateShort(r.startDate) || formatDateShort(r.endDate))
       ? `${formatDateShort(r.startDate) || '?'} → ${formatDateShort(r.endDate) || '?'}`
       : 'No dates set',
+    `${graphCount ?? 0} graph${(graphCount ?? 0) === 1 ? '' : 's'}`,
   ].filter(Boolean).join(' · ');
 
   const canMutateRow = isEdit;
@@ -237,7 +244,7 @@ export default function RouteRow({
           <div>
             <div className={t.windowHead}>
               <div className={t.facetLabel}>dates</div>
-              {canMutateRow && !isDerivedDate && (
+              {canMutateRow && (
                 <div className={t.windowActionsRow}>
                   {isEditingDates ? (
                     <>
@@ -254,6 +261,14 @@ export default function RouteRow({
                         <Icon icon="CancelCircle" />
                       </button>
                     </>
+                  ) : isDerivedDate ? (
+                    // A derived row's own copy/paste (a LITERAL span) would silently conflict with
+                    // its live-computed value — only the pencil is offered, which opens straight
+                    // into Derived mode (seeded below) so an author can change the formula/base or
+                    // switch back to Fixed. Copy/paste stays Fixed-only, same as before.
+                    <button type="button" className={t.iconBtn} title="Edit derived-date relationship" onClick={onStartEditDates}>
+                      <Icon icon="PencilSquare" />
+                    </button>
                   ) : (
                     <>
                       <button type="button" className={t.iconBtn} title="Copy this date span" onClick={onCopyWindow}>
@@ -279,11 +294,15 @@ export default function RouteRow({
             </div>
 
             {isDerivedDate && !isEditingDates && (
-              <div className={t.derivedNote}>Derived from {derivedFromRouteName || 'another route'} — edit that route's dates instead.</div>
+              <div className={t.derivedNote}>Derived from {derivedFromRouteName || 'another route'} — click the pencil to change the formula, switch to fixed dates, or edit the base route's own dates instead.</div>
             )}
 
             {!isEditingDates ? (
               (() => {
+                // A derived row's read-only value is no longer a dead-end (the pencil above now
+                // opens it), but the CLICK-ANYWHERE-TO-OPEN convenience stays Fixed-only — clicking
+                // the value text on a derived row would be an easy miss-click straight into
+                // Derived mode with no visual cue it was about to happen, unlike the pencil.
                 const opener = canMutateRow && !isDerivedDate;
                 const value = formatDateShort(r.startDate)
                   ? `${formatDateShort(r.startDate)} → ${formatDateShort(r.endDate)}`

@@ -8,7 +8,16 @@ export const reportRouteListTheme = {
   wrapper: 'flex flex-col h-full',
 
   // ── Panel head · pinned. "Routes" + count + collapse toggle, dark navy. ──
-  panelHead: 'h-12 px-3 flex items-center gap-2 bg-[#12181F] shrink-0',
+  // -mt-3 -mx-3 cancels the generic section-cell wrapper's own p-3 padding
+  // (SectionArray's per-section grid cell, applied above this component, not
+  // themed here) on 3 of its 4 sides, so this dark bar bleeds flush to the
+  // panel's true top/left/right edges instead of leaving a p-3-width white
+  // sliver between it and the compact SideNav rail (left) and the panel's own
+  // border (right) — found live 2026-08-07, compact-sidenav-margin-bug.md.
+  // Bottom is deliberately left alone: nothing sits flush below this bar the
+  // way the rail sits flush beside it, so canceling pb-3 there would just move
+  // the (harmless, expected) bottom whitespace without fixing anything visible.
+  panelHead: '-mt-3 -mx-3 h-12 px-3 flex items-center gap-2 bg-[#12181F] shrink-0',
   panelHeadIcon: 'size-4 text-[#FACC15] shrink-0',
   title: 'font-display uppercase text-white text-[12.5px] tracking-wide flex-1',
   routeCount: 'px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums',
