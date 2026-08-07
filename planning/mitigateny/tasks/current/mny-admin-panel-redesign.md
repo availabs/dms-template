@@ -1,7 +1,16 @@
 # MNY Admin Panel Redesign — Design Mockups
 
-**Project:** MitigateNY · **Topic:** themes · **Status:** IN PROGRESS — Phase 1 DONE, Phase 2+ not
-started · **Started:** 2026-07-29
+**Project:** MitigateNY · **Topic:** themes · **Status:** ON HOLD (2026-08-06) — Phase 1 DONE,
+Phase 2+ blocked on the direction decision in
+[`mny-admin-panel-directions.md`](./mny-admin-panel-directions.md) · **Started:** 2026-07-29
+
+> **2026-08-06 — framing superseded a second time.** A full current-state analysis (admin pattern
+> vs county template/drafts/guide/actions, live pull) produced a three-report series in
+> `src/themes/mny/design/reports/` (`admin-workflow-current-state.html`,
+> `admin-direction-consolidate.html`, `admin-direction-dissolve.html`). This task's "collapse
+> within the panel" plan survives as **Direction A**; the recommended direction (**B1**) moves all
+> six planner forms into the plan experience and reduces `/admin` to a slim DHSES console. Do not
+> build Phase 2+ here until the owner picks a direction.
 
 ## Objective
 

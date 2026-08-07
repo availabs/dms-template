@@ -1166,7 +1166,54 @@ const graph = {
   }],
 };
 
-const avlGraph = graph;
+// ─────────────────────────────────────────────────────────────────────────────
+// avlGraph.chartDefaults — THE BRAND'S CHART GEOMETRY AND AXIS TYPE
+//
+// This block was missing (2026-08-06), so every TransportNY chart was running the
+// codebase's own defaults — `margin: {top:20,right:20,bottom:50,left:100}`, 0.75rem
+// inherited-family ticks, `strokeWidth: 1`, and bars at the CSS `fill-opacity: 0.75`.
+// Those are reasonable library defaults and wrong for this brand: a 100-px left gutter
+// is a third of a size-6 card, 12-px sans ticks fight the mono chrome everywhere else on
+// the page, and translucent bars mud two-series comparisons at small sizes.
+//
+// `chartDefaults` merges UNDER a section's own `display`, so these are defaults an author
+// can still override per section (graph_new/index.jsx's mergeChartDefaults). Every key
+// here is one GraphComponent already reads — nothing new was needed in the library.
+const chartDefaults = {
+  // tighter than 20/20/50/100: enough for a 4-character tick and one row of labels
+  margin: { top: 12, right: 12, bottom: 30, left: 48 },
+  height: 260,
+  // 1 disappears against a pale card; 2 is the weight the drawn cards used
+  strokeWidth: 2,
+  // solid bars — the knob exists for exactly this ("Set to 1 for solid, design-matching
+  // bars"), and the route colours are the comparison, so they must not be washed out
+  barOpacity: 1,
+  interpolation: "catmullrom",
+  area: false,
+  // ticks are CHROME: the same 9-px mono the attribution lines and meta rows use
+  xAxis: {
+    show: true, showGridLines: false, rotateLabels: false, tickDensity: 2,
+    gridLineOpacity: 0.25, axisColor: "rgba(15,23,42,0.15)",
+    tickFontSize: "9px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    tickFontWeight: "400", tickColor: "#94a3b8",
+    labelFontSize: "9px", labelFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    labelFontWeight: "400", labelColor: "#94a3b8",
+  },
+  yAxis: {
+    show: true, showGridLines: true, format: "Integer",
+    gridLineOpacity: 0.35, axisColor: "rgba(15,23,42,0.15)",
+    tickFontSize: "9px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    tickFontWeight: "400", tickColor: "#94a3b8",
+    labelFontSize: "9px", labelFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    labelFontWeight: "400", labelColor: "#94a3b8",
+  },
+  legend: { show: true },
+};
+
+const avlGraph = {
+  ...graph,
+  styles: graph.styles.map(function (s) { return { ...s, chartDefaults: chartDefaults }; }),
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // map — MapLibre wrapper

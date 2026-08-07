@@ -158,6 +158,49 @@ Both modals are on their **second pass**, and the interesting part is the priori
   and where hand-typed dates reliably go wrong), and preset pills that carry their own hours —
   "AM Peak" alone makes you hover to learn this brand means 06:00–10:00, and two of the five
   presets differ only by hours.
+- **The charts are the AVL Graph's own shape** (2026-08-06), drawn against the real DOM —
+  `div.avl-graph-container` → `svg.avl-graph` with **no viewBox**, px geometry against a measured
+  container, `g.axis-group > g.axis.axis-left` with `path.domain` and `g.tick`, and the plot
+  translated by the margin. That fixes the fit as well as the fidelity: the old `viewBox` drawings
+  *scaled*, so a size-4 card had 9-px axis text and the wrong proportions. A GridGraph's left axis
+  is band (its index is the row), so it draws row labels, not numbers.
+- **`avlGraph.chartDefaults` now ships**, which the brand never had — so every TransportNY chart was
+  running the library's loose defaults. Tightened where they were wrong for this brand: margin
+  20/20/50/100 → 12/12/30/48, ticks 0.75rem inherited → 9-px mono (ticks are chrome and now match
+  the meta rows), `strokeWidth` 1 → 2, bars 0.75 → solid, height 300 → 260, axis colour off
+  `currentColor`. Every one of those is a key `chartDefaults` already exposed and merges *under* a
+  section's own `display` — the library needed no change.
+- **The route row lost its `+`** (everything a row has is on the row now that the TMC list is gone
+  and the window is one line) and **"on N cards" became a pill** beside the name, where the
+  "unused" badge already sat.
+- **The control row fits itself.** Five controls don't fit every card, so set values shrink to
+  tokens (`1h`, `06–10 · Wd`, a glyph for the overlay/difference flip) and what's left collapses
+  by priority into one "⋯" that opens the same contents — measured against what the header can
+  spare, not against a size threshold, since the same card is wide at 1600px and narrow at 1280.
+  The "graph N" chips left the headers (nothing points at them now), and the title truncates to a
+  112-px floor with a tooltip: the controls claim the spare width first. Three measurement traps
+  worth not repeating are written into the page — `scrollWidth` never fires on a `justify-end`
+  row, shedding pills one at a time thrashes once you account for the "⋯", and the budget belongs
+  to the header, not the slot.
+- **One edit mode per route.** The row's single pencil opens the name *and* the dates with one
+  save/cancel pair; a pencil for the name plus a second one for the dates made two edit modes out
+  of one object.
+- **Quick Controls, for real** (2026-08-06). `theme.sectionHeaderExtensions` injects a builder into
+  a section's header band — the row with the title and the ⋮ trigger — with the same ctx the
+  Settings-drawer extensions get; it ships Measure and Comparison Mode today. The page now draws
+  that row live on every card and extends it to **Routes · Measure · Aggregate · When · Mode**,
+  with the row folding into one "⋯" pill below size 6. Route selection is a card control now, and
+  its mode follows the shape: a Map is single-select, charts and tables are multi.
+- **Time of day, days of week and the aggregate moved off the route onto the card.** They describe
+  the question a card asks, not the route: on the route they forced a duplicate route to ask a
+  second question of the same road, and one window silently governed every card that route fed. A
+  route now carries name · colour · TMCs · date span; a card carries shape · measure · aggregate ·
+  when · mode · routes. Set in the Add Graph modal's **When** step, edited afterwards in the card's
+  own controls. *Escalation:* storage moves with them — `useGraphPublish` would take the date list
+  from each route's span minus the **card's** weekday mask and the epoch list from the **card's**
+  time window; today both read off the route.
+- **The per-graph chips left the route rows.** A chip per graph was fine at five and unusable at
+  twenty, which these reports reach; a row now says "on N cards" and jumps to the first one.
 - **Every per-route control is live** — window, colour, name, order, assignment. They briefly sat
   behind page edit mode, which (once the rail's own edit toggle was gone) meant opening a route
   showed a read-only summary with no way in. Page edit mode now governs only the *page*: section

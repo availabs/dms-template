@@ -54,7 +54,14 @@ mny/design/
 │   ├── actions-qa.html                 actions data-quality / location-precision audit
 │   ├── duplicate-actions.html          same-place redundant rows — cause + safe-to-delete case
 │   ├── boilerplate-actions.html        cross-jurisdiction template reuse — where + how to shape it
-│   └── location-from-text.html         recovering site coords from action text (mining the descriptions)
+│   ├── location-from-text.html         recovering site coords from action text (mining the descriptions)
+│   ├── capabilities-vs-capacity.html · capability-inventory.html · capacity-assessment-architecture.html
+│   │                                   the capability/capacity concept + data series
+│   ├── priority-coverage.html · state-capability-catalog.html
+│   ├── admin-panel-information-architecture.html   the July 2026 within-panel consolidation study
+│   ├── admin-workflow-current-state.html            ┐ Admin Panel Review series (2026-08):
+│   ├── admin-direction-consolidate.html             │ current state · Direction A (clean up /admin)
+│   └── admin-direction-dissolve.html                ┘ Direction B (move work into the plan; recommended B1)
 ├── assets/mny/                       ← logo, topolines, hazard glyphs, county art
 └── references/                       ← original Figma handoff exports (read-only)
     └── MitigateNY UX_UI [...]/*.jpg
