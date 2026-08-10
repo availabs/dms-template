@@ -125,6 +125,18 @@ const textSettings = {
     metaSM:      T.metaSM,
     metaXS:      T.metaXS,
 
+    // ----- Dashboard KPI + header-button tokens (admin-dashboard alignment) -
+    // Green display numeral (the mockup's "For sale now" figure).
+    displayXL_field: `${FONT_DISPLAY} font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-[${C.field}]`,
+    // KPI sub-lines: primary (slate), positive (forest), and a muted secondary
+    // that draws its own hairline divider above (the mockup's border-t rows).
+    kpiSub:  `${FONT_PROSE} text-[12px] leading-[1.5] text-[${C.slate}]`,
+    kpiUp:   `${FONT_PROSE} text-[12px] leading-[1.5] font-medium text-[${C.forest}]`,
+    kpiMeta: `block w-full ${FONT_PROSE} text-[12px] leading-[1.5] text-[${C.mist}] mt-2 pt-2 border-t border-[${C.ink}]/5`,
+    // Header action buttons rendered as Card cells (value styled as a button).
+    btnPrimary: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[${C.skydeep}] hover:bg-[${C.ink}] border-b-[3px] border-[${C.ink}]/40 text-white ${FONT_PROSE} text-[13.5px] font-semibold cursor-pointer transition-colors`,
+    btnGhost: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-white hover:bg-[${C.paper}] border border-[${C.ink}]/15 text-[${C.ink}] ${FONT_PROSE} text-[13.5px] font-semibold cursor-pointer transition-colors`,
+
     // ----- Heading roles — h1..h6 mapped onto the display ladder ----------
     // (mirrored explicitly into lexical.styles[0].heading_h1..h6 below —
     // the textSettings backfill only fires when those keys are falsy.)
@@ -395,6 +407,13 @@ const layoutGroup = {
       name: 'header',
       wrapper1: `w-full lb-plat border-b ${BORDER}`,
       wrapper2: `mx-auto w-full max-w-[1240px] px-6 py-10`,
+    },
+    {
+      // Admin-dashboard page header: plain paper, no plat texture, tight —
+      // matches admin-dashboard.html (title area sits on the pane, not a band).
+      name: 'admin_header',
+      wrapper1: `w-full lb-paper pt-8`,
+      wrapper2: `mx-auto w-full max-w-[1240px] px-6`,
     },
     {
       // The dark highlight band — impact numbers. At most one per page.
@@ -1652,6 +1671,20 @@ const landbankTheme = {
   textSettings,
   Icons: icons,
   fonts,
+
+  // Section-level title heading (rendered by section.jsx above a section's
+  // component when `data.title` is set). Title-case display, small eyebrow rule
+  // below it — gives each dashboard band a mockup-style card header.
+  // `normal-case` is required: the core section-title wrapper
+  // (section.jsx / section_components.jsx) hardcodes `uppercase`, which
+  // CSS-inherits into the title text; setting `text-transform:none` on the
+  // heading element itself overrides it so titles render title-case.
+  heading: {
+    default: `${T.displayMD} normal-case mb-3 pb-2 border-b ${BORDER}`,
+    1: `${T.displayLG} normal-case mb-3`,
+    2: `${T.displayMD} normal-case mb-3 pb-2 border-b ${BORDER}`,
+    3: `${T.displaySM} normal-case mb-2`,
+  },
 
   // Composition
   layout,
