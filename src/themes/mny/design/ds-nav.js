@@ -56,12 +56,24 @@
       { f: 'column-types.html', t: 'column types' },
       { f: 'datasets-files.html', t: 'datasets · files' },
     ]},
+    { key: 'lhmpadmin', label: 'LHMP Admin', dir: 'pages/lhmp-admin', landing: 'plan-status-admin.html', pages: [
+      { f: 'plan-status-admin.html', t: 'plan status · admin panel' },
+      { f: 'plan-status-plan.html', t: 'plan status · in the plan' },
+    ]},
     { key: 'reports', label: 'Reports', dir: 'reports', landing: 'actions-qa.html', pages: [
       { f: 'actions-qa.html', t: 'actions data quality' },
       { f: 'duplicate-actions.html', t: 'duplicate actions' },
       { f: 'boilerplate-actions.html', t: 'boilerplate actions' },
       { f: 'location-from-text.html', t: 'locating from text' },
       { f: 'priority-coverage.html', t: 'local priority coverage' },
+      { f: 'capabilities-vs-capacity.html', t: 'capabilities vs capacity' },
+      { f: 'capability-inventory.html', t: 'capability inventory' },
+      { f: 'capacity-assessment-architecture.html', t: 'capacity assessment architecture' },
+      { f: 'state-capability-catalog.html', t: 'state capability catalog' },
+      { f: 'admin-panel-information-architecture.html', t: 'admin panel IA (july)' },
+      { f: 'admin-workflow-current-state.html', t: 'admin review 1 · current state' },
+      { f: 'admin-direction-consolidate.html', t: 'admin review 2 · direction A' },
+      { f: 'admin-direction-dissolve.html', t: 'admin review 3 · direction B' },
     ]},
   ];
 

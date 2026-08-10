@@ -541,6 +541,7 @@
                         <li><strong class="text-mny-900">Annotation fill-state</strong> — 267&ndash;276 slots per county, filled/empty is one text-length test (measured for this report)</li>
                         <li><strong class="text-mny-900">Form-row coverage per jurisdiction</strong> — the rules are already written in the guide: &ge;1 action per hazard of concern per jurisdiction, &ge;2 new/carryover actions, SFHA flood-action rule, ~16 HoC rows per jurisdiction</li>
                         <li><strong class="text-mny-900">LHMP_IA's own columns</strong> — <code class="text-[12px]">mny_required</code>, <code class="text-[12px]">complete</code>, <code class="text-[12px]">dhses_review</code>, <code class="text-[12px]">control_number</code> (CN&hellip;) — a requirements checklist embedded in the template's config dataset, currently unused</li>
+                        <li><strong class="text-mny-900">FEMA review-element tags on the sections themselves</strong> (found 2026-08-07) — 1,866 template sections carry <code class="text-[12px]">data.tags</code> codes like <code class="text-[12px]">B2-a</code>, <code class="text-[12px]">C4-b</code>, <code class="text-[12px]">A1-a</code>, including 173 of the 256 narrative slots — the review-tool mapping Task 7 alludes to already exists in the data</li>
                         <li><strong class="text-mny-900">DHSES_County_Database</strong> — the 62-county plan-status registry, the natural cross-county rollup</li>
                       </ul>
                     </div>
@@ -640,33 +641,8 @@
   </div>
 </div>
 
-<!-- Floating nav widget -->
-<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
-  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:250px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
-    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
-    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
-    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
-    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
-    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
-    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
-    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
-    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Admin Panel Review (this series)</div>
-    <a href="admin-workflow-current-state.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:700;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Current State (this page)</a>
-    <a href="admin-direction-consolidate.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Direction A &middot; Consolidate</a>
-    <a href="admin-direction-dissolve.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Direction B &middot; Into the Plan</a>
-    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
-    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Related</div>
-    <a href="admin-panel-information-architecture.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Admin Panel IA (July)</a>
-    <a href="capacity-assessment-architecture.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capacity Assessment Architecture</a>
-    <a href="../pages/county-actions/dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> County Actions Flow (mockups)</a>
-    <a href="../pages/admin-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Admin Home (July mockup)</a>
-  </div>
-  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
-          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
-          aria-label="Design system navigation">
-    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
-  </button>
-</div>
+<!-- Floating design-system nav widget (shared, section-contextual) -->
+<script src="../ds-nav.js"></script>
 
 <!-- Footer link block -->
 <div class="max-w-[1440px] mx-auto px-4 xl:px-[64px] pb-10">

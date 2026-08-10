@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Plan Status (Sullivan, in-plan version)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  LHMP ADMIN — PLAN STATUS, version B: inside the county plan itself.
+  The same status content as plan-status-admin.html, recast as a page under Track Progress in the
+  county-plan pattern — for Direction B, where the admin panel is removed for planners and every
+  entry surface lives in the plan experience (reports/admin-direction-dissolve.html). The planner
+  never leaves their site: every gap links to an in-plan surface (the county-actions flow pages in
+  ../county-actions/, per-chapter entry bands, worklists). Same-site chapter links are href="#" in
+  this mockup; the actions links are real links into the existing county-actions mockups.
+
+  Data provenance is identical to the admin version (see its header comment): all numbers real,
+  pulled 2026-08-06/07 — Sullivan 36105; DHSES_County_Database row 1108698 (plan expired 4/27/2026,
+  update funded 11/26/2024); template 1300890 annotation inventory (267 slots, 10 exemplar-filled);
+  Actions_Revised 475 Sullivan actions; Hazards_of_Concern 0 Sullivan rows; Capacities V2 320;
+  Participation 27 (latest 2026-03-26); Roles 111; LHMP_IA mny_required 42/30/43 (CFR column empty).
+
+  What differs from the admin version BY DESIGN:
+  · chrome: the plan's own topnav + breadcrumb — no context switch, no "back to plan" needed;
+  · gap links land on in-plan surfaces (Direction B's shared-pattern pages), not /admin forms;
+  · the "two kinds of saving" strip teaches the records-vs-narrative model at the moment it
+    matters — the one-sentence rule the guide audit found missing.
+-->
+
+<!-- ================================================================
+     TOPNAV — county plan site chrome (fixed floating)
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="../home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Local Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Plan</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 cursor-pointer border-b-2 border-mny-y700 h-full flex items-center">Track Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-1">
+          <div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <!-- icon: User -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-16">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+
+      <div class="grid grid-cols-12 gap-y-4 gap-x-6">
+
+        <!-- ==========================================================
+             SECTION — PAGE IDENTITY (lexical, col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="page-identity" class="col-span-12">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
+                <a href="#" class="hover:text-mny-700">Track Progress</a>
+                <span class="text-mny-200">/</span>
+                <span class="text-mny-700">Plan Status</span>
+              </div>
+              <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1] tracking-[-0.05em] mt-1.5">Plan Status</h1>
+              <p class="font-proxima text-[16px] text-mny-700 leading-[140%] mt-2 max-w-[620px]">
+                Everything this plan has to fill out, and whether it has been — without leaving your
+                plan. Every gap links to the page where you fix it. Drafted work counts.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 flex-1">
+              <button class="flex items-center gap-2 px-4 py-2 bg-mny-50 border border-mny-200 rounded-full hover:border-mny-400 transition-colors">
+                <!-- icon: Location -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                <span class="font-proxima text-[14px] font-[600] text-mny-900">Sullivan County</span>
+                <span class="font-proxima text-[12px] text-mny-400">FIPS 36105</span>
+              </button>
+              <a href="#" class="ml-auto flex items-center gap-2 px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] border border-transparent text-mny-900 font-proxima text-[13px] font-[700] uppercase tracking-wider rounded-full transition-colors">
+                <!-- icon: Edit -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
+                Do the next task
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — TWO KINDS OF SAVING (lexical strip, col-12).
+             The one-sentence rule the guide audit found missing,
+             taught where it matters.
+             ========================================================== -->
+        <div data-dms="section" data-name="how-saving-works" class="col-span-12">
+          <div class="rounded-[10px] bg-mny-50 border border-mny-100 px-4 py-2.5 flex flex-wrap items-center gap-x-6 gap-y-1.5">
+            <span class="font-display text-[11px] font-[600] uppercase tracking-[0.08em] text-mny-400">How saving works</span>
+            <span class="font-proxima text-[13px] text-mny-700"><strong class="font-[600] text-mny-900">Records</strong> (actions, hazards of concern, meetings&hellip;) save immediately and appear everywhere your plan shows that data.</span>
+            <span class="font-proxima text-[13px] text-mny-700"><strong class="font-[600] text-mny-900">Page text</strong> (the light-blue boxes) stays draft until you publish the page.</span>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — PLAN RECORD STRIP (Card over DHSES_County_Database,
+             col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="plan-record" class="col-span-12">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            <div class="bg-mny-50 rounded-[10px] p-2.5 border-l-4 border-mny-900">
+              <p class="font-proxima text-[10px] text-mny-900 font-[700] uppercase tracking-wide">Plan status</p>
+              <p class="font-display text-[18px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1">Update in Progress</p>
+              <p class="font-proxima text-[10px] text-mny-400 mt-0.5">update funded 11/26/2024</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-2.5 border-l-4 border-mny-red mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-red font-[700] uppercase tracking-wide">Current plan expired</p>
+              <p class="font-display text-[18px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1 tabular-nums">4/27/2026</p>
+              <p class="font-proxima text-[10px] text-mny-red font-[600] mt-0.5">102 days ago — approved 4/28/2021</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-2.5 border-l-4 border-mny-y700 mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Plan narrative filled</p>
+              <p class="font-display text-[18px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1 tabular-nums">8 <span class="text-[13px] text-mny-400">/ 256 slots</span></p>
+              <p class="font-proxima text-[10px] text-mny-400 mt-0.5">drafted or published — see the writing plan below</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-2.5 border-l-4 border-mny-grn mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Forms with live data</p>
+              <p class="font-display text-[18px] text-mny-900 font-[500] leading-[1.1] tracking-[-0.02em] mt-1 tabular-nums">4 <span class="text-[13px] text-mny-400">/ 6</span></p>
+              <p class="font-proxima text-[10px] text-mny-400 mt-0.5">Hazards of Concern is the blocking gap</p>
+            </div>
+            <div class="bg-white rounded-[10px] p-2.5 border-l-4 border-mny-200 mny-shadow-sm">
+              <p class="font-proxima text-[10px] text-mny-700 font-[600] uppercase tracking-wide">Next best task</p>
+              <p class="font-proxima text-[13px] text-mny-900 font-[600] leading-[1.3] mt-1">Enter hazards of concern <span class="text-mny-400 font-[400]">— it unblocks two action rules</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — THE WRITING PLAN (col-12). Expanded narrative
+             inventory: every Local-Context slot in the visible plan
+             (256 across 34 pages), grouped in the order the planning
+             guide's Tasks recommend working, with each slot's FEMA
+             review-element tag where the template carries one
+             (sections' data.tags — 173 of the 256 slots are tagged).
+             Slot names & counts pulled live from pattern 1300890.
+             ========================================================== -->
+        <div data-dms="section" data-name="writing-plan" class="col-span-12 mt-3">
+          <div class="rounded-[12px] border border-mny-100 p-4">
+            <div class="flex flex-wrap items-baseline justify-between gap-3 mb-1">
+              <h2 class="font-display text-[20px] font-[500] text-mny-900 uppercase tracking-[-0.01em]">Plan narrative — the writing plan</h2>
+              <span class="font-proxima text-[11px] text-mny-400">256 Local-Context slots across 34 pages &middot; 8 filled &middot; ordered by planning task</span>
+            </div>
+            <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] mb-4 max-w-[820px]">
+              Every light-blue box in your plan, in the order the planning guide recommends working.
+              The small gray codes are the <strong class="font-[600] text-mny-900">FEMA review-element tags carried on the
+              template's sections</strong> — write the slot and you are answering that element.
+            </p>
+
+            <!-- 1 · Task 1 -->
+            <div class="mb-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="size-6 rounded-full bg-mny-900 text-white font-display text-[13px] font-[600] flex items-center justify-center">1</span>
+                <span class="font-display text-[14px] font-[600] uppercase tracking-wide text-mny-900">Start here — with Task 1 &middot; Organize the effort</span>
+                <span class="font-proxima text-[11px] text-mny-400">13 slots &middot; elements A (process) + D (maintenance)</span>
+              </div>
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">About the Process</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 13</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">A1</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">A2-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">A3-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">A4-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">D1-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">D2</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">D3</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-2 font-proxima text-[12px] text-mny-700">
+                  <span>&#9675; Local Context <span class="text-[9px] font-[700] text-mny-400">A1</span></span>
+                  <span>&#9675; Organizational Structure — Planning Teams <span class="text-[9px] font-[700] text-mny-400">A1-a</span></span>
+                  <span>&#9675; Jurisdictional Representation</span>
+                  <span>&#9675; Jurisdictional Engagement Process <span class="text-[9px] font-[700] text-mny-400">A1-a·b</span></span>
+                  <span>&#9675; Stakeholder Outreach &amp; Engagement <span class="text-[9px] font-[700] text-mny-400">A2-a</span></span>
+                  <span>&#9675; Public Participation <span class="text-[9px] font-[700] text-mny-400">A3-a</span></span>
+                  <span>&#9675; Public Comment <span class="text-[9px] font-[700] text-mny-400">A3-a</span></span>
+                  <span>&#9675; Technical Data &amp; Existing Resources <span class="text-[9px] font-[700] text-mny-400">A4-a</span></span>
+                  <span>&#9675; Other Related Planning Processes</span>
+                  <span>&#9675; Monitoring, Evaluating &amp; Updating the Plan <span class="text-[9px] font-[700] text-mny-400">D2-a·b·c</span></span>
+                  <span>&#9675; Plan for Integration with Other Plans <span class="text-[9px] font-[700] text-mny-400">D3-a·b</span></span>
+                  <span>&#9675; Continued Public Engagement <span class="text-[9px] font-[700] text-mny-400">D1-a</span></span>
+                  <span>&#9675; Local Context (2nd)</span>
+                </div>
+                <p class="font-proxima text-[11px] text-mny-400 mt-2">Your Roles (111) and Participation (27 meetings) data already feeds this page's tables — these slots are the narrative around them. The three D-tagged slots are Task 6 material you can return to later.</p>
+              </div>
+            </div>
+
+            <!-- 2 · Task 2 -->
+            <div class="mb-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="size-6 rounded-full bg-mny-900 text-white font-display text-[13px] font-[600] flex items-center justify-center">2</span>
+                <span class="font-display text-[14px] font-[600] uppercase tracking-wide text-mny-900">With Task 2 &middot; Profile the community — The Local Environment</span>
+                <span class="font-proxima text-[11px] text-mny-400">34 slots &middot; element B2 (vulnerability), plus C1/C2/E1 accents</span>
+              </div>
+              <div class="space-y-2">
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">People &amp; Communities</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 8</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">B2-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Local Populations at Highest Risk</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Transient &amp; Seasonal Populations</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Population Change</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Governance Structure</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Special Districts</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context ×3</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Built Environment</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 12</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">B2-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C1-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C2-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">E1-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Historic Properties</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">What&rsquo;s Changed</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Codes Enforcement</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">NFIP</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context ×8</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Natural Environment</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 9</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">B2-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C1-a·b</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">County Open Space Plan</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Firewise Communities</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Water Quality</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Air Quality</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Forestry Local Context</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context ×4</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">NFIP — Floodplain Management</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 3</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">A4-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">B1-b</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C2-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">NFIP Participation Summary</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Community Rating System</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">High Hazard Dams</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 1</span>
+                  <span class="flex items-center gap-1"></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context</span></div>
+                <p class="font-proxima text-[11px] text-mny-400 mt-1">the dam registry &amp; your annotations carry this page — one narrative slot</p>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Chapter opener</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 1</span>
+                  <span class="flex items-center gap-1"></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Executive Summary</span></div>
+                <p class="font-proxima text-[11px] text-mny-400 mt-1">write last — it summarizes the five pages above</p>
+              </div>
+              </div>
+            </div>
+
+            <!-- 3 · Task 3 -->
+            <div class="mb-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="size-6 rounded-full bg-mny-900 text-white font-display text-[13px] font-[600] flex items-center justify-center">3</span>
+                <span class="font-display text-[14px] font-[600] uppercase tracking-wide text-mny-900">With Task 3 &middot; Assess the risk — The Risk</span>
+                <span class="font-proxima text-[11px] text-mny-400">194 slots &middot; the big lift &middot; elements B1/B2, C1/C4 on every hazard</span>
+              </div>
+              <div class="space-y-2 mb-3">
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">The Risk (chapter)</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-grn rounded-full" style="width:33%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">1 / 3</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">A1-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="inline-flex items-center gap-1 px-1.5 py-[1px] rounded bg-mny-grn/15 text-mny-grn text-[10px] font-[600]">Risk Analysis Process Summary &#10003; &#10003;</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Risk Analysis Process Summary (2nd)</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Executive Summary</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Natural Hazards (index)</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 2</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">B1-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Executive Summary</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Climate Change</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 1</span>
+                  <span class="flex items-center gap-1"></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Disasters</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 3</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">B1-d</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Executive Summary</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context ×2</span></div>
+              </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Non-natural Hazards</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 1</span>
+                  <span class="flex items-center gap-1"></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context</span></div>
+              </div>
+              </div>
+              <div class="rounded-[10px] border border-mny-100 bg-mny-50/60 px-3 py-3">
+                <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+                  <p class="font-proxima text-[13px] font-[700] text-mny-900">The 16 hazard chapters — same 11 slots on each <span class="font-[400] text-mny-400">(174 slots, 1 filled)</span></p>
+                  <span class="font-proxima text-[11px] text-mny-400">work a full hazard top-to-bottom, then repeat — or fill one row (e.g. every Local Hazard Summary) across all 16</span>
+                </div>
+                <div class="overflow-x-auto"><div class="min-w-[760px]">
+                <div class="flex items-end gap-[3px] mb-1">
+                  <span class="w-[228px] shrink-0"></span>
+                  <span title="Avalanche" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Av</span>
+                  <span title="Coastal Hazards" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Co</span>
+                  <span title="Drought" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Dr</span>
+                  <span title="Earthquake" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Ea</span>
+                  <span title="Extreme Cold" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">XC</span>
+                  <span title="Extreme Heat" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">XH</span>
+                  <span title="Flooding" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Fl</span>
+                  <span title="Hail" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Ha</span>
+                  <span title="Hurricane" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Hu</span>
+                  <span title="Ice Storm" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Ic</span>
+                  <span title="Landslide" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">La</span>
+                  <span title="Lightning" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Li</span>
+                  <span title="Snowstorm" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Sn</span>
+                  <span title="Tornado" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">To</span>
+                  <span title="Wildfire" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Wf</span>
+                  <span title="Wind" class="w-[26px] text-center font-display text-[10px] font-[500] text-mny-400 uppercase">Wi</span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Local Hazard Summary</span></span>
+                  <span title="Avalanche · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm — this slot is missing from the template (inconsistency)" class="w-[26px] h-[18px] rounded-[3px] border border-dashed border-mny-200 bg-white"></span>
+                  <span title="Tornado · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Local Hazard Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind — this slot is missing from the template (inconsistency)" class="w-[26px] h-[18px] rounded-[3px] border border-dashed border-mny-200 bg-white"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Declarations &amp; Their Effects</span><span class="px-1 rounded bg-mny-100 text-mny-700 text-[8px] font-[700]">B1-d</span></span>
+                  <span title="Avalanche · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Declarations & Their Effects — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Featured Event</span><span class="px-1 rounded bg-mny-100 text-mny-700 text-[8px] font-[700]">B1-d</span></span>
+                  <span title="Avalanche · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Featured Event — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">County Assessment</span><span class="px-1 rounded bg-mny-100 text-mny-700 text-[8px] font-[700]">B2-a·b</span></span>
+                  <span title="Avalanche · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · County Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Jurisdictional Assessment</span><span class="px-1 rounded bg-mny-100 text-mny-700 text-[8px] font-[700]">B2-a·b</span></span>
+                  <span title="Avalanche · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Jurisdictional Assessment — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Built Environment — Risk Summary</span></span>
+                  <span title="Avalanche · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Built Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">People &amp; Communities — Risk Summary</span></span>
+                  <span title="Avalanche · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · People & Communities — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Natural Environment — Risk Summary</span></span>
+                  <span title="Avalanche · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Natural Environment — Risk Summary — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Local Capabilities</span><span class="px-1 rounded bg-mny-100 text-mny-700 text-[8px] font-[700]">C1-a</span></span>
+                  <span title="Avalanche · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Local Capabilities — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Local Actions</span><span class="px-1 rounded bg-mny-100 text-mny-700 text-[8px] font-[700]">C4-a·b</span></span>
+                  <span title="Avalanche · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold — this slot is missing from the template (inconsistency)" class="w-[26px] h-[18px] rounded-[3px] border border-dashed border-mny-200 bg-white"></span>
+                  <span title="Extreme Heat · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Local Actions — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+                <div class="flex items-center gap-[3px] mb-[3px]">
+                  <span class="w-[228px] shrink-0 flex items-center justify-between gap-1 pr-2"><span class="font-proxima text-[11px] text-mny-700 leading-tight">Featured Strategy</span><span class="px-1 rounded bg-mny-100 text-mny-700 text-[8px] font-[700]">C4-a</span></span>
+                  <span title="Avalanche · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Coastal Hazards · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Drought · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Earthquake · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Cold · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Extreme Heat · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Flooding · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hail · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Hurricane · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Ice Storm · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Landslide · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Lightning · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Snowstorm · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Tornado · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wildfire · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                  <span title="Wind · Featured Strategy — empty" class="w-[26px] h-[18px] rounded-[3px] bg-mny-100"></span>
+                </div>
+              </div></div>
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 font-proxima text-[11px] text-mny-400">
+                  <span class="flex items-center gap-1"><span class="w-[14px] h-[11px] rounded-[3px] bg-mny-100 inline-block"></span> empty slot</span>
+                  <span class="flex items-center gap-1"><span class="w-[14px] h-[11px] rounded-[3px] bg-mny-grn inline-block"></span> written</span>
+                  <span class="flex items-center gap-1"><span class="w-[14px] h-[11px] rounded-[3px] border border-dashed border-mny-200 bg-white inline-block"></span> slot missing from the template (Wind &amp; Snowstorm lack Local Hazard Summary; Extreme Cold lacks Local Actions — inconsistencies worth fixing upstream)</span>
+                  <span>+ Flooding carries one extra slot, <strong class="text-mny-grn font-[600]">Special Flood Hazard Areas &#10003;</strong> — the template&rsquo;s one filled hazard exemplar</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4+5 · Tasks 4 & 5 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="size-6 rounded-full bg-mny-900 text-white font-display text-[13px] font-[600] flex items-center justify-center">4</span>
+                  <span class="font-display text-[14px] font-[600] uppercase tracking-wide text-mny-900">With Task 4 &middot; Capabilities</span>
+                  <span class="font-proxima text-[11px] text-mny-400">4 slots &middot; C1-a</span>
+                </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Capabilities Assessment</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 4</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C1-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context ×4</span></div>
+                <p class="font-proxima text-[11px] text-mny-400 mt-1">pairs with your 320 capability entries — narrative on what the inventory means</p>
+              </div>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="size-6 rounded-full bg-mny-900 text-white font-display text-[13px] font-[600] flex items-center justify-center">5</span>
+                  <span class="font-display text-[14px] font-[600] uppercase tracking-wide text-mny-900">With Task 5 &middot; Strategy</span>
+                  <span class="font-proxima text-[11px] text-mny-400">13 slots &middot; C1/C3/C4/C5</span>
+                </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Strategies</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 12</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C3-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C4-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C5-a</span><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">C1-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">County Goals &amp; Objectives</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Problem Area Identification</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Prioritization &amp; Cost Evaluation</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Funding Sources</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Capabilities Highlights</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Displaced Residents</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Temporary Housing</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Evacuation</span><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Shelters</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Local Context ×3</span></div>
+                <p class="font-proxima text-[11px] text-mny-400 mt-1">+ The Plan chapter opener (1 Executive Summary slot) — write it when this group is done</p>
+              </div>
+              </div>
+            </div>
+
+            <!-- 6 · Task 6 + done -->
+            <div class="flex flex-wrap items-stretch gap-3">
+              <div class="flex-1 min-w-[320px]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="size-6 rounded-full bg-mny-900 text-white font-display text-[13px] font-[600] flex items-center justify-center">6</span>
+                  <span class="font-display text-[14px] font-[600] uppercase tracking-wide text-mny-900">With Task 6 &middot; Maintain</span>
+                  <span class="font-proxima text-[11px] text-mny-400">2 slots here + 3 D-tagged slots back on About the Process</span>
+                </div>
+
+              <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-proxima text-[13px] font-[700] text-mny-900 w-[200px] shrink-0">Annual Maintenance + Track Progress</span>
+                  <div class="w-[120px] h-1.5 rounded-full bg-mny-100 overflow-hidden shrink-0"><div class="h-full bg-mny-y700 rounded-full" style="width:0%"></div></div>
+                  <span class="font-proxima text-[12px] text-mny-700 tabular-nums w-[48px]">0 / 2</span>
+                  <span class="flex items-center gap-1"><span class="px-1 py-[1px] rounded bg-mny-100 text-mny-700 text-[9px] font-[700] tracking-wide">E2-a</span></span>
+                  <a href="#" class="ml-auto font-proxima text-[12px] font-[600] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Write &rarr;</a>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1.5"><span class="px-1.5 py-[1px] rounded bg-white border border-mny-200 text-mny-700 text-[10px] font-[600]">Change Log</span><span class="px-1.5 py-[1px] rounded bg-mny-50 border border-mny-100 text-mny-400 text-[10px]">Executive Summary (Track Progress)</span></div>
+              </div>
+              </div>
+              <div class="w-[320px] shrink-0">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="size-6 rounded-full bg-mny-grn text-white font-display text-[13px] font-[600] flex items-center justify-center">&#10003;</span>
+                  <span class="font-display text-[14px] font-[600] uppercase tracking-wide text-mny-900">Done</span>
+                </div>
+                <div class="rounded-[10px] border border-mny-grn/40 bg-mny-grn/5 px-3 py-2.5 h-[calc(100%-32px)]">
+                  <div class="flex items-center gap-3">
+                    <span class="font-proxima text-[13px] font-[700] text-mny-900">Home</span>
+                    <span class="font-proxima text-[12px] text-mny-grn font-[700] tabular-nums">6 / 6</span>
+                  </div>
+                  <p class="font-proxima text-[11px] text-mny-400 mt-1">the template&rsquo;s worked examples — review &amp; localize the wording before publishing</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — FEMA REVIEW ELEMENTS (col-7). Driven by the tags
+             the template already carries on its sections (data.tags):
+             1,866 of 3,859 sections are tagged with review-tool codes.
+             ========================================================== -->
+        <div data-dms="section" data-name="review-elements" class="col-span-12 lg:col-span-7 mt-3">
+          <div class="rounded-[12px] border border-mny-100 p-4 h-full">
+            <h2 class="font-display text-[20px] font-[500] text-mny-900 uppercase tracking-[-0.01em] mb-1">FEMA review elements — where they live in this plan</h2>
+            <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] mb-3 max-w-[620px]">
+              The template&rsquo;s sections carry <strong class="font-[600] text-mny-900">review-element tags</strong> —
+              1,866 tagged sections, including 173 of your 256 writing slots. This is the plan&rsquo;s
+              built-in map to the FEMA Local Plan Review Tool; each bar counts tag instances across the plan.
+            </p>
+            <div class="space-y-1.5 font-proxima text-[12px]">
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">B &middot; Risk Assessment</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-700" style="width:100%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">757</span></div>
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">C &middot; Mitigation Strategy</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-700" style="width:43%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">329</span></div>
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">H &middot; annex / HHPD add-ons</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-400" style="width:11%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">85</span></div>
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">A &middot; Planning Process</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-700" style="width:6%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">49</span></div>
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">S &middot; NY State requirements</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-400" style="width:4%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">30</span></div>
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">E &middot; Plan Update</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-700" style="width:3%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">21</span></div>
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">D &middot; Plan Maintenance</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-700" style="width:3%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">19</span></div>
+              <div class="flex items-center gap-2"><span class="w-[210px] shrink-0 text-mny-900 font-[600]">F &middot; Adoption</span><div class="flex-1 h-3 rounded bg-mny-100 overflow-hidden"><div class="h-full bg-mny-700" style="width:1%"></div></div><span class="w-[40px] text-right tabular-nums text-mny-700">8</span></div>
+            </div>
+            <p class="font-proxima text-[11px] text-mny-400 mt-3 pt-3 border-t border-mny-100">
+              B dominates by design — the risk chapters are the bulk of the plan. 83 writing slots carry no
+              tag yet, and the H/S letter meanings should be confirmed with DHSES. A future pass can filter
+              this whole page by element: &ldquo;show me everything answering B2.&rdquo;
+            </p>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — REQUIRED COMPONENTS (col-5, LHMP_IA registry)
+             ========================================================== -->
+        <div data-dms="section" data-name="requirements" class="col-span-12 lg:col-span-5 mt-3">
+          <div class="rounded-[12px] border border-mny-100 p-4 h-full flex flex-col">
+            <h2 class="font-display text-[20px] font-[500] text-mny-900 uppercase tracking-[-0.01em] mb-1">Required components</h2>
+            <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] mb-3">
+              The state&rsquo;s component registry (LHMP_IA) separately marks 42 components
+              <strong class="font-[600] text-mny-900">Required</strong>:
+            </p>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2 bg-mny-50 rounded-[8px] px-3 py-2">
+                <span class="font-proxima text-[13px] font-[600] text-mny-900">The Plan</span>
+                <span class="font-proxima text-[12px] text-mny-700 tabular-nums">19 required · <span class="text-mny-red font-[600]">0 complete</span></span>
+              </div>
+              <div class="flex items-center justify-between gap-2 bg-mny-50 rounded-[8px] px-3 py-2">
+                <span class="font-proxima text-[13px] font-[600] text-mny-900">Jurisdictional Annexes</span>
+                <span class="font-proxima text-[12px] text-mny-700 tabular-nums">10 required · <span class="text-mny-red font-[600]">0 complete</span></span>
+              </div>
+              <div class="flex items-center justify-between gap-2 bg-mny-50 rounded-[8px] px-3 py-2">
+                <span class="font-proxima text-[13px] font-[600] text-mny-900">The Local Environment</span>
+                <span class="font-proxima text-[12px] text-mny-700 tabular-nums">8 required · <span class="text-mny-red font-[600]">0 complete</span></span>
+              </div>
+              <div class="flex items-center justify-between gap-2 bg-mny-50 rounded-[8px] px-3 py-2">
+                <span class="font-proxima text-[13px] font-[600] text-mny-900">The Risk</span>
+                <span class="font-proxima text-[12px] text-mny-700 tabular-nums">5 required · <span class="text-mny-y700 font-[600]">1 complete</span></span>
+              </div>
+            </div>
+            <p class="font-proxima text-[12px] text-mny-700 mt-3">Plus 30 recommended and 43 optional components.</p>
+            <div class="mt-auto pt-3">
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[8px] px-3 py-2">
+                <p class="font-proxima text-[11px] text-mny-900 leading-[1.45]"><strong class="font-[700]">Two tagging systems, one gap:</strong> the FEMA-element tags at left live on the sections themselves; this Required list lives in the LHMP_IA registry. They aren&rsquo;t joined yet — the registry&rsquo;s 44&nbsp;CFR column is empty on all 529 rows. Wire the two together (data entry, not engineering) and this page becomes the pre-filled Plan Review Tool Task&nbsp;7 promises.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — FORM COVERAGE vs THE RULES (col-12). Every "Go"
+             link stays in the plan: the county-actions flow pages are
+             real links into ../county-actions/; the surfaces not yet
+             mocked are marked.
+             ========================================================== -->
+        <div data-dms="section" data-name="form-coverage" class="col-span-12 mt-3">
+          <div class="rounded-[12px] border border-mny-100 p-4">
+            <div class="flex items-baseline justify-between gap-3 mb-1">
+              <h2 class="font-display text-[20px] font-[500] text-mny-900 uppercase tracking-[-0.01em]">Your plan's data — coverage against the actual rules</h2>
+              <span class="font-proxima text-[11px] text-mny-400">every link stays inside your plan</span>
+            </div>
+            <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] mb-3 max-w-[720px]">
+              The six datasets your plan displays, scored against the requirements the planning guide
+              states. Enter each one right where your plan shows it.
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[880px]">
+                <thead>
+                  <tr class="text-left border-b border-mny-100">
+                    <th class="py-2 pr-3 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider">Data</th>
+                    <th class="py-2 px-3 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider">Entered</th>
+                    <th class="py-2 px-3 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider">Rule check</th>
+                    <th class="py-2 px-3 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider">Status</th>
+                    <th class="py-2 pl-3 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider text-right">Where you do it</th>
+                  </tr>
+                </thead>
+                <tbody class="align-top font-proxima text-[13px] text-mny-700">
+                  <tr class="border-b border-mny-50 bg-mny-red/[0.04]">
+                    <td class="py-2.5 pr-3 font-[600] text-mny-900">Hazards of Concern</td>
+                    <td class="py-2.5 px-3 tabular-nums"><span class="font-[700] text-mny-red">0</span> of ~368 determinations <span class="text-mny-400">(16 hazards &times; 23 jurisdictions)</span></td>
+                    <td class="py-2.5 px-3">every jurisdiction must rank each hazard — <span class="text-mny-red font-[600]">blocks two Actions rules below</span></td>
+                    <td class="py-2.5 px-3"><span class="inline-flex px-2 py-0.5 rounded-full bg-mny-red text-white text-[10px] font-[700] uppercase tracking-wide">Start here</span></td>
+                    <td class="py-2.5 pl-3 text-right"><a href="#" title="HoC worklist under The Risk — next mockup in this set" class="font-[700] text-[12px] uppercase tracking-wider text-mny-900 bg-mny-y700 hover:bg-[#D49B35] px-3 py-1.5 rounded-full whitespace-nowrap">The Risk &rarr; worklist</a></td>
+                  </tr>
+                  <tr class="border-b border-mny-50">
+                    <td class="py-2.5 pr-3 font-[600] text-mny-900">Actions</td>
+                    <td class="py-2.5 px-3 tabular-nums"><span class="font-[700] text-mny-900">475</span> · 23/23 jurisdictions <span class="text-mny-400">(Proposed 391 · Completed 41 · In-Progress 23)</span></td>
+                    <td class="py-2.5 px-3">&ge;2 new/carryover <span class="text-mny-grn font-[700]">&#10003; 391</span> &middot; SFHA flood action <span class="text-mny-grn font-[700]">&#10003; 280 flood</span> &middot; &ge;1 per hazard of concern per jurisdiction <span class="text-mny-y700 font-[700]">awaits HoC</span></td>
+                    <td class="py-2.5 px-3"><span class="inline-flex px-2 py-0.5 rounded-full bg-mny-grn/15 text-mny-grn text-[10px] font-[700] uppercase tracking-wide">Strong</span></td>
+                    <td class="py-2.5 pl-3 text-right"><a href="../county-actions/dashboard.html" class="font-[600] text-[12px] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Track Progress &rarr; Actions</a></td>
+                  </tr>
+                  <tr class="border-b border-mny-50 bg-mny-y50/40">
+                    <td class="py-2.5 pr-3 font-[600] text-mny-900">Capabilities</td>
+                    <td class="py-2.5 px-3 tabular-nums"><span class="font-[700] text-mny-900">320</span> entries <span class="text-mny-400">— under the Capacities V2 schema</span></td>
+                    <td class="py-2.5 px-3"><span class="text-mny-y700 font-[600]">your entries aren't displayed in the plan yet</span> — the plan reads the older Capabilities schema; merge decision pending</td>
+                    <td class="py-2.5 px-3"><span class="inline-flex px-2 py-0.5 rounded-full bg-mny-y700 text-mny-900 text-[10px] font-[700] uppercase tracking-wide">Schema pending</span></td>
+                    <td class="py-2.5 pl-3 text-right"><a href="#" title="Capabilities Assessment workspace — after the schema merge" class="font-[600] text-[12px] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">The Plan &rarr; Capabilities</a></td>
+                  </tr>
+                  <tr class="border-b border-mny-50">
+                    <td class="py-2.5 pr-3 font-[600] text-mny-900">Participation</td>
+                    <td class="py-2.5 px-3 tabular-nums"><span class="font-[700] text-mny-900">27</span> meetings · latest <span class="tabular-nums">2026-03-26</span></td>
+                    <td class="py-2.5 px-3">document how stakeholders and the public were involved — keep logging through adoption</td>
+                    <td class="py-2.5 px-3"><span class="inline-flex px-2 py-0.5 rounded-full bg-mny-grn/15 text-mny-grn text-[10px] font-[700] uppercase tracking-wide">Active</span></td>
+                    <td class="py-2.5 pl-3 text-right"><a href="#" title="Meetings & engagement band on About the Process" class="font-[600] text-[12px] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">About the Process &rarr;</a></td>
+                  </tr>
+                  <tr class="border-b border-mny-50">
+                    <td class="py-2.5 pr-3 font-[600] text-mny-900">Roles</td>
+                    <td class="py-2.5 px-3 tabular-nums"><span class="font-[700] text-mny-900">111</span> contacts on the planning roster</td>
+                    <td class="py-2.5 px-3">who leads, supports, and maintains each part of the process</td>
+                    <td class="py-2.5 px-3"><span class="inline-flex px-2 py-0.5 rounded-full bg-mny-grn/15 text-mny-grn text-[10px] font-[700] uppercase tracking-wide">Entered</span></td>
+                    <td class="py-2.5 pl-3 text-right"><a href="#" title="Planning team & roles band on About the Process" class="font-[600] text-[12px] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">About the Process &rarr;</a></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 pr-3 font-[600] text-mny-900">High Hazard Dams</td>
+                    <td class="py-2.5 px-3 tabular-nums">state registry <span class="text-mny-400">(you annotate — never add or remove dams)</span></td>
+                    <td class="py-2.5 px-3">add local context to the dams in your county as needed</td>
+                    <td class="py-2.5 px-3"><span class="inline-flex px-2 py-0.5 rounded-full bg-mny-100 text-mny-700 text-[10px] font-[700] uppercase tracking-wide">As needed</span></td>
+                    <td class="py-2.5 pl-3 text-right"><a href="#" title="Annotate-in-place on the High Hazard Dams chapter" class="font-[600] text-[12px] text-mny-700 underline decoration-mny-y500 hover:decoration-mny-700 whitespace-nowrap">Local Environment &rarr; Dams</a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — PROCESS POSITION (col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="process-position" class="col-span-12 mt-3">
+          <div class="rounded-[12px] bg-mny-900 p-4 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-[0.05] pointer-events-none" style="background:url('../../assets/mny/topolines.png');background-size:500px;"></div>
+            <div class="relative">
+              <div class="flex items-baseline justify-between gap-3 mb-3">
+                <h2 class="font-display text-[20px] font-[500] text-white uppercase tracking-[-0.01em]">Where you are in the process</h2>
+                <a href="#" class="font-proxima text-[12px] font-[600] text-mny-y500 underline decoration-mny-y700 hover:text-mny-y700">Planning guide &rarr;</a>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+                <a href="#" class="rounded-[8px] bg-white/10 border border-mny-grn/60 px-2.5 py-2 hover:bg-white/15">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-mny-grn">Task 1 · underway</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Organize the effort</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">111 roles · 27 meetings</p>
+                </a>
+                <a href="#" class="rounded-[8px] bg-white/10 border border-mny-y500/60 px-2.5 py-2 hover:bg-white/15">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-mny-y500">Task 2 · started</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Profile the community</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">0/34 Local Env. slots</p>
+                </a>
+                <a href="#" class="rounded-[8px] bg-white/10 border border-mny-red/70 px-2.5 py-2 hover:bg-white/15">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-[#F1A099]">Task 3 · blocked</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Hazards of concern</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">0 determinations</p>
+                </a>
+                <a href="#" class="rounded-[8px] bg-white/10 border border-mny-y500/60 px-2.5 py-2 hover:bg-white/15">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-mny-y500">Task 4 · pending</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Assess capabilities</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">320 entries await schema</p>
+                </a>
+                <a href="#" class="rounded-[8px] bg-white/10 border border-mny-grn/60 px-2.5 py-2 hover:bg-white/15">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-mny-grn">Task 5 · strong</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Mitigation strategy</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">475 actions · 337 review-ready</p>
+                </a>
+                <a href="#" class="rounded-[8px] bg-white/5 border border-white/15 px-2.5 py-2 hover:bg-white/10">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-mny-200">Task 6</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Maintenance process</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">not started</p>
+                </a>
+                <a href="#" class="rounded-[8px] bg-white/5 border border-white/15 px-2.5 py-2 hover:bg-white/10">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-mny-200">Task 7</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Draft &amp; submit</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">DHSES &rarr; FEMA review</p>
+                </a>
+                <a href="#" class="rounded-[8px] bg-white/5 border border-white/15 px-2.5 py-2 hover:bg-white/10">
+                  <p class="font-display text-[11px] font-[600] uppercase tracking-wide text-mny-200">Task 8</p>
+                  <p class="font-proxima text-[12px] font-[600] text-white leading-tight mt-0.5">Adopt the plan</p>
+                  <p class="font-proxima text-[10px] text-mny-200 mt-0.5">resolutions &rarr; approval</p>
+                </a>
+              </div>
+              <p class="font-proxima text-[11px] text-mny-200 mt-3">
+                Task states are derived from the bands above — they update as your data does. Each tile
+                opens that task's instructions in the planning guide.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SECTION — PAGE INDEX (design-system scaffolding, col-12)
+             ========================================================== -->
+        <div data-dms="section" data-name="page-index" class="col-span-12 pt-6">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-mny-200 pt-4">
+            <span class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-400">LHMP Admin</span>
+            <a href="plan-status-admin.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">1 · Plan Status — admin panel</a>
+            <span class="font-proxima text-[13px] font-[700] text-mny-y700">2 · Plan Status — in the plan</span>
+            <span class="font-proxima text-[12px] text-mny-400">|</span>
+            <a href="../../reports/admin-direction-consolidate.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">Direction A report</a>
+            <a href="../../reports/admin-direction-dissolve.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">Direction B report</a>
+            <a href="../county-actions/dashboard.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">County Actions flow</a>
+            <span class="ml-auto font-proxima text-[12px] text-mny-400">Sullivan County · real data as of 2026-08-07</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget (shared, section-contextual) -->
+<script src="../../ds-nav.js"></script>
+
+</body>
+</html>

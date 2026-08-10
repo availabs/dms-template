@@ -107,14 +107,29 @@ function stubChDb() {
 }
 
 // Recording fake for all PHYSICAL pm3-table SQL. Answers the TMC meta SELECT
-// with the fixture row; records everything else.
+// with the fixture row and the metrics-table column introspection with a
+// representative metric-column list; records everything else.
+//
+// `type: 'postgres'` so the Postgres-only paths (the metrics⋈geometry view and
+// the npmrds_meta GIST index) actually run and can be asserted.
+const FAKE_METRIC_COLUMNS = ['lottr_amp_lottr', 'speed_pctl_50', 'ted_truck_freeflow_all_xdelay_phrs'];
+
 function fakeDataDb() {
   const queries = [];
   return {
     queries,
+    type: 'postgres',
     joined() { return queries.join('\n;\n'); },
-    async query(sql) {
+    async query(sql, params) {
       queries.push(sql);
+      if (/information_schema\.columns/i.test(sql)) {
+        return {
+          rows: [
+            { column_name: 'ogc_fid' }, { column_name: 'tmc' }, { column_name: 'year' },
+            ...FAKE_METRIC_COLUMNS.map((column_name) => ({ column_name })),
+          ],
+        };
+      }
       if (/^\s*SELECT/i.test(sql) && sql.includes(`tmc = '${TMC}'`)) {
         return { rows: [{ ...TMC_META_ROW }] };
       }
@@ -208,13 +223,26 @@ async function runTests() {
   await test('processes a TMC whose meta row map21 would reject (permissive checkMeta, end-to-end)', async () => {
     const sql = dataDb.joined();
     assert(sql.includes(`'${TMC}'`), 'fixture TMC reaches the data table');
-    // the meta-row insert carries the meta columns incl. wkb_geometry + mpo fields
-    assert(/INSERT INTO[\s\S]*tmc,urban_code,region_code,county,ua_name,mpo_code,mpo_name,wkb_geometry/.test(sql),
-      'inserts the pm3 meta-column row');
+    // Since geometry de-duplication the per-TMC insert seeds ONLY the join key;
+    // the 23 attribute columns + geometry come from the view's join instead.
+    assert(/INSERT INTO pm3\.\S+_metrics \(tmc, year\) VALUES/.test(sql),
+      'seeds the (tmc, year) join-key row into the metrics table');
+    // Per-query, not over the joined blob: the CREATE VIEW legitimately
+    // mentions wkb_geometry.
+    const inserts = dataDb.queries.filter((q) => /INSERT INTO/i.test(q));
+    assert(inserts.length > 0, 'expected at least one INSERT');
+    for (const q of inserts) {
+      assert(!/wkb_geometry/.test(q), `INSERT must NOT carry wkb_geometry: ${q.trim().slice(0, 120)}`);
+      assert(!/urban_code|congestion_level|directionalaadt(?!truck)/.test(q),
+        `INSERT must NOT carry TMC attribute columns: ${q.trim().slice(0, 120)}`);
+    }
   });
 
   await test('writes per-metric (METRIC_WRITES_DB=true): one upsert per metric, all 11 metrics', async () => {
-    const inserts = dataDb.queries.filter((q) => /ON CONFLICT ON CONSTRAINT tmc_year_/.test(q));
+    // +1 for the (tmc, year) seed row, which shares the same named constraint.
+    const inserts = dataDb.queries.filter(
+      (q) => /ON CONFLICT ON CONSTRAINT tmc_year_/.test(q) && !/\(tmc, year\) VALUES/.test(q)
+    );
     assert(inserts.length === METRIC_NAMES.length,
       `should issue ${METRIC_NAMES.length} per-metric upserts (got ${inserts.length})`);
     const sql = dataDb.joined();
@@ -233,8 +261,45 @@ async function runTests() {
     assert(!/"[A-Z]+_lottr"/.test(sql), 'must NOT write uppercase bin-prefixed columns');
   });
 
-  await test('creates the GIST geometry index', async () => {
-    assert(/USING\s+GIST \(wkb_geometry\)/.test(dataDb.joined()), 'should create a GIST index on wkb_geometry');
+  await test('ensures the GIST index on the npmrds_meta geometry table, not on pm3', async () => {
+    const sql = dataDb.joined();
+    // Without this index a single z9 tile through the joined view measured 255s
+    // vs 22ms materialized (2026-08-07). It must target the META table.
+    const idx = dataDb.queries.find((q) => /USING GIST \(wkb_geometry\)/.test(q));
+    assert(idx, 'should create a GIST index on wkb_geometry');
+    assert(/CREATE INDEX IF NOT EXISTS/.test(idx), 'index creation must be idempotent');
+    assert(!/ON pm3\./.test(idx), `index must NOT target the pm3 relation (got: ${idx.trim()})`);
+    assert(sql.includes('_wkb_geometry_gist'), 'uses the meta-geometry index name');
+  });
+
+  await test('builds the metrics ⋈ geometry view as views.table_name', async () => {
+    const { rows } = await db.query(`SELECT table_name FROM views WHERE view_id = $1`, [result.view_id]);
+    const viewName = rows[0].table_name;
+    const create = dataDb.queries.find((q) => /CREATE VIEW/.test(q));
+    assert(create, 'should create the joined view');
+    assert(create.includes(`CREATE VIEW pm3.${viewName} AS`), `view is named pm3.${viewName}`);
+    assert(dataDb.queries.some((q) => q.includes(`DROP VIEW IF EXISTS pm3.${viewName}`)),
+      'drops before create so a changed column set is not a CREATE OR REPLACE error');
+    assert(create.includes(`FROM pm3.${viewName}_metrics m`), 'selects from the metrics table');
+    assert(/JOIN \S+ t1\s+ON t1\.tmc = m\."tmc" AND t1\.year = m\."year"/.test(create),
+      'joins the meta table on both tmc and year');
+    assert(create.includes('t1."wkb_geometry"'), 'view supplies wkb_geometry from the join');
+    for (const m of FAKE_METRIC_COLUMNS) {
+      assert(create.includes(`m."${m}"`), `view exposes metric column ${m}`);
+    }
+    assert(result.metrics_table === `pm3.${viewName}_metrics`,
+      `result reports the metrics table (got ${result.metrics_table})`);
+  });
+
+  await test('records the meta-layer provenance the view join depends on', async () => {
+    const { rows } = await db.query(`SELECT metadata FROM views WHERE view_id = $1`, [result.view_id]);
+    const meta = parseJson(rows[0].metadata);
+    assert(meta.npmrds_meta_layer_view_id && meta.npmrds_meta_layer_view_id['2023'],
+      'view metadata records the meta-layer view_id per year');
+    assert(meta.npmrds_meta_layer_table && meta.npmrds_meta_layer_table['2023'],
+      'view metadata records the meta-layer table per year');
+    assert(String(meta.pm3_metrics_table).endsWith('_metrics'),
+      'view metadata records the metrics table');
   });
 
   await test('writes tiles + rawViewIdsUsed to the view metadata', async () => {

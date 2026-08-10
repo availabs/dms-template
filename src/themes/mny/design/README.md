@@ -41,6 +41,10 @@ mny/design/
 │   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
 │   ├── datasets-files.html             the datasets pattern
 │   ├── site-management*.html           admin surfaces
+│   ├── lhmp-admin/                   ← LHMP ADMIN — the plan-status page, both directions
+│   │   ├── plan-status-admin.html      inside the admin panel (Direction A's landing page)
+│   │   └── plan-status-plan.html       inside the county plan under Track Progress (Direction B,
+│   │                                   admin panel removed for planners); same real Sullivan data
 │   └── county-actions/               ← COUNTY ACTIONS WORKFLOW — one linked 6-page flow
 │       ├── dashboard.html              1 · county actions dashboard (stats + map + table + gap hand-off)
 │       ├── jurisdictions.html          2 · pick a jurisdiction, or tier the whole county
