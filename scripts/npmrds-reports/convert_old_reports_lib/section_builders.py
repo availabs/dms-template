@@ -749,6 +749,11 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
     is_self_bound = any(s.get("functionId") == "comparison_series" and s.get("enabled")
                          and s.get("paramKey") == "$self" for s in subscribers)
     if is_self_bound:
+        # Changing this field's shape? Every golden-corpus entry tagged
+        # "display._measurePick.routeIds" (scripts/npmrds-reports/report_probe_fixtures/
+        # golden-corpus.json) needs re-verifying — `node scripts/npmrds-reports/
+        # probe_corpus.mjs --only <key>` before/after — see
+        # src/dms/skills/regression-testing-npmrds-reports.md.
         window = resolve_measure_pick_window(info["assigned"], comps_by_id or {}, gaps,
                                               old_graph.get("id"))
         state.setdefault("display", {})["_measurePick"] = {

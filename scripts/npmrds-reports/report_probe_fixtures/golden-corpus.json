@@ -1,0 +1,109 @@
+{
+  "_readme": [
+    "Golden-corpus manifest for scripts/npmrds-reports/probe_corpus.mjs — see",
+    "planning/transportny/tasks/current/report-probe-expect-and-golden-corpus.md for the design record.",
+    "One entry per curated, kept-live report page. `covers` tags the real field/function names each",
+    "entry exercises (not prose descriptions) — when a load-bearing shape changes (e.g. `_measurePick`,",
+    "`sidebarHideInView`), `grep -r <name> scripts/npmrds-reports/report_probe_fixtures/golden-corpus.json`",
+    "finds exactly which corpus entries are at risk and need re-verifying before/after the change.",
+    "baselineCapturedAt/lastVerifiedAt are stamped ONLY by probe_corpus.mjs itself (--capture / a clean",
+    "diff pass respectively) — never hand-edit them, they're the tool's own record of what it has",
+    "actually machine-checked, not a claim about when a human last looked at the page."
+  ],
+  "entries": [
+    {
+      "key": "golden_corpus_linegraph",
+      "url": "converted_reports/golden_corpus_linegraph",
+      "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-linegraph.json",
+      "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-linegraph.json --publish",
+      "authRequired": false,
+      "covers": [
+        "avlGraph.LineGraph",
+        "comparisonSeries.plain",
+        "sectionGroups.sidebarHideInView",
+        "display._measurePick.routeIds"
+      ],
+      "notes": "Representative for the plain (non-difference) LineGraph code path, 2-route travelTime. Session-scoped page from 2026-08-07 was cleaned up per feedback_golden_corpus_pages_session_scoped — rebuild from the spec before first --capture.",
+      "baselineCapturedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-10",
+      "expectedValue": null
+    },
+    {
+      "key": "golden_corpus_bargraph",
+      "url": "converted_reports/golden_corpus_bargraph",
+      "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-bargraph.json",
+      "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-bargraph.json --publish",
+      "authRequired": false,
+      "covers": [
+        "avlGraph.BarGraph",
+        "measure.speed",
+        "comparisonSeries.plain",
+        "display._measurePick.routeIds"
+      ],
+      "notes": "Representative for the BarGraph code path AND the Layer-3 known-good-value PoC (see expectedValue) — chosen because `speed` is a near-raw average, the class of measure the team is most confident is already correctly computed (any discrepancy is most likely rounding, not a wrong formula). Rebuild before first --capture, same as linegraph.",
+      "baselineCapturedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-10",
+      "expectedValue": {
+        "description": "NY-9D Northbound (route 2195805, TMCs 120+29712/120+29713/120+29714) average speed, Monday (toDayOfWeek(date,1)=1), 2025-01-01..2025-02-28. Computed independently: per-TMC avgIf(travel_time_all_vehicles, !=0) via direct ClickHouse SQL against npmrds.s583_v982_NPMRDS_V6, summed, combined with per-TMC miles from the UDA view-3464 reference-data endpoint (a static geometry lookup, not derived from this report's own rendering), via the report's own formula (sum(miles)*3600/sum(avg_travel_time_s)). Matched the live rendered value EXACTLY (19.57234077140305, to 15 significant digits) when computed 2026-08-10 — confirms the speed formula is correct for this measure, not just close.",
+        "matchRoute": "NY-9D Northbound",
+        "value": 19.57234077140305,
+        "toleranceAbs": 0.1,
+        "groundTruthQuery": "dbq.py ch \"SELECT tmc, avgIf(toFloat64(travel_time_all_vehicles), travel_time_all_vehicles != 0) AS avg_tt FROM npmrds.s583_v982_NPMRDS_V6 WHERE tmc IN ('120+29713','120+29712','120+29714') AND date >= '2025-01-01' AND date <= '2025-02-28' AND toDayOfWeek(date,1)=1 GROUP BY tmc\" + UDA viewsById/3464 miles lookup for the same 3 TMCs; speed = sum(miles)*3600/sum(avg_tt)",
+        "groundTruthComputedAt": "2026-08-10"
+      }
+    },
+    {
+      "key": "golden_corpus_gridgraph",
+      "url": "converted_reports/golden_corpus_gridgraph",
+      "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-gridgraph.json",
+      "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-gridgraph.json --publish",
+      "authRequired": false,
+      "covers": [
+        "avlGraph.GridGraph",
+        "measure.travelTime",
+        "resolution.day",
+        "display._measurePick.routeIds"
+      ],
+      "notes": "Representative for the per-TMC/day heat-grid code path — see graph-new-single-categorize-limit memory (GridGraph's yAxis-not-categorize quirk lives here). Rebuild before first --capture.",
+      "baselineCapturedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-10",
+      "expectedValue": null
+    },
+    {
+      "key": "golden_corpus_routemap",
+      "url": "converted_reports/golden_corpus_routemap",
+      "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-routemap.json",
+      "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-routemap.json --publish",
+      "authRequired": false,
+      "covers": [
+        "Map.choroplethBake",
+        "measure.speed",
+        "quantile_breaks",
+        "route_map.choropleth_paint"
+      ],
+      "notes": "Representative for the Route Map / choropleth-baking code path — a real per-report choropleth baked server-side at build time, distinct from the other AVL Graph types. Rebuild before first --capture; the bake step's own dependencies (dama-tiles pg) must be reachable, not just ClickHouse.",
+      "baselineCapturedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-10",
+      "expectedValue": null
+    },
+    {
+      "key": "dynamic_report_one_week_study",
+      "url": "converted_reports/one_week_study?routes=2207838",
+      "source": "existing-page:2210438 (reports-catalog template conversion, NOT spec-built — old-tool-only Bar Graph Summary can't be built via report_build.mjs)",
+      "rebuild": null,
+      "authRequired": false,
+      "covers": [
+        "dynamicReport.routeSlotsFilter",
+        "filters[].type=routeSlots",
+        "ReportRouteList.entryGateModal",
+        "BarGraphSummary",
+        "display._measurePick.routeIds",
+        "sectionGroups.sidebarHideInView"
+      ],
+      "notes": "PRIORITY entry — the Dynamic Report / catalog-template code path, distinct from --report-id conversions and the only corpus page exercising Bar Graph Summary. MUST keep the `?routes=` param (bypasses the Add-Routes entry-gate modal deterministically) — probing the bare slug tests only the empty-slot placeholder state, see report-probe-expect-and-golden-corpus.md's 2026-08-07 finding. `authRequired: false` confirmed live 2026-08-10 (renders publicly with real data despite the row's own `published` field reading back empty — that field isn't what gates public rendering here).",
+      "baselineCapturedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-10",
+      "expectedValue": null
+    }
+  ]
+}

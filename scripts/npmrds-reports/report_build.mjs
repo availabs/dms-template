@@ -964,6 +964,11 @@ for (const [i, g] of spec.graphs.entries()) {
 }
 
 // ── wire route → graph routing onto `_measurePick.routeIds` ────────────────
+// Changing this field's shape? Every corpus entry in
+// scripts/npmrds-reports/report_probe_fixtures/golden-corpus.json tagged
+// "display._measurePick.routeIds" needs re-verifying (`node
+// scripts/npmrds-reports/probe_corpus.mjs --only <key>` before/after) — see
+// src/dms/skills/regression-testing-npmrds-reports.md.
 // Design push #2 (2026-08-06, see useGraphPublish.js's own header comment) moved
 // route routing OFF the route (`routes[].graphIds` on the snap row) and ONTO each
 // GRAPH's own `display._measurePick.routeIds` — `findSelfBoundGraphs` treats any
