@@ -2553,9 +2553,16 @@ const sectionMenuExtensions = {
 // Measure/Comparison Mode state as npmrdsMeasureMenu above — see
 // components/QuickControls and components/MeasurePicker's applyMeasurePick.
 // ─────────────────────────────────────────────────────────────────────────────
+// Design push #2 (2026-08-06): QuickControls' Routes/Measure/When/Aggregate pills apply to
+// Table (Spreadsheet) and Map cards too, not just chart types (Mode is the one pill that hides
+// itself there — see QuickControlsRow's own `hasMode`). The older Settings-drawer Measure
+// item-group (sectionMenuExtensions below) stays chart-only on purpose — Quick Controls fully
+// covers Table/Map editing on its own, no reason to wire a second surface for them.
 const sectionHeaderExtensions = {
   "Graph": [npmrdsQuickControls],
   "AVL Graph": [npmrdsQuickControls],
+  "Spreadsheet": [npmrdsQuickControls],
+  "Map": [npmrdsQuickControls],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -97,6 +97,16 @@ export const DEFAULT_PICK = {
     // comparisonSeries.combine.invert. See npmrdsMeasureMenu's "Anchor Route"
     // item and report-spec.md's "Difference graphs: anchor and sign".
     anchorInvert: false,
+    // Design push #2 (2026-08-06): time-of-day/day-of-week/route-assignment moved from the
+    // route to the graph. `weekdays`/`start`/`end` are the same shape RouteRow's old
+    // per-route window facets used (an empty/missing day key means "on"; `start`/`end` are
+    // plain "HH:mm" strings, empty = all day). `routeIds` is this graph's own list of
+    // `route_comp_id`s (the inverse of the old per-route `graphIds`) — resolved against
+    // ReportRouteList's route catalog (see useGraphPublish.js's per-graph transformReportRoutes).
+    weekdays: {},
+    start: '',
+    end: '',
+    routeIds: [],
 };
 
 // Tags every column this picker generates as metadata (documents provenance

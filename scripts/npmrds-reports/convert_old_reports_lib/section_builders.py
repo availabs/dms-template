@@ -336,6 +336,70 @@ def resolve_difference_pair(state, route_comps, old_routes):
                   f"resolution {res_of(anchor)!r} + same physical route)")
 
 
+_WEEKDAY_KEYS = ("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday")
+
+
+def _normalize_time(t):
+    """Old settings.startTime/endTime appear in the corpus as both 'HH:mm' and
+    'HH:mm:ss' (confirmed live on report 1045 — comp-0 series uses '07:00',
+    comp-28/29/30/31 use '06:00:00') for the literal same time-of-day. Reduce
+    to 'HH:mm' (QuickControls/AddGraphModal/PEAK_PRESETS' own convention)
+    before comparing across comps or writing into _measurePick, so a format
+    difference alone never causes a spurious measure_pick_window_mixed gap.
+    Malformed input passes through verbatim rather than crashing — old data,
+    don't assume it's well-formed."""
+    if not t:
+        return ""
+    parts = t.split(":")
+    try:
+        return f"{int(parts[0]):02d}:{int(parts[1]):02d}"
+    except (IndexError, ValueError):
+        return t
+
+
+def _window_signature(settings):
+    """(days_on, startTime, endTime) as a hashable tuple, normalized per
+    generateDateRange/isDayOn's own semantics (useGraphPublish.js /
+    ReportRouteList/utils.js): only an explicit `false` excludes a day, a
+    missing key means included. AM/PM/off-peak flags are deliberately excluded
+    (proven query-inert in the old client — see old-reports-conversion.md's
+    "AM/PM/off-peak flags" note); only weekdays/startTime/endTime have any
+    real effect."""
+    weekdays = settings.get("weekdays") or {}
+    days_on = tuple(weekdays.get(day) is not False for day in _WEEKDAY_KEYS)
+    return (days_on, _normalize_time(settings.get("startTime")), _normalize_time(settings.get("endTime")))
+
+
+def resolve_measure_pick_window(assigned, comps_by_id, gaps, graph_id):
+    """Design push #2 (2026-08-06) moved a route's weekday mask / time-of-day
+    window off the route entry and onto each GRAPH's own
+    `display._measurePick` (see useGraphPublish.js's transformReportRoutes,
+    which reads weekdays/start/end from the graph, never from the route).
+    An old graph_comp's `assigned` route_comps each carried their own
+    weekdays/startTime/endTime — when every assigned comp agrees, that's
+    unambiguously the graph's own window; when they don't, there's no single
+    correct answer (same shape of problem as the AADT-override
+    agree-vs-mixed handling elsewhere in this file), so gap-log and leave the
+    graph's window at the empty "all days, all day" default rather than
+    guessing at one comp's values over another's."""
+    signatures = {_window_signature(comps_by_id.get(c, {}).get("settings") or {}) for c in assigned}
+    if len(signatures) > 1:
+        gaps.append({"kind": "measure_pick_window_mixed", "graph": graph_id,
+                     "detail": "assigned comps disagree on weekdays/startTime/"
+                               "endTime; graph's _measurePick window left at "
+                               "defaults (all days, all day)"})
+        return {"weekdays": {}, "start": "", "end": ""}
+    days_on, start, end = next(iter(signatures)) if signatures else (
+        tuple(True for _ in _WEEKDAY_KEYS), "", "")
+    # Sparse dict, only explicit exclusions (matches QuickControls' setWeekday
+    # convention — "storage never carries a same-meaning-but-verbose all-true
+    # object").
+    weekdays = {} if all(days_on) else {
+        day: False for day, on in zip(_WEEKDAY_KEYS, days_on) if not on
+    }
+    return {"weekdays": weekdays, "start": start, "end": end}
+
+
 def analyze_graph(g, comps_by_id, gaps):
     """Extract the conversion-relevant facts from an old graph_comp:
     measure (displayData), resolution, dataColumn, assigned comps, title,
@@ -506,18 +570,31 @@ def analyze_graph(g, comps_by_id, gaps):
     title = state.get("title") or "{type}, {data}"
     title = title.replace("{data}", MEASURE_NAMES.get(measure, measure))
     title = title.replace("{type}", gtype or "")
-    comp_names = ", ".join((comps_by_id[c].get("name") or "").strip()
-                           for c in assigned)
+    # Captured before the {name} replace below so callers can tell whether
+    # THIS graph's own title template ever carried a name-derived
+    # distinction at all — used by the route-comp-merge title-suffix fix
+    # (a merged route's own name goes generic, so a graph whose title never
+    # had {name} to begin with needs another way to keep showing which
+    # peak/date window it represents).
+    had_name_token = "{name}" in title
+    # Filtered so a template's intentionally-empty comp labels (see
+    # generic_comp_label) don't leave stray ", , " artifacts when joined
+    # alongside comps that DO have a recoverable generic label — a no-op
+    # for --report-id conversions, where a comp's name is never empty.
+    comp_names = ", ".join(filter(None, ((comps_by_id[c].get("name") or "").strip()
+                                         for c in assigned)))
     title = title.replace("{name}", comp_names)
     description = (state.get("message") or {}).get("text", "")
     return {"type": gtype, "measure": measure, "resolution": resolution,
             "data_column": data_column, "assigned": assigned,
-            "title": title.strip(), "description": description}
+            "title": title.strip(), "description": description,
+            "had_name_token": had_name_token, "comp_names": comp_names}
 
 
 def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
                              color_range=None, aadt_override=None,
-                             route_map_value_ctx=None, diff_invert=False):
+                             route_map_value_ctx=None, diff_invert=False,
+                             comps_by_id=None):
     # Old `layout.w` (react-grid-layout, 12-col) maps directly onto the
     # section's own `size` field (colspan) — confirmed the npmrds_sub pattern
     # (row 2100394) has `theme.selectedTheme: "transportnyv2"`, whose
@@ -643,6 +720,41 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
                        .get("combine") or {"mode": "difference"})
         combine["invert"] = True
         state.setdefault("comparisonSeries", {})["combine"] = combine
+    # Design push #2 (2026-08-06): a self-bound graph (`$self` comparison_series
+    # subscriber — see useGraphPublish.js's findSelfBoundGraphs) reads its own routes
+    # from `display._measurePick.routeIds`, not the route's own (now-dead) `graphIds`
+    # — that inversion shipped for the live UI (QuickControls/AddGraphModal) the same
+    # day this converter was last touched, and this function was never updated to
+    # match, so every graph_template clone came out with `_measurePick` absent and
+    # `routeIds` permanently empty: `useGraphPublish`'s publish effect always resolved
+    # zero routes for it, regardless of what a Dynamic Report viewer picked via the
+    # route-slot modal. `info["assigned"]` is already the exact inverse of the old
+    # per-route `graphIds` computation two lines below in the caller (the same
+    # route_comp_id space `build_route_entry`/`build_slot_entry` write as
+    # `route_comp_id`) — only set when the template already wires the `$self`
+    # subscriber, never invent that wiring here. `weekdays`/`start`/`end` come from
+    # resolve_measure_pick_window: the per-graph window every assigned old route_comp
+    # agreed on, or the empty "all days, all day" default when they disagreed
+    # (gap-logged there). Computed here (only for self-bound graphs, gated the same
+    # as routeIds below) rather than in analyze_graph, so graph types that don't
+    # consume `_measurePick` yet (e.g. Route Map — see
+    # dynamic-report-nongraph-section-binding.md item 1) never get a spurious
+    # "comps disagree" gap logged for a window that was never going to be written
+    # anyway. Before this, weekdays/start/end were hardcoded to the empty default
+    # unconditionally, silently dropping any weekday mask / peak-hour window a
+    # converted report used to have — the route entry's own (now-dead, per
+    # useGraphPublish.js) `weekdays`/baked startTime/endTime were never actually read
+    # by anything post design-push-#2.
+    subscribers = (state.get("display") or {}).get("_functions", {}).get("subscribers") or []
+    is_self_bound = any(s.get("functionId") == "comparison_series" and s.get("enabled")
+                         and s.get("paramKey") == "$self" for s in subscribers)
+    if is_self_bound:
+        window = resolve_measure_pick_window(info["assigned"], comps_by_id or {}, gaps,
+                                              old_graph.get("id"))
+        state.setdefault("display", {})["_measurePick"] = {
+            "weekdays": window["weekdays"], "start": window["start"], "end": window["end"],
+            "routeIds": list(info["assigned"]),
+        }
     state_json = json.dumps(state)
     return {
         "type": COMPONENT_TYPE,

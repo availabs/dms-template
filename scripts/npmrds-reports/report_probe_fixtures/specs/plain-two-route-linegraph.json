@@ -1,0 +1,34 @@
+{
+  "title": "TEST FIXTURE - probe expect plain LineGraph (delete-safe, rebuild on demand)",
+  "slug": "converted_reports/probe_fixture_plain_linegraph",
+  "description": "Committed test fixture for report_probe.mjs --expect. Not real client content. Safe to rebuild (report_build.mjs --update) or delete at any time; the spec file in git is the durable artifact, the page is disposable.",
+  "graphs": [
+    {
+      "key": "overview",
+      "title": "Travel Time Comparison",
+      "graphType": "LineGraph",
+      "measure": "travelTime",
+      "resolution": "hour",
+      "comparisonMode": "plain",
+      "why": "Fixture graph exercising --expect's per-section /graph-request and series-count assertions with two plain (non-difference) route instances."
+    }
+  ],
+  "routes": [
+    {
+      "id": "nb",
+      "route_id": 2195805,
+      "name": "NY-9D Northbound (fixture)",
+      "startDate": "2025-01-01",
+      "endDate": "2025-02-28",
+      "graphs": ["overview"]
+    },
+    {
+      "id": "sb",
+      "route_id": 2195804,
+      "name": "NY-9D Southbound (fixture)",
+      "startDate": "2025-01-01",
+      "endDate": "2025-02-28",
+      "graphs": ["overview"]
+    }
+  ]
+}

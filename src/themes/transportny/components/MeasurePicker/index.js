@@ -171,9 +171,13 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
         subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
     }
 
-    // Bookkeeping only (mirrors display._functions) — remembers the
-    // last pick so reopening the menu shows the right checkmarks/
-    // summary. Never read by the render/query pipeline.
+    // Remembers the full pick so reopening the menu/Quick Controls shows the right checkmarks/
+    // summary. `graphType`/`measure`/`resolution`/`comparisonMode`/`anchorInvert` are pure
+    // bookkeeping (already reflected in the composed columns/display above) — but
+    // `weekdays`/`start`/`end`/`routeIds` (design push #2, 2026-08-06) are NOT: those are read
+    // straight back out of this same field by useGraphPublish.js's per-graph transformReportRoutes
+    // to build the actual query filters, making this object functionally load-bearing for those
+    // three fields, not just cosmetic.
     state.display._measurePick = pick;
     return true;
 }
@@ -187,7 +191,39 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 // `partial` is merged onto the current pick read from
 // state.display._measurePick — callers only need to pass the field(s)
 // they're changing.
+// The 4 fields every self-bound section type reads back out of `_measurePick` at publish time
+// (useGraphPublish.js's transformReportRoutes) — the only ones a Map card's Routes/When pills
+// are allowed to write. `graphType`/`measure`/`resolution`/`comparisonMode`/`anchorInvert` are
+// AVL-Graph-only bookkeeping for fields composeMeasureConfig produced; Map has no such fields to
+// bookkeep (see the Map short-circuit below), so DEFAULT_PICK's AVL-Graph defaults for them must
+// never be merged onto a Map section's stored state.
+const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds'];
+
 export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
+    // Map has no compose path at all: composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment
+    // documents graph-shaped output (columns/join/display.graphType/comparisonSeries.combine) as
+    // "nonsensical" for Map, which renders from `symbologies`, not from any of that. Short-circuit
+    // to a plain field-level merge onto `_measurePick` instead of running the AVL-Graph compose
+    // pipeline. Gated on `currentComponent?.type` (the ComponentRegistry's own reliable identity)
+    // rather than `state.display.graphType` / `_measurePick.graphType` — neither field exists on a
+    // Map section's stored state (confirmed live 2026-08-07: a Map's `_measurePick` only ever
+    // carries weekdays/start/end/routeIds, per section_builders.py's write), so a graphType-based
+    // check would silently misfire and fall through to the AVL-Graph path below. See
+    // dynamic-report-nongraph-section-binding.md item 9.
+    if (currentComponent?.type === 'Map') {
+        const existing = state?.display?._measurePick || {};
+        const nextPick = { ...existing };
+        for (const key of MAP_MEASURE_PICK_FIELDS) {
+            if (key in partial) nextPick[key] = partial[key];
+            else if (!(key in nextPick)) nextPick[key] = DEFAULT_PICK[key];
+        }
+        dwAPI.setState(draft => {
+            if (!draft.display) draft.display = {};
+            draft.display._measurePick = nextPick;
+        });
+        return;
+    }
+
     const pick = { ...DEFAULT_PICK, ...(state?.display?._measurePick || {}) };
     const nextPick = { ...pick, ...partial };
     const hasDataset = !!state?.externalSource?.source_id;
