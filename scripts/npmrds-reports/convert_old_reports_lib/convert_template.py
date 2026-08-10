@@ -8,7 +8,7 @@ from .expressions import ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_
 from .template_specs import MEASURE_EXPR
 from .db import dms, fetch_old_template, flatten_route_comps, now_iso
 from .dates import resolve_relative_dates
-from .transforms import build_slot_entry, route_comp_display_name, route_settings_gaps
+from .transforms import build_slot_entry, generic_comp_label, group_route_comps, merged_group_date_label, route_comp_merge_key, route_settings_gaps
 from .graph_templates import ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import ensure_route_compare_template
@@ -38,7 +38,7 @@ def finish_template(old_id, old, page_id, gaps, dry_run, slug=None):
     return report
 
 
-def convert_template(old_id, dry_run=False, replace=False):
+def convert_template(old_id, dry_run=False, replace=False, title_override=None):
     """Ports one admin2.templates row into a Dynamic Report page — the
     "unified mechanism" design (dynamic-reports-and-route-tags.md item 3,
     revised 2026-08-03 per Ryan: treat every candidate as if it has no
@@ -100,16 +100,26 @@ def convert_template(old_id, dry_run=False, replace=False):
         else:
             delete_converted_page(existing)
 
-    title = old["name"] or f"Template {old_id}"
+    # title_override lets a caller (the reports catalog build) mint the page's
+    # title/slug from its own curated display name instead of the old system's
+    # internal template name — the two intentionally diverge in several cases
+    # (e.g. old template 246 "Rochester Inner Loop" is catalog card "Snapshot"),
+    # and without this the page's own URL/<h1> would read the wrong name. See
+    # planning/transportny/tasks/current/catalog-page-slug-naming-fix.md.
+    title = title_override or old["name"] or f"Template {old_id}"
     slug = compute_report_slug(title, exclude_id=existing)
 
     route_comps = flatten_route_comps(old.get("route_comps"), gaps)
     resolve_relative_dates(route_comps, gaps)
     for rc in route_comps:
         route_settings_gaps(rc.get("settings") or {}, rc.get("name"), gaps)
-        # No real old_route to fall back on — per the unified design, real
-        # per-route data is never fetched for a template conversion.
-        rc["name"] = route_comp_display_name(rc, None)
+        # Templates are Dynamic Reports — a viewer fills each route slot
+        # with ANY route/dates later, so a slot's own name (and any graph
+        # title that substitutes it in) must never bake in a specific old
+        # route name or calendar date the way a real --report-id
+        # conversion's route_comp_display_name correctly would. See
+        # generic_comp_label's own docstring.
+        rc["name"] = generic_comp_label(rc, gaps)
 
     if old.get("station_comps"):
         gaps.append({"kind": "station_comps",
@@ -342,9 +352,39 @@ def convert_template(old_id, dry_run=False, replace=False):
     # -- route SLOT entries for the reports_snap_2 row (build_slot_entry, not
     # build_route_entry — no real route resolution at all, see that
     # function's docstring for the route_slot_group grouping mechanism)
-    route_entries = [
-        build_slot_entry(rc, graphs_for_comp.get(rc.get("compId"), []), old_id)
-        for rc in route_comps]
+    # Merge/dedup pass, mirrors convert_report.py's (converter-route-comp-
+    # redesign.md) — no old_route/tmc_override on this path, so the key
+    # collapses to (routeId, calendar startDate, calendar endDate).
+    merge_groups = group_route_comps(route_comps, route_comp_merge_key)
+    comp_group_size = {}
+    route_entries = []
+    for group in merge_groups:
+        for rc in group:
+            comp_group_size[rc.get("compId")] = len(group)
+        rep = group[0]
+        union_graph_ids, seen_tids = [], set()
+        for rc in group:
+            for tid in graphs_for_comp.get(rc.get("compId"), []):
+                if tid not in seen_tids:
+                    seen_tids.add(tid)
+                    union_graph_ids.append(tid)
+        entry = build_slot_entry(rep, union_graph_ids, old_id)
+        # See convert_report.py's identical field — useGraphPublish.js's
+        # routesByCompId lookup needs every merged member's ORIGINAL compId to
+        # resolve to this one entry, not just the representative's own
+        # route_comp_id (which is all build_slot_entry itself sets).
+        entry["route_comp_ids"] = [rc.get("compId") for rc in group]
+        if len(group) > 1:
+            # A merged group's members differ in peak/weekday/resolution —
+            # show only the shared date, not any one member's own suffix
+            # (which would misrepresent the merged entry as "the AM one").
+            entry["name"] = merged_group_date_label(rep.get("settings") or {})
+            entry.pop("weekdays", None)
+            gaps.append({"kind": "route_comps_merged", "detail": {
+                "route_id": rep.get("routeId"),
+                "merged_comp_ids": [m.get("compId") for m in group],
+                "calendar_range": [entry.get("startDate"), entry.get("endDate")]}})
+        route_entries.append(entry)
 
     if dry_run:
         print(f"[dry-run] would create page '{slug}' ('{old['name']}') with "
@@ -358,6 +398,13 @@ def convert_template(old_id, dry_run=False, replace=False):
                "--title", title, "--slug", slug],
               data={"index": "0", "parent": str(parent_id),
                     "sidebar": page_template.get("sidebar", "left"),
+                    # Collapses the rail's own 340px space in view mode once RRL renders
+                    # nothing (a normal report, or a resolved Dynamic Report) — see
+                    # sectionGroup.jsx's `collapseRailIfEmpty`. Never copied from the
+                    # template before this fix, so every converted page had a permanent
+                    # blank/white rail-width gap in view mode regardless of this flag's
+                    # value on the template itself.
+                    "sidebarHideInView": page_template.get("sidebarHideInView", False),
                     "published": "draft"})
     page_id = res["id"]
     print(f"created page id={page_id} slug={slug}")
@@ -381,6 +428,10 @@ def convert_template(old_id, dry_run=False, replace=False):
         if bin_year:
             year_, bin_ = bin_year
             info["title"] = f"{info['title']} ({RELIABILITY_BIN_LABELS[bin_]}, {year_})"
+        # Route-comp-merge title fix — see convert_report.py's identical block.
+        if (not info.get("had_name_token") and info.get("comp_names")
+                and any(comp_group_size.get(c, 1) > 1 for c in info["assigned"])):
+            info["title"] = f"{info['title']} — {info['comp_names']}"
         section_datas.append(
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
@@ -394,7 +445,8 @@ def convert_template(old_id, dry_run=False, replace=False):
                                      # render, not a degraded one. See
                                      # convert_template()'s docstring.
                                      route_map_value_ctx=None,
-                                     diff_invert=route_diff_invert.get(g.get("id"), False)))
+                                     diff_invert=route_diff_invert.get(g.get("id"), False),
+                                     comps_by_id=comps_by_id))
 
     draft_ids = []
     for sd in section_datas:
@@ -407,7 +459,7 @@ def convert_template(old_id, dry_run=False, replace=False):
         r = dms(["raw", "create", "npmrdsv5", COMPONENT_TYPE], data=sd)
         published_refs.append({"id": str(r["id"]), "ref": f"npmrdsv5+{COMPONENT_TYPE}"})
     groups = page_template.get("draft_section_groups") or [
-        {"name": "default", "index": 0, "theme": "content", "position": "content"}]
+        {"name": "default", "index": 0, "theme": "flush", "position": "content"}]
     dms(["raw", "update", str(page_id)],
         data={"sections": published_refs, "section_groups": groups,
               "draft_section_groups": groups, "published": "", "has_changes": False})

@@ -53,6 +53,11 @@ def main():
                     help="old admin2.templates id to convert into a Dynamic "
                          "Report page (route-slots, graph_comps-only — see "
                          "convert_template())")
+    ap.add_argument("--title",
+                    help="--template-id only: override the page's title/slug "
+                         "instead of deriving it from the old template's own "
+                         "name — use when a catalog's curated display name "
+                         "differs from the old system's internal name")
     ap.add_argument("--dry-run", action="store_true",
                     help="report what would happen without writing")
     ap.add_argument("--replace", action="store_true",
@@ -129,8 +134,12 @@ def main():
         print(json.dumps({"elementType": element_type, "state": state}))
         return
 
+    if args.title and not args.template_id:
+        ap.error("--title is only meaningful with --template-id")
+
     if args.template_id:
-        convert_template(args.template_id, dry_run=args.dry_run, replace=args.replace)
+        convert_template(args.template_id, dry_run=args.dry_run, replace=args.replace,
+                          title_override=args.title)
         return
 
     if not args.report_id:

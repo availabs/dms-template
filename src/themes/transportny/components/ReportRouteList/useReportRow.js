@@ -357,60 +357,15 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     }
   };
 
-  // Toggle whether a route feeds a given graph's route list. `graphIds` is a hidden
-  // per-route field (section ids of the graphs this route has been clicked onto) —
-  // never surfaced as an abstract "group"; the UI is just "this route is on Graph N."
-  // A route feeds no graph until explicitly toggled onto one (no implicit sharing).
-  const toggleRouteGraph = async (index, sectionId) => {
-    if (!apiUpdate || !item?.id || saving || !reportRow) return;
-    setSaving(true);
-    setError('');
-    try {
-      const newRoutes = cloneDeep(routes);
-      const current = new Set(newRoutes[index].graphIds || []);
-      if (current.has(sectionId)) current.delete(sectionId); else current.add(sectionId);
-      newRoutes[index].graphIds = Array.from(current);
-      await persistRoutes(newRoutes);
-    } catch (e) {
-      console.error('<ReportRouteList:toggleGraph>', e);
-      setError('Could not update route.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Batched version of toggleRouteGraph for the Add-Graph modal's "auto-assign" step (Ryan's
-  // decision, 2026-08-03: only routes selected in that same modal, added to a graph that's just
-  // been created). One `persistRoutes` call for every selected route, same reasoning as
-  // `addRoutes`: looping `toggleRouteGraph` per route would race against a stale `routes` closure,
-  // each call persisting `[...staleRoutes, oneMoreAssignment]` and silently dropping all but the
-  // last.
-  const assignRoutesToGraph = async (routeIndexes, sectionId) => {
-    if (!apiUpdate || !item?.id || saving || !reportRow || !routeIndexes?.length) return;
-    setSaving(true);
-    setError('');
-    try {
-      const newRoutes = cloneDeep(routes);
-      routeIndexes.forEach((i) => {
-        const current = new Set(newRoutes[i]?.graphIds || []);
-        current.add(sectionId);
-        if (newRoutes[i]) newRoutes[i].graphIds = Array.from(current);
-      });
-      await persistRoutes(newRoutes);
-    } catch (e) {
-      console.error('<ReportRouteList:assignRoutesToGraph>', e);
-      setError('Could not assign routes to the new graph.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Batched "paste into all" for the copy/paste-a-window feature: one persistRoutes call for
-  // every target route, same reasoning as assignRoutesToGraph (looping updateRoute per route
-  // would race a stale `routes` closure and drop all but the last write). Callers are
-  // responsible for excluding derived-date routes and the copy source from `routeIndexes` —
-  // this function just applies the window uniformly to whatever indexes it's given.
-  const pasteWindowToRoutes = async (routeIndexes, { startDate, endDate, weekdays }) => {
+  // Batched "paste into all" for the copy/paste-a-date-span feature: one persistRoutes call for
+  // every target route, same reasoning as addRoutes (looping updateRoute per route would race a
+  // stale `routes` closure and drop all but the last write). Callers are responsible for
+  // excluding derived-date routes and the copy source from `routeIndexes` — this function just
+  // applies the span uniformly to whatever indexes it's given.
+  //
+  // Design push #2 (2026-08-06): shrunk to date-span only — weekday mask moved off the route
+  // entirely (see useGraphPublish.js/QuickControls), so there's nothing else left to paste.
+  const pasteWindowToRoutes = async (routeIndexes, { startDate, endDate }) => {
     if (!apiUpdate || !item?.id || saving || !reportRow || !routeIndexes?.length) return;
     setSaving(true);
     setError('');
@@ -420,12 +375,11 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
         if (!newRoutes[i]) return;
         newRoutes[i].startDate = startDate;
         newRoutes[i].endDate = endDate;
-        newRoutes[i].weekdays = weekdays ? { ...weekdays } : undefined;
       });
       await persistRoutes(newRoutes);
     } catch (e) {
       console.error('<ReportRouteList:pasteWindowToRoutes>', e);
-      setError('Could not paste the window.');
+      setError('Could not paste the date span.');
     } finally {
       setSaving(false);
     }
@@ -442,8 +396,6 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     removeRoute,
     reorderRoutes,
     updateRoute,
-    toggleRouteGraph,
-    assignRoutesToGraph,
     pasteWindowToRoutes,
   };
 }

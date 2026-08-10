@@ -62,8 +62,9 @@ to change again:
 
 ## Publishing routes to graphs: per-graph, via a self-resolving key
 
-Each graph on the page gets its **own** route list — a route is added to a graph one click at a time.
-The mechanism:
+Each graph on the page gets its **own** route list, weekday mask, and time-of-day window — a route is
+assigned to a graph (and that graph's own window set) via its **Quick Controls** row
+(`components/QuickControls/`), not through this panel. The mechanism:
 
 - A graph's `comparison_series` subscriber carries the reserved sentinel `paramKey: '$self'` instead of
   an author-typed literal. `usePageFilterSync` resolves `'$self'` to a key derived from the graph's own
@@ -73,18 +74,30 @@ The mechanism:
 - `ReportRouteList` never writes into a graph's row (a cross-section write was considered and rejected
   — the same class of coupling that caused the original `graph_comps` leak). It only *reads* sibling
   sections to discover which ones carry an enabled `$self` subscriber (`findSelfBoundGraphs`), labeling
-  them ordinally ("Graph 1", "Graph 2", ...) for the UI.
-- Each route carries a hidden `graphIds: string[]` (section identities it's been clicked onto) — never
-  surfaced as an abstract "group"; the UI is a chip per discovered graph, toggled on click. A route
-  feeds no graph until explicitly assigned. Removing a graph section strips its id from every route's
-  `graphIds` and clears its stale action param.
-- The publish effect loops over discovered graphs, publishing each one's filtered route subset to its
-  own key via `setActionParam` (guarded with `isEqual` per key to avoid a write→re-render→write loop).
+  them ordinally ("Graph 1", "Graph 2", ...) for the UI, and — since design push #2, 2026-08-06 — also
+  reads each one's own `routeIds`/`weekdays`/`start`/`end` straight out of the same parsed
+  `display._measurePick` blob (see `MeasurePicker/composeMeasureConfig.js`'s `DEFAULT_PICK`).
+- **A route itself carries none of that.** A route (this panel's own storage row) is name · colour ·
+  TMCs · date span, full stop — no weekday mask, no time-of-day, no graph assignment. Those three moved
+  to the **graph's own** `display._measurePick.{weekdays,start,end,routeIds}`, written by that graph's
+  own Quick Controls via the same `applyMeasurePick` the older Settings-drawer Measure picker already
+  used — this panel never writes them. `routeIds` is the *inverse* of the old per-route `graphIds`: a
+  graph now holds the list of routes it draws, not a route holding the list of graphs it feeds.
+- Since a graph needs the report's full route catalog to offer a "Routes" picker without its own fetch,
+  this panel broadcasts it (id/name/colour/TMCs/date-span per route) to one fixed, page-wide `pageState`
+  key (`ROUTE_CATALOG_PARAM_KEY`, `useGraphPublish.js`) via the same generic `setActionParam` mechanism
+  used per-graph below — any graph's Quick Controls reads it straight off `pageState`.
+- The publish effect loops over discovered graphs, crosses each one's own weekday/time-of-day window
+  against its own `routeIds` (looked up against this panel's routes), and publishes the result to its
+  own key via `setActionParam` (guarded with `isEqual` per key to avoid a write→re-render→write loop). A
+  `routeIds` entry whose route was since removed from the report simply resolves to nothing and is
+  silently dropped — no cleanup effect rewrites the graph's own stored pick to strip it (Ryan,
+  2026-08-06: a stale id sitting unused forever isn't worth building cleanup for).
 
 A graph that wants a **frozen snapshot** instead can carry a baked `comparisonSeries.variants` (e.g. a
-one-time `transformReportRoutes(routes)` capture) instead of a subscriber — `buildUdaConfig` prefers
-the dynamic `config` when present, falls back to `variants`, so both binding modes coexist with no
-special-casing. Hand-typed literal `paramKey`s also still work; `'$self'` is additive.
+one-time `transformReportRoutes(routes, window)` capture) instead of a subscriber — `buildUdaConfig`
+prefers the dynamic `config` when present, falls back to `variants`, so both binding modes coexist with
+no special-casing. Hand-typed literal `paramKey`s also still work; `'$self'` is additive.
 
 ## Edit-mode gating
 

@@ -126,6 +126,114 @@ def route_comp_display_name(rc, old_route):
         return name  # malformed settings — keep converting on the plain name
 
 
+def route_comp_merge_key(rc, old_route=None, tmc_override=None):
+    """Groups route_comps that represent the SAME real route + calendar date
+    range. Design Push #2 (2026-08-06) moved weekday-mask/time-of-day off the
+    route and onto each GRAPH's own display._measurePick — so comps sharing
+    (routeId, calendar startDate, calendar endDate) that differ only in the
+    old tool's own peak/weekday/resolution slicing are redundant at the
+    route level now (`build_route_entry`/`build_slot_entry` callers collapse
+    them into one entry). Calendar date range stays a real route-level fact
+    (before/after, year-over-year) and is never part of the collapse.
+    Deliberately EXCLUDES startTime/endTime/weekdays/resolution.
+
+    Resolved tmc_array is included as a defensive tie-breaker for the case
+    where a routeId's underlying TMC set changed between two comps' own
+    creation — in practice always identical for comps sharing routeId+dates
+    (resolved_tmcs is itself derived from those same dates), so this closes
+    that edge case by construction rather than needing a corpus sweep. On
+    the template/slot path (no old_route, no tmc_override) this always
+    resolves to an empty tuple, so it's a no-op there — an equivalent
+    3-part key.
+
+    flatten_route_comps + resolve_relative_dates already ran before this is
+    called, so settings["startDate"]/["endDate"] are always concrete
+    YYYYMMDD ints here — safe to compare directly, no rounding concerns."""
+    settings = rc.get("settings") or {}
+    tmc = tmc_override or (old_route or {}).get("tmc_array") or []
+    return (str(rc.get("routeId")), settings.get("startDate"),
+            settings.get("endDate"), tuple(sorted(map(str, tmc))))
+
+
+def group_route_comps(route_comps, key_fn):
+    """Stable grouping (first-seen order preserved, both across groups and
+    within each group) — the first rc in a group becomes its representative
+    in the merge callers below."""
+    groups, order = {}, []
+    for rc in route_comps:
+        k = key_fn(rc)
+        if k not in groups:
+            groups[k] = []
+            order.append(k)
+        groups[k].append(rc)
+    return [groups[k] for k in order]
+
+
+def generic_comp_label(rc, gaps=None):
+    """Template (Dynamic Report) route slots are filled with ANY
+    (name + tmc_array) a viewer later supplies — the DATE stays fixed,
+    known, and saved on the slot itself (unchanged by this function; see
+    build_slot_entry's own startDate/endDate, always set from the comp's
+    real settings regardless of naming). Only the ROUTE-NAME portion of an
+    old comp's label is what must never leak through generically — a
+    slot's own name, and any graph title that would otherwise substitute
+    it in via {name}, must never bake in a specific old route name.
+
+    compTitle's {name} token marks exactly the route-specific portion;
+    blanking just that (while substituting {year}/{month}/{date} with
+    their real computed values, same helpers route_comp_display_name
+    itself uses) recovers a label like "{year} - AM - {name}" -> "2023 -
+    AM" — date kept, route name dropped.
+
+    When compTitle has NONE of {name}/{year}/{month}/{date} at all, it's
+    pure literal text an analyst typed directly for one specific real
+    route (e.g. "I-490 36055 EB AM Peak") — there's no structural signal to
+    separate a reusable peak/dow/date label from the route-specific words
+    in that string, so this returns "" rather than guess and leak the
+    route name through."""
+    settings = rc.get("settings") or {}
+    compTitle = settings.get("compTitle") or ""
+    tokens = ("{name}", "{year}", "{month}", "{date}")
+    if not any(t in compTitle for t in tokens):
+        if compTitle and gaps is not None:
+            gaps.append({"kind": "template_comp_title_not_generic",
+                         "route": rc.get("compId"),
+                         "detail": f"compTitle {compTitle!r} has no "
+                                   "{name}/{year}/{month}/{date} token to "
+                                   "strip — no reusable peak/dow/date label "
+                                   "could be recovered; slot/graph title "
+                                   "left blank for this comp rather than "
+                                   "keep the route-specific literal text"})
+        return ""
+    try:
+        residue = (compTitle.replace("{name}", "")
+                   .replace("{year}", _comp_year_string(settings))
+                   .replace("{month}", _comp_month_string(settings))
+                   .replace("{date}", _comp_date_string(settings)))
+    except Exception:
+        return ""
+    return residue.strip(" -–—,·|/").strip()
+
+
+def merged_group_date_label(settings):
+    """The date-only label for a MERGED route slot entry (>1 comp
+    collapsed into one) — deliberately does NOT reuse generic_comp_label's
+    per-comp compTitle residue, since a merge group's members differ
+    precisely in their peak/weekday/resolution suffix (that's the whole
+    reason they merged); showing any ONE member's suffix on the shared
+    entry would misrepresent it as "the AM one" when it now feeds every
+    merged member's graphs. The calendar date range IS shared across the
+    whole group by construction (part of the merge key) — safe to show."""
+    year = settings.get("year")
+    if year and year != "advanced":
+        return str(year)
+    start, end = settings.get("startDate"), settings.get("endDate")
+    if start and end:
+        s, e = str(start), str(end)
+        return s[:4] if s[:4] == e[:4] else f"{s[:4]}-{e[:4]}"
+    return ""
+
+
 def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
                       tmc_override=None):
     settings = rc.get("settings") or {}
@@ -153,6 +261,7 @@ def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
     entry = {
         "name": rc.get("name") or (old_route or {}).get("name") or "",
         "route_id": str(rc.get("routeId")),
+        "route_slot_group": str(rc.get("routeId")),
         "tmc_array": js(resolved_tmc_array),
         "description": (old_route or {}).get("description") or "",
         "points": js((old_route or {}).get("points")),
@@ -229,16 +338,16 @@ def build_slot_entry(rc, graph_tracking_ids, old_template_id):
     start = to_datetime_str(settings.get("startDate"), settings.get("startTime"))
     end = to_datetime_str(settings.get("endDate"), settings.get("endTime"))
     entry = {
-        # `rc["name"]` was already resolved to its final display name by convert_template's own
-        # per-rc loop before this function runs — recomputing via route_comp_display_name here
-        # (as this line used to) re-applies compTitle substitution A SECOND time, which is only a
-        # no-op for a compTitle that never references `{name}` (e.g. template 244's bare "{year}",
-        # which is why this went unnoticed until now). For a `{name}`-referencing compTitle (e.g.
-        # 278's "{year} - {name}") it compounds — confirmed live, real corpus data: comp-15 came
-        # out "2024 - 2024 - 2024 - Rochester Inner Loop 2" instead of "2024 - Rochester Inner Loop
-        # 2". Mirrors build_route_entry's own `rc.get("name") or ...` pattern, which never
-        # recomputes here for exactly this reason.
-        "name": rc.get("name") or route_comp_display_name(rc, None),
+        # `rc["name"]` was already resolved to its final (generic,
+        # route-/date-free) label by convert_template's own per-rc loop
+        # before this function runs (see generic_comp_label) — no fallback
+        # to route_comp_display_name here: that function's full rendering
+        # bakes in a specific route name/date, which a template's own
+        # unfilled route slot must never carry (a viewer can fill it with
+        # ANY route later). An empty label is a correct outcome (see
+        # generic_comp_label's own docstring for when/why), not a bug to
+        # paper over with a route-specific fallback.
+        "name": rc.get("name") or "",
         "route_comp_id": rc.get("compId") or "",
         "route_slot_group": str(rc.get("routeId")),
         "graphIds": list(graph_tracking_ids),

@@ -10,6 +10,7 @@ import {
   DEFAULT_PICK,
 } from '../MeasurePicker/composeMeasureConfig';
 import { MEASURE_DESCRIPTIONS, GRAPH_TYPE_DESCRIPTIONS } from './graphGuidanceCopy';
+import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_PRESETS, timeOfDayToken } from '../ReportRouteList/utils';
 
 // Small decorative glyphs for the static preview (Workstream 2 of the plan — a real
 // per-pick /graph fetch was explicitly rejected in favor of a cheap illustration). The shared
@@ -106,7 +107,16 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     setSelectedRouteIds(new Set());
   }, [open]);
 
+  // A Map card draws one route at a time (m2SelectMode in the reference file) — clicking the
+  // already-selected route deselects it, clicking a different one REPLACES the selection rather
+  // than adding to it. Verified against the reference's own `m2-pick` handler: no toast/refusal
+  // for this per-row click (a toast only guards a "select all" affordance, which this modal
+  // doesn't have).
   const toggleRoute = (id) => {
+    if (pick.graphType === 'Map') {
+      setSelectedRouteIds((prev) => (prev.has(id) && prev.size === 1 ? new Set() : new Set([id])));
+      return;
+    }
     setSelectedRouteIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -114,6 +124,22 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
       return next;
     });
   };
+
+  const setWeekday = (key, on) => {
+    setPick((p) => {
+      const next = { ...(p.weekdays || {}) };
+      if (on) delete next[key]; else next[key] = false;
+      return { ...p, weekdays: next };
+    });
+  };
+  const applyDowPreset = (onKeys) => {
+    setPick((p) => {
+      const next = {};
+      DOW_DEFS.forEach(({ key }) => { if (!onKeys.includes(key)) next[key] = false; });
+      return { ...p, weekdays: next };
+    });
+  };
+  const applyTodPreset = (preset) => setPick((p) => ({ ...p, start: preset.startTime, end: preset.endTime }));
 
   // Difference graphs color `anchor - other` (see report-spec.md's "Difference graphs: anchor
   // and sign") — only meaningful once exactly 2 routes are checked. Order mirrors how
@@ -125,7 +151,11 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     () => routes.filter((r) => selectedRouteIds.has(r.route_comp_id)),
     [routes, selectedRouteIds]
   );
-  const showAnchor = pick.comparisonMode === 'difference' && selectedInReportOrder.length === 2;
+  // Matches QuickControls' own `hasMode` (npmrds-report.js:1020) — Map/Table don't offer a
+  // comparison-mode concept, so hide the field here too rather than let an author set it at
+  // creation and have it vanish the moment QuickControls takes over post-creation.
+  const hasModeField = pick.graphType !== 'Map' && pick.graphType !== 'Table';
+  const showAnchor = hasModeField && pick.comparisonMode === 'difference' && selectedInReportOrder.length === 2;
   const anchorOptions = showAnchor
     ? [
         { value: 'first', label: selectedInReportOrder[0].name },
@@ -174,6 +204,13 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 <div className={t.empty}>No routes on this report yet — add a route first, then assign it here.</div>
               ) : null}
             </div>
+            {routes.length > 0 ? (
+              <div className={t.routesNote}>
+                {pick.graphType === 'Map'
+                  ? 'A map draws one route at a time — picking another replaces it.'
+                  : 'Each route keeps its identity colour, so the new card reads against the ones already on the report. A route can feed any number of cards.'}
+              </div>
+            ) : null}
           </div>
 
           <div>
@@ -189,7 +226,15 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                     className={pick.graphType === o.value ? t.shapeCardSelected : t.shapeCard}
                     disabled={!!disabledReason}
                     title={disabledReason}
-                    onClick={() => setPick((p) => ({ ...p, graphType: o.value }))}
+                    onClick={() => {
+                      setPick((p) => ({ ...p, graphType: o.value }));
+                      // Switching TO Map collapses an existing multi-selection to just its first
+                      // entry (mirrors the reference file's own graph-type-switch behavior) — a
+                      // Map card can only ever draw one route.
+                      if (o.value === 'Map') {
+                        setSelectedRouteIds((prev) => (prev.size > 1 ? new Set([Array.from(prev)[0]]) : prev));
+                      }
+                    }}
                   >
                     <ShapeGlyph className={t.shapeCardGlyph} />
                     <span className={t.shapeCardLabel}>{o.label}</span>
@@ -222,10 +267,12 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 <label className={t.pickerLabel}>Resolution</label>
                 <Select options={RESOLUTION_OPTIONS} value={pick.resolution} onChange={(v) => setPick((p) => ({ ...p, resolution: v }))} />
               </div>
-              <div className={t.pickerField}>
-                <label className={t.pickerLabel}>Comparison Mode</label>
-                <Select options={COMPARISON_MODE_OPTIONS} value={pick.comparisonMode} onChange={(v) => setPick((p) => ({ ...p, comparisonMode: v }))} />
-              </div>
+              {hasModeField ? (
+                <div className={t.pickerField}>
+                  <label className={t.pickerLabel}>Comparison Mode</label>
+                  <Select options={COMPARISON_MODE_OPTIONS} value={pick.comparisonMode} onChange={(v) => setPick((p) => ({ ...p, comparisonMode: v }))} />
+                </div>
+              ) : null}
               {showAnchor ? (
                 <div className={t.pickerField}>
                   <label className={t.pickerLabel}>Anchor Route</label>
@@ -238,6 +285,45 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
               ) : null}
             </div>
 
+            {/* When — time-of-day + day-of-week, the exact facets that moved off the route onto
+                the graph (design push #2, 2026-08-06). Not offered for Map (routeSelect is the
+                only per-card facet Map's own read-only Quick Controls exposes; a Map card is
+                colored by the measure at a point in time, not a window average). */}
+            {pick.graphType !== 'Map' && (
+              <div className="mt-3">
+                <div className={t.sectionLabel}>When</div>
+                <div className={t.whenPresetRow}>
+                  {PEAK_PRESETS.map((preset) => {
+                    const on = pick.start === preset.startTime && pick.end === preset.endTime;
+                    return (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        className={on ? t.whenPresetSelected : t.whenPreset}
+                        onClick={() => applyTodPreset(preset)}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className={t.dowRow}>
+                  {DOW_DEFS.map(({ key, label }) => {
+                    const on = isDayOn(pick.weekdays, key);
+                    return (
+                      <button key={key} type="button" className={on ? t.dayToggleSelected : t.dayToggle} onClick={() => setWeekday(key, !on)}>
+                        {label}
+                      </button>
+                    );
+                  })}
+                  <span className="w-1" />
+                  <button type="button" className={t.daySetBtn} onClick={() => applyDowPreset(WEEKDAY_KEYS)}>Weekdays</button>
+                  <button type="button" className={t.daySetBtn} onClick={() => applyDowPreset(WEEKEND_KEYS)}>Weekends</button>
+                  <button type="button" className={t.daySetBtn} onClick={() => applyDowPreset(DOW_DEFS.map((d) => d.key))}>All</button>
+                </div>
+              </div>
+            )}
+
             <div className={t.preview}>
               <Glyph className={t.previewGlyph} />
               <div className={t.previewTextWrap}>
@@ -245,7 +331,7 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 <div className={t.previewDescription}>{MEASURE_DESCRIPTIONS[pick.measure]}</div>
                 <div className={t.previewDescription}>{GRAPH_TYPE_DESCRIPTIONS[pick.graphType]}</div>
                 <div className={t.previewSummary}>
-                  Shown at {resolutionLabel} resolution, {comparisonLabel.toLowerCase()} mode.
+                  Shown at {resolutionLabel} resolution{pick.graphType !== 'Map' ? `, ${timeOfDayToken(pick.start, pick.end)} · ${(summarizeWeekdays(pick.weekdays) || 'all days').toLowerCase()}` : ''}{hasModeField ? `, ${comparisonLabel.toLowerCase()} mode` : ''}.
                 </div>
               </div>
             </div>

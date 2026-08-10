@@ -385,7 +385,8 @@ const theme = {
   pageOptions: {
     settingsPane: [
       {
-        type: "Select",
+        type: "MultiSelect",
+        singleSelectOnly: true,
         label: "Page Background",
         location: "theme.page.container",
         default: "",
@@ -405,7 +406,8 @@ const theme = {
         ],
       },
       {
-        type: "Select",
+        type: "MultiSelect",
+        singleSelectOnly: true,
         label: "Show in Footer",
         location: "navOptions.show_in_footer",
         default: "",
