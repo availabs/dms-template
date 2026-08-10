@@ -117,8 +117,6 @@
               <span class="text-mny-200">·</span>
               <span class="font-proxima text-[14px] text-mny-700">Sullivan County</span>
               <span class="text-mny-200">·</span>
-              <span class="font-proxima text-[13px] text-mny-400 tabular-nums">Action 2026-DelawareT-03</span>
-              <span class="text-mny-200">·</span>
               <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Local plan</span>
             </div>
           </div>
@@ -137,15 +135,12 @@
           </div>
         </div>
 
-        <!-- the four states, as one row of pills -->
+        <!-- the states, as one row of pills. The "HMP Review Ready" pill was removed:
+             readiness is a recorded field, not a badge — it still reads in the record
+             dl below as Readiness. -->
         <div class="flex flex-wrap items-center gap-2 mt-4">
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-400/15 border border-mny-400/50 font-proxima text-[12px] font-[600] text-mny-900">
             <span class="w-2 h-2 rounded-full bg-mny-400"></span>In-Progress
-          </span>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-grn/15 border border-mny-grn/40 font-proxima text-[12px] font-[600] text-mny-900">
-            <!-- icon: CheckmarkFilled -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-grn" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
-            HMP Review Ready
           </span>
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-50 border border-mny-200 font-proxima text-[12px] text-mny-700">
             Local priority <strong class="text-mny-900 font-[700]">High</strong>
@@ -307,6 +302,22 @@
              The scannable answers a planner needs while reading the
              case: what hazard, what kind of work, how much, how long,
              who leads, who pays.
+
+             NULL FIELDS ARE HIDDEN, not printed blank. In the live build
+             that is one section setting — `display.hideIfNull: true`
+             ("Hide if No Data" in the Card toolbar, dataWrapper
+             index.jsx:650), which drops every empty cell in the section.
+             No per-column flag and no library change needed. Note the one
+             exception baked into that line: a cell with `allowEditInView`
+             still renders when empty (so a gap stays fixable) — this rail
+             is read-only, so nothing here is exempt.
+
+             Whatever is hidden here is still accounted for: it appears in
+             the "empty fields" disclosure at the bottom of the page.
+
+             FIELD SET (in order): primary hazard · SECONDARY hazard ·
+             type of work · cost range · time to implement · lead agency ·
+             potential funding · the three eligibility flags · location.
              ======================================================== -->
         <div data-dms="section" data-name="key-facts" class="col-span-12 lg:col-span-4 pt-6 lg:pt-0">
           <div class="lg:sticky lg:top-[120px] rounded-[12px] border border-mny-100 bg-mny-50 p-4">
@@ -314,8 +325,21 @@
 
             <dl class="mt-3 space-y-3.5">
 
+              <!-- Hazards addressed — one chip per populated hazard column, each with
+                   its rank label. This specimen (action 1100379) has a primary hazard
+                   only: `secondary_hazard_type` and `tertiary_hazard_type` are both
+                   empty on it, so hideIfNull suppresses their chips and they read in
+                   the empty-fields disclosure instead. When secondary IS populated it
+                   renders as a sibling chip, identical but labelled "secondary":
+
+                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-mny-200 font-proxima text-[13px] font-[600] text-mny-900">
+                       <img src="../../assets/mny/hazards/mny-<hazard>.webp" alt="" class="size-4 object-contain" onerror="this.style.display='none'">
+                       <Hazard>
+                     </span>
+                     <span class="font-proxima text-[11px] text-mny-400">secondary</span>
+              -->
               <div>
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Hazard addressed</dt>
+                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Hazards addressed</dt>
                 <dd class="flex flex-wrap items-center gap-1.5 mt-1">
                   <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-mny-200 font-proxima text-[13px] font-[600] text-mny-900">
                     <img src="../../assets/mny/hazards/mny-flood.webp" alt="" class="size-4 object-contain" onerror="this.style.display='none'">
@@ -331,8 +355,13 @@
                 <dd class="font-proxima text-[12px] text-mny-700 leading-[1.4]">Drainage, underground utilities</dd>
               </div>
 
+              <!-- Labelled "Cost range", not "Estimated cost": this is `cost_range` (the
+                   band, populated). The numeric `estimated_cost` is empty on this action
+                   and appears in the empty-fields list as "Estimated cost ($)" — with
+                   hideIfNull now the stated rule, two fields both reading "estimated
+                   cost" (one shown, one listed empty) looks like the rule misfiring. -->
               <div class="pt-3 border-t border-mny-200">
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Estimated cost</dt>
+                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Cost range</dt>
                 <dd class="font-proxima text-[16px] text-mny-900 font-[600] mt-0.5 tabular-nums">$50,000 – $150,000</dd>
               </div>
 
@@ -416,7 +445,12 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5 mt-4">
+          <!-- Four across at xl (was three), with lg:3 as the step down. Eleven chips
+               fill 3 rows of 4 with one gap instead of 4 rows of 3 with two. Verified
+               with a forced 4-column grid at a 913px viewport — tighter than xl ever
+               gets — and the longest question ("Protects repetitive / severe
+               repetitive loss properties") still wrapped without clipping. -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 mt-4">
 
             <!-- YES -->
             <div class="flex items-start justify-between gap-3 rounded-[10px] border border-mny-grn/40 bg-mny-grn/[0.08] px-3 py-2.5">
