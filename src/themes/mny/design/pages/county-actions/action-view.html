@@ -513,11 +513,12 @@
              ======================================================== -->
         <div data-dms="section" data-name="provenance" class="col-span-12 pt-8">
           <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2.5 border-b border-mny-100">Record &amp; provenance</h2>
-          <dl class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-x-6 gap-y-4 mt-4">
-            <div>
-              <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Action number</dt>
-              <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5 tabular-nums">2026-DelawareT-03</dd>
-            </div>
+          <!-- Four fields, not six. `Action number` and `Readiness` were dropped: the
+               action number was already removed from the page identity line, and keeping
+               it here just relocated it; readiness was a status this page asserted twice
+               (it also had a badge in the state-pill row, removed for the same reason).
+               Grid drops to 4 columns so the row still fills its width. -->
+          <dl class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 mt-4">
             <div>
               <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Created</dt>
               <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5">1 Mar 2021</dd>
@@ -529,10 +530,6 @@
             <div>
               <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Plan source</dt>
               <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5">Local (LHMP)</dd>
-            </div>
-            <div>
-              <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Readiness</dt>
-              <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5">HMP Review Ready</dd>
             </div>
             <div>
               <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Planning mechanism</dt>
