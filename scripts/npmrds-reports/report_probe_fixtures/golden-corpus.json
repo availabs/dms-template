@@ -25,7 +25,7 @@
       ],
       "notes": "Representative for the plain (non-difference) LineGraph code path, 2-route travelTime. Session-scoped page from 2026-08-07 was cleaned up per feedback_golden_corpus_pages_session_scoped — rebuild from the spec before first --capture.",
       "baselineCapturedAt": "2026-08-10",
-      "lastVerifiedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-11",
       "expectedValue": null
     },
     {
@@ -42,7 +42,7 @@
       ],
       "notes": "Representative for the BarGraph code path AND the Layer-3 known-good-value PoC (see expectedValue) — chosen because `speed` is a near-raw average, the class of measure the team is most confident is already correctly computed (any discrepancy is most likely rounding, not a wrong formula). Rebuild before first --capture, same as linegraph.",
       "baselineCapturedAt": "2026-08-10",
-      "lastVerifiedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-11",
       "expectedValue": {
         "description": "NY-9D Northbound (route 2195805, TMCs 120+29712/120+29713/120+29714) average speed, Monday (toDayOfWeek(date,1)=1), 2025-01-01..2025-02-28. Computed independently: per-TMC avgIf(travel_time_all_vehicles, !=0) via direct ClickHouse SQL against npmrds.s583_v982_NPMRDS_V6, summed, combined with per-TMC miles from the UDA view-3464 reference-data endpoint (a static geometry lookup, not derived from this report's own rendering), via the report's own formula (sum(miles)*3600/sum(avg_travel_time_s)). Matched the live rendered value EXACTLY (19.57234077140305, to 15 significant digits) when computed 2026-08-10 — confirms the speed formula is correct for this measure, not just close.",
         "matchRoute": "NY-9D Northbound",
@@ -66,7 +66,7 @@
       ],
       "notes": "Representative for the per-TMC/day heat-grid code path — see graph-new-single-categorize-limit memory (GridGraph's yAxis-not-categorize quirk lives here). Rebuild before first --capture.",
       "baselineCapturedAt": "2026-08-10",
-      "lastVerifiedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-11",
       "expectedValue": null
     },
     {
@@ -83,7 +83,7 @@
       ],
       "notes": "Representative for the Route Map / choropleth-baking code path — a real per-report choropleth baked server-side at build time, distinct from the other AVL Graph types. Rebuild before first --capture; the bake step's own dependencies (dama-tiles pg) must be reachable, not just ClickHouse.",
       "baselineCapturedAt": "2026-08-10",
-      "lastVerifiedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-11",
       "expectedValue": null
     },
     {
@@ -98,11 +98,49 @@
         "ReportRouteList.entryGateModal",
         "BarGraphSummary",
         "display._measurePick.routeIds",
-        "sectionGroups.sidebarHideInView"
+        "sectionGroups.sidebarHideInView",
+        "dateFormula",
+        "derivedFromRoute",
+        "relativeDateResolution.TODAY_ANCHOR_COMP_ID",
+        "relativeDateResolution.resolveRelativeDateFormula"
       ],
-      "notes": "PRIORITY entry — the Dynamic Report / catalog-template code path, distinct from --report-id conversions and the only corpus page exercising Bar Graph Summary. MUST keep the `?routes=` param (bypasses the Add-Routes entry-gate modal deterministically) — probing the bare slug tests only the empty-slot placeholder state, see report-probe-expect-and-golden-corpus.md's 2026-08-07 finding. `authRequired: false` confirmed live 2026-08-10 (renders publicly with real data despite the row's own `published` field reading back empty — that field isn't what gates public rendering here).",
+      "notes": "PRIORITY entry — the Dynamic Report / catalog-template code path, distinct from --report-id conversions and the only corpus page exercising Bar Graph Summary. MUST keep the `?routes=` param (bypasses the Add-Routes entry-gate modal deterministically) — probing the bare slug tests only the empty-slot placeholder state, see report-probe-expect-and-golden-corpus.md's 2026-08-07 finding. `authRequired: false` confirmed live 2026-08-10 (renders publicly with real data despite the row's own `published` field reading back empty — that field isn't what gates public rendering here). Its Day-1..Day-5/Average-for-Week/Month/Year comps exercise the Today-anchor mechanism (`dateFormula`/`derivedFromRoute`/`TODAY_ANCHOR_COMP_ID`) — `covers` gained those tags 2026-08-10 after noticing no entry named them despite this page relying on them, per this doc's own 'reverse direction matters too' rule.",
+      "baselineCapturedAt": "2026-08-11",
+      "lastVerifiedAt": "2026-08-11",
+      "expectedValue": null
+    },
+    {
+      "key": "dynamic_report_monthly_congestion",
+      "url": "converted_reports/monthly_congestion?routes=2207838",
+      "source": "existing-page:2210600 (reports-catalog template conversion, NOT spec-built)",
+      "rebuild": null,
+      "authRequired": false,
+      "covers": [
+        "relativeDateResolution.CALENDAR_POSITION_REGEX",
+        "relativeDateResolution.resolveCalendarPositionFormula",
+        "dateFormula",
+        "derivedFromRoute"
+      ],
+      "notes": "Added 2026-08-10 alongside the calendar-position grammar enrichment (see dynamic-reports-and-route-tags.md item 3) — the 12 individual-month comps (`comp-1`..`comp-12`) were migrated off frozen static dates onto `startDate=>calendar:{m}-1..{m}-L` derived from `__TODAY__`; this is the only corpus entry exercising that formula shape for a plain (non-wrapping) month. Several 'Hours of Delay' panels show EMPTY SVG even on a passing baseline — a pre-existing, unrelated per-year AADT-data-coverage gap (see the task doc), not something this entry's diff should ever flag as new. Months past the real ClickHouse data cliff (`SELECT max(date) FROM npmrds.s583_v982_NPMRDS_V6`) will legitimately have less content than earlier months at any given capture time — re-verify by re-running the probe, don't assume a diff here is a regression before checking the real cliff date first.",
       "baselineCapturedAt": "2026-08-10",
-      "lastVerifiedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-11",
+      "expectedValue": null
+    },
+    {
+      "key": "dynamic_report_seasonality",
+      "url": "converted_reports/seasonality?routes=2207838",
+      "source": "existing-page:2210658 (reports-catalog template conversion, NOT spec-built)",
+      "rebuild": null,
+      "authRequired": false,
+      "covers": [
+        "relativeDateResolution.CALENDAR_POSITION_REGEX",
+        "relativeDateResolution.resolveCalendarPositionFormula",
+        "dateFormula",
+        "derivedFromRoute"
+      ],
+      "notes": "Added 2026-08-10 alongside the calendar-position grammar enrichment (see dynamic-reports-and-route-tags.md item 3) — the 5 seasonal-window comps (`comp-13`/`18`/`14`/`15`/`16`) were migrated off frozen static dates onto `calendar:` formulas derived from `__TODAY__`, including the ONLY corpus example of the year-wrap case (`Winter`: `calendar:12-19..3-19` and `calendar:12-20..3-19`, start in the anchor year MINUS ONE). Same 'blank tail past the real data cliff is expected, not a regression' caveat as `dynamic_report_monthly_congestion` — 'Fall Average Day' having no line is normal once Fall's window runs past the cliff, re-check the real cliff date before treating a diff here as a bug.",
+      "baselineCapturedAt": "2026-08-10",
+      "lastVerifiedAt": "2026-08-11",
       "expectedValue": null
     }
   ]
