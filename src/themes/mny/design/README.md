@@ -41,24 +41,6 @@ mny/design/
 │   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
 │   ├── datasets-files.html             the datasets pattern
 │   ├── site-management*.html           admin surfaces
-│   ├── admin-forms.html                ADMIN PANEL — redesign of the live Forms hub (page
-│   │                                   1336681, pattern 566466), ALT A "task view": audience-
-│   │                                   neutral dataset index, statewide scope, one
-│   │                                   Browse/Add/Bulk-edit verb set per card. Direction-neutral.
-│   ├── admin-forms-insights.html       same page, ALT B "insight view": county-planner audience,
-│   │                                   Sullivan County scope. Each card leads with a finding
-│   │                                   about that dataset in this county, backed by measured
-│   │                                   figures, and offers ONE button to its list. Cards sorted
-│   │                                   by urgency. Every number is real (no illustrative bars).
-│   ├── admin-forms-lisa-frank.html     same page, ALT C: a Lisa Frank palette study —
-│   │                                   hot pink/cyan holographic cards, animated sunset-ocean
-│   │                                   sky, inline-SVG dolphins, glitter. Same six datasets and
-│   │                                   same real numbers; styling only. NOT a brand candidate.
-│   ├── admin-home.html                 admin panel landing (July 2026 pass)
-│   ├── admin-{state,county,jurisdiction}-actions-*.html
-│   │                                   15 tier-duplicated Actions pages (July 2026 Phase 1;
-│   │                                   superseded shape — see the redesign task doc)
-│   ├── plan-status-dashboard.html      county plan-health metrics (adoption, coverage, NFIP)
 │   └── county-actions/               ← COUNTY ACTIONS WORKFLOW — one linked 6-page flow
 │       ├── dashboard.html              1 · county actions dashboard (stats + map + table + gap hand-off)
 │       ├── jurisdictions.html          2 · pick a jurisdiction, or tier the whole county

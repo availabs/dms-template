@@ -4,5 +4,8 @@
     "test": "node run-tests.js",
     "test:unit": "node run-tests.js --unit",
     "test:integration": "node run-tests.js --integration"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }

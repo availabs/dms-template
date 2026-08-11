@@ -2,6 +2,34 @@
 
 This file is read by Claude Code (and humans) before working on anything in `src/themes/`. Read it before adding custom column types, custom section components, or theme overrides.
 
+## ⚠ First: read the relevant skills in `src/dms/skills/`
+
+**Any time you touch a design system — a `*_design_system*/` mockup folder, a brand's
+`theme.js`/`themev2.js`, `icons.jsx`, a `*.theme.js` component style map, or you're porting a
+mockup onto a live page — start at [`src/dms/skills/README.md`](../dms/skills/README.md) and read
+the skills that cover the job.** They are the accumulated, corrected knowledge of how this
+codebase does design work; skipping them is how invented theme keys that silently no-op, hand-rolled
+`className` passthroughs, and re-litigated layout decisions get in.
+
+The ones that apply to most design-system work:
+
+- [`designing-a-dms-design-system.md`](../dms/skills/designing-a-dms-design-system.md) — the
+  structural grammar and the mockup deliverable (plain HTML + Tailwind CDN, no build step).
+- [`translating-design-system-to-dms-theme.md`](../dms/skills/translating-design-system-to-dms-theme.md)
+  — mockup → runnable `theme.js` overlay, incl. the `options`/`styles` + named-style conventions.
+- [`managing-design-system-icons.md`](../dms/skills/managing-design-system-icons.md) — keeping
+  pages, registry, and live `icons.jsx` in sync (an unregistered icon name renders nothing).
+- [`card-layout.md`](../dms/skills/card-layout.md) — before configuring any non-trivial Card.
+- [`creating-page-section-components.md`](../dms/skills/creating-page-section-components.md) —
+  only after the bar below is genuinely cleared.
+- [`creating-pages-from-a-design-pattern.md`](../dms/skills/creating-pages-from-a-design-pattern.md)
+  and [`traversing-dms-pages.md`](../dms/skills/traversing-dms-pages.md) — instantiating and then
+  verifying the live page the design is for.
+
+Several of those (`traversing-dms-pages.md`, `traversing-report-pages.md`) are **living
+documents**: if a live check teaches you something they don't say, write it down in the same
+session.
+
 ## The principle: configure the Card, don't write a new component
 
 The Card section is the workhorse of DMS pages. A page author with admin access can pick a data source, pick which columns to show, set spans, swap fonts, change image sizes, hide headers — without touching code. That capability is the product. Every time a developer answers "make this page look like X" with a custom React component, that capability narrows: the next author who wants something similar has to ask the developer.

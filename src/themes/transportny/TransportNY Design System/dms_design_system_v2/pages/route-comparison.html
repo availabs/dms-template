@@ -99,72 +99,65 @@
 
         <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
 
-          <!-- ═════════ BREADCRUMBS · LayoutGroup `breadcrumbs` (deep page) ═════════
-               Contract item 3 · the dedicated `breadcrumbs` group (the datasets-source
-               model), NOT a <nav> inlined into page-header. Both look alike but they are
-               different DMS structures and translate differently. -->
-          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
-              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
-                <a href="npmrds-home.html" class="text-slate-500 hover:text-[#0f1722]">NPMRDS</a><span class="text-slate-300 px-1">/</span><a href="npmrds-reports.html" class="text-slate-500 hover:text-[#0f1722]">Reports</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Route Comparison</span>
-              </nav>
-            </div>
-          </div>
+          <!-- ═════════ CONTENT · LayoutGroup `flush` · THE RAIL HOST ═════════
+               ONE band holds this whole page — the builder rail AND the cross-tab — because
+               `sectionGroup.jsx` renders the rail INSIDE a single band (the `railHost`), so
+               anything that must sit beside the rail has to be a section of that band. Same
+               structure npmrds-report.html uses; the two route-selection surfaces now match
+               exactly (Alex, 2026-08-07: "the side content controls should mirror the
+               activeStyle of the side content in the single report page").
 
-          <!-- ═════════ HEADER ═════════ -->
-          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-8 flex items-end justify-between gap-8" data-dms-section="page-header">
-              <div>
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// mass route × period comparison</span>
-                <h1 class="mt-2 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Route Comparison<span class="text-[#CA8A04]">.</span></h1>
-                <div class="mt-3 flex items-center gap-2.5 flex-wrap font-proxima text-[14.5px] text-slate-600">
-                  <span class="font-display font-medium text-[15px] text-[#0F1722]">Statewide reliability scan</span>
-                  <span class="text-slate-300">·</span>
-                  <span class="font-mono tabular-nums text-[12.5px] text-slate-700">6 routes</span>
-                  <span class="text-slate-300">·</span>
-                  <span class="font-mono tabular-nums text-[12.5px] text-slate-700">3 periods</span>
-                  <span class="text-slate-300">·</span>
-                  <span class="font-mono tabular-nums text-[12.5px] text-slate-700">3 metrics</span>
-                </div>
-              </div>
-              <div class="flex flex-col items-end gap-2.5">
-                <div class="flex items-center gap-2">
-                  <!-- Contract item 7 · download affordance, same treatment as pages 2/3/6 -->
-                  <button class="h-9 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] hover:bg-slate-50"><!-- icon: Download --><svg class="size-3.5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>Data</button>
-                  <button class="h-9 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] hover:bg-slate-50"><!-- icon: Export --><svg class="size-3.5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>Share</button>
-                  <button class="tny-press h-9 px-4 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[12.5px] tracking-wide rounded-[6px]">Save report</button>
-                </div>
-                <!-- Contract item 4 · the freshness line, identical on all six pages -->
-                <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1 justify-end">
-                  <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
-                  <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
-                  <span class="text-slate-300">·</span><span>jul 2026 partial</span>
-                  <span class="text-slate-300">·</span><span>since jan 2017</span>
-                </div>
-                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">results update live as you select</div>
-              </div>
-            </div>
-          </div>
+               Two consequences of the flush rail, both deliberate:
 
-          <!-- ═════════ CONTENT · builder rail + cross-tab ═════════ -->
-          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6 items-start">
+                 · NO BREADCRUMB BAND AND NO FULL-BLEED HEADER BAND. Both used to sit above the
+                   content band here. They can't: the rail's `sticky top-0 h-svh` is exact — it
+                   assumes NO sticky chrome above it — and a header band would push the rail
+                   below the top of the tab. Their copy moved into the page-header CARD, which
+                   is a section of the content column (see below).
+                 · THE RAIL IS NOT A GRID COLUMN. It's a fixed-width flex sibling of the content
+                   column, outside the 12-col grid. The old `col-span-3` / `col-span-9` pair
+                   mistranslated: those sections would belong to the content band, the rail
+                   couldn't be toggled or side-swapped from page settings, and every card's size
+                   would silently mean ¾ of what it says. The canvas keeps its own grid-cols-12
+                   at whatever width is left.
 
-              <!-- ══════ BUILDER RAIL (the custom control component) ══════ -->
-              <div class="col-span-12 lg:col-span-3" data-dms-section="builder">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm">
+               STYLE: `layoutGroup` `flush` (no max-w cap, no `pl-12 pr-8` — the rail hugs the
+               true page edge and the content column supplies its own inset) + `pages.sectionGroup`
+               styles[1] `flush`. Row is `items-stretch`, NOT `items-start`: that stretches the
+               rail column to full band height so its inner sticky has room to pin. -->
+          <div class="w-full bg-[#ECEEF2]" data-dms-group="content">
+            <div class="w-full">
+              <div class="flex flex-row gap-0 items-stretch">
 
-                  <!-- Rail header · the same dark bar npmrds-report.html's route rail uses.
-                       Both surfaces are route-selection rails, so they read as one family
-                       (Phase-6 brief; Phase 8 Coherence 8). -->
-                  <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/08 bg-[#12181F] rounded-t-[8px]">
-                    <svg class="size-4 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
-                    <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Build comparison</span>
-                    <button class="font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-white">Reset</button>
-                  </div>
+                <!-- ══════ BUILDER RAIL · section group `sidebar` · the RouteComparison component ══════
+                     Same shell as npmrds-report.html's route rail: a pinned dark panel head, a
+                     body that scrolls ONLY between the head and the footer, and a pinned footer —
+                     so the rail never grows taller than the viewport. It used to be two floating
+                     white cards on the grey pane; the panel now IS the rail surface (the white
+                     field + right border belong to the rail container).
+
+                     BELOW xl THE RAIL IS GONE (`hidden xl:block`) and the canvas fills the band. -->
+                <div class="w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10" data-dms-group="sidebar">
+                  <div class="sticky top-0 h-svh overflow-hidden">
+                    <div class="flex flex-col h-full">
+                      <div class="flex flex-col h-full min-h-0" data-dms-section="builder">
+
+                        <!-- panel head · pinned. Matches npmrds-report.html's `Routes (N)` bar —
+                             same h-12, same #12181F field, same amber glyph, same count pill.
+                             Both surfaces are route-selection rails, so they read as one family. -->
+                        <div class="h-12 px-3 flex items-center gap-2 bg-[#12181F] shrink-0">
+                          <!-- icon: Filter --><svg class="size-4 text-[#FACC15] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.86 12.5C6.37 10.65 4.6 8.6 3.63 7.45C3.33 7.09 3.23 6.83 3.17 6.37C2.97 4.8 2.87 4.01 3.33 3.51C3.79 3 4.6 3 6.23 3H17.77C19.4 3 20.21 3 20.67 3.51C21.13 4.01 21.03 4.8 20.83 6.37C20.77 6.83 20.67 7.09 20.37 7.45C19.4 8.6 17.63 10.65 15.13 12.51C14.91 12.68 14.76 12.96 14.73 13.26C14.48 15.99 14.26 17.49 14.11 18.24C13.89 19.47 12.15 20.2 11.23 20.86C10.67 21.25 10 20.78 9.93 20.18C9.8 19.03 9.54 16.69 9.26 13.26C9.23 12.95 9.08 12.68 8.86 12.5Z"/></svg>
+                          <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Build comparison</span>
+                          <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums">6</span>
+                          <button class="font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-white">Reset</button>
+                        </div>
+
+                        <!-- SCROLL BODY · the only part that scrolls. Blocks are separated by
+                             hairlines, not by gaps — inside a flush panel a gap reads as a seam. -->
+                        <div class="flex-1 min-h-0 overflow-y-auto">
 
                   <!-- ── SCOPE · global filters (apply to every cell) ── -->
-                  <div class="px-4 py-4 border-b border-zinc-950/10">
+                  <div class="px-3 py-3.5 border-b border-zinc-950/08">
                     <div class="flex items-center gap-2 mb-2.5">
                       <svg class="size-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
                       <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Scope</span>
@@ -191,7 +184,7 @@
                   </div>
 
                   <!-- ── STEP 1 · Routes (the rows) ── -->
-                  <div class="px-4 py-4 border-b border-zinc-950/10">
+                  <div class="px-3 py-3.5 border-b border-zinc-950/08">
                     <div class="flex items-center gap-2 mb-2.5">
                       <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[12px] font-semibold">1</span>
                       <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Routes</span>
@@ -241,7 +234,7 @@
                   </div>
 
                   <!-- ── STEP 2 · Periods (the column groups) ── -->
-                  <div class="px-4 py-4 border-b border-zinc-950/10">
+                  <div class="px-3 py-3.5 border-b border-zinc-950/08">
                     <div class="flex items-center gap-2 mb-2.5">
                       <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[12px] font-semibold">2</span>
                       <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Periods</span>
@@ -283,7 +276,7 @@
                   </div>
 
                   <!-- ── STEP 3 · Metrics (the leaves) ── -->
-                  <div class="px-4 py-4">
+                  <div class="px-3 py-3.5">
                     <div class="flex items-center gap-2 mb-2.5">
                       <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[12px] font-semibold">3</span>
                       <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Metrics</span>
@@ -317,18 +310,71 @@
                       </label>
                     </div>
                   </div>
+                        </div><!-- /scroll body -->
 
-                </div>
+                        <!-- FOOTER · pinned, same treatment as the panel head's counterpart in
+                             npmrds-report.html: a strip, not a second floating card. It used to
+                             be a `tny-card-bone` card sitting below the builder card on the grey
+                             pane; there is no grey pane beside a flush rail to float on. -->
+                        <div class="px-3 py-2.5 border-t border-zinc-950/08 bg-slate-50 shrink-0">
+                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">// shareable</div>
+                          <p class="font-proxima text-[11px] leading-[1.5] text-slate-600">This whole comparison — routes, periods, metrics — lives in the page URL. Copy <span class="tny-mono">Share link</span> to send it, or <span class="tny-mono">Save report</span> to keep it in a folder.</p>
+                        </div>
 
-                <!-- rail footer note -->
-                <div class="mt-3 rounded-[8px] border border-zinc-950/10 tny-card-bone shadow-sm px-4 py-3">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">// shareable</div>
-                  <p class="font-proxima text-[11.5px] leading-[1.55] text-slate-700">This whole comparison — routes, periods, metrics — lives in the page URL. Copy <span class="tny-mono">Share link</span> to send it, or <span class="tny-mono">Save report</span> to keep it in a folder.</p>
-                </div>
-              </div>
+                      </div><!-- /builder panel -->
+                    </div>
+                  </div>
+                </div><!-- /rail -->
 
-              <!-- ══════ CROSS-TAB (native pivoted Spreadsheet) ══════ -->
-              <div class="col-span-12 lg:col-span-9" data-dms-section="crosstab">
+                <!-- ── CONTENT COLUMN · contentCol (flush: it owns the inset the band no longer
+                     supplies) → the band's ONE 12-col section grid. The page header and the
+                     cross-tab are siblings on it. -->
+                <div class="flex-1 min-w-0 px-8 py-8">
+                  <div class="max-w-[1480px] mr-auto grid grid-cols-12 gap-6">
+
+                    <!-- ── SECTION · page header (size 12) · the ReportPageHeader component ──
+                         The same component and the same treatment the single report page uses
+                         (Alex, 2026-08-07). No longer a full-bleed band: on a flush rail the
+                         header is a section in the content column, so it starts at the rail's
+                         edge and reads as a card on the pane.
+                         RIGHT-HAND CONTENT IS ATTRIBUTION ONLY — no scope echo (time-of-day /
+                         days / vehicle class). Scope is reported in the rail; a second place
+                         that reports it drifts. -->
+                    <div class="col-span-12" data-dms-section="page-header" data-edit-kind="ReportPageHeader" data-edit-size="12">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-6 py-6">
+                        <div class="flex items-center gap-3 mb-2 flex-wrap">
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// mass route × period comparison</span>
+                          <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">statewide · every npmrds route · any period</span>
+                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/15 bg-slate-100 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500"><span class="size-1.5 rounded-full bg-slate-400"></span>draft</span>
+                        </div>
+                        <div class="flex items-end justify-between gap-6 flex-wrap">
+                          <div class="flex-1 min-w-[360px] max-w-[780px]">
+                            <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Route Comparison<span class="text-[#CA8A04]">.</span></h1>
+                            <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3">Compare any set of routes against each other across any set of time periods, one metric per cell. Build the comparison in the rail; the matrix recomputes live and the whole selection lives in the page URL.</p>
+                          </div>
+                          <div class="flex flex-col items-start gap-3 shrink-0">
+                            <div class="flex items-center gap-2 flex-wrap justify-end">
+                              <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Export --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Share</span></button>
+                              <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: FileText --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Print</span></button>
+                              <button class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: PencilEdit --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Edit</span></button>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- attribution / freshness · contract item 4, verbatim four segments.
+                             A full-width foot line rather than a member of the action stack: at
+                             10.5px with 0.18em tracking it is ~640px wide and would starve the h1. -->
+                        <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                          <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                          <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                          <span class="text-slate-300">·</span><span>since jan 2017</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ══════ CROSS-TAB (native pivoted Spreadsheet) ══════ -->
+                    <div class="col-span-12" data-dms-section="crosstab">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                   <!-- card header -->
                   <div class="px-4 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-3 flex-wrap">
@@ -523,11 +569,14 @@
                     </div>
                   </div>
                 </div>
-              </div>
+                    </div><!-- /crosstab section -->
 
+                  </div><!-- /12-col grid -->
+                </div><!-- /content column -->
+
+              </div><!-- /contentRow -->
             </div>
-          </div>
-
+          </div><!-- /content band -->
           <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
               <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
