@@ -27,6 +27,8 @@
 import icons from './icons';
 import parcelPlate from './columnTypes/parcelPlate.config';
 import { parcelPlateTheme } from './columnTypes/parcelPlate.theme';
+import statusDot from './columnTypes/statusDot.config';
+import { statusDotTheme } from './columnTypes/statusDot.theme';
 
 /* ---------- Brand palette (design_system/theme.html#color) ----------------- */
 
@@ -125,6 +127,20 @@ const textSettings = {
     metaSM:      T.metaSM,
     metaXS:      T.metaXS,
 
+    // Form field label — `labelSM`'s 12px semibold ink, but explicitly
+    // `normal-case tracking-normal`. Required, not decorative: the dataCard
+    // `header` class carries `uppercase tracking-[0.16em]` (right for a data
+    // card's column headers, wrong for a form), and a `headerFontStyle` token is
+    // ADDED to that class rather than replacing it — so text-transform has to be
+    // overridden here or every field label shouts. Same collision as the
+    // section-title `uppercase` documented on the `heading` key below.
+    fieldLabel: `${FONT_PROSE} text-[12px] leading-[1.2] font-semibold text-[${C.ink}] normal-case tracking-normal`,
+
+    // Band eyebrow — the small caps kicker above a card title, used on every
+    // band in the dashboard/design set ("COMPOSITION", "BY YEAR", …). metaSM's
+    // treatment in the brand link blue.
+    eyebrow: `${FONT_META} text-[11px] leading-[1.4] font-medium uppercase tracking-[0.16em] text-[${C.skydeep}]`,
+
     // ----- Dashboard KPI + header-button tokens (admin-dashboard alignment) -
     // Green display numeral (the mockup's "For sale now" figure).
     displayXL_field: `${FONT_DISPLAY} font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-[${C.field}]`,
@@ -132,7 +148,7 @@ const textSettings = {
     // that draws its own hairline divider above (the mockup's border-t rows).
     kpiSub:  `${FONT_PROSE} text-[12px] leading-[1.5] text-[${C.slate}]`,
     kpiUp:   `${FONT_PROSE} text-[12px] leading-[1.5] font-medium text-[${C.forest}]`,
-    kpiMeta: `block w-full ${FONT_PROSE} text-[12px] leading-[1.5] text-[${C.mist}] mt-2 pt-2 border-t border-[${C.ink}]/5`,
+    kpiMeta: `block w-full ${FONT_PROSE} text-[12px] leading-[1.5] text-[${C.mist}] mt-1.5 pt-1.5 border-t border-[${C.ink}]/5`,
     // Header action buttons rendered as Card cells (value styled as a button).
     btnPrimary: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[${C.skydeep}] hover:bg-[${C.ink}] border-b-[3px] border-[${C.ink}]/40 text-white ${FONT_PROSE} text-[13.5px] font-semibold cursor-pointer transition-colors`,
     btnGhost: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-white hover:bg-[${C.paper}] border border-[${C.ink}]/15 text-[${C.ink}] ${FONT_PROSE} text-[13.5px] font-semibold cursor-pointer transition-colors`,
@@ -673,7 +689,10 @@ const logo = {
    dialog's style dropdown. Primary/cta/danger use the .lb-press effect
    (3px bottom border collapses on :active).                                */
 
-const BTN_BASE = `cursor-pointer inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md ${FONT_PROSE} text-[13.5px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[${C.skydeep}]/40 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`;
+// `whitespace-nowrap` is load-bearing, not cosmetic: the base fixes the height at
+// h-10, so a two-word label ("Save parcel") wrapped to two lines inside a 40px box
+// and overflowed it. Buttons should never wrap.
+const BTN_BASE = `cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap h-10 px-4 rounded-md ${FONT_PROSE} text-[13.5px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[${C.skydeep}]/40 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`;
 
 const button = {
   options: { activeStyle: 0 },
@@ -885,10 +904,17 @@ const mkKpi = (accent) => ({
   // leaves the top color owned solely by the accent.
   itemBorder: `bg-white border border-r-[${C.ink}]/10 border-b-[${C.ink}]/10 border-l-[${C.ink}]/10 border-t-2 border-t-[${accent}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
   cardBorder: `bg-white border border-r-[${C.ink}]/10 border-b-[${C.ink}]/10 border-l-[${C.ink}]/10 border-t-2 border-t-[${accent}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
-  // v2 (inherited from default): gutter is data, not a class — 16px
-  // ambient, overridable per section/cell (was `p-4`).
+  // v2 (inherited from default): the ambient CELL gutter, emitted inline and
+  // overridable per section/cell (was `p-4`). Left at the original 16 — the KPI
+  // tiles now set `cellsPadding: 0` + `cardsPadding: 16` explicitly, which mirrors
+  // the mockup (`lb-card p-4`: padding on the card, none on the stacked lines) and
+  // makes this value inert for them. Kept unchanged so other cards using a `kpi_*`
+  // style don't drift.
   cellGutter: 16,
-  headerValueWrapper: `w-full rounded-md flex flex-col items-start justify-center gap-1`,
+  // `justify-start` (not center): with the row on a uniform fill height, centering
+  // pushed the figure down in the two-cell tiles so the four numerals no longer
+  // shared a baseline. Top-aligned, every tile's figure lines up.
+  headerValueWrapper: `w-full rounded-md flex flex-col items-start justify-start gap-0.5`,
 });
 
 const dataCard = {
@@ -956,8 +982,16 @@ const dataCard = {
       itemFlexRowReverse: `flex-row flex-row-reverse`,
       iconAndColorValues: `flex items-center gap-1.5 uppercase`,
 
-      formEditButtonsWrapper: `w-fit justify-self-end self-end flex gap-0.5`,
-      formAddNewItemWrapper: `w-fit justify-self-end self-end`,
+      // ⚠ `col-span-full` is load-bearing. These wrappers are grid items in the
+      // CELLS grid, so without it the button lands in column 1 of a
+      // `cellsGridSize`-wide grid (1/12 of the width on the add-parcel form):
+      // `justify-self-end` then aligns it to the end of that one narrow track —
+      // i.e. hard against the left edge, clipped, with the label wrapping. Spanning
+      // the full row makes `justify-end` mean what it says.
+      // The border-t/pt echoes the design system's modal footer
+      // (admin-new-property.html: `px-6 py-4 border-t border-ink/10 … justify-between`).
+      formEditButtonsWrapper: `col-span-full w-full flex justify-end gap-2 pt-4 mt-2 border-t ${BORDER}`,
+      formAddNewItemWrapper: `col-span-full w-full flex justify-end pt-4 mt-2 border-t ${BORDER}`,
 
       justifyTextLeft: `text-start justify-items-start rounded-md`,
       justifyTextRight: `text-end justify-items-end rounded-md`,
@@ -1772,6 +1806,7 @@ const landbankTheme = {
     },
   },
   parcelPlate: parcelPlateTheme,
+  statusDot: statusDotTheme,
 
   // Pattern-level
   pages: pagesTheme,
@@ -1781,6 +1816,7 @@ const landbankTheme = {
   // Theme-registered column types (auto-registered in patterns/page/siteConfig.jsx)
   columnTypes: {
     parcel_plate: parcelPlate,
+    status_dot: statusDot,
   },
   pageComponents: {},
 };
