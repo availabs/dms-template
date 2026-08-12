@@ -1,6 +1,6 @@
 # Landbank admin dashboard → live DMS page
 
-**Project:** Landbank · **Topic:** content · **Status:** IN PROGRESS — **ALL bands A–K built & live-verified** (admin pattern + draft dashboard page 1077: header, scope cross-filter, KPIs, by-year, by-status, map, neighborhood, pipeline, table, footer, add-parcel modal). **Design-alignment pass 1 DONE 2026-08-07** (11→4 section groups to kill stacked `py-12` padding, white-card framing + inner padding + per-band titles + mockup-order reflow, all live-verified via the new Playwright harness). Remaining: design-alignment **pass 2** (map held-default, table columns, composition regroup, scope eyebrow — element-data surgery), dev restart to activate the title-case `heading` theme key, run the live create-submission test, publish, escalate library gaps. · **Created:** 2026-08-04
+**Project:** Landbank · **Topic:** content · **Status:** IN PROGRESS — **ALL bands A–K built & live-verified** (admin pattern + draft dashboard page 1077: header, scope cross-filter, KPIs, by-year, by-status, map, neighborhood, pipeline, table, footer, add-parcel modal). **Design-alignment passes 1, 2 and the header/KPI pass all DONE 2026-08-07** (sessions 6/6b/6c: 11→4 section groups, white-card framing + per-band titles + mockup-order reflow, map held-only default, mockup table columns, header meta-strip + action buttons with no new sections, KPI sub-stats, title-case headings — all live-verified via the Playwright harness). **The page is feature-complete against the mockup except the flagged/blocked items.** **Session 7 (2026-08-10) fixed a broken production build (missing `colorbrewer` install) and ran the live create test, which surfaced 🔴 G12 — the add-parcel create path is BLOCKED by a defaultless `ogc_fid` PK on the source table (data-layer DDL fix needed; no data was written).** **Session 7c (2026-08-10) closed the last design gap: the grouped 2-series "Acquisitions vs. sales" chart is BUILT from calculated columns alone (an `unnest` unpivot) — the previously-recorded "needs a SQL view" blocker was wrong.** Remaining: **fix G12** (the only hard blocker), then **publish** (still draft-only — and publishing before G12 ships a button that always 500s), **run `npm run deploy-landbank`** (blocked: Netlify CLI not installed/authenticated), the composition-legend 6-bucket regroup (needs owner bucket definition), and escalate the library gaps (G7/G8/G11/G13 + the G4 follow-up). · **Created:** 2026-08-04
 
 ## Working method (IMPORTANT — read before resuming)
 
@@ -306,6 +306,392 @@ scripted bulk writes, but plain `dms page|section|raw …` commands are fine now
     rule: avoid) and Export is G7. 2-series by-year (SQL view), donut (G4), SideNav/topbar (pattern nav) unchanged.
   - **Still pending a dev restart:** the title-case `heading` theme key from session 6 — band titles render
     UPPERCASE until `npm run dev` is restarted.
+- **2026-08-07 (session 6c) — header/scope/KPI band alignment + heading fix. LIVE-VERIFIED, then the
+  workstation crashed.** ⚠ This entry was **reconstructed on 2026-08-10** from the session's scratchpad
+  artifacts (`bands.mjs`, `kpi-fix2.mjs`, `top-shot.mjs`, `sections/*.fresh.json`, `top.after2-3.png`,
+  `dash.after8-9.png`, `dash.live2.png`) after the crash ended the session before the log was written —
+  the code landed and was verified, only the write-up was lost. Code committed 2026-08-10 (`615c753`).
+  - **Dev server WAS restarted** — the session-6 `heading` key is active; band titles render title-case
+    in the final screenshots. ⚠ **Key fix:** title-case needed an explicit **`normal-case`** on every
+    `heading` level, because the core section-title wrapper (`section.jsx` / `section_components.jsx`)
+    hardcodes `uppercase`, which CSS-inherits into the title text. Setting `text-transform:none` on the
+    heading element itself overrides it. (Worth a library note — a theme can't opt out of the hardcoded
+    `uppercase` except by fighting inheritance.)
+  - **New theme surface** in `src/themes/landbank/theme.js` (additive, author-selectable):
+    `layoutGroup.styles` gained **`admin_header`** (plain paper, no plat texture, `pt-8`, no `py-12` —
+    the mockup's title area sits on the pane, not in a band); `textSettings` gained **`displayXL_field`**
+    (green display numeral), **`kpiSub`** / **`kpiUp`** (slate / forest sub-lines) and **`kpiMeta`**
+    (muted secondary that draws its own hairline divider above), plus **`btnPrimary`** / **`btnGhost`**
+    so a Card cell's *value* can render as a real button.
+  - **`bands.mjs`** — header band regrouped to `admin_header`; **1078** rewritten as h1 + a meta strip
+    ("● 1,314 parcels tracked · source: Landbank Properties · DAMA #3", `size:8`) — the mockup's
+    "synced …" line stays dropped (no backing column); **1095** → two right-aligned static cells
+    (Export `btnGhost`, "+ Add parcel" `btnPrimary`, `cellsGridSize:2`, `size:4`), so Band A's meta
+    strip + action row landed **without adding sections** (the A2/A3 items the plan listed, and the
+    session-6b "header meta-strip would add a section" blocker — solved by reusing 1078/1095).
+  - **KPI sub-stats (1079–1082)** — each tile keeps cell 0 as the big number and gains contextual
+    calc sub-lines: held → "▲ 19 acquired in 2025"; for-sale → "median ask $600" + "907 vacant lots ·
+    395 buildings all-time" (green numeral via `displayXL_field`); pending → "+ 6 under option · 4 at
+    board"; sold → "$13.17M total proceeds" + "median 3002 days in inventory". Built as string-concat
+    calc expressions so one cell renders a whole sentence.
+  - **`kpi-fix2.mjs` — two SQL fixes found only by live rendering.** (1) 1079's held-2025 expression
+    rendered empty until it was given an explicit **`as` alias** (`as held_acq_2025`) — a bare
+    aliasless concat expression doesn't come back on the row (same full-`name`-as-row-key behavior the
+    session-2c `stacked_bar` finding documents). (2) `sum(sold_amount)` failed on the TEXT-ish money
+    column; fixed with **`sum((NULLIF(sold_amount::text,''))::numeric)`** — the empty-string-to-NULL
+    guard is required, a plain `::numeric` cast throws on `''`.
+  - **Verified live** (`top.after3.png`, `dash.live2.png`): full page renders end to end — title-case
+    band titles, Export / + Add parcel buttons, four KPI tiles with accents + sub-lines, by-year bars
+    (2015→2026), status legend, avg-days 2,613, portfolio map (held-only, colored pins + 7-row legend),
+    neighborhood bars, disposition pipeline, needs-attention 6/6/69, held-inventory table (187 rows,
+    19 pages, mockup column order), footer, and the add-parcel form inline at the page foot (edit mode).
+  - **Open cosmetic items noticed in the final screenshots (not addressed):** KPI tile heights are
+    uneven (tiles 2 and 4 are taller — the `kpiMeta` divider row adds height; the mockup wants equal
+    heights, likely `height:"fill"` on all four); the gap between the header band and the Scope band is
+    larger than the mockup's; the composition legend still lists 10 raw statuses (session 6b's
+    deliberate skip, still needs the owner's bucket definition).
+  - **Sanity-check for the owner:** every `asking_price` on the table reads **$500–$600** and the
+    for-sale median is **$600**. That is plausible for ACLB side-lot pricing, but it is worth one
+    confirmation that the column isn't truncated/mis-typed at the source before this page is shown to
+    staff as an asking-price figure.
+
+- **2026-08-10 (session 7) — deploy prep + the live create test RUN. Two blockers found; NO data written.**
+  Picking up after the 2026-08-07 workstation crash (session 6c's code was committed 2026-08-10 as
+  `753a29a`/`615c753`/`b967042`/`63ba402`; tree clean, everything pushed).
+  - **⚠ Production build was broken — fixed.** `npm run build` failed with `Rollup failed to resolve
+    import "colorbrewer"` from `src/themes/transportny/components/macroview/updateFilters.jsx`. The
+    package **is** declared (`package.json` `colorbrewer:^1.7.0`) **and present in `package-lock.json`**,
+    but was absent from `node_modules` — so this was a **stale local install**, not a repo defect
+    (`npm install` left the lockfile byte-identical). Anyone doing a fresh install is unaffected; anyone
+    who pulled the transportny map-plugins work without re-installing hits it. Fixed by `npm install`;
+    build is now green (**✓ built in 1m 52s**, `dist/` populated, deploy-ready). Note the blast radius:
+    it breaks the build for **every** site in this repo, not just landbank — the themes barrel imports
+    all themes, so one unresolved import fails the whole bundle.
+  - **⚠ BLOCKER — the add-parcel create path cannot work: the source table's PK has no default.**
+    Ran the owner-approved live create submission through the real form (`create-test.mjs`, Playwright,
+    edit mode on localhost). The form filled and submitted correctly, but the create round-trip returned
+    **HTTP 500**:
+    ```
+    null value in column "ogc_fid" of relation "s3_v3_landbank_properties"
+    violates not-null constraint
+    ```
+    The request itself was **well-formed** — `call ["uda","data","create"]` with
+    `["landbank_dama", 3, {street_address, city, zip_code, property_status:"Processing",
+    active:"Y", inventory_type:"Land Bank"}]` — so the modal, the `isEditable` gate, the field wiring
+    and **both `selectOnly` create-defaults plus the `property_status` default all work as designed**.
+    The failure is in the **data layer**: `ogc_fid` is `NOT NULL` with **no sequence/identity default**
+    (the table looks like a materialized copy — `s3_v3_…` — which drops the original `serial`'s
+    sequence), and the server deliberately never sends `ogc_fid` (it is absent from `metadata.columns`,
+    so `buildRowPayload` strips it — `uda.controller.js:742-751`). Postgres therefore has nothing to
+    fill the PK with. **Reads are unaffected** — this only breaks create.
+    - **✅ No data was written.** Verified before and after: `street_address = 'ZZTEST 9999 Claude
+      Verify Ln'` → **0 rows**, table total unchanged at **1,314**. Nothing to clean up, no test row to
+      delete.
+    - **Fix is an owner/data-team action (new gap G12, below)** — needs a DDL change on
+      `landbank_dama.s3_v3_landbank_properties`, which is outside this task's access.
+    - ⚠ **This changes the publish calculus:** publishing the dashboard as-is ships a "+ Add parcel"
+      button to staff that always 500s. Recommend fixing G12 (or hiding the trigger) before publish.
+  - **Verification tooling added** — `scratchpad/landbank/uda.mjs` (count / rows / delete against an
+    external DAMA view via the real falcor paths: `['uda',env,'viewsById',view,'options',<json>,'length'
+    |'dataByIndex']`, `call ['uda','data','delete'] [env,view,id]`), plus `form-probe.mjs` (DOM/selector
+    probe) and `create-test.mjs` (the create submission, with failing-response-body capture).
+    **Read path validated against known-good numbers:** total **1,314** (matches the header strip),
+    For Sale **60**, Sale Pending **17** — all reconcile with the KPI tiles.
+    ⚠ Two gotchas for future scripts: the falcor length value sits at `…options[<optionsJson>].length`
+    keyed by the **exact** options JSON string, and on Windows the `import.meta.url === file://${argv[1]}`
+    main-module guard **never matches** (`import.meta.url` has three slashes) — compare basenames.
+  - **⚠ Netlify deploy NOT run — needs credentials.** `npm run deploy-landbank` (site
+    `6049e6b1-c619-45cc-90b1-d2fd70b10560`) requires the Netlify CLI, which is **not installed**
+    (absent from `node_modules/.bin` and from the global npm prefix) and **not authenticated** (no
+    `NETLIFY_AUTH_TOKEN` in the environment or `.env`, no `~/.config/netlify` config). `netlify login`
+    is an interactive browser flow, so this step is owner-run or needs a token supplied.
+  - **Dev server note:** nothing survived the crash; a fresh `npm run dev` took **port 5174** (5173 was
+    occupied), so `auth.json` now carries the `userToken` for **both** 5173 and 5174 origins.
+
+- **2026-08-10 (session 7b) — KPI uniform heights + the by-year/composition row rebuilt as a
+  4-card compound card. LIVE-VERIFIED by measurement, not just screenshots.** Deploy is on hold
+  (owner), so this is design-alignment only.
+  - **⭐ The `height:'fill'` diagnosis (the question "why doesn't the card fill its section?").**
+    The theme's height mechanism is **not** broken. Neither the landbank theme nor the default
+    `pages.sectionArray` ships a `heights` map, but that is harmless — `sectionArray.jsx`'s
+    `resolveHeight` and `section.jsx`'s `resolveSectionHeightStyles` both fall through to a literal
+    `'fill'` branch, and `pages.section` (which landbank does not override, so it inherits the
+    pattern default) *does* ship `heights: {auto, fill, hero, tall, medium, small}`. Measured live:
+    the grid item, the inner chrome box **and** `section.jsx`'s contentWrapper all reach the full row
+    height (`h-full` + `flex: 1 1 auto`). **The height propagates correctly all the way to the Card's
+    container — the Card simply declines to consume it.** Cause: `Card.config.jsx:499-503` —
+    *"Model default: v1 themes fill, `layoutModel:'v2'` themes pack"*. The landbank `dataCard`
+    `styles[0]` sets `layoutModel:'v2'`, and every named style (`kpi`, `kpi_sky/field/amber/ink`,
+    built by `mkKpi()`) inherits it from `styles[0]`, so **on this theme cards pack to content height
+    by default and ignore the section's spare height.**
+    **Fix = two author-facing display knobs** (this is what the controls exist for):
+    `display.cardsVerticalAlign:'stretch'` (card box → section box) and, when the card's own
+    border/bg must reach the bottom, `display.cellsVerticalAlign:'stretch'` (cell rows → card box).
+    ⚠ **Enrichment gap worth filing:** graphs get theme-level display defaults via
+    `theme.chartDefaults` (`mergeChartDefaults`, graph_new/index.jsx:171), but **Cards have no
+    equivalent** — no `cardDefaults`/`displayDefaults` anywhere. So a theme *cannot* say "KPI tiles
+    fill by default"; every author must set the knob per section. Adding a Card equivalent is the
+    author-empowerment fix (and would let `mkKpi` ship `cardsVerticalAlign:'stretch'` itself).
+  - **KPI row (1079-1082) — uniform + tighter.** `height:'fill'` on each section +
+    `cardsVerticalAlign:'stretch'`. Theme: `mkKpi` `cellGutter` 16→**12**, `headerValueWrapper`
+    `justify-center`→**`justify-start`** with `gap-0.5` (centering pushed the figure down in the
+    two-cell tiles so the four numerals lost their shared baseline), and `kpiMeta` `mt-2 pt-2`→
+    `mt-1.5 pt-1.5`. **Measured: card boxes 133/133/133/133 in 157px sections — uniform.**
+  - **Row layout → mockup.** 1084 "Acquisitions vs. sales" is now **size 8 + `rowspan:"3"`**
+    (`md:row-span-3`), graph `display.height` 280→**600** so the plot fills its card instead of
+    leaving ~400px empty. The composition column is the remaining 4 cols.
+  - **The status card is FOUR sections fused into one card** (per the owner's structure: title spans
+    2 units, donut 1, list 1, avg-days 2 → 4/2/2/4 page columns), using the shipped gap-0 compound-card
+    model (`src/dms/planning/tasks/current/gap0-section-grid-compound-cards-migration.md`) — zero each
+    shared edge's **padding**, and toggle borders on one side of each seam only:
+    | Section | size | padding | border | radius |
+    |---|---|---|---|---|
+    | **1170** title (new `lexical`) | 4 | `{bottom:0}` | top+left+right | tl,tr |
+    | **1169** donut (new `AVL Graph`) | 2 | `{top:0,right:0,bottom:0}` | left | — |
+    | **1086** status list | 2 | `{top:0,left:0,bottom:0}` | right | — |
+    | **1087** avg-days | 4 | `{top:0}` | top(divider)+left+right+bottom | bl,br |
+    **Measured seams: title→list 0.0px, list→avg 0.0px**, and the graph card (590→1342) matches the
+    column exactly. ⚠ **Every card in a fused column must be `height:'fill'`** — the title card was
+    initially content-sized, and when the rowspan-3 graph grew the grid rows its box stopped reaching
+    the row boundary and the seam reopened as a gap.
+  - **⚠ Key fix — a section that draws its own frame must turn the Card's frame OFF.** The
+    list→avg seam measured a stubborn 17px gap and the avg box was inset 17px on *all* sides: the
+    section chrome (`bg-white p-4` + borders) and the Card's own `cardBorder` were drawing **two
+    nested frames**. 1086 already had `cardBorder:false`; 1087 did not. Setting
+    `display.cardBorder:false` (+`cellBorder:false`) closed it to 0.0px. Worth remembering for every
+    compound card: **section frame XOR card frame, never both.**
+  - **G4 donut SHIPPED (library, 3 files).** `avl-graph/PieGraph.jsx` hardcoded `p.innerRadius = 0`;
+    now a `pieInnerRadius` prop (fraction of the slice's **outerRadius**, so the band stays
+    proportional when `radiusScale` sizes pies by total; clamped to ≤0.95, added to the layout
+    effect's deps), threaded through `GraphComponent.jsx` as
+    `pieInnerRadius={get(graphFormat,"pieInnerRadius",0)}`, and exposed to authors as **"Donut Hole
+    (0–0.95)"** in the existing `pieGraph` control group in `graph_new/config.jsx` (already gated on
+    `graphType === 'PieGraph'`). Default 0 = the historical solid pie, so this is fully BC. The
+    dashboard donut uses `pieInnerRadius: 0.62`. **Needs its own task doc under `src/dms/planning/`.**
+  - **Three traps hit while creating the two new sections** (all now understood — put these in the
+    page-creation skill):
+    1. **A new section row needs `group`.** Without `data.group` = the band's uuid the section belongs
+       to no band and renders **nothing at all** (no title, no component, no fiber node) while still
+       existing and still sitting in `draft_sections`. Also copy `type` and a `trackingId`.
+    2. **`draft_sections[].id` must be a NUMBER.** Appended as a String `"1169"` it was silently
+       **pruned on the next edit-mode load** (18 entries → 17) — the session-6 "edit-mode loads can
+       auto-persist a degraded layout" hazard, triggered by the type mismatch against every other
+       numeric entry.
+    3. **AVL Graph won't group a bare categorical column** (session 2c's finding, re-confirmed): the
+       donut was blank with `property_status` as the `categorize` column and works with
+       `coalesce(property_status,'Unknown') as status_label`. Pie also uses **different column targets
+       than Bar** — `index`/`slice`/`categorize`, not `xAxis`/`yAxis`; with only a `categorize` + a
+       `slice` column the wrapper builds one pie whose keys are the categories.
+    4. Graph **margins** are sized for a full-width chart (left 100 / bottom 50). In a 2-col cell they
+       consumed nearly everything and `pieDiameter` collapsed to an ~80px ring — set
+       `display.margin` to ~8 all round for a small donut.
+  - **Verified live** (`s7i.full.png`): KPI row uniform; graph 2/3-width and full-height; the
+    composition card reads as ONE card — COMPOSITION eyebrow → "Held inventory by status" → "198
+    parcels currently held" → donut + counted status list → divider → "AVG DAYS HELD 2,613"; map,
+    neighborhood, pipeline, needs-attention, table, footer and the add-parcel form all unchanged.
+  - **Still open on this row (not guessed at):**
+    - 🔴 **"Acquisitions vs. sales" is still ONE series.** Confirmed blocked, and I tested two
+      candidate workarounds rather than assuming: (a) the server's **`seriesVariants`** fan-out
+      (`query_sets/postgres.js:416`) only varies each arm's **WHERE** — all arms share one
+      SELECT/GROUP BY — so it cannot key year off `acquisition_date` in one arm and `sold_date` in
+      another; (b) a **correlated scalar subquery** as a second measure returns an empty atom (the
+      column is stripped by the attribute sanitizer). So the task's **option 1 stands: a
+      `(year, acquired, sold)` pre-agg view in `landbank_dama`** — same DB access as G12. The
+      single-series data is real and matches the mockup (2017 = **316** acquired).
+    - The donut/list show the **10 raw statuses**, not the mockup's 6 buckets (still needs the owner's
+      bucket definition — unchanged from session 6b). Slice colors are a palette in count-desc order,
+      so the three 6-count statuses can swap color↔status; the durable fix is the regroup or per-key
+      colors.
+    - Legend pills wrap to two lines in the 2-col column; mockup has them on one.
+    - Avg-days shows the mean only; the mockup also carries "median 2,756".
+    - The title card uses **`h4`** (the theme's 21px `displayMD` slot). The mockup calls it `h2` but
+      styles it 21px, and this theme maps `h2`→`displayXL` (38px), which rendered far too large.
+
+- **2026-08-10 (session 7c) — Band D's grouped "Acquisitions vs. sales" chart BUILT & LIVE-VERIFIED.**
+  Owner asked whether `acquisition_date` + `sold_date` could drive the side-by-side chart via
+  calculated columns. **They can** — see the rewritten §"Band D" above for the full mechanism, the
+  verification numbers and the caveats. Section **1084** rebuilt in place (element-data backed up to
+  `scratchpad/landbank/backups/section_1084.pre-grouped.json`): three calc columns
+  (`unnest` year / `unnest` series / `count(*)`), `graphType:'BarGraph'`,
+  **`groupMode:'grouped'`**, `pageSize:60` (must exceed the 25-group count), `legend.position:'top'`,
+  `colors:['#0AA7E4','#4C9129']` (Acquired sky / Sold field, per the mockup swatches). Row-level
+  filters deliberately removed — a filter on either date would drop parcels missing the *other* one
+  and undercount both series; the chart is historical and ignores the scope band by design.
+  - **Verified live** (`s8a.full.png`): clean **2015–2026** axis with paired blue/green bars, 2017
+    Acquired tallest (316), 2021 Sold tallest (186), 2026 correctly Sold-only, legend renders both
+    series, and the unparsed-year buckets do not appear as a stray tick.
+  - **⚠ Process note worth carrying forward:** across sessions 7 and 7b this task twice recorded a
+    capability as "blocked" on the strength of reasoning plus two failed probes. The reasoning was
+    sound about the paths it tested and wrong about the conclusion. **A negative result about a
+    mechanism is not a negative result about the goal** — enumerate what the sanitizer/engine actually
+    permits (here: read `disallowedKeywords`, then ask what non-blocklisted constructs reshape rows)
+    before writing "impossible" into a task file.
+  - **G13 (theme-level Card display defaults) and the two DDL items are unaffected** — G12 (`ogc_fid`
+    has no default → the add-parcel create path 500s) is still the one hard blocker on this page, and
+    still needs someone with DDL access to `landbank_dama`.
+
+- **2026-08-10 (session 7d) — KPI tile padding unified to the mockup.** Owner spotted that tiles
+  **2, 3 and 4 had no top/left padding** while tile 1 did.
+  - **Cause:** section **1079** was missing `cellsPadding` / `cardsGridPadding` /
+    `cardsVerticalAlign` entirely, while 1080-1082 all carried them. Session 7b's loop wrote the same
+    three keys to all four; 1079's copy did not stick (most likely an edit-mode auto-persist rewrote
+    its element-data — the same hazard that pruned the donut's `draft_sections` ref). So tile 1 fell
+    back to the theme's ambient `cellGutter` (padding) while 2-4 had an explicit `cellsPadding: 0`
+    (no padding). **Lesson: after a bulk element-data loop, read the values back and compare — don't
+    assume a loop that reported success left all N sections in the same state.**
+  - **Fix — put the padding on the CARD, not the cells,** which is how the mockup does it
+    (`admin-dashboard.html:176-207`: every tile is `lb-card p-4 h-full border-t-2 border-t-<accent>`,
+    i.e. 16px on the card; the stacked lines carry no padding and get their rhythm from
+    `mt-1`/`mt-0.5`/`mt-3 pt-2`). Applied **identically** to 1079-1082:
+    `cardsPadding: 16` (= `p-4`), `cellsPadding: 0`, `cellsGridGap: 4` (8 was looser than the
+    mockup's rhythm), `cardsGridPadding: "0"`, `cardsGridSize/cellsGridSize: 1`,
+    `cardsVerticalAlign: "stretch"`, `cardBorder: true` (the `kpi_*` accent frame IS the card border),
+    `cellBorder: false`.
+  - **Theme reverted toward baseline:** `mkKpi` `cellGutter` put **back to 16** (its original value).
+    Session 7b had dropped it to 12 to shed whitespace, but with `cellsPadding: 0` +
+    `cardsPadding: 16` set explicitly it is inert for these tiles, so leaving it modified would only
+    risk drift for other cards using a `kpi_*` style. The two `mkKpi` changes that ARE load-bearing
+    stay: `justify-start` (keeps the four numerals on a shared baseline once the row fills) and the
+    tightened `kpiMeta` `mt-1.5 pt-1.5`.
+  - **Verified by measurement, all four tiles:** computed `padding: 16px 16px 16px 16px`, label inset
+    **17px** top and left on every tile (16px padding + 1px border), card heights **148/148/148/148**.
+
+- **2026-08-10 (session 7e) — composition card tightened + a new `status_dot` column type.**
+  - **⭐ NEW theme column type `status_dot`** (`src/themes/landbank/columnTypes/statusDot.{jsx,theme.js,config.js}`,
+    registered as `columnTypes.status_dot` + `statusDot:` theme tokens). The legend was using the core
+    **`status_pill`** type, which always fills a `UI.Pill` behind the text; the design file draws the
+    composition legend as a **colored dot + plain label** (`size-2.5 rounded-full bg-<hue>` + a
+    `flex-1 text-slate` label). `status_pill` has no dot variant, so per
+    [`src/themes/CLAUDE.md`](../../../../src/themes/CLAUDE.md) this is the sanctioned shape: one small
+    theme-registered type rendering one visual element, the same precedent as `parcel_plate`. Reads
+    only its own value; the count stays a normal right-aligned Card cell. `dotColorByValue` in the
+    theme maps the raw ACLB status vocabulary onto the mockup's six hues (in-process statuses share
+    steel, on-hold statuses share rose), and an optional per-column `dotColors` overrides it.
+    ⚠ **Key fix:** the wrapper must be **`flex w-full`**, not `inline-flex` — an inline-flex box sizes
+    to its content, so a long label overran its cell and the next cell's count rendered *underneath
+    it*; `truncate` never engaged because it had no constrained basis. `flex w-full` + a
+    `flex-1 min-w-0` label matches the mockup's own row and makes the ellipsis work.
+  - **Padding: one `p-6` card, sliced four ways.** The mockup is a single `lb-card p-6` with `mt-4`
+    between blocks; ours is four fused sections each adding `p-4`, which doubled at the seams and left
+    the title/footer looking airy. Now each section carries only its slice, injected via the `bg`
+    string (`resolveBg` passes any `bg-`-prefixed literal verbatim): title `bg-white px-6 pt-5 pb-0`,
+    donut `bg-white pl-6 pr-2 py-2`, list `bg-white pl-2 pr-6 py-2`, avg-days
+    `bg-white px-6 pt-3 pb-5` (the `pt-3` is the mockup's divider gap).
+  - **Donut margin 1 all round** (was 8) so the ring fills its cell — `display.margin: {1,1,1,1}`.
+  - **Graph plot 600 → 430.** The real source of the airy title/footer was the rowspan-3 grid rows
+    stretching to the graph's height; the slack landed as dead space in those two `height:'fill'`
+    cards (they grow, their content stays top-aligned). Shortening the plot removes the slack at
+    source rather than fighting it per-card.
+  - **Legend cells** `cellsGridSize: 5` with the label at `cellSpan: 4` and the count at `1` — two
+    equal cells gave the label only half of a ~2-col card.
+  - **Verified by measurement:** every label background `rgba(0,0,0,0)` (no pill), dots 10px and fully
+    rounded with the right hues (steel `rgb(129,149,161)` for Application to Board, rose
+    `rgb(206,91,78)` for Foreclosure Vacated), and the two long labels now **clip with an ellipsis**
+    (`text-overflow: ellipsis`, 16–17px of overflow hidden) instead of colliding with the count.
+  - ⚠ **Those two ellipses are a symptom of the still-open 6-bucket regroup** — the mockup's legend
+    has six short labels ("On hold / other"), so nothing truncates there. Still needs the owner's
+    bucket definition; truncation is the correct interim, not the target.
+  - **Dev-server hygiene:** killed the two orphaned Vite instances this session had created (5175/5176)
+    and left the owner's two (5173/5174, started 11:54) alone. Current dev server: **5175**.
+
+- **2026-08-11 (session 7f) — chart tooltips ON + the band cut from 752px to 478px.**
+  - **⭐ Why neither chart had a tooltip.** avl-graph gates it on `show`
+    (`BarGraph.jsx:580` `!showHoverComp ? null : …`) and **`DefaultHoverCompData` ships no `show`
+    key** — it can only arrive via `display.tooltip`, which `GraphComponent` spreads into `hoverComp`.
+    graph_new's `graphOptions` *does* default `tooltip:{show:true}`, but that only seeds sections
+    created through the **UI**; both of these were script-built, so `show` was `undefined` → falsy →
+    no tooltip, ever. Fixed with `display.tooltip` on both (no library change):
+    bar `{show:true, showTotal:false, valueFormat:'comma'}` (both series for the hovered year is the
+    comparison; their sum is meaningless) and donut `{show:true, showTotal:true, valueFormat:'comma'}`
+    (the pie's total IS the held figure).
+    **Verified by hovering:** bar tooltip returns `Sold: / Acquired: / <value>`; donut has 10
+    `path.avl-slice` arcs and hovering one lists the status breakdown.
+    ⚠ Note for future graph sections built by script: **always set `display.tooltip.show`** — the
+    component default is off, not on.
+    ⚠ The donut tooltip lists all ten statuses (a single-index pie has one index and N keys, so
+    DefaultHoverComp shows them all) — effectively a second legend. Harmless, but the 6-bucket
+    regroup would make it read much better.
+  - **⭐ Big whitespace win: the graph's default margins.** 1084 had no explicit `margin`, so it used
+    the defaults — **left 100 / bottom 50 / top 20 / right 20**. With `yAxis.show:false` that 100px
+    left gutter was pure dead space. Now `{top:8,right:8,bottom:26,left:8}`.
+  - **Title card: lexical → Card of static cells.** Measured, it was **168px tall for 87px of
+    content**; the dead space was the lexical component's hard-default `p-4` PLUS the theme's
+    `lexical.paragraph` `mb-4` on every paragraph — neither safely changeable (both global). Rebuilt
+    as a Card with three cells (eyebrow / title / caption), which has no prose margins and exposes
+    exact spacing (`cardsPadding` / `cellsPadding` / `cellsGridGap: 2`). This is the Card-first move
+    `src/themes/CLAUDE.md` asks for, and matches how the header action row (1095) already works.
+    **92px now.** Backup: `scratchpad/landbank/backups/section_1170.pre-card.json`.
+    - Bonus: the caption is now a **calculated column**
+      (`count(*)::text || ' parcels currently held'`) reading the same filter tree as the legend, so
+      it tracks the source (and the scope band) instead of being hardcoded.
+    - **NEW theme token `eyebrow`** (`metaSM`'s small-caps treatment in `skydeep`) — the design set
+      puts an eyebrow above every band title, so it belongs in `textSettings`, not inline.
+  - **avg-days footer:** `cardBorder:false`, `cardsPadding:0`, `cellsPadding:0`, `cellsGridGap:2`,
+    section `bg-white px-6 pt-3 pb-4` → **192px → 118px**.
+  - **Plot sized to fill, not to overflow.** The band height is set by the composition column
+    (478px = title 92 + list 268 + avg 118), and the graph card carries ~**168px** of non-plot
+    overhead (band title, section `p-4`, legend row, x-tick row). 380 overshot and pushed the band to
+    548; **310 fills the card exactly** — measured `graph card 478px, plot 310px, unused 168px`, i.e.
+    zero genuine slack. Worth remembering: in a rowspan column, raising a graph's `height` past
+    `columnHeight − overhead` grows the whole band rather than filling the card.
+  - **Net: band 752px → 478px (−36%)**, and the KPI row → band → map seams all measure 0px.
+  - 🔴 **DATA INCONSISTENCY SURFACED — needs an owner decision.** The now-live caption reads
+    **"187 parcels currently held"** while the KPI tile reads **"CURRENTLY HELD 198"**. Both are
+    correct for their own definition: the KPI uses the documented held rule (the 10-status list
+    **OR `property_status IS NULL`**), while the legend/caption filter is `property_status IN (…10…)`,
+    which **excludes 11 NULL-status rows**. Previously the caption was hardcoded "198" and so agreed
+    with the KPI but contradicted its own legend (which sums to 187). It is now self-consistent with
+    the legend and visibly disagrees with the KPI — better, but not resolved. The mockup has no such
+    gap (its legend sums to 199 = its caption), because its sixth bucket is "On hold / other" —
+    exactly where those 11 NULL rows belong. **So this is the same decision as the 6-bucket regroup:
+    define the buckets, put NULL in "other", and all three numbers reconcile.** Do not paper over it
+    by hardcoding 198 again.
+
+- **2026-08-11 (session 7g) — add-parcel modal form aligned to `admin-new-property.html`.**
+  Reference: the design file's Location fieldset (`:126-135`) — a `block … mb-1` label **above** a
+  `w-full h-10 px-3` input, on a `grid grid-cols-12 gap-3`.
+  - **⭐ Root cause of the whole mismatch: `headerValueLayout` was unset**, and it defaults to
+    **`'row'` (Inline)** — so every label sat *beside* its input, and the input only occupied part of
+    its cell. That is also why the address field didn't span the modal: `street_address` was already
+    `cellSpan: 12`, but the input was sharing that 12-col cell with its label. Setting
+    `display.headerValueLayout: 'col'` (Stacked) fixed the label position **and** the full-width
+    address input in one move. Backup: `scratchpad/landbank/backups/section_1096.pre-design.json`.
+  - **Field spans** transcribed from the design file, with the address widened to the full 12 per the
+    owner: `street_address` 12 · `city` 4 · `zip_code` 4 · `neighborhood` 4 · `property_status` 12.
+    Status went to 12 so the Save button drops onto its own row instead of being squeezed into the
+    leftover columns. Grid: `cellsGridGap: 12` (design `gap-3`), `cellsRowGap: 18`, `cardsPadding: 8`.
+  - **⚠ NEW theme token `fieldLabel`** — labels were rendering `UPPERCASE` with wide tracking. Cause:
+    the dataCard `header` class carries `uppercase tracking-[0.16em]` (correct for a data card's
+    column headers, wrong for a form), and a `headerFontStyle` token is **added to** that class rather
+    than replacing it, so `text-transform` has to be overridden explicitly. `fieldLabel` = `labelSM` +
+    `normal-case tracking-normal`. **This is the third instance of the same trap** (section titles
+    needed `normal-case` in session 6c, band titles again in 7b) — the pattern is: a core wrapper
+    hard-codes `uppercase`, and a theme can only escape it by overriding on the element itself.
+    Labels also renamed to the design file's sentence case ("Street address", "Zip", …).
+  - **⚠ `whitespace-nowrap` added to `BTN_BASE`** — load-bearing, not cosmetic: the base fixes button
+    height at `h-10`, so "Save parcel" wrapped to two lines *inside* a 40px box and overflowed it.
+  - **⚠ `col-span-full` added to `formAddNewItemWrapper` / `formEditButtonsWrapper`** (landbank
+    `dataCard`) — the real reason the Save button sat hard against the left edge, clipped, with a
+    wrapping label. Both wrappers are **grid items in the CELLS grid**, and they shipped
+    `w-fit justify-self-end self-end` (core default, same value). Without a span they land in
+    **column 1** of a `cellsGridSize`-wide grid — 1/12 of the width on this form — so
+    `justify-self-end` faithfully aligned the button to the end of that one narrow track, i.e. the far
+    left. Now `col-span-full w-full flex justify-end pt-4 mt-2 border-t`, which also echoes the design
+    system's modal footer (`px-6 py-4 border-t border-ink/10 … justify-between`).
+    **Measured:** button right edge **1434px** = address-input right edge **1434px** (0px delta),
+    height 40px (single line, no wrap), left edge inside the field grid.
+    ⚠ The core default carries the same latent bug for any Card whose `cellsGridSize` > 1 — worth
+    fixing upstream in `card.theme.jsx` rather than per theme.
+  - **Modal body padding** — set on the section (`padding: {6,6,6,6}` = 24px, matching the design's
+    `px-6 py-5`) because the modal panel itself has none. See G14.
+  - ⚠ **Verified in the INLINE edit-mode render only.** The view-mode modal reads *published*
+    sections, so the actual modal chrome (panel padding, scrim, ✕) is still unverified — as in session
+    5, that needs a throwaway published page. The field layout, labels, spans and button are confirmed.
+  - **Not done (deliberately out of scope, flag not guess):** the design file's modal **header** —
+    eyebrow ("New property record · step 2 of 2") + the address as an `h2` + an SBL/neighborhood
+    subtitle — plus its grouped fieldsets with icon captions ("Identification", "Location", …) and a
+    footer action row. Those need at least one more section in the modal group; worth doing but it is
+    a scope decision, not a formatting fix.
 
 **Design source:** `src/themes/landbank/design_system/pages/admin-dashboard.html` (ADMIN PANEL 1 of 5,
 Phase 1 mockup — see [`landbank-admin-panel/README.md`](./landbank-admin-panel/README.md))
@@ -513,17 +899,53 @@ Captions are `origin:"static"` cells with `valueFontStyle:"proseXS"` (exactly as
 
 ### Band D — Acquisitions vs. sales by year (`col-span-8`)
 
-⚠ **The grouped two-series bar cannot be built from this table as-is**: acquisitions and sales live
-in two different columns on the same row (`acquisition_date`, `sold_date`), and a single GROUP BY
-can only key on one of them. Options, in preference order:
+✅ **SOLVED 2026-08-10 (session 7c) — the grouped two-series bar IS buildable from this table, with
+calculated columns only.** No SQL view, no library change, no DDL. **Superseded reasoning is kept
+below for the record because it was wrong in an instructive way.**
 
-1. **(recommended) Add a small SQL view in `landbank_dama`** — `(year, acquired, sold)`, one row per
-   year — and register it as a second DAMA source; then it's a plain 2-series `BarGraph`
-   (`target:"xAxis"` on `year`, two `yAxis` count columns). Data-layer prerequisite, no library
-   change, and every future "by year" chart benefits.
-2. **Two adjacent BarGraph sections** ("Acquired by year", "Sold by year"), `col-span-4` each — ships
-   today with zero new work, loses the side-by-side comparison the mockup makes.
-3. A library-level unpivot/union capability in `dataWrapper` — out of scope here; note only.
+**The solution — an `unnest` unpivot in two calculated columns.** Two same-cardinality
+set-returning functions in the SELECT list zip in lockstep (Postgres 10+), so each parcel becomes
+**two rows** — `(acq_year,'Acquired')` and `(sold_year,'Sold')`:
+
+```sql
+-- xAxis      (group: true)
+unnest(array[<year_of(acquisition_date)>, <year_of(sold_date)>]) as yr
+-- categorize (group: true)
+unnest(array['Acquired','Sold']) as series
+-- yAxis      (fn: 'exempt')
+count(*) as parcels
+```
+
+Grouping on the two `unnest(...)` expressions yields exactly `(year, series, count)` — the shape a
+grouped `BarGraph` wants (`display.groupMode: 'grouped'`). Why this works where everything else
+failed: `unnest` is **not** in `sanitizeName`'s blocklist (`select`/`union`/`cast` are, which is what
+killed the subquery and inline-UNION approaches), and — the surprise — **Postgres accepts the SRF as
+a GROUP BY key here**, so the server aggregates it rather than the client.
+
+**Verified**: 25 group rows (11 years × 2 series + 2026-Sold-only + 2 unparsed buckets), zero
+duplicates, the `length` route independently agrees (25), and both series reconcile exactly to the
+table total — Acquired 1285 + 29 unparsed = 1314, Sold 1135 + 179 unparsed = 1314. The **year spine
+is the union of both columns for free**, so 2026 (23 sales, no acquisitions) appears — a spine
+derived from `acquisition_date` alone would silently drop it.
+
+⚠ **Caveats:** (1) the 29/179 unparsed-date rows are silently excluded, so the chart's Sold total
+(1135) will not match the KPI strip's status-based 1,115 — state which definition is meant;
+(2) slice/series colors are assigned by key order from the data, so Acquired↔Sold could swap colors
+if that order changes — currently correct (Acquired sky, Sold field) but worth pinning with
+`colorsByKey`.
+
+<details><summary>Superseded (pre-session-7c) analysis — kept because the dead ends are worth knowing</summary>
+
+The original claim was that acquisitions and sales live in two columns on the same row and a single
+GROUP BY can only key on one, so the chart needed one of: (1) a `(year, acquired, sold)` SQL view in
+`landbank_dama` registered as a second DAMA source; (2) two adjacent single-series BarGraphs; (3) a
+library-level unpivot. Genuinely dead ends, each confirmed by test rather than assumption:
+`seriesVariants` (`query_sets/postgres.js:416`) varies only each arm's **WHERE** — all arms share one
+SELECT/GROUP BY; a **correlated scalar subquery** as a second measure is stripped (blocklisted
+`select`) and returns an empty atom; `join.sources` must resolve to a **registered DAMA view** via
+`getEssentials(view_id, env)`, so no inline `(VALUES …)` relation for a cross-join unpivot. The error
+was concluding from those that the whole class was impossible, instead of testing the SELECT-list SRF.
+</details>
 
 Whichever ships, the axis/legend styling copies section 1062 (`height:280`, `yAxis.show:false`,
 `legend.show:false`, `barOpacity:1`, `paddingInner:0.25`) and the callout sentence under the chart is
@@ -668,7 +1090,9 @@ the planning rules.
 | **G1** | Staff pages need `layout` style `app` (ink SideNav) + restricted access, but layout is a **pattern-level** choice and pattern 21 is the public site | site config (no code) | Create a second `page` pattern `dev2|admin:pattern`, `base_url=/admin`, `selectedTheme=landbank`, layout `activeStyle` = `app`, SideNav menu = Dashboard / Inventory table / Add property / For-sale list, `authPermissions` `{groups:{"landbank Admin":["*"]}, public:[]}`. Public pages stay on 21. No library change |
 | **G2** ✅ DONE (2026-08-04) | The 4 KPI tiles have **different top-border accent colors**; `dataCard.styles` has one `kpi` variant, and `activeStyle` is per section | **landbank theme** | ~~Add~~ **Added** `kpi_sky` / `kpi_field` / `kpi_amber` / `kpi_ink` variants (shared `mkKpi(accent)` helper, different `border-t` color) to `dataCard.styles` in `src/themes/landbank/theme.js`. Author-selectable per section from the existing style dropdown; every future stat strip benefits |
 | **G3** | KPI tile 1's **sparkline** (11 mini bars, last one highlighted) | recommend *no code* | Ship the tile as a Card + a tiny `BarGraph` section (`height:48`, axes/legend off) beneath it in the same band — expressible today. If sparkline-in-a-cell is wanted later: a `sparkline` column type reading a sibling **array** column (`array_agg(...)` calc), same "reads the row" convention `data_bar`/`stacked_bar` already use |
-| **G4** | **Donut** (ring + centered total) — `PieGraph.jsx` hardcodes `innerRadius = 0` | **library** | Add `display.pieInnerRadius` (0–0.9, default 0) to graph_new's config + pass it through `PieGraph`'s `p.innerRadius = pieDiameter * 0.5 * pieInnerRadius`; optionally `pieCenterLabel` for the total. Small, backward-compatible, and it's the one graph knob every dashboard mockup asks for |
+| **G4** ✅ **DONE (2026-08-10)** | **Donut** (ring + centered total) — `PieGraph.jsx` hardcoded `innerRadius = 0` | **library** | ~~Add~~ **Added** `pieInnerRadius` (0–0.95, default 0): `avl-graph/PieGraph.jsx` derives `p.innerRadius` from the slice's own `outerRadius`, `GraphComponent.jsx` passes `get(graphFormat,"pieInnerRadius",0)`, and `graph_new/config.jsx` exposes **"Donut Hole (0–0.95)"** in the `pieGraph` group. Fully BC (0 = solid pie). Live on the dashboard at 0.62. **Still to do:** the centered "199 HELD" total (`pieCenterLabel`) is NOT implemented, and this needs its own task doc under `src/dms/planning/` |
+| **G14** | **The modal section group's chrome is hardcoded, un-themed Tailwind.** `sectionGroup.jsx:107-120` renders the panel as `relative bg-white rounded-lg shadow-xl w-full ${modalWidthClass} mx-4 max-h-[90vh] overflow-y-auto` — **no padding class at all**, so section content sits flush to the modal edges; plus a `bg-black/50` backdrop and a `text-gray-400` ✕. The theme's own `modal` style (ink scrim, `rounded-md`, themed title/close/body) is never consulted, and this contradicts `packages/dms/CLAUDE.md`'s "all markup must be styled through the theme" rule | **library** | Read the panel/backdrop/close classes from `getComponentTheme(theme, 'modal')` (the key already exists with `panel`/`header`/`title`/`closeButton`/`body`, and landbank already ships `default` + `wide` styles), falling back to the current literals for BC. Then a modal gets its padding and scrim from the theme instead of each author padding the inner section. Interim used here: put the padding on the section (`padding: {6,6,6,6}`) |
+| **G13** | **A theme cannot set default `display` values for Cards.** Graphs merge `theme.chartDefaults` into their display (`mergeChartDefaults`); Cards have no equivalent, so theme-level intent like "KPI tiles fill their section" can't be expressed and every author must set `cardsVerticalAlign:'stretch'` per section | **library** | Add a Card counterpart (e.g. `theme.dataCard.styles[i].displayDefaults`, merged under the section's own `display` so explicit section values always win). Then `mkKpi()` can ship `cardsVerticalAlign:'stretch'` and the landbank KPI strip fills by default. Found while diagnosing why `height:'fill'` alone doesn't make a v2-model card fill — see session 7b |
 | **G5** | Map **cluster bubbles with counts** + pinned popover | recommend *no code* | Ship status-colored points + the standard legend/hover/popup. Clustering is a MapLibre/symbology-level feature, not a section knob — treat as a separate research item, not a blocker |
 | **G6** ✅ DONE (2026-08-04) | `stacked_bar` reads its colors from a `stackedBar` theme key the landbank theme doesn't ship (only `dataBar`) | **landbank theme** | ~~Add~~ **Added** a top-level `stackedBar` key mirroring `dataBar` (papertint track) with `fills` for the 7 status colors (canonical status keys + brand aliases) in `src/themes/landbank/theme.js`, so the pipeline bar and its legend match the pills exactly |
 | **G7** | Export button on a **Card** — `dataWrapper` has the xlsx export, but only Spreadsheet's config exposes `allowDownload` | **library** (1-line config) | Add the same `{type:'toggle', label:'Allow Download', key:'allowDownload'}` control to `Card.config.jsx`. Until then: put the export on the Spreadsheet (Band I) only, and drop the header Export button |
@@ -676,6 +1100,7 @@ the planning rules.
 | **G9** | Table row **icon-only** view/edit actions; link cells render text (`isLink` + `linkText`) | **landbank theme** | A small `icon_link` column type (icon name + `location`/`searchParams` template, per the theme's own icon registry) — pure chrome, one concern, exactly the `portrait_banner`/`stream_player` shape sanctioned in `src/themes/CLAUDE.md`. Interim: `linkText:"View"`/`"Edit"` text links |
 | **G10** | Mockup's flow is **address → geocode → prefilled modal**; DMS has no geocoding step | out of scope | Ship the single-step modal with manual `latitude`/`longitude`. A geocode-on-create step is a server/datatype concern (geocodio is already the source's provenance) — separate task if the owner wants it |
 | **G11** | No CLI command inspects or sets **external (DAMA) source metadata** (`isEditable`, PK) — `dms dataset *` only covers internal DMS sources | **library (CLI)** | Add `dms dataset external show <source-id> --env <pgEnv>` (+ optionally `set-editable`) so prereq 1 is verifiable from the terminal instead of only through the admin UI |
+| **G12** 🔴 **BLOCKER (found 2026-08-10)** | **Create fails on any external source whose PK has no default.** `landbank_dama.s3_v3_landbank_properties.ogc_fid` is `NOT NULL` with no sequence/identity, and the server never sends `ogc_fid` (absent from `metadata.columns` → stripped by `buildRowPayload`), so every insert violates the not-null constraint. Breaks the whole add-parcel flow; reads unaffected | **data layer** (primary) + **library** (defensive) | **Primary (owner/data team):** give the PK a default on the materialized table — `ALTER TABLE …s3_v3_landbank_properties ALTER COLUMN ogc_fid ADD GENERATED BY DEFAULT AS IDENTITY;` then `SELECT setval(pg_get_serial_sequence('…','ogc_fid'), (SELECT max(ogc_fid) FROM …));` (verify the exact DDL against the live table first — the `s3_v3_` materialization is what dropped the original serial). **Defensive (library):** `resolveEditableTable`/`createExternalRow` should detect a defaultless NOT NULL PK and fail with an actionable message (or offer an explicit opt-in `max(pk)+1` fallback) instead of surfacing a raw Postgres 500 — right now an author gets no clue what is wrong. Also worth folding into **G11**, so `dataset external show` reports "PK has default: yes/no" and prereq 1 becomes verifiable before a form is ever built |
 
 ## Documented deviations from the mockup (no code, decisions already made above)
 
@@ -701,7 +1126,9 @@ the planning rules.
 5. ✅ **DONE (2026-08-06)** — Band F map (tiles + symbology). Circle layer over view 3, categorical
    on `property_status`; verified 1207 points render. Cross-filter dropped (empty dynamic-filter
    hides an always-on layer — G5); shows the full portfolio.
-6. Band D (after the year-view decision) and E1 (pie now, donut if **G4** lands).
+6. ✅ **DONE (2026-08-10)** — Band D grouped 2-series by-year chart (sec 1084) via the `unnest`
+   unpivot in calculated columns — **no SQL view needed after all**; and E1's donut, via the shipped
+   **G4** `pieInnerRadius` knob (sec 1169).
 7. ✅ **DONE (2026-08-06)** — Band K modal. Verified on a throwaway published page (trigger → modal
    → editable form with select options + Save button → ✕ closes). Key fix: `externalSource.isEditable
    = true` on the form blob. NOT run: the live create submission (writes to production source 3) —
@@ -717,8 +1144,11 @@ the planning rules.
 - [ ] Search box matches across address / SBL / eProperty ID / neighborhood
 - [ ] Map: tiles render, points colored by status, legend matches paint, filter zoom works
 - [ ] Table: pagination, sort by days held, xlsx download, row links resolve
-- [ ] Modal: trigger opens it, form validates/saves, row appears in the DB with the right column values
-- [ ] Modal closes on successful add; a failed add leaves it open with the form intact
-- [ ] Created row appears in the table + KPIs without a reload (`add_publish` → `data_refresh`)
+- [x] Modal: trigger opens it (verified session 5) — form renders + submits the correct payload (session 7)
+- [ ] 🔴 **BLOCKED by G12** — row appears in the DB with the right column values. The submit returns
+      HTTP 500 (`ogc_fid` not-null violation); nothing is ever written. Re-run `create-test.mjs` once
+      the PK gets a default.
+- [x] A failed add leaves the form intact (session 7: the 500 left the page and the typed values in place)
+- [ ] 🔴 **BLOCKED by G12** — created row appears in the table + KPIs without a reload (`add_publish` → `data_refresh`)
 - [ ] Page is **not** reachable by an anonymous user (pattern/page `authPermissions`)
 - [ ] Draft-only: no `dms page publish` run by this task (except the throwaway modal-verification page, which gets deleted)
