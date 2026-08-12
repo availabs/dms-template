@@ -1116,6 +1116,28 @@ seconds later. Flaky DNS, not a down VPN — retry before diagnosing anything as
     `scratchpad/npmrds-sub/mint_token.sh`, then re-probe the edit URL — or `--publish` and probe the
     public URL.
 
+- **2026-08-12** — Three real `report_build.mjs`/converter-lib changes, all spawned by Ryan's
+  hand-by-hand review of the 12 spec-built catalog templates against the old tool (full detail in
+  `dynamic-reports-and-route-tags.md`, this is a pointer + summary, not a duplicate):
+  1. **`isGraphSectionElement()` fixed a systemic silent-data-loss bug**: it only recognized a
+     Route Compare/Info Box section via a `_routeComparePick`/`_infoBoxPick` marker this script
+     itself invented — `convert_old_reports.py` never stamps either, so any such section the
+     Python converter successfully built was completely invisible to `--from-page`, silently
+     dropped with no warning at all (found on `annual_average_study`, likely affects other
+     templates too — audit deferred, see task file). Fixed by matching structure instead: the
+     same self-bound `comparison_series`/`$self` subscriber the live runtime's own
+     `findSelfBoundGraphs` uses, plus a `type:'delta'` column as the Route-Compare-vs-Info-Box
+     tell.
+  2. **Multi-measure Info Box + Route Compare** — `measure` accepts an array (2+) for both graph
+     types now; composed fresh per report (not a combinatorially-named shared template); Info Box
+     also gained a real plain `speed` measure (was missing entirely — only the unrelated
+     `reliability` bucket existed). Full grammar in `research/npmrds-reports/report-spec.md`'s
+     "Route/TMC Info Box graphs"/"Route Compare graphs" sections.
+  3. **Metadata-unification**: `speed`/`speedTruck` (and Info Box's `speed`/`length`/`aadt`,
+     Route Compare's `speed`) repointed from a static, year-agnostic join
+     (`TMC_IDENTIFICATION_JOIN`, since removed) to `META_JOIN` (year-matched) — every query now
+     pulls TMC metadata for its actual year. Full detail: `src/dms/documentation/npmrds-data-sources.md`.
+
 ### Exact next steps for a fresh session
 
 **Phase B is done** — everything the old version of this section listed has either been completed or

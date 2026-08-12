@@ -403,28 +403,52 @@ Live-verified 2026-07-27: a one-route `measure: "speed"` Map graph built end-to-
 matching a direct ClickHouse query over the same TMC/date range, with a populated legend and zero
 console/page errors.
 
-### Route/TMC Info Box graphs (added 2026-07-28)
+### Route/TMC Info Box graphs (added 2026-07-28; `speed` measure + multi-measure added 2026-08-12)
 
-`{graphType: "InfoBox", measure: "reliability"|"travelTime"|"length"|"aadt"|"hoursOfDelay", grain?:
-"route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or per-TMC) summary table — the
-single most consistent panel across the old corpus after Route Map (Route Info Box appears in 100%
-of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
+`{graphType: "InfoBox", measure: "speed"|"reliability"|"travelTime"|"length"|"aadt"|"hoursOfDelay",
+grain?: "route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or per-TMC) summary table —
+the single most consistent panel across the old corpus after Route Map (Route Info Box appears in
+100% of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
 `route_comparison` — see the composition-rules analysis in
 `planning/transportny/tasks/current/client-request-to-report-skill.md`).
+
+**`measure` may also be an array of 2+ of the above, for a multi-measure box** — N columns in one
+table, matching the old tool's real shape (e.g. `measure: ["speed", "travelTime"]` renders exactly
+like the old tool's combined "Speed, Travel Time" Route Info Box). Composed fresh per report (each
+measure's own value column pulled from its already-existing single-measure template, assembled into
+a new state — never a combinatorially-named shared template) rather than through
+`build_route_info_box_section_state`'s single-measure clone path. **Not every combination is valid**:
+`reliability` can never combine with anything else (a completely different join mechanism — see
+below); `hoursOfDelay` can't combine with `speed`/`length`/`aadt` (their join requirements collide on
+the same table slot). An invalid combination fails the build with a clear message
+(`check_info_box_measure_combo()` in `info_box_templates.py`) rather than composing silently-wrong
+SQL. `speed`+`travelTime`+`length`+`aadt` all combine freely with each other.
+
+**`measure: "speed"` (added 2026-08-12) is the real plain speed-in-mph measure** (`miles / time`,
+the same `SPEED_EXPR` the AVL Graph `speed` measure uses) — verified against the actual old tool
+source (`dataTypes.js`'s `toSpeed`/`speedReducer`) that Route Info Box's "Speed" column was always
+this, never the reliability/LOTTR-TTTR bucket below. Do not confuse the two: `"speed"` here is
+plain mph; `"reliability"` (next paragraph) is a completely different pm3-backed measure that the
+old tool's own internal code confusingly also called "speed" internally.
 
 **This is not an AVL Graph.** Its element-type is `Spreadsheet`, not `AVL Graph`, and like Route Map
 it's composed by shelling out to `convert_old_reports.py --route-info-box-section` (new
 `build_route_info_box_section_state` function) rather than `applyMeasurePick` — same reuse principle,
-reusing the exact template-minting machinery (`ensure_pm3_join_template`/
+reusing the exact template-minting machinery (`ensure_pm3_join_template`/`ensure_info_box_speed_template`/
 `ensure_info_box_traveltime_template`/`ensure_info_box_length_template`/`ensure_info_box_aadt_template`/
 `ensure_info_box_delay_template`) built for old-report conversion (rounds 18/38/40).
 
-**Unlike Route Map, there is no per-report baking step.** Every one of the five measure buckets
+**Unlike Route Map, there is no per-report baking step.** Every one of the six measure buckets
 queries live at render time via the cloned template's own join (a cross-engine `pgFederated` join
-against source 1410's per-year view for `reliability`; a plain ClickHouse join for the other four) —
-the same `fetchMode:"force"`/`comparisonSeries` mechanism an AVL Graph section already uses. So an
-Info Box graph composes in one pass, before route resolution, and there is no placeholder-vs-baked
-distinction the way Route Map has one.
+against source 1410's per-year view for `reliability`; a plain ClickHouse join against `META_JOIN`
+— source 582/983, joined on `(tmc, year)` so every row resolves against its own date's year, not a
+frozen snapshot — for the other five) — the same `fetchMode:"force"`/`comparisonSeries` mechanism
+an AVL Graph section already uses. So an Info Box graph composes in one pass, before route
+resolution, and there is no placeholder-vs-baked distinction the way Route Map has one. See
+`src/dms/documentation/npmrds-data-sources.md`'s `META_JOIN` entry for the full
+year-correctness fix (2026-08-12) — `speed`/`length`/`aadt` used to read a different, static,
+year-agnostic join (`TMC_IDENTIFICATION_JOIN`, since removed) that silently returned a
+possibly-wrong-vintage `miles`/`aadt` value regardless of what year was actually being queried.
 
 `grain` defaults to `"route"`: each assigned route renders as its own row via the `__series`
 comparison-series discriminator (same fan-out mechanism as an AVL Graph section — the structural
@@ -480,6 +504,13 @@ resolve live at render time via `comparisonSeries` + dms-server's `__ANCHOR__(<e
 reading whichever route the page's own route list currently has first — same convention a difference
 graph's implicit anchor uses (see "Difference graphs: anchor and sign" above), and no `anchor` field
 of its own: reorder `routes[]` to change which one is first instead.
+
+**`measure` may also be `["speed", "travelTime"]` (added 2026-08-12) for a multi-measure box** — a
+value+delta column PAIR per measure (`__series`, Speed, % vs Main, Travel Time, % vs Main — 5
+columns total), matching the old tool's real combined shape. Only these two measures exist for
+Route Compare and they already share the same join, so (unlike Info Box) there's no combination to
+reject. `speed`'s own join was corrected 2026-08-12 to `META_JOIN` (year-matched), same fix as
+Info Box/AVL Graph's `speed` — see `src/dms/documentation/npmrds-data-sources.md`.
 
 No `resolution`, no `comparisonMode` (a `RouteCompare` graph's delta column already *is* the
 %-diff-from-anchor; `comparisonMode: "difference"` is rejected as redundant), no `caption`

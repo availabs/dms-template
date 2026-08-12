@@ -238,8 +238,12 @@ function buildDiffColors(measure, graphType) {
  * Resolution + Comparison Mode pick. Returns null if measureKey is unknown.
  * `defaultColors` should be the component's own defaultState.display.colors,
  * used to restore a sane palette when comparisonMode is 'plain'.
+ * `seriesCount` (optional) is how many routes/arms will feed this graph —
+ * only used to decide BarGraph's plain-mode color treatment (see the colors
+ * block below); omit when unknown, which keeps the existing categorical
+ * default (BC).
  */
-export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors }) {
+export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors, seriesCount }) {
     const measure = vocab.measures[measureKey];
     if (!measure) return null;
     // See isUnsupportedSummaryMeasure's own comment — avgHoursOfDelay's summary value is
@@ -318,7 +322,47 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // so the tmc value renders as its own raw string.
         displayPatch.yAxis = { format: null };
     }
-    displayPatch.colors = isDifference ? buildDiffColors(measure, graphType) : (defaultColors || null);
+    // Plain-mode color scale. `defaultColors` is the base template's own
+    // flat palette of distinct route-identity swatches — correct for a
+    // LineGraph (each swatch marks a different route/year) but wrong for a
+    // GridGraph, which always colors cells by raw measure VALUE regardless
+    // of route count (GridGraphWrapper never reads the categorize/__series
+    // column, see GridGraph.jsx) — a scaleLinear built across ~20 visually
+    // unrelated hues turns ordinary epoch-to-epoch noise into "confetti"
+    // (reported live 2026-08-12). A single-route BarGraph (a day/weekday/
+    // month magnitude breakdown, no real second series) has the same root
+    // cause: with only one category, it just picks one flat swatch instead
+    // of a value scale. Multi-route BarGraphs (2+ series sharing an x-axis,
+    // e.g. comparing years by weekday) and "summary" BarGraphs (one bar per
+    // route arm — the categorize column IS the x-axis there) are genuinely
+    // categorical and keep the inherited palette; `seriesCount` is how the
+    // caller tells us which case this is (report_build.mjs knows it from
+    // the spec's route→graph assignment; the live picker from the graph's
+    // already-assigned `_measurePick.routeIds`, when a route was picked
+    // before the measure).
+    const isSingleSeriesBarGraph = graphType === 'BarGraph' && resolutionKey !== 'summary' && seriesCount === 1;
+    if (isDifference) {
+        displayPatch.colors = buildDiffColors(measure, graphType);
+    } else if (graphType === 'GridGraph' || isSingleSeriesBarGraph) {
+        // measure.reverseColors already encodes which raw-value direction is
+        // "good" (see its use in buildDiffColors) — reuse it here to orient
+        // the same red(bad)-yellow-green(good) scale for a raw (non-diff)
+        // magnitude value.
+        displayPatch.colors = {
+            type: 'scheme', scheme: 'rdylgn', reverse: measure.reverseColors,
+            ...(graphType === 'BarGraph' ? { byValue: true } : {}),
+        };
+    } else {
+        displayPatch.colors = defaultColors || null;
+    }
+    // "(Line Total)" / per-series totals only make sense for a measure
+    // that's genuinely additive across whatever's being summed here (time
+    // buckets) — vocabulary.json already flags this via `fn: "sum"`
+    // (hoursOfDelay, the co2 totals) vs "avg"/"exempt" for rate-like
+    // measures (speed, travelTime, avgHoursOfDelay) where a raw sum is
+    // meaningless. Reported live 2026-08-12: a Route Line Graph showed a
+    // large, unitless "Line Total" next to each year's speed value.
+    displayPatch.tooltip = { showTotal: measure.fn === 'sum' };
     // "summary" has no categorize-targeted column to key a legend off (the categorize
     // column IS the x-axis here — see buildXAxisColumn), so the legend would otherwise
     // fall back to the yAxis column's own raw SQL expression as its label — confirmed,

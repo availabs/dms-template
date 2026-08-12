@@ -987,6 +987,14 @@ try {
       measure: g.measure,
       resolution: g.resolution,
       comparisonMode: g.comparisonMode || 'plain',
+      // Lets composeMeasureConfig tell a real single-route magnitude BarGraph
+      // (day/weekday/month breakdown of ONE route) apart from a genuine
+      // multi-route comparison sharing the same x-axis — see its own comment
+      // on `isSingleSeriesBarGraph`. Known here (unlike the live picker,
+      // which only has this if a route was already assigned) because the
+      // spec's route→graph assignment (`g._assigned`) is already resolved
+      // above.
+      seriesCount: g._assigned.length,
     });
     // The spec's explicit anchor, honored without reordering routes. Only set
     // when true so a normal-order difference graph's state stays byte-identical

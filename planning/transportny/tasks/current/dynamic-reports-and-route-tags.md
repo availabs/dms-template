@@ -760,7 +760,81 @@ anymore.
 
 ---
 
+### GridGraph/BarGraph magnitude color scale + LineGraph tooltip digits/Line-Total — FIXED and live-verified 2026-08-12 on `annual_average_study` only
+
+Ryan's hand-by-hand review flagged two more issues on `annual_average_study`, both confirmed
+present across all 12 templates by inspection of every spec's graph list:
+
+**Colors.** `composeMeasureConfig.js`'s plain-mode color composition unconditionally inherited the
+shared base template's `defaultColors` — a flat, ~20-swatch route-identity palette (`#D72638`,
+`#007F5F`, `#F8A100`, ...), correct for a LineGraph where each swatch marks a different route/year.
+GridGraph always colors cells by raw measure VALUE, never by route (`GridGraphWrapper` in
+`GridGraph.jsx` never reads the categorize/`__series` column at all) — a `scaleLinear` built across
+~20 visually-unrelated hues turned ordinary epoch-to-epoch noise into "confetti" coloring with no
+readable gradient (screenshot: `ugly_colors.png`). A single-route BarGraph (a day/weekday/month
+magnitude breakdown, e.g. `bar_weekday`/`bar_by_day`/`bar_by_month`) has the same root cause — with
+only one category it just picked one flat swatch instead of a value scale (reported live: "static
+purple" on `single_route`'s bar graphs).
+
+Fix, in `composeMeasureConfig.js` (never a template patch): for `graphType === 'GridGraph'`
+(unconditional) or a single-series `BarGraph` (`resolutionKey !== 'summary' && seriesCount === 1`),
+compose `{ type: 'scheme', scheme: 'rdylgn', reverse: measure.reverseColors, byValue: <BarGraph only> }`
+instead of the inherited palette — reuses `measure.reverseColors` (already used for diff-mode
+polarity) to orient red(bad)/green(good) correctly per measure. Multi-route BarGraphs and
+`resolution: "summary"` (Bar Graph Summary, one bar per route arm) keep the categorical palette —
+genuinely correct there. `seriesCount` is a new optional `composeMeasureConfig()` parameter:
+`report_build.mjs` passes it straight from `g._assigned.length` (already resolved at that point in
+the script); the live Measure Picker (`MeasurePicker/index.js`) derives it best-effort from
+`_measurePick.routeIds.length` when a route was already assigned before this measure pick (the
+common authoring order) — passed as a `seriesCount` field on `partial`/`pick`, stripped back out
+before `_measurePick` is persisted (it's a compose-time hint, not stored state). Known gap: picking
+a measure on a BRAND NEW graph *before* any route is assigned can't know the count yet, so it falls
+back to the categorical default until the picker is reopened after routes exist — acceptable, not
+chased further.
+
+**Tooltip.** Two independent small bugs found via the "too many digits" + nonsensical "sum"
+complaint (screenshot: `tooltip_digits.png`, the Route Line Graph — Speed tooltip showing
+`21.66106715604913` and a parenthetical `(7471.105285395136)` "Line Total"):
+- `GraphComponent.jsx`'s `hoverComp` memo built `yFormat` (what LineGraph's `DefaultHoverComp`
+  actually reads for both the per-line value and the Line Total) via the raw `getFormatFunc`
+  (bare identity passthrough) instead of `getTooltipFormatFunc` — which already exists specifically
+  to round away float noise, and which `valueFormat` on the very next line already correctly uses
+  for every OTHER chart type's tooltip. One-line fix (`yFormat: getTooltipFormatFunc(...)`),
+  benefits every LineGraph everywhere immediately — no rebuild needed, it's render code, not
+  composed/stored state.
+- "(Line Total)" was shown unconditionally. `vocabulary.json` already flags which measures are
+  genuinely additive across time buckets via `fn: "sum"` (`hoursOfDelay`, the co2 totals) vs
+  `"avg"`/`"exempt"` for rate-like measures (`speed`, `travelTime`, `avgHoursOfDelay`) where a raw
+  sum is meaningless — reused that existing flag rather than adding a new vocab field:
+  `composeMeasureConfig.js` now sets `displayPatch.tooltip = { showTotal: measure.fn === 'sum' }`,
+  merged into `state.display.tooltip` in `applyMeasurePickToState` the same way `xAxis`/`yAxis`
+  already merge.
+
+Both live-verified on `annual_average_study` (rebuilt via `--update 2210974 --publish`, the only
+template rebuilt so far — Ryan explicitly said not to rebuild the other 11 yet): GridGraph and all
+3 BarGraph panels now show a smooth red→yellow→green gradient with a real legend scale (screenshot
+confirmed); hovering the Line Graph shows `27.7`/`24.7`/`25.3`/`25.7` (1 decimal, no Line Total)
+instead of 15-digit floats. The code fix is universal (lives in `composeMeasureConfig.js`/
+`GraphComponent.jsx`/`report_build.mjs`, not the spec) but does NOT retroactively change already-
+built sections — same caveat as the metadata-join fix above — so **the other 11 live catalog pages
+still show the old confetti colors/float tooltips until each is rebuilt+republished** (same
+one-line `--update <id> --publish` per template, ids already resolved once this session — see the
+golden-corpus manifest for `annual_average_study`'s id 2210974; the other 11 aren't in this doc
+since they weren't looked up again after `report-spec-and-build-script.md`'s original build round).
+
+Golden-corpus: `dynamic_report_annual_average_study` entry's baseline re-captured against the fixed
+page; its `url` also corrected to include `?routes=2207838` (it's a `route_slot_group` Dynamic
+Report like `one_week_study` — the bare slug only shows the Add-Routes entry-gate modal, not real
+content; the very first capture of this entry, same day, had used the bare slug and gotten lucky on
+leftover browser-profile route selection).
+
+---
+
 ## Open questions for triage
+
+- **The other 11 live catalog pages need `--update <id> --publish` to pick up the 2026-08-12
+  color-scale/tooltip fix** (see the section above) — deliberately not run yet, Ryan's explicit
+  call to fix+verify on `annual_average_study` alone first before touching the others.
 
 Mostly resolved — see the archive's own "Open questions" section for the full resolved list. Still
 live:
