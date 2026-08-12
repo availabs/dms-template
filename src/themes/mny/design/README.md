@@ -41,10 +41,6 @@ mny/design/
 │   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
 │   ├── datasets-files.html             the datasets pattern
 │   ├── site-management*.html           admin surfaces
-│   ├── lhmp-admin/                   ← LHMP ADMIN — the plan-status page, both directions
-│   │   ├── plan-status-admin.html      inside the admin panel (Direction A's landing page)
-│   │   └── plan-status-plan.html       inside the county plan under Track Progress (Direction B,
-│   │                                   admin panel removed for planners); same real Sullivan data
 │   └── county-actions/               ← COUNTY ACTIONS WORKFLOW — one linked 6-page flow
 │       ├── dashboard.html              1 · county actions dashboard (stats + map + table + gap hand-off)
 │       ├── jurisdictions.html          2 · pick a jurisdiction, or tier the whole county
@@ -96,7 +92,7 @@ Every page in `design-system/`, `pages/` and `reports/` ends with one line:
 ```
 
 The widget is **section-contextual**, mirroring how a real DMS site navigates. It reads
-`location.pathname`, finds which of the seven sections owns the current page, and renders:
+`location.pathname`, finds which of the eight sections owns the current page, and renders:
 
 1. **the current section, expanded** — its pages numbered in flow order, the current one
    highlighted in `yellow-700` on a `yellow-50` row;
@@ -112,6 +108,7 @@ any page is at most two hops from any other. The sections are the site's real IA
 | Public Site | `pages/` | `home.html` |
 | Actions (Statewide) | `pages/` | `actions-dashboard.html` |
 | County Actions Workflow | `pages/county-actions/` | `dashboard.html` |
+| Admin Panel | `pages/` | `admin-forms.html` |
 | Site Management | `pages/` | `site-management-v2.html` |
 | Authoring Reference | `pages/` | `page-templates.html` |
 | Reports | `reports/` | `actions-qa.html` |
