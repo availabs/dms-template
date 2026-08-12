@@ -303,4 +303,10 @@ module.exports = {
   getTrafficDistributionProfileName,
   getNumBinsInDayForTimeBinSize,
   omitPrefixColumns,
+  // Exported (additively — no behavior change here) so pm3 can build its
+  // metrics⋈geometry view from the SAME expressions this query builder uses
+  // instead of keeping a second copy of the AADT/AVO formulas. The expressions
+  // reference the meta table as `t1` (or unqualified) and carry their own
+  // `as <name>` aliases, so a consumer must alias the meta table `t1`.
+  dataKeyToQueryMap,
 };

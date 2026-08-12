@@ -294,14 +294,22 @@ function RouteComparisonPanel() {
 
   return (
     <div className={t.wrapper}>
-      <div className={t.card}>
 
-        {/* header — Reset action only. The "Build comparison" title was removed: the
-            rail's own step labels (Scope · Routes · Periods · Metrics) already identify
-            the panel, and a title band here is redundant. */}
-        <div className={t.cardHeader}>
-          <button type="button" className={t.resetBtn} onClick={resetAll}>Reset</button>
-        </div>
+      {/* Panel head — pinned. The same dark bar ReportRouteList's "Routes" head uses:
+          both surfaces are route-selection rails, so they read as one family. The
+          title came back with it (it was dropped while this was a floating card,
+          where the step labels alone identified the panel; a pinned head needs a
+          name). The pill counts selected routes — the thing the rail is building. */}
+      <div className={t.panelHead}>
+        <Icon icon="Filter" className={t.panelHeadIcon} />
+        <span className={t.panelTitle}>Build comparison</span>
+        <span className={t.countPill}>{selectedRoutes.length}</span>
+        <button type="button" className={t.resetBtn} onClick={resetAll}>Reset</button>
+      </div>
+
+      {/* Scroll body — head and foot stay pinned; only this scrolls, so the rail is
+          never taller than the viewport. */}
+      <div className={t.body}>
 
         {/* ── SCOPE · global filters (apply to every cell) ── */}
         <div className={t.block}>
@@ -544,7 +552,7 @@ function RouteComparisonPanel() {
 
       </div>
 
-      {/* rail footer note (shareable) */}
+      {/* rail footer note (shareable) — pinned strip below the scroll body */}
       <div className={t.footNote}>
         <div className={t.footKicker}>{"// shareable"}</div>
         <p className={t.footText}>

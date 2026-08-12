@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Admin — Plan Data (Lisa Frank variant) 🐬✨</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'lf-pink':   '#FF2E9A', 'lf-hot': '#FF6EC7', 'lf-bubble': '#FFB3E6',
+            'lf-purple': '#8A2BE2', 'lf-violet': '#B14AED',
+            'lf-cyan':   '#00E5FF', 'lf-aqua': '#5FF6D2', 'lf-blue': '#2D7DFF',
+            'lf-sun':    '#FFD23F', 'lf-tangerine': '#FF8A3D',
+            'lf-ink':    '#2A0A45',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            fun: ['"Fredoka"', '"Baloo 2"', 'system-ui', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Fredoka:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+
+<style>
+/* ============================================================
+   LISA FRANK VARIANT — everything Tailwind can't express.
+   Pure CSS: no JS, no build step. Animations are decorative only
+   and are switched off under prefers-reduced-motion.
+   ============================================================ */
+
+/* --- the sky: an animated sunset-over-ocean wash ------------- */
+.lf-sky {
+  background:
+    radial-gradient(120% 80% at 18% 8%,  rgba(255,210,63,.55) 0%, rgba(255,138,61,.35) 28%, rgba(255,46,154,0) 62%),
+    radial-gradient(110% 70% at 84% 12%, rgba(0,229,255,.45) 0%, rgba(45,125,255,0) 60%),
+    linear-gradient(170deg, #FF6EC7 0%, #B14AED 26%, #8A2BE2 46%, #2D7DFF 68%, #00E5FF 86%, #5FF6D2 100%);
+  background-size: 200% 200%, 200% 200%, 100% 300%;
+  animation: lf-drift 26s ease-in-out infinite alternate;
+}
+@keyframes lf-drift {
+  0%   { background-position: 0% 0%,   100% 0%,  50% 0%; }
+  100% { background-position: 40% 30%,  60% 20%, 50% 100%; }
+}
+
+/* --- glitter: two stacked star-fields, slowly parallaxing ---- */
+.lf-glitter::before,
+.lf-glitter::after {
+  content: "";
+  position: fixed; inset: -20%;
+  pointer-events: none; z-index: 0;
+  background-repeat: repeat;
+}
+.lf-glitter::before {
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%, #fff 60%, transparent 61%),
+    radial-gradient(1.4px 1.4px at 68% 32%, #FFF3B0 60%, transparent 61%),
+    radial-gradient(2.2px 2.2px at 42% 72%, #fff 60%, transparent 61%),
+    radial-gradient(1.2px 1.2px at 88% 62%, #B9FBFF 60%, transparent 61%),
+    radial-gradient(1.8px 1.8px at 26% 88%, #FFD6F2 60%, transparent 61%);
+  background-size: 260px 260px;
+  animation: lf-twinkle 3.6s ease-in-out infinite alternate, lf-float 40s linear infinite;
+  opacity: .85;
+}
+.lf-glitter::after {
+  background-image:
+    radial-gradient(1px 1px at 30% 40%, #fff 60%, transparent 61%),
+    radial-gradient(1px 1px at 76% 12%, #fff 60%, transparent 61%),
+    radial-gradient(1.4px 1.4px at 55% 84%, #FFE7FB 60%, transparent 61%);
+  background-size: 170px 170px;
+  animation: lf-twinkle 2.4s ease-in-out .6s infinite alternate, lf-float 64s linear reverse infinite;
+  opacity: .6;
+}
+@keyframes lf-twinkle { from { opacity: .30 } to { opacity: .95 } }
+@keyframes lf-float   { from { transform: translate3d(0,0,0) } to { transform: translate3d(-260px,-160px,0) } }
+
+/* --- holographic card shell: rainbow gradient border + glow --- */
+.lf-card {
+  position: relative;
+  display: flex;                     /* lets the inner fill a stretched grid row */
+  border-radius: 26px;
+  padding: 3px;                      /* the gradient border thickness */
+  background: linear-gradient(135deg,#FF2E9A,#FFD23F,#5FF6D2,#00E5FF,#B14AED,#FF2E9A);
+  background-size: 320% 320%;
+  animation: lf-holo 12s ease infinite;
+  box-shadow:
+    0 10px 30px rgba(138,43,226,.30),
+    0 2px 8px rgba(255,46,154,.24),
+    inset 0 0 0 1px rgba(255,255,255,.4);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.lf-card:hover { transform: translateY(-4px); box-shadow: 0 18px 44px rgba(138,43,226,.42), 0 4px 14px rgba(0,229,255,.36); }
+@keyframes lf-holo { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+.lf-card-inner {
+  border-radius: 23px;
+  background: linear-gradient(180deg, rgba(255,255,255,.97) 0%, rgba(255,247,253,.97) 55%, rgba(238,250,255,.97) 100%);
+  overflow: hidden;
+  flex: 1;                           /* fill the shell, or the gradient shows
+                                        below a short card in a tall grid row */
+  display: flex; flex-direction: column;
+}
+.lf-card-body { flex: 1; }           /* pushes the wave footer to the card's foot */
+
+/* --- gradient (holographic) text ----------------------------- */
+.lf-holo-text {
+  background: linear-gradient(96deg,#FF2E9A 0%,#B14AED 30%,#2D7DFF 55%,#00E5FF 78%,#5FF6D2 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.lf-sunset-text {
+  background: linear-gradient(96deg,#FF2E9A 0%,#FF8A3D 45%,#FFD23F 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* --- the big metric numerals: gradient + soft neon halo ------- */
+.lf-stat, .lf-stat-cool, .lf-stat-warm {
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+/* NB: use background-IMAGE here, not the `background` shorthand — the shorthand
+   resets background-clip back to border-box and the gradient paints as a solid
+   block over the glyphs instead of clipping to them. */
+.lf-stat      { background-image: linear-gradient(180deg,#FF2E9A 0%,#B14AED 60%,#2D7DFF 100%); filter: drop-shadow(0 2px 5px rgba(255,46,154,.32)); }
+.lf-stat-cool { background-image: linear-gradient(180deg,#00E5FF 0%,#2D7DFF 60%,#8A2BE2 100%); filter: drop-shadow(0 2px 5px rgba(0,229,255,.36)); }
+.lf-stat-warm { background-image: linear-gradient(180deg,#FFD23F 0%,#FF8A3D 55%,#FF2E9A 100%); filter: drop-shadow(0 2px 5px rgba(255,138,61,.36)); }
+
+/* --- CTA: candy pill with a travelling shine ----------------- */
+.lf-btn {
+  position: relative; overflow: hidden;
+  background: linear-gradient(96deg,#FF2E9A,#B14AED 45%,#00E5FF);
+  background-size: 200% 100%;
+  box-shadow: 0 6px 16px rgba(255,46,154,.38), inset 0 1px 0 rgba(255,255,255,.55);
+  transition: background-position .4s ease, transform .18s ease, box-shadow .18s ease;
+}
+.lf-btn:hover { background-position: 100% 0; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,229,255,.46); }
+.lf-btn::after {
+  content:""; position:absolute; top:0; bottom:0; width:38%;
+  left:-50%; transform: skewX(-22deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent);
+  animation: lf-shine 3.4s ease-in-out infinite;
+}
+@keyframes lf-shine { 0%{left:-50%} 55%{left:120%} 100%{left:120%} }
+
+/* --- dolphins leap on a slow arc ----------------------------- */
+.lf-pod   { animation: lf-leap 7s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 80%; }
+.lf-pod-2 { animation: lf-leap 9s ease-in-out .9s infinite; transform-box: fill-box; transform-origin: 50% 80%; }
+.lf-pod-3 { animation: lf-leap 11s ease-in-out 1.8s infinite; transform-box: fill-box; transform-origin: 50% 80%; }
+@keyframes lf-leap {
+  0%,100% { transform: translateY(8px) rotate(-3deg); }
+  50%     { transform: translateY(-14px) rotate(4deg); }
+}
+
+/* --- sparkle glyphs ------------------------------------------ */
+.lf-spark   { animation: lf-pop 2.8s ease-in-out infinite; }
+.lf-spark-b { animation: lf-pop 3.6s ease-in-out .7s infinite; }
+.lf-spark-c { animation: lf-pop 4.4s ease-in-out 1.4s infinite; }
+@keyframes lf-pop {
+  0%,100% { transform: scale(.75) rotate(0deg);   opacity:.55 }
+  50%     { transform: scale(1.15) rotate(18deg); opacity:1 }
+}
+
+/* --- rainbow divider ----------------------------------------- */
+.lf-rule {
+  height: 3px; border: 0; border-radius: 999px;
+  background: linear-gradient(90deg,#FF2E9A,#FFD23F,#5FF6D2,#00E5FF,#B14AED);
+  background-size: 200% 100%;
+  animation: lf-holo 9s ease infinite;
+}
+
+/* --- wave band at the foot of a card ------------------------- */
+.lf-foot { background: linear-gradient(180deg, rgba(0,229,255,.16), rgba(255,110,199,.20)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lf-sky, .lf-glitter::before, .lf-glitter::after, .lf-card, .lf-btn::after,
+  .lf-pod, .lf-pod-2, .lf-pod-3, .lf-spark, .lf-spark-b, .lf-spark-c, .lf-rule { animation: none !important; }
+}
+</style>
+</head>
+
+<body class="lf-sky lf-glitter relative min-h-screen overflow-x-hidden">
+
+<!--
+  ADMIN PANEL — PLAN DATA, "LISA FRANK" VARIANT  🐬🌈✨
+  A third skin of the same page as admin-forms-insights.html: same six datasets,
+  same card anatomy (title · description · measured metrics · one CTA), same real
+  numbers. Only the styling differs — this is a palette/mood study, not a new
+  information architecture.
+
+  SELF-CONTAINED BY DESIGN. The dolphins, sun, ocean and every sparkle are inline
+  SVG + CSS gradients — no external image requests, so it renders offline and
+  cannot break on a dead asset link. All motion is pure CSS and is disabled under
+  prefers-reduced-motion.
+
+  DATA: the live values from the built page (2369408), measured 2026-08-06 and
+  refreshed 2026-08-10 (Capabilities is the post-reload county-scoped set):
+  Actions 61/35/1/18 · HoC 90/52/26/12 · Participation 29/21/49 ·
+  Roles 79/35/5/4 · Capabilities 320/291/192 · Dams 306/14/33/247.
+
+  NOT a candidate for the mny theme — the brand is deep steel-blue with a single
+  amber accent. This one is for fun.
+-->
+
+<!-- ================================================================
+     DECOR — sunset, ocean and a pod of dolphins behind everything
+     ================================================================ -->
+<div class="pointer-events-none absolute inset-x-0 top-0 h-[520px] overflow-hidden z-0" aria-hidden="true">
+  <svg class="absolute -top-8 left-1/2 -translate-x-1/2 w-[1700px] h-[560px]" viewBox="0 0 1700 560" fill="none">
+    <defs>
+      <radialGradient id="sun" cx="50%" cy="50%">
+        <stop offset="0%"   stop-color="#FFF6C9"/>
+        <stop offset="42%"  stop-color="#FFD23F"/>
+        <stop offset="100%" stop-color="#FF8A3D" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#00E5FF" stop-opacity=".55"/>
+        <stop offset="100%" stop-color="#2D7DFF" stop-opacity=".05"/>
+      </linearGradient>
+      <linearGradient id="dolphinA" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FF6EC7"/><stop offset="45%" stop-color="#B14AED"/><stop offset="100%" stop-color="#00E5FF"/>
+      </linearGradient>
+      <linearGradient id="dolphinB" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#00E5FF"/><stop offset="55%" stop-color="#5FF6D2"/><stop offset="100%" stop-color="#FFD23F"/>
+      </linearGradient>
+      <linearGradient id="dolphinC" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FFD23F"/><stop offset="60%" stop-color="#FF8A3D"/><stop offset="100%" stop-color="#FF2E9A"/>
+      </linearGradient>
+    </defs>
+
+    <!-- sun low over the water -->
+    <circle cx="300" cy="180" r="215" fill="url(#sun)"/>
+    <circle cx="300" cy="180" r="86" fill="#FFD23F" opacity=".92"/>
+
+    <!-- ocean bands -->
+    <path d="M0 400 Q 220 374 440 396 T 880 392 T 1320 398 T 1700 386 L1700 560 L0 560Z" fill="url(#sea)"/>
+    <path d="M0 436 Q 260 414 520 434 T 1040 430 T 1700 428 L1700 560 L0 560Z" fill="#2D7DFF" opacity=".18"/>
+
+    <!-- a pod of three dolphins, mid-leap.
+         Body is one closed curve: snout -> melon -> dorsal -> peduncle -> fluke -> belly. -->
+    <!-- NB: the positioning transform lives on an OUTER <g>, the animation class
+         on an inner one. A CSS keyframe `transform` REPLACES an element's SVG
+         transform attribute — putting both on one <g> collapses the dolphin to
+         the origin at scale 1.
+         Body outline runs: rostrum -> melon -> dorsal fin -> back -> peduncle ->
+         flukes -> belly -> jaw, with the pectoral fin as a second path. -->
+    <g transform="translate(1000 84) scale(1.35)">
+      <g class="lf-pod">
+        <path fill="url(#dolphinA)" d="M188 38 C170 20 140 12 112 18 C104 2 92 -2 78 4 C86 14 84 22 76 30 C56 44 34 66 18 96 C10 110 6 120 2 132 C14 126 26 124 36 128 C30 116 34 106 42 98 C60 78 84 60 108 52 C124 46 140 44 152 48 C166 52 178 48 188 38 Z"/>
+        <path fill="url(#dolphinA)" opacity=".75" d="M92 58 C80 70 70 84 66 96 C80 88 92 76 100 64 Z"/>
+        <path fill="#fff" opacity=".20" d="M112 30 C136 26 158 32 172 42 C154 34 132 32 114 36 Z"/>
+        <circle cx="168" cy="34" r="4.4" fill="#2A0A45"/>
+      </g>
+    </g>
+
+    <g transform="translate(1310 200) scale(.95) rotate(-10)">
+      <g class="lf-pod-2">
+        <path fill="url(#dolphinB)" d="M188 38 C170 20 140 12 112 18 C104 2 92 -2 78 4 C86 14 84 22 76 30 C56 44 34 66 18 96 C10 110 6 120 2 132 C14 126 26 124 36 128 C30 116 34 106 42 98 C60 78 84 60 108 52 C124 46 140 44 152 48 C166 52 178 48 188 38 Z"/>
+        <path fill="url(#dolphinB)" opacity=".75" d="M92 58 C80 70 70 84 66 96 C80 88 92 76 100 64 Z"/>
+        <circle cx="168" cy="34" r="4.4" fill="#2A0A45"/>
+      </g>
+    </g>
+
+    <g transform="translate(742 244) scale(.72) rotate(8)">
+      <g class="lf-pod-3">
+        <path fill="url(#dolphinC)" d="M188 38 C170 20 140 12 112 18 C104 2 92 -2 78 4 C86 14 84 22 76 30 C56 44 34 66 18 96 C10 110 6 120 2 132 C14 126 26 124 36 128 C30 116 34 106 42 98 C60 78 84 60 108 52 C124 46 140 44 152 48 C166 52 178 48 188 38 Z"/>
+        <circle cx="168" cy="34" r="4.4" fill="#2A0A45"/>
+      </g>
+    </g>
+
+    <!-- splash sparkles under the pod -->
+    <g fill="#fff" opacity=".8">
+      <circle cx="1060" cy="286" r="4"/><circle cx="1096" cy="300" r="2.6"/><circle cx="1028" cy="304" r="2.2"/>
+      <circle cx="1348" cy="352" r="3.4"/><circle cx="1382" cy="366" r="2.2"/>
+    </g>
+  </svg>
+</div>
+
+<!-- floating sparkle glyphs -->
+<div class="pointer-events-none fixed inset-0 overflow-hidden z-0" aria-hidden="true">
+  <span class="lf-spark   absolute left-[7%]  top-[18%] text-3xl">✨</span>
+  <span class="lf-spark-b absolute left-[44%] top-[7%]  text-2xl">💫</span>
+  <span class="lf-spark-c absolute left-[81%] top-[27%] text-3xl">⭐</span>
+  <span class="lf-spark-b absolute left-[20%] top-[56%] text-xl">✨</span>
+  <span class="lf-spark   absolute left-[93%] top-[66%] text-2xl">🌟</span>
+  <span class="lf-spark-c absolute left-[58%] top-[82%] text-xl">✨</span>
+  <span class="lf-spark   absolute left-[34%] top-[93%] text-2xl">💖</span>
+</div>
+
+<!-- ================================================================
+     LAYOUT
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="relative z-10 max-w-[1440px] mx-auto px-4 xl:px-[64px] pt-14 pb-20">
+
+  <!-- ============ PAGE HEADER ============ -->
+  <div data-dms="section" data-name="page-header" class="mb-10">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/75 backdrop-blur-sm shadow-lg ring-1 ring-white/70">
+      <span class="text-base">🐬</span>
+      <span class="font-fun text-[13px] font-[600] text-lf-purple">Admin Panel</span>
+      <span class="text-lf-bubble">/</span>
+      <span class="font-fun text-[13px] font-[600] text-lf-pink">Plan Data</span>
+    </div>
+
+    <h1 class="font-display text-[68px] leading-[1] uppercase tracking-[-0.03em] font-[700] mt-4 drop-shadow-[0_3px_0_rgba(255,255,255,.5)]">
+      <span class="lf-sunset-text">Your Plan</span>
+      <span class="lf-holo-text">Data</span>
+      <span class="lf-spark inline-block align-top text-4xl">✨</span>
+    </h1>
+
+    <p class="font-fun text-[19px] text-white mt-3 max-w-[720px] drop-shadow-[0_2px_6px_rgba(42,10,69,.6)]">
+      The datasets your plan is built from, and where each one stands for your county today —
+      how work is progressing, who is at the table, and how the risk picture breaks down. 🌈
+    </p>
+
+    <div class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 backdrop-blur shadow-xl ring-2 ring-lf-hot/50">
+      <span class="text-lg">🌊</span>
+      <span class="font-fun text-[16px] font-[600] text-lf-ink">Sullivan County</span>
+      <svg class="w-4 h-4 text-lf-pink" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+    </div>
+  </div>
+
+  <!-- ============ THE SIX CARDS ============ -->
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-7">
+
+    <!-- ░░ ACTIONS ░░ -->
+    <div class="lf-card">
+      <div class="lf-card-inner">
+        <div class="lf-card-body px-6 pt-6 pb-4">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="font-display text-[30px] font-[700] uppercase leading-[1] lf-holo-text">Actions 🐬</h2>
+            <span class="lf-spark text-2xl">✨</span>
+          </div>
+          <p class="font-fun text-[15px] text-lf-ink/80 leading-[150%] mt-2">
+            The mitigation projects your jurisdictions intend to carry out — problem, solution, lead agency,
+            cost range, hazard addressed and current status.
+          </p>
+          <hr class="lf-rule my-4">
+          <div class="grid grid-cols-4 gap-3">
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">61</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">County-led</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-cool">35</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Not started</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">1</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">In progress</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">18</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Completed</p></div>
+          </div>
+        </div>
+        <div class="lf-foot px-6 py-4">
+          <a href="#" class="lf-btn inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-fun font-[700] text-[13px] uppercase tracking-wider">
+            Open actions <span>🌊</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░ HAZARDS OF CONCERN ░░ -->
+    <div class="lf-card">
+      <div class="lf-card-inner">
+        <div class="lf-card-body px-6 pt-6 pb-4">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="font-display text-[30px] font-[700] uppercase leading-[1] lf-sunset-text">Hazards of Concern 🌅</h2>
+            <span class="lf-spark-b text-2xl">💫</span>
+          </div>
+          <p class="font-fun text-[15px] text-lf-ink/80 leading-[150%] mt-2">
+            One row per jurisdiction per hazard, recording whether it's a local concern, how likely it is,
+            and what's vulnerable.
+          </p>
+          <hr class="lf-rule my-4">
+          <div class="grid grid-cols-4 gap-3">
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">90</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Flagged</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">52</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">High</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">26</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Medium</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-cool">12</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Low</p></div>
+          </div>
+          <div class="mt-4">
+            <p class="font-fun text-[11px] font-[600] uppercase tracking-wider text-lf-violet">Likelihood profile</p>
+            <div class="mt-2 flex h-[12px] rounded-full overflow-hidden ring-2 ring-white shadow-inner">
+              <div style="width:57.8%;background:linear-gradient(90deg,#FF2E9A,#FF8A3D)"></div>
+              <div style="width:28.9%;background:linear-gradient(90deg,#FF8A3D,#FFD23F)"></div>
+              <div style="width:13.3%;background:linear-gradient(90deg,#5FF6D2,#00E5FF)"></div>
+            </div>
+          </div>
+        </div>
+        <div class="lf-foot px-6 py-4">
+          <a href="#" class="lf-btn inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-fun font-[700] text-[13px] uppercase tracking-wider">
+            Open hazards <span>⭐</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░ PARTICIPATION ░░ -->
+    <div class="lf-card">
+      <div class="lf-card-inner">
+        <div class="lf-card-body px-6 pt-6 pb-4">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="font-display text-[30px] font-[700] uppercase leading-[1] lf-holo-text">Participation 🐚</h2>
+            <span class="lf-spark-c text-2xl">✨</span>
+          </div>
+          <p class="font-fun text-[15px] text-lf-ink/80 leading-[150%] mt-2">
+            Every planning meeting, workshop and public comment period, with its format, invitation method
+            and attendance.
+          </p>
+          <hr class="lf-rule my-4">
+          <div class="grid grid-cols-3 gap-3">
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">29</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Logged all-time</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-cool">21</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">This year</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">49</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Hours</p></div>
+          </div>
+        </div>
+        <div class="lf-foot px-6 py-4">
+          <a href="#" class="lf-btn inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-fun font-[700] text-[13px] uppercase tracking-wider">
+            Open participation <span>🌊</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░ ROLES ░░ -->
+    <div class="lf-card">
+      <div class="lf-card-inner">
+        <div class="lf-card-body px-6 pt-6 pb-4">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="font-display text-[30px] font-[700] uppercase leading-[1] lf-sunset-text">Roles 🦄</h2>
+            <span class="lf-spark text-2xl">🌟</span>
+          </div>
+          <p class="font-fun text-[15px] text-lf-ink/80 leading-[150%] mt-2">
+            Planning committee members and points of contact for each jurisdiction — name, agency, title,
+            and the role they hold on the plan.
+          </p>
+          <hr class="lf-rule my-4">
+          <div class="grid grid-cols-4 gap-3">
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">79</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">People</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-cool">35</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Mitigation reps</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">5</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Floodplain admins</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">4</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">NFIP coords</p></div>
+          </div>
+        </div>
+        <div class="lf-foot px-6 py-4">
+          <a href="#" class="lf-btn inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-fun font-[700] text-[13px] uppercase tracking-wider">
+            Open roles <span>💫</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░ CAPABILITIES ░░ -->
+    <div class="lf-card">
+      <div class="lf-card-inner">
+        <div class="lf-card-body px-6 pt-6 pb-4">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="font-display text-[30px] font-[700] uppercase leading-[1] lf-holo-text">Capabilities 🌈</h2>
+            <span class="lf-spark-b text-2xl">✨</span>
+          </div>
+          <p class="font-fun text-[15px] text-lf-ink/80 leading-[150%] mt-2">
+            Programs, funding sources and technical assistance your jurisdictions can draw on. FEMA's
+            capability assessment chapter is written from this.
+          </p>
+          <hr class="lf-rule my-4">
+          <div class="grid grid-cols-3 gap-3">
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">320</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">In your county</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-cool">291</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">With a lead agency</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">192</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Described</p></div>
+          </div>
+        </div>
+        <div class="lf-foot px-6 py-4">
+          <a href="#" class="lf-btn inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-fun font-[700] text-[13px] uppercase tracking-wider">
+            Open capabilities <span>⭐</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░ HIGH HAZARD DAMS ░░ -->
+    <div class="lf-card">
+      <div class="lf-card-inner">
+        <div class="lf-card-body px-6 pt-6 pb-4">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="font-display text-[30px] font-[700] uppercase leading-[1] lf-sunset-text">High Hazard Dams 🌊</h2>
+            <span class="lf-spark-c text-2xl">💫</span>
+          </div>
+          <p class="font-fun text-[15px] text-lf-ink/80 leading-[150%] mt-2">
+            The state's dam inventory for your county — hazard class, condition rating, owner, height and
+            storage. Maintained by the state.
+          </p>
+          <hr class="lf-rule my-4">
+          <div class="grid grid-cols-4 gap-3">
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat">306</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">In county</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">14</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Class C</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-warm">33</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Class B</p></div>
+            <div><p class="font-display text-[38px] leading-[1] font-[700] lf-stat-cool">247</p><p class="font-fun text-[11px] font-[600] uppercase tracking-wide text-lf-purple mt-1">Class A</p></div>
+          </div>
+          <div class="mt-4">
+            <p class="font-fun text-[11px] font-[600] uppercase tracking-wider text-lf-violet">Hazard classification</p>
+            <div class="mt-2 flex h-[12px] rounded-full overflow-hidden ring-2 ring-white shadow-inner">
+              <div style="width:80.7%;background:linear-gradient(90deg,#00E5FF,#5FF6D2)"></div>
+              <div style="width:10.8%;background:linear-gradient(90deg,#FFD23F,#FF8A3D)"></div>
+              <div style="width:4.6%;background:linear-gradient(90deg,#FF8A3D,#FF2E9A)"></div>
+              <div style="width:3.9%;background:#E9D5FF"></div>
+            </div>
+          </div>
+        </div>
+        <div class="lf-foot px-6 py-4">
+          <a href="#" class="lf-btn inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-fun font-[700] text-[13px] uppercase tracking-wider">
+            Open dams <span>🐬</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <div class="mt-12 rounded-[22px] bg-white/75 backdrop-blur-sm px-6 py-4 shadow-xl ring-1 ring-white/70">
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 font-fun text-[13px]">
+      <span class="font-[700] uppercase tracking-wider text-lf-pink">🐬 Admin Panel:</span>
+      <a href="admin-forms-lisa-frank.html" class="font-[700] text-lf-purple">Plan Data · Lisa Frank</a>
+      <a href="admin-forms-insights.html" class="text-lf-ink/70 hover:text-lf-pink">Plan Data · insight view</a>
+      <a href="admin-forms.html" class="text-lf-ink/70 hover:text-lf-pink">Plan Data · task view</a>
+      <a href="admin-home.html" class="text-lf-ink/70 hover:text-lf-pink">Panel Home</a>
+    </div>
+    <p class="font-fun text-[11px] text-lf-ink/60 mt-2">
+      Same six datasets, same real numbers as the insight view — palette study only. 🌈✨
+    </p>
+  </div>
+
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>
