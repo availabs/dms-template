@@ -92,7 +92,7 @@ Every page in `design-system/`, `pages/` and `reports/` ends with one line:
 ```
 
 The widget is **section-contextual**, mirroring how a real DMS site navigates. It reads
-`location.pathname`, finds which of the seven sections owns the current page, and renders:
+`location.pathname`, finds which of the eight sections owns the current page, and renders:
 
 1. **the current section, expanded** — its pages numbered in flow order, the current one
    highlighted in `yellow-700` on a `yellow-50` row;
@@ -108,6 +108,7 @@ any page is at most two hops from any other. The sections are the site's real IA
 | Public Site | `pages/` | `home.html` |
 | Actions (Statewide) | `pages/` | `actions-dashboard.html` |
 | County Actions Workflow | `pages/county-actions/` | `dashboard.html` |
+| Admin Panel | `pages/` | `admin-forms.html` |
 | Site Management | `pages/` | `site-management-v2.html` |
 | Authoring Reference | `pages/` | `page-templates.html` |
 | Reports | `reports/` | `actions-qa.html` |

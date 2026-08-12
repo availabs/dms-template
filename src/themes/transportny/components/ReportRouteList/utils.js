@@ -94,6 +94,33 @@ export const WEEKDAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'frid
 export const WEEKEND_KEYS = ['sunday', 'saturday'];
 export const isDayOn = (weekdays, key) => weekdays?.[key] !== false;
 
+// Time-of-day presets — moved here from RouteRow.jsx (design push #2, 2026-08-06): time-of-day
+// is a graph-side facet now (QuickControls' "When" pill, AddGraphModal's "When" step), not a
+// per-route one, so both surfaces share this one list instead of each keeping their own copy.
+// OVN/FREEFLOW are absent on purpose: both wrap past midnight, which the epoch-range mechanism
+// these times feed (generateEpochRange above, a plain start<=end loop) can't express — it would
+// silently produce an empty epoch filter.
+export const PEAK_PRESETS = [
+  { label: 'AM Peak', startTime: '06:00', endTime: '10:00' },
+  { label: 'PM Peak', startTime: '16:00', endTime: '20:00' },
+  { label: 'PM Peak (alt)', startTime: '15:00', endTime: '19:00' },
+  { label: 'Midday', startTime: '10:00', endTime: '16:00' },
+  { label: 'All Day', startTime: '', endTime: '' },
+];
+
+// "6a-10a" style short label for a start/end "HH:mm" pair — used by QuickControls' pill token
+// and AddGraphModal's preview strip. Returns 'all day' when either bound is empty.
+export function timeOfDayToken(start, end) {
+  if (!start || !end) return 'all day';
+  const short = (hhmm) => {
+    const [h] = hhmm.split(':').map(Number);
+    const period = h < 12 ? 'a' : 'p';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}${period}`;
+  };
+  return `${short(start)}–${short(end)}`;
+}
+
 // Renders as null (no summary line) when the mask has no exclusions, so an
 // unrestricted route's date range block looks exactly as it did before this
 // control existed. Shared between RouteRow (per-row summary) and ReportRouteList

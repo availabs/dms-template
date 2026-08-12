@@ -67,15 +67,119 @@ datasets, actions/mockups).
   geoids hardcoded in every draft's Home) → Direction B's form surfaces should be shared
   `subdomain:*` patterns (the `/actions` model), not cloned pages.
 
+## Addendum 2026-08-07 — sitemap visualizations added to both direction reports
+
+Per owner request, both direction reports now end with a three-map visualization section
+(consolidate: "Section 06 — The two sites, page by page"; dissolve: "Section 05 — One site,
+page by page"):
+
+- **Map 1 — the county plan site**, drawn from the live template pull: the 39 public pages + 4
+  by-link working pages (43 of the template's 58; the other 15 are hidden
+  workbench/sandbox/superseded pages + 1 orphan) in nav structure (Home & chrome / Local Environment / The Risk / The Plan /
+  Track Progress), every page tagged with chips for the data it displays (amber = county-entered
+  form data, steel = state catalog, "+N ext" = external risk library). Hidden workbench/sandbox
+  pages and the orphaned Response page are omitted (stated in the caption). In the dissolve
+  report, Map 1 additionally embeds Direction B's entry surfaces in place (amber-bordered NEW
+  nodes with "shared" tags: county-actions flow, HoC worklist + per-chapter entry bands,
+  capabilities workspace, Roles/Participation worklists, dams annotate-in-place, Plan Status).
+- **Map 2 — the proposed admin**: consolidate shows all ~34 remaining pages with was→now badges
+  (Actions "was 23" → 5, etc.) + the retired-~78 box; dissolve shows the 5-box B1 DHSES console.
+- **Map 3 — linkage/change lanes**: consolidate maps entry page ▶ dataset ▶ plan display pages
+  with a per-lane "Change:" note; dissolve maps every one of today's 112 admin pages ▶ its
+  Direction B destination (or archived/deleted).
+
+Rendered checks: Playwright at 1440px, screenshots in session scratchpad; all relative links
+re-verified.
+
+## Addendum 2026-08-12 — data refresh + current-state report rewritten
+
+The team renovated the admin panel (112 → 75 pages: legacy trees and CRUD variants deleted; a new
+"Your Plan Data" landing at `/forms_redesign`; Forms hub redesign sitting in draft; annex page
+renamed "Jurisdictional Annex Entry Page", 106-section draft) and half-repaired the LHMP_IA
+"Add Data" rows (5/10 now hit form hubs; ~94 county-template sections still render dead cached
+URLs — live confirmation of the cache-staleness fragility). County template page-set unchanged
+(annex twin now hidden; Select Jurisdiction 92 sections); guide gained a "Guide Home Dup" fork
+and now has ZERO links to /admin (prose only); Suffolk published a wave (169 drafted / 104
+published). Full details: findings ledger §17; fresh pulls in `references/admin IA/data/`.
+**`admin-workflow-current-state.html` was rewritten from scratch against this refresh** (owner
+request: fresh-state voice, no change-tracking). The two direction reports still cite the
+2026-08-06 snapshot — their page-move tables reference deleted trees; update them once a
+direction is picked.
+
 ## Open items / next steps
 
 - [ ] **Owner decision: direction** (A / B1 / B2). Recommendation in the series: **B1**, with the
   four no-regret moves now regardless: repair the 7 LHMP_IA Add-Data rows (+ refresh cached
   sections), guide link sweep, archive the legacy/dup trees, decide Capabilities-vs-Capacities.
-- [ ] **Plan Status page mockup** — direction-proof (centerpiece of A, phase 1 of B); next
-  design-system mockup to cut. Driving data enumerated in the current-state report §06
-  (annotation fill from draft_sections, per-jurisdiction form coverage vs the guide's rules,
-  LHMP_IA `mny_required`/`control_number`/`cfr_requirement_number`, DHSES_County_Database).
+- [x] **Plan Status page mockup — DONE 2026-08-07**, both directions, under a new "LHMP Admin"
+  design category `src/themes/mny/design/pages/lhmp-admin/`:
+  `plan-status-admin.html` (admin-panel chrome — Direction A's landing; reworked 2026-08-07 to
+  wear the LIVE mny_admin chrome after owner feedback: compact fixed 64px icon sidenav with
+  Logo-top/UserMenu-bottom and a CSS hover flyout for Forms, page content as one full-width white
+  card — rail/flyout/pageWrapper class strings quoted verbatim from
+  `src/themes/mny/admin.theme.js` sidenav style "mny-compact" so the translation skill can
+  round-trip them; no top nav) and
+  `plan-status-plan.html` (county-plan chrome under Track Progress — Direction B; adds the
+  "How saving works" records-vs-page-text strip; gap links stay in-plan, Actions links go to the
+  county-actions mockups). Same four bands in both: plan record (real DHSES row — Sullivan's plan
+  EXPIRED 4/27/2026, update funded 11/26/2024), narrative completeness by chapter (10/267 slots;
+  Local Env 34 · Risk 195 · Plan 30 · Home 6 · Track 2), form coverage vs the guide's rules
+  (Actions 475 strong / HoC 0-of-368 "start here" blocker / Capacities V2 320 schema-pending /
+  Participation 27 / Roles 111 / Dams annotate-only), required components (LHMP_IA mny_required
+  42 Required by chapter: Plan 19 · Annexes 10 · Local Env 8 · Risk 5; honest banner:
+  cfr_requirement_number empty on all 529 rows), and a Tasks 1–8 position stepper with derived
+  states. All numbers real (pulled 2026-08-06/07); provenance in each file's header comment.
+  Registered as the "LHMP Admin" section in `ds-nav.js`. Both direction reports now link the
+  mockups (centerpiece band, phase-1 cards, dissolve Map 1 node). ALSO fixed same day: the three
+  review reports now use the shared `ds-nav.js` widget instead of hand-rolled panels, and
+  ds-nav's Reports section was completed (5 → all 13 reports listed).
+
+  **Expanded 2026-08-07 (owner feedback: "too shallow — expand the plan narrative"):** the
+  chapter-meter band became a full-width **task-ordered writing plan** on both versions — six
+  numbered groups mapped to the guide's Tasks 1–6, per-page rows with meters + named-slot chips
+  (Task 1 shows About the Process's full 13-slot checklist), a **16×11 hazard-slot matrix**
+  summarizing the 174 hazard-chapter slots (dashed cells mark real template inconsistencies:
+  Wind/Snowstorm lack Local Hazard Summary, Extreme Cold lacks Local Actions; Flooding carries
+  the one filled extra SFHA slot), and totals corrected to the visible plan (8/256, was 10/267).
+  **Requirements-tagging question ANSWERED: 1,866 template sections carry FEMA review-element
+  codes in `data.tags`** (173 of 256 slots) — surfaced on the page as element chips per slot/page
+  plus a new "FEMA review elements" rollup band (B 757 · C 329 · H 85 · A 49 · S 30 · E 21 ·
+  D 19 · F 8); H/S letter meanings need DHSES confirmation. The old "no element mapping" banner
+  was rewritten: two tagging systems exist (section tags + LHMP_IA registry), joining them is the
+  remaining work. Findings ledger §16 + `summaries/narrative_inventory.txt` hold the full
+  per-page slot inventory.
+
+  **v3 of the in-plan version (2026-08-07, same-day owner feedback: uneven units of work; needs
+  3/4 + 1/4 layout):** `plan-status-plan.html` rebuilt — (1) 3/4 main column + 1/4 **sticky rail**
+  (status overview card + "On this page" anchor nav with per-group counts), per the pages
+  sectionGroup rail convention; (2) the writing plan is now **uniform tables, one row per slot**
+  (What to write · Where in the plan [Chapter › Page hierarchy] · Requirement [FEMA element
+  chips] · Status · Write), task groups 1–6 + Done; (3) **hazards are per-hazard tabs** (16
+  CSS-only radio tabs, 11–12 rows each; absent slots rendered as dashed "Absent · fix template"
+  rows); (4) every row has an **info popup** (CSS hover) carrying the REAL Local-Guidance text
+  extracted from the template beside that slot (234/267 slots have adjacent guidance; 210 wired),
+  a requirement gloss (element letter → review-tool area), and status detail (draft-vs-published
+  explanation). Guidance extraction: `scratchpad session/slot_guidance.json` via
+  `extract_guidance.mjs` (nearest Inline-Guidance neighbor heuristic). The admin twin
+  intentionally stays on the v2 compact form (matrix as the cross-hazard view) until the
+  direction decision; its header comment says so. NOTE: session scratchpad was pruned mid-day —
+  pulls restored from `references/admin IA/data/` (the archive saved the session).
+
+  **v5 (2026-08-07, owner requests): BOTH versions now share the deep layout.** Additions over v3:
+  (1) a dedicated **Guidance column** — book icon only where guidance exists (231 of 256 rows),
+  hover popup shows the REAL "Local Guidance" text the page editor displays above that box
+  (re-extracted at fuller length, preceding-biased window: 234/267 slots have guidance;
+  `extract_guidance3.mjs` → `data/slot_guidance.json` in the admin IA folder); (2) **"Local
+  Context" rows auto-named from the section band they sit under** — "Local Context — for
+  Transportation / Energy / Critical Buildings and Infrastructure / …" (31 rows named; derived
+  from nearest preceding titled section); (3) requirement chips gloss their review-tool area on
+  hover; status chips popup draft-vs-published detail; (4) the admin version got the full v3+v5
+  restructure inside its admin chrome (main 3/4 + sticky rail 1/4; its Write links jump out to
+  the county site — narrative is written in the plan even when status lives in /admin).
+  OPEN ITEM fed back to the template: adopt the derived Local-Context names as real slot titles
+  in pattern 1300890 (31 renames; would make every checklist and the editor itself clearer), and
+  add the 3 missing hazard slots (Wind/Snowstorm "Local Hazard Summary", Extreme Cold "Local
+  Actions").
 - [ ] HoC worklist mockup (Direction B phase 3; promotes hidden template prototype 1676369).
 - [ ] Human visual pass on the three reports (rendered checks done via Playwright at 1440px;
   screenshots in session scratchpad).

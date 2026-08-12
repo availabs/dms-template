@@ -8,7 +8,7 @@ from .expressions import ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_
 from .template_specs import MEASURE_EXPR
 from .db import dms, fetch_old_report, fetch_old_routes, flatten_route_comps, now_iso
 from .dates import report_is_pre_2017_only, resolve_relative_dates
-from .transforms import build_route_entry, route_comp_display_name
+from .transforms import build_route_entry, group_route_comps, route_comp_display_name, route_comp_merge_key
 from .graph_templates import ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import ensure_route_compare_template
@@ -74,6 +74,11 @@ def convert_report(old_id, dry_run=False, replace=False):
     # here the label IS the series key.
     seen_names = {}
     for rc in route_comps:
+        # Stashed before the peak/date-labeled display name overwrites
+        # rc["name"] below — the merged-route-entry generic-name fallback
+        # (when old_route itself has no name) needs the comp's own bare
+        # pre-substitution name, not the compTitle-rendered one.
+        rc["_raw_name"] = rc.get("name")
         name = route_comp_display_name(rc, old_routes.get(str(rc.get("routeId"))))
         if name in seen_names:
             deduped = f"{name} ({rc.get('compId')})"
@@ -448,12 +453,53 @@ def convert_report(old_id, dry_run=False, replace=False):
                   f"years {sorted(years)}) -> {tmcs}")
 
     # -- route entries for the reports_snap_2 row
-    route_entries = [
-        build_route_entry(rc, old_routes.get(str(rc.get("routeId"))),
-                          graphs_for_comp.get(rc.get("compId"), []),
-                          old_id, gaps,
-                          tmc_override=resolved_tmcs.get(rc.get("compId")))
-        for rc in route_comps]
+    # Merge/dedup pass (converter-route-comp-redesign.md): comps sharing
+    # (routeId, calendar startDate, calendar endDate, resolved tmc_array)
+    # differ only in the old tool's own peak/weekday/resolution slicing —
+    # redundant now that Design Push #2 moved that onto each graph's own
+    # _measurePick. One entry per group, graphIds unioned across every
+    # comp in the group. comp_group_size feeds the graph-title-suffix fix
+    # below (a merged route's own name goes generic; a graph whose title
+    # never had {name} needs another way to keep the distinction visible).
+    merge_groups = group_route_comps(
+        route_comps,
+        lambda rc: route_comp_merge_key(rc, old_routes.get(str(rc.get("routeId"))),
+                                        resolved_tmcs.get(rc.get("compId"))))
+    comp_group_size = {}
+    route_entries = []
+    for group in merge_groups:
+        for rc in group:
+            comp_group_size[rc.get("compId")] = len(group)
+        rep = group[0]
+        union_graph_ids, seen_tids = [], set()
+        for rc in group:
+            for tid in graphs_for_comp.get(rc.get("compId"), []):
+                if tid not in seen_tids:
+                    seen_tids.add(tid)
+                    union_graph_ids.append(tid)
+        entry = build_route_entry(rep, old_routes.get(str(rep.get("routeId"))),
+                                  union_graph_ids, old_id, gaps,
+                                  tmc_override=resolved_tmcs.get(rep.get("compId")))
+        # Every graph fed by a group member other than the representative still
+        # has its own _measurePick.routeIds frozen on that member's ORIGINAL
+        # compId (set long before this merge pass ran) — useGraphPublish.js's
+        # routesByCompId lookup needs every member's id to resolve to this one
+        # entry, not just the representative's own route_comp_id.
+        entry["route_comp_ids"] = [rc.get("compId") for rc in group]
+        if len(group) > 1:
+            rep_old_route = old_routes.get(str(rep.get("routeId")))
+            entry["name"] = ((rep_old_route or {}).get("name")
+                             or rep.get("_raw_name") or entry["name"])
+            # weekdays/startTime/endTime used to vary within this group —
+            # dropped rather than inherited from whichever comp happens to
+            # be the representative, since it's already superseded by each
+            # fed graph's own _measurePick and would be misleading here.
+            entry.pop("weekdays", None)
+            gaps.append({"kind": "route_comps_merged", "detail": {
+                "route_id": rep.get("routeId"),
+                "merged_comp_ids": [m.get("compId") for m in group],
+                "calendar_range": [entry.get("startDate"), entry.get("endDate")]}})
+        route_entries.append(entry)
 
     # -- catalog upserts (with resolved TMCs for point-routes)
     seen_rids = set()
@@ -494,6 +540,10 @@ def convert_report(old_id, dry_run=False, replace=False):
                "--title", title, "--slug", slug],
               data={"index": "0", "parent": str(parent_id),
                     "sidebar": page_template.get("sidebar", "left"),
+                    # See convert_template.py's identical line — never copied before this
+                    # fix, so every converted page had a permanent blank/white rail-width
+                    # gap in view mode.
+                    "sidebarHideInView": page_template.get("sidebarHideInView", False),
                     "published": "draft"})
     page_id = res["id"]
     print(f"created page id={page_id} slug={slug}")
@@ -526,13 +576,23 @@ def convert_report(old_id, dry_run=False, replace=False):
         if bin_year:
             year_, bin_ = bin_year
             info["title"] = f"{info['title']} ({RELIABILITY_BIN_LABELS[bin_]}, {year_})"
+        # Route-comp-merge title fix: this graph's title template never had
+        # a {name} slot (so it renders with zero per-comp distinction) AND
+        # at least one of its assigned comps got merged into a shared route
+        # entry (whose own name just went generic) — append the comp
+        # name(s) so the peak/date distinction survives somewhere on the
+        # page instead of disappearing entirely.
+        if (not info.get("had_name_token") and info.get("comp_names")
+                and any(comp_group_size.get(c, 1) > 1 for c in info["assigned"])):
+            info["title"] = f"{info['title']} — {info['comp_names']}"
         section_datas.append(
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
                                      aadt_override=aadt_ov,
                                      route_map_value_ctx=route_map_value_ctx,
                                      diff_invert=route_diff_invert.get(
-                                         g.get("id"), False)))
+                                         g.get("id"), False),
+                                     comps_by_id=comps_by_id))
 
     draft_ids = []
     for sd in section_datas:
@@ -547,7 +607,7 @@ def convert_report(old_id, dry_run=False, replace=False):
         published_refs.append({"id": str(r["id"]),
                                "ref": f"npmrdsv5+{COMPONENT_TYPE}"})
     groups = page_template.get("draft_section_groups") or [
-        {"name": "default", "index": 0, "theme": "content", "position": "content"}]
+        {"name": "default", "index": 0, "theme": "flush", "position": "content"}]
     dms(["raw", "update", str(page_id)],
         data={"sections": published_refs, "section_groups": groups,
               "draft_section_groups": groups, "published": "", "has_changes": False})

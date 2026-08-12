@@ -10,7 +10,7 @@ import { useAddGraphSection } from './useAddGraphSection';
 import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
 import { useRouteMileage } from './useRouteMileage';
 import { resolveRouteDates } from './relativeDateResolution';
-import { formatDateShort, summarizeWeekdays } from './utils';
+import { formatDateShort } from './utils';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
@@ -53,7 +53,6 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
-  const [editWeekdaysValue, setEditWeekdaysValue] = useState({});
   // Mechanism B authoring buffer (relativeDateResolution.js) — mirrors the editStartDateValue/
   // editEndDateValue pattern above: parent owns the edit-buffer state, RouteRow is presentational.
   // 'fixed' | 'derived'; editDeriveFromValue is the picked base's route_comp_id; editDeriveFormulaValue
@@ -66,9 +65,9 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddGraphModalOpen, setIsAddGraphModalOpen] = useState(false);
-  // Copy/paste a whole window (dates + weekday mask + time-of-day) across routes — the three
-  // facets only mean anything as a set ("the same window as that route"), so this is one clipboard
-  // slot, not per-facet copy/paste. `from` is a route_comp_id (survives reordering, unlike index).
+  // Copy/paste a route's date span across routes — `from` is a route_comp_id (survives
+  // reordering, unlike index). Design push #2 (2026-08-06) shrunk this to date-span only:
+  // weekday mask/time-of-day moved off the route entirely (see useGraphPublish.js).
   const [clipboard, setClipboard] = useState(null);
 
   // The route CATALOG binding — read-only, backs the "Add Route" tag-browser modal
@@ -106,13 +105,11 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
     removeRoute,
     reorderRoutes,
     updateRoute,
-    toggleRouteGraph,
-    assignRoutesToGraph,
     pasteWindowToRoutes,
   } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit: canMutate });
 
-  // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/graphIds/
-  // color assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
+  // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/color
+  // assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
   // the real route ids the viewer's URL supplies. Never persisted; a pure in-memory overlay.
   const { resolvedRoutes, resolvedGroupRoutes } = useDynamicReportRoutes({
     apiLoad,
@@ -147,18 +144,29 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
 
   const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
 
+  // Design push #2 (2026-08-06) removed the per-graph assignment CHIPS a route used to show
+  // (see RouteRow.jsx) — that's still gone, graph assignment is a QuickControls-owned field on
+  // each graph's own state, not a route-side toggle. But `graphs` (the discovered self-bound
+  // sibling graphs, already computed here for the publish/broadcast effects below) is exactly
+  // the live source of truth for a lighter ask: how many graphs does each route feed, right now
+  // — found live 2026-08-07, Ryan: "I don't see the number of graphs each route feeds, it should
+  // be in the RRL." `routes[].graphIds` (the old per-route field the Python converter still
+  // writes) is NOT used for this — it's write-once at conversion time and never updated when an
+  // author reassigns a route via QuickControls' Routes pill (which only ever writes the GRAPH's
+  // own `_measurePick.routeIds`), so it goes stale the moment anyone touches Quick Controls.
   const { graphs } = useGraphPublish({
     item,
     isEdit,
-    canMutate,
-    apiUpdate,
     routes: effectiveRoutes,
-    reportRow,
-    persistRoutes,
     pageState,
     setActionParam,
     clearActionParam,
   });
+  const graphCountByCompId = useMemo(() => {
+    const counts = new Map();
+    graphs.forEach((g) => (g.routeIds || []).forEach((id) => counts.set(id, (counts.get(id) || 0) + 1)));
+    return counts;
+  }, [graphs]);
 
   // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
   // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
@@ -244,13 +252,12 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
     }
   };
 
+  // Design push #2 (2026-08-06): `routeIds` now rides in `pick` itself (composed straight into
+  // the new section's own `display._measurePick` by useAddGraphSection.js/applyMeasurePickToState)
+  // instead of a separate post-create route-side write — a graph owns its own route assignment
+  // now, RRL's `routes` storage row is never touched by adding a graph at all.
   const handleConfirmAddGraph = async ({ pick, selectedRouteIds }) => {
-    const trackingId = await addGraphSection(pick);
-    if (!trackingId || !selectedRouteIds?.length) return;
-    const indexes = routes
-      .map((r, i) => (selectedRouteIds.includes(r.route_comp_id) ? i : -1))
-      .filter((i) => i !== -1);
-    await assignRoutesToGraph(indexes, trackingId);
+    await addGraphSection({ ...pick, routeIds: selectedRouteIds || [] });
   };
 
   // A Dynamic Report with no (or a mismatched) `?routes=` still needs to show its
@@ -358,7 +365,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
           )}
           {canMutate && clipboard && (() => {
             // Every route except the copy source and any derived-date route (its dates come
-            // from a sibling, not a window it can accept a paste onto).
+            // from a sibling, not a span it can accept a paste onto).
             const pasteAllTargets = effectiveRoutes
               .map((r, i) => ({ r, i }))
               .filter(({ r }) => r.route_comp_id !== clipboard.from && !r.dateFormula);
@@ -366,8 +373,8 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
               <div className={t.clipboardStrip}>
                 <div className={t.clipboardStripHead}>
                   <Icon icon="Copy" className={t.clipboardStripIcon} />
-                  <span className={t.clipboardStripLabel}>window copied · {clipboard.fromName}</span>
-                  <button type="button" className={t.clipboardStripClear} title="Forget the copied window" onClick={() => setClipboard(null)}>
+                  <span className={t.clipboardStripLabel}>date span copied · {clipboard.fromName}</span>
+                  <button type="button" className={t.clipboardStripClear} title="Forget the copied date span" onClick={() => setClipboard(null)}>
                     <Icon icon="XMark" />
                   </button>
                 </div>
@@ -375,13 +382,12 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                   {(formatDateShort(clipboard.start) || formatDateShort(clipboard.end))
                     ? `${formatDateShort(clipboard.start) || '?'} – ${formatDateShort(clipboard.end) || '?'}`
                     : 'No dates set'}
-                  {summarizeWeekdays(clipboard.weekdays) ? ` · ${summarizeWeekdays(clipboard.weekdays)}` : ''}
                 </div>
                 {pasteAllTargets.length > 0 && (
                   <button
                     type="button"
                     className={t.clipboardStripPasteAll}
-                    onClick={() => pasteWindowToRoutes(pasteAllTargets.map(({ i }) => i), { startDate: clipboard.start, endDate: clipboard.end, weekdays: clipboard.weekdays })}
+                    onClick={() => pasteWindowToRoutes(pasteAllTargets.map(({ i }) => i), { startDate: clipboard.start, endDate: clipboard.end })}
                   >
                     <Icon icon="Paste" /> paste into all ({pasteAllTargets.length})
                   </button>
@@ -420,6 +426,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                 key={r.route_comp_id ?? i}
                 route={r}
                 miles={mileageByRouteCompId.get(r.route_comp_id)}
+                graphCount={graphCountByCompId.get(r.route_comp_id) || 0}
                 theme={t}
                 Icon={Icon}
                 ColorPicker={ColorPicker}
@@ -430,11 +437,10 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                   fromName: r.name,
                   start: r.startDate,
                   end: r.endDate,
-                  weekdays: r.weekdays ? { ...r.weekdays } : undefined,
                 })}
                 onPasteWindow={() => clipboard && updateRoute({
                   index: i,
-                  updates: { startDate: clipboard.start, endDate: clipboard.end, weekdays: clipboard.weekdays },
+                  updates: { startDate: clipboard.start, endDate: clipboard.end },
                 })}
                 clipboard={clipboard}
                 isEdit={canMutate}
@@ -470,8 +476,6 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                 editEndDateValue={editEndDateValue}
                 onEditStartDateValueChange={setEditStartDateValue}
                 onEditEndDateValueChange={setEditEndDateValue}
-                editWeekdaysValue={editWeekdaysValue}
-                onEditWeekdaysValueChange={setEditWeekdaysValue}
                 editDateMode={editDateMode}
                 onEditDateModeChange={setEditDateMode}
                 editDeriveFromValue={editDeriveFromValue}
@@ -486,7 +490,6 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                   // Fixed mode starts from the right dates instead of blank or stale ones.
                   setEditStartDateValue(r.startDate);
                   setEditEndDateValue(r.endDate);
-                  setEditWeekdaysValue(r.weekdays || {});
                   setEditDateMode(r.dateFormula ? 'derived' : 'fixed');
                   setEditDeriveFromValue(r.derivedFromRoute || '');
                   setEditDeriveFormulaValue(r.dateFormula || '');
@@ -506,18 +509,11 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                       updates: { dateFormula: editDeriveFormulaValue, derivedFromRoute: editDeriveFromValue },
                     });
                   } else {
-                    // Only explicit `false` entries are meaningful (see useGraphPublish.js's
-                    // generateDateRange) — stripping `true`/absent keys keeps storage matching
-                    // the existing convention (e.g. converted old reports' `{saturday:false,
-                    // sunday:false}`) and collapses back to `undefined` (all days) when every
-                    // toggle is back on, instead of persisting a same-meaning-but-verbose object.
-                    const excluded = Object.fromEntries(Object.entries(editWeekdaysValue).filter(([, v]) => v === false));
                     updateRoute({
                       index: i,
                       updates: {
                         startDate: editStartDateValue,
                         endDate: editEndDateValue,
-                        weekdays: Object.keys(excluded).length ? excluded : undefined,
                         // Switching back to Fixed removes the relationship — editStartDateValue/
                         // editEndDateValue above were seeded from the live-resolved value (see
                         // onStartEditDates), so nothing goes blank.
@@ -529,8 +525,6 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                   setEditingRouteDatesIndex(null);
                 }}
                 onCancelEditDates={() => setEditingRouteDatesIndex(null)}
-                graphs={graphs}
-                onToggleGraph={(sectionId) => toggleRouteGraph(i, sectionId)}
                 canMoveUp={i > 0}
                 canMoveDown={i < effectiveRoutes.length - 1}
                 onReorderUp={() => reorderRoutes(i, 'up')}

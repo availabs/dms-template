@@ -96,19 +96,18 @@ export function resolveRelativeDateFormula(formula, baseStartDate, baseEndDate) 
   return { start: formatDateOnly(start), end: formatDateOnly(end) };
 }
 
-function getTimeSuffix(dateStr) {
-  return (dateStr || '').split('T')[1] || '';
-}
-
 // Resolves every formula-bearing route entry against its base (found by
 // `derivedFromRoute` === some sibling's `route_comp_id`, in the SAME array)
-// and returns a new array with fresh startDate/endDate — preserving each
-// row's OWN time-of-day suffix (peak-window settings are independent
-// per-comp data, untouched by this mechanism — see relativedates.utils.js's
-// own setTimes=false default). Entries without a formula, or whose base
-// can't be resolved, pass through unchanged; returns the SAME array
-// reference when nothing changed (mirrors applyDerivedPageVariables'
-// no-render-churn guarantee).
+// and returns a new array with fresh startDate/endDate. Entries without a
+// formula, or whose base can't be resolved, pass through unchanged; returns
+// the SAME array reference when nothing changed (mirrors
+// applyDerivedPageVariables' no-render-churn guarantee).
+//
+// Design push #2 (2026-08-06): used to also preserve each row's own time-of-day
+// suffix on the resolved date (peak-window settings were independent per-comp
+// data) — dropped along with the rest of a route's time-of-day fields, which
+// moved to the graph (see useGraphPublish.js). A route's startDate/endDate are
+// plain "YYYY-MM-DD" now, no `T`-suffix to preserve.
 export function resolveRouteDates(routes) {
   if (!routes?.length) return routes;
   const byCompId = new Map(routes.map((r) => [r.route_comp_id, r]));
@@ -124,13 +123,9 @@ export function resolveRouteDates(routes) {
     if (!base?.startDate || !base?.endDate || base.dateFormula) return route;
     const resolved = resolveRelativeDateFormula(route.dateFormula, base.startDate, base.endDate);
     if (!resolved) return route;
-    const startTime = getTimeSuffix(route.startDate);
-    const endTime = getTimeSuffix(route.endDate);
-    const nextStart = startTime ? `${resolved.start}T${startTime}` : resolved.start;
-    const nextEnd = endTime ? `${resolved.end}T${endTime}` : resolved.end;
-    if (nextStart === route.startDate && nextEnd === route.endDate) return route;
+    if (resolved.start === route.startDate && resolved.end === route.endDate) return route;
     changed = true;
-    return { ...route, startDate: nextStart, endDate: nextEnd };
+    return { ...route, startDate: resolved.start, endDate: resolved.end };
   });
   return changed ? next : routes;
 }

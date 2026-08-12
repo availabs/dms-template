@@ -44,6 +44,13 @@
       { f: 'workspace.html', t: 'county workspace' }, { f: 'action-view.html', t: 'action view' },
       { f: 'action-edit.html', t: 'action edit' },
     ]},
+    { key: 'panel', label: 'Admin Panel', dir: 'pages', landing: 'admin-forms.html', pages: [
+      { f: 'admin-forms.html', t: 'plan data · task view' },
+      { f: 'admin-forms-insights.html', t: 'plan data · insight view' },
+      { f: 'admin-forms-lisa-frank.html', t: 'plan data · lisa frank 🐬' },
+      { f: 'admin-home.html', t: 'panel home' },
+      { f: 'plan-status-dashboard.html', t: 'plan status' },
+    ]},
     { key: 'admin', label: 'Site Management', dir: 'pages', landing: 'site-management-v2.html', pages: [
       { f: 'site-management-v2.html', t: 'site management · v2' },
       { f: 'site-management.html', t: 'site management' },
@@ -56,12 +63,24 @@
       { f: 'column-types.html', t: 'column types' },
       { f: 'datasets-files.html', t: 'datasets · files' },
     ]},
+    { key: 'lhmpadmin', label: 'LHMP Admin', dir: 'pages/lhmp-admin', landing: 'plan-status-admin.html', pages: [
+      { f: 'plan-status-admin.html', t: 'plan status · admin panel' },
+      { f: 'plan-status-plan.html', t: 'plan status · in the plan' },
+    ]},
     { key: 'reports', label: 'Reports', dir: 'reports', landing: 'actions-qa.html', pages: [
       { f: 'actions-qa.html', t: 'actions data quality' },
       { f: 'duplicate-actions.html', t: 'duplicate actions' },
       { f: 'boilerplate-actions.html', t: 'boilerplate actions' },
       { f: 'location-from-text.html', t: 'locating from text' },
       { f: 'priority-coverage.html', t: 'local priority coverage' },
+      { f: 'capabilities-vs-capacity.html', t: 'capabilities vs capacity' },
+      { f: 'capability-inventory.html', t: 'capability inventory' },
+      { f: 'capacity-assessment-architecture.html', t: 'capacity assessment architecture' },
+      { f: 'state-capability-catalog.html', t: 'state capability catalog' },
+      { f: 'admin-panel-information-architecture.html', t: 'admin panel IA (july)' },
+      { f: 'admin-workflow-current-state.html', t: 'admin review 1 · current state' },
+      { f: 'admin-direction-consolidate.html', t: 'admin review 2 · direction A' },
+      { f: 'admin-direction-dissolve.html', t: 'admin review 3 · direction B' },
     ]},
   ];
 

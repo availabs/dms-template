@@ -963,6 +963,55 @@ for (const [i, g] of spec.graphs.entries()) {
   g._mapElementType = built.elementType;
 }
 
+// ── wire route → graph routing onto `_measurePick.routeIds` ────────────────
+// Design push #2 (2026-08-06, see useGraphPublish.js's own header comment) moved
+// route routing OFF the route (`routes[].graphIds` on the snap row) and ONTO each
+// GRAPH's own `display._measurePick.routeIds` — `findSelfBoundGraphs` treats any
+// section with an enabled comparison_series `$self` subscriber as self-bound
+// regardless of element type, so AVL Graph, Map, and Info Box sections all read
+// their assigned routes from this one field now (report-spec.md's "startTime/
+// endTime" section live-verified this for Map/InfoBox on 2026-07-28, before this
+// script existed). Missing this after the design push meant `_measurePick.routeIds`
+// stayed `[]` (composeMeasureConfig has no such field, and Map/InfoBox's compose
+// path — convert_old_reports.py — doesn't know about specific route assignments at
+// all) — every graph on every spec-built report resolved zero routes, rendering
+// completely blank with no error. Confirmed live 2026-08-07 building
+// report_probe_fixtures/specs/plain-two-route-linegraph.json: `routes[].graphIds`
+// was correctly wired, RRL showed "0 GRAPHS" per route, and no `/graph` query for
+// the actual measure ever fired. Runs AFTER the Route Map re-bake loop above,
+// which fully replaces `composedStates[i]` for Map graphs and would otherwise
+// clobber this. `route_comp_id` here must match `routeEntries`'s own `comp-${i}`
+// indexing below exactly — both index into `spec.routes` in declaration order.
+{
+  const routeCompId = new Map(spec.routes.map((r, i) => [r, `comp-${i}`]));
+  const uniform = (arr) => arr.length > 0 && arr.every(v => v === arr[0]);
+  for (const [i, g] of spec.graphs.entries()) {
+    if (!composedStates[i]) continue; // RouteCompare has no `_measurePick` concept (report-spec.md); anchor is order-based, not field-based.
+    const state = composedStates[i];
+    if (!state.display) state.display = {};
+    const routeIds = g._assigned.map(r => routeCompId.get(r));
+    // `weekdays`/`startTime`/`endTime` are still spec'd per-route (report-spec.md
+    // hasn't been migrated to graph-level fields for this) — best-effort: promote
+    // them to the graph's pick only when every assigned route agrees, otherwise
+    // warn and leave unset rather than silently picking one route's window for
+    // routes that asked for something different.
+    const weekdaysList = g._assigned.map(r => JSON.stringify(r.weekdays || {}));
+    const windowList = g._assigned.map(r => `${r.startTime || ''}|${r.endTime || ''}`);
+    if (!uniform(weekdaysList)) {
+      console.warn(`  note: graph "${g.key}"'s assigned routes have DIFFERENT weekday masks — report-spec.md's per-route \`weekdays\` field doesn't map onto Design Push #2's graph-level field; leaving weekdays unset for this graph rather than guessing.`);
+    }
+    if (!uniform(windowList)) {
+      console.warn(`  note: graph "${g.key}"'s assigned routes have DIFFERENT startTime/endTime windows — same gap as above; leaving the time-of-day window unset for this graph.`);
+    }
+    state.display._measurePick = {
+      ...(state.display._measurePick || {}),
+      routeIds,
+      ...(uniform(weekdaysList) && g._assigned[0].weekdays ? { weekdays: g._assigned[0].weekdays } : {}),
+      ...(uniform(windowList) && g._assigned[0].startTime ? { start: g._assigned[0].startTime, end: g._assigned[0].endTime } : {}),
+    };
+  }
+}
+
 // ── create OR reconcile the page ────────────────────────────────────────────
 const pageTemplate = (dms(['raw', 'get', String(PAGE_TEMPLATE_ID)]))?.data;
 if (!pageTemplate) fail(`could not load the Report Page template (row ${PAGE_TEMPLATE_ID}).`);
@@ -979,6 +1028,39 @@ function templateFrameworkSections() {
 }
 
 let pageId, slug, parentRef, graphTrackingIds, sectionDatas, titleBlockTrackingId;
+
+// CORRECTION 2026-08-07 (same day, after Ryan pushed back on maintaining
+// page-scaffolding facts twice across this script and convert_old_reports.py):
+// the "Report Page" template row (`pageTemplate`, already loaded below) already
+// carries the CORRECT `sidebarHideInView: true` and
+// `draft_section_groups: [{name:'default', position:'content', theme:'flush'}]`
+// — this script just never read either field off it when creating a page. The
+// fix below is "copy from `pageTemplate`", NOT a second hardcoded literal (an
+// earlier pass here — since removed — hardcoded a matching-by-coincidence copy
+// of the template's own value, recreating the exact two-sources-of-truth problem
+// this correction exists to avoid). If the template's own value is ever wrong,
+// fix the template row (id `PAGE_TEMPLATE_ID`) — every future page from ANY
+// generator inherits it for free; don't re-hardcode here.
+//
+// `theme:'flush'` — `pages.sectionGroup` styles[1], no padding, hugging the
+// content edge. RRL's own section still carries `group:'sidebar'`
+// (clonedSection, unchanged) to land in the rail: `sectionGroup.jsx`'s
+// `sidebarGroup` lookup (`groupSource.find(g => g?.position === 'sidebar' ||
+// g?.name === 'sidebar')`) falls back to a synthetic `{name:'sidebar',
+// position:'sidebar', theme:'content'}` when the groups array has no explicit
+// sidebar entry — exactly what `converted_reports/snapshot`'s own real
+// `section_groups` (a single content-position entry) relies on. A first, WRONG
+// attempt at this part of the fix (forcing every section's `group` to
+// 'default') broke the rail entirely — RRL rendered as a full-width stacked
+// band instead of the side rail, because a section without `group:'sidebar'`
+// never reaches `sectionGroup.jsx`'s rail render path at all, regardless of
+// what the groups array says.
+//
+// `sidebarHideInView: true` — separate bug, found live 2026-08-07 by Ryan on
+// the PUBLISHED view (not edit mode): without it, `sectionGroup.jsx`'s rail
+// column (`sideNavContainer1`) reserves its width unconditionally even when
+// RRL never renders on a real page (by design — RRL is edit-mode-only), leaving
+// a dead gray gap where content should fill the full width.
 
 function clonedSection(tmplSection, trackingId) {
   return {
@@ -1188,8 +1270,15 @@ if (updateCtx) {
   if (!parentId) fail(`parent page "${parentSlug}" not found — create it first, or set \`parent\` in the spec.`);
 
   slug = spec.slug || `${parentSlug}/${String(spec.title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
-  const pageRes = dms(['page', 'create', '--pattern', PATTERN, '--title', spec.title, '--slug', slug],
-    { index: '0', parent: String(parentId), sidebar: pageTemplate.sidebar || 'left', published: 'draft' });
+  // sidebar/sidebarHideInView/draft_section_groups all copied straight off the
+  // template row — see the correction note above `clonedSection` for why this
+  // must stay a copy, never a re-hardcoded literal.
+  const pageRes = dms(['page', 'create', '--pattern', PATTERN, '--title', spec.title, '--slug', slug], {
+    index: '0', parent: String(parentId), published: 'draft',
+    sidebar: pageTemplate.sidebar || 'left',
+    ...(pageTemplate.sidebarHideInView !== undefined ? { sidebarHideInView: pageTemplate.sidebarHideInView } : {}),
+    ...(pageTemplate.draft_section_groups ? { draft_section_groups: pageTemplate.draft_section_groups } : {}),
+  });
   pageId = pageRes?.id;
   if (!pageId) fail('page create returned no id.');
   console.log(`created page id=${pageId} slug=${slug}`);
@@ -1214,9 +1303,10 @@ if (DO_PUBLISH) {
     ref: `${APP}+${COMPONENT_TYPE}`,
   }));
   const groups = pageTemplate.draft_section_groups
-    || [{ name: 'default', index: 0, theme: 'content', position: 'content' }];
+    || [{ name: 'default', index: 0, theme: 'flush', position: 'content' }]; // defensive only — see note above
   dms(['raw', 'update', String(pageId)], {
     sections: publishedRefs, section_groups: groups, draft_section_groups: groups,
+    sidebarHideInView: pageTemplate.sidebarHideInView,
     published: '', has_changes: false,
   });
   console.log(`published (published section rows: ${publishedRefs.map(r => r.id).join(', ')})`);
