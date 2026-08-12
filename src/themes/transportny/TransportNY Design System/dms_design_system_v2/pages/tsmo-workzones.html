@@ -29,28 +29,32 @@
 
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
-    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
-      <div class="flex flex-1 items-start">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
 
         <!-- ════════ SIDENAV · TSMO (Work Zones active) ════════ -->
-        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
-          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
-            <a href="tsmo-congestion.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
-              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
-              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">TSMO</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">TransportNY · operations</div></div>
-            </a>
-            <div class="flex-1 py-2 overflow-y-auto">
-              <div class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Dashboards</div>
-              <a href="tsmo-congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Congestion</span></a>
-              <a href="tsmo-reliability.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Reliability</span></a>
-              <a href="tsmo-incidents.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Incidents</span></a>
-              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[13px]">Work Zones</span></a>
-              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Explorers</div>
-              <a href="tsmo-incident-search.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Incident Search</span></a>
-              <a href="tsmo-corridor.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Corridor View</span></a>
-              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Program</div>
-              <a href="tsmo-about.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">About TSMO</span></a>
-              <a href="tsmo-methodology.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Data &amp; Methodology</span></a>
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="tsmo-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="TSMO"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">TSMO</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+            <div class="flex-1 py-4 overflow-y-auto">
+              <div class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Dashboards</div>
+              <a href="tsmo-congestion.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><span class="flex-1">Congestion</span></a>
+              <a href="tsmo-reliability.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><span class="flex-1">Reliability</span></a>
+              <a href="tsmo-incidents.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><span class="flex-1">Incidents</span></a>
+              <a class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><span class="flex-1">Work Zones</span></a>
+              <div class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Explorers</div>
+              <a href="tsmo-incident-search.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><span class="flex-1">Incident Search</span></a>
+              <a href="tsmo-corridor.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><span class="flex-1">Corridor View</span></a>
+              <div class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Program</div>
+              <a href="tsmo-about.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><span class="flex-1">About TSMO</span></a>
+              <a href="tsmo-methodology.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><span class="flex-1">Data &amp; Methodology</span></a>
+            </div>
+            <!-- bottomMenu · QuickLinks (QuickLinks.jsx): Data Sources · Docs · (authed) Report an issue -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
             </div>
             <div class="border-t border-[#2a3545] py-2.5 px-4">
               <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 leading-relaxed">TRANSCOM events · NY-filtered<br/>NPMRDS probe delay attribution</div>
@@ -58,7 +62,7 @@
           </div>
         </aside>
 
-        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
 
           <!-- ═════════ PAGE HEADER ═════════ -->
           <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
@@ -73,12 +77,12 @@
                 <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Work Zones<span class="text-[#CA8A04]">.</span></h1>
                 <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[700px]">Construction is New York's single largest source of attributed delay — 188.6M vehicle-hours since 2018, about twenty-two times the delay attributed to crashes. Unlike a crash, a work zone is known in advance: this page tracks where that delay lands, how long zones run, and how much of it is planned work that can be scheduled around.</p>
               </div>
-              <div class="flex flex-col items-end gap-2 flex-shrink-0">
+              <div class="flex flex-col items-end gap-2 min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="h-8 inline-flex items-center gap-2 rounded-full bg-white border border-zinc-950/15 px-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>events live · delay thru Oct '25</span>
                   <button class="h-8 inline-flex items-center gap-1.5 px-3 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px]"><!-- icon: Export --><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>Export</button>
                 </div>
-                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">source · TRANSCOM multi-state feed, NY-filtered · NPMRDS probe attribution · 1.77M construction events since 2015</div>
+                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 flex flex-wrap justify-end">source · TRANSCOM multi-state feed, NY-filtered · NPMRDS probe attribution · 1.77M construction events since 2015</div>
               </div>
             </div>
           </div>
@@ -334,70 +338,19 @@
             </div>
           </div>
 
-          <!-- ═════════ § 04 · ACTIVE WORK ZONES (operations) ═════════ -->
-          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
-
-              <div class="flex items-center gap-2 mb-5" data-dms-section="active-intro">
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
-                <span class="font-display font-medium text-[16px] text-[#2D3E4C]">What's active right now</span>
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">— live zones, sized by current delay</span>
-              </div>
-
-              <div class="grid grid-cols-12 gap-6">
-
-                <!-- Active WZ map -->
-                <div class="col-span-12 lg:col-span-8" data-dms-section="wz-events-map">
-                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Active work zones</span><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>live · 1,284 active</span></div>
-                    <div class="relative tny-map flex-1 min-h-[380px]">
-                      <!-- decorative --><svg viewBox="0 0 800 380" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
-                        <path d="M 90 300 L 220 280 L 380 250 L 540 230 L 700 240" stroke="#cbd5e1" stroke-width="3" fill="none"/>
-                        <path d="M 620 60 L 640 160 L 660 260 L 690 330" stroke="#cbd5e1" stroke-width="3" fill="none"/>
-                        <path d="M 240 60 L 300 170 L 380 250" stroke="#cbd5e1" stroke-width="2.5" fill="none"/>
-                        <path d="M 380 250 L 480 300 L 620 330" stroke="#cbd5e1" stroke-width="2.5" fill="none"/>
-                        <path d="M 220 280 L 380 250" stroke="#D6453B" stroke-width="5" fill="none" opacity="0.85"/>
-                        <path d="M 640 160 L 660 260" stroke="#D6453B" stroke-width="5" fill="none" opacity="0.85"/>
-                        <path d="M 480 300 L 620 330" stroke="#E8843F" stroke-width="4" fill="none" opacity="0.85"/>
-                        <path d="M 90 300 L 220 280" stroke="#E5A646" stroke-width="4" fill="none" opacity="0.85"/>
-                        <circle cx="300" cy="265" r="6" fill="#D6453B"/><circle cx="650" cy="210" r="6" fill="#D6453B"/><circle cx="550" cy="315" r="5" fill="#E8843F"/><circle cx="155" cy="290" r="5" fill="#E5A646"/><circle cx="270" cy="115" r="5" fill="#E5A646"/>
-                      </svg>
-                      <div class="absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-2 border border-zinc-950/10">
-                        <div class="font-display uppercase text-[10.5px] tracking-wide text-slate-600 mb-1">WZ delay · current month</div>
-                        <div class="space-y-0.5 font-mono text-[10px]">
-                          <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#D6453B"></span>&gt; 100k vh</div>
-                          <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#E8843F"></span>25–100k vh</div>
-                          <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#E5A646"></span>&lt; 25k vh</div>
-                        </div>
-                      </div>
-                      <div class="absolute top-2 right-2 rounded-[6px] bg-white shadow-md px-2 py-1 border border-zinc-950/10 font-mono text-[10px] text-slate-600">statewide · zoom to region</div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Live companion / Smart Work Zone roadmap -->
-                <div class="col-span-12 lg:col-span-4" data-dms-section="wz-live-companion">
-                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Right now</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">statewide</span></div>
-                    <div class="p-5 flex-1 flex flex-col">
-                      <div class="divide-y divide-zinc-950/05">
-                        <div class="flex items-end justify-between pb-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Active zones</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-[#0F1722]">1,284</span></div>
-                        <div class="flex items-end justify-between py-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Lane-blocking now</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-amber-700">217</span></div>
-                        <div class="flex items-end justify-between pt-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Biggest active</span><span class="font-mono text-[12px] tabular-nums text-[#0F1722] text-right leading-tight">I-95 Cross&nbsp;Bronx<br/><span class="text-slate-500">~9.4k vh / day</span></span></div>
-                      </div>
-                      <div class="mt-auto pt-4">
-                        <div class="rounded-[6px] border border-dashed border-zinc-950/15 bg-slate-50/60 p-3">
-                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">// roadmap</div>
-                          <p class="font-proxima text-[11.5px] text-slate-500 leading-[1.5]"><span class="font-medium text-slate-600">Smart Work Zones.</span> Live queue-warning &amp; sensor feeds would let this panel show real-time queue length and back-of-queue location per zone — a planned TSMO integration.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
+          <!-- ═════════ § 04 · ACTIVE WORK ZONES — REMOVED 2026-07-28 (ticket #180) ═════════
+               Removed from the live page and from this mockup on product fit, not feasibility.
+               Two things were missing here and only one was ever buildable:
+                 · the MAP was buildable — transcom_event_tmc (view 2799) is tile-served at SRID 4326
+                   and a date-scoped server-side filter measures 39KB (z7) / 113KB (z10), vs 28.6MB /
+                   62MB for a category-only filter.
+                 · the "Right now" LIVE COUNTS were not — they need Smart Work Zones queue/sensor
+                   feeds that exist in no source here.
+               But this dashboard is historical delay attribution (Year filter, delay by year/region/
+               duration, attribution thru 2025), so "what is active right now" is a live-operations
+               question it is not built to answer — and the map could only be scoped to a date the
+               rest of the page does not cover. Measurements preserved on ticket #180.
+          -->
 
           <!-- ═════════ METHOD NOTE ═════════ -->
           <div class="w-full bg-[#ECEEF2] pb-10 pt-8" data-dms-group="content">

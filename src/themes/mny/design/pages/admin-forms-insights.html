@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Admin — Plan Data, insight view (Forms redesign · alt)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-ora': '#EA8954', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  ADMIN PANEL — FORMS HUB REDESIGN, ALTERNATIVE B: THE INSIGHT VIEW
+  Second take on live page 1336681 ("Forms", /admin/forms), pattern 566466.
+  Sibling: admin-forms.html (alternative A, the task/verb view).
+
+  CARD ANATOMY
+    · dataset name · 1–2 sentence description · four measured metrics · one button.
+
+  ==================================================================================
+  METRIC SELECTION RULE (revision 3, 2026-08-06) — READ BEFORE ADDING A METRIC
+  ==================================================================================
+  Every metric must still be worth reading in YEAR FIVE of the plan cycle.
+  Revision 2 failed this: "# of jurisdictions with none", "% of statewide", raw statewide
+  totals and "0 with county priority" are ONBOARDING metrics — they measure the one-time setup,
+  go to zero (or to a constant) once a county finishes, and are dead weight from then on.
+
+  The three families that survive, and what they look like here:
+    1. RECENCY   — when was this last touched? Never stops mattering.
+                   → Participation "meetings this year".
+    2. MIX       — the distribution across a status/class/role/type. Moves as work happens.
+                   → Actions progress mix; HoC likelihood profile; Roles composition; dam hazard
+                     classes; what the capability catalog is made of.
+    3. RATE      — a normalised ratio that a bigger county and a smaller one can both read.
+                   → % complete, per-jurisdiction averages, meeting hours.
+  Deliberately NOT on the page: share-of-statewide, "jurisdictions with none", "records in
+  county" as a bare fill count, "0 with county priority".
+
+  REVISION 4 (2026-08-06) — six targeted swaps requested after review:
+    Actions       "underway now" relabelled → "in progress" (same measured value, 1).
+    HoC           "24% concern rate" → "12 low likelihood", completing the likelihood tiers.
+    Participation "8 in prior years" → "45 hours of meetings" (summed from the duration column).
+    Roles         "12 required stakeholders" → "5 floodplain administrators". The reviewer
+                  couldn't tell what required_stakeholder meant; a named role is self-evident.
+    Capabilities  all three verification metrics dropped — "verified" was not interpretable in
+                  this context — and replaced with what the catalog is MADE OF. Its currency bar
+                  went with them; the card now has no bar, like Participation and Roles.
+    Dams          "15% above low hazard" → "247 class A — low hazard".
+
+  Card order is operational weight for a county planner (Actions first, reference data last) —
+  NOT "thinnest data first", which was itself an onboarding ordering. Left borders are uniform
+  for the same reason: with no status badge and no urgency ordering, a coloured border would
+  imply a status judgement the metrics no longer make.
+
+  SCOPE: Sullivan County (geoid 36105), the specimen county used across the rest of this design
+  system (pages/county-actions/*).
+
+  ==================================================================================
+  HOW THE NUMBERS WERE OBTAINED — read before changing any figure
+  ==================================================================================
+  Measured live 2026-08-06 against dmsserver.availabs.org via
+      dms.data.{app}+{source}|{view}:data .options.{JSON key}.length
+  County filters are NOT uniform across sources:
+      Hazards of Concern  geoid_county = 36105   -> 374   (view 1473471)
+      High Hazard Dams    geoid        = 36105   -> 306   (view 1459528)
+      Roles               county       = Sullivan->  79   (view 1473296)
+      Participation       county       = Sullivan->  29   (view 1473469)
+      Actions             geoid_juris  = 36105   ->  61   (view 1074456) = the COUNTY's own
+      Capabilities        (statewide catalog)    -> 649   (view 1172519)
+
+  MIX breakdowns — one `filter` + `length` query per option value:
+      Actions  action_status   Proposed–Not Started 35 · Completed 18 · In-Progress 1 ·
+                               Discontinued 1  (= 55 of 61; 6 carry no matching status)
+      HoC      hazard_of_concern  Yes 90 · Not Reported 284
+      HoC      likelihood         High 52 · Medium 26 · Low 12  (= exactly the 90 concerns)
+      Roles    hm_representative  Yes 35 · No 44
+      Roles    role (52-option select, 32 of 79 matched an option):
+                               Mayor/CEO 7 · Elected Official 7 · Highway Superintendent 7 ·
+                               Floodplain Administrator 5 · NFIP Coordinator 4 · Public Works 2
+      Dams     hazard_code        A 247 · B 33 · C 14   (= 294 of 306; 12 uncoded)
+
+  CAPABILITY CATALOG COMPOSITION (statewide, 649). The useful columns here are `checkbox` type
+  with NO option list — the encoding is a lowercase 'x'. Once you know that they all count:
+      administrative_technical 243 · education_outreach 153 · financial 148 · flooding 136 ·
+      environmental_protection 120 · climate_adaptation 104 · coastal_hazards 78 ·
+      extreme_heat 56 · drought 32 · grant 28 · discontinued 27 · planning 20 · earthquake 15
+  These overlap (one capability can be several), so they must NOT be stacked into a bar — which
+  is why this card has no proportional bar.
+
+  PARTICIPATION DURATION — `duration` is a NUMBER column, and sums can't be read back (see the
+  withheld-values note below). Counted per distinct value instead and multiplied out:
+      0.5h × 8  +  1h × 1  +  2h × 20  =  45 hours, across all 29 of 29 meetings.
+  Re-derive this way if the meeting count changes; it is not a live sum.
+
+  RECENCY — the options path DOES support `gte`/`lt` range operators (verified with a
+  discriminating sweep: participation `date` gte 2025/2026/2030 returned 29/21/0):
+      Participation meetings dated on/after 2026-01-01  21 of 29   (today is 2026-08-07)
+
+  ⚠ RECENCY IS NOT SAFE ON EVERY DATE COLUMN. These are TEXT columns compared as strings, so a
+  column holding mixed formats gives nonsense. Actions `action_status_date` gte '2030-01-01'
+  returns 48 of 61 — US-style values like "9/15/2024" sort above "2030" because '9' > '2'.
+  Any date metric must be sanity-swept (gte 2000 / 2030) before it is trusted; there is
+  deliberately NO recency metric on the Actions card for exactly this reason.
+
+  TWO ROUTES THAT DO NOT WORK — don't re-try:
+   1. ROW VALUES ARE WITHHELD. `['id','data']` (or named columns) under .options.{key}.byIndex
+      returns atoms with no value for every dataset here. `length` works, contents do not — so
+      no client-side profiling, and every breakdown must be a counted query against a known
+      value. The CLI's own `dataset dump`/`query` use this path and are affected too.
+   2. `groupBy` LENGTHS ARE NOT DISTINCT-COUNTS. groupBy on Actions `jurisdiction` returned 61
+      for 61 rows that are all one jurisdiction. Nothing here uses a groupBy length.
+   3. No `like` operator (all probes returned 0), so a county-wide Actions rollup can't be done
+      by prefix-matching geoid_juris — hence the countywide 475 / 23 jurisdictions come from the
+      established repo values in design/README.md + pages/county-actions/.
+
+  Ledger: planning/mitigateny/tasks/current/mny-admin-forms-hub-redesign.md
+-->
+
+<!-- ================================================================
+     TOPNAV — site chrome (fixed floating)
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 border-b-2 border-mny-y700 h-full flex items-center">Plan Data</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">Plan Status</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">Site Management</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">Help</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-1">
+          <div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <!-- icon: User -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-16">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- ========================================================
+             SECTION — PAGE HEADER (lexical, col-12)
+             ======================================================== -->
+        <div data-dms="section" data-name="page-header" class="col-span-12 pb-5">
+          <div class="flex flex-wrap items-end justify-between gap-4 pb-5 border-b border-mny-100">
+            <div>
+              <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
+                <a href="admin-home.html" class="hover:text-mny-700">Admin Panel</a>
+                <span class="text-mny-200">/</span>
+                <span class="text-mny-700">Plan Data</span>
+              </div>
+              <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1] tracking-[-0.05em] mt-1.5">Your Plan Data</h1>
+              <p class="font-proxima text-[16px] text-mny-700 leading-[140%] mt-2 max-w-[660px]">
+                The datasets your plan is built from, and where each one stands for your county today —
+                how work is progressing, who is at the table, and how the risk picture breaks down.
+              </p>
+            </div>
+
+            <div class="flex flex-col items-end">
+              <button class="flex items-center gap-2 px-4 py-2 bg-white border border-mny-100 rounded-full mny-shadow-sm hover:border-mny-200 transition-colors">
+                <!-- icon: MapPin -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                <span class="font-proxima text-[14px] font-[600] text-mny-900">Sullivan County</span>
+                <!-- icon: ChevronDown -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — DATASET CARDS (Card, cardsGridSize 2, col-12)
+             Metrics are recency / mix / rate only — see the metric
+             selection rule in the page header comment.
+             ======================================================== -->
+        <div data-dms="section" data-name="dataset-cards" class="col-span-12">
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+            <!-- 1 · ACTIONS ------------------------------------------- -->
+            <div class="flex flex-col rounded-[12px] border border-mny-100 bg-white mny-shadow-sm overflow-hidden">
+              <div class="px-5 pt-4 pb-4 flex-1">
+                <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05]">Actions</h3>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[145%] mt-1.5">
+                  The mitigation projects your jurisdictions intend to carry out — problem, solution, lead
+                  agency, cost range, hazard addressed and current status. The figures below cover the
+                  actions the county itself leads.
+                </p>
+
+                <div class="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-mny-100">
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">61</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">county-led actions</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">35</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">not yet started</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">1</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">in progress</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-grn font-[500] leading-[1] tabular-nums">18</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">completed</p>
+                  </div>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-mny-100">
+                  <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide">Progress</p>
+                  <div class="mt-2 flex h-[8px] rounded-full overflow-hidden bg-mny-50">
+                    <div class="bg-mny-grn" style="width:29.5%" title="Completed: 18"></div>
+                    <div class="bg-mny-400" style="width:1.6%" title="In progress: 1"></div>
+                    <div class="bg-mny-200" style="width:57.4%" title="Proposed — not started: 35"></div>
+                    <div class="bg-mny-y500" style="width:1.6%" title="Discontinued: 1"></div>
+                    <div class="bg-mny-100" style="width:9.9%" title="No status recorded: 6"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t border-mny-100 bg-mny-50/60">
+                <a href="county-actions/workspace.html" class="inline-flex items-center gap-2 px-5 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors">
+                  Open actions
+                  <!-- icon: ArrowRight -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- 2 · HAZARDS OF CONCERN -------------------------------- -->
+            <div class="flex flex-col rounded-[12px] border border-mny-100 bg-white mny-shadow-sm overflow-hidden">
+              <div class="px-5 pt-4 pb-4 flex-1">
+                <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05]">Hazards of Concern</h3>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[145%] mt-1.5">
+                  One row per jurisdiction per hazard, recording whether it's a local concern, how likely it
+                  is, and what's vulnerable. Your risk assessment chapter is written from this grid.
+                </p>
+
+                <div class="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-mny-100">
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">90</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">flagged a concern</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-red font-[500] leading-[1] tabular-nums">52</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">high likelihood</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-ora font-[500] leading-[1] tabular-nums">26</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">medium likelihood</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-grn font-[500] leading-[1] tabular-nums">12</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">low likelihood</p>
+                  </div>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-mny-100">
+                  <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide">Likelihood profile</p>
+                  <div class="mt-2 flex h-[8px] rounded-full overflow-hidden bg-mny-50">
+                    <div class="bg-mny-red" style="width:57.8%" title="High: 52"></div>
+                    <div class="bg-mny-ora" style="width:28.9%" title="Medium: 26"></div>
+                    <div class="bg-mny-grn" style="width:13.3%" title="Low: 12"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t border-mny-100 bg-mny-50/60">
+                <a href="#" class="inline-flex items-center gap-2 px-5 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors">
+                  Open hazards of concern
+                  <!-- icon: ArrowRight -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- 3 · PARTICIPATION ------------------------------------- -->
+            <div class="flex flex-col rounded-[12px] border border-mny-100 bg-white mny-shadow-sm overflow-hidden">
+              <div class="px-5 pt-4 pb-4 flex-1">
+                <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05]">Participation</h3>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[145%] mt-1.5">
+                  Every planning meeting, workshop and public comment period, with its format, invitation
+                  method and attendance. This is the evidence trail FEMA asks for at review.
+                </p>
+
+                <div class="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-mny-100">
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">29</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">logged all-time</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">21</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">meetings this year</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">1.3</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">per jurisdiction</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">45</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">hours of meetings</p>
+                  </div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t border-mny-100 bg-mny-50/60">
+                <a href="#" class="inline-flex items-center gap-2 px-5 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors">
+                  Open participation
+                  <!-- icon: ArrowRight -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- 4 · ROLES --------------------------------------------- -->
+            <div class="flex flex-col rounded-[12px] border border-mny-100 bg-white mny-shadow-sm overflow-hidden">
+              <div class="px-5 pt-4 pb-4 flex-1">
+                <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05]">Roles</h3>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[145%] mt-1.5">
+                  Planning committee members and points of contact for each jurisdiction — name, agency, title,
+                  and the role they hold on the plan.
+                </p>
+
+                <div class="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-mny-100">
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">79</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">people on record</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">35</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">mitigation reps</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">5</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">floodplain administrators</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">4</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">NFIP coordinators</p>
+                  </div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t border-mny-100 bg-mny-50/60">
+                <a href="#" class="inline-flex items-center gap-2 px-5 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors">
+                  Open roles
+                  <!-- icon: ArrowRight -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- 5 · CAPABILITIES -------------------------------------- -->
+            <div class="flex flex-col rounded-[12px] border border-mny-100 bg-white mny-shadow-sm overflow-hidden">
+              <div class="px-5 pt-4 pb-4 flex-1">
+                <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05]">Capabilities</h3>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[145%] mt-1.5">
+                  The statewide catalog of programs, funding sources and technical assistance your jurisdictions
+                  can draw on. FEMA's capability assessment chapter is written from this.
+                </p>
+
+                <div class="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-mny-100">
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">649</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">in the catalog</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">243</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">technical assistance</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">148</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">financial support</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">153</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">education &amp; outreach</p>
+                  </div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t border-mny-100 bg-mny-50/60">
+                <a href="#" class="inline-flex items-center gap-2 px-5 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors">
+                  Open capabilities
+                  <!-- icon: ArrowRight -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- 6 · HIGH HAZARD DAMS ---------------------------------- -->
+            <div class="flex flex-col rounded-[12px] border border-mny-100 bg-white mny-shadow-sm overflow-hidden">
+              <div class="px-5 pt-4 pb-4 flex-1">
+                <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05]">High Hazard Dams</h3>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[145%] mt-1.5">
+                  The state's dam inventory for your county — hazard class, condition rating, owner, height and
+                  storage. Maintained by the state; you add local context to the ones that matter.
+                </p>
+
+                <div class="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-mny-100">
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">306</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">dams in county</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-red font-[500] leading-[1] tabular-nums">14</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">class C — high hazard</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-ora font-[500] leading-[1] tabular-nums">33</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">class B — intermediate</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[26px] text-mny-900 font-[500] leading-[1] tabular-nums">247</p>
+                    <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5 leading-[130%]">class A — low hazard</p>
+                  </div>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-mny-100">
+                  <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide">Hazard classification</p>
+                  <div class="mt-2 flex h-[8px] rounded-full overflow-hidden bg-mny-50">
+                    <div class="bg-mny-200" style="width:80.7%" title="Class A — low hazard: 247"></div>
+                    <div class="bg-mny-ora" style="width:10.8%" title="Class B — intermediate: 33"></div>
+                    <div class="bg-mny-red" style="width:4.6%" title="Class C — high hazard: 14"></div>
+                    <div class="bg-mny-100" style="width:3.9%" title="Uncoded: 12"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t border-mny-100 bg-mny-50/60">
+                <a href="#" class="inline-flex items-center gap-2 px-5 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors">
+                  Open high hazard dams
+                  <!-- icon: ArrowRight -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FOOTER LINK BLOCK
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto px-4 xl:px-[64px] pb-10">
+  <div class="border-t border-mny-200 pt-4 flex flex-wrap gap-x-6 gap-y-1 font-proxima text-[12px] text-mny-400">
+    <span class="font-[700] text-mny-700 uppercase tracking-wide">Admin Panel:</span>
+    <a href="admin-forms-insights.html" class="text-mny-y700 font-[600]">Plan Data · insight view</a>
+    <a href="admin-forms.html" class="hover:text-mny-700">Plan Data · task view</a>
+    <a href="admin-home.html" class="hover:text-mny-700">Panel Home</a>
+    <a href="plan-status-dashboard.html" class="hover:text-mny-700">Plan Status</a>
+    <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">Reports:</span>
+    <a href="../reports/admin-panel-information-architecture.html" class="hover:text-mny-700">Information Architecture</a>
+    <a href="../reports/admin-workflow-current-state.html" class="hover:text-mny-700">Current State</a>
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

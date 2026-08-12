@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — County Actions Dashboard (Sullivan)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../../theme/index.css.additions">
+  <!-- MapLibre — the Map primitive. This page must be served over HTTP
+       (python3 -m http.server in design/), not opened as file://, because it
+       fetches the boundary + point assets. -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.js"></script>
+  <style>
+    .mny-donut text { fill: #2D3E4C; }
+    .maplibregl-popup-content { border-radius: 10px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(45,62,76,.16); }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================
+     TOPNAV — site chrome (fixed floating)
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="../home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Local Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Plan</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 cursor-pointer border-b-2 border-mny-y700 h-full flex items-center">Track Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-1">
+          <div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <!-- icon: User -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-16">
+
+  <!-- ==============================================================
+       LAYOUTGROUP "content" — ONE boxed group holds every section on this
+       page. No section sits on the topo canvas: the identity band and the
+       status strip are inside the white surface with everything else.
+       ============================================================== -->
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+      <div class="grid grid-cols-12 gap-0">
+
+      <!-- SECTION — county identity (lexical, col-12) -->
+      <div data-dms="section" data-name="county-identity" class="col-span-12 pb-5">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
+              <a href="#" class="hover:text-mny-700">Track Progress</a>
+              <span class="text-mny-200">/</span>
+              <span class="text-mny-700">Actions Dashboard</span>
+            </div>
+            <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1] tracking-[-0.05em] mt-1.5">Sullivan County Actions</h1>
+            <p class="font-proxima text-[16px] text-mny-700 leading-[140%] mt-2 max-w-[560px]">
+              Every mitigation action in the county plan — where each one stands, and what still needs
+              your attention before the next plan review.
+            </p>
+          </div>
+
+          <!-- ── SIGNED-IN ONLY ──────────────────────────────────────────────
+               Both routes lead to editing surfaces, so an anonymous visitor never
+               sees them: the dashboard itself is public, the work is not. The county
+               chip that used to sit here is gone — the H1 already names the county,
+               and a FIPS code beside it was reference data, not a control.
+
+               In the live build this is NOT a CSS state. Two layers:
+                 · the destination pages carry `authPermissions`
+                   ({"users":{...},"groups":{"public":[]}}) so the routes are closed
+                   even if someone types the URL — this is already true of
+                   jurisdictions / workspace (see the v2 build task);
+                 · these entry points live in their OWN section so the section can be
+                   hidden for anonymous visitors, rather than rendering a button that
+                   dead-ends at a permission error.
+               The mockup shows the signed-in state (note the user chip in the TopNav);
+               the lock marks the block as gated so a reviewer can see which chrome
+               disappears when signed out.
+               ──────────────────────────────────────────────────────────────── -->
+          <div data-auth="signed-in" class="flex flex-wrap items-center justify-end gap-3 flex-1">
+            <span class="flex items-center gap-1.5 font-proxima text-[11px] font-[600] uppercase tracking-wider text-mny-400" title="Visible to signed-in county staff only">
+              <!-- icon: Locked -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+              County staff
+            </span>
+            <!-- border-transparent, not no-border: the outlined Prioritize button beside
+                 this one is 2px taller without it, and the pair sits on one row. -->
+            <a href="jurisdictions.html" class="flex items-center gap-2 px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] border border-transparent text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
+              <!-- icon: Edit -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
+              Edit Actions
+            </a>
+            <!-- The county-priority route. Outlined rather than a second amber pill: two
+                 filled CTAs side by side read as one action split in half, and Edit Actions
+                 is the one that opens the jurisdiction chooser. -->
+            <a href="workspace.html" class="flex items-center gap-2 px-5 py-2.5 bg-mny-50 border border-mny-200 hover:border-mny-400 text-mny-700 hover:text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
+              <!-- icon: List -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"/></svg>
+              Prioritize Actions
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================================
+           SECTION — STATUS STRIP (Card, col-12)
+           Five linked cells over one stacked meter. The meter IS the
+           distribution — no separate pie. Each cell is a filter link.
+           ========================================================== -->
+      <div data-dms="section" data-name="status-strip" class="col-span-12 pb-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+
+          <a href="dashboard.html" class="group bg-white rounded-[12px] mny-shadow-sm p-4 border border-mny-200 border-l-4 border-l-mny-900 ring-1 ring-mny-900/15 flex flex-col justify-between">
+            <p class="font-proxima text-[11px] text-mny-900 font-[700] uppercase leading-[140%] tracking-wide">All actions</p>
+            <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] mt-1 tabular-nums">475</p>
+            <p class="font-proxima text-[11px] text-mny-700 font-[600] mt-1 flex items-center gap-1">
+              <!-- icon: CheckmarkFilled -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
+              Showing
+            </p>
+          </a>
+
+          <a href="?implementation_status=Proposed" class="group bg-mny-50 rounded-[12px] p-4 border border-mny-100 border-l-4 border-l-mny-200 hover:border-mny-400 transition-all flex flex-col justify-between">
+            <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">Proposed</p>
+            <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] mt-1 tabular-nums">391</p>
+            <p class="font-proxima text-[11px] text-mny-400 mt-1 group-hover:text-mny-700">82% of actions</p>
+          </a>
+
+          <a href="?implementation_status=In-Progress" class="group bg-mny-50 rounded-[12px] p-4 border border-mny-100 border-l-4 border-l-mny-400 hover:border-mny-400 transition-all flex flex-col justify-between">
+            <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">In-Progress</p>
+            <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] mt-1 tabular-nums">23</p>
+            <p class="font-proxima text-[11px] text-mny-400 mt-1 group-hover:text-mny-700">5% of actions</p>
+          </a>
+
+          <a href="?implementation_status=Completed" class="group bg-mny-50 rounded-[12px] p-4 border border-mny-100 border-l-4 border-l-mny-grn hover:border-mny-400 transition-all flex flex-col justify-between">
+            <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">Completed</p>
+            <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] mt-1 tabular-nums">41</p>
+            <p class="font-proxima text-[11px] text-mny-400 mt-1 group-hover:text-mny-700">9% of actions</p>
+          </a>
+
+          <a href="?implementation_status=other" class="group bg-mny-50 rounded-[12px] p-4 border border-mny-100 border-l-4 border-l-mny-y700 hover:border-mny-400 transition-all flex flex-col justify-between">
+            <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">Discontinued / not reported</p>
+            <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] mt-1 tabular-nums">20</p>
+            <p class="font-proxima text-[11px] text-mny-400 mt-1 group-hover:text-mny-700">4 discontinued · 16 blank</p>
+          </a>
+
+        </div>
+
+        <!-- stacked meter — proportional segments over the 475 total -->
+        <div class="mt-3 flex h-[8px] rounded-full overflow-hidden bg-white border border-mny-100">
+          <div class="bg-mny-200" style="width:82.32%" title="Proposed — 391"></div>
+          <div class="bg-mny-400" style="width:4.84%" title="In-Progress — 23"></div>
+          <div class="bg-mny-grn" style="width:8.63%" title="Completed — 41"></div>
+          <div class="bg-mny-y700" style="width:4.21%" title="Discontinued / not reported — 20"></div>
+        </div>
+      </div>
+
+        <!-- ========================================================
+             SECTION — PAGE FILTERS (Filter section, "bar" style, col-12)
+
+             These three controls used to sit in the table's header, where they
+             looked like table controls. Moved here — under the cards, above the
+             map — they read as what they now are: PAGE filters. Everything below
+             reacts to them, map included.
+
+             The live wiring is the standard one (creating-interactive-pages +
+             full-text-search-filter): each control is a viewer-facing leaf with
+             `usePageFilters: true` writing a page variable — `search` (an
+             `operation:'like'` leaf, which is what renders a text box),
+             `geoid_juris`, `implementation_status` — and EVERY data section below
+             carries matching leaves. That last part is the one that bites: there is
+             no "filter the whole page" switch, so the map, both mix charts and the
+             table each need the same leaves, and the search box additionally needs
+             the OR-group of `like` leaves replicated per section. A section without
+             them silently ignores the bar.
+
+             `display.gridSize: 3` renders the three in one row — set it INSIDE the
+             stringified element-data, not as a top-level data.display.
+
+             The status cards above already write `?implementation_status=`, so the
+             Status control and the cards are two views of one page variable and stay
+             in sync for free.
+             ======================================================== -->
+        <div data-dms="section" data-name="page-filters" class="col-span-12 pb-6">
+          <div class="bg-mny-50 rounded-[12px] px-3 py-2.5 border border-mny-100">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 mr-0.5">Filter this page</span>
+
+              <label class="flex items-center gap-2 bg-white rounded-full pl-3 pr-2 py-1.5 border border-mny-200 flex-1 min-w-[230px] max-w-[320px] focus-within:border-mny-400">
+                <!-- icon: Search -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                <input type="text" placeholder="Search 475 actions…" class="w-full font-proxima text-[13px] text-mny-900 placeholder:text-mny-400 outline-none bg-transparent">
+              </label>
+
+              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                <span class="font-proxima text-[13px] text-mny-700">Jurisdiction</span>
+                <span class="font-proxima text-[13px] text-mny-400">All</span>
+                <!-- icon: ChevronDown -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+              </button>
+
+              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                <span class="font-proxima text-[13px] text-mny-700">Status</span>
+                <span class="font-proxima text-[13px] text-mny-400">All</span>
+                <!-- icon: ChevronDown -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+              </button>
+
+              <button class="font-proxima text-[12px] font-[600] text-mny-400 hover:text-mny-900 underline underline-offset-2 px-1">Clear all</button>
+
+              <!-- hidden below lg: it is the least important item in the bar and it is what
+                   wraps to a second row once the controls stop fitting -->
+              <span class="hidden lg:inline ml-auto font-proxima text-[12px] text-mny-400">Map, charts and table all follow these</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- The "Needs your attention" band used to sit here, between the status
+             strip and the map. It moved to jurisdiction-prioritization.html, where
+             the four fields it counts are actually editable — a gap tile that lands
+             somewhere read-only is a dead end. Nothing replaces it: the dashboard
+             reports, and the two hero buttons are the routes into the work. -->
+
+        <!-- ========================================================
+             SECTION — MAP (Map, col-6 · ROW-SPAN 2)
+             County outline + 21 jurisdiction polygons + donut clusters.
+             The borders are the point: every donut sits inside the
+             jurisdiction it belongs to, so a dot reads as "this town's
+             actions", not "a project at this spot".
+
+             Half-width and row-spanning 2, so the two portfolio-mix
+             sections stack in the right half beside it — "where the work
+             is" and "what kind of work" read together instead of the mix
+             falling below the fold. The row-span makes the grid itself
+             match the map's height to the stacked pair (see grid.html's
+             rowspan vocabulary); the map div is flex-1 so it absorbs
+             whatever height that comes to.
+             ======================================================== -->
+        <div data-dms="section" data-name="action-map" class="col-span-12 lg:col-span-6 lg:row-span-2 pb-6 lg:pr-3">
+          <div class="flex flex-col h-full">
+            <div class="mb-3">
+              <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Where the work is</h2>
+              <!-- No counts in this copy. It states the RULE; the map itself states the
+                   state — every number here would go stale the moment an action is added,
+                   moved or mapped, and no author would remember to come back and edit it.
+                   (Same principle the needs-attention tiles were written to, before that
+                   band moved to the jurisdiction page.) The "some actions aren't shown"
+                   caveat is kept, just phrased so it stays true at any count. -->
+              <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-1.5">
+                Actions close together are grouped into one donut — the number on it is how many are
+                in that group, and the ring shows their status mix. Grouping is by
+                <strong class="text-mny-900 font-[600]">proximity, not by jurisdiction</strong>, so a
+                donut can straddle a town line and one town can hold several. Zoom in or click a donut
+                to split it; click a town to open its worklist. Actions with no location recorded
+                aren't on the map.
+              </p>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full" style="background:#C5D7E0;border:1px solid #A9BECC;"></span><span class="font-proxima text-[12px] text-mny-700 font-[600]">Proposed</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full" style="background:#6D96AE;"></span><span class="font-proxima text-[12px] text-mny-700 font-[600]">In-Progress</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full" style="background:#54B99B;"></span><span class="font-proxima text-[12px] text-mny-700 font-[600]">Completed</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full" style="background:#EAAD43;"></span><span class="font-proxima text-[12px] text-mny-700 font-[600]">Other</span></div>
+              </div>
+            </div>
+
+            <div class="relative flex-1 rounded-[12px] overflow-hidden border border-mny-100 mny-shadow-sm">
+              <div id="map" class="w-full h-full min-h-[440px] bg-mny-50"></div>
+              <div id="mapLoading" class="absolute inset-0 flex items-center justify-center bg-mny-50 pointer-events-none transition-opacity duration-500">
+                <span class="font-display text-[14px] text-mny-400 uppercase tracking-wider">Loading Sullivan County&hellip;</span>
+              </div>
+              <!-- jurisdiction readout, populated on hover -->
+              <div id="jurReadout" class="absolute left-3 bottom-3 right-3 bg-white/95 backdrop-blur rounded-[10px] border border-mny-100 mny-shadow-sm px-3 py-2 pointer-events-none opacity-0 transition-opacity duration-150">
+                <p id="jurName" class="font-display text-[14px] font-[500] text-mny-900 uppercase leading-[1]">—</p>
+                <p id="jurCount" class="font-proxima text-[12px] text-mny-700 mt-1">—</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — PORTFOLIO MIX (2 × Card, col-6, stacked in the
+             right half beside the row-spanning map)
+             ======================================================== -->
+        <div data-dms="section" data-name="hazard-mix" class="col-span-12 lg:col-span-6 pb-6 lg:pl-3">
+          <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Hazards addressed</h2>
+          <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5 mb-4">Primary hazard on each action</p>
+          <div class="space-y-2.5">
+            <!-- widths are share-of-max (280), so the longest bar fills the track -->
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600]">Flooding</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-400 h-full rounded-full flex items-center justify-end pr-2" style="width:100%"><span class="font-proxima text-[11px] text-white font-[700] tabular-nums">280</span></div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600]">Most / all hazards</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-400 h-full rounded-full flex items-center justify-end pr-2" style="width:23.2%"><span class="font-proxima text-[11px] text-white font-[700] tabular-nums">65</span></div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600]">Hurricane</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-400 h-full rounded-full flex items-center justify-end pr-2" style="width:22.1%"><span class="font-proxima text-[11px] text-white font-[700] tabular-nums">62</span></div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600]">Snowstorm</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-400 h-full rounded-full flex items-center justify-end pr-2" style="width:5.4%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">15</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600]">Wind</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-400 h-full rounded-full" style="width:2.5%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">7</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600]">Wildfire</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-400 h-full rounded-full" style="width:2.5%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">7</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-400 font-[600]">Drought · Landslide · Lightning · Ice</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-200 h-full rounded-full" style="width:3.2%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">9</span>
+            </div>
+            <div class="flex items-center gap-3 pt-1">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-400 font-[600] italic">Not set</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden border border-dashed border-mny-200"><div class="bg-mny-200 h-full rounded-full" style="width:10.7%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-400 font-[700] tabular-nums">30</span>
+            </div>
+          </div>
+        </div>
+
+        <div data-dms="section" data-name="action-type-mix" class="col-span-12 lg:col-span-6 pb-6 lg:pl-3">
+          <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Mitigation category</h2>
+          <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5 mb-4">Primary action type — 226 unclassified</p>
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600] leading-[120%]">Community infrastructure</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-700 h-full rounded-full flex items-center justify-end pr-2" style="width:36.7%"><span class="font-proxima text-[11px] text-white font-[700] tabular-nums">83</span></div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600] leading-[120%]">Dam rehab / removal</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-700 h-full rounded-full flex items-center justify-end pr-2" style="width:14.6%"><span class="font-proxima text-[11px] text-white font-[700] tabular-nums">33</span></div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600] leading-[120%]">Acquisition / elevation</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-700 h-full rounded-full flex items-center justify-end pr-2" style="width:12.8%"><span class="font-proxima text-[11px] text-white font-[700] tabular-nums">29</span></div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600] leading-[120%]">Power / microgrids</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-700 h-full rounded-full flex items-center justify-end pr-2" style="width:12.4%"><span class="font-proxima text-[11px] text-white font-[700] tabular-nums">28</span></div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600] leading-[120%]">Studies / risk assessment</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-700 h-full rounded-full" style="width:8.8%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">20</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600] leading-[120%]">Codes / ordinance</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-700 h-full rounded-full" style="width:7.1%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">16</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600] leading-[120%]">Education / outreach</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden"><div class="bg-mny-700 h-full rounded-full" style="width:5.8%"></div></div>
+              <span class="w-[28px] font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">13</span>
+            </div>
+            <div class="flex items-center gap-3 pt-1">
+              <span class="w-[150px] shrink-0 text-right font-proxima text-[13px] text-mny-400 font-[600] italic">Not classified</span>
+              <div class="flex-1 bg-mny-50 rounded-full h-[20px] overflow-hidden border border-dashed border-mny-200"><div class="bg-mny-200 h-full rounded-full flex items-center justify-end pr-2" style="width:100%"><span class="font-proxima text-[11px] text-mny-700 font-[700] tabular-nums">226</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — COUNTY ACTIONS TABLE (Spreadsheet, col-12)
+             All 475, searchable. Row → action-view.html
+             ======================================================== -->
+        <div data-dms="section" data-name="actions-table" class="col-span-12">
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3 mb-4">
+            <div>
+              <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">All actions</h2>
+              <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5">Sort any column, or open an action to read it in full</p>
+            </div>
+            <!-- Search / Jurisdiction / Status moved out to the page filter bar under the
+                 cards — they filter the whole page now, not just this table. CSV stays:
+                 it exports what the table is currently showing, so it belongs to the
+                 table, not to the filters. -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mny-200 bg-white hover:border-mny-400 transition-colors">
+                <!-- icon: Download -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-700" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <span class="font-proxima text-[13px] font-[600] text-mny-700">CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- The seven trailing columns are fixed-width, so Action Name is the one that
+               flexes. Below ~1000px that squeezed it to ~126px and the names wrapped to
+               three lines, so the table scrolls inside its own container instead —
+               the same treatment the two worklist tables in this section use. -->
+          <div class="rounded-[12px] border border-mny-100 overflow-hidden">
+            <div class="overflow-x-auto">
+            <table class="w-full border-collapse min-w-[1250px]">
+              <thead>
+                <tr class="bg-mny-50">
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[178px]">
+                    <span class="inline-flex items-center gap-1 cursor-pointer hover:text-mny-900">Jurisdiction
+                      <!-- icon: ArrowsVertical -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 20V4m0 0L4.5 7.5M8 4l3.5 3.5M16 4v16m0 0 3.5-3.5M16 20l-3.5-3.5"/></svg>
+                    </span>
+                  </th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Action Name</th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[150px]">Hazard</th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[132px]">Status</th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[140px]">Cost Range</th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[160px]">Application Readiness</th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[150px]">Project Maturity</th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[112px]">Priority</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer" onclick="location.href='action-view.html?id=1100379'">
+                  <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Delaware (Town)</td>
+                  <td class="px-3 py-3"><a href="action-view.html?id=1100379" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Delaware - Kohlertown Route 52, Culvert Issues</a></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>In-Progress</span></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$50k – $150k</td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer" onclick="location.href='action-view.html?id=1100375'">
+                  <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Fallsburg (Town)</td>
+                  <td class="px-3 py-3"><a href="action-view.html?id=1100375" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Maplewood Ave Flooding/Culvert Issues</a></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$150k – $500k</td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer" onclick="location.href='action-view.html?id=1100333'">
+                  <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Rockland (Town)</td>
+                  <td class="px-3 py-3"><a href="action-view.html?id=1100333" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Rockland - Acquire Generators for Critical Facilities</a></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Most / all</td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$150k – $500k</td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
+                </tr>
+
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer" onclick="location.href='action-view.html?id=1100334'">
+                  <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Jeffersonville (Village)</td>
+                  <td class="px-3 py-3"><a href="action-view.html?id=1100334" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Jeffersonville - Laundry Brook and Callicoon Creek Intersection Flooding</a></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$50k – $150k</td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
+                </tr>
+
+                <!-- a row carrying the real cost-field fault, flagged inline -->
+                <!-- The only row here with no ?id= — this is one of Sullivan's 3 UNMAPPED
+                     actions, so it isn't in assets/mny/data/sullivan_actions.geojson (that
+                     aggregate holds the 472 mapped ones) and the mockup has no id to quote.
+                     It does have one in the source; fill it in when the page is built. -->
+                <tr class="border-b border-mny-50 hover:bg-mny-50/60 cursor-pointer" onclick="location.href='action-view.html'">
+                  <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Bethel (Town)</td>
+                  <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Bethel - Stormwater System Assessment</a></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                  <td class="px-3 py-3">
+                    <span class="inline-flex items-center gap-1 font-proxima text-[12px] text-mny-redk font-[600]" title="A status string is stored in the cost_range field">
+                      <!-- icon: Warning -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+                      Bad value
+                    </span>
+                  </td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
+                </tr>
+
+                <tr class="hover:bg-mny-50/60 cursor-pointer" onclick="location.href='action-view.html?id=1100342'">
+                  <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-mny-900">Sullivan (County)</td>
+                  <td class="px-3 py-3"><a href="action-view.html?id=1100342" class="font-proxima text-[14px] font-[600] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Sullivan County - County Road 164 Mitigation</a></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
+                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 italic">Not set</td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
+                  <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
+                </tr>
+
+              </tbody>
+            </table>
+            </div>
+
+            <!-- pagination — outside the scroll container, so it stays put while the
+                 columns scroll under it -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-mny-50 border-t border-mny-100 px-3 py-2.5">
+              <span class="font-proxima text-[12px] text-mny-400">Showing <span class="font-[700] text-mny-700 tabular-nums">1–6</span> of <span class="font-[700] text-mny-700 tabular-nums">475</span> actions</span>
+              <div class="flex items-center gap-1">
+                <button class="size-7 rounded-md flex items-center justify-center text-mny-200 cursor-not-allowed" aria-label="Previous page" disabled>
+                  <!-- icon: ChevronLeft -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.7 5.3a1 1 0 010 1.4L9.4 10l3.3 3.3a1 1 0 01-1.4 1.4l-4-4a1 1 0 010-1.4l4-4a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
+                </button>
+                <button class="size-7 rounded-md bg-mny-900 text-white font-proxima text-[12px] font-[700] tabular-nums">1</button>
+                <button class="size-7 rounded-md hover:bg-mny-100 text-mny-700 font-proxima text-[12px] font-[600] tabular-nums">2</button>
+                <button class="size-7 rounded-md hover:bg-mny-100 text-mny-700 font-proxima text-[12px] font-[600] tabular-nums">3</button>
+                <span class="px-1 font-proxima text-[12px] text-mny-400">…</span>
+                <button class="size-7 rounded-md hover:bg-mny-100 text-mny-700 font-proxima text-[12px] font-[600] tabular-nums">80</button>
+                <button class="size-7 rounded-md flex items-center justify-center text-mny-700 hover:bg-mny-100" aria-label="Next page">
+                  <!-- icon: ChevronRight -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — PAGE INDEX (design-system scaffolding, col-12)
+             Reviewer navigation, not product content — it never ships
+             on a live DMS page. Kept inside the content group so no
+             section sits on the topo canvas.
+             ======================================================== -->
+        <div data-dms="section" data-name="page-index" class="col-span-12 pt-6">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-mny-200 pt-4">
+            <span class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-400">County Actions Workflow</span>
+            <span class="font-proxima text-[13px] font-[700] text-mny-y700">1 · Dashboard</span>
+            <a href="jurisdictions.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">2 · Jurisdictions</a>
+            <a href="jurisdiction-prioritization.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Jurisdiction Prioritization</a>
+            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · County Workspace</a>
+            <a href="action-view.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">5 · Action View</a>
+            <a href="action-edit.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">6 · Action Edit</a>
+            <span class="ml-auto font-proxima text-[12px] text-mny-400">Sullivan County · 475 actions · data as of 2025-02-25</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- ================================================================
+     FLOATING DESIGN-SYSTEM NAV WIDGET
+     ================================================================ -->
+<script src="../../ds-nav.js"></script>
+
+<!-- ================================================================
+     MAP — county + jurisdiction borders under donut clusters by status.
+     Donut code adapted from maplibre.org "display HTML clusters with
+     custom properties", same as actions-location-overview.html so the
+     two pages stay comparable.
+     ================================================================ -->
+<script>
+(function () {
+  const colors = ['#C5D7E0', '#6D96AE', '#54B99B', '#EAAD43'];
+  const STATUS_LABELS = ['Proposed', 'In-Progress', 'Completed', 'Other'];
+
+  // Sullivan's bbox, read off sullivan_boundaries.geojson. The map frames the
+  // county with fitBounds rather than a hardcoded zoom, so the half-width column
+  // (and any breakpoint that changes its width) still shows the whole county.
+  const COUNTY_BOUNDS = [[-75.1447, 41.4215], [-74.3643, 42.0164]];
+
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    bounds: COUNTY_BOUNDS,
+    fitBoundsOptions: { padding: 20 },
+    minZoom: 7,
+    maxZoom: 16,
+  });
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+  map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+
+  // The container is a flex child of a row-spanning grid cell, so its height is
+  // decided by the sibling column. Watch it directly — MapLibre only listens to
+  // window resize, which misses a reflow that changes the cell height alone.
+  let framed = false;
+  new ResizeObserver(() => {
+    map.resize();
+    if (!framed) { map.fitBounds(COUNTY_BOUNDS, { padding: 20, animate: false }); framed = true; }
+  }).observe(map.getContainer());
+
+  const readout = document.getElementById('jurReadout');
+  const jurName = document.getElementById('jurName');
+  const jurCount = document.getElementById('jurCount');
+
+  map.on('load', () => {
+    // ── boundaries, drawn under everything ───────────────────────────────
+    map.addSource('bounds', { type: 'geojson', data: '../../assets/mny/data/sullivan_boundaries.geojson' });
+
+    // jurisdiction fill — tinted by action count so the map reads as a
+    // choropleth even before the donuts resolve
+    map.addLayer({
+      id: 'juris-fill',
+      type: 'fill',
+      source: 'bounds',
+      filter: ['==', ['get', 'kind'], 'juris'],
+      paint: {
+        'fill-color': [
+          'interpolate', ['linear'], ['get', 'n'],
+          0, '#FFFFFF', 1, '#F3F8F9', 12, '#E0EBF0', 20, '#C5D7E0', 30, '#A9BECC',
+        ],
+        'fill-opacity': 0.75,
+      },
+    });
+    map.addLayer({
+      id: 'juris-fill-hover',
+      type: 'fill',
+      source: 'bounds',
+      filter: ['==', ['get', 'name'], ''],
+      paint: { 'fill-color': '#EAAD43', 'fill-opacity': 0.25 },
+    });
+    map.addLayer({
+      id: 'juris-line',
+      type: 'line',
+      source: 'bounds',
+      filter: ['==', ['get', 'kind'], 'juris'],
+      paint: { 'line-color': '#6D96AE', 'line-width': 1, 'line-opacity': 0.9 },
+    });
+    // county outline last of the boundary layers so it reads on top
+    map.addLayer({
+      id: 'county-line',
+      type: 'line',
+      source: 'bounds',
+      filter: ['==', ['get', 'kind'], 'county'],
+      paint: { 'line-color': '#2D3E4C', 'line-width': 2.5 },
+    });
+
+    // ── the actions ──────────────────────────────────────────────────────
+    map.addSource('actions', {
+      type: 'geojson',
+      data: '../../assets/mny/data/sullivan_actions.geojson',
+      cluster: true,
+      clusterRadius: 30,
+      clusterMaxZoom: 14,
+      clusterProperties: {
+        p0: ['+', ['case', ['==', ['get', 's'], 0], 1, 0]],
+        p1: ['+', ['case', ['==', ['get', 's'], 1], 1, 0]],
+        p2: ['+', ['case', ['==', ['get', 's'], 2], 1, 0]],
+        p3: ['+', ['case', ['==', ['get', 's'], 3], 1, 0]],
+      },
+    });
+
+    map.addLayer({
+      id: 'unclustered',
+      type: 'circle',
+      source: 'actions',
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-color': ['match', ['get', 's'], 0, '#C5D7E0', 1, '#6D96AE', 2, '#54B99B', 3, '#EAAD43', '#9AB'],
+        'circle-radius': 5,
+        'circle-stroke-width': 1.5,
+        'circle-stroke-color': '#ffffff',
+      },
+    });
+
+    // ── jurisdiction hover → readout; click → its worklist ───────────────
+    map.on('mousemove', 'juris-fill', (e) => {
+      const p = e.features[0].properties;
+      map.getCanvas().style.cursor = 'pointer';
+      map.setFilter('juris-fill-hover', ['==', ['get', 'name'], p.name]);
+      jurName.textContent = p.name;
+      jurCount.innerHTML = p.n
+        ? `<strong style="color:#2D3E4C">${p.n}</strong> action${p.n === 1 ? '' : 's'} · ${p.p1} in progress · ${p.p2} completed`
+        : 'No actions recorded';
+      readout.style.opacity = '1';
+    });
+    map.on('mouseleave', 'juris-fill', () => {
+      map.getCanvas().style.cursor = '';
+      map.setFilter('juris-fill-hover', ['==', ['get', 'name'], '']);
+      readout.style.opacity = '0';
+    });
+    map.on('click', 'juris-fill', (e) => {
+      const p = e.features[0].properties;
+      // a town on the map is a jurisdiction, so it opens the jurisdiction worklist
+      if (p.n) window.location.href = `jurisdiction-prioritization.html?jurisdiction=${encodeURIComponent(p.name)}`;
+    });
+
+    // ── single-action popup ──────────────────────────────────────────────
+    map.on('click', 'unclustered', (e) => {
+      const p = e.features[0].properties;
+      const prec = { 1: 'exact coordinates', 2: 'geocoded address', 3: 'town centroid', 4: 'county centroid' }[p.p] || 'unknown';
+      new maplibregl.Popup({ closeButton: false, offset: 12 })
+        .setLngLat(e.lngLat)
+        .setHTML(
+          `<div style="min-width:190px;max-width:260px">
+             <div style="font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:12px;color:#6D96AE;font-weight:500;">${p.j || 'Sullivan County'}</div>
+             <div style="font-size:13px;color:#2D3E4C;font-weight:600;margin-top:3px;line-height:1.35;">${p.n || 'Untitled action'}</div>
+             <div style="font-size:12px;color:#37576B;margin-top:4px;">${STATUS_LABELS[p.s]}</div>
+             <div style="font-size:11px;color:#6D96AE;margin-top:2px;">Located by: ${prec}</div>
+             <a href="action-view.html" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#EAAD43;text-decoration:none;">View action →</a>
+           </div>`
+        )
+        .addTo(map);
+    });
+    map.on('mouseenter', 'unclustered', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'unclustered', () => { map.getCanvas().style.cursor = ''; });
+
+    map.on('sourcedata', (e) => {
+      if (e.sourceId === 'actions' && map.isSourceLoaded('actions')) {
+        const shim = document.getElementById('mapLoading');
+        if (shim) { shim.style.opacity = '0'; setTimeout(() => shim.remove(), 500); }
+      }
+    });
+  });
+
+  // ── donut cluster markers ────────────────────────────────────────────────
+  const markers = {};
+  let markersOnScreen = {};
+
+  function updateMarkers() {
+    const newMarkers = {};
+    for (const feature of map.querySourceFeatures('actions')) {
+      if (!feature.properties.cluster) continue;
+      const id = feature.properties.cluster_id;
+      let marker = markers[id];
+      if (!marker) {
+        const el = createDonutChart(feature.properties);
+        el.addEventListener('click', () => {
+          map.getSource('actions').getClusterExpansionZoom(id).then((zoom) => {
+            map.easeTo({ center: feature.geometry.coordinates, zoom: Math.min(zoom, 15) });
+          });
+        });
+        marker = markers[id] = new maplibregl.Marker({ element: el }).setLngLat(feature.geometry.coordinates);
+      }
+      newMarkers[id] = marker;
+      if (!markersOnScreen[id]) marker.addTo(map);
+    }
+    for (const id in markersOnScreen) if (!newMarkers[id]) markersOnScreen[id].remove();
+    markersOnScreen = newMarkers;
+  }
+
+  map.on('render', () => {
+    if (!map.getSource('actions') || !map.isSourceLoaded('actions')) return;
+    updateMarkers();
+  });
+
+  function createDonutChart(props) {
+    const counts = [props.p0, props.p1, props.p2, props.p3];
+    const offsets = [];
+    let total = 0;
+    for (const c of counts) { offsets.push(total); total += c; }
+
+    const fontSize = total >= 100 ? 16 : total >= 10 ? 13 : 11;
+    const r = total >= 100 ? 26 : total >= 10 ? 20 : 16;
+    const r0 = Math.round(r * 0.62);
+    const w = r * 2;
+
+    // Generated data-viz, not a registry icon — the Map primitive draws its own
+    // cluster markers, so this SVG carries no <!-- icon: --> tag.
+    let html = `<div><svg class="mny-donut" width="${w}" height="${w}" viewBox="0 0 ${w} ${w}" text-anchor="middle" style="font:${fontSize}px 'Oswald',sans-serif;display:block;filter:drop-shadow(0 1px 3px rgba(45,62,76,.28))">`;
+    for (let i = 0; i < counts.length; i++) {
+      html += donutSegment(offsets[i] / total, (offsets[i] + counts[i]) / total, r, r0, colors[i]);
+    }
+    html += `<circle cx="${r}" cy="${r}" r="${r0}" fill="white"/>
+      <text dominant-baseline="central" transform="translate(${r}, ${r})">${total.toLocaleString()}</text></svg></div>`;
+
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    return el.firstChild;
+  }
+
+  function donutSegment(start, end, r, r0, color) {
+    if (end - start === 1) end -= 0.00001;
+    const a0 = 2 * Math.PI * (start - 0.25);
+    const a1 = 2 * Math.PI * (end - 0.25);
+    const x0 = Math.cos(a0), y0 = Math.sin(a0);
+    const x1 = Math.cos(a1), y1 = Math.sin(a1);
+    const largeArc = end - start > 0.5 ? 1 : 0;
+    return `<path d="M ${r + r0 * x0} ${r + r0 * y0} L ${r + r * x0} ${r + r * y0} A ${r} ${r} 0 ${largeArc} 1 ${r + r * x1} ${r + r * y1} L ${r + r0 * x1} ${r + r0 * y1} A ${r0} ${r0} 0 ${largeArc} 0 ${r + r0 * x0} ${r + r0 * y0}" fill="${color}"/>`;
+  }
+})();
+</script>
+
+</body>
+</html>

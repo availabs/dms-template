@@ -36,6 +36,10 @@ import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
+import ReportPageHeader from "./components/ReportPageHeader"
+import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { calloutStatMenu } from "./components/CalloutStatPicker"
+import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 
 import icons from "./icons";
@@ -432,6 +436,17 @@ const layoutGroup = {
       wrapper2: "w-full px-0 flex flex-col gap-6",
       wrapper3: "",
     },
+    {
+      // flush — full-bleed band for a page whose rail is `pages.sectionGroup`
+      // styles[1] 'flush' (the report canvas's route rail), selected by the same
+      // group.theme name. No max-w cap, no pl-12/pr-8 gutter: the rail hugs the
+      // true page edge; the content column supplies its own inset instead
+      // (pages.sectionGroup styles[1].contentCol carries px-8 py-8 for this).
+      name: "flush",
+      wrapper1: "w-full bg-[#ECEEF2]",
+      wrapper2: "w-full",
+      wrapper3: "",
+    },
   ],
 };
 
@@ -711,7 +726,18 @@ const button = {
 const input = {
   input:          "relative w-full block appearance-none rounded-[6px] px-3 h-11 text-[14px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15 aria-invalid:border-[#EF4444] disabled:opacity-50 disabled:bg-slate-50",
   inputContainer: "group flex relative w-full",
-  textarea:       "relative block h-full w-full appearance-none rounded-[6px] px-3 py-2 text-[14px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15 resize-y",
+  // Auto-growing prose box (2026-07-27, Alex — ticket-detail textareas "showed a fixed height that
+  // needs to be dragged or scrolled"). `field-sizing-content` (Tailwind 4 → CSS
+  // `field-sizing: content`) sizes the textarea to its content, so long fields like a ticket's
+  // resolution render in full. Two things had to go with it:
+  //   · `h-full` — took its height from the parent cell, which pinned the box and made growth
+  //     impossible; `min-h-24` replaces it as the floor for short/empty values.
+  //   · nothing else: `resize-y` stays, so a user can still drag when they want to shrink a huge one.
+  // `max-h-[70vh]` keeps a pathological value (a 8k-char resolution) from pushing the rest of the
+  // page off screen — it scrolls only past that point. Where `field-sizing` is unsupported the box
+  // degrades to `min-h-24` + drag, i.e. today's behaviour rather than a broken one.
+  // Scope: every textarea in this theme (datasets/CR detail pages, forms), which is the intent.
+  textarea:       "relative block field-sizing-content min-h-24 max-h-[70vh] w-full appearance-none rounded-[6px] px-3 py-2 text-[14px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15 resize-y",
   confirmButtonContainer: "absolute right-0 hidden group-hover:flex items-center",
   editButton:    "py-1.5 px-2 text-slate-400 hover:text-[#1F3F8F] cursor-pointer",
   cancelButton:  "text-slate-400 hover:text-[#EF4444] cursor-pointer py-1.5 pr-1",
@@ -1383,7 +1409,9 @@ const table = {
       headerLeftGutter:               "flex justify-between sticky left-0 z-[1]",
       headerWrapper:                  "flex justify-between",
       headerCellContainer:            "w-full px-3 py-2 content-center font-display uppercase text-[11px] tracking-wide",
-      headerCellContainerBg:          "bg-slate-50/80 text-slate-600 border-b border-zinc-950/10",
+      // Opaque on purpose: headerContainer is `sticky top-0`, so any alpha lets
+      // body rows scroll through and show under the column labels (ticket #199).
+      headerCellContainerBg:          "bg-slate-50 text-slate-600 border-b border-zinc-950/10",
       headerCellContainerBgSelected:  "bg-blue-100 text-[#0F1722]",
       colResizer:                     "z-5 -ml-2 w-[1px] hover:w-[2px] bg-zinc-950/5 hover:bg-zinc-950/15",
       headerCellLabel:                "truncate select-none",
@@ -1410,7 +1438,9 @@ const table = {
       totalCell:                      "hover:bg-slate-100 font-medium",
       stripedRow:                     "",
       gutterCellWrapper:              "flex items-center justify-center cursor-pointer sticky left-0 z-[1] font-mono text-[11px]",
-      gutterCellWrapperNotSelected:   "bg-slate-50/60 text-slate-400",
+      // Opaque for the same reason as the header: gutterCellWrapper is
+      // `sticky left-0`, so alpha lets cells scroll through it horizontally.
+      gutterCellWrapperNotSelected:   "bg-slate-50 text-slate-400",
       gutterCellWrapperSelected:      "bg-blue-100 text-[#0F1722]",
 
       pivotGroupHeader:               "bg-slate-100 text-slate-700 text-center border-b border-r border-zinc-950/5",
@@ -1449,7 +1479,8 @@ const table = {
       // information than the dashboard default.
       name: "report",
       headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
-      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      // Opaque — sticky header, see the `default` style's note (ticket #199).
+      headerCellContainerBg:          "bg-slate-50 text-slate-500 border-b border-zinc-950/10",
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
       cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
     },
@@ -1462,7 +1493,8 @@ const table = {
       name: "flush",
       tableContainer:                 "flex flex-col bg-white overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
       headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
-      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      // Opaque — sticky header, see the `default` style's note (ticket #199).
+      headerCellContainerBg:          "bg-slate-50 text-slate-500 border-b border-zinc-950/10",
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
       cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
     },
@@ -1633,7 +1665,8 @@ const map = {
     legend: {
       panel: "p-4",
       panelInner: "relative w-72 min-h-10 max-h-[calc(100vh_-_111px)] overflow-auto rounded-[8px] border border-zinc-950/10 bg-white shadow-lg pointer-events-auto scrollbar-sm",
-      header: "h-9 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/80 sticky top-0 z-10",
+      // Opaque — the panel body scrolls under this sticky header (ticket #199 class).
+      header: "h-9 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50 sticky top-0 z-10",
       headerTitle: `${F_DISP} font-medium text-[13px] text-[#2D3E4C] flex-1`,
       headerMeta: `${F_MONO} text-[9.5px] uppercase tracking-wider text-slate-500`,
       section: "",
@@ -1821,33 +1854,71 @@ const pages = {
       menuPosition:  "absolute top-2 right-2 items-center",
       editIcon:      "hover:text-[#1F3F8F] size-5",
       contentWrapper:"h-full",
+      // Layout only, no background — the gray "head-band" seen in the design
+      // audit screenshots turned out to belong to a separate, sibling Card
+      // section's own "title_bar" style (see avl-graph-quick-controls.md's
+      // "Open visual question" note), not this row, so there's nothing to
+      // visually match here.
+      headerExtensionsRow: "px-3 pb-2",
     }],
   },
 
   // The sticky in-page-nav rail (the mockup's "on this page" <aside>). A distinct
   // layout region rendered as the content LayoutGroup's outerChildren, themed
-  // entirely here (flat shape — sectionGroup.jsx / InPageNav.jsx read it via
-  // getComponentTheme(theme,'pages.sectionGroup')). Rail = a nav card + any
-  // sidebar-group sections stacked below.
+  // entirely here. sectionGroup.jsx reads it via getComponentTheme(theme,
+  // 'pages.sectionGroup', group.theme) so a band's own theme name selects the style;
+  // InPageNav.jsx reads the same key with no selector (always styles[0]) but only
+  // ever renders when a band has navLabel'd sections, so this doesn't matter for a
+  // 'flush' rail band, which has none. Rail = a nav card + any sidebar-group sections
+  // stacked below.
+  // options.activeStyle + styles[] follows the standard getComponentTheme convention
+  // (see @availabs/dms/CLAUDE.md). sectionGroup.jsx passes the band's own `group.theme`
+  // as the selector — a band opts into "flush" by setting its theme name to 'flush';
+  // every other band's group.theme (undefined, 'default', 'content', ...) falls through
+  // to styles[0], so this is additive and doesn't touch any existing page's rendering.
   sectionGroup: {
-    // content ↔ rail row (inside the band's max-w-[1480px] content container).
-    // items-stretch keeps the rail column full-height so its inner sticky pins.
-    // min-h-screen: the band fills at least the viewport so a short results column
-    // doesn't leave the sidebar rail floating in a short area; the rail's own
-    // overflow-y-auto (sideNavContainer2) still scrolls only when its content
-    // genuinely exceeds the viewport. min-height is BC-safe — tall bands are unaffected.
-    contentRow: "flex flex-row gap-10 items-stretch min-h-screen",
-    contentCol: "flex-1 min-w-0",
-    sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
-    sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
-    sideNavContainer3: "flex flex-col gap-4",
-    // "On this page" nav card
-    navWrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-4",
-    navLabelText:  "On this page",
-    navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-3",
-    navList:       "flex flex-col gap-0.5",
-    navItem:       "block w-full text-left font-proxima text-[13px] text-slate-600 hover:text-[#0F2D4D] py-1.5 pl-3 border-l-2 border-transparent transition-colors cursor-pointer",
-    navItemActive: "block w-full text-left font-proxima text-[13px] text-[#0F2D4D] font-medium py-1.5 pl-3 border-l-2 border-[#EAAD43] bg-slate-50/60 transition-colors cursor-pointer",
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        name: "default",
+        // content ↔ rail row (inside the band's max-w-[1480px] content container).
+        // items-stretch keeps the rail column full-height so its inner sticky pins.
+        // min-h-screen: the band fills at least the viewport so a short results column
+        // doesn't leave the sidebar rail floating in a short area; the rail's own
+        // overflow-y-auto (sideNavContainer2) still scrolls only when its content
+        // genuinely exceeds the viewport. min-height is BC-safe — tall bands are unaffected.
+        contentRow: "flex flex-row gap-10 items-stretch min-h-screen",
+        contentCol: "flex-1 min-w-0",
+        sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
+        sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
+        sideNavContainer3: "flex flex-col gap-4",
+        // "On this page" nav card
+        navWrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-4",
+        navLabelText:  "On this page",
+        navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-3",
+        navList:       "flex flex-col gap-0.5",
+        navItem:       "block w-full text-left font-proxima text-[13px] text-slate-600 hover:text-[#0F2D4D] py-1.5 pl-3 border-l-2 border-transparent transition-colors cursor-pointer",
+        navItemActive: "block w-full text-left font-proxima text-[13px] text-[#0F2D4D] font-medium py-1.5 pl-3 border-l-2 border-[#EAAD43] bg-slate-50/60 transition-colors cursor-pointer",
+      },
+      {
+        // npmrds-report.html's rail: fixed 340px flex sibling of the content column,
+        // no padding (hugs the content area's left edge — the content column supplies
+        // the inset, not this container), sticky top-0 h-svh (exact tab height — safe
+        // only because this page carries no sticky chrome above the rail, e.g. no
+        // breadcrumb band; a page that keeps one needs its own top-offset variant).
+        // contentRow drops to gap-0 to match (no gap between rail and content column).
+        name: "flush",
+        contentRow: "flex flex-row gap-0 items-stretch min-h-screen",
+        // The band no longer supplies an inset (layoutGroup styles[1] 'flush' has no
+        // pl-12/pr-8), so the content column carries its own px-8 py-8 here, exactly
+        // per the mockup's content-column div. The rail stays flush at x=0 — only
+        // the content side gets the inset.
+        contentCol: "flex-1 min-w-0 px-8 py-8",
+        sideNavContainer1: "w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10",
+        sideNavContainer2: "sticky top-0 h-svh overflow-hidden",
+        sideNavContainer3: "flex flex-col h-full",
+      },
+    ],
   },
 
   sectionArray: {
@@ -1988,6 +2059,13 @@ const pages = {
       // Inner-card background options (per-side border carries no bg of its own).
       backgrounds: {
         none: "", white: "bg-white", tint: "bg-slate-50/60",
+      },
+      // Drop-shadow options for the inner card box (report-page redesign Gap 03 —
+      // the granular per-side border/radius/bg path had no shadow knob at all;
+      // the old report tool's cards read as one unified box partly because of a
+      // visible shadow). `none` preserves today's default (unset → no shadow).
+      shadows: {
+        none: "", sm: "shadow-sm", md: "shadow-md",
       },
       // Curated gutter steps (fewer = wider, more usable buttons): flush / tight /
       // default(3) / comfortable / loose / wide.
@@ -2443,7 +2521,48 @@ const pageComponents = {
   AddPageButton,
   Header,
   ReportRouteList,
+  ReportPageHeader,
   RouteComparison,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// sectionMenuExtensions — theme-supplied additional sectionMenu item-groups,
+// keyed by ComponentRegistry component name. See sectionMenuExtensions.js /
+// sectionMenu.jsx in the dms submodule for the generic extension point.
+// ─────────────────────────────────────────────────────────────────────────────
+// Keyed by the resolved component's `.name`, which differs by element-type
+// despite both resolving to the same graph_new component (see
+// ComponentRegistry/index.jsx): legacy-migrated sections keep `.name: 'Graph'`,
+// but the "AVL Graph" registry entry force-overrides `.name` back to
+// 'AVL Graph' — which is what virtually every real report graph (RRL's
+// "+ Add Graph", the Report Page template's starter graph, every converted
+// report) actually resolves to. Both keys must be registered or these
+// extensions silently stop firing for real graphs.
+const sectionMenuExtensions = {
+  "Graph": [npmrdsMeasureMenu],
+  "AVL Graph": [npmrdsMeasureMenu],
+  "Card": [calloutStatMenu],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// sectionHeaderExtensions — theme-supplied inline header content, keyed by
+// ComponentRegistry component name. See sectionHeaderExtensions.js / section.jsx
+// in the dms submodule for the generic extension point (siblings to
+// sectionMenuExtensions above, but rendered inline in the header band instead
+// of the Settings drawer). npmrdsQuickControls reuses the exact same
+// Measure/Comparison Mode state as npmrdsMeasureMenu above — see
+// components/QuickControls and components/MeasurePicker's applyMeasurePick.
+// ─────────────────────────────────────────────────────────────────────────────
+// Design push #2 (2026-08-06): QuickControls' Routes/Measure/When/Aggregate pills apply to
+// Table (Spreadsheet) and Map cards too, not just chart types (Mode is the one pill that hides
+// itself there — see QuickControlsRow's own `hasMode`). The older Settings-drawer Measure
+// item-group (sectionMenuExtensions below) stays chart-only on purpose — Quick Controls fully
+// covers Table/Map editing on its own, no reason to wire a second surface for them.
+const sectionHeaderExtensions = {
+  "Graph": [npmrdsQuickControls],
+  "AVL Graph": [npmrdsQuickControls],
+  "Spreadsheet": [npmrdsQuickControls],
+  "Map": [npmrdsQuickControls],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2622,6 +2741,8 @@ const transportnyTheme = {
   // Preserved from original
   navOptions,
   pageComponents,
+  sectionMenuExtensions,
+  sectionHeaderExtensions,
   widgets,
 };
 

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Albany County Land Bank · 110 Alexander Street — Record</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<!--
+  property-view.html · ADMIN PANEL 4 of 5 — single-property VIEW CARD.
+  Layout `app`. A read view of one REAL parcel (110 Alexander Street · SBL
+  76.64-2-6 · South End · For Sale). Linked from the admin table/dashboard AND
+  from the public properties.html "view" links. Edit -> property-edit.html.
+-->
+<body class="lb-paper text-ink antialiased">
+<div class="min-h-svh" data-dms-layout="app">
+
+  <!-- ═══ SideNav ═══ -->
+  <aside class="fixed inset-y-0 left-0 w-60 bg-ink flex flex-col z-40 max-lg:hidden">
+    <div class="h-14 bg-black/25 border-b border-white/10 flex items-center px-3 gap-2.5 shrink-0">
+      <span class="bg-white rounded px-1.5 py-1 inline-flex"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-5 w-auto"/></span>
+      <div><p class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/70 leading-tight">ACLB Portal</p><p class="font-meta text-[9.5px] text-white/40 leading-tight">staff console</p></div>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-2 font-prose text-[13.5px] font-semibold">
+      <div class="px-4 pt-2 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40">Operations</div>
+      <a href="admin-dashboard.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 19a9 9 0 1 1 13 0"/><path d="M12 14l4.2-4.2"/><circle cx="12" cy="14" r="1.4" fill="currentColor" stroke="none"/></svg>Dashboard</a>
+      <a href="admin-table.html" class="flex items-center px-4 py-2.5 bg-white/10 text-white border-l-[3px] border-leaf"><svg class="size-[18px] mr-3 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10M3.5 14.5h17"/></svg>Inventory table</a>
+      <a href="admin-new-property.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add property</a>
+      <a href="properties.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span class="flex-1">For-sale list</span><span class="font-meta text-[10px] rounded-full bg-leaf px-1.5 py-0.5 text-ink">60</span></a>
+      <div class="px-4 pt-5 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40">Records</div>
+      <a href="admin-table.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg>Sales history</a>
+      <a href="#" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg>Board reports</a>
+    </nav>
+    <div class="border-t border-white/10 py-2.5 px-4 flex items-center gap-2.5 shrink-0">
+      <span class="size-7 rounded-full bg-skydeep flex items-center justify-center text-white font-prose text-[11px] font-semibold">AT</span>
+      <div class="min-w-0 flex-1"><p class="font-prose text-[12px] font-semibold text-white truncate">A. Torres</p><p class="font-meta text-[9.5px] text-white/45 leading-tight">staff · admin</p></div>
+    </div>
+  </aside>
+
+  <!-- ═══ Content ═══ -->
+  <div class="lg:pl-60 flex flex-col min-h-svh">
+    <header class="sticky top-0 z-30 w-full bg-white/95 backdrop-blur border-b border-ink/10">
+      <div class="mr-auto w-full max-w-[1360px] pl-8 pr-6 h-14 flex items-center gap-4">
+        <a href="admin-table.html" class="inline-flex items-center gap-1.5 font-prose text-[13px] font-semibold text-slate hover:text-ink"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H4m0 0 6-6m-6 6 6 6"/></svg>Inventory</a>
+        <p class="hidden sm:flex items-center gap-1.5 font-prose text-[12px] text-mist"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><span class="font-semibold text-slate">110 Alexander Street</span></p>
+        <div class="ml-auto relative group">
+          <button class="flex items-center gap-2 h-9 pl-1.5 pr-2 rounded-md hover:bg-paper transition-colors"><span class="size-7 rounded-full bg-skydeep flex items-center justify-center text-white font-prose text-[11px] font-semibold">AT</span><svg class="size-3.5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="absolute right-0 top-full mt-1 w-56 bg-white rounded-md border border-ink/10 shadow-lg py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+            <div class="px-3 py-1.5 border-b border-ink/5 mb-1"><p class="font-prose text-[13px] font-semibold text-ink">A. Torres</p><p class="font-meta text-[10px] text-mist">staff · admin</p></div>
+            <a href="home.html" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink"><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg>Public site</a>
+            <a href="admin-dashboard.html" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink"><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 19a9 9 0 1 1 13 0"/><path d="M12 14l4.2-4.2"/></svg>Dashboard</a>
+            <div class="border-t border-ink/5 my-1"></div>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-rosedeep hover:bg-rose/[0.06]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12H3m0 0 4-4m-4 4 4 4M13 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/></svg>Sign out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 py-6">
+      <div class="mr-auto w-full max-w-[1360px] pl-8 pr-6">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- record header -->
+          <div class="col-span-12 p-3">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span>
+                  <span class="font-meta font-medium text-[11px] text-skydeep">SBL 76.64-2-6</span>
+                </div>
+                <h1 class="font-display font-bold text-[38px] leading-[1.05] tracking-[-0.01em] text-ink">110 Alexander Street</h1>
+                <p class="mt-1.5 font-prose text-[13.5px] text-slate">South End · Albany, NY 12202 · <span class="font-meta text-[12px] text-mist">42.6411, −73.7637</span></p>
+              </div>
+              <div class="flex gap-2">
+                <a href="properties.html" class="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-white hover:bg-paper border border-ink/15 text-ink font-prose text-[13.5px] font-semibold"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg>Public listing</a>
+                <a href="property-edit.html" class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg>Edit record</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- MAIN column -->
+          <div class="col-span-12 lg:col-span-8 p-3">
+            <div class="grid grid-cols-12 gap-3">
+
+              <!-- parcel plate + headline facts -->
+              <div class="col-span-12 sm:col-span-5">
+                <div class="lb-card overflow-hidden h-full">
+                  <div class="lb-plate h-56 relative flex items-center justify-center">
+                    <!-- 25 x 50 ft lot -> width:35% height:70% -->
+                    <div class="lb-lot" style="width:35%; height:70%"></div>
+                    <span class="absolute font-meta font-medium text-[10px] text-slate" style="bottom:11%; left:50%; transform:translateX(-50%)">25′</span>
+                    <span class="absolute font-meta font-medium text-[10px] text-slate" style="left:70%; top:50%; transform:translateY(-50%)">50′</span>
+                    <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-white/85 border border-field/20 text-forest text-[12px] font-semibold">For Sale</span>
+                  </div>
+                  <div class="p-4 border-t border-ink/10">
+                    <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Asking price</div>
+                    <div class="font-display font-bold text-[27px] leading-tight text-ink tabular-nums">$600</div>
+                    <div class="mt-2 pt-2 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">0.03 ac · zoned R-2</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- key facts grid -->
+              <div class="col-span-12 sm:col-span-7">
+                <div class="lb-card p-5 h-full">
+                  <div class="flex items-center gap-2.5 mb-3"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Record summary</span></div>
+                  <div class="grid grid-cols-2 gap-y-4 gap-x-4">
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Class</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5">Residential Vacant Lot</div></div>
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Neighborhood</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5">South End</div></div>
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Days in inventory</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5 tabular-nums">2,333</div></div>
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Assessed value</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5 tabular-nums">$1,000</div></div>
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Sale status</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5">For Sale</div></div>
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Inventory type</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5">Land Bank</div></div>
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">School district</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5">Albany City SD</div></div>
+                    <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">eProperty ID</div><div class="font-prose text-[14px] font-semibold text-ink mt-0.5 font-meta">990635</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- full record detail -->
+              <div class="col-span-12">
+                <div class="lb-card p-5">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2.5"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Full record · 85 fields</span></div>
+                    <a href="property-edit.html" class="font-prose text-[12px] font-semibold text-skydeep hover:text-ink">Edit all →</a>
+                  </div>
+
+                  <div class="font-meta font-medium text-[10px] uppercase tracking-[0.16em] text-mist mb-2">Parcel &amp; geometry</div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-y-3 gap-x-4 pb-4 mb-4 border-b border-ink/5">
+                    <div><div class="font-prose text-[12px] text-mist">Width</div><div class="font-meta text-[13px] text-ink tabular-nums">25 ft</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Length</div><div class="font-meta text-[13px] text-ink tabular-nums">50 ft</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Acres</div><div class="font-meta text-[13px] text-ink tabular-nums">0.03</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Zoned as</div><div class="font-meta text-[13px] text-ink">R-2</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">General zoning</div><div class="font-prose text-[13px] text-ink">Residential</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Structure type</div><div class="font-prose text-[13px] text-mist">— (vacant)</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Census tract</div><div class="font-meta text-[13px] text-ink tabular-nums">36001000</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">GeoID</div><div class="font-meta text-[13px] text-ink tabular-nums">36001</div></div>
+                  </div>
+
+                  <div class="font-meta font-medium text-[10px] uppercase tracking-[0.16em] text-mist mb-2">Acquisition &amp; assessment</div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-y-3 gap-x-4 pb-4 mb-4 border-b border-ink/5">
+                    <div><div class="font-prose text-[12px] text-mist">Acquisition method</div><div class="font-prose text-[13px] text-ink">Purchase — Private</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Acquisition amount</div><div class="font-meta text-[13px] text-ink tabular-nums">$1</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Current assessed</div><div class="font-meta text-[13px] text-ink tabular-nums">$1,000</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">FMV</div><div class="font-meta text-[13px] text-ink tabular-nums">$3,000</div></div>
+                  </div>
+
+                  <div class="font-meta font-medium text-[10px] uppercase tracking-[0.16em] text-mist mb-2">Availability &amp; title</div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-y-3 gap-x-4">
+                    <div><div class="font-prose text-[12px] text-mist">Available</div><div class="font-prose text-[13px] font-semibold text-forest">Yes</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Featured</div><div class="font-prose text-[13px] text-slate">No</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">Quiet title</div><div class="font-prose text-[13px] text-forest">Complete</div></div>
+                    <div><div class="font-prose text-[12px] text-mist">ACLB insurance</div><div class="font-prose text-[13px] text-ink">Active</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SIDECAR -->
+          <div class="col-span-12 lg:col-span-4 p-3">
+            <div class="space-y-3">
+              <!-- mini map -->
+              <div class="lb-card overflow-hidden">
+                <div class="relative h-52 lb-plate">
+                  <svg class="absolute inset-0 h-full w-full" viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M0 70h400M0 130h400M120 0v200M260 0v200" stroke="rgba(22,35,44,0.06)" stroke-width="3" fill="none"/>
+                    <path d="M330 0 Q310 90 335 200" stroke="rgba(10,167,228,0.18)" stroke-width="10" fill="none"/>
+                  </svg>
+                  <span class="absolute text-field" style="left:47%;top:52%;transform:translate(-50%,-100%)"><svg viewBox="0 0 24 24" class="size-8 drop-shadow" fill="currentColor" stroke="#fff" stroke-width="1"><path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11z"/></svg></span>
+                  <div class="absolute bottom-2 left-2 rounded bg-white/95 border border-ink/10 px-2 py-1 font-meta text-[10px] text-slate">South End · Ward 2</div>
+                </div>
+              </div>
+
+              <!-- disposition timeline -->
+              <div class="lb-card p-5">
+                <div class="flex items-center gap-2.5 mb-4"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Disposition timeline</span></div>
+                <ol class="relative border-l border-ink/10 ml-1 space-y-5">
+                  <li class="pl-5 relative"><span class="absolute -left-[7px] top-0.5 size-3 rounded-full bg-field border-2 border-white"></span><div class="font-prose text-[13px] font-semibold text-ink">Acquired</div><div class="font-meta text-[11px] text-mist">2019 · purchase, private</div></li>
+                  <li class="pl-5 relative"><span class="absolute -left-[7px] top-0.5 size-3 rounded-full bg-steel border-2 border-white"></span><div class="font-prose text-[13px] font-semibold text-ink">Processed &amp; cleared title</div><div class="font-meta text-[11px] text-mist">quiet title complete</div></li>
+                  <li class="pl-5 relative"><span class="absolute -left-[7px] top-0.5 size-3 rounded-full bg-sky border-2 border-white dot-pulse"></span><div class="font-prose text-[13px] font-semibold text-ink">Listed for sale</div><div class="font-meta text-[11px] text-mist">$600 · 2,333 days in inventory</div></li>
+                  <li class="pl-5 relative opacity-50"><span class="absolute -left-[7px] top-0.5 size-3 rounded-full bg-papertint border-2 border-white"></span><div class="font-prose text-[13px] font-semibold text-slate">Sale pending</div><div class="font-meta text-[11px] text-mist">awaiting buyer</div></li>
+                </ol>
+              </div>
+
+              <!-- steward card -->
+              <div class="lb-card-ink p-5">
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/40 mb-2">Assigned steward</div>
+                <div class="flex items-center gap-3">
+                  <span class="size-9 rounded-full bg-skydeep flex items-center justify-center text-white font-prose text-[12px] font-semibold">AT</span>
+                  <div><p class="font-prose text-[14px] font-semibold text-white">A. Torres</p><p class="font-meta text-[11px] text-white/50">Disposition · South End</p></div>
+                </div>
+                <a href="property-edit.html" class="mt-4 w-full lb-press inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-white text-ink border-b-[3px] border-ink/20 font-prose text-[13.5px] font-semibold hover:bg-paper"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg>Edit this record</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- footer -->
+          <div class="col-span-12 p-3">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-t border-ink/10 pt-4">
+              <p class="font-prose text-[12px] text-mist">Record from Landbank Properties (DAMA source 3) · last synced Jul 30, 2026</p>
+              <div class="flex flex-wrap gap-3 font-prose text-[12px] font-semibold text-slate">
+                <a href="admin-table.html" class="hover:text-ink">Back to inventory</a>
+                <a href="property-edit.html" class="hover:text-ink">Edit</a>
+                <a href="properties.html" class="hover:text-ink">Public listing</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- floating page-nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:#fff;border-radius:8px;padding:10px 0;min-width:220px;box-shadow:0 6px 24px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:2px 16px 8px;border-bottom:1px solid #EAEFF1;margin-bottom:4px;">Admin panel</div>
+    <a href="admin-dashboard.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Dashboard</a>
+    <a href="admin-table.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Inventory table (edit)</a>
+    <a href="admin-new-property.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Add property</a>
+    <a href="property-view.html" style="display:block;padding:6px 16px;font-size:13px;color:#0A6E99;font-weight:600;text-decoration:none;">Property view</a>
+    <a href="property-edit.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Property edit</a>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:8px 16px;border-top:1px solid #EAEFF1;margin-top:4px;">Public site</div>
+    <a href="home.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Home</a>
+    <a href="about.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">About</a>
+    <a href="properties.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(.96)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+    style="width:40px;height:40px;border-radius:8px;background:#16232C;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.3);" aria-label="Page navigation">
+    <svg style="width:20px;height:20px" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

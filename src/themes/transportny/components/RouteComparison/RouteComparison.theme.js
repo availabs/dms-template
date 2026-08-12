@@ -9,20 +9,34 @@
 // className passthroughs).
 export const routeComparisonTheme = {
   // ── shell ──────────────────────────────────────────────────────────────────
-  wrapper: 'flex flex-col gap-3',
-  card: 'rounded-[8px] border border-zinc-950/10 bg-white shadow-sm',
+  // The panel IS the rail (pages.sectionGroup styles[1] 'flush'): the white field,
+  // the 340px width and the right border belong to the rail container, so this
+  // component contributes no box of its own — no border, no rounding, no shadow.
+  // It was two floating cards on the grey pane until 2026-08-07; there is no grey
+  // pane beside a flush rail to float on. Head and foot are pinned (`shrink-0`)
+  // and only `body` scrolls, so the rail never grows taller than the viewport.
+  // Mirrors reportRouteListTheme's shell exactly — both are route-selection rails.
+  wrapper: 'flex flex-col h-full min-h-0',
 
-  // ── card header (Reset action only — title removed) ──
-  cardHeader: 'px-4 pt-3 pb-2.5 border-b border-zinc-950/10 flex items-center justify-end gap-2',
-  resetBtn: 'font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-700 cursor-pointer',
+  // ── Panel head · pinned. Title + count + Reset, dark navy. Same h-12/#12181F
+  //    bar as ReportRouteList's "Routes" head. ──
+  panelHead: 'h-12 px-3 flex items-center gap-2 bg-[#12181F] shrink-0',
+  panelHeadIcon: 'size-4 text-[#FACC15] shrink-0',
+  panelTitle: 'font-display uppercase text-white text-[12.5px] tracking-wide flex-1',
+  countPill: 'px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums',
+  resetBtn: 'font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-white cursor-pointer',
 
-  // ── generic numbered/labelled block ──
-  block: 'px-4 py-4 border-b border-zinc-950/10',
-  blockLast: 'px-4 py-4',
+  // ── Scroll body · the only part that scrolls. ──
+  body: 'flex-1 min-h-0 overflow-y-auto',
+
+  // ── generic numbered/labelled block. Separated by hairlines, not gaps — inside
+  //    a flush panel a gap reads as a seam. ──
+  block: 'px-3 py-3.5 border-b border-zinc-950/08',
+  blockLast: 'px-3 py-3.5',
   blockHead: 'flex items-center gap-2 mb-2.5',
   stepBadge: 'flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[11px] font-semibold',
   blockIcon: 'size-4 text-slate-500',
-  blockTitle: 'font-display font-medium text-[13.5px] uppercase tracking-wide text-[#0F1722] flex-1',
+  blockTitle: 'font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1',
   blockHint: 'font-mono text-[10px] text-slate-400',
 
   // ── Scope block ──
@@ -118,10 +132,10 @@ export const routeComparisonTheme = {
   metricOverrideLabel: 'uppercase tracking-wider',
   metricOverrideInput: 'h-6 px-1.5 rounded border border-zinc-950/10 bg-slate-50 text-slate-600 text-[10px] w-full',
 
-  // ── footer note (shareable) ──
-  footNote: 'rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-4 py-3',
+  // ── footer note (shareable) · pinned strip, not a second floating card ──
+  footNote: 'px-3 py-2.5 border-t border-zinc-950/08 bg-slate-50 shrink-0',
   footKicker: 'font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1',
-  footText: 'font-proxima text-[11.5px] leading-[1.55] text-slate-700',
+  footText: 'font-proxima text-[11px] leading-[1.5] text-slate-600',
   footMono: 'font-mono text-[11px] text-slate-500',
 
   // ── status ──

@@ -3,11 +3,35 @@ import QuickLinks from './QuickLinks'
 import Header from './components/Header'
 import AddPageButton from './components/AddPageButton'
 import ReportRouteList from "./components/ReportRouteList/index"
+import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { npmrdsQuickControls } from "./components/QuickControls"
+import { RoutecreationPlugin } from "./components/routecreation/routecreation.plugin"
+import { MacroviewPlugin } from "./components/macroview/macroview.plugin"
 const theme = {
   pageComponents: {
     "AddPageButton": AddPageButton,
     Header,
     ReportRouteList
+  },
+  sectionMenuExtensions: {
+    // Keyed by the resolved component's `.name`, which differs by
+    // element-type despite both resolving to the same graph_new component
+    // (see ComponentRegistry/index.jsx): legacy-migrated sections keep
+    // `.name: 'Graph'`, but the "AVL Graph" registry entry force-overrides
+    // `.name` back to 'AVL Graph' — which is what virtually every real
+    // report graph (RRL's "+ Add Graph", the Report Page template's starter
+    // graph, every converted report) actually resolves to. Both keys must be
+    // registered or these extensions silently stop firing for real graphs.
+    "Graph": [npmrdsMeasureMenu],
+    "AVL Graph": [npmrdsMeasureMenu]
+  },
+  sectionHeaderExtensions: {
+    "Graph": [npmrdsQuickControls],
+    "AVL Graph": [npmrdsQuickControls]
+  },
+  mapPlugins: {
+    routecreation: RoutecreationPlugin,
+    macroview: MacroviewPlugin
   },
   "navOptions": {
     "authMenu": {
@@ -121,7 +145,8 @@ const theme = {
           "topBarButtonsView": "z-10",
           "menuPosition": "absolute top-[6px] right-[6px] items-center",
           "editIcon": "hover:text-blue-500 size-6",
-          "contentWrapper": "h-full"
+          "contentWrapper": "h-full",
+          "headerExtensionsRow": "px-3 pb-2"
         }
       ]
     },

@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is AVAIL DMS (Data Management System) - a React-based documentation/content management site built with Vite. The site uses the `@availabs/dms` library (included as a git submodule in `src/dms/`) to provide dynamic page routing, admin patterns, and content management.
 
+## Before starting any non-trivial task
+
+**Check [`src/dms/skills/README.md`](./src/dms/skills/README.md) first.** It's an indexed library of how-to guides for recurring authoring/scoping/live-verification tasks (theming, building sections, creating pages/reports/routes, navigating a live page's DOM, testing conventions). Do this at the start of the task, not only when stuck — the answer, or a relevant gotcha, may already be written down. See the "Skills" section below for more detail.
+
 ## Core principle: author empowerment
 
 **A central design goal of DMS is that an author with admin access should be able to do almost everything a developer can do.** Page layout, data binding, theming, content authoring, swapping sources — all of that lives in the admin UI, not in code. When a developer answers an authoring request with a custom React component, that capability moves out of the author's hands and into the codebase. The next person who wants something similar has to file a ticket.
@@ -132,10 +136,16 @@ dms page list --format json > scratchpad/my-site/pages.json
 
 There are two separate planning systems, split by what the task touches:
 
-- **`planning/` (repo root)** — tasks that touch dms-template itself: `src/themes/`, `data-types/`, deployment/config, site content coordination. Read `planning/planning-rules.md` before implementing.
+- **`planning/` (repo root)** — tasks that touch dms-template itself: `src/themes/`, `data-types/`, deployment/config, site content coordination. This directory is shared across users and **organized by project** (`planning/mitigateny/`, `planning/transportny/`, `planning/tessera/`, `planning/landbank/`, `planning/shared/`), each with its own `tasks/current/` and `tasks/completed/`; `todo.md` and `completed.md` at `planning/` are the shared cross-project indexes. **Every task must be assigned to exactly one project.** Read `planning/planning-rules.md` before implementing.
 - **`src/dms/planning/`** — tasks that touch the `@availabs/dms` library submodule. Read `src/dms/planning/planning-rules.md` before implementing.
 
 **Before implementing any task, read the relevant `planning-rules.md`** — it defines the workflow for task files, progress tracking, and completion. The task file in the matching `planning/tasks/current/` is the source of truth for implementation status and must be updated as work progresses, not just at the end. If a root-level task turns out to require a library change, continue that part of the work under `src/dms/planning/` instead.
+
+## Skills (how-to guides)
+
+`src/dms/skills/` is an indexed library of how-to guides for recurring authoring tasks (building a section component, theming, creating pages/reports/routes, navigating a live page's DOM for browser automation, etc.) — start at [`src/dms/skills/README.md`](./src/dms/skills/README.md) for the index. Skills are a peer to `planning/` (work tracking) and `documentation/`/`research/` (reference material), not a replacement: check the index before starting non-trivial authoring or live-verification work, since the answer may already be written down.
+
+Some skills — `traversing-dms-pages.md` and `traversing-report-pages.md` in particular — are explicitly living documents: update them in the same session whenever a live UI check surfaces a fact they don't yet have, and fix anything that's gone stale.
 
 ## Naming Conventions
 

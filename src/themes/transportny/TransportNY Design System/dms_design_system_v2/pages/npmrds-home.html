@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS · Home · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  NPMRDS CATEGORY · PAGE 1 of 6 — Home
+  ════════════════════════════════════════════════════════════════════
+  Replaces transportNY/src/sites/npmrds/pages/Home/index.jsx (two-column template
+  picker + per-measure region link grid) and supersedes getting-started.html.
+
+  ── REVISION 2 (2026-07-30, Alex's feedback) ────────────────────────
+  1. Renamed "Quick start" → **Home** (nav label, title, footers, ds-nav) on all nine pages.
+  2. The § 01 "Latest available NPMRDS data" band is **gone**, and (rev 2b) ALL the data
+     facts collapsed into the single `data-spine` row at the foot of the header band: extent
+     (2017-01-01 → 2026-07-19, both measured), volume, and the network at the vintage that
+     matches the latest data year.
+     The separate four-segment freshness line was removed from this page — the row says it
+     better. Dropped from the spine on Alex's call: reports-in-library, saved-routes and
+     region count — those are product counts, not data facts, and § 02 already carries them.
+     Rationale: a whole band to say "through June 2026" outweighed the fact.
+  3. The body is **four product sections + a closing About band**, inside ONE content band
+     with a sticky right rail:
+       · the four cards formerly in "Where do you want to start?" are now the **doorway card
+         that opens each product section** — same content, one per section instead of a 4-up
+         row divorced from the thing it opens;
+       · each section then carries either that product's **stats** (MAP-21's four PM3 measures
+         against target) or **links into particular views** (Macro View's eight measures,
+         Reports' library/your-work/templates/new-route, Route Comparison's metrics + period
+         modes). This is where the per-measure entry points the legacy home page had — cut in
+         revision 1 as "one doorway per destination" — legitimately come back: scoped inside
+         the product that owns them, not as a flat 14-link grid behind a region select.
+       · the RAIL is an in-page nav (`sidebar` section group) with a documentation card under
+         it. The three onboarding steps folded into that card as "New here?".
+  Per adding-an-in-page-nav-rail.md: sections opt into the rail via `navLabel`/`anchorId`; the
+  content↔rail column split lives in the PAGES theme (`pages.sectionGroup`), not the shared
+  layoutGroup. The row is **`items-stretch`** and BOTH rail cards sit in ONE sticky wrapper —
+  `items-start` collapses the rail column and kills sticky, and two separately-pinned siblings
+  overlap. (This bullet was backwards across three docs until 2026-07-29.)
+
+  CROSS-PAGE CONTRACT (repeated verbatim on all six NPMRDS pages —
+  see planning/transportny/tasks/current/npmrds-category-design-set.md §Cross-page contract):
+   1. Layout `app` + the NPMRDS SideNav — **byte-identical in shape to the TSMO and Freight
+      Atlas sidenavs**, which are the catalogue's correct treatment and match the live pattern
+      config (`sideNav.topMenu:[LogoNav]`, `bottomMenu:[QuickLinks, UserMenu]` on pattern
+      2100394). Three parts, in order:
+        · **LogoNav** — 40px brand tile + product name (display 15 uppercase) over a mono-9
+          subtitle ("NYSDOT · TransportNY"), the whole block a link home;
+        · **QuickLinks** — the rounded search pill (`bg-[#1a2029]`, `hover:border-[#3a4555]`);
+        · nav items **from the SideNav theme keys, not a textSettings token** — production
+          `navitemSide` is `font-proxima font-[400] text-[15px] px-4 py-2.5`, `navitemSideActive`
+          the same at `font-[500]`, icon `size-5 mr-3`, active = `bg-[#1e2530]` + amber left
+          rail + amber icon. Rail width **w-64** (`lg:ml-64`), items wrapper `py-4`;
+        · **UserMenu** — avatar, two-line identity, right-aligned action.
+      **The nav is FLAT — no sub-items anywhere** (Alex 2026-07-30), and **Docs is not in it**.
+      Five items, in the SAME ORDER as this page's sections: Home · Macro View · Reports ·
+      Route comparison · MAP-21 PM3. The order is repeated in every footer link block and in
+      `ds-nav.js`.
+      ⚠ CONSEQUENCE — skill §10 criterion 5 ("SideNav shown with ≥1 active sub-level and the
+      indicator-icon state") **cannot be met by these pages** and is knowingly waived. The
+      theme's multi-level nav keys stay documented by `components.html` and the Freight
+      Atlas / TSMO pages, so the translation skill still has the states it needs; it is only
+      the NPMRDS pages that are flat. Flattening also cost the MAP-21 group its four children
+      in the nav, which left `map-21.html` a dead end for its siblings — replaced by a
+      `family-nav` pill row in the breadcrumbs band on all four MAP-21 pages.
+      EXCEPTION — TWO pages use the documented COMPACT 64px icon SideNav, as
+      freight-atlas-map.html does: npmrds-macro (a full-page map cannot spend 240px on nav) and
+      npmrds-report (2026-08-05 — it already spends 340px on its route rail, and 256 + 340 = 596px
+      of chrome left the graph canvas narrower than the chrome beside it). Neither loses a
+      destination: same items, same order, same amber active rail, labels becoming `title`
+      tooltips. Both are leaf/deep surfaces you arrive at with the nav already understood.
+   2. Page header shape: breadcrumb (deep pages only) → kicker + rule + meta → h1 + purpose
+      → right-aligned control/action stack + freshness line.
+      EXCEPTION — the workbench page has no page header at all; its chrome is map-owned
+      (floating panels), again per freight-atlas-map.html.
+   3. Breadcrumbs on pages 4/5/6 only — EXCEPT npmrds-report, which drops its breadcrumb band
+      (Alex, 2026-08-05); that page's note records the layout consequence for its full-height rail. Pages 1–3 are category roots. Use the dedicated
+      `breadcrumbs` LayoutGroup (the datasets-source model), NOT a <nav> inlined into
+      page-header — they are different DMS structures and translate differently.
+   4. Freshness strip: "NPMRDS speeds · complete through Jun 2026 · Jul 2026 partial ·
+      since Jan 2017". These FOUR segments are byte-identical on pages 2–6. A page may APPEND
+      a page-scoped suffix after the four (the MAP-21 pages and the workbench add "pm3 year
+      2025"); a page may NOT replace or drop one of the four.
+      EXCEPTION — **Home** carries no separate freshness line. Its `data-spine` row states the
+      same facts more completely (real first + last date, volume, network, last quotable month)
+      and is the page's single data row. Orientation pages shouldn't say it twice.
+   5. Measure vocabulary written once (npmrds-macro § 01) and reused byte-identically on
+      1/4/6 — this page's § 01 measure links use exactly those names and units.
+   6. Route row: colour dot (size-3) · name at 13px/600 truncated WITH a title tooltip ·
+      meta at 10px uppercase-tracked "N TMC · N.N mi · dates". One treatment on 1/2/5/6.
+   7. Download affordance: section-header right, Download icon + metaSM label.
+   8. Empty/loading/error states from design-system/patterns.html §states.
+   9. Compound cards = two or more STACKED sections sharing an edge whose padding is zeroed.
+      **Not achievable on this catalogue's `grid gap-6`** — the 24px gutter belongs to the
+      grid, so no section-padding zeroing can close it. Compound cards arrive with the gap-0
+      conversion (its own follow-on task). Until then, adjacent cards each close themselves
+      and carry their own attribution line. See npmrds-report.html band 1.
+  10. No `data-dms-section` nests inside another. A wrapper that contains sections is a BAND
+      (`data-dms-group` + a 12-col grid); band heads are their own lexical sections. DMS has
+      no container-section concept, so nested markers mistranslate. The main column and the
+      per-section inner grids below are unmarked layout divs for that reason — the flat
+      `pages.sectionGroup` grid has no sub-grid concept, which is logged as an Escalation.
+
+  TOKENS (design-system/theme.html §type — no invented specs):
+    displayHero 52/600 · displayXL 44/600 · displayLG 38/600 upper · displayMD 28/600
+    displaySM 22/500 · displayXS 18/500 · cardTitleSM 15/500 · proseLG 16 · prose 14.5
+    proseSM 12.5 · proseXS 11.5 · metaMD 12 tabular · metaSM 10.5 upper · metaXS 9.5 upper
+    kicker 10.5 amber · statXL 52 / statLG 28 / statMD 22 (tabular stat aliases)
+    chromeNav 13/500 · chromeLabel 10 mono upper · chromeTick 9 mono
+  Modifier axes applied at the call site only: colour · tabular-nums · uppercase · italic ·
+  text-transform.
+
+  REAL DATA (verified 2026-07-29 — ClickHouse system.parts on npmrds.s583_v982_NPMRDS_V6;
+  never max(date) on that table, it is a 14.4B-row unfiltered scan):
+    EXTENT, measured 2026-07-30 — first date **2017-01-01**, last date **2026-07-19**.
+      Both from partition-PRUNED queries (`WHERE toYYYYMM(date)=201701` / `=202607`); the
+      partition key IS `toYYYYMM(date)`, so each touched one partition and returned in 0.2s.
+      That is not the unfiltered-scan hazard — the hazard is `max(date)` with no partition
+      predicate, which reads all 14.4B rows.
+    partitions 201701 → 202607 · last complete month Jun 2026 (199,359,695 rows)
+    Jul 2026 partial: 122,745,144 rows across exactly **19 days** (loaded 2026-07-29 00:32 UTC)
+    total 14,376,452,702
+    PM3 reporting year 2025 (source 2001/view 3394 ⋈ FHWA targets 2027/3460)
+    report library 869 legacy reports · 32 rebuilt as DMS pages
+    routes catalogue 32,569 distinct route_ids (Routes Data 2107426/2107427 — the source is
+      ~2× duplicated on route_id, 64,801 raw rows; recorded as data debt)
+    TMC network — the row shows **52,473 segments · 2026 map**, because the vintage must track
+      the latest data year (2026-07-19 → 2026). Per-vintage: 2024: 52,029 · 2025: 52,157 ·
+      2026: 52,473. Earlier drafts showed the 2025 count while the data ran into 2026.
+    (historic note) 52,157 segments for the **2025** map — VERIFIED 2026-07-29 against three
+      independent sources that agree exactly: ClickHouse npmrds_meta.s582_v983_… (source 582 /
+      view 983) WHERE year=2025, npmrds_meta.s1946_v3298_ny_2025_tmc_meta, and the PostGIS 2025
+      geometry view (source 582 / **view 1312**). The year qualifier is load-bearing: the
+      current network is 52,473 (2026) and 2024 was 52,029, so a bare "52,157 TMC segments"
+      goes stale and then wrong. NB: view **1041 is the 2022** network (51,227), not 2025.
+  Doc links point at docs-overview.html in the mockup; the real npmrds_docs slug AND row id
+  are in comments beside each link. All eleven npmrds_docs pages are listed in the rail's
+  documentation card — a docs index's completeness is its content.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ═════════ SIDENAV · the NPMRDS category nav (contract item 1) ═════════ -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="npmrds-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `hero` ═════════
+               Carries the whole data-currency story now: the freshness line states start,
+               latest complete and partial; the spine strip states the volumes. -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pt-12 pb-6" data-dms-section="page-header">
+              <div class="flex items-center gap-3 mb-2 flex-wrap">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// national performance management research data set</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">new york state · fhwa probe data</span>
+              </div>
+              <div class="max-w-[760px]">
+                <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">NPMRDS<span class="text-[#CA8A04]">.</span></h1>
+                <p class="font-proxima text-[16px] leading-[1.65] text-slate-700 mt-3">Five-minute travel-time and speed observations on every NHS road segment in New York State. Use it to measure reliability, quantify congestion, evaluate a project before and after, and file the federal MAP-21 performance report.</p>
+              </div>
+            </div>
+
+            <!-- DATA SPINE · ONE row, and the only place Home states the data.
+                 ★ THIS IS A DATA-DRIVEN CARD, NOT AUTHORED TEXT. Every value below is computed
+                 from the NPMRDS data itself, so the row always shows the true current extent
+                 and can never go stale. The values shown are what the live query returned on
+                 2026-07-30; they are placeholders for the binding, not copy.
+
+                 BINDING (verified live 2026-07-30 — the whole row is ONE query, 0.02s):
+                   Card · externalSource → npmrds2 · source 583 / view 982 (NPMRDS V6, ClickHouse)
+                   calc columns:
+                     min(date)  → extent_first        (formatFn: date)
+                     max(date)  → extent_last         (formatFn: date)
+                     count()    → observations        (formatFn: abbreviate)
+                   `last_complete_month` was REMOVED from this row on Alex's call — three facts
+                   read better than four, and the extent already answers "what have I got".
+                   TMC-segment count is a SECOND binding (different grain → sibling cell or a
+                   joined source): `npmrds_meta.s582_v983_NPMRDS_V6_tmc_meta`, source 582 /
+                   view 983, `WHERE year = toYear(max(date))` — the network vintage must TRACK
+                   THE LATEST DATA YEAR, never a literal. Verified per-vintage counts:
+                   2024: 52,029 · 2025: 52,157 · 2026: 52,473. Latest data is 2026-07-19, so
+                   the vintage is 2026 and the count is 52,473 — which is what the row shows.
+                   A hardcoded 2025 would have been silently a year stale.
+
+                 ⚠ PERFORMANCE — this is the counter-intuitive part, so don't "optimise" it away:
+                 `min(date)`, `max(date)` and `count()` on that 14.4-BILLION-row table are
+                 **metadata reads, not scans** — 0.02–0.05s — because `date` feeds the partition
+                 key (`toYYYYMM(date)`) and MergeTree keeps per-part min/max and row counts. The
+                 unfiltered-scan hazard is real but narrower than "never touch this table": it
+                 applies to aggregates over MEASURE columns (travel_time_*) with no partition
+                 predicate. Date bounds and row counts are free. Verified, not assumed.
+
+                 Contract item 4 EXCEPTION (Home only): the four-segment freshness line is
+                 absorbed here rather than repeated in the header's right column — a page whose
+                 job is orientation shouldn't say the same thing twice, six inches apart. Pages
+                 2–6 keep the standard line. Because this row is live-bound, it is also strictly
+                 more trustworthy than an authored freshness line.
+                 Dropped on Alex's call: reports-in-library / saved-routes / region count —
+                 product counts, not data facts, and each already lives in the section that owns
+                 it (§ 02 Reports carries 869 and 32,569).
+                 Sibling section, never nested (contract item 10). -->
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pb-8" data-dms-section="data-spine">
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-4 py-3 flex flex-wrap items-center gap-x-8 gap-y-3">
+                <!-- the headline fact: what data you actually have -->
+                <div class="flex items-center gap-3">
+                  <span class="size-2 rounded-full bg-emerald-500 dot-pulse shrink-0"></span>
+                  <div>
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">data available</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] tabular-nums text-[#0F1722]">Jan 1, 2017 &ndash; Jul 19, 2026</div>
+                  </div>
+                </div>
+                <span class="h-8 w-px bg-zinc-950/10 hidden sm:block"></span>
+                <div>
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">observations</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] tabular-nums text-[#0F1722]">14.38<span class="text-[12.5px] text-slate-500 ml-0.5">billion</span></div>
+                </div>
+                <span class="h-8 w-px bg-zinc-950/10 hidden sm:block"></span>
+                <div>
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">road segments · 2026 map</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] tabular-nums text-[#0F1722]">52,473<span class="text-[12.5px] text-slate-500 ml-1">TMCs</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ BODY · LayoutGroup `content` · main column + sticky rail ═════════
+               ONE band, because a `sidebar` section group belongs to a band — a rail cannot
+               span four of them. `items-stretch` is required or the rail column collapses to
+               content height and sticky has no travel. -->
+          <div class="w-full bg-[#ECEEF2] py-10" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div class="grid grid-cols-12 gap-8 items-stretch">
+
+                <!-- ══════════ MAIN COLUMN ══════════ -->
+                <div class="col-span-12 lg:col-span-9 min-w-0">
+                  <div class="grid grid-cols-12 gap-y-10 gap-x-6">
+
+                    <!-- ─────── § 01 · MACRO VIEW ─────── -->
+                    <div class="col-span-12" id="macro" data-dms-section="macro-head">
+                      <div class="flex items-end justify-between gap-6 flex-wrap">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">statewide · one measure, one year at a time · 11 regions</span>
+                          </div>
+                          <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Macro View.</h2>
+                        </div>
+                        <a href="npmrds-macro.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">open macro view <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      </div>
+                    </div>
+
+                    <div class="col-span-12" data-dms-section="macro-body">
+                      <div class="grid grid-cols-12 gap-6">
+                        <!-- the doorway card · was "Where do you want to start?" card 1 -->
+                        <div class="col-span-12 md:col-span-4 relative group">
+                          <div class="absolute -top-3 left-5 z-10 px-2.5 py-1 rounded-[4px] font-mono text-[9.5px] uppercase tracking-[0.2em] text-white shadow-md" style="background:#1F3F8F">statewide map</div>
+                          <div class="flex flex-col h-full rounded-[8px] bg-white shadow-xl overflow-hidden transition-transform duration-150 group-hover:-translate-y-1">
+                            <div class="p-5 pt-7 flex-1">
+                              <div class="flex items-center gap-3">
+                                <span class="inline-flex size-14 rounded-[10px] items-center justify-center text-white shrink-0" style="background:#1F3F8F"><!-- icon: GeographicFlexibility --><svg class="size-8" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg></span>
+                                <span class="font-display font-medium uppercase text-[22px] leading-[1.1] tracking-tight text-[#0F1722]">Macro View</span>
+                              </div>
+                              <p class="mt-3 font-proxima text-[12.5px] leading-[1.55] text-slate-600">Every performance measure, mapped on the whole NHS network. Filter to a region, read the distribution against the definition, download exactly what the map is drawing.</p>
+                              <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-slate-500"><a href="npmrds-macro.html" class="hover:text-[#1F3F8F]">Measure reference &rarr;</a><a href="npmrds-macro.html" class="hover:text-[#1F3F8F]">Download &rarr;</a></div>
+                            </div>
+                            <a href="npmrds-macro.html" class="h-11 px-5 flex items-center justify-between transition-colors" style="background:#1F3F8F">
+                              <span class="font-display uppercase text-[13px] tracking-wide text-white">Open Macro View</span>
+                              <span class="text-[#FACC15] text-[16px]">&rarr;</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        <!-- links into particular views · the eight measures, named and unitted
+                             exactly as npmrds-macro § 01 names them (contract item 5) -->
+                        <div class="col-span-12 md:col-span-8">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col">
+                            <div class="px-4 h-10 flex items-center gap-2 border-b border-zinc-950/05">
+                              <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 flex-1">go straight to a measure</span>
+                              <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">2025 · region 8</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 flex-1">
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 border-b border-r border-zinc-950/05 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">LOTTR</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">Travel-time reliability</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">ratio</span>
+                              </a>
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 border-b border-zinc-950/05 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">TTTR</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">Truck reliability</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">ratio</span>
+                              </a>
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 border-b border-r border-zinc-950/05 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">TED</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">Total excessive delay</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">veh-hr</span>
+                              </a>
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 border-b border-zinc-950/05 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">PHED</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">Peak-hour excessive delay</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">per-hr</span>
+                              </a>
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 border-b border-r border-zinc-950/05 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">Speed</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">Percentile · 5th → 95th</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">mph</span>
+                              </a>
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 border-b border-zinc-950/05 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">Freeflow</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">Uncongested reference</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">mph</span>
+                              </a>
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 border-r border-zinc-950/05 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">CO₂</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">Emissions · 6 pollutants</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">tons/yr</span>
+                              </a>
+                              <a href="npmrds-macro.html" class="px-4 py-2.5 flex items-center gap-2 hover:bg-slate-50">
+                                <span class="font-display font-medium text-[15px] text-[#0f1722] w-16 shrink-0">Network</span>
+                                <span class="font-proxima text-[12.5px] text-slate-600 flex-1 min-w-0 truncate">TMC &amp; RIS attributes</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 shrink-0">meta</span>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ─────── § 02 · REPORTS ─────── -->
+                    <div class="col-span-12" id="reports" data-dms-section="reports-head">
+                      <div class="flex items-end justify-between gap-6 flex-wrap">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">869 in the library · 32,569 saved routes · 12 ready-made</span>
+                          </div>
+                          <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Reports.</h2>
+                        </div>
+                        <a href="npmrds-reports.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">open reports <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      </div>
+                    </div>
+
+                    <div class="col-span-12" data-dms-section="reports-body">
+                      <div class="grid grid-cols-12 gap-6">
+                        <!-- the doorway card · CREATE. Revision 2c: this card's whole job is
+                             starting a new report; finding one is the section head's link and
+                             the two ready-made cards beside it. -->
+                        <div class="col-span-12 md:col-span-4 relative group">
+                          <div class="absolute -top-3 left-5 z-10 px-2.5 py-1 rounded-[4px] font-mono text-[9.5px] uppercase tracking-[0.2em] text-white shadow-md" style="background:#37576B">start something</div>
+                          <div class="flex flex-col h-full rounded-[8px] bg-white shadow-xl overflow-hidden transition-transform duration-150 group-hover:-translate-y-1">
+                            <div class="p-5 pt-7 flex-1">
+                              <div class="flex items-center gap-3">
+                                <span class="inline-flex size-14 rounded-[10px] items-center justify-center text-white shrink-0" style="background:#37576B"><!-- icon: Report --><svg class="size-8" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg></span>
+                                <span class="font-display font-medium uppercase text-[22px] leading-[1.1] tracking-tight text-[#0F1722]">New report</span>
+                              </div>
+                              <p class="mt-3 font-proxima text-[12.5px] leading-[1.55] text-slate-600">A report is a page: routes in the left rail, graphs bound to them. Start blank and add your own graphs, or take a ready-made report beside this and just supply the route.</p>
+                              <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-slate-500"><a href="npmrds-reports.html" class="hover:text-[#1F3F8F]">Search 869 &rarr;</a><a href="npmrds-reports.html#your-reports" class="hover:text-[#1F3F8F]">Your 7 &rarr;</a></div>
+                              <div class="mt-4 pt-3 border-t border-zinc-950/05">
+                                <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1.5">6 more ready-made, by question</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                  <a href="npmrds-reports.html#templates" class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600 hover:border-[#37576B]">floating car</a>
+                                  <a href="npmrds-reports.html#templates" class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600 hover:border-[#37576B]">before &amp; after</a>
+                                  <a href="npmrds-reports.html#templates" class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600 hover:border-[#37576B]">events</a>
+                                </div>
+                              </div>
+                            </div>
+                            <a href="npmrds-report.html" class="h-11 px-5 flex items-center justify-between transition-colors" style="background:#37576B">
+                              <span class="font-display uppercase text-[13px] tracking-wide text-white">Create a report</span>
+                              <span class="text-[#FACC15] text-[16px]">&rarr;</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        <!-- ready-made · each row opens a REPORT, already built; the reader only
+                             supplies the route. These are the real FocusAnalysis.config.js
+                             categories and titles (ids 246/247/228/225 and 244/239/207/77). -->
+<div class="col-span-12 md:col-span-4">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col">
+                            <div class="px-4 pt-4 pb-3 border-b border-zinc-950/05">
+                              <div class="flex items-center gap-2 mb-2">
+                                <span class="size-7 rounded-[5px] bg-[#37576B]/10 flex items-center justify-center text-[#37576B] shrink-0"><!-- icon: Activity --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] flex-1">// behavioral</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 tabular-nums shrink-0">3</span>
+                              </div>
+                              <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">How the road behaves</div>
+                              <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">Ready-made reports for normal conditions — what a typical day, week or season actually looks like.</p>
+                            </div>
+                            <div class="flex-1"><a href="npmrds-report.html" class="px-4 py-2.5 flex items-start gap-2 hover:bg-slate-50 border-b border-zinc-950/05"><div class="min-w-0 flex-1"><div class="font-proxima text-[13px] font-medium text-[#0f1722]">Snapshot</div><div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500">One route, one window, every measure at five-minute resolution.</div></div><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a><a href="npmrds-report.html" class="px-4 py-2.5 flex items-start gap-2 hover:bg-slate-50 border-b border-zinc-950/05"><div class="min-w-0 flex-1"><div class="font-proxima text-[13px] font-medium text-[#0f1722]">Seasonality</div><div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500">Winter, spring, summer and fall on one axis.</div></div><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a><a href="npmrds-report.html" class="px-4 py-2.5 flex items-start gap-2 hover:bg-slate-50"><div class="min-w-0 flex-1"><div class="font-proxima text-[13px] font-medium text-[#0f1722]">Bi-directional</div><div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500">Two routes, opposite directions, paired on every graph.</div></div><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a></div>
+                            <div class="px-4 py-2 border-t border-zinc-950/05 bg-slate-50/60 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">1 route · 2 for bi-directional</div>
+                          </div>
+                        </div>
+
+<div class="col-span-12 md:col-span-4">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col">
+                            <div class="px-4 pt-4 pb-3 border-b border-zinc-950/05">
+                              <div class="flex items-center gap-2 mb-2">
+                                <span class="size-7 rounded-[5px] bg-[#37576B]/10 flex items-center justify-center text-[#37576B] shrink-0"><!-- icon: History --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg></span>
+                                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] flex-1">// change over time</span>
+                                <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 tabular-nums shrink-0">3</span>
+                              </div>
+                              <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Whether it changed</div>
+                              <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">Ready-made reports that put two or more periods side by side and show the difference.</p>
+                            </div>
+                            <div class="flex-1"><a href="npmrds-report.html" class="px-4 py-2.5 flex items-start gap-2 hover:bg-slate-50 border-b border-zinc-950/05"><div class="min-w-0 flex-1"><div class="font-proxima text-[13px] font-medium text-[#0f1722]">Year over year</div><div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500">Same window, consecutive years, stacked for comparison.</div></div><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a><a href="npmrds-report.html" class="px-4 py-2.5 flex items-start gap-2 hover:bg-slate-50 border-b border-zinc-950/05"><div class="min-w-0 flex-1"><div class="font-proxima text-[13px] font-medium text-[#0f1722]">This month vs. last month vs. last year</div><div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500">Three-way rolling comparison for a monthly memo.</div></div><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a><a href="npmrds-report.html" class="px-4 py-2.5 flex items-start gap-2 hover:bg-slate-50"><div class="min-w-0 flex-1"><div class="font-proxima text-[13px] font-medium text-[#0f1722]">Monthly congestion</div><div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500">Delay and excessive-delay hours, by month.</div></div><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a></div>
+                            <div class="px-4 py-2 border-t border-zinc-950/05 bg-slate-50/60 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">1 route · dates from the template</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ─────── § 03 · ROUTE COMPARISON ─────── -->
+                    <div class="col-span-12" id="comparison" data-dms-section="comparison-head">
+                      <div class="flex items-end justify-between gap-6 flex-wrap">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">many routes × many periods · one cross-tab</span>
+                          </div>
+                          <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Route comparison.</h2>
+                        </div>
+                        <a href="route-comparison.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">open route comparison <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      </div>
+                    </div>
+
+                    <div class="col-span-12" data-dms-section="comparison-body">
+                      <div class="grid grid-cols-12 gap-6">
+                        <div class="col-span-12 md:col-span-4 relative group">
+                          <div class="absolute -top-3 left-5 z-10 px-2.5 py-1 rounded-[4px] font-mono text-[9.5px] uppercase tracking-[0.2em] text-white shadow-md" style="background:#8a5f03">batch tool</div>
+                          <div class="flex flex-col h-full rounded-[8px] bg-white shadow-xl overflow-hidden transition-transform duration-150 group-hover:-translate-y-1">
+                            <div class="p-5 pt-7 flex-1">
+                              <div class="flex items-center gap-3">
+                                <span class="inline-flex size-14 rounded-[10px] items-center justify-center text-white shrink-0" style="background:#8a5f03"><!-- icon: ScatterMatrix --><svg class="size-8" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg></span>
+                                <span class="font-display font-medium uppercase text-[22px] leading-[1.1] tracking-tight text-[#0F1722]">Route comparison</span>
+                              </div>
+                              <p class="mt-3 font-proxima text-[12.5px] leading-[1.55] text-slate-600">Rows are routes, columns are periods × metrics, cells compute on demand. Typical use: every corridor in a region against the same month last year, exported as one table.</p>
+                              <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-slate-500"><a href="docs-overview.html" class="hover:text-[#1F3F8F]">Batch Reports API &rarr;</a></div>
+                            </div>
+                            <a href="route-comparison.html" class="h-11 px-5 flex items-center justify-between transition-colors" style="background:#8a5f03">
+                              <span class="font-display uppercase text-[13px] tracking-wide text-white">Build a cross-tab</span>
+                              <span class="text-[#FACC15] text-[16px]">&rarr;</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        <div class="col-span-12 md:col-span-8">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col">
+                            <div class="px-4 h-10 flex items-center gap-2 border-b border-zinc-950/05">
+                              <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 flex-1">what a run gives you</span>
+                              <!-- Contract item 7 · download affordance, section-header right -->
+                              <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 inline-flex items-center gap-1"><!-- icon: Download --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>csv</span>
+                            </div>
+                            <div class="p-4 space-y-3 flex-1">
+                              <div>
+                                <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1.5">metrics per cell</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">speed</span>
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">travel time</span>
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">delay</span>
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-[#37576B]/30 bg-[#37576B]/8 font-mono text-[10px] uppercase tracking-wider text-[#1f3450]">% change vs base</span>
+                                </div>
+                              </div>
+                              <div>
+                                <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1.5">period modes</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">fixed dates</span>
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">each route's own</span>
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">relative to base</span>
+                                </div>
+                              </div>
+                              <div>
+                                <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1.5">vehicle class</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">all vehicles</span>
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">freight trucks</span>
+                                  <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600">passenger</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="px-4 py-2.5 border-t border-zinc-950/05">
+                              <!-- real slug ap_is/batch_reports_api · 1715527 -->
+                              <a href="docs-overview.html" class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1.5"><!-- icon: Code --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8 9-3 3 3 3m8-6 3 3-3 3M13.5 5l-3 14"/></svg>run it from the API instead <!-- icon: ChevronRight --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ─────── § 04 · MAP-21 PM3 ─────── -->
+                    <div class="col-span-12" id="map21" data-dms-section="map21-head">
+                      <div class="flex items-end justify-between gap-6 flex-wrap">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">cy 2025 · 23 cfr 490 subparts e–g</span>
+                          </div>
+                          <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">MAP-21 PM3.</h2>
+                        </div>
+                        <a href="map-21.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">open map-21 <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      </div>
+                    </div>
+
+                    <div class="col-span-12" data-dms-section="map21-body">
+                      <div class="grid grid-cols-12 gap-6">
+                        <div class="col-span-12 md:col-span-4 relative group">
+                          <div class="absolute -top-3 left-5 z-10 px-2.5 py-1 rounded-[4px] font-mono text-[9.5px] uppercase tracking-[0.2em] text-white shadow-md" style="background:#0F2D4D">cy 2025</div>
+                          <div class="flex flex-col h-full rounded-[8px] bg-white shadow-xl overflow-hidden transition-transform duration-150 group-hover:-translate-y-1">
+                            <div class="p-5 pt-7 flex-1">
+                              <div class="flex items-center gap-3">
+                                <span class="inline-flex size-14 rounded-[10px] items-center justify-center text-white shrink-0" style="background:#0F2D4D"><!-- icon: Activity --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                                <span class="font-display font-medium uppercase text-[22px] leading-[1.1] tracking-tight text-[#0F1722]">MAP-21 PM3</span>
+                              </div>
+                              <p class="mt-3 font-proxima text-[12.5px] leading-[1.55] text-slate-600">The federal performance report against agency-set four-year targets, by segment, region and MPO. Two of the four measures are currently below target.</p>
+                              <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-slate-500"><a href="docs-overview.html" class="hover:text-[#1F3F8F]">23 CFR 490 &rarr;</a><a href="map-21.html" class="hover:text-[#1F3F8F]">Methodology &rarr;</a></div>
+                            </div>
+                            <a href="map-21.html" class="h-11 px-5 flex items-center justify-between transition-colors" style="background:#0F2D4D">
+                              <span class="font-display uppercase text-[13px] tracking-wide text-white">Open PM3 report</span>
+                              <span class="text-[#FACC15] text-[16px]">&rarr;</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        <!-- product stats · the four PM3 measures against target. Same binding as
+                             map-21.html § compliance (2001/3394 ⋈ 2027/3460), so they cannot disagree. -->
+                        <div class="col-span-12 md:col-span-8">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col">
+                            <div class="px-4 h-9 flex items-center gap-2 border-b border-zinc-950/05">
+                              <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 flex-1">reporting year <span class="text-[#0f1722] font-medium tabular-nums">2025</span></span>
+                              <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">change vs <span class="tabular-nums">2024</span></span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 flex-1 content-stretch">
+                              <div class="px-4 py-3 border-b border-r border-zinc-950/05 flex flex-col justify-center">
+                                <div class="flex items-center gap-2">
+                                  <span class="size-1.5 rounded-full bg-[#10B981] shrink-0"></span>
+                                  <span class="font-display font-medium text-[15px] text-[#0f1722] flex-1 min-w-0 truncate" title="Interstate reliability">Interstate reliability</span>
+                                  <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0F1722]">84.2<span class="text-[12px] font-medium text-slate-500">%</span></span>
+                                </div>
+                                <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden mt-2">
+                                  <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:84.2%"></div>
+                                  <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                                </div>
+                                <div class="flex items-center justify-between mt-1"><span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400"><span class="text-slate-500">LOTTR</span> · &ge; 80%</span><span class="font-mono text-[12px] tabular-nums font-medium text-emerald-700">↑ +4.2</span></div>
+                              </div>
+                              <div class="px-4 py-3 border-b border-zinc-950/05 flex flex-col justify-center">
+                                <div class="flex items-center gap-2">
+                                  <span class="size-1.5 rounded-full bg-[#EF4444] shrink-0"></span>
+                                  <span class="font-display font-medium text-[15px] text-[#0f1722] flex-1 min-w-0 truncate" title="Non-Interstate NHS reliability">Non-Interstate NHS reliability</span>
+                                  <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0F1722]">73.8<span class="text-[12px] font-medium text-slate-500">%</span></span>
+                                </div>
+                                <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden mt-2">
+                                  <div class="absolute inset-y-0 left-0 bg-red-500" style="width:73.8%"></div>
+                                  <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:76%"></div>
+                                </div>
+                                <div class="flex items-center justify-between mt-1"><span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400"><span class="text-slate-500">LOTTR</span> · &ge; 76%</span><span class="font-mono text-[12px] tabular-nums font-medium text-red-700">↓ -2.2</span></div>
+                              </div>
+                              <div class="px-4 py-3 border-b border-r border-zinc-950/05 flex flex-col justify-center">
+                                <div class="flex items-center gap-2">
+                                  <span class="size-1.5 rounded-full bg-[#10B981] shrink-0"></span>
+                                  <span class="font-display font-medium text-[15px] text-[#0f1722] flex-1 min-w-0 truncate" title="Truck reliability">Truck reliability</span>
+                                  <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0F1722]">1.42</span>
+                                </div>
+                                <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden mt-2">
+                                  <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:71%"></div>
+                                  <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:77.5%"></div>
+                                </div>
+                                <div class="flex items-center justify-between mt-1"><span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400"><span class="text-slate-500">TTTR</span> · &le; 1.55</span><span class="font-mono text-[12px] tabular-nums font-medium text-emerald-700">↓ -0.13</span></div>
+                              </div>
+                              <div class="px-4 py-3 border-b border-zinc-950/05 flex flex-col justify-center">
+                                <div class="flex items-center gap-2">
+                                  <span class="size-1.5 rounded-full bg-[#EF4444] shrink-0"></span>
+                                  <span class="font-display font-medium text-[15px] text-[#0f1722] flex-1 min-w-0 truncate" title="Peak-hour excessive delay">Peak-hour excessive delay</span>
+                                  <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0F1722]">4.42<span class="text-[12px] font-medium text-slate-500">M hr</span></span>
+                                </div>
+                                <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden mt-2">
+                                  <div class="absolute inset-y-0 left-0 bg-red-500" style="width:85%"></div>
+                                  <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:77%"></div>
+                                </div>
+                                <div class="flex items-center justify-between mt-1"><span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400"><span class="text-slate-500">PHED</span> · &le; 4.0M hr</span><span class="font-mono text-[12px] tabular-nums font-medium text-red-700">↑ +10.6%</span></div>
+                              </div>
+                            </div>
+                            <!-- links into particular views · the four MAP-21 sub-pages -->
+                            <div class="px-4 py-2.5 flex flex-wrap items-center gap-x-5 gap-y-2 mt-auto">
+                              <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">go to</span>
+                              <a href="map-21.html" class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">per-year</a>
+                              <a href="map-21-system-performance.html" class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">system performance</a>
+                              <a href="map-21-lottr.html" class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">lottr</a>
+                              <a href="map-21-trend.html" class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">multi-year trend</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ─────── § 05 · ABOUT · the closing band ─────── -->
+                    <div class="col-span-12" id="about" data-dms-section="about-head">
+                      <div class="flex items-end justify-between gap-6 flex-wrap">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">before you quote a number</span>
+                          </div>
+                          <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What NPMRDS is good at — and what it isn't.</h2>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-span-12" data-dms-section="about-body">
+                      <div class="grid grid-cols-12 gap-6">
+                        <div class="col-span-12 lg:col-span-4">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                            <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">What it is</div>
+                            <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-2">Anonymised probe observations — vehicles reporting position and speed — aggregated by FHWA to five-minute averages on each TMC road segment. NYSDOT receives the New York extract; AVAIL loads, validates and indexes it for query.</p>
+                          </div>
+                        </div>
+                        <div class="col-span-12 lg:col-span-4">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                            <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Strengths</div>
+                            <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-2 space-y-1.5">
+                              <li class="flex gap-2"><span class="text-emerald-600 mt-0.5 shrink-0"><!-- icon: Check --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 12.75 6 6 9-13.5"/></svg></span>Continuous, statewide, nine-plus years deep — no field deployment needed.</li>
+                              <li class="flex gap-2"><span class="text-emerald-600 mt-0.5 shrink-0"><!-- icon: Check --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 12.75 6 6 9-13.5"/></svg></span>Consistent method year over year, so before-and-after comparisons are fair.</li>
+                              <li class="flex gap-2"><span class="text-emerald-600 mt-0.5 shrink-0"><!-- icon: Check --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 12.75 6 6 9-13.5"/></svg></span>Separate all-vehicle, truck and passenger feeds for freight work.</li>
+                            </ul>
+                          </div>
+                        </div>
+                        <div class="col-span-12 lg:col-span-4">
+                          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                            <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Limits</div>
+                            <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-2 space-y-1.5">
+                              <li class="flex gap-2"><span class="text-[#a9701c] mt-0.5 shrink-0"><!-- icon: AlertTriangle --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>It measures speed, not volume. Pair with AADT for delay and cost.</li>
+                              <li class="flex gap-2"><span class="text-[#a9701c] mt-0.5 shrink-0"><!-- icon: AlertTriangle --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>Low-volume rural segments have thin samples; short windows get noisy.</li>
+                              <li class="flex gap-2"><span class="text-[#a9701c] mt-0.5 shrink-0"><!-- icon: AlertTriangle --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>The TMC map changes between vintages — segment IDs are not eternal.</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- ══════════ RAIL · section group `sidebar` ══════════
+                     ONE sticky wrapper around BOTH cards (two separately-pinned siblings at the
+                     same `top` overlap). The column is full band height because the row above is
+                     `items-stretch` — that is what gives sticky its travel. -->
+                <div class="col-span-12 lg:col-span-3" data-dms-group="sidebar">
+                  <div class="lg:sticky lg:top-6 space-y-6">
+
+                    <!-- in-page nav · sections opt in via navLabel/anchorId; scroll-spy marks
+                         the active one (statically the first here) -->
+                    <div data-dms-section="page-nav">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                        <div class="font-display uppercase text-[11.5px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                        <a href="#macro" class="tny-toc-item active">Macro View</a>
+                        <a href="#reports" class="tny-toc-item">Reports</a>
+                        <a href="#comparison" class="tny-toc-item">Route comparison</a>
+                        <a href="#map21" class="tny-toc-item">MAP-21 PM3</a>
+                        <a href="#about" class="tny-toc-item">About the data</a>
+                      </div>
+                    </div>
+
+                    <!-- documentation card · authored `sidebar` content beside the nav.
+                         "New here?" is the three onboarding steps, folded in from the deleted
+                         quick-start band; then every npmrds_docs page, because a docs index's
+                         completeness is its content. -->
+                    <div data-dms-section="docs-card">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="px-4 py-3 border-b border-zinc-950/05 flex items-center gap-2">
+                          <!-- icon: Book --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] flex-1">Documentation</span>
+                        </div>
+
+                        <!-- New here? · the three steps, compressed to one line each -->
+                        <div class="px-4 py-3 border-b border-zinc-950/05 bg-[#FACC15]/10">
+                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// new here?</div>
+                          <ol class="space-y-1"><li class="flex gap-2"><span class="font-mono text-[10px] tabular-nums text-[#CA8A04] shrink-0">1</span><span class="font-proxima text-[12.5px] leading-[1.45] text-slate-600">Build a route</span></li><li class="flex gap-2"><span class="font-mono text-[10px] tabular-nums text-[#CA8A04] shrink-0">2</span><span class="font-proxima text-[12.5px] leading-[1.45] text-slate-600">Put it in a report</span></li><li class="flex gap-2"><span class="font-mono text-[10px] tabular-nums text-[#CA8A04] shrink-0">3</span><span class="font-proxima text-[12.5px] leading-[1.45] text-slate-600">Read the measure</span></li></ol><a href="docs-overview.html" class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] mt-2 inline-block">walk me through it &rarr;</a>
+                        </div>
+
+                        <div class="divide-y divide-zinc-950/05">
+                          <!-- each href → docs-overview.html in the mockup; real slug · row id in the comment -->
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/overview · 225868 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">NPMRDS overview</span><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/quick_start · 280326 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">Quick start</span><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/route_analysis · 280610 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">Route analysis</span><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/regional_analysis · 280612 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">Regional analysis</span><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/p_m_3_measures · 281670 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">PM3 measures</span><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/batch_reports · 489118 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">Batch reports</span><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- ap_is/batch_reports_api · 1715527 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">Batch Reports API</span><!-- icon: Code --><svg class="size-3 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8 9-3 3 3 3m8-6 3 3-3 3M13.5 5l-3 14"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/training_videos · 419465 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">Training videos</span><!-- icon: Play --><svg class="size-3 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></a>
+                          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-2 hover:bg-slate-50"><!-- npmrds/appendix · 281807 --><span class="font-proxima text-[12.5px] text-slate-700 flex-1 min-w-0 truncate">Appendix &amp; glossary</span><!-- icon: ChevronRight --><svg class="size-3 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                        </div>
+
+                        <a href="docs-overview.html" class="px-4 py-2.5 border-t border-zinc-950/05 flex items-center gap-1.5 bg-slate-50/60 hover:bg-slate-100">
+                          <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] flex-1">all documentation</span>
+                          <!-- icon: ChevronRight --><svg class="size-3 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                        </a>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER · link block (skill §7.0.3) ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="npmrds-report.html" class="hover:text-slate-900">report</a>
+                <a href="route-comparison.html" class="hover:text-slate-900">route-comparison</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              
+              </div>
+              <span class="font-mono text-[11.5px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

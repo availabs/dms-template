@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Albany County Land Bank · Edit 110 Alexander Street — Staff</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<!--
+  property-edit.html · ADMIN PANEL 5 of 5 — full edit form for an existing parcel.
+  Layout `app`. Pre-filled for 110 Alexander Street (SBL 76.64-2-6). Same field
+  groups as the new-property modal, as a full page with a sticky save rail.
+  Reached from the table pencil icon + the view card's Edit button.
+  Save/Cancel -> property-view.html.
+-->
+<body class="lb-paper text-ink antialiased">
+<div class="min-h-svh" data-dms-layout="app">
+
+  <!-- ═══ SideNav ═══ -->
+  <aside class="fixed inset-y-0 left-0 w-60 bg-ink flex flex-col z-40 max-lg:hidden">
+    <div class="h-14 bg-black/25 border-b border-white/10 flex items-center px-3 gap-2.5 shrink-0">
+      <span class="bg-white rounded px-1.5 py-1 inline-flex"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-5 w-auto"/></span>
+      <div><p class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/70 leading-tight">ACLB Portal</p><p class="font-meta text-[9.5px] text-white/40 leading-tight">staff console</p></div>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-2 font-prose text-[13.5px] font-semibold">
+      <div class="px-4 pt-2 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40">Operations</div>
+      <a href="admin-dashboard.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 19a9 9 0 1 1 13 0"/><path d="M12 14l4.2-4.2"/><circle cx="12" cy="14" r="1.4" fill="currentColor" stroke="none"/></svg>Dashboard</a>
+      <a href="admin-table.html" class="flex items-center px-4 py-2.5 bg-white/10 text-white border-l-[3px] border-leaf"><svg class="size-[18px] mr-3 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10M3.5 14.5h17"/></svg>Inventory table</a>
+      <a href="admin-new-property.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add property</a>
+      <a href="properties.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span class="flex-1">For-sale list</span><span class="font-meta text-[10px] rounded-full bg-leaf px-1.5 py-0.5 text-ink">60</span></a>
+      <div class="px-4 pt-5 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40">Records</div>
+      <a href="admin-table.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg>Sales history</a>
+      <a href="#" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors"><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg>Board reports</a>
+    </nav>
+    <div class="border-t border-white/10 py-2.5 px-4 flex items-center gap-2.5 shrink-0">
+      <span class="size-7 rounded-full bg-skydeep flex items-center justify-center text-white font-prose text-[11px] font-semibold">AT</span>
+      <div class="min-w-0 flex-1"><p class="font-prose text-[12px] font-semibold text-white truncate">A. Torres</p><p class="font-meta text-[9.5px] text-white/45 leading-tight">staff · admin</p></div>
+    </div>
+  </aside>
+
+  <!-- ═══ Content ═══ -->
+  <div class="lg:pl-60 flex flex-col min-h-svh">
+    <header class="sticky top-0 z-30 w-full bg-white/95 backdrop-blur border-b border-ink/10">
+      <div class="mr-auto w-full max-w-[1360px] pl-8 pr-6 h-14 flex items-center gap-4">
+        <a href="property-view.html" class="inline-flex items-center gap-1.5 font-prose text-[13px] font-semibold text-slate hover:text-ink"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H4m0 0 6-6m-6 6 6 6"/></svg>110 Alexander Street</a>
+        <p class="hidden sm:flex items-center gap-1.5 font-prose text-[12px] text-mist"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><span class="font-semibold text-slate">Edit</span></p>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber/10 text-amberdeep font-prose text-[12px] font-semibold"><span class="size-1.5 rounded-full bg-amber dot-pulse"></span>Unsaved changes</span>
+        <div class="ml-auto flex items-center gap-2">
+          <a href="property-view.html" class="font-prose text-[13px] font-semibold text-slate hover:text-ink h-9 px-3 inline-flex items-center">Cancel</a>
+          <a href="property-view.html" class="lb-press inline-flex items-center gap-2 h-9 px-4 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13px] font-semibold"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>Save changes</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 py-6">
+      <div class="mr-auto w-full max-w-[1360px] pl-8 pr-6">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- header -->
+          <div class="col-span-12 p-3">
+            <div class="flex items-center gap-2.5 mb-1"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Edit record</span></div>
+            <h1 class="font-display font-bold text-[38px] leading-[1.05] tracking-[-0.01em] text-ink">110 Alexander Street</h1>
+            <p class="mt-1.5 font-prose text-[13px] text-mist">SBL <span class="font-meta text-skydeep">76.64-2-6</span> · South End · editing writes to Landbank Properties (DAMA source 3)</p>
+          </div>
+
+          <!-- FORM column -->
+          <div class="col-span-12 lg:col-span-8 p-3">
+            <div class="lb-card p-6">
+
+              <!-- Status & disposition -->
+              <div class="flex items-center gap-2 mb-3"><svg class="size-4 text-field" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><circle cx="8" cy="8" r="1.5"/></svg><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-slate">Status &amp; disposition</span></div>
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Property status</label><button class="w-full h-10 px-2.5 rounded bg-white border border-ink/15 flex items-center justify-between"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></button></div>
+                <div class="col-span-12 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Sale status</label><button class="w-full h-10 px-3 rounded bg-white border border-ink/15 flex items-center justify-between font-prose text-[13.5px] text-ink">For Sale<svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></button></div>
+                <div class="col-span-12 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Target disposition</label><button class="w-full h-10 px-3 rounded bg-white border border-ink/15 flex items-center justify-between font-prose text-[13.5px] text-mist">Side-lot / infill<svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></button></div>
+                <div class="col-span-12 flex flex-wrap gap-x-8 gap-y-2 mt-1">
+                  <div class="flex items-center gap-2"><span class="relative inline-flex h-5 w-9 rounded-full bg-skydeep"><span class="absolute right-0.5 top-0.5 size-4 rounded-full bg-white"></span></span><span class="font-prose text-[13px] text-slate">Available publicly</span></div>
+                  <div class="flex items-center gap-2"><span class="relative inline-flex h-5 w-9 rounded-full bg-papertint border border-ink/10"><span class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow-sm"></span></span><span class="font-prose text-[13px] text-slate">Featured</span></div>
+                  <div class="flex items-center gap-2"><span class="relative inline-flex h-5 w-9 rounded-full bg-skydeep"><span class="absolute right-0.5 top-0.5 size-4 rounded-full bg-white"></span></span><span class="font-prose text-[13px] text-slate">Active record</span></div>
+                </div>
+              </div>
+
+              <!-- Location -->
+              <div class="flex items-center gap-2 mb-3 mt-6 pt-5 border-t border-ink/5"><svg class="size-4 text-skydeep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-slate">Location</span></div>
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 sm:col-span-6"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Street address</label><input type="text" value="110 Alexander Street" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-3"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">City</label><input type="text" value="Albany" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-3"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Zip</label><input type="text" value="12202" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-12 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Neighborhood</label><button class="w-full h-10 px-3 rounded bg-white border border-ink/15 flex items-center justify-between font-prose text-[13.5px] text-ink">South End<svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></button></div>
+                <div class="col-span-6 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Latitude</label><input type="text" value="42.641109" class="w-full h-10 px-3 rounded bg-papertint border border-ink/10 font-meta text-[13px] text-slate focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Longitude</label><input type="text" value="-73.763686" class="w-full h-10 px-3 rounded bg-papertint border border-ink/10 font-meta text-[13px] text-slate focus:outline-none"/></div>
+              </div>
+
+              <!-- Parcel & zoning -->
+              <div class="flex items-center gap-2 mb-3 mt-6 pt-5 border-t border-ink/5"><svg class="size-4 text-amberdeep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21l-4-4Z"/><path d="m7.5 12.5 2 2m1-5 2 2"/></svg><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-slate">Parcel &amp; zoning</span></div>
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Property class</label><button class="w-full h-10 px-3 rounded bg-white border border-ink/15 flex items-center justify-between font-prose text-[13.5px] text-ink">Residential Vacant Lot<svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></button></div>
+                <div class="col-span-6 sm:col-span-2"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Zoned as</label><input type="text" value="R-2" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-2"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Width (ft)</label><input type="text" value="25" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink tabular-nums focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-2"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Length (ft)</label><input type="text" value="50" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink tabular-nums focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-2"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Acres</label><input type="text" value="0.03" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink tabular-nums focus:border-skydeep focus:outline-none"/></div>
+              </div>
+
+              <!-- Pricing -->
+              <div class="flex items-center gap-2 mb-3 mt-6 pt-5 border-t border-ink/5"><svg class="size-4 text-field" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M16.5 6.5c-.8-1.2-2.4-2-4.5-2-2.6 0-4.5 1.3-4.5 3.5 0 4.6 9 2.6 9 7.5 0 2.2-1.9 3.5-4.5 3.5-2.1 0-3.7-.8-4.5-2"/></svg><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-slate">Pricing &amp; assessment</span></div>
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-6 sm:col-span-3"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Asking price ($)</label><input type="text" value="600" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink tabular-nums focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-3"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Deposit ($)</label><input type="text" value="50" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink tabular-nums focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-3"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Current assessed ($)</label><input type="text" value="1000" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink tabular-nums focus:border-skydeep focus:outline-none"/></div>
+                <div class="col-span-6 sm:col-span-3"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">FMV ($)</label><input type="text" value="3000" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-meta text-[13px] text-ink tabular-nums focus:border-skydeep focus:outline-none"/></div>
+              </div>
+
+              <!-- Notes -->
+              <div class="flex items-center gap-2 mb-3 mt-6 pt-5 border-t border-ink/5"><svg class="size-4 text-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-slate">Potential use &amp; tags</span></div>
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 sm:col-span-8"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Potential use</label><textarea rows="2" class="w-full p-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink focus:border-skydeep focus:outline-none resize-none">Side-lot to adjacent South End owner; eligible for community garden program.</textarea></div>
+                <div class="col-span-12 sm:col-span-4"><label class="block font-prose text-[12px] font-semibold text-ink mb-1">Tags</label><div class="w-full min-h-10 px-2 py-1.5 rounded bg-white border border-ink/15 flex flex-wrap items-center gap-1"><span class="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-sky/10 text-skydeep font-prose text-[12px] font-semibold">side-lot<svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg></span><span class="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-sky/10 text-skydeep font-prose text-[12px] font-semibold">corner<svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg></span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STICKY RAIL -->
+          <div class="col-span-12 lg:col-span-4 p-3">
+            <div class="sticky top-20 space-y-3">
+              <!-- record card -->
+              <div class="lb-card overflow-hidden">
+                <div class="lb-plate h-40 relative flex items-center justify-center">
+                  <div class="lb-lot" style="width:35%; height:70%"></div>
+                  <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:12%; left:50%; transform:translateX(-50%)">25′</span>
+                  <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:70%; top:50%; transform:translateY(-50%)">50′</span>
+                  <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-white/85 border border-field/20 text-forest text-[12px] font-semibold">For Sale</span>
+                </div>
+                <div class="p-4 border-t border-ink/10">
+                  <div class="font-display font-semibold text-[17px] leading-tight text-ink">110 Alexander Street</div>
+                  <div class="font-meta text-[11px] text-mist mt-0.5">SBL 76.64-2-6 · South End</div>
+                </div>
+              </div>
+
+              <!-- save panel -->
+              <div class="lb-card p-5">
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Pending changes</div>
+                <ul class="mt-2 space-y-1.5 font-prose text-[12.5px] text-slate">
+                  <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-amber"></span>Deposit · <span class="font-meta text-ink">$0 → $50</span></li>
+                  <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-amber"></span>Tags · <span class="text-ink">+ corner</span></li>
+                  <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-amber"></span>Target disposition · <span class="text-ink">Side-lot / infill</span></li>
+                </ul>
+                <a href="property-view.html" class="mt-4 w-full lb-press inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>Save changes</a>
+                <a href="property-view.html" class="mt-2 w-full inline-flex items-center justify-center h-10 px-4 rounded-md bg-white hover:bg-paper border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">Cancel</a>
+              </div>
+
+              <!-- danger zone -->
+              <div class="lb-card p-5 border border-rose/20">
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-rosedeep">Danger zone</div>
+                <p class="font-prose text-[12px] text-slate mt-1.5">Remove this parcel from the public listings, or delete the record entirely.</p>
+                <div class="flex gap-2 mt-3">
+                  <button class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-white hover:bg-paper border border-ink/15 text-slate font-prose text-[12.5px] font-semibold">Unlist</button>
+                  <button class="lb-press inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-rose border-b-[3px] border-rosedeep text-white font-prose text-[12.5px] font-semibold"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M9 6V4h6v2m-9 0 1 14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-14"/></svg>Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- floating page-nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:#fff;border-radius:8px;padding:10px 0;min-width:220px;box-shadow:0 6px 24px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:2px 16px 8px;border-bottom:1px solid #EAEFF1;margin-bottom:4px;">Admin panel</div>
+    <a href="admin-dashboard.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Dashboard</a>
+    <a href="admin-table.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Inventory table (edit)</a>
+    <a href="admin-new-property.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Add property</a>
+    <a href="property-view.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Property view</a>
+    <a href="property-edit.html" style="display:block;padding:6px 16px;font-size:13px;color:#0A6E99;font-weight:600;text-decoration:none;">Property edit</a>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:8px 16px;border-top:1px solid #EAEFF1;margin-top:4px;">Public site</div>
+    <a href="home.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Home</a>
+    <a href="about.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">About</a>
+    <a href="properties.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(.96)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+    style="width:40px;height:40px;border-radius:8px;background:#16232C;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.3);" aria-label="Page navigation">
+    <svg style="width:20px;height:20px" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

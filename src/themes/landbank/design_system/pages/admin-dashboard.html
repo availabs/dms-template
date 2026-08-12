@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Albany County Land Bank · Portfolio Dashboard — Staff</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<!--
+  admin-dashboard.html · ADMIN PANEL 1 of 5 — the staff portfolio dashboard.
+  Layout `app` (ink SideNav staff console). Re-theme of the Fable-5 dashboard
+  into the current landbank design system. All figures are the REAL ACLB
+  dataset (DAMA "Landbank Properties", source 3 · 1,314 rows):
+    199 held · 60 For Sale · 57 ACLB Project · 17 Sale Pending · 16 Processing ·
+    11 CoDev · 1,115 sold · $13.25M proceeds · median ask $600.
+  Cross-filter (scope band) is design chrome for Phase 1; wiring is Phase 2.
+  Interconnects: + Add parcel -> admin-new-property.html · table rows ->
+  property-view.html / property-edit.html · Inventory -> admin-table.html ·
+  Public site -> home.html.
+-->
+<body class="lb-paper text-ink antialiased">
+<div class="min-h-svh" data-dms-layout="app">
+
+  <!-- ═══════════════ SideNav · ink staff console ═══════════════ -->
+  <aside class="fixed inset-y-0 left-0 w-60 bg-ink flex flex-col z-40 max-lg:hidden">
+    <!-- logo chip -->
+    <div class="h-14 bg-black/25 border-b border-white/10 flex items-center px-3 gap-2.5 shrink-0">
+      <span class="bg-white rounded px-1.5 py-1 inline-flex"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-5 w-auto"/></span>
+      <div>
+        <p class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/70 leading-tight">ACLB Portal</p>
+        <p class="font-meta text-[9.5px] text-white/40 leading-tight">staff console</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-2 font-prose text-[13.5px] font-semibold">
+      <div class="px-4 pt-2 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40">Operations</div>
+      <!-- active -->
+      <a href="admin-dashboard.html" aria-current="page" class="flex items-center px-4 py-2.5 bg-white/10 text-white border-l-[3px] border-leaf">
+        <svg class="size-[18px] mr-3 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 19a9 9 0 1 1 13 0"/><path d="M12 14l4.2-4.2"/><circle cx="12" cy="14" r="1.4" fill="currentColor" stroke="none"/></svg>
+        Dashboard
+      </a>
+      <a href="admin-table.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors">
+        <svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10M3.5 14.5h17"/></svg>
+        Inventory table
+      </a>
+      <a href="admin-new-property.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors">
+        <svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add property
+      </a>
+      <a href="properties.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors">
+        <svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span class="flex-1">For-sale list</span>
+        <span class="font-meta text-[10px] rounded-full bg-leaf px-1.5 py-0.5 text-ink">60</span>
+      </a>
+
+      <div class="px-4 pt-5 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40">Records</div>
+      <a href="admin-table.html" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors">
+        <svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg>
+        Sales history
+      </a>
+      <a href="#" class="flex items-center px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent transition-colors">
+        <svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg>
+        Board reports
+      </a>
+    </nav>
+
+    <!-- bottom user chip -->
+    <div class="border-t border-white/10 py-2.5 px-4 flex items-center gap-2.5 shrink-0">
+      <span class="size-7 rounded-full bg-skydeep flex items-center justify-center text-white font-prose text-[11px] font-semibold">AT</span>
+      <div class="min-w-0 flex-1">
+        <p class="font-prose text-[12px] font-semibold text-white truncate">A. Torres</p>
+        <p class="font-meta text-[9.5px] text-white/45 leading-tight">staff · admin</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ Content column ═══════════════ -->
+  <div class="lg:pl-60 flex flex-col min-h-svh">
+
+    <!-- slim topbar -->
+    <header class="sticky top-0 z-30 w-full bg-white/95 backdrop-blur border-b border-ink/10">
+      <div class="mr-auto w-full max-w-[1560px] pl-8 pr-6 h-14 flex items-center gap-4">
+        <button class="lg:hidden text-slate" aria-label="Open menu"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></button>
+        <p class="hidden sm:flex items-center gap-1.5 font-prose text-[12px] text-mist">Operations
+          <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+          <span class="font-semibold text-slate">Portfolio dashboard</span>
+        </p>
+        <!-- search -->
+        <label class="ml-auto relative hidden md:block w-64">
+          <svg class="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 5 5"/></svg>
+          <input type="text" placeholder="Search parcel or address…" class="w-full h-9 pl-9 pr-3 rounded-md bg-paper border border-ink/15 font-prose text-[13px] text-ink placeholder:text-mist focus:border-skydeep focus:outline-none"/>
+        </label>
+        <!-- user menu (hover dropdown) — interlinks to the public site -->
+        <div class="relative group">
+          <button class="flex items-center gap-2 h-9 pl-1.5 pr-2 rounded-md hover:bg-paper transition-colors" aria-haspopup="true">
+            <span class="size-7 rounded-full bg-skydeep flex items-center justify-center text-white font-prose text-[11px] font-semibold">AT</span>
+            <svg class="size-3.5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="absolute right-0 top-full mt-1 w-56 bg-white rounded-md border border-ink/10 shadow-lg py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+            <div class="px-3 py-1.5 border-b border-ink/5 mb-1">
+              <p class="font-prose text-[13px] font-semibold text-ink">A. Torres</p>
+              <p class="font-meta text-[10px] text-mist">staff · admin</p>
+            </div>
+            <a href="home.html" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink">
+              <svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg>Public site</a>
+            <a href="admin-table.html" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink">
+              <svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10"/></svg>Inventory table</a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink">
+              <svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Profile</a>
+            <div class="border-t border-ink/5 my-1"></div>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-rosedeep hover:bg-rose/[0.06]">
+              <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12H3m0 0 4-4m-4 4 4 4M13 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/></svg>Sign out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 py-6">
+      <div class="mr-auto w-full max-w-[1560px] pl-8 pr-6">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- page header -->
+          <div class="col-span-12 p-3">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h1 class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink">Portfolio dashboard</h1>
+                <p class="mt-2 flex flex-wrap items-center gap-2 font-prose text-[12px] text-mist">
+                  <span class="inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-field dot-pulse"></span>1,314 parcels tracked</span>
+                  <span>·</span><span class="font-meta text-[11px]">synced Jul 30, 2026 6:00 AM</span>
+                  <span>·</span><span>source: Landbank Properties · DAMA #3</span>
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <button class="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-white hover:bg-paper border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">
+                  <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15 7.5 10.5M4 21h16"/></svg>Export
+                </button>
+                <a href="admin-new-property.html" class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold">
+                  <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add parcel
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- scope / filter band (design chrome; wiring is Phase 2) -->
+          <div class="col-span-12 p-3">
+            <div class="lb-card p-2.5 flex flex-wrap items-center gap-2">
+              <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-mist px-1.5">Scope</span>
+              <button class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-ink/15 bg-white hover:border-skydeep/50 font-prose text-[13px] text-ink"><span class="text-mist">Years:</span> 2015–2026<svg class="size-3.5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></button>
+              <button class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-ink/15 bg-white hover:border-skydeep/50 font-prose text-[13px] text-ink"><span class="text-mist">Municipality:</span> All<svg class="size-3.5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></button>
+              <!-- active category chip (Property Status) -->
+              <span class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-skydeep/40 bg-sky/[0.07] font-prose text-[13px] font-semibold text-skydeep">Status: Held (in inventory)
+                <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg></span>
+              <button class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-skydeep hover:text-ink ml-1">Reset</button>
+              <span class="ml-auto font-prose text-[12px] text-mist pr-1">every chart, the map &amp; the table share this slice</span>
+            </div>
+          </div>
+
+          <!-- KPI row -->
+          <div class="col-span-12 sm:col-span-6 xl:col-span-3 p-3">
+            <div class="lb-card p-4 h-full border-t-2 border-t-sky">
+              <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Currently held</div>
+              <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">199</div>
+              <div class="font-prose text-[12px] text-forest mt-0.5">▲ 19 acquired in 2025</div>
+              <div class="mt-3 flex h-6 items-end gap-0.5" aria-hidden="true">
+                <div class="w-full rounded-t-sm bg-ink/10" style="height:35%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:55%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:100%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:70%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:75%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:30%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:38%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:12%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:26%"></div><div class="w-full rounded-t-sm bg-ink/10" style="height:10%"></div><div class="w-full rounded-t-sm bg-sky" style="height:18%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-span-12 sm:col-span-6 xl:col-span-3 p-3">
+            <div class="lb-card p-4 h-full border-t-2 border-t-field">
+              <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">For sale now</div>
+              <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-forest tabular-nums mt-1">60</div>
+              <div class="font-prose text-[12px] text-slate mt-0.5">median ask <span class="font-semibold text-ink">$600</span></div>
+              <div class="font-prose text-[12px] text-mist mt-3 pt-2 border-t border-ink/5">895 vacant lots · 370 buildings all-time</div>
+            </div>
+          </div>
+          <div class="col-span-12 sm:col-span-6 xl:col-span-3 p-3">
+            <div class="lb-card p-4 h-full border-t-2 border-t-amber">
+              <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Sale pending</div>
+              <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">17</div>
+              <div class="font-prose text-[12px] text-slate mt-0.5">+ 6 under option · 4 at board</div>
+              <div class="font-prose text-[12px] text-mist mt-3 pt-2 border-t border-ink/5">avg 41 days application → closing</div>
+            </div>
+          </div>
+          <div class="col-span-12 sm:col-span-6 xl:col-span-3 p-3">
+            <div class="lb-card p-4 h-full border-t-2 border-t-ink">
+              <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Sold to date</div>
+              <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">1,115</div>
+              <div class="font-prose text-[12px] text-slate mt-0.5"><span class="font-semibold text-ink">$13.25M</span> total proceeds</div>
+              <div class="font-prose text-[12px] text-mist mt-3 pt-2 border-t border-ink/5">median 3,002 days in inventory</div>
+            </div>
+          </div>
+
+          <!-- Acquisitions vs sales by year -->
+          <div class="col-span-12 xl:col-span-8 p-3">
+            <div class="lb-card p-6 h-full flex flex-col">
+              <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <div class="flex items-center gap-2.5 mb-1"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">By year</span></div>
+                  <h2 class="font-display font-semibold text-[21px] leading-[1.2] text-ink">Acquisitions vs. sales</h2>
+                  <p class="font-prose text-[12px] text-mist mt-0.5">2015 – 2026 YTD · count of parcels</p>
+                </div>
+                <div class="flex items-center gap-4 font-prose text-[12px] text-slate">
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-sky"></span>Acquired</span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-field"></span>Sold</span>
+                </div>
+              </div>
+              <div class="mt-5 flex flex-1 gap-3">
+                <div class="flex h-48 flex-col justify-between pb-6 text-right font-meta text-[9.5px] text-mist tabular-nums">
+                  <span>320</span><span>240</span><span>160</span><span>80</span><span>0</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="relative flex h-48 items-end border-b border-ink/20">
+                    <div class="pointer-events-none absolute inset-x-0 bottom-[25%] border-t border-ink/[0.06]"></div>
+                    <div class="pointer-events-none absolute inset-x-0 bottom-[50%] border-t border-ink/[0.06]"></div>
+                    <div class="pointer-events-none absolute inset-x-0 bottom-[75%] border-t border-ink/[0.06]"></div>
+                    <!-- year groups: acquired (sky) + sold (field); heights = value/320 -->
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:37%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:3%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:58%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:10%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:100%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:49%"></div><span class="absolute -top-4 font-meta text-[10px] font-semibold text-ink tabular-nums">316</span></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:69%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:43%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:76%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:43%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:18%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:52%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:28%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:59%"></div><span class="absolute -top-4 font-meta text-[10px] font-semibold text-forest tabular-nums">186</span></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:2%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:39%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:13%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:17%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:2%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:9%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5 rounded-sm bg-sky/[0.06]"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:6%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:27%"></div></div>
+                    <div class="relative flex h-full flex-1 items-end justify-center gap-0.5"><div class="w-2.5 rounded-t-[2px] bg-sky" style="height:2%"></div><div class="w-2.5 rounded-t-[2px] bg-field" style="height:7%"></div></div>
+                  </div>
+                  <div class="mt-1.5 flex font-meta text-[9.5px] text-mist">
+                    <span class="flex-1 text-center">’15</span><span class="flex-1 text-center">’16</span><span class="flex-1 text-center">’17</span><span class="flex-1 text-center">’18</span><span class="flex-1 text-center">’19</span><span class="flex-1 text-center">’20</span><span class="flex-1 text-center">’21</span><span class="flex-1 text-center">’22</span><span class="flex-1 text-center">’23</span><span class="flex-1 text-center">’24</span><span class="flex-1 text-center">’25</span><span class="flex-1 text-center">’26</span>
+                  </div>
+                </div>
+              </div>
+              <p class="font-prose text-[12px] text-mist mt-4">The 2017 intake wave (316 parcels) is now mostly disposed — sales have outpaced acquisitions every year since 2020. <a href="admin-table.html" class="font-semibold text-skydeep hover:text-ink">View as table →</a></p>
+            </div>
+          </div>
+
+          <!-- Held by status donut -->
+          <div class="col-span-12 xl:col-span-4 p-3">
+            <div class="lb-card p-6 h-full flex flex-col">
+              <div class="flex items-center gap-2.5 mb-1"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Composition</span></div>
+              <h2 class="font-display font-semibold text-[21px] leading-[1.2] text-ink">Held inventory by status</h2>
+              <p class="font-prose text-[12px] text-mist mt-0.5">199 parcels currently held</p>
+              <div class="mt-4 flex flex-1 items-center gap-5">
+                <!-- donut: 60/57/17/16/11/38 of 199 · circumference r70 = 439.82 -->
+                <svg viewBox="0 0 180 180" class="w-36 h-36 shrink-0" role="img" aria-label="Held inventory by status">
+                  <g transform="rotate(-90 90 90)">
+                    <circle cx="90" cy="90" r="70" fill="none" stroke="#4C9129" stroke-width="24" stroke-dasharray="132.6 439.82" stroke-dashoffset="0"/>
+                    <circle cx="90" cy="90" r="70" fill="none" stroke="#0AA7E4" stroke-width="24" stroke-dasharray="126.0 439.82" stroke-dashoffset="-132.6"/>
+                    <circle cx="90" cy="90" r="70" fill="none" stroke="#E0940B" stroke-width="24" stroke-dasharray="37.6 439.82" stroke-dashoffset="-258.6"/>
+                    <circle cx="90" cy="90" r="70" fill="none" stroke="#8195A1" stroke-width="24" stroke-dasharray="35.4 439.82" stroke-dashoffset="-296.2"/>
+                    <circle cx="90" cy="90" r="70" fill="none" stroke="#8B6FC7" stroke-width="24" stroke-dasharray="24.3 439.82" stroke-dashoffset="-331.6"/>
+                    <circle cx="90" cy="90" r="70" fill="none" stroke="#CE5B4E" stroke-width="24" stroke-dasharray="84.0 439.82" stroke-dashoffset="-355.9"/>
+                  </g>
+                  <text x="90" y="86" text-anchor="middle" font-family="'Archivo', sans-serif" font-weight="700" font-size="32" fill="#16232C">199</text>
+                  <text x="90" y="104" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" letter-spacing="0.12em" fill="#8CA0AB">HELD</text>
+                </svg>
+                <div class="min-w-0 flex-1 space-y-2 font-prose text-[12.5px]">
+                  <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-field shrink-0"></span><span class="flex-1 text-slate">For Sale</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">60</span></div>
+                  <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-sky shrink-0"></span><span class="flex-1 text-slate">ACLB Project</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">57</span></div>
+                  <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-amber shrink-0"></span><span class="flex-1 text-slate">Sale Pending</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">17</span></div>
+                  <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-steel shrink-0"></span><span class="flex-1 text-slate">Processing</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">16</span></div>
+                  <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-violet shrink-0"></span><span class="flex-1 text-slate">Co-Development</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">11</span></div>
+                  <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-rose shrink-0"></span><span class="flex-1 text-slate">On hold / other</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">38</span></div>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-ink/5">
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Avg days in inventory (held)</div>
+                <div class="mt-1 flex items-baseline gap-2"><span class="font-display font-semibold text-[21px] text-ink tabular-nums">2,611</span><span class="font-prose text-[12px] text-slate">days · median 2,756</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Portfolio map -->
+          <div class="col-span-12 p-3">
+            <div class="lb-card overflow-hidden">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 px-5 py-3">
+                <div>
+                  <h2 class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Portfolio map</h2>
+                  <p class="font-prose text-[12px] text-mist">169 held parcels with coordinates · colored by status</p>
+                </div>
+                <div class="inline-flex rounded-md border border-ink/10 bg-papertint p-0.5 font-prose text-[12px]">
+                  <span class="rounded bg-white px-2.5 py-1 font-semibold text-ink shadow-sm">Held</span>
+                  <span class="px-2.5 py-1 text-slate">Sold</span>
+                  <span class="px-2.5 py-1 text-slate">All</span>
+                </div>
+              </div>
+              <div class="relative h-[420px] lb-plate">
+                <!-- abstract county-scale survey ground -->
+                <svg class="absolute inset-0 h-full w-full" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M0 100h1200M0 210h1200M0 320h1200M180 0v420M420 0v420M660 0v420M900 0v420" stroke="rgba(22,35,44,0.06)" stroke-width="4" fill="none"/>
+                  <path d="M980 0 Q940 130 985 250 T960 420" stroke="rgba(10,167,228,0.20)" stroke-width="18" fill="none"/>
+                  <rect x="720" y="150" width="150" height="110" fill="rgba(76,145,41,0.06)"/><rect x="600" y="120" width="120" height="90" fill="rgba(76,145,41,0.06)"/>
+                </svg>
+                <!-- neighborhood cluster bubbles (held counts) -->
+                <span class="absolute flex size-12 items-center justify-center rounded-full border-2 border-white bg-field text-white font-prose text-[13px] font-bold shadow-md" style="left:80.5%;top:49.5%">57</span>
+                <span class="absolute flex size-11 items-center justify-center rounded-full border-2 border-white bg-field text-white font-prose text-[12px] font-bold shadow-md" style="left:79.4%;top:41%">41</span>
+                <span class="absolute flex size-9 items-center justify-center rounded-full border-2 border-white bg-field text-white font-prose text-[11px] font-bold shadow" style="left:83%;top:44%">19</span>
+                <span class="absolute flex size-8 items-center justify-center rounded-full border-2 border-white bg-field text-white font-prose text-[11px] font-bold shadow" style="left:67.8%;top:38.8%">9</span>
+                <span class="absolute flex size-7 items-center justify-center rounded-full border-2 border-white bg-field text-white font-prose text-[10px] font-bold shadow" style="left:70.6%;top:42.3%">6</span>
+                <!-- individual status pins -->
+                <span class="absolute text-sky" style="left:68.5%;top:39.4%"><svg viewBox="0 0 24 24" class="size-6 drop-shadow" fill="currentColor" stroke="#fff" stroke-width="1"><path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11z"/></svg></span>
+                <span class="absolute text-amber" style="left:76%;top:51.5%"><svg viewBox="0 0 24 24" class="size-6 drop-shadow" fill="currentColor" stroke="#fff" stroke-width="1"><path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11z"/></svg></span>
+                <span class="absolute text-violet" style="left:74%;top:47%"><svg viewBox="0 0 24 24" class="size-6 drop-shadow" fill="currentColor" stroke="#fff" stroke-width="1"><path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11z"/></svg></span>
+                <span class="absolute text-rose" style="left:79.8%;top:41.4%"><svg viewBox="0 0 24 24" class="size-6 drop-shadow" fill="currentColor" stroke="#fff" stroke-width="1"><path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11z"/></svg></span>
+                <span class="absolute text-steel" style="left:62%;top:29%"><svg viewBox="0 0 24 24" class="size-6 drop-shadow" fill="currentColor" stroke="#fff" stroke-width="1"><path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11z"/></svg></span>
+                <!-- popover -->
+                <div class="absolute w-60 rounded-md border border-ink/10 bg-white p-3 shadow-lg" style="left:63%;top:55%">
+                  <p class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">South End · 57 held</p>
+                  <p class="font-prose text-[13px] font-semibold text-ink mt-1">21 for sale · 30 lots held · 6 projects</p>
+                  <a href="admin-table.html" class="font-prose text-[12px] font-semibold text-skydeep hover:text-ink mt-1 inline-block">Filter table to South End →</a>
+                </div>
+                <!-- zoom stack -->
+                <div class="absolute right-3 top-3 flex flex-col overflow-hidden rounded-md border border-ink/10 bg-white shadow-sm">
+                  <span class="flex size-8 items-center justify-center border-b border-ink/10 text-slate"><svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+                  <span class="flex size-8 items-center justify-center text-slate"><svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14"/></svg></span>
+                </div>
+                <!-- legend -->
+                <div class="absolute bottom-3 left-3 rounded-md border border-ink/10 bg-white/95 px-3 py-2 shadow-sm">
+                  <p class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-1.5">Status</p>
+                  <div class="grid grid-cols-2 gap-x-4 gap-y-1 font-prose text-[12px] text-slate">
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-field"></span>For Sale</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-sky"></span>ACLB Project</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-amber"></span>Sale Pending</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-violet"></span>Co-Dev</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-steel"></span>Processing</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-rose"></span>On hold</span>
+                  </div>
+                </div>
+                <p class="font-meta text-[10px] text-mist absolute bottom-1.5 right-2">© MapLibre · OSM · geocodio</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Held by neighborhood -->
+          <div class="col-span-12 xl:col-span-6 p-3">
+            <div class="lb-card p-6 h-full flex flex-col">
+              <div class="flex items-center gap-2.5 mb-1"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Geography</span></div>
+              <h2 class="font-display font-semibold text-[21px] leading-[1.2] text-ink">Held inventory by neighborhood</h2>
+              <p class="font-prose text-[12px] text-mist mt-0.5">top areas · 199 parcels</p>
+              <div class="mt-5 space-y-3">
+                <div><div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">South End</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">57</span></div><div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:100%"></div></div></div>
+                <div><div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">West Hill</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">41</span></div><div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:72%"></div></div></div>
+                <div><div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">Arbor Hill</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">19</span></div><div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:33%"></div></div></div>
+                <div><div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">Eagle Hill</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">9</span></div><div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:16%"></div></div></div>
+                <div><div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">N. Albany / Shaker Park</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">8</span></div><div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:14%"></div></div></div>
+                <div><div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">Buckingham Pond</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">6</span></div><div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:11%"></div></div></div>
+                <div><div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-mist">All others</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">59</span></div><div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field/45" style="width:83%"></div></div></div>
+              </div>
+              <p class="font-prose text-[12px] text-mist mt-5">South End and West Hill hold half the current inventory. <a href="admin-table.html" class="font-semibold text-skydeep hover:text-ink">Open in table →</a></p>
+            </div>
+          </div>
+
+          <!-- Disposition pipeline -->
+          <div class="col-span-12 xl:col-span-6 p-3">
+            <div class="lb-card p-6 h-full flex flex-col">
+              <div class="flex items-center gap-2.5 mb-1"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Pipeline</span></div>
+              <h2 class="font-display font-semibold text-[21px] leading-[1.2] text-ink">Disposition pipeline</h2>
+              <p class="font-prose text-[12px] text-mist mt-0.5">status of the 199 held parcels</p>
+              <!-- stacked bar: 60/57/17/16/11/38 of 199 -->
+              <div class="mt-6 flex h-9 w-full gap-0.5 overflow-hidden rounded-md">
+                <div class="h-full bg-field" style="width:30.2%" title="For Sale · 60"></div>
+                <div class="h-full bg-sky" style="width:28.6%" title="ACLB Project · 57"></div>
+                <div class="h-full bg-amber" style="width:8.5%" title="Sale Pending · 17"></div>
+                <div class="h-full bg-steel" style="width:8.0%" title="Processing · 16"></div>
+                <div class="h-full bg-violet" style="width:5.5%" title="Co-Development · 11"></div>
+                <div class="h-full bg-rose" style="width:19.2%" title="On hold / other · 38"></div>
+              </div>
+              <div class="mt-5 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2.5 font-prose text-[12.5px]">
+                <div class="flex items-center gap-2"><span class="size-2.5 rounded-sm bg-field shrink-0"></span><span class="flex-1 text-slate">For sale</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">60</span></div>
+                <div class="flex items-center gap-2"><span class="size-2.5 rounded-sm bg-sky shrink-0"></span><span class="flex-1 text-slate">ACLB project</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">57</span></div>
+                <div class="flex items-center gap-2"><span class="size-2.5 rounded-sm bg-amber shrink-0"></span><span class="flex-1 text-slate">Sale pending</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">17</span></div>
+                <div class="flex items-center gap-2"><span class="size-2.5 rounded-sm bg-steel shrink-0"></span><span class="flex-1 text-slate">Processing</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">16</span></div>
+                <div class="flex items-center gap-2"><span class="size-2.5 rounded-sm bg-violet shrink-0"></span><span class="flex-1 text-slate">Co-development</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">11</span></div>
+                <div class="flex items-center gap-2"><span class="size-2.5 rounded-sm bg-rose shrink-0"></span><span class="flex-1 text-slate">On hold / other</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">38</span></div>
+              </div>
+              <div class="mt-auto pt-4">
+                <div class="rounded-md bg-papertint p-3.5">
+                  <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Needs attention</div>
+                  <p class="font-prose text-[12px] text-slate mt-1.5 flex items-center gap-1.5">
+                    <svg class="size-3.5 shrink-0 text-amberdeep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5 2.5 19.5h19L12 4.5ZM12 10v4.5M12 17.2h.01"/></svg>
+                    6 title problems · 6 tabled by board · 15 parcels held &gt; 8 years
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inventory table -->
+          <div class="col-span-12 p-3">
+            <div class="lb-card overflow-hidden">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 px-5 py-3">
+                <div>
+                  <h2 class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Held inventory</h2>
+                  <p class="font-prose text-[12px] text-mist">199 parcels · sorted by days in inventory</p>
+                </div>
+                <div class="flex gap-2">
+                  <a href="admin-table.html" class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-ink/15 bg-white hover:bg-paper font-prose text-[13px] font-semibold text-slate">
+                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10"/></svg>Edit in table
+                  </a>
+                  <button class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-ink/15 bg-white hover:bg-paper font-prose text-[13px] font-semibold text-slate">
+                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15 7.5 10.5M4 21h16"/></svg>CSV
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full min-w-[980px]">
+                  <thead>
+                    <tr class="border-b border-ink/10 bg-papertint/60">
+                      <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Address</th>
+                      <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Parcel (SBL)</th>
+                      <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Neighborhood</th>
+                      <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Class</th>
+                      <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Status</th>
+                      <th class="text-right px-4 py-2.5 font-prose text-[12px] font-semibold text-slate"><span class="inline-flex items-center gap-1">Days held<svg class="size-3 text-skydeep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h5M4 12h8M4 18h11M18 4v12m0 0-3-3m3 3 3-3"/></svg></span></th>
+                      <th class="text-right px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Asking</th>
+                      <th class="text-right px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-prose text-[13px]">
+                    <!-- rows are REAL parcels from source 3 -->
+                    <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                      <td class="px-4 py-2.5 font-semibold text-ink">137 Third Avenue</td>
+                      <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">76.56-4-58</td>
+                      <td class="px-4 py-2.5 text-slate">South End</td>
+                      <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">4,100</td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$600</td>
+                      <td class="px-4 py-2.5"><div class="flex items-center justify-end gap-1">
+                        <a href="property-view.html" title="View" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                        <a href="property-edit.html" title="Edit" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></a>
+                      </div></td>
+                    </tr>
+                    <tr class="border-b border-ink/5 hover:bg-sky/[0.04] bg-papertint/30">
+                      <td class="px-4 py-2.5 font-semibold text-ink">78 Elizabeth St</td>
+                      <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">76.64-4-35</td>
+                      <td class="px-4 py-2.5 text-slate">South End</td>
+                      <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep text-[12px] font-semibold">ACLB Project</span></td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">1,931</td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$1,000</td>
+                      <td class="px-4 py-2.5"><div class="flex items-center justify-end gap-1">
+                        <a href="property-view.html" title="View" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                        <a href="property-edit.html" title="Edit" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></a>
+                      </div></td>
+                    </tr>
+                    <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                      <td class="px-4 py-2.5 font-semibold text-ink">185 Colonie Street</td>
+                      <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.66-1-36</td>
+                      <td class="px-4 py-2.5 text-slate">Arbor Hill</td>
+                      <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-amber/10 text-amberdeep text-[12px] font-semibold">Sale Pending</span></td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">2,596</td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$600</td>
+                      <td class="px-4 py-2.5"><div class="flex items-center justify-end gap-1">
+                        <a href="property-view.html" title="View" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                        <a href="property-edit.html" title="Edit" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></a>
+                      </div></td>
+                    </tr>
+                    <tr class="border-b border-ink/5 hover:bg-sky/[0.04] bg-papertint/30">
+                      <td class="px-4 py-2.5 font-semibold text-ink">72 Clinton Ave</td>
+                      <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">76.26-1-2</td>
+                      <td class="px-4 py-2.5 text-slate">Arbor Hill</td>
+                      <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-steel/10 text-slate text-[12px] font-semibold">Processing</span></td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">3,102</td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-mist tabular-nums">—</td>
+                      <td class="px-4 py-2.5"><div class="flex items-center justify-end gap-1">
+                        <a href="property-view.html" title="View" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                        <a href="property-edit.html" title="Edit" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></a>
+                      </div></td>
+                    </tr>
+                    <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                      <td class="px-4 py-2.5 font-semibold text-ink">141 Henry Johnson Blvd</td>
+                      <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.64-6-36</td>
+                      <td class="px-4 py-2.5 text-slate">West Hill</td>
+                      <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-violet/10 text-violetdeep text-[12px] font-semibold">Co-Development</span></td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">1,076</td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$600</td>
+                      <td class="px-4 py-2.5"><div class="flex items-center justify-end gap-1">
+                        <a href="property-view.html" title="View" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                        <a href="property-edit.html" title="Edit" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></a>
+                      </div></td>
+                    </tr>
+                    <tr class="border-b border-ink/5 hover:bg-sky/[0.04] bg-papertint/30">
+                      <td class="px-4 py-2.5 font-semibold text-ink">150 Dongan Ave</td>
+                      <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">76.66-2-10</td>
+                      <td class="px-4 py-2.5 text-slate">South End</td>
+                      <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-rose/10 text-rosedeep text-[12px] font-semibold">On Hold · Tabled</span></td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">1,738</td>
+                      <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$600</td>
+                      <td class="px-4 py-2.5"><div class="flex items-center justify-end gap-1">
+                        <a href="property-view.html" title="View" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                        <a href="property-edit.html" title="Edit" class="size-7 rounded flex items-center justify-center text-mist hover:text-skydeep hover:bg-sky/[0.08]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></a>
+                      </div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 border-t border-ink/10 px-4 py-2.5">
+                <p class="font-prose text-[12px] text-mist inline-flex items-center gap-1.5">
+                  <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8.5v.5"/></svg>
+                  <span class="font-meta text-[11px]">Landbank Properties · DAMA #3</span> · showing 1–6 of 199
+                </p>
+                <div class="flex items-center gap-1">
+                  <span class="size-7 rounded-md border border-ink/15 flex items-center justify-center text-mist"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></span>
+                  <span class="size-7 rounded-md bg-skydeep text-white font-prose text-[12px] font-semibold flex items-center justify-center">1</span>
+                  <span class="size-7 rounded-md text-slate hover:bg-papertint font-prose text-[12px] flex items-center justify-center cursor-pointer">2</span>
+                  <span class="size-7 rounded-md text-slate hover:bg-papertint font-prose text-[12px] flex items-center justify-center cursor-pointer">3</span>
+                  <span class="font-meta text-[11px] text-mist px-1">…</span>
+                  <span class="size-7 rounded-md text-slate hover:bg-papertint font-prose text-[12px] flex items-center justify-center cursor-pointer">34</span>
+                  <span class="size-7 rounded-md border border-ink/15 flex items-center justify-center text-slate hover:border-skydeep/50 cursor-pointer"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- slim internal footer -->
+          <div class="col-span-12 p-3">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-t border-ink/10 pt-4">
+              <p class="font-prose text-[12px] text-mist">ACLB staff portal · data syncs nightly from Landbank Properties (DAMA source 3) · questions → <a href="#" class="font-semibold text-skydeep hover:text-ink">operations@albanycountylandbank.org</a></p>
+              <div class="flex flex-wrap gap-3 font-prose text-[12px] font-semibold text-slate">
+                <a href="home.html" class="hover:text-ink">Public site</a>
+                <a href="admin-table.html" class="hover:text-ink">Inventory</a>
+                <a href="admin-new-property.html" class="hover:text-ink">Add property</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- floating page-nav widget (design review) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:#fff;border-radius:8px;padding:10px 0;min-width:220px;box-shadow:0 6px 24px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:2px 16px 8px;border-bottom:1px solid #EAEFF1;margin-bottom:4px;">Admin panel</div>
+    <a href="admin-dashboard.html" style="display:block;padding:6px 16px;font-size:13px;color:#0A6E99;font-weight:600;text-decoration:none;">Dashboard</a>
+    <a href="admin-table.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Inventory table (edit)</a>
+    <a href="admin-new-property.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Add property</a>
+    <a href="property-view.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Property view</a>
+    <a href="property-edit.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Property edit</a>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:8px 16px;border-top:1px solid #EAEFF1;margin-top:4px;">Public site</div>
+    <a href="home.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Home</a>
+    <a href="about.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">About</a>
+    <a href="properties.html" style="display:block;padding:6px 16px;font-size:13px;color:#16232C;text-decoration:none;">Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(.96)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+    style="width:40px;height:40px;border-radius:8px;background:#16232C;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.3);" aria-label="Page navigation">
+    <svg style="width:20px;height:20px" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

@@ -62,8 +62,9 @@ to change again:
 
 ## Publishing routes to graphs: per-graph, via a self-resolving key
 
-Each graph on the page gets its **own** route list — a route is added to a graph one click at a time.
-The mechanism:
+Each graph on the page gets its **own** route list, weekday mask, and time-of-day window — a route is
+assigned to a graph (and that graph's own window set) via its **Quick Controls** row
+(`components/QuickControls/`), not through this panel. The mechanism:
 
 - A graph's `comparison_series` subscriber carries the reserved sentinel `paramKey: '$self'` instead of
   an author-typed literal. `usePageFilterSync` resolves `'$self'` to a key derived from the graph's own
@@ -73,28 +74,128 @@ The mechanism:
 - `ReportRouteList` never writes into a graph's row (a cross-section write was considered and rejected
   — the same class of coupling that caused the original `graph_comps` leak). It only *reads* sibling
   sections to discover which ones carry an enabled `$self` subscriber (`findSelfBoundGraphs`), labeling
-  them ordinally ("Graph 1", "Graph 2", ...) for the UI.
-- Each route carries a hidden `graphIds: string[]` (section identities it's been clicked onto) — never
-  surfaced as an abstract "group"; the UI is a chip per discovered graph, toggled on click. A route
-  feeds no graph until explicitly assigned. Removing a graph section strips its id from every route's
-  `graphIds` and clears its stale action param.
-- The publish effect loops over discovered graphs, publishing each one's filtered route subset to its
-  own key via `setActionParam` (guarded with `isEqual` per key to avoid a write→re-render→write loop).
+  them ordinally ("Graph 1", "Graph 2", ...) for the UI, and — since design push #2, 2026-08-06 — also
+  reads each one's own `routeIds`/`weekdays`/`start`/`end` straight out of the same parsed
+  `display._measurePick` blob (see `MeasurePicker/composeMeasureConfig.js`'s `DEFAULT_PICK`).
+- **A route itself carries none of that.** A route (this panel's own storage row) is name · colour ·
+  TMCs · date span, full stop — no weekday mask, no time-of-day, no graph assignment. Those three moved
+  to the **graph's own** `display._measurePick.{weekdays,start,end,routeIds}`, written by that graph's
+  own Quick Controls via the same `applyMeasurePick` the older Settings-drawer Measure picker already
+  used — this panel never writes them. `routeIds` is the *inverse* of the old per-route `graphIds`: a
+  graph now holds the list of routes it draws, not a route holding the list of graphs it feeds.
+- Since a graph needs the report's full route catalog to offer a "Routes" picker without its own fetch,
+  this panel broadcasts it (id/name/colour/TMCs/date-span per route) to one fixed, page-wide `pageState`
+  key (`ROUTE_CATALOG_PARAM_KEY`, `useGraphPublish.js`) via the same generic `setActionParam` mechanism
+  used per-graph below — any graph's Quick Controls reads it straight off `pageState`.
+- The publish effect loops over discovered graphs, crosses each one's own weekday/time-of-day window
+  against its own `routeIds` (looked up against this panel's routes), and publishes the result to its
+  own key via `setActionParam` (guarded with `isEqual` per key to avoid a write→re-render→write loop). A
+  `routeIds` entry whose route was since removed from the report simply resolves to nothing and is
+  silently dropped — no cleanup effect rewrites the graph's own stored pick to strip it (Ryan,
+  2026-08-06: a stale id sitting unused forever isn't worth building cleanup for).
 
 A graph that wants a **frozen snapshot** instead can carry a baked `comparisonSeries.variants` (e.g. a
-one-time `transformReportRoutes(routes)` capture) instead of a subscriber — `buildUdaConfig` prefers
-the dynamic `config` when present, falls back to `variants`, so both binding modes coexist with no
-special-casing. Hand-typed literal `paramKey`s also still work; `'$self'` is additive.
+one-time `transformReportRoutes(routes, window)` capture) instead of a subscriber — `buildUdaConfig`
+prefers the dynamic `config` when present, falls back to `variants`, so both binding modes coexist with
+no special-casing. Hand-typed literal `paramKey`s also still work; `'$self'` is additive.
 
 ## Edit-mode gating
 
-Every mutation (`persistRoutes`, the orphan-cleanup effect, the add-route fetch) and every mutating
-control (reorder, rename, remove, the graph-assignment chips) is gated on `PageContext`'s
-`editPageMode` — not this component's own `props.isEdit`, which means "this section's own settings
-editor is open," not "the page is in edit mode" (see Gotchas). Outside edit mode the panel renders
-read-only. This matters: before the gate existed, merely *viewing* a published report could silently
-strip a route's graph assignments (the orphan-cleanup effect compared draft-captured ids against the
-published id set and concluded they were stale).
+Two independent flags, both required before any mutation fires — conflating them (or dropping
+either) was a real bug, fixed 2026-08-03 (see `planning/transportny/tasks/current/reportroutelist.md`):
+
+- `PageContext`'s `editPageMode` — is the page open at `/edit/...` at all. This alone decides which
+  sections array (`draft_sections` vs `sections`) is currently on screen (`useGraphPublish`'s
+  `sectionsKey`) and whether an author sees raw Dynamic Report slot placeholders vs a viewer's
+  resolved routes. It says nothing about whether *this* section has been individually opened for
+  editing — before the fix, RRL used this flag alone, so every mutating control went live the
+  instant the page opened at `/edit/...`, without the user ever entering this section's own edit
+  mode, unlike every other content-bearing section (Card, Spreadsheet) on the same page.
+- This component's own `props.isEdit` — dataWrapper's per-section signal, true only while *this*
+  section's own settings editor is open (the "Edit" pencil in its Settings menu, same mechanism
+  every section gets — `sectionArray.jsx`'s `edit.index === i` toggle). Destructured in
+  `ReportRouteList.jsx` as `sectionEditorOpen`.
+
+`canMutate = editPageMode && sectionEditorOpen` gates every mutation (`persistRoutes`, the
+orphan-cleanup effect, the add-route fetch, the Dynamic Report toggle) and every mutating control
+(reorder, rename, remove, date-edit, the graph-assignment chips, +Add Route/Route Slot/Graph) — the
+user must click this section's own "Edit" pencil before any of it is even reachable, matching how
+Card/Spreadsheet gate row CRUD via `SectionEdit` vs `SectionView`. Outside that, the panel renders
+read-only. `editPageMode` alone still gates the read-only/display-only decisions listed above (it
+matters that those keep working regardless of whether this section's own pencil is open — sibling
+graphs still need to discover draft sections, and Dynamic Report authors still need to see raw
+placeholders, without first clicking into RRL specifically). This distinction also fixed the
+original bug this gate was built for: before *any* gate existed, merely *viewing* a published report
+could silently strip a route's graph assignments (the orphan-cleanup effect compared draft-captured
+ids against the published id set and concluded they were stale).
+
+**Publish/Discard still don't apply to route content, and that's not a gap this fix addresses.**
+RRL's routes live in the separate `reports_snap_2` dataset row (see Storage above), which the page's
+`sections`/`draft_sections`/Publish/Discard machinery (`editFunctions.jsx`'s `publish`/
+`discardChanges`) never touches — same as Card/Spreadsheet row CRUD (`dataWrapper/index.jsx`'s
+`updateItem`/`addItem`/`removeItem`, always an immediate `apiUpdate` straight to the bound dataset,
+no staging). This gate gets RRL to require entering the section's own edit mode before mutating, the
+same as every other content-bearing section; it does not add undo/publish for route content, because
+no dataset-content edit anywhere in DMS has that today.
+
+## View-mode visibility: hidden from real viewers, always shown to authors
+
+`ReportRouteList` renders **nothing** to a real viewer (`editPageMode` false) — mirroring the old
+tool, whose route sidebar never appeared outside authoring either. The one exception: a Dynamic Report
+with no (or a mismatched) `?routes=` still needs to show its blocking route-selection modal
+(`RouteTagBrowserModal`), or a first-time viewer would hit a permanently blank page with no way to ever
+pick routes.
+
+```jsx
+if (!isEdit) {
+  return routeSelectionModal; // null for a normal report, or the blocking picker for an unresolved Dynamic Report
+}
+```
+
+**Deliberately NOT implemented via the generic `hideInView` section flag** (`sectionMenu.jsx`'s "Hide
+Component" toggle, checked by `sectionArray.jsx`'s `hideSectionCondition`) — that flag filters the
+*entire* section out of the tree before it ever mounts, which would also silently swallow the
+entry-gate modal above. Confirmed live, 2026-08-05: a Dynamic Report with `hideInView` on and no
+`?routes=` rendered nothing, forever, with no UI path to ever pick routes. Self-hiding inside the
+component instead keeps that one exception alive, and is unconditional — no per-report author toggle
+to remember, unlike `hideInView`. **Never set `hideInView` on this component's section** — see
+Gotchas below.
+
+## Expanded route row: collapsed-by-default subsections (`RouteRow.jsx`)
+
+Redesigned 2026-08-05 from a real design critique (a screenshot of a route acting as the base for 8
+date-derived siblings). The old expanded row rendered every control open all the time — TMCs, a full
+disabled date-range block plus an italic run-on sentence naming every dependent, an always-open
+`ColorPicker` (swatch grid + gradient + hue bar), a flat wrap of every graph chip, and a full-width red
+"Remove Route from Report" button — all visible at once regardless of whether the author needed any of
+it right now.
+
+`RouteRow.jsx` now keeps each of those as its own local disclosure (`dateDetailsOpen`, `depsOpen`,
+`colorOpen`, `menuOpen` — plain `useState`, ephemeral, never lifted to the parent, same convention as
+the pre-existing `showAllTmcs`):
+
+- **Date Range** collapses to a one-line summary (`"1/1/2024 – 12/31/2024 · Weekdays only"`, or
+  `"· Derived from {base name}"`) — the full read-only detail, or the Fixed/Derived edit controls,
+  only mount once expanded or once actively editing.
+- **"Base for N routes"** is a standing, always-visible one-liner (independent of the Date Range
+  disclosure above) that expands into a pill list of dependent names — replaces the old italic
+  run-on sentence, the worst offender in the original critique.
+- **Appearance** collapses to a color swatch + label; the real `ColorPicker` only mounts once clicked
+  open.
+- **Graphs** are grouped into "On"/"Off" with a `"N of M graphs"` summary line, instead of one flat
+  alphabetical wrap of every chip.
+- **Remove** (and **Rename**, moved here as a same-arc follow-up) live in a "⋮" overflow menu next to
+  the reorder arrows, instead of a full-width danger button competing with routine controls on every
+  expanded row.
+
+The kebab trigger's wrapper needs `relative flex items-center`, not just `relative` — a plain block
+wrapper around an inline-block `Button` doesn't center the button inside it, landing it a few px off
+from the reorder arrows beside it (real bug, caught live, fixed same day).
+
+Live-verified against `converted_reports/year_over_year_beginner_0` (Dynamic Report, slot placeholders)
+and `converted_reports/claude_scratch_tag_browser` (real TMC data — confirms the redesign didn't
+regress TMC rendering; it was only ever absent on Dynamic Report slot placeholders, unrelated to this
+pass).
 
 ## Where the template lives
 
@@ -116,6 +217,10 @@ See `page-templates.md` for how page templates work generally.
   different lifecycle stages — a section's identity that needs to survive a publish cycle must use
   `trackingId` (assigned once at creation), not the row id.
 - **`route_comp_id` is a local join key only** (`comp-<n>`, assigned by this component) — not a DB id.
+- **Never set the generic `hideInView` section flag on this component.** It filters the whole section
+  — including the Dynamic Report entry-gate modal — out of the view-mode tree before mount. The
+  component already hides itself correctly (see View-mode visibility above); `hideInView` only
+  reintroduces the exact bug that section fixed.
 
 ## Design iterations during development
 

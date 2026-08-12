@@ -1,0 +1,1446 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NY-9D Beacon Signal Study · Report · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  NPMRDS CATEGORY · PAGE 6 of 6 — the individual report
+  ════════════════════════════════════════════════════════════════════
+  A report IS a page (npmrds_sub Report Page template, row 2187021). The left rail is the
+  ReportRouteList component; every chart is an ordinary page section that self-binds to the
+  routes assigned to it via a comparison_series subscriber carrying paramKey:'$self'.
+  See src/themes/transportny/components/ReportRouteList/README.md before changing anything —
+  the behaviour is fixed; this page designs its APPEARANCE.
+
+  TRANSCRIBED FROM three live pages (npmrds_sub, parent 2188366):
+    2195810 page_13_13  "NY-9D Beacon Signal Study"  ·  5 sections — the page drawn here
+    2194949 Tappan Zee Cashless Toll v2              · 10 sections, the full component mix
+    2192364 Year Over Year (Beginner)                · 21 sections, the density stress case
+  Component vocabulary observed: ReportRouteList (group `sidebar`) · Map ("Route Map, Speed")
+  · AVL Graph as BarGraph / LineGraph / GridGraph ("Route Bar Graph", "Route Difference
+  Graph", "Route Line Graph", "TMC Difference Grid") · Spreadsheet ("Route Info Box",
+  "TMC Info Box, AADT") · a placeholder Spreadsheet titled "Add a Route to Your Report".
+
+  WHAT THIS PAGE DESIGNS — the one open gap from research/report-page-redesign/findings.md
+  (gap 3: visual and density polish of the graph cards). Gaps 1 and 2 already shipped and are
+  drawn as-is, not redesigned:
+    · inline quick controls (Measure + Comparison Mode pills) ship via sectionHeaderExtensions
+    · per-route colour assignment ships in ReportRouteList
+  THE GRAPH-CARD CONTRACT decided here and repeated on every card:
+    1. Header h-10, one line: title · measure chip · quick-control pills right · kebab last.
+       No separate section title above the card — the header IS the title
+       (feedback_deprecate_section_title). The title token is **cardTitleSM (15px/500)**
+       rendered sentence-case: sentence-case is a legal text-transform modifier at the call
+       site, so this needs no new token. (An earlier draft of this comment said displayXS/18px;
+       every card drawn here, and patterns §13's own demo, are 15px. The drawing was right and
+       the comment was wrong.)
+    2. Legend BELOW the plot, left-aligned, route-coloured chips. Never floating over the plot
+       and never in the right gutter: at size 4 a right-gutter legend eats a third of the plot.
+    3. Attribution is ONE muted metaXS line in the card footer — source, view, as-of. The
+       legacy treatment wrapped to three lines and dominated small cards.
+    4. Plot padding is the card's, not the section's. Section padding is the grid gutter.
+    5. At size 4 the y-axis drops to 3 ticks and the legend collapses to dots + count.
+
+  DENSITY RULE (for the 21-section case): bands hold at most 12 columns of chart per row and
+  break on question, not on count — one band per question, a fused lexical head naming it.
+  Anything past four bands gets an in-page nav rail. The floor is size 4, and band 2 now
+  DRAWS a size-4 card (graph-7-small) with three y-ticks and a collapsed dot legend, so
+  contract clause 5 is a spec instead of an assertion.
+
+  COMPOUND CARDS ARE NOT DEMONSTRATED HERE, AND CANNOT BE (Phase 8 correction). A compound card
+  is two or more STACKED sections sharing an edge whose padding is zeroed (skill §7.4). On this
+  catalogue's `grid gap-6` the 24px gutter is owned by the GRID, and no amount of section-padding
+  zeroing closes it — so a side-by-side "fused" pair renders as two cards with missing borders
+  plus an orphan strip, which is exactly what the earlier draft did. The map + summary pair in
+  band 1 is now an honest side-by-side pair, each card closing itself with its own attribution.
+  Real compound cards arrive with the gap-0 conversion (contract item 9).
+
+  SECTION NESTING: no `data-dms-section` wraps another section. `report-summary` is a SIBLING
+  of `page-header`, not a child; band heads are their own lexical sections. DMS has no
+  container-section concept, so a wrapper that contains sections is a band.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 9 (2026-08-05) — THE SIDE CONTENT REGION AND THE ROUTE CONTROLS
+  Three changes, all documented in design-system/layouts.html § 09 (layout knowledge) and
+  design-system/components.html § Content Sidebar (the component + its two styles):
+
+  1. THE RAIL IS THE PAGE'S SIDE CONTENT REGION, NOT A GRID COLUMN. Earlier drafts drew it as
+     `col-span-3` beside a `col-span-9` canvas. That mistranslates: `sectionGroup.jsx` renders
+     the rail as a fixed-width flex sibling of the content column, outside the 12-col grid,
+     toggled by the "Show Content Sidebar" page setting (`item.sidebar`) and filled from the
+     page's `sidebar` section group. Drawn as a grid column, the sections in it would belong to
+     the content band, the rail couldn't be side-swapped from settings, and every card's size
+     would silently mean ¾ of what it says. The canvas now keeps its own grid-cols-12 and the
+     card sizes below are unchanged (12 / 5 / 7 / 6 / 4).
+
+  2. THE RAIL USES THE NEW `flush` STYLE (`pages.sectionGroup` styles[1]): no padding, hugging
+     the content area's left edge, `sticky top-0 h-svh` — the full height of the tab, with the
+     panel pinning its own head/toolbar/footer and scrolling only the route list between them.
+     Two consequences, both intended: the band is Full Width (no `pl-12 pr-8`, or the band's
+     padding would sit between the pane edge and the rail), and THE PAGE HEADER IS NO LONGER
+     FULL WIDTH — it is a section in the content column, because a full-bleed header band above
+     the rail would stop the rail starting at the top of the tab. The finding moved out of the
+     rail into the canvas for the same reason: a control rail disappears below `xl`, so nothing
+     load-bearing can live only there.
+
+  3. THE ROUTE CONTROLS ARE AT FULL CAPABILITY, from the component, not from memory:
+     add route · add route slot · add graph · dynamic-report switch · search · collapse · per-row
+     expand, reorder, rename (inline, save/cancel), remove, TMC list, date+time window,
+     time-of-day presets, day-of-week mask, identity colour, graph-assignment chips. Two
+     corrections to earlier drafts: route edits do NOT stage in the page draft (they write
+     straight to the report's own dataset row; publish and discard don't apply to route content),
+     and the mutation gate is TWO flags — `editPageMode` AND this section's own edit pencil.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 10 (2026-08-05, same day) — THIS PAGE IS INTERACTIVE, AND HAS NO BREADCRUMBS
+
+  · THE STATES ARE NO LONGER DRAWN BELOW THE FOLD; THEY ARE REACHABLE. Phase 9 answered "what
+    do the route controls look like" with ~775 lines of drawn states — an edit-mode rail, a
+    panel-states card, both modals, all sitting under the real page. That is the wrong artifact
+    for this page: the rail is a control surface and the modals are multi-step flows (drill into
+    a tag folder, come back out, change a measure and watch the guidance change), and none of
+    that can be judged from a still. So the rail above is LIVE, both modals open and work, and
+    the drawn states are gone. Behaviour: `npmrds-report.js` — read its header comment for the
+    exact live/inert split. The rows are rendered there rather than written here because a row
+    has six mutually exclusive states and hand-drawing four copies of each is what produced
+    those 775 lines.
+    WHAT STAYS INERT, on purpose: the two confirm buttons, remove, duplicate and the section
+    Settings drawer — adding or removing would change the report, and this page designs the
+    flow, not the write. Colour and assignment edits move the rail's own chrome; the plots are
+    still drawings and never redraw. Each says so when clicked.
+    WHAT'S LEFT BELOW THE FOLD is only what interaction can't carry: § 03 the control inventory
+    (what each control writes) and the rules behind the design, § 04 the print state.
+
+  · NO BREADCRUMBS (Alex, 2026-08-05). This deviates from cross-page contract item 3, which
+    puts a `breadcrumbs` LayoutGroup on pages 4/5/6 — recorded here rather than silently. It
+    has a layout consequence worth keeping: with no sticky chrome above the rail, the flush
+    rail's `sticky top-0 h-svh` is exact. A page that keeps a breadcrumb strip must offset BOTH
+    `top` and the height by its height, or the rail hangs past the viewport at scroll 0 and its
+    pinned footer sits below the fold.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 11 (2026-08-05, same day) — THE TWO ADDS ARE ALWAYS THERE, AND BOTH MODALS ARE REV 2
+
+  · ADD ROUTE / ADD GRAPH ARE NO LONGER BEHIND EDIT MODE (Alex). They are the report's two
+    jobs; hiding them behind a mode makes an empty report look like a dead end. One
+    always-present action row now holds both plus the edit toggle, and the row itself carries
+    the mode (white + "edit routes" / amber + "done"). Escalation for the component: its
+    `canMutate` gate has to change from "hide the button" to "the button enters edit mode and
+    opens the modal" — nothing writes until confirm either way, so the read-only guarantee is
+    intact. Per-route controls stay gated; the Dynamic Report switch stays gated (it
+    reconfigures the page, not the route list).
+
+  · ADD GRAPH, REV 2 — the four picks were four identical dropdowns, which said "four
+    settings" when the shape is ONE decision and two refinements:
+      01 WHAT SHAPE  — five CARDS, not a select. Picking a card type is a visual choice, and
+         a closed select hid the whole vocabulary behind a click. Cards also made room for
+         the two types that were missing: **TABLE** (builds a Spreadsheet — the real reports
+         are full of "Route Info Box" / "Route summary" tables) and **MAP** (builds a Map —
+         "Route Map, Speed" on the real pages, and the only card that answers WHERE on the
+         corridor the value changes). For both, the only way in was the long +Add Component
+         path this modal exists to replace, which made the row a chart menu rather than a
+         card menu. Each card names what it creates, because that decides what the section's
+         own menu offers afterwards.
+      02 WHAT VALUE  — one select, grouped Speed · Travel time · Delay · Emissions, with the
+         measure's own sentence live underneath. Nine flat options was a wall.
+      03 ROUTES      — checklist with select-all/none and an n/total count, in the right-hand
+         column: on a report that already has routes, WHAT to show is the decision and WHICH
+         routes is the follow-through. Confirm is still disabled until one is checked.
+      REFINE         — resolution + comparison mode, one muted row labelled optional; the
+         Anchor Route select appears there only for Difference with exactly two routes.
+      The footer strip names what will be built in words (measure — shape · section type ·
+      resolution · mode · n routes) rather than drawing it; a live per-pick /graph fetch was
+      rejected as far too expensive for a preview. No combination is blocked — the picker
+      composes every combo mechanically and gating them here would invent a rule.
+      The default pick also changed, from the component's BarGraph · speed · 5-minutes to
+      Line · travel time · hour: a 5-minute bar chart of speed is the densest, least readable
+      combination in the vocabulary, and it was what an author saw before touching anything.
+
+  · ADD ROUTES, REV 2 — search leads (largest element, focused on open, result count
+    stated); the three real tag axes became header pills so browsing is no longer below the
+    fold, with Auto-generated and Other tags demoted to text links beside them (a provenance
+    flag and a free-text search are not axes); every row carries its county/region/agency
+    tags, because name + TMC count cannot separate "NY-9D NB (Beacon)" from "NY-9D NB · Main
+    St to Verplanck"; and the selection block caps its height and gained clear-all.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 12 (2026-08-05, same day) — WHAT THE ROUTE CONTROLS DROPPED AND WHAT MOVED (Alex)
+
+  · THE TMC LIST IS GONE from the open-out. It led with nine codes and a "+N more" toggle:
+    the widest content in a 340-px panel, for information nobody uses that way — you don't
+    identify a route by reading `120P29714` off a rail. The COUNT stays in the meta line
+    (contract item 6), and the extent lives on the map card, where it's legible.
+
+  · IDENTITY COLOUR IS A POPOVER ON THE ROW'S DOT, not a block inside the open-out. Inline it
+    was doubly buried — expand the route, then click "change" — for a control whose whole job
+    is "this route is blue everywhere". You notice two routes are hard to tell apart while
+    looking at a chart, and from there it should be one click. The popover renders into a
+    FIXED element outside the rail (`#colour-pop`): the rows region scrolls and the rail's
+    sticky wrapper is `overflow-hidden`, so anything absolutely positioned inside a row is
+    clipped — the same reason the shared Popup primitive portals. It applies on click and
+    stays open, because trying two or three colours against the charts is the real behaviour;
+    outside click, Escape, the ✕ or a scroll closes it.
+
+  · THE RAIL'S OWN "EDIT ROUTES" BUTTON IS GONE. The page header's Edit button already owns
+    the mode — that IS the DMS gate (the page being at /edit/…) — and once the two Adds
+    stopped needing a mode, a second button for one piece of state was redundant. The action
+    row shows the state instead: white when reading, amber + "editing" when the page is.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 13 (2026-08-05, same day) — THE WINDOW CONTROLS DESCRIBED SOMETHING THE TOOL DOESN'T DO
+
+  THE BUG WAS SEMANTIC, and it was in the component as well as in this drawing. The controls
+  read "Start date [date][time] / End date [date][time]", which claims one continuous stretch
+  from a start instant to an end instant. What `useGraphPublish` actually builds from that
+  single stored pair of "YYYY-MM-DDTHH:mm" strings is TWO INDEPENDENT IN-LISTS:
+    · `date`  = every date from the start date to the end date, minus the days the weekday
+                mask excludes (generateDateRange — a literal day-by-day loop)
+    · `epoch` = every 5-minute epoch from the start TIME to the end TIME — a WITHIN-DAY band
+                applied to every one of those dates (generateEpochRange, end-inclusive)
+  So the tool averages the same hours ACROSS days. It never reads from the start instant
+  through to the end instant. The controls now say that, as three facets in the order the
+  engine applies them:
+      DATES (which days) → DAYS (which of those count) → TIME OF DAY (which hours of each)
+  and the time block carries the sentence outright: "applied to every day in the range and
+  averaged together — not one continuous stretch."
+
+  TWO SILENT ENGINE BEHAVIOURS ARE NOW SURFACED, both read out of the code rather than
+  guessed: a backwards time window makes the epoch array empty, and an empty epoch array
+  means the filter is never pushed — so it silently becomes ALL DAY instead of erroring (same
+  reason OVN and FREEFLOW are absent from the presets: they cross midnight). And a time on
+  only one bound is ignored entirely. Both are amber notes on the control; an end date before
+  the start date is a rose one, because that query returns nothing.
+
+  COPY / PASTE A WINDOW (Alex). Every route on a before/after report wants the same window,
+  and retyping four fields per route was the tool asking for transcription errors. Each
+  window block gets copy and paste; copying raises a strip at the top of the rail that offers
+  the bulk case directly ("paste into all (N)"), because "make them all use the same window"
+  is what copying a window is usually for. Derived-date routes are skipped and say so — their
+  dates are computed from a sibling. The whole window travels as one shape (dates + days +
+  time): the three facets only mean anything as a set, and two buttons per row at 340px buys
+  nothing.
+
+  ALSO in this pass: the read-only window is three summary lines with the day count the
+  engine will actually enumerate ("40 of 54 days" — the mask applied), not four disabled
+  inputs; the day counts and the validation refresh on `change`, not on every keystroke,
+  because a native date field edits itself segment by segment.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 14 (2026-08-05, same day) — THE ROUTES ARE EDITABLE, AND THE GRAPHS STAY PUT (Alex)
+
+  · PER-ROUTE CONTROLS ARE ALWAYS LIVE. Removing the rail's own edit toggle in Phase 12 left
+    the window, colour, name, assignment and order behind the page header's Edit button, so
+    opening a route showed a read-only summary with no way in — the controls were there and
+    none of them could be touched. Same argument as the two Add buttons: this panel IS the
+    report's control surface. The window's summary is itself the way in (click the three
+    lines, not just the pencil). What page edit mode still governs is the PAGE: the section
+    toolbars, the Measure Picker, the Dynamic Report switch. Escalation, same shape as
+    before — the component's gate moves from "hide the control" to "the first edit enters
+    edit mode", and a reader without edit permission still gets the read-only rail the
+    component renders for them.
+
+  · THE GRAPHS ON THIS PAGE DO NOT MOVE, ON PURPOSE (Alex, explicitly). In the product a
+    window/colour/assignment change publishes to every graph the route feeds
+    (setActionParam → refetch) and the cards redraw. A version of this page simulated a
+    slice of that — legends rebuilt from assignment, plotted series recoloured, each card's
+    attribution rewritten to the new window, a brief "updating" flash — and it was reverted:
+    with no data behind the page, anything that made a card look refreshed implied numbers
+    that had not changed and could not change. The cards are drawings; the binding is
+    documented instead of faked. What this page is for is the CONTROLS.
+
+  · SO THE SELECTION ITSELF GOT THE ATTENTION: the three facets (dates → days → time of
+    day), the day count the engine will really enumerate, the two silent-failure warnings,
+    copy/paste of a whole window, a "shift ± 1 year" pair that moves a span without
+    changing its length (the before/after move, and the one place hand-typed dates reliably
+    go wrong), and preset pills that carry their own hours — "AM Peak" alone makes you hover
+    to learn this brand means 06:00–10:00, and two of the five presets differ only by hours.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 15 (2026-08-06) — QUICK CONTROLS, AND THE WINDOW MOVES FROM THE ROUTE TO THE CARD
+
+  1 · QUICK CONTROLS ARE THE REAL MECHANISM, not drawn pills. `theme.sectionHeaderExtensions
+      = { "AVL Graph": [npmrdsQuickControls] }` registers a builder that `section.jsx`
+      renders INLINE IN THE SECTION'S HEADER BAND — the row already holding the title and the
+      ⋮ Settings trigger — with the same ctx the Settings-drawer extensions get (state,
+      dwAPI, currentComponent, isEdit, canEditSection, siblingSections). Today it ships two
+      pills, Measure and Comparison Mode, both writing through the shared `applyMeasurePick`
+      so the header and the drawer can't drift; Graph Type and Resolution were deliberately
+      out of scope. This page now draws that row for real, live, on every card — and extends
+      it to everything below.
+
+  2 · TIME OF DAY, DAYS OF WEEK AND THE AGGREGATE MOVED OFF THE ROUTE (Alex). They describe
+      the QUESTION a card asks, not the route: "NY-9D NB, Jan 6 – Feb 28 2025" is a stretch
+      of road over a span of dates; "weekday PM peak, hourly" is one of many ways to read it.
+      On the route they forced a duplicate route to ask a second question of the same road,
+      and they silently applied to every card that route fed.
+        A ROUTE now carries: name · colour · TMCs · DATE SPAN.
+        A CARD now carries: shape · measure · aggregate · time of day · days · mode · ROUTES.
+      They are set in the Add Graph modal (§ WHEN) and editable afterwards in the card's own
+      Quick Controls — in the controls, not behind a modal, which is what the row is for.
+      ESCALATION for the component: storage moves with them. `useGraphPublish` would build
+      the date IN-list from each route's span minus the CARD's weekday mask, and the epoch
+      IN-list from the CARD's time window; today both read off the route
+      (generateDateRange/generateEpochRange take route.weekdays and route.start/end).
+
+  3 · ROUTE SELECTION IS A CARD CONTROL. The Routes pill is the row's first and widest
+      control, and its mode follows the shape: a Map draws ONE route (single-select, radio
+      dots, picking another replaces it); charts and tables take any number. Difference mode
+      still wants exactly two, and says so in the popover when it doesn't have them.
+
+  4 · THE PER-GRAPH CHIPS ARE GONE FROM THE ROUTE ROWS. A chip per discovered graph was fine
+      at five and unusable at twenty — and reports reach twenty easily ("Year Over Year
+      (Beginner)" has 21 sections). Assignment now happens on the card side, so a row only
+      answers "is this route used, and where": a count that scrolls to the first card it
+      feeds, and the "unused" warning that was the reason the chips existed.
+
+  5 · THE ROW COMPRESSES. Size 12 shows every pill; below size 6 there is no room, so the
+      card keeps Routes and folds the rest into one "⋯" pill with the same popover contents —
+      the "button that opens the controls" fallback, but only where the row genuinely can't
+      fit. Time of day and days share ONE pill ("AM Peak · weekdays") because they are one
+      thought, and splitting them doubled the pill count for nothing.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 16 (2026-08-06) — MAKING THE CONTROL ROW FIT, AND ONE EDIT MODE PER ROUTE (Alex)
+
+  · THE "GRAPH N" CHIPS ARE GONE from the card headers. They existed so a route row's chips
+    could point at a card; assignment lives in the card's own Routes control now, so the
+    chip is a label nothing reads — and it was taking the width the controls needed.
+
+  · SET VALUES BECOME TOKENS so five controls fit where three did: an aggregate is "1h", not
+    "Hour"; a when is "06–10 · Wd", not "AM Peak · weekdays"; a mode is a GLYPH (overlapping
+    series vs bars against a zero line), because overlay/difference is a two-state flip an
+    icon can carry. Every full word is still one click away in the popover, and every pill
+    keeps the long form in its tooltip.
+
+  · THE ROW MEASURES ITSELF instead of trusting a size threshold — the same card is wide at
+    1600px and narrow at 1280, and a size-7 table beside a size-5 map has a different budget
+    again. What's left after tokenising collapses by priority, lowest first: mode →
+    aggregate → when → measure. Routes never collapses; it is why the row exists. Anything
+    dropped goes into the "⋯" pill, which opens the same contents, so nothing is unreachable.
+    THREE MEASUREMENT BUGS worth not repeating, all found by driving it:
+      1. `scrollWidth > clientWidth` never fires on a `justify-end` row — overflow spills
+         LEFT and scrollWidth only counts overflow to the right. A size-4 card was silently
+         clipping its Routes and Measure pills while reporting that everything fit.
+      2. Shedding one pill at a time and re-checking thrashes: dropping a 28-px mode icon to
+         add a 40-px "⋯" makes the row WIDER, so a card with room for four showed two. The
+         "⋯" has to be reserved up front, in one greedy pass.
+      3. The budget is what the HEADER can spare — its width minus padding, the title's
+         floor and the ⋮ — not what the slot currently occupies. Measuring the slot hid the
+         title's slack, and a card missed its fourth pill by three pixels.
+    The title is the flexible element now (it truncates to a 112-px floor and carries a
+    `title` tooltip); the controls claim the spare width first. 84 px was tried and rejected:
+    "Travel time b…" is too much to trade for one more pill.
+
+  · ONE EDIT MODE PER ROUTE. The row's single pencil now opens the name AND the dates with
+    one save/cancel pair, and forces the open-out so both are visible. A pencil on the row
+    for the name plus a second one inside the open-out for the dates made two edit modes out
+    of one object. The line telling you where the other facets live went too — the card
+    headers say it themselves now.
+
+  ─────────────────────────────────────────────────────────────────────────────────────────
+  PHASE 17 (2026-08-06) — THE CHARTS MATCH THE COMPONENT, AND THE ROUTE ROW LOSES ITS "+"
+
+  · THE CHARTS ARE THE AVL GRAPH'S OWN SHAPE NOW, drawn by npmrds-report.js against the
+    real DOM (ui/components/graph_new): a `w-full h-fit` wrapper, then
+    `div.avl-graph-container` → `svg.w-full.h-full.block.avl-graph` with **no viewBox** —
+    the chart is laid out in px against a measured container and FILLS it. Inside:
+    `g.animated-group > g.axis-group > g.axis.axis-left` with `path.domain` (2px) and
+    `g.tick > line + text`, then a plot `<g>` translated by the margin holding
+    `rect.avl-rect` / `path.graph-line` / `rect.avl-grid`. Defaults taken from the source:
+    margins 20/20/50/100, height 300 (config default, floored at top+bottom+100), ticks at
+    0.75rem, gridlines currentColor @ 0.25, bars at fill-opacity 0.75, y-gridlines on and
+    x off. The legend now matches Legend.jsx too — a 16-px rounded swatch with a truncating
+    label, not a hairline dash.
+    WHY THIS MATTERED BEYOND FIDELITY: the old drawings were `viewBox` SVGs, so they SCALED.
+    On a size-4 card that meant 9-px axis text and a plot with the wrong proportions; the
+    real component keeps its type size and re-lays-out instead. Small cards now do what an
+    authored small section would: a tighter margin (44/34/12 under 420 px) and three y-ticks.
+    A GridGraph's left axis is BAND — its index is the row (a TMC/segment), which is also
+    why its tooltip reads the row via `keyFormat` — so it draws row labels, not numbers.
+    Chart SHAPE follows the card's config (series count and colour follow its Routes
+    control); the VALUES stay fixed sample arrays. Layout and structure are live here, and
+    numbers are not.
+
+  · WHERE THE COMPONENT'S OWN DEFAULTS WERE LOOSE, THIS DESIGN FIXES THEM — and the fix is a
+    theme block, not a library change, because `chartDefaults` already exposes every key
+    (it merges UNDER a section's `display`, so authors still override per section). The brand
+    never shipped one, so every TransportNY chart was running library defaults. Now in
+    `theme/theme.js` under `avlGraph.chartDefaults`:
+      margin 20/20/50/100 → 12/12/30/48   a 100-px left gutter is a third of a size-6 card
+      ticks 0.75rem inherited → 9px mono  ticks are chrome, and they now match the meta
+                                          rows and attribution lines they sit beside
+      strokeWidth 1 → 2                   1 disappears against a pale card
+      bar fill-opacity 0.75 → 1 (solid)   the route colour IS the comparison; translucency
+                                          mudded two series at small sizes
+      height 300 → 260                     plus a smaller container on the size-4 card
+      axis/gridline colour → zinc-950/15   instead of `currentColor`, which followed the
+                                          text colour and drew near-black axes
+    The second line also drops the `.secondary` class the component would dash: on a
+    before/after chart the identity colour is already the difference.
+
+  · THE ROUTE ROW HAS NO "+" (Alex). Once the TMC list left and the window became one line,
+    the expander guarded nothing: everything a row has is on the row. Editing is the pencil,
+    which is the only thing the open-out ever held.
+
+  · "ON N CARDS" IS A PILL beside the name, where the "unused" badge already sat, so a row
+    is one line of identity and one line of meta instead of three lines.
+
+  CONTRACT: SideNav · header shape · freshness line · route rows · download affordance — all
+  per npmrds-home.html's header note, where all three of this page's deviations are recorded:
+    · COMPACT 64px icon SideNav instead of the 256px expanded one (Alex, 2026-08-05). Same items,
+      same order, same amber active rail; labels become `title` tooltips. 256 + the 340px route
+      rail was 596px of chrome, which left the graph canvas narrower than the chrome beside it.
+    · no breadcrumb band (see Phase 10 above).
+    · the header is a section in the content column rather than its own `header` band, which is
+      what a flush rail requires. Its own shape — kicker + rule + meta → h1 + purpose → action
+      stack → freshness — is unchanged, except that the freshness line is now the header card's
+      full-width foot line: at 10.5px/0.18em it is ~640px wide, and inside the `shrink-0` action
+      stack it starved the h1 until the title wrapped once the compact nav widened the canvas.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-16">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ═════════ SIDENAV · COMPACT (icon-only · 64px) ═════════
+             EXCEPTION to cross-page contract item 1, the second one in the set (npmrds-macro is
+             the first): this page already spends 340 px on the route rail, and 256 + 340 = 596 px
+             of chrome left the canvas narrower than the rail-plus-nav beside it. Compact reclaims
+             192 px for the graphs. The nav loses no destination — every item is still here, as an
+             icon with a `title` tooltip, in the same order, with the same amber active rail — and
+             a report is a leaf you arrive at from Reports, so labels are the least load-bearing
+             chrome on the page. Markup is npmrds-macro.html's compact nav verbatim, with the
+             active item moved to Reports. -->
+        <aside class="fixed inset-y-0 left-0 w-16 max-lg:hidden z-20">
+          <div class="flex flex-col w-16 h-full z-20 bg-[#12181F] items-center overflow-visible">
+            <!-- LogoNav · compact: logoWrapper w-16 bg-[#12181F], logo mark at h-8 -->
+            <a href="npmrds-home.html" title="NPMRDS" class="@container h-16 w-16 flex px-2 py-3 items-center justify-center bg-[#12181F]"><span class="flex-shrink-0"><img class="h-8 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></span></a>
+            <!-- nav · navitemSide/Active + menuIconSide size-6, itemsWrapper py-4 -->
+            <div class="flex-1 py-4 w-full overflow-visible">
+              <a href="npmrds-home.html" title="Home" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg></a>
+              <a href="npmrds-macro.html" title="Macro View" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-6" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg></a>
+              <a href="npmrds-reports.html" title="Reports" class="group relative flex items-center justify-center w-full py-3 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Report --><svg class="size-6" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg></a>
+              <a href="route-comparison.html" title="Route comparison" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-6" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg></a>
+              <a href="map-21.html" title="MAP-21 PM3" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></a>
+            </div>
+            <!-- bottomMenu · QuickLinks icon-only (labels hide under @[120px]) -->
+            <div class="border-t border-[#2a3545] pt-2 w-full">
+              <a href="../pages/datasets-catalog.html" title="Data Sources" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg></a>
+              <a href="docs-overview.html" title="Docs" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg></a>
+              <div class="my-2 border-t border-[#2a3545] w-full"></div>
+              <a href="#" title="Report an issue" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></a>
+            </div>
+            <a href="login.html" title="amuro@albany.edu · NYSDOT" class="border-t border-[#2a3545] pt-2 w-full flex items-center justify-center py-2"><span class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span></a>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ REPORT BODY · LayoutGroup `content` · THE RAIL HOST ═════════
+               ONE band holds this whole page: the route rail and every graph card. That is not a
+               drawing convenience — `sectionGroup.jsx` renders the rail INSIDE a single band (the
+               `railHost`), so anything that must sit beside the rail has to be a section of that
+               band. Two consequences, both deliberate and both visible here:
+
+                 · THE PAGE HEADER IS A SECTION IN THE CONTENT COLUMN, not its own full-bleed
+                   `header` band. A header band would sit above the rail and the rail could no
+                   longer start at the top of the tab. So the header is NOT full width: it begins
+                   at the rail's right edge and ends at the 1480 cap, and it reads as a card on the
+                   pane like everything else (brand rule: never bg-white on a section).
+                 · THE RAIL IS NOT A GRID COLUMN. It is a fixed-width flex sibling of the content
+                   column, outside the 12-col grid — `col-span-3` + `col-span-9` (what this page
+                   drew before) mistranslates: those sections would belong to the content band, the
+                   rail couldn't be toggled or side-swapped from page settings, and every card's
+                   size would silently mean ¾ of what it says. The canvas keeps its own
+                   grid-cols-12 at whatever width is left, which is why the cards below are
+                   unchanged sizes (12 / 5 / 7 / 6 / 4).
+
+               STYLE: `pages.sectionGroup` styles[1] `flush` — no padding, hugging the content
+               area's left edge, `sticky top-0 h-svh` so the panel is exactly the height of the
+               tab. (It can be a bare `top-0 h-svh` because this page carries no sticky chrome
+               above the rail: the breadcrumb band was removed 2026-08-05 per Alex. A page that
+               keeps one has to offset both `top` and the height by its height, the way styles[0]
+               does for the page header.) The panel pins its own head, toolbar and footer and
+               scrolls ONLY the route list between them, so the rail never grows taller than the
+               viewport. The band is Full Width: show (no `pl-12 pr-8`) or the band's padding would
+               sit between the pane edge and the rail; the content column supplies the inset
+               instead. See design-system/layouts.html § 09 and components.html § Content Sidebar.
+
+               STICKY, CORRECTED (Phase 8): the row is `items-stretch`, NOT `items-start` — that
+               stretches the rail column to full band height so its inner sticky has room to pin.
+               ONE sticky wrapper around the whole rail stack; two siblings pinned at the same
+               `top` overlap.
+
+               BELOW xl THE RAIL IS GONE (`hidden xl:block`) and the canvas fills the band. So
+               nothing load-bearing lives only in the rail: the finding is a canvas section, and
+               every graph legend names its own routes. -->
+          <div class="w-full bg-[#ECEEF2]" data-dms-group="content">
+            <div class="w-full">
+              <div class="flex flex-row gap-0 items-stretch">
+
+                <!-- ── RAIL · section group `sidebar` · the ReportRouteList component ──
+                     THIS PANEL IS LIVE. Its shell is here; its rows are rendered by
+                     `npmrds-report.js` (`rowHtml`), because a row has six mutually exclusive
+                     states — collapsed, open, renaming, date-editing, colour-picking, slot — and
+                     hand-drawing four copies of each is what made the previous draft 1,300 lines
+                     of states nobody could interact with. Read that file for what's live and what
+                     is deliberately inert; the two Add buttons open real modals but do not write.
+
+                     Every mutating control is gated on TWO flags in the product
+                     (`PageContext.editPageMode` AND this section's own edit pencil) — here that
+                     pair is the one "edit routes" toggle. -->
+                <div class="w-[340px] shrink-0 hidden xl:block bg-white border-r border-zinc-950/10" data-dms-group="sidebar">
+                  <div class="sticky top-0 h-svh overflow-hidden">
+                    <div class="flex flex-col h-full">
+
+                      <div class="flex flex-col h-full min-h-0" data-dms-section="route-list">
+                        <!-- panel head · pinned. `Routes (N)` + the collapse toggle. -->
+                        <div class="h-12 px-3 flex items-center gap-2 bg-[#12181F] shrink-0">
+                          <!-- icon: Road --><svg class="size-4 text-[#FACC15] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
+                          <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Routes</span>
+                          <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums" id="rail-count">4</span>
+                          <button id="rail-collapse" data-act="collapse" title="Collapse routes" class="size-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10"><!-- icon: ChevronUp --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                        </div>
+
+                        <!-- ACTIONS · ALWAYS AVAILABLE (Alex, 2026-08-05). Add Route and Add
+                             Graph used to appear only in edit mode, mirroring the component's
+                             `canMutate` gate. That is wrong for this page: adding a route and
+                             adding a graph ARE the report's two jobs, and hiding them behind a
+                             mode makes an empty report look like a dead end. They now sit in one
+                             always-present action row, replacing a mode strip plus a toolbar.
+                             CONSEQUENCE FOR THE COMPONENT (escalation, not a mockup detail): the
+                             gate moves from "hide the button" to "the button enters edit mode and
+                             opens the modal", so the read-only guarantee still holds — nothing
+                             writes until the modal is confirmed. The row carries the mode itself —
+                             white when reading, amber + "editing" while the page is in edit mode,
+                             which the header's Edit button controls. -->
+                        <div id="rail-actions" class="px-3 py-2.5 border-b border-zinc-950/08 bg-slate-50 flex items-center gap-2 shrink-0">
+                          <!-- no local edit toggle: the page header's Edit button owns the mode
+                               (that IS the DMS gate — the page being at /edit/…), and a second
+                               button for one piece of state was redundant the moment the two
+                               Adds stopped needing it. The row shows the state instead. -->
+                          <button data-act="m1-show" class="tny-press h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: Plus --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[11.5px] tracking-wide" id="btn-add-route-label">Add route</span></button>
+                          <button data-act="m2-show" class="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Plus --><svg class="size-3.5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[11.5px] tracking-wide">Add graph</span></button>
+                          <span id="rail-mode-note" class="ml-auto font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400 shrink-0"></span>
+                        </div>
+
+                        <!-- COLLAPSIBLE · everything below the actions, matching the component's
+                             own `isRoutesExpanded`: the Dynamic Report switch, the search box and
+                             the rows fold away together. The pinned totals below stay, so a
+                             collapsed panel still says what the report holds. -->
+                        <div id="rail-body" class="flex flex-col flex-1 min-h-0">
+
+                          <!-- DYNAMIC REPORT · a page-filter registration, not a route property.
+                               On, Add Route becomes Add Route Slot: a slot is a placeholder, so
+                               there is no catalogue to browse for one. -->
+                          <div id="rail-dynamic" class="hidden px-3 py-2.5 border-b border-zinc-950/08 bg-slate-50/60 shrink-0">
+                            <div class="flex items-center gap-2">
+                              <button id="dyn-track" data-act="dynamic" role="switch" aria-checked="false" class="w-8 h-[18px] rounded-full bg-slate-300 relative shrink-0"><span id="dyn-knob" class="absolute top-0.5 left-0.5 size-3.5 rounded-full bg-white shadow transition-all"></span></button>
+                              <span class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 flex-1">Dynamic report</span>
+                              <span id="dyn-state" class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/12 bg-white text-slate-500 font-mono text-[9px] uppercase tracking-wider">off</span>
+                            </div>
+                            <p class="font-proxima text-[11px] leading-[1.45] text-slate-500 mt-1">Routes are filled at view time from the URL, not stored on this page. Start from an empty list — existing routes aren't converted.</p>
+                            <p id="rail-dyn-note" class="hidden font-proxima text-[11px] leading-[1.45] text-[#8a5f03] mt-1.5 pt-1.5 border-t border-[#CA8A04]/20">On: the button above adds an empty <strong>route slot</strong>, and a viewer is met by the Add Routes modal as a blocking gate — one route per slot, exact count.</p>
+                          </div>
+
+                          <!-- COPIED WINDOW · appears when a route's window has been copied, and
+                               offers the bulk case directly ("paste into N other routes"),
+                               because "make them all use the same window" is what copying a
+                               window is usually for. Per-route paste lives in each window
+                               block. Rendered by npmrds-report.js. -->
+                          <div id="rail-clip" class="hidden px-3 py-2.5 border-b border-[#1F3F8F]/20 bg-[#1F3F8F]/5 shrink-0"></div>
+
+                          <!-- search · rendering-only filter, never touches the routes array -->
+                          <div class="px-3 py-2 border-b border-zinc-950/05 shrink-0">
+                            <div class="h-8 px-2 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15">
+                              <!-- icon: Search --><svg class="size-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                              <input id="rail-search" data-act="rail-search" placeholder="Search routes…" class="flex-1 min-w-0 bg-transparent font-proxima text-[12.5px] text-slate-700 placeholder:text-slate-400 focus:outline-none"/>
+                              <button id="rail-clear" data-act="search-clear" title="Clear search" class="hidden size-5 rounded flex items-center justify-center text-slate-400 hover:text-slate-700"><!-- icon: CancelCircle --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg></button>
+                            </div>
+                          </div>
+
+                          <!-- ROUTE ROWS · the only scrolling region in the panel. Rendered by
+                               npmrds-report.js (`rowHtml`). Contract item 6 · the route row:
+                               colour dot · name (truncate + title attribute) · TMC count · length
+                               · date range. Truncation is load-bearing: route names are meant to
+                               be long and descriptive. -->
+                          <div id="route-rows" class="flex-1 min-h-0 overflow-y-auto divide-y divide-zinc-950/05"></div>
+
+                          <!-- error · the one place the panel talks back (try renaming a route to
+                               a name another route already has) -->
+                          <div id="rail-error" class="hidden px-3 py-2 border-t border-[#EF4444]/20 bg-[#EF4444]/5 font-proxima text-[11.5px] text-[#b91c1c] shrink-0"></div>
+                        </div>
+
+                        <!-- panel foot · pinned totals, so the summary strip's numbers can be
+                             checked against the rail without scrolling -->
+                        <div class="px-3 py-2 border-t border-zinc-950/08 bg-slate-50 shrink-0 flex items-center gap-2 mt-auto">
+                          <span id="rail-totals" class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums flex-1">4 routes · 36 TMC · 7.8 mi</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400 tabular-nums">5 graphs</span>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ── CONTENT COLUMN · contentCol (flush: it owns the inset the band no longer
+                     supplies) → the band's ONE 12-col section grid. Header, summary, finding,
+                     band heads and every graph card are siblings on it. -->
+                <div class="flex-1 min-w-0 px-8 py-8">
+                  <div class="max-w-[1480px] mr-auto grid grid-cols-12 gap-6" id="report-canvas">
+
+                    <!-- ── SECTION · page header (size 12) ── no longer a full-bleed band: on a
+                         flush rail the header is a section in the content column, so it starts at
+                         the rail's edge and reads as a card on the pane. -->
+                    <div class="col-span-12" data-dms-section="page-header" data-edit-kind="Lexical · page header" data-edit-size="12">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-6 py-6">
+                        <div class="flex items-center gap-3 mb-2 flex-wrap">
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// before &amp; after</span>
+                          <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                          <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">region 8 · dutchess county · signal retiming</span>
+                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>published</span>
+                        </div>
+                        <div class="flex items-end justify-between gap-6 flex-wrap">
+                          <div class="flex-1 min-w-[360px] max-w-[780px]">
+                            <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">NY-9D Beacon Signal Study<span class="text-[#CA8A04]">.</span></h1>
+                            <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3">Travel-time comparison on NY-9D through the City of Beacon, before and after the January 2026 signal retiming. Both directions, weekday AM and PM peaks, hourly bins.</p>
+                          </div>
+                          <div class="flex flex-col items-start gap-3 shrink-0">
+                            <div class="flex items-center gap-2 flex-wrap justify-end">
+                              <!-- Contract item 7 · download -->
+                              <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Download --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Data</span></button>
+                              <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Export --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Share</span></button>
+                              <!-- Open question 4 · these reports are client deliverables, so the header
+                                   acknowledges the document. The print-shaped state is drawn in § 04. -->
+                              <a href="#print-state" class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: FileText --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Print</span></a>
+                              <button data-act="mode" class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: PencilEdit --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide" id="btn-edit-label">Edit</span></button>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- freshness · contract item 4, verbatim four segments. A full-width foot
+                             line rather than a member of the action stack: at 10.5px with 0.18em
+                             tracking it is ~640px wide, and inside a `shrink-0` stack it starved
+                             the h1 until the title wrapped. -->
+                        <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                          <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                          <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                          <span class="text-slate-300">·</span><span>since jan 2017</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · report summary strip (size 12) ── what this report is made of,
+                         at a glance. A sibling of page-header, not nested inside it. -->
+                    <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-slate-50 p-3 flex flex-wrap items-center gap-x-6 gap-y-2" data-dms-section="report-summary">
+                      <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">this report</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: Road --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg><span class="font-mono tabular-nums font-medium">4</span>&nbsp;routes · <span class="font-mono tabular-nums font-medium">36</span>&nbsp;TMC · <span class="font-mono tabular-nums font-medium">7.8</span>&nbsp;mi</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: History --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>Jan–Feb 2025 vs Jan–Feb 2026 · hourly</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: ChartLine --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="font-mono tabular-nums font-medium">6</span>&nbsp;graphs · travel time, speed</span>
+                      <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700 ml-auto"><!-- icon: User --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>Alex Muro · updated <span class="font-mono tabular-nums">2026-07-27</span></span>
+                    </div>
+
+                    <!-- ── SECTION · the finding (size 12) ── MOVED OUT OF THE RAIL (Phase 9).
+                         A flush rail is a control surface that disappears below xl; the report's
+                         answer can't live there. It leads the canvas instead, which is also where
+                         the print state promotes it. -->
+                    <div class="col-span-12 rounded-[8px] border border-[#1F3F8F]/25 bg-[#1F3F8F]/5 p-4" data-dms-section="finding">
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1F3F8F]">// the finding</div>
+                      <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-1.5 max-w-[900px]">Northbound PM-peak travel time fell <span class="font-mono tabular-nums font-semibold text-[#0f1722]">42 s</span> (−11.4%) after retiming. Southbound is unchanged within noise. The gain concentrates on the two segments north of Main St.</p>
+                    </div>
+
+                    <!-- BAND 1 · the question: did travel time change?
+                         Fused lexical head, not a section title (feedback_deprecate_section_title) -->
+                    <div class="col-span-12" data-dms-section="band-1-head">
+                      <div class="flex items-end justify-between gap-4 flex-wrap">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">northbound · both periods · hourly bins</span>
+                          </div>
+                          <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Did travel time change?</h2>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · Route Line Graph, Travel Time · size 12 · the overview chart -->
+                    <div class="col-span-12" data-dms-section="graph-1-line" data-graph="g1" data-edit-kind="AVL Graph · LineGraph · graph 1" data-edit-size="12" data-measure>
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <!-- graph-card contract 1 · header h-10, one line -->
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Travel time by hour of day</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g1"></div>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <!-- plot · contract 4 · padding is the card's -->
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g1" data-sample="hourly"></div>
+                        </div>
+                        <!-- graph-card contract 2 · legend BELOW the plot, left-aligned -->
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#1F3F8F]"></span>NY-9D NB · before</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#E5A646]"></span>NY-9D NB · after</span>
+                        </div>
+                        <!-- graph-card contract 3 · ONE muted attribution line -->
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · source 583 / view 982 · travel_time_all_vehicles · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- SIDE-BY-SIDE PAIR · map + the numbers for the same routes.
+                         NOT a compound card. A compound card is STACKED sections sharing a
+                         zeroed edge (skill §7.4, patterns §13) — that recipe cannot work
+                         side-by-side on this catalogue's `gap-6` grid, because the 24px gap is
+                         owned by the grid and no amount of section-padding zeroing closes it.
+                         The earlier draft drew these two with `border-b-0` plus a shared
+                         attribution strip below, which rendered as two cards with missing
+                         bottom borders and a floating orphan strip. Each card now closes
+                         itself and carries its own one-line attribution.
+                         Real compound cards arrive with the gap-0 conversion (contract item 9). -->
+                    <div class="col-span-12 lg:col-span-5" data-dms-section="graph-2-map" data-graph="gm" data-edit-kind="Map · Route Map, Speed" data-edit-size="5">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Route map</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="gm"></div>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="relative h-[224px] tny-map">
+                          <!-- decorative --><svg viewBox="0 0 420 224" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full">
+                            <path d="M 90 210 L 120 160 L 150 120 L 175 80 L 205 40 L 240 14" stroke="#1a9850" stroke-width="5" fill="none"/>
+                            <path d="M 150 120 L 210 130 L 275 128" stroke="#fee08b" stroke-width="3" fill="none"/>
+                            <path d="M 175 80 L 240 92" stroke="#91cf60" stroke-width="3" fill="none"/>
+                            <circle cx="150" cy="120" r="4" fill="#0F1722"/>
+                            <circle cx="175" cy="80" r="4" fill="#0F1722"/>
+                          </svg>
+                          <div class="absolute left-3 top-3 font-mono text-[10px] uppercase tracking-wider text-slate-700">Beacon</div>
+                          <div class="absolute left-[34%] top-[52%] font-mono text-[9.5px] uppercase tracking-wider text-slate-600 bg-white/80 px-1 rounded">Main St</div>
+                          <div class="absolute left-[41%] top-[33%] font-mono text-[9.5px] uppercase tracking-wider text-slate-600 bg-white/80 px-1 rounded">Verplanck</div>
+                          <div class="absolute bottom-3 left-3 rounded-[6px] border border-zinc-950/10 bg-white/95 px-2 py-1.5">
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">speed · mph</div>
+                            <div class="flex items-center gap-1">
+                              <span class="block w-5 h-1.5 rounded-sm bg-[#d73027]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#fc8d59]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#fee08b]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#91cf60]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#1a9850]"></span>
+                            </div>
+                            <div class="flex items-center justify-between font-mono text-[9px] tabular-nums text-slate-400 mt-0.5"><span>18</span><span>44</span></div>
+                          </div>
+                        </div>
+                        <!-- graph-card contract 3 · ONE muted metaXS attribution line per card -->
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · source 583 / view 982 ⋈ tmc geometry 582 / view 1312 (2025) · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-7" data-dms-section="graph-3-info" data-graph="gt" data-edit-kind="Spreadsheet · Route Info Box" data-edit-size="7">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Route summary · peak periods</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="gt"></div>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                          <table class="w-full min-w-[400px]">
+                            <thead>
+                              <tr class="bg-slate-50 border-b border-zinc-950/08">
+                                <th class="text-left px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">route</th>
+                                <th class="text-right px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">am tt</th>
+                                <th class="text-right px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">pm tt</th>
+                                <th class="text-right px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">Δ pm</th>
+                                <th class="text-right px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">avg speed</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-950/05">
+                              <tr>
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#1F3F8F] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-700 truncate" title="NY-9D Northbound — Jan–Feb 2025">NB · before</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">4:38</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">6:09</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-400">—</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">24.1</td>
+                              </tr>
+                              <tr>
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#E5A646] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-700 truncate" title="NY-9D Northbound — Jan–Feb 2026">NB · after</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">4:31</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">5:27</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums font-medium text-emerald-700">−42 s</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">26.8</td>
+                              </tr>
+                              <tr>
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#10B981] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-700 truncate" title="NY-9D Southbound — Jan–Feb 2025">SB · before</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">5:52</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">5:11</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-400">—</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">25.4</td>
+                              </tr>
+                              <tr class="bg-slate-50/60">
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#8B5CF6] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-500 truncate" title="NY-9D Southbound — Jan–Feb 2026 (not assigned to a graph)">SB · after</span><span class="h-4 px-1 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9px] uppercase tracking-wider shrink-0">unused</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">5:48</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">5:08</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">−3 s</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">25.6</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!-- graph-card contract 3 · ONE muted metaXS attribution line per card.
+                             Δ pm sits before avg speed so the payoff number (−42 s, the report's
+                             whole finding) is never the column that scrolls out of view. -->
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · source 583 / view 982 · weekdays only · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- BAND 2 · the question: where on the corridor? -->
+                    <div class="col-span-12 mt-2" data-dms-section="band-2-head">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">per-segment · pm peak · after − before</span>
+                      </div>
+                      <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Where on the corridor did it change?</h2>
+                      <!-- Authored reading lives in the band head (Lexical), where authored copy
+                           belongs — not inside graph chrome. -->
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 max-w-[720px]">S3 and S4, north of Main St, carry the gain; the rest of the corridor is flat within noise.</p>
+                    </div>
+
+                    <!-- CARD · Route Bar Graph · size 6 · demonstrates the size-6 legend rule -->
+                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-4-bar" data-graph="g2" data-edit-kind="AVL Graph · BarGraph · graph 2" data-edit-size="6" data-measure>
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Travel time by segment</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g2"></div>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g2" data-sample="segment"></div>
+                        </div>
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#1F3F8F]"></span>before</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#E5A646]"></span>after</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 ml-auto">seconds · pm peak</span>
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · pm peak weekdays · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · Route Difference Graph · size 6 · diverging bars, zero-centred -->
+                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-5-diff" data-graph="g3" data-edit-kind="AVL Graph · BarGraph, difference · graph 3" data-edit-size="6" data-measure>
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Difference · after − before</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g3"></div>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g3" data-sample="diff"></div>
+                        </div>
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#1a9850]"></span>faster after</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-4 h-4 rounded mr-1 shrink-0 bg-[#d73027]"></span>slower after</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 ml-auto">main → NB · zero-centred</span>
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · comparison_series difference mode · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · TMC Difference Grid · size 12 · segment × hour heat grid -->
+                    <div class="col-span-12" data-dms-section="graph-6-grid" data-graph="g4" data-edit-kind="AVL Graph · GridGraph · graph 4" data-edit-size="12" data-measure>
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">Segment × hour · speed difference</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g4"></div>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:260px" data-chart="g4" data-sample="hourly"></div>
+                        </div>
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">mph faster after</span>
+                          <span class="inline-flex items-center gap-0.5"><span class="block w-5 h-2 rounded-sm bg-[#e8cba4]"></span><span class="block w-5 h-2 rounded-sm bg-[#f7f2ea]"></span><span class="block w-5 h-2 rounded-sm bg-[#cbe5d6]"></span><span class="block w-5 h-2 rounded-sm bg-[#8bc9ab]"></span><span class="block w-5 h-2 rounded-sm bg-[#2e9464]"></span><span class="block w-5 h-2 rounded-sm bg-[#0f6b42]"></span></span>
+                          <span class="font-mono text-[10px] tabular-nums text-slate-500">−3 · 0 · +8</span>
+                          <!-- The authored reading of this grid ("S3 & S4 north of Main St carry
+                               the gain") moved to the band head: an avlGraph legend renders from
+                               the series, so it cannot carry authored copy. -->
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · tmc × epoch, difference mode · weekdays · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · size 4 · THE SMALLEST ALLOWED CARD, drawn so graph-card contract
+                         clause 5 and density rule 03 are a spec rather than an assertion:
+                         at size 4 the y-axis drops to THREE ticks and the legend collapses to
+                         dots + a count. 21-section pages live or die on this rule, so the set
+                         has to contain one. -->
+                    <div class="col-span-12 sm:col-span-6 lg:col-span-4" data-dms-section="graph-7-small" data-graph="g5" data-edit-kind="AVL Graph · BarGraph · graph 5" data-edit-size="4" data-measure>
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate flex-1 min-w-[112px]">AM peak · by segment</span>
+                          <!-- QuickControls · sectionHeaderExtensions, rendered by npmrds-report.js.
+                               flex-1 + overflow-hidden is load-bearing: it gives the row a measurable
+                               budget, which is how the pills know when to collapse. -->
+                          <div class="shrink-0 flex items-center justify-end gap-1.5" data-qc="g5"></div>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="w-full h-fit px-4 pt-4">
+                          <!-- the AVL Graph section renders this shape: a measured,
+                               full-width container the chart fills (no viewBox), with the
+                               plot translated by the margin. Drawn by npmrds-report.js. -->
+                          <div class="w-full avl-graph-container relative text-slate-500" style="height:180px" data-chart="g5" data-sample="small"></div>
+                        </div>
+                        <div class="px-4 pb-3 flex items-center gap-2">
+                          <span class="inline-flex items-center gap-1">
+                            <span class="size-2 rounded-full bg-[#1F3F8F]"></span><span class="size-2 rounded-full bg-[#E5A646]"></span>
+                          </span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 tabular-nums">2 routes</span>
+                          <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 ml-auto">size 4 · 3 ticks · dot legend</span>
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · am peak · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- EMPTY STATE · the real pages carry a placeholder section titled
+                         "Add a Route to Your Report". Designed, not left as a bare Spreadsheet. -->
+                    <div class="col-span-12 lg:col-span-8" data-dms-section="add-graph-empty" data-edit-kind="Spreadsheet · Add a Route to Your Report" data-edit-size="8">
+                      <div class="rounded-[8px] border border-dashed border-zinc-950/15 bg-white/60 p-6 flex flex-col sm:flex-row items-center gap-4">
+                        <span class="size-10 rounded-[6px] bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><!-- icon: ChartLine --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></span>
+                        <div class="min-w-0 flex-1 text-center sm:text-left">
+                          <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Add another graph</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">Pick a graph type and a measure; then assign routes to it from the rail. <span class="font-medium text-slate-700">NY-9D SB · after</span> is not on any graph yet.</p>
+                        </div>
+                        <button data-act="m2-show" class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e] shrink-0"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Add graph</span></button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · WHAT'S LIVE, AND THE RULES BEHIND IT · `content_tint` ═════════
+               The states this page used to DRAW below the fold are now reachable in the rail
+               above, so what's left down here is the part a drawing can't replace: which controls
+               exist, what each one writes, and the decisions that shaped them. Behaviour lives in
+               `npmrds-report.js` — read its header comment for the live/inert split. -->
+          <div class="w-full bg-[#E4E8EE] border-y border-zinc-950/05 py-12" data-dms-group="content_tint" id="how-it-works">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- ── SECTION · band head · lexical (size 12) ── -->
+              <div class="col-span-12" data-dms-section="how-it-works-head">
+                <div class="flex items-end justify-between gap-6 flex-wrap">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">the rail above is live · states are reached, not drawn</span>
+                    </div>
+                    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Drive it, then read this.</h2>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 max-w-[820px]">Hit <strong>Edit</strong> in the page header, open a route, and the whole control set is there. Both modals are reachable either way — the two Add buttons never hide. This band is the reference: what each control writes, and why the design landed where it did.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · try this (size 4) ── the shortest path through the interaction, so
+                   a reviewer doesn't have to hunt for the states that used to be drawn. -->
+              <div class="col-span-12 xl:col-span-4" data-dms-section="try-this">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full p-5">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// try this</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Every state, in ten clicks.</div>
+                  <ol class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span>Type <span class="tny-mono">I-84</span> in the rail's search — the <strong>no-match</strong> state, then clear it.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><strong>+</strong> on any route — the open-out: the window, the day/time restriction, the graph chips.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><em>Nothing in the rail is behind a mode</em> — reorder, rename, remove, colour, window and assignment are always live. <strong>Edit</strong> in the page header adds the <em>page</em> chrome instead: a section toolbar per card, the Measure Picker, the Dynamic Report switch. The graph cards deliberately don't move — see the note below.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span>Rename a route to a name another route already has — the refusal is real copy, not a placeholder.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span>The row's <strong>pencil</strong> → name and dates together, one save/cancel, with the day count and <strong>shift ± 1 year</strong>. That is all a route carries now: which road, over which dates.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span>Now the card headers — <strong>Quick Controls</strong>. <strong>Routes</strong> on any card changes what it draws (the map is single-select); <strong>when</strong> holds time of day + days; measure, aggregate and mode sit beside them. The row measures itself — narrow the window and watch pills fold into the “⋯” by priority, lowest first. Set a backwards time window there to see the silent-failure warning.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><strong>Copy</strong> a date span, then <strong>paste into all</strong> from the strip that appears at the top of the rail — or paste it route by route. Derived-date routes are skipped and say why.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span>The colour dot on any row → the colour <strong>popover</strong>, no need to open the route; a chip → assignment on/off. Open <strong>NY-9D SB · after</strong>: its dates are <em>derived</em>, so it says so instead of offering a pencil.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><strong>Add route</strong> → search leads; the County / Region / Agency doors sit beside it. Drill in, come back on the breadcrumb, search inside a tag, watch already-added routes get flagged. Every row carries its own tags, so two routes with the same name stem are still tellable apart.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">10</span><span><strong>Add graph</strong> → pick a <strong>shape</strong> from the five cards (Bar · Line · Grid · <strong>Table</strong> · <strong>Map</strong>), then a measure, then <strong>when</strong> (time of day, days, aggregate — the facets that moved off the route), then routes. Pick <em>Map</em> and the route list turns single-select; set <em>Difference</em> with exactly two routes to make the <strong>Anchor Route</strong> select appear. The footer names what will be built — including whether it's an AVL Graph, a Spreadsheet or a Map.</span></li>
+                  </ol>
+                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05"><strong>Inert on purpose:</strong> the two confirm buttons, remove, duplicate and the section Settings drawer. Adding or removing would change the report; this page designs the flow, not the write. Colour and assignment edits move the rail's own chrome — the plots are still drawings and don't redraw.</p>
+                </div>
+              </div>
+
+              <!-- ── SECTION · control inventory (size 4) ── every control in the rail, what it
+                   writes, and its gate. Kept so the design can be checked against the component
+                   instead of guessed at. -->
+              <div class="col-span-12 xl:col-span-4" data-dms-section="control-inventory">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full overflow-hidden">
+                  <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// the control set</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Two surfaces, one question each.</div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1.5">The rail answers <strong>what road, over what dates</strong>. A card's own Quick Controls answer <strong>what question of it</strong> — measure, aggregate, when, mode, and which routes. Everything below the second heading used to live on the route; moving it is a storage change for the component, not just a layout one.</p>
+                  </div>
+                  <table class="w-full text-[12px]">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/08">
+                      <tr>
+                        <th class="text-left px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">control</th>
+                        <th class="text-left px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">where</th>
+                        <th class="text-left px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">writes</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-950/05 font-proxima text-slate-700">
+                      <tr class="bg-slate-50/60"><td colspan="3" class="px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">the rail · a route is a road and a span</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Add Route</td><td class="px-3 py-1.5 text-slate-500">actions · always</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[] ← modal</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Add Graph</td><td class="px-3 py-1.5 text-slate-500">actions · always</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">a new card</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Dynamic Report</td><td class="px-3 py-1.5 text-slate-500">rail · page edit</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">page.filters routeSlots</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Search · collapse · expand</td><td class="px-3 py-1.5 text-slate-500">rail</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · local</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Reorder · remove</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">routes[]</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Edit <span class="font-normal text-slate-400">name + dates, one mode</span></td><td class="px-3 py-1.5 text-slate-500">row · one pencil</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.name · start / end</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Shift ± 1 year</td><td class="px-3 py-1.5 text-slate-500">open-out · editing</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.start / end</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Copy / paste span</td><td class="px-3 py-1.5 text-slate-500">open-out + rail strip</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.start / end</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Identity colour</td><td class="px-3 py-1.5 text-slate-500">row · popover</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">route.color</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">“on N cards”</td><td class="px-3 py-1.5 text-slate-500">row</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">nothing · jumps to it</td></tr>
+                      <tr class="bg-slate-50/60"><td colspan="3" class="px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">quick controls · a card is a question</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Routes <span class="font-normal text-slate-400">single or multi</span></td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.routes[]</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Measure</td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.measure</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Aggregate</td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.resolution</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">When <span class="font-normal text-slate-400">time of day + days</span></td><td class="px-3 py-1.5 text-slate-500">card header · one pill</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.start/end · weekdays{}</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">Comparison mode</td><td class="px-3 py-1.5 text-slate-500">card header</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-500">card.mode</td></tr>
+                      <tr><td class="px-4 py-1.5 font-medium">“⋯” <span class="font-normal text-slate-400">whatever didn't fit</span></td><td class="px-3 py-1.5 text-slate-500">card header · measured</td><td class="px-4 py-1.5 font-mono text-[10.5px] text-slate-400">the same popover</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="px-5 py-3 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[11.5px] leading-[1.5] text-slate-500">
+                    Route content lives in the report's own dataset row, not in <span class="tny-mono">draft_sections</span> — it writes through on every edit, exactly like Card/Spreadsheet row CRUD, so <strong>publish and discard don't apply to it</strong>. Card state is section state, so it follows the page's own draft/publish cycle. <strong>Quick Controls are the real mechanism</strong> — <span class="tny-mono">theme.sectionHeaderExtensions</span> injects a builder into the section header band, with the same ctx the Settings-drawer extensions get; today it ships Measure and Comparison Mode, and this design extends the row.
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · design rules (size 4) ── -->
+              <div class="col-span-12 xl:col-span-4" data-dms-section="control-rules">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full p-5">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// rules this set forced</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">A 340-px control surface.</div>
+                  <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2.5">
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">A control has to describe the query it builds.</span> The window read “start date + start time / end date + end time”, which claims a continuous stretch between two instants. The engine builds a list of <em>days</em> and, separately, a band of <em>hours applied to every one of them</em> — it averages the same hours across days. Three facets in the engine's own order (dates → days → time of day) say that; the old pairing said the opposite, and no amount of polish fixes a control that lies about its result.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Put a control where its subject lives.</span> Time of day, days and the aggregate sat on the route, so asking a second question of the same road meant a second route, and one window silently governed every card that route fed. They belong to the card — the card <em>is</em> the question — and they now sit in its header, in the row the platform already renders there. What's left on a route is what a route is: a road and a span of dates.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">A control row has to measure itself.</span> Five controls fit a size-12 header and not a size-5 one, and the same card is wide at 1600 px and narrow at 1280 — so a size threshold is the wrong tool. Set values shrink to tokens (<span class="tny-mono">1h</span>, <span class="tny-mono">06–10 · Wd</span>, a mode glyph), then what's left collapses by priority into one “⋯” that opens the same contents. The title truncates to a floor and keeps a tooltip: the controls claim the spare width first, because the title is legible from the plot and the controls aren't.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">A per-item control must survive twenty items.</span> A chip per graph on every route row was fine at five graphs and unusable at twenty, which these reports reach. A count plus a jump answers the same question in one line and doesn't grow.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">05</span><span><span class="font-medium text-slate-700">Name the silent failures.</span> A backwards time window empties the epoch list, and an empty list means the filter is never sent — so it silently returns all-day data. The control says so, in those words, rather than letting a plausible-looking window produce a wrong chart.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">06</span><span><span class="font-medium text-slate-700">If every route wants the same value, make it copyable.</span> A before/after report is four routes with one window. Retyping four fields per route is a transcription-error generator, so the window copies as one shape and the copied strip offers the bulk case first.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">07</span><span><span class="font-medium text-slate-700">Two affordances per row, never more.</span> Rename and remove sit in the row; everything else waits inside the open-out. At 340&nbsp;px a row with six icons is unreadable and the route's name — the thing you scan for — loses its width.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">08</span><span><span class="font-medium text-slate-700">Editing is explicit; saving isn't automatic.</span> The name and the window each take a save/cancel pair, because a half-typed window would refetch every graph on the page. Colour and chips commit on click — single, reversible, cheap.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">09</span><span><span class="font-medium text-slate-700">Presets before fields.</span> <em>AM Peak</em> and <em>Weekdays</em> are the real vocabulary; the raw inputs stay, but nobody should have to type <span class="tny-mono">16:00</span> twice from memory. The two windows that wrap past midnight are absent on purpose — the epoch range can't express them.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">10</span><span><span class="font-medium text-slate-700">Destructive is the only coloured control.</span> Amber = you are editing; rose = removal; blue = the one primary action. Nothing else earns a colour, which is what keeps the route colours themselves legible.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">11</span><span><span class="font-medium text-slate-700">Colour is a popover on the dot, not a block in the open-out.</span> Inline it was doubly buried — expand the route, then click “change” — for a control whose whole job is “this route is blue everywhere”. You notice two routes are hard to tell apart while looking at a chart, and from there it's one click on the dot. The TMC list left the open-out for the opposite reason: nobody identifies a route by reading <span class="tny-mono">120P29714</span> off a rail, so the count in the meta line is the useful part.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">12</span><span><span class="font-medium text-slate-700">Say “unused”.</span> A route on no graph is a half-finished report, not a tidy one, so the row says so and the empty-state card in the canvas repeats it by name.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">13</span><span><span class="font-medium text-slate-700">Nothing in the rail hides behind a mode.</span> Add Route and Add Graph sit in an always-present action row, and every per-route control — window, colour, name, order, assignment — is live: a report with no routes has to offer the way out of that state, and a mode you have to discover first is not an offer. Page edit mode still governs the <em>page</em>: section toolbars, the Measure Picker, Dynamic Report.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">14</span><span><span class="font-medium text-slate-700">Don't fake the refetch.</span> A route's window, colour and assignment do publish to every card the route feeds, and in the product those cards redraw. This page has no data behind it, so it doesn't pretend: the cards stay the drawings they are, and the binding is written down rather than simulated. A version that rebuilt legends and flashed “updating” was reverted — it made cards look refreshed while the numbers underneath hadn't moved, which teaches the wrong thing more effectively than saying nothing.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">15</span><span><span class="font-medium text-slate-700">The panel scrolls once.</span> The head, the action row and the totals are pinned; only the rows move. A rail that scrolls as a whole loses its Add buttons exactly when a long list makes you want them.</span></li>
+                  </ul>
+                  <div class="mt-4 pt-3 border-t border-zinc-950/05">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">// the density rule still holds</div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600">“Year Over Year (Beginner)” carries two maps, thirteen bar graphs and four tables. Bands break on <strong>question</strong>, not on count; four bands maximum before the page earns an in-page nav rail; never below size 4, where the y-axis drops to three ticks and the legend collapses to dots plus a count; one attribution line, truncated rather than wrapped.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · PRINT STATE · LayoutGroup `content` ═════════
+               Open question 4's recorded default: ONE print-shaped state, not a full print
+               stylesheet. These reports are client deliverables — the real titles say so
+               ("US-44/NY-55 Westbound Road Diet Impact Assessment") — so the design has to
+               admit the document exists. What changes when printed: app chrome drops (SideNav,
+               ds-nav, quick-control pills, kebabs, Edit), the route rail becomes a static
+               legend block, the finding is promoted above the charts, and provenance +
+               pagination move to a page foot. Drawn on the brand's bone surface. -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content" id="print-state">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- ── SECTION · band head · lexical (size 12) ── -->
+              <div class="col-span-12" data-dms-section="print-state-head">
+                <div class="flex items-end justify-between gap-6 flex-wrap">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">the deliverable · letter portrait · chrome removed</span>
+                    </div>
+                    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Printed, this is a document.</h2>
+                  </div>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 max-w-[420px] text-right">one state, not a print stylesheet</span>
+                </div>
+              </div>
+
+              <!-- ── SECTION · the print sheet (size 7) ── -->
+              <div class="col-span-12 lg:col-span-7" data-dms-section="print-sheet">
+                <div class="rounded-[8px] border border-zinc-950/10 tny-card-bone shadow-sm overflow-hidden">
+                  <!-- letterhead · replaces the app header -->
+                  <div class="px-7 pt-7 pb-4 border-b-2 border-[#0F1722]">
+                    <div class="flex items-start justify-between gap-4">
+                      <div class="min-w-0">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">New York State Department of Transportation · TransportNY</div>
+                        <h3 class="font-display font-semibold text-[22px] leading-[1.2] uppercase text-[#0F1722] mt-1">NY-9D Beacon Signal Study</h3>
+                        <div class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1">Travel-time comparison · Jan–Feb 2025 vs Jan–Feb 2026 · weekday AM and PM peaks</div>
+                      </div>
+                      <div class="w-9 h-9 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[13px] shrink-0">NY</div>
+                    </div>
+                  </div>
+                  <!-- the finding leads on paper · a reader with one page gets the answer -->
+                  <div class="px-7 py-4 border-b border-zinc-950/10">
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#1F3F8F]">Finding</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-1">Northbound PM-peak travel time fell <span class="font-mono tabular-nums font-semibold text-[#0f1722]">42 s</span> (−11.4%) after retiming. Southbound is unchanged within noise. The gain concentrates on the two segments north of Main St.</p>
+                  </div>
+                  <!-- the rail becomes a static legend -->
+                  <div class="px-7 py-3 border-b border-zinc-950/10 flex flex-wrap gap-x-5 gap-y-1.5">
+                    <span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] text-slate-600"><span class="size-2 rounded-full bg-[#1F3F8F]"></span>NY-9D NB · before</span>
+                    <span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] text-slate-600"><span class="size-2 rounded-full bg-[#E5A646]"></span>NY-9D NB · after</span>
+                    <span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] text-slate-600"><span class="size-2 rounded-full bg-[#10B981]"></span>NY-9D SB · before</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 tabular-nums ml-auto">36 TMC · 7.8 mi</span>
+                  </div>
+                  <!-- charts keep their titles but lose every interactive affordance -->
+                  <div class="px-7 py-4">
+                    <div class="font-display font-medium text-[13px] text-[#0f1722]">Travel time by hour of day</div>
+                    <svg viewBox="0 0 560 130" class="w-full h-[130px] block mt-1">
+                      <line x1="34" y1="6" x2="34" y2="110" stroke="#c9c2b4" stroke-width="1"/>
+                      <line x1="34" y1="110" x2="552" y2="110" stroke="#a9a294" stroke-width="1"/>
+                      <line x1="34" y1="58" x2="552" y2="58" stroke="#e0dacd" stroke-width="1"/>
+                      <text x="29" y="113" text-anchor="end" font-family="ui-monospace,monospace" font-size="8" fill="#8a8272">3:00</text>
+                      <text x="29" y="61"  text-anchor="end" font-family="ui-monospace,monospace" font-size="8" fill="#8a8272">5:00</text>
+                      <text x="29" y="12"  text-anchor="end" font-family="ui-monospace,monospace" font-size="8" fill="#8a8272">7:00</text>
+                      <path d="M 44 96 L 100 93 L 156 84 L 212 58 L 254 40 L 310 70 L 366 74 L 422 66 L 468 36 L 512 24 L 552 62" fill="none" stroke="#1F3F8F" stroke-width="1.75"/>
+                      <path d="M 44 98 L 100 96 L 156 90 L 212 70 L 254 56 L 310 78 L 366 80 L 422 74 L 468 56 L 512 48 L 552 70" fill="none" stroke="#E5A646" stroke-width="1.75"/>
+                    </svg>
+                  </div>
+                  <!-- page foot · provenance + pagination, the print-only chrome -->
+                  <div class="px-7 py-2.5 border-t border-zinc-950/10 flex items-center justify-between gap-4">
+                    <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 truncate">npmrds v6 · source 583 / view 982 · as of 2026-07-29</span>
+                    <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 tabular-nums shrink-0">page 1 / 3</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · what the print state changes (size 5) ── -->
+              <div class="col-span-12 lg:col-span-5" data-dms-section="print-rules">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// what changes on paper</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Chrome is not content.</div>
+                  <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Drop every affordance.</span> SideNav, the ds-nav widget, quick-control pills, kebabs, Edit, Share — none of it survives a PDF, so none of it prints.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Promote the finding.</span> On screen it is a canvas section under the header (it left the rail when the rail became a control surface); on paper it leads, because a printed report is read linearly and often only page one.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">The rail becomes a legend.</span> Route colours still key the charts, so the rows persist as a static colour key — without the mutation controls.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">Provenance and pagination move to a page foot.</span> The per-card attribution lines collapse into one sheet-level line — the same facts, once.</span></li>
+                  </ul>
+                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-4">Scope note: this is one drawn state, per Open question 4's recorded default. A real print stylesheet — page breaks that never split a card, repeated headers, widow control — is its own task.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="route-comparison.html" class="hover:text-slate-900">route-comparison</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════════════════
+     THE TWO MODALS · live. Shells here, contents rendered by npmrds-report.js.
+     Both are `Modal activeStyle:"wide"` (max-w-7xl) — the brand's `modal` theme now
+     ships that style, which it previously didn't, so these were rendering at the
+     narrow max-w-lg and their two-pane bodies were unusable.
+
+     RULES BOTH FOLLOW:
+       1. HEAD, BODY, FOOT. The head names the job, the body is the only scrolling
+          region, the foot holds the count and the two buttons. The confirm button
+          counts what it will do ("Add 2 Routes"), never just "OK".
+       2. SELECTION IS ALWAYS VISIBLE — echoed as chips (routes) or a count (graphs)
+          above the fold, because either modal can hide a chosen item behind a
+          drill-down or a scroll.
+       3. NOTHING IS CREATED UNTIL CONFIRM. Both are pickers that hand a value back
+          to the panel; neither writes. On this page confirm is inert and says so.
+     Escape, the backdrop, the ✕ and Cancel all close.
+     ═════════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ── Add Routes · RouteTagBrowserModal ──
+     The old tool organised routes in FOLDERS; the data model has none, so tags stand in —
+     county:, region: and agency: are fixed, enumerable vocabularies (62 NY counties,
+     NYSDOT's own 11 regions, 18 agency/MPO codes) and drilling into one reproduces the
+     folder browser's organising effect without inventing a folder table.
+
+     REV 2 (2026-08-05) — four things the first cut got wrong:
+       1. SEARCH IS THE FAST PATH, so it leads. It is the header's largest element, focused
+          on open, and its result count is stated. Browsing is for when you don't know the
+          name; typing is for when you do, which is most of the time.
+       2. A ROUTE ROW HAS TO SAY WHAT IT IS. Name + TMC count can't separate "NY-9D NB
+          (Beacon)" from "NY-9D NB · Main St to Verplanck" — so each row now carries its
+          county / region / agency tags as muted chips. Same data the folders are built
+          from, shown where the decision is made.
+       3. THE FIVE DOORS WERE EQUAL-WEIGHT AND AREN'T. County, Region and Agency are the
+          real axes and stay tiles; Auto-generated (a provenance flag, not an axis) and
+          Other tags (free text — project numbers like `pin:8756.41`) are edge doors and
+          become a text line under them.
+       4. SELECTION NEEDS AN ESCAPE. The chip row can grow past the fold on a big pick, so
+          it caps its height and gains "clear all".
+     TWO LIST BEHAVIOURS, both deliberate: the unscoped default list HIDES routes already on
+     this report (it's a suggestion list, and it says how many it's showing), while any
+     deliberate view — a name search, a drilled tag, a free-text tag — SHOWS them, flagged,
+     because re-adding a catalogue route with a different window is a normal thing to want. -->
+<div id="modal-routes" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Add Routes">
+  <div class="absolute inset-0 bg-zinc-950/40" data-backdrop>
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+      <div class="pointer-events-auto w-full max-w-3xl rounded-[8px] bg-white ring-1 ring-zinc-950/10 shadow-2xl overflow-hidden flex flex-col h-[74vh] max-h-[700px]">
+
+        <div class="px-6 pt-5 pb-4 border-b border-zinc-950/08 shrink-0">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="font-display uppercase text-[16px] tracking-wide text-[#0F1722]">Add Routes</div>
+              <div class="font-proxima text-[12.5px] text-slate-500 mt-1">Search by name, or browse by county, region or agency.</div>
+            </div>
+            <button data-act="m1-close" class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-[#0F1722] shrink-0" title="Close"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+          </div>
+
+          <!-- search leads · the fastest path to a known route -->
+          <div class="mt-3 h-11 px-3 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15">
+            <!-- icon: Search --><svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="m1-search" data-act="m1-search" class="flex-1 min-w-0 bg-transparent font-proxima text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none" placeholder="Search routes by name…"/>
+            <button id="m1-search-clear" data-act="m1-search-clear" title="Clear" class="hidden size-5 rounded flex items-center justify-center text-slate-400 hover:text-slate-700"><!-- icon: CancelCircle --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg></button>
+          </div>
+
+          <!-- BOTH PATHS, ALWAYS VISIBLE. The tag doors used to sit under the result list,
+               which put the entire browse half of the modal below the fold. As compact scope
+               pills under the search box they cost one row, stay reachable from every view,
+               and double as the axis switcher once you're inside one. -->
+          <div id="m1-browse" class="flex flex-wrap items-center gap-1.5 mt-2.5"></div>
+
+          <!-- where you are · only once you've left the root -->
+          <div id="m1-crumbs" class="hidden items-center flex-wrap gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mt-2.5"></div>
+
+          <!-- what you've picked · capped so a big selection can't push the list away -->
+          <div id="m1-selected" class="hidden mt-3 pt-3 border-t border-zinc-950/05">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span id="m1-selected-label" class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500"></span>
+              <button data-act="m1-clear" class="ml-auto font-mono text-[9.5px] uppercase tracking-wider text-slate-400 hover:text-[#b91c1c]">clear all</button>
+            </div>
+            <div id="m1-chips" class="flex flex-wrap gap-1.5 max-h-[68px] overflow-y-auto"></div>
+          </div>
+        </div>
+
+        <div id="m1-body" class="flex-1 min-h-0 overflow-y-auto px-6 py-4"></div>
+
+        <div class="px-6 py-3 border-t border-zinc-950/10 flex items-center justify-between gap-3 shrink-0">
+          <span id="m1-count" class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 tabular-nums">nothing selected</span>
+          <div class="flex items-center gap-2">
+            <button data-act="m1-close" class="h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 font-display uppercase text-[12.5px] tracking-wide hover:border-[#37576B]">Cancel</button>
+            <button id="m1-confirm" data-act="m1-confirm" class="h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-slate-200 text-slate-400 font-display uppercase text-[12.5px] tracking-wide cursor-not-allowed">Add Routes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Graph · AddGraphModal ──
+     Collapses the old author path (+Add Component → blank AVL Graph → open the section
+     menu → Measure Picker → configure) into one modal.
+
+     REV 2 (2026-08-05) — THE FOUR PICKS ARE NOT EQUALLY IMPORTANT, so they no longer look
+     it. The first cut was four identical dropdowns in a 2×2 grid plus a route checklist,
+     which said "these are four settings" when the real shape is a decision and two
+     refinements:
+
+       01 SHAPE  — a set of cards, not a dropdown. Picking a chart type is a VISUAL choice
+                   ("I want bars"), and a closed select hides the whole vocabulary behind a
+                   click; four cards show it, each with its glyph and the one line that says
+                   when to reach for it. Cards also make room for the type that was missing:
+                   TABLE. The real report pages are full of "Route Info Box" / "Route
+                   summary" Spreadsheet sections, and until now the only way to get one was
+                   the long path this modal exists to replace. Note the card footnote: the
+                   three chart types create an AVL Graph section, Table creates a
+                   Spreadsheet — the modal says which, because it changes what the section's
+                   own menu will offer afterwards.
+       02 VALUE  — one select, but grouped (Speed · Travel time · Delay · Emissions). Nine
+                   flat options is a wall; four families is a glance. The measure's own
+                   sentence sits under it, live, because "Avg. Hours of Delay" does not
+                   explain itself.
+       03 ROUTES — a checklist with select-all/none and a live count. Kept on the right, not
+                   first: on a report that already has routes, WHAT to show is the decision
+                   and WHICH routes is the follow-through. Confirm stays disabled until at
+                   least one is checked, so the requirement is still enforced, just not
+                   pretended to be the first question.
+       REFINE    — resolution and comparison mode, demoted to one muted row with a label
+                   that says they're optional. Both have sane defaults and neither changes
+                   what the card IS. The Anchor Route select appears here only for Difference
+                   mode with exactly two routes checked — the one case where the sign of the
+                   answer depends on which arm is "Main".
+
+     No combination is blocked: the picker composes every graphType × measure × resolution ×
+     comparisonMode mechanically, and gating them here would be a new rule this catalogue
+     has no authority to invent. The preview strip is a STATIC illustration plus guidance
+     copy — a live per-pick /graph fetch was considered and rejected as far too expensive
+     for a preview — so it names what will be built rather than drawing it. -->
+<div id="modal-graph" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Add Graph">
+  <div class="absolute inset-0 bg-zinc-950/40" data-backdrop>
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+      <div class="pointer-events-auto w-full max-w-5xl rounded-[8px] bg-white ring-1 ring-zinc-950/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+
+        <div class="px-6 pt-5 pb-4 border-b border-zinc-950/08 shrink-0 flex items-start justify-between gap-4">
+          <div>
+            <div class="font-display uppercase text-[16px] tracking-wide text-[#0F1722]">Add Graph</div>
+            <div class="font-proxima text-[12.5px] text-slate-500 mt-1">Pick what the new card should show, then which routes feed it.</div>
+          </div>
+          <button data-act="m2-close" class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-[#0F1722] shrink-0" title="Close"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto">
+          <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px]">
+
+            <!-- primary column · the decision, then the refinements -->
+            <div class="px-6 py-5 space-y-5 lg:border-r border-zinc-950/08">
+              <div>
+                <div class="flex items-baseline gap-2 mb-2">
+                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
+                  <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">What shape</span>
+                </div>
+                <!-- rendered by npmrds-report.js · four cards, one per type -->
+                <div id="m2-types" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2"></div>
+              </div>
+
+              <div>
+                <div class="flex items-baseline gap-2 mb-2">
+                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">What value</span>
+                </div>
+                <select id="m2-measure" data-act="m2-measure" class="w-full h-10 px-3 rounded-[6px] border border-zinc-950/15 bg-white font-proxima text-[14px] text-[#0f1722] focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15"></select>
+                <p id="m2-measure-help" class="font-proxima text-[12.5px] leading-[1.5] text-slate-600 mt-1.5"></p>
+              </div>
+
+              <!-- 03 · WHEN · the facets that moved off the route (Alex, 2026-08-06): a route
+                   is a stretch of road over a span of DATES; which hours of those days, which
+                   weekdays and at what aggregate are properties of the QUESTION this card
+                   asks, so they are set here and live on the card. Every one of them is also
+                   in the card's own Quick Controls afterwards. -->
+              <div class="pt-4 border-t border-zinc-950/05">
+                <div class="flex items-baseline gap-2 mb-2">
+                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">When</span>
+                  <span class="font-proxima text-[11.5px] text-slate-400 flex-1">of each route's date span</span>
+                </div>
+                <div class="grid grid-cols-2 gap-x-3 gap-y-2.5">
+                  <div class="col-span-2">
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">time of day · which hours of each day</label>
+                    <div id="m2-tod" class="flex flex-wrap gap-1"></div>
+                    <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-1.5">Applied to <strong>every day</strong> in the span and averaged together — not one continuous stretch.</p>
+                  </div>
+                  <div class="col-span-2">
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">days of week</label>
+                    <div id="m2-dow" class="flex flex-wrap items-center gap-1"></div>
+                  </div>
+                  <div>
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">aggregate</label>
+                    <select id="m2-resolution" data-act="m2-resolution" class="w-full h-9 px-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 font-proxima text-[13px] text-slate-700 focus:outline-none focus:border-[#1F3F8F] focus:bg-white"></select>
+                  </div>
+                  <div>
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1 block">comparison mode</label>
+                    <select id="m2-comparisonMode" data-act="m2-comparisonMode" class="w-full h-9 px-2 rounded-[6px] border border-zinc-950/10 bg-slate-50 font-proxima text-[13px] text-slate-700 focus:outline-none focus:border-[#1F3F8F] focus:bg-white"></select>
+                  </div>
+                  <div id="m2-anchor-wrap" class="hidden col-span-2">
+                    <label class="font-mono text-[9px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1 block">anchor route · which arm is “main”</label>
+                    <select id="m2-anchor" data-act="m2-anchor" class="w-full h-9 px-2 rounded-[6px] border border-[#CA8A04]/40 bg-[#FACC15]/8 font-proxima text-[13px] text-[#0f1722] focus:outline-none focus:border-[#CA8A04]"></select>
+                  </div>
+                </div>
+                <p id="m2-anchor-help" class="hidden font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-1.5">Difference is drawn as <span class="tny-mono">main − other</span>, so the anchor decides which way “faster” points.</p>
+              </div>
+            </div>
+
+            <!-- secondary column · which routes feed it -->
+            <div class="px-6 py-5 bg-slate-50/60">
+              <div class="flex items-baseline gap-2 mb-2">
+                <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
+                <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Routes</span>
+                <span id="m2-route-count" class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums ml-auto">0/4</span>
+              </div>
+              <div id="m2-routes" class="space-y-1"></div>
+              <div class="flex items-center gap-3 mt-2">
+                <button data-act="m2-all" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:text-[#16307A]">select all</button>
+                <button data-act="m2-none" class="font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-700">none</button>
+              </div>
+              <p id="m2-routes-note" class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- preview strip · what will be built, in words, spanning both columns -->
+        <div class="px-6 py-3 border-t border-zinc-950/08 bg-white shrink-0 flex items-start gap-3">
+          <div id="m2-glyph" class="shrink-0"></div>
+          <div class="min-w-0 flex-1">
+            <div id="m2-preview-title" class="font-display font-medium text-[14px] text-[#0f1722]"></div>
+            <div id="m2-preview-summary" class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 mt-0.5"></div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button data-act="m2-close" class="h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 font-display uppercase text-[12.5px] tracking-wide hover:border-[#37576B]">Cancel</button>
+            <button id="m2-confirm" data-act="m2-confirm" class="h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-slate-200 text-slate-400 font-display uppercase text-[12.5px] tracking-wide cursor-not-allowed">Add Graph</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IDENTITY COLOUR POPOVER · anchored to a row's colour dot, positioned by
+     npmrds-report.js. Fixed and outside the rail on purpose: the rows region scrolls and
+     the rail's sticky wrapper is overflow-hidden, so an absolutely-positioned popover
+     inside a row would be clipped — the same reason the shared Popup primitive portals. -->
+<div id="colour-pop" class="hidden fixed z-[55] w-[224px] p-2.5 rounded-[8px] bg-white border border-zinc-950/10 shadow-[0_10px_24px_-4px_rgba(0,0,0,0.18)]"></div>
+
+<!-- QUICK CONTROLS POPOVER · anchored to whichever header pill was clicked. Portalled
+     out of the card for the same reason as the colour picker: a card sits anywhere on a
+     scrolling page, and its header row is `overflow-hidden` by the card chrome. -->
+<div id="qc-pop" class="hidden fixed z-[55] w-[290px] p-2.5 rounded-[8px] bg-white border border-zinc-950/10 shadow-[0_10px_24px_-4px_rgba(0,0,0,0.18)]"></div>
+
+<!-- the one honest interruption: what this mockup won't do, said where you clicked -->
+<div id="inert-toast" class="hidden opacity-0 transition-opacity duration-300 fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] max-w-[560px] px-4 py-3 rounded-[6px] bg-[#0F1722] text-slate-100 shadow-2xl font-proxima text-[12.5px] leading-[1.5]"></div>
+
+<script src="npmrds-report.js"></script>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

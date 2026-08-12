@@ -8,6 +8,23 @@ import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+// LAYOUT NOTES for the facts group (learned the hard way 2026-07-29):
+//  · The group is a 12-col AUTO-PLACED grid and the Map carries `rowspan: 2`. A size-4 section added
+//    after the Map therefore lands in the row-3 LEFT slot, not under the map — it displaced the size-8
+//    footnote and collapsed the map's cell. Anything appended to this group must be size 12 so it
+//    starts its own row (that is where the hideIfNull notice lives).
+//  · A hideIfNull Card was tried here as a "no affected segments recorded" notice and REMOVED
+//    2026-07-29: it rendered only in EDIT mode. dataWrapper's hide effect bails on `!state?.data`, and
+//    the section never fetched in view mode even with the `totalLength: 1` seed its sibling Cards carry
+//    — so viewers got nothing and authors got an unexplained empty strip. The event-POINT layer is the
+//    actual fix for the blank-map symptom; don't re-add a conditional notice without first proving a
+//    joined-aggregate Card fetches in view mode.
+//  · Map heights come from TWO fields. `HEIGHT_OPTIONS` (full/screen/1/2-3/1-3/1-4) is keyed off the
+//    MAP CONFIG's `height`; "fill" is NOT a key there, so a config height of "fill" makes the map
+//    inherit its container — which is 150px in edit mode and 300px in view mode. Pin the MAP CONFIG
+//    height to a real option ("1/3" = 300px) and leave the SECTION height as "fill" so the section
+//    still stretches with the grid row. A human had put "1/3" on the SECTION, where it does nothing.
+
 const PATTERN = "tsmo2", SLUG = "incident_view";
 const ENV = { ...process.env, DMS_HOST: process.env.DMS_HOST || "http://localhost:3001", DMS_APP: process.env.DMS_APP || "npmrdsv5", DMS_TYPE: process.env.DMS_TYPE || "dev2" };
 const cli = (...a) => execFileSync("node", ["src/dms/packages/dms/cli/bin/dms.js", ...a], { env: ENV, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
@@ -199,7 +216,7 @@ const SECTIONS = [
    "br": true
   },
   "element": {
-   "element-data": "{\"tabs\": [{\"name\": \"Layers\", \"rows\": [{\"name\": \"Affected segment\", \"type\": \"symbology\", \"symbologyId\": \"iv_loc_map\"}]}], \"symbologies\": {\"iv_loc_map\": {\"id\": \"iv_loc_map\", \"name\": \"Location & affected segment\", \"isVisible\": true, \"description\": \"The event's affected TMCs (transcom_event_tmc, view 2799) filtered to this event server-side, zoomed to fit. event_id follows the page's ?event_id.\", \"categories\": [], \"symbology\": {\"activeLayer\": \"affseg01\", \"zoomToFilterBounds\": [], \"layers\": {\"affseg01\": {\"id\": \"affseg01\", \"name\": \"Event-affected TMCs\", \"type\": \"line\", \"layer-type\": \"categories\", \"data-column\": \"tmc\", \"source_id\": 1635, \"view_id\": 2799, \"order\": 0, \"isVisible\": true, \"usePageFilters\": true, \"sources\": [{\"id\": \"npmrds2_event_tmc_1635_affseg01\", \"source\": {\"type\": \"vector\", \"format\": \"pbf\", \"tiles\": [\"https://graph.availabs.org/dama-admin/npmrds2/tiles/2799/{z}/{x}/{y}/t.pbf?cols=tmc\"]}}], \"layers\": [{\"id\": \"affseg01_case\", \"type\": \"line\", \"source\": \"npmrds2_event_tmc_1635_affseg01\", \"source-layer\": \"view_2799\", \"paint\": {\"line-color\": \"#ffffff\", \"line-width\": [\"interpolate\", [\"linear\"], [\"zoom\"], 8, 2.5, 11, 5, 14, 8], \"line-opacity\": 0.9, \"line-offset\": [\"interpolate\", [\"linear\"], [\"zoom\"], 8, 0.6, 11, 1.2, 14, 2.5]}, \"layout\": {\"visibility\": \"visible\", \"line-cap\": \"round\", \"line-join\": \"round\"}}, {\"id\": \"affseg01\", \"type\": \"line\", \"source\": \"npmrds2_event_tmc_1635_affseg01\", \"source-layer\": \"view_2799\", \"paint\": {\"line-color\": \"#D6453B\", \"line-width\": [\"interpolate\", [\"linear\"], [\"zoom\"], 8, 1.5, 11, 3, 14, 6], \"line-opacity\": 0.95, \"line-offset\": [\"interpolate\", [\"linear\"], [\"zoom\"], 8, 0.6, 11, 1.2, 14, 2.5]}, \"layout\": {\"visibility\": \"visible\", \"line-cap\": \"round\", \"line-join\": \"round\"}}], \"legend-data\": [{\"color\": \"#D6453B\", \"label\": \"event-affected TMCs\"}], \"dynamic-filters\": [{\"column_name\": \"event_id\", \"searchParamKey\": \"event_id\", \"serverSide\": true, \"values\": [], \"defaultValue\": \"__none__\", \"zoomToFilterBounds\": true}], \"hover-columns\": []}}}}}, \"display\": {\"_functions\": {\"providers\": [], \"subscribers\": []}}, \"height\": \"fill\", \"zoomPan\": true, \"hideControls\": true, \"blankBaseMap\": false, \"basemapStyle\": \"Default\", \"legendPosition\": \"hide\", \"setInitialBounds\": false, \"initialBounds\": null}",
+   "element-data": "{\"tabs\":[{\"name\":\"Layers\",\"rows\":[{\"name\":\"Affected segment\",\"type\":\"symbology\",\"symbologyId\":\"iv_loc_map\"},{\"name\":\"Event location\",\"type\":\"symbology\",\"symbologyId\":\"iv_loc_map\"}]}],\"symbologies\":{\"iv_loc_map\":{\"id\":\"iv_loc_map\",\"name\":\"Location & affected segment\",\"isVisible\":true,\"description\":\"The event's affected TMCs (transcom_event_tmc, view 2799) filtered to this event server-side, zoomed to fit. event_id follows the page's ?event_id.\",\"categories\":[],\"symbology\":{\"activeLayer\":\"affseg01\",\"zoomToFilterBounds\":[],\"layers\":{\"affseg01\":{\"id\":\"affseg01\",\"name\":\"Event-affected TMCs\",\"type\":\"line\",\"layer-type\":\"categories\",\"data-column\":\"tmc\",\"source_id\":1635,\"view_id\":2799,\"order\":0,\"isVisible\":true,\"usePageFilters\":true,\"sources\":[{\"id\":\"npmrds2_event_tmc_1635_affseg01\",\"source\":{\"type\":\"vector\",\"format\":\"pbf\",\"tiles\":[\"https://graph.availabs.org/dama-admin/npmrds2/tiles/2799/{z}/{x}/{y}/t.pbf?cols=tmc\"]}}],\"layers\":[{\"id\":\"affseg01_case\",\"type\":\"line\",\"source\":\"npmrds2_event_tmc_1635_affseg01\",\"source-layer\":\"view_2799\",\"paint\":{\"line-color\":\"#ffffff\",\"line-width\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,2.5,11,5,14,8],\"line-opacity\":0.9,\"line-offset\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,0.6,11,1.2,14,2.5]},\"layout\":{\"visibility\":\"visible\",\"line-cap\":\"round\",\"line-join\":\"round\"}},{\"id\":\"affseg01\",\"type\":\"line\",\"source\":\"npmrds2_event_tmc_1635_affseg01\",\"source-layer\":\"view_2799\",\"paint\":{\"line-color\":\"#D6453B\",\"line-width\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,1.5,11,3,14,6],\"line-opacity\":0.95,\"line-offset\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,0.6,11,1.2,14,2.5]},\"layout\":{\"visibility\":\"visible\",\"line-cap\":\"round\",\"line-join\":\"round\"}}],\"legend-data\":[{\"color\":\"#D6453B\",\"label\":\"event-affected TMCs\"}],\"dynamic-filters\":[{\"column_name\":\"event_id\",\"searchParamKey\":\"event_id\",\"serverSide\":true,\"values\":[],\"defaultValue\":\"__none__\",\"zoomToFilterBounds\":true}],\"hover-columns\":[]},\"evtpoint01\":{\"id\":\"evtpoint01\",\"name\":\"Event location\",\"type\":\"circle\",\"layer-type\":\"\",\"data-column\":\"event_id\",\"source_id\":956,\"view_id\":1947,\"order\":1,\"isVisible\":true,\"usePageFilters\":true,\"sources\":[{\"id\":\"npmrds2_transcom_main_956_evtpoint01\",\"source\":{\"type\":\"vector\",\"format\":\"pbf\",\"tiles\":[\"https://graph.availabs.org/dama-admin/npmrds2/tiles/1947/{z}/{x}/{y}/t.pbf?cols=event_id\"]}}],\"layers\":[{\"id\":\"evtpoint01\",\"type\":\"circle\",\"source\":\"npmrds2_transcom_main_956_evtpoint01\",\"source-layer\":\"view_1947\",\"paint\":{\"circle-color\":\"#0F1722\",\"circle-radius\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,5,11,6.5,14,8],\"circle-stroke-color\":\"#ffffff\",\"circle-stroke-width\":2,\"circle-opacity\":0.95},\"layout\":{\"visibility\":\"visible\"}}],\"legend-data\":[{\"color\":\"#0F1722\",\"label\":\"event location\"}],\"dynamic-filters\":[{\"column_name\":\"event_id\",\"searchParamKey\":\"event_id\",\"serverSide\":true,\"values\":[],\"defaultValue\":\"__none__\",\"zoomToFilterBounds\":true}],\"hover-columns\":[]}}}}},\"display\":{\"_functions\":{\"providers\":[],\"subscribers\":[]}},\"height\":\"1/3\",\"zoomPan\":true,\"hideControls\":true,\"blankBaseMap\":false,\"basemapStyle\":\"Default\",\"legendPosition\":\"hide\",\"setInitialBounds\":true,\"initialBounds\":[{\"lng\":-79.9,\"lat\":40.45},{\"lng\":-71.8,\"lat\":45.05}]}",
    "element-type": "Map"
   },
   "padding": {
@@ -596,6 +613,26 @@ let pageId = items.find((p) => (p.url_slug || p.data?.url_slug) === SLUG)?.id;
 if (!pageId) { pageId = (cli("page", "create", "--pattern", PATTERN, "--title", SLUG, "--slug", SLUG).match(/"id"\s*:\s*"?(\d+)"?/) || [])[1]; console.log("created", SLUG, pageId); }
 else console.log("reusing", SLUG, pageId);
 const existing = JSON.parse(clean(cli("raw", "get", String(pageId)))).data.draft_sections || [];
+
+// ⚠ PARITY GUARD (backfilled 2026-07-28; page_to_build.mjs emits this for newly generated scripts).
+// A rebuild WIPES and recreates, so anything authored on the live page after this script was
+// generated — and never backported here — is DESTROYED. That has happened twice: 6 sections lost on
+// tsmo2/workzones_v2 (2026-07-15/16), and a graph's yAxis.tickSpacing silently reverted on
+// tsmo2/incidents_v2 (2026-07-27) at an IDENTICAL section count. So this count check is necessary but
+// NOT sufficient — before re-running after any live authoring, also prove CONTENT parity:
+//   node src/themes/transportny/qa_skills/tools/builds/fidelity_static.mjs src/themes/transportny/qa_skills/tools/builds/build_tsmo2_incident_view.mjs 2182470
+// If this fires, do NOT edit the count — regenerate:
+//   node src/themes/transportny/qa_skills/tools/page_to_build.mjs --pattern tsmo2 --slug incident_view
+// INTENTIONAL structural change (adding/removing sections) makes the counts differ on purpose, and
+// "regenerate" is the wrong advice then — it would export live and discard the new sections. Opt in
+// with ALLOW_SECTION_COUNT_CHANGE=1, and ONLY after fidelity_static has proven that every authored
+// difference is already backported. The flag excuses the COUNT check, never the CONTENT check.
+const ALLOW_COUNT_CHANGE = process.env.ALLOW_SECTION_COUNT_CHANGE === "1";
+if (existing.length && existing.length !== SECTIONS.length && !ALLOW_COUNT_CHANGE) {
+  throw new Error(`REFUSING TO WIPE ${SLUG}: the live draft has ${existing.length} sections but this builder carries ${SECTIONS.length} — it has drifted, and wiping would drop authored sections it cannot recreate. Regenerate with page_to_build.mjs instead of running this, or set ALLOW_SECTION_COUNT_CHANGE=1 if the difference is an intentional structural change you have already proven safe.`);
+}
+if (ALLOW_COUNT_CHANGE && existing.length !== SECTIONS.length)
+  console.log(`⚠ ALLOW_SECTION_COUNT_CHANGE: proceeding with ${existing.length} live → ${SECTIONS.length} built sections`);
 for (const e of existing) {
   try { cli("section", "delete", String(e.id), "--page", String(pageId)); }
   catch (err) { console.log("  DELETE FAILED for", e.id, String(err).slice(0, 120)); }

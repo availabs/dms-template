@@ -20,6 +20,9 @@ The defining surface texture is a topographic line-art background (topolines.png
 ```
 mny/design/
 ├── README.md                         ← this file
+├── ds-nav.js                         ← the floating nav widget, shared by every page
+│                                       section-contextual: lists the current section's
+│                                       pages + one jump link per other section
 ├── theme/
 │   └── index.css.additions           ← @font-face aliases + brand surface utilities
 │                                       canonical source; linked by all mockup pages
@@ -37,12 +40,28 @@ mny/design/
 │   ├── actions-prioritization.html     prioritize actions — card view (tiers across counties)
 │   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
 │   ├── datasets-files.html             the datasets pattern
-│   └── site-management*.html           admin surfaces
+│   ├── site-management*.html           admin surfaces
+│   └── county-actions/               ← COUNTY ACTIONS WORKFLOW — one linked 6-page flow
+│       ├── dashboard.html              1 · county actions dashboard (stats + map + table + gap hand-off)
+│       ├── jurisdictions.html          2 · pick a jurisdiction, or tier the whole county
+│       ├── jurisdiction-prioritization.html
+│       │                               3 · one jurisdiction's worklist — LOCAL priority + the
+│       │                                   needs-attention band + create-action modal
+│       ├── workspace.html              4 · county worklist — COUNTY priority, the only editable column
+│       ├── action-view.html            5 · read one action (redesign of the live /actions/view)
+│       └── action-edit.html            6 · edit one action (same IA, editable + sticky save bar)
 ├── reports/                          ← data-analysis reports (NOT for DMS migration)
 │   ├── actions-qa.html                 actions data-quality / location-precision audit
 │   ├── duplicate-actions.html          same-place redundant rows — cause + safe-to-delete case
 │   ├── boilerplate-actions.html        cross-jurisdiction template reuse — where + how to shape it
-│   └── location-from-text.html         recovering site coords from action text (mining the descriptions)
+│   ├── location-from-text.html         recovering site coords from action text (mining the descriptions)
+│   ├── capabilities-vs-capacity.html · capability-inventory.html · capacity-assessment-architecture.html
+│   │                                   the capability/capacity concept + data series
+│   ├── priority-coverage.html · state-capability-catalog.html
+│   ├── admin-panel-information-architecture.html   the July 2026 within-panel consolidation study
+│   ├── admin-workflow-current-state.html            ┐ Admin Panel Review series (2026-08):
+│   ├── admin-direction-consolidate.html             │ current state · Direction A (clean up /admin)
+│   └── admin-direction-dissolve.html                ┘ Direction B (move work into the plan; recommended B1)
 ├── assets/mny/                       ← logo, topolines, hazard glyphs, county art
 └── references/                       ← original Figma handoff exports (read-only)
     └── MitigateNY UX_UI [...]/*.jpg
@@ -59,6 +78,103 @@ mny/design/
 > `pages/actions-location-overview.html` loads MapLibre GL + the generated
 > `assets/mny/data/actions_locations.geojson`, so it (and the reports, for their relative asset
 > links) must be viewed over a local server (`python3 -m http.server` in `design/`), not `file://`.
+> The same applies to `pages/county-actions/dashboard.html`, which fetches
+> `assets/mny/data/sullivan_boundaries.geojson` and `sullivan_actions.geojson`.
+
+---
+
+## `ds-nav.js` — the nav widget
+
+Every page in `design-system/`, `pages/` and `reports/` ends with one line:
+
+```html
+<script src="../ds-nav.js"></script>       <!-- ../../ from pages/county-actions/ -->
+```
+
+The widget is **section-contextual**, mirroring how a real DMS site navigates. It reads
+`location.pathname`, finds which of the eight sections owns the current page, and renders:
+
+1. **the current section, expanded** — its pages numbered in flow order, the current one
+   highlighted in `yellow-700` on a `yellow-50` row;
+2. **`jump to section`** — one link per *other* section, pointing at that section's landing
+   page with its page count.
+
+So the panel is 9–11 links instead of the 22-link flat dump the old inline widget carried, and
+any page is at most two hops from any other. The sections are the site's real IA:
+
+| Section | Folder | Landing |
+|---|---|---|
+| Design System | `design-system/` | `theme.html` |
+| Public Site | `pages/` | `home.html` |
+| Actions (Statewide) | `pages/` | `actions-dashboard.html` |
+| County Actions Workflow | `pages/county-actions/` | `dashboard.html` |
+| Admin Panel | `pages/` | `admin-forms.html` |
+| Site Management | `pages/` | `site-management-v2.html` |
+| Authoring Reference | `pages/` | `page-templates.html` |
+| Reports | `reports/` | `actions-qa.html` |
+
+**Adding a page: add one line to that section's `pages` array in `ds-nav.js`, and the script tag
+to the page.** Nothing else. A section's `dir` may be nested (`pages/county-actions`) — hrefs are
+recomputed from the current page's depth, so no section needs to know where another one lives, and
+the relative paths hold whether you serve `design/` as the root or open a file directly.
+
+Widget styling stays out of `theme.js` — it is review scaffolding and never ships on a live site.
+
+---
+
+## `pages/county-actions/` — the County Actions Workflow
+
+One **linked six-page flow**, not six independent mockups: a planner moves
+dashboard → jurisdictions → jurisdiction prioritization → county workspace → action view ⇄
+action edit, and every page carries the breadcrumb and footer index back out. It is the design
+for the live `actions` pattern
+(`mitigat-ny-prod`, pattern `2265530`, base_url `actions`), whose `view` page is currently the
+actions form transcribed as eight flat half-width Cards.
+
+**Every number, name and quoted sentence on these six pages is real Sullivan County data** —
+geoid `36105`, 475 actions across 23 jurisdictions, pulled from the DMS internal actions dataset
+(source `1029065` / view `1074456`). **One exception, stated on the page itself:** the
+local-priority *fill* figures on `jurisdiction-prioritization.html` are placeholders —
+`local_priority` isn't in the baked aggregate, so refresh them from the source before quoting
+them. Fallsburg's status split on that page (30 actions · 28 proposed · 1 active · 1 done) is
+real. Aggregates are baked by
+[`references/actions/scripts/16_sullivan_map.mjs`](../../../../references/actions/scripts/16_sullivan_map.mjs)
+into `references/actions/data/sullivan_stats.json`; re-run it to refresh them. The specimen action
+on pages 4 and 5 is id `1100379` (*Delaware — Kohlertown Route 52, Culvert Issues*), prose verbatim.
+
+**Layout rule for this section: one boxed `content` LayoutGroup per page, and nothing on the topo
+canvas.** No page here uses an unboxed `header` or `footer` group — identity bands, stat strips and
+the footer page index all sit inside the white surface with everything else, and the topo texture
+shows only in the Layout's outer gutter. Only genuinely fixed chrome floats over the canvas (TopNav,
+the `action-edit` sticky save bar, the design-system widget). Note the knock-on when copying patterns
+out of these pages: chrome toned for the topo canvas (`bg-white` pills, `hover:bg-white`) goes
+invisible on the white surface — the tinted `bg-mny-50` variants here are the version that reads.
+
+**Two worklists, one editable column each.** The split is the load-bearing idea of the section:
+`jurisdiction-prioritization.html` is a jurisdiction working its own actions — it owns **local
+priority** plus the three data-completeness gaps (action type, cost range, critical facility), and
+it hosts the **Needs your attention** band, because a gap tile has to land somewhere the fix is
+possible. `workspace.html` is the county tiering across jurisdictions, and **county priority is
+its only editable column**; the other three columns stay visible there because a tier can't be
+judged without them, but they are read-only. So `jurisdictions.html`'s 23 tiles all open the
+jurisdiction worklist, and only the explicit all-475 route opens the county workspace.
+
+Two facts the pages state rather than hide, because they shape the design:
+
+- **County priority is unset on all 475 actions.** The county workspace's progress meter is
+  therefore empty by design — that is the job the page exists to do, not a placeholder.
+- **Nothing in Sullivan has a site coordinate.** 472 mapped actions sit on 26 town/county
+  centroids, so the dashboard map draws the **county outline and 21 jurisdiction polygons** under
+  the donut clusters: the polygon is the real unit of precision, and the caveat panel says so.
+  Ateres (Village) has 11 actions but no polygon in the NFIP layer, and is flagged as such.
+
+Sullivan was chosen over higher-fill counties (Chemung, Niagara) for continuity with the existing
+`actions-prioritize.html` / `actions-dashboard.html` mockups. Its trade-off: `estimated_cost` is
+empty on every row and point-of-contact on 439 of 475, so pages 4–5 double as the reference for how
+**empty** fields present (collapsed behind a "show 18 empty fields" toggle on view; dashed amber
+`.mny-field-empty` inputs on edit).
+
+Full rationale, per-page section tables and the figures: `planning/mitigateny/tasks/current/county-actions-workflow-design.md`.
 
 ---
 

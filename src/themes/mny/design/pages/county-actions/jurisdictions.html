@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Select a Jurisdiction (Sullivan)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================
+     TOPNAV — site chrome (fixed floating)
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="../home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Local Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Plan</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 cursor-pointer border-b-2 border-mny-y700 h-full flex items-center">Track Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-1">
+          <div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <!-- icon: User -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-16">
+
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- ========================================================
+             SECTION — WORK HEADER (lexical, col-12)
+             The "whole county" route is a first-class button here, not
+             a hidden option — a county planner reviewing everything
+             shouldn't have to pick a town first.
+             ======================================================== -->
+        <div data-dms="section" data-name="work-header" class="col-span-12 pb-5">
+          <div class="flex flex-wrap items-end justify-between gap-4 pb-5 border-b border-mny-100">
+            <div>
+              <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
+                <a href="#" class="hover:text-mny-700">Track Progress</a>
+                <span class="text-mny-200">/</span>
+                <a href="dashboard.html" class="hover:text-mny-700">Sullivan County Actions</a>
+                <span class="text-mny-200">/</span>
+                <span class="text-mny-700">Edit Actions</span>
+              </div>
+              <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1] tracking-[-0.05em] mt-1.5">Where do you want to work?</h1>
+              <p class="font-proxima text-[16px] text-mny-700 leading-[140%] mt-2 max-w-[600px]">
+                Pick a jurisdiction to rank its own actions and close its data gaps. Every tile
+                shows how much of that jurisdiction's work is still unprioritized. County tiers
+                are a separate pass — that's the county workspace, on the right.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <a href="dashboard.html" class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-700 hover:text-mny-900">
+                <!-- icon: ChevronLeft -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.7 5.3a1 1 0 010 1.4L9.4 10l3.3 3.3a1 1 0 01-1.4 1.4l-4-4a1 1 0 010-1.4l4-4a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
+                Back to dashboard
+              </a>
+              <a href="workspace.html?scope=county" class="flex items-center gap-2 px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
+                <!-- icon: List -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"/></svg>
+                Tier all 475 in one list
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — COUNTY-LEVEL TILE (Card, col-12)
+             Sullivan (County) is not a municipality — it's the county's
+             own 61 actions. Given its own row so it isn't mistaken for
+             one town among many.
+
+             It is still a jurisdiction VALUE in the data, so it opens the
+             same jurisdiction worklist every other tile does — the county
+             ranking its own actions. The all-475 button in the header is
+             the different job: tiering across jurisdictions.
+             ======================================================== -->
+        <div data-dms="section" data-name="county-level" class="col-span-12 pb-5">
+          <a href="jurisdiction-prioritization.html?jurisdiction=Sullivan%20(County)" class="group block rounded-[12px] border-l-4 border-mny-900 border-y border-r border-mny-100 bg-mny-50 p-4 hover:border-r-mny-400 hover:border-y-mny-400 transition-colors">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <div class="size-11 shrink-0 rounded-[10px] bg-mny-900 flex items-center justify-center">
+                  <!-- icon: Building -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Sullivan (County)</h2>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-mny-900 font-proxima text-[10px] font-[700] uppercase tracking-wider text-white">County</span>
+                  </div>
+                  <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-1">
+                    Actions the county itself leads — countywide programs, county roads and bridges,
+                    county-owned facilities.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-6">
+                <div class="text-right">
+                  <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">61</p>
+                  <p class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wide mt-0.5">actions</p>
+                </div>
+                <div class="w-[160px]">
+                  <div class="flex h-[8px] rounded-full overflow-hidden bg-white border border-mny-100">
+                    <div class="bg-mny-200" style="width:57.4%" title="Proposed — 35"></div>
+                    <div class="bg-mny-400" style="width:4.9%" title="In-Progress — 3"></div>
+                    <div class="bg-mny-grn" style="width:29.5%" title="Completed — 18"></div>
+                    <div class="bg-mny-y700" style="width:8.2%" title="Other — 5"></div>
+                  </div>
+                  <p class="font-proxima text-[11px] text-mny-700 mt-1.5">35 proposed · 3 active · 18 done</p>
+                </div>
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[700] text-mny-900 whitespace-nowrap">61 need priority</span>
+                <!-- icon: ChevronRight -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-mny-400 group-hover:text-mny-900 transition-colors" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- ========================================================
+             SECTION — JURISDICTION GRID (Card, cardsGridSize 3, col-12)
+             22 municipal jurisdictions, sorted by action count.
+             ======================================================== -->
+        <div data-dms="section" data-name="jurisdiction-grid" class="col-span-12">
+          <div class="flex flex-wrap items-end justify-between gap-3 mb-4">
+            <div>
+              <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Municipal jurisdictions</h2>
+              <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5">22 towns and villages · 414 actions</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <label class="flex items-center gap-2 bg-white rounded-full pl-3 pr-2 py-1.5 border border-mny-200 min-w-[200px] focus-within:border-mny-400">
+                <!-- icon: Search -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                <input type="text" placeholder="Find a jurisdiction…" class="w-full font-proxima text-[13px] text-mny-900 placeholder:text-mny-400 outline-none bg-transparent">
+              </label>
+              <div class="flex items-center bg-white rounded-full border border-mny-200 p-0.5">
+                <button class="px-3 py-1 rounded-full bg-mny-900 font-display text-[11px] font-[500] uppercase tracking-wider text-white">Most actions</button>
+                <button class="px-3 py-1 rounded-full font-display text-[11px] font-[500] uppercase tracking-wider text-mny-700 hover:text-mny-900">A–Z</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+            <!-- TILE — Fallsburg (Town) 30 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Fallsburg%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Fallsburg</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">30</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:93.3%"></div><div class="bg-mny-400" style="width:3.3%"></div><div class="bg-mny-grn" style="width:3.4%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">28 proposed · 1 active · 1 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">30 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Rockland (Town) 27 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Rockland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Rockland</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">27</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:85.2%"></div><div class="bg-mny-400" style="width:7.4%"></div><div class="bg-mny-grn" style="width:7.4%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">23 proposed · 2 active · 2 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">27 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Callicoon (Town) 25 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Callicoon%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Callicoon</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">25</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:88%"></div><div class="bg-mny-400" style="width:4%"></div><div class="bg-mny-grn" style="width:8%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">22 proposed · 1 active · 2 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">25 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Bethel (Town) 25 · all proposed -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Bethel%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Bethel</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">25</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:100%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">25 proposed — none started</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">25 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Woodridge (Village) 23 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Woodridge%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Woodridge</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-900">Village</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">23</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:87%"></div><div class="bg-mny-400" style="width:4.3%"></div><div class="bg-mny-grn" style="width:8.7%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">20 proposed · 1 active · 2 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">23 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Tusten (Town) 23 · most progressed -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Tusten%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Tusten</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">23</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:60.9%"></div><div class="bg-mny-400" style="width:13%"></div><div class="bg-mny-grn" style="width:21.7%"></div><div class="bg-mny-y700" style="width:4.4%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">14 proposed · 3 active · 5 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">23 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Neversink (Town) 21 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Neversink%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Neversink</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">21</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:85.7%"></div><div class="bg-mny-y700" style="width:14.3%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">18 proposed · 3 not reported</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">21 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Forestburgh (Town) 21 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Forestburgh%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Forestburgh</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">21</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:85.7%"></div><div class="bg-mny-grn" style="width:9.5%"></div><div class="bg-mny-y700" style="width:4.8%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">18 proposed · 2 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">21 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Delaware (Town) 20 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Delaware%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Delaware</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">20</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:90%"></div><div class="bg-mny-400" style="width:10%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">18 proposed · 2 active</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">20 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Liberty (Village) 20 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Liberty%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Liberty</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-900">Village</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">20</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:95%"></div><div class="bg-mny-y700" style="width:5%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">19 proposed · 1 discontinued</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">20 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Monticello (Village) 19 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Monticello%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Monticello</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-900">Village</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">19</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:89.5%"></div><div class="bg-mny-400" style="width:5.2%"></div><div class="bg-mny-grn" style="width:5.3%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">17 proposed · 1 active · 1 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">19 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Fremont (Town) 19 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Fremont%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Fremont</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">19</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:73.7%"></div><div class="bg-mny-400" style="width:5.3%"></div><div class="bg-mny-grn" style="width:21%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">14 proposed · 1 active · 4 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">19 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Thompson (Town) 17 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Thompson%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Thompson</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">17</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:88.2%"></div><div class="bg-mny-400" style="width:5.9%"></div><div class="bg-mny-y700" style="width:5.9%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">15 proposed · 1 active</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">17 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Liberty (Town) 17 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Liberty%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Liberty</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">17</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:82.4%"></div><div class="bg-mny-400" style="width:5.9%"></div><div class="bg-mny-grn" style="width:11.7%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">14 proposed · 1 active · 2 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">17 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Mamakating (Town) 16 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Mamakating%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Mamakating</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">16</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:93.8%"></div><div class="bg-mny-y700" style="width:6.2%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">15 proposed · 1 not reported</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">16 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Lumberland (Town) 16 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Lumberland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Lumberland</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">16</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:75%"></div><div class="bg-mny-400" style="width:6.2%"></div><div class="bg-mny-y700" style="width:18.8%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">12 proposed · 1 active · 3 blank</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">16 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Jeffersonville (Village) 13 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Jeffersonville%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Jeffersonville</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-900">Village</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">13</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:92.3%"></div><div class="bg-mny-grn" style="width:7.7%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">12 proposed · 1 done</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">13 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Wurtsboro (Village) 13 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Wurtsboro%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Wurtsboro</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-900">Village</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">13</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:76.9%"></div><div class="bg-mny-400" style="width:7.7%"></div><div class="bg-mny-y700" style="width:15.4%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">10 proposed · 1 active · 2 blank</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">13 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Highland (Town) 13 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Highland%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Highland</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">13</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:76.9%"></div><div class="bg-mny-400" style="width:7.7%"></div><div class="bg-mny-y700" style="width:15.4%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">10 proposed · 1 active · 2 blank</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">13 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Bloomingburg (Village) 12 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Bloomingburg%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Bloomingburg</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-900">Village</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">12</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:100%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">12 proposed — none started</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">12 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Ateres (Village) 11 · NO BOUNDARY -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Ateres%20(Village)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Ateres</h3>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-900">Village</span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-dashed border-mny-400 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700" title="No polygon in the NFIP community layer — these actions can't be drawn on the map">
+                      <!-- icon: Location -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 019.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                      No boundary
+                    </span>
+                  </div>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">11</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:100%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">11 proposed — none started</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">11 to tier</span>
+              </div>
+            </a>
+
+            <!-- TILE — Cochecton (Town) 9 -->
+            <a href="jurisdiction-prioritization.html?jurisdiction=Cochecton%20(Town)" class="group block rounded-[12px] border border-mny-100 bg-white p-4 hover:border-mny-400 hover:mny-shadow-sm transition-all">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-display text-[20px] font-[500] text-mny-900 uppercase leading-[1.05] truncate">Cochecton</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 mt-1.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Town</span>
+                </div>
+                <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums shrink-0">9</p>
+              </div>
+              <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+                <div class="bg-mny-200" style="width:100%"></div>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2.5">
+                <span class="font-proxima text-[12px] text-mny-700">9 proposed — none started</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-y700 whitespace-nowrap">9 to tier</span>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — DATA NOTE (lexical, col-12)
+             Two real join faults, stated rather than hidden. The stray
+             labels are why "23 jurisdictions" and "26 distinct labels"
+             are both true numbers for Sullivan.
+             ======================================================== -->
+        <div data-dms="section" data-name="coverage-note" class="col-span-12 pt-6">
+          <div class="flex items-start gap-3 bg-mny-50 border border-mny-100 rounded-[10px] p-4">
+            <!-- icon: Information -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+            <div>
+              <p class="font-proxima text-[13px] text-mny-900 font-[600] leading-[1.5]">About this list</p>
+              <p class="font-proxima text-[13px] text-mny-700 leading-[1.55] mt-0.5">
+                <strong class="text-mny-900 font-[600]">Ateres (Village)</strong> has 11 actions but no polygon in
+                the NFIP community layer, so its actions are listed here and excluded from the map.
+                Three further actions are filed under the loose labels
+                <em>“Bethel”</em>, <em>“Delaware”</em> and <em>“Town of Callicoon”</em> — spelling variants of
+                jurisdictions that already appear above. They're reachable from the whole-county list and should be
+                merged into their proper jurisdiction.
+                <a href="workspace.html?scope=county&amp;needs=jurisdiction" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Review the 3 mislabelled actions</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — PAGE INDEX (design-system scaffolding, col-12)
+             Reviewer navigation, not product content — it never ships
+             on a live DMS page. Kept inside the content group so no
+             section sits on the topo canvas.
+             ======================================================== -->
+        <div data-dms="section" data-name="page-index" class="col-span-12 pt-6">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-mny-200 pt-4">
+            <span class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-400">County Actions Workflow</span>
+            <a href="dashboard.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">1 · Dashboard</a>
+            <span class="font-proxima text-[13px] font-[700] text-mny-y700">2 · Jurisdictions</span>
+            <a href="jurisdiction-prioritization.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Jurisdiction Prioritization</a>
+            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · County Workspace</a>
+            <a href="action-view.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">5 · Action View</a>
+            <a href="action-edit.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">6 · Action Edit</a>
+            <span class="ml-auto font-proxima text-[12px] text-mny-400">Sullivan County · 23 jurisdictions · 475 actions</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- ================================================================
+     FLOATING DESIGN-SYSTEM NAV WIDGET
+     ================================================================ -->
+<script src="../../ds-nav.js"></script>
+
+</body>
+</html>

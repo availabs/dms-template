@@ -1,0 +1,32 @@
+{
+  "title": "Golden Corpus - Route Map",
+  "slug": "converted_reports/golden_corpus_routemap",
+  "description": "Golden-corpus representative page for Map/Route Map (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.",
+  "graphs": [
+    {
+      "key": "overview",
+      "title": "Speed Choropleth",
+      "graphType": "Map",
+      "measure": "speed",
+      "why": "Golden-corpus representative for the Route Map/choropleth code path."
+    }
+  ],
+  "routes": [
+    {
+      "id": "nb",
+      "route_id": 2195805,
+      "name": "NY-9D Northbound",
+      "startDate": "2025-01-01",
+      "endDate": "2025-02-28",
+      "graphs": ["overview"]
+    },
+    {
+      "id": "sb",
+      "route_id": 2195804,
+      "name": "NY-9D Southbound",
+      "startDate": "2025-01-01",
+      "endDate": "2025-02-28",
+      "graphs": ["overview"]
+    }
+  ]
+}

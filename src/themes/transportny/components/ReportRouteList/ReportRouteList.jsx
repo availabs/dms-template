@@ -1,204 +1,51 @@
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { cloneDeep, isEqual } from 'lodash-es';
+import { useContext, useMemo, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
+import { convertToUrlParams } from "../../../../dms/packages/dms/src/patterns/page/pages/_utils";
 import { reportRouteListTheme } from './ReportRouteList.theme';
-import { buildUdaConfig, SELF_PARAM_KEY_SENTINEL, selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
-import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
+import { useReportRow } from './useReportRow';
+import { useGraphPublish } from './useGraphPublish';
+import { useAddGraphSection } from './useAddGraphSection';
+import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
+import { useRouteMileage } from './useRouteMileage';
+import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from './relativeDateResolution';
+import { formatDateShort } from './utils';
+import RouteRow from './RouteRow';
+import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
+import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
-function transformReportRoutes(routes) {
-  if(!routes || routes.length < 1){
-    return;
-  }
-  // Helper function to handle YYYY-MM-DD or YYYY-MM-DDTHH:mm strings safely
-  function parseYMD(dateStr) {
-    if (dateStr.includes('T')) {
-        return new Date(dateStr);
-    }
-    const [year, month, day] = dateStr.split('-');
-    // Month is 0-indexed in JS Dates (0 = January)
-    return new Date(year, month - 1, day);
-  }
-
-  const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-  // Helper function to generate an array of 'YYYY-MM-DD' dates. `weekdays` is an
-  // optional per-route mask ({monday: true, ..., sunday: false}) — only an explicit
-  // `false` excludes a day, so routes without the field keep every day (the shape
-  // converted old reports carry; see scripts/convert_old_reports.py). The date
-  // filter is already a literal IN-list, so day-of-week exclusion needs no new
-  // filter op — masked days are simply never enumerated.
-  function generateDateRange(startStr, endStr, weekdays) {
-    const startDate = parseYMD(startStr);
-    const endDate = parseYMD(endStr);
-    const dates = [];
-
-    // Loop day-by-day from start to end
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      if (weekdays && weekdays[DAY_NAMES[d.getDay()]] === false) continue;
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      dates.push(`${year}-${month}-${day}`);
-    }
-    return dates;
-  }
-
-  function timeToEpoch(timeStr) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 12 + Math.floor(minutes / 5);
-  }
-
-  function generateEpochRange(startStr, endStr) {
-    const startTime = startStr.includes('T') ? startStr.split('T')[1] : startStr;
-    const endTime = endStr.includes('T') ? endStr.split('T')[1] : endStr;
-
-    const startEpoch = timeToEpoch(startTime);
-    const endEpoch = timeToEpoch(endTime);
-
-    const epochs = [];
-    for (let e = startEpoch; e <= endEpoch; e++) {
-      epochs.push(e);
-    }
-    return epochs;
-  }
-
-  return routes.map(route => {
-    let parsedTmcArray = [];
-    try {
-      parsedTmcArray = JSON.parse(route.tmc_array);
-    } catch (e) {
-      console.error(`Failed to parse tmc_array for route ${route.route_id}:`, e);
-    }
-
-    // Generates the range based on your MM-DD-YYYY inputs
-    const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate, route.weekdays) : [];
-    const epochArray = (route.startDate && route.endDate && route.startDate.includes('T') && route.endDate.includes('T')) ? generateEpochRange(route.startDate, route.endDate) : [];
-
-    const groups = [
-      {
-        op: "filter",
-        col: "tmc",
-        value: parsedTmcArray
-      },
-      {
-        op: "filter",
-        col: "date",
-        value: dateArray
-      }
-    ];
-
-    if (epochArray.length > 0) {
-      groups.push({
-        op: "filter",
-        col: "epoch",
-        value: epochArray
-      });
-    }
-
-    return {
-      label: route.name,
-      filters: {
-        op: "AND",
-        groups: groups
-      }
-    };
-  });
-}
-
-function roundToFiveMinutes(dateStr) {
-  if (!dateStr || !dateStr.includes('T')) return dateStr;
-
-  const [datePart, timePart] = dateStr.split('T');
-  if (!timePart) return dateStr;
-
-  const [hours, minutes] = timePart.split(':').map(Number);
-  const roundedMinutes = Math.round(minutes / 5) * 5;
-
-  let finalHours = hours;
-  let finalMinutes = roundedMinutes;
-  if (finalMinutes >= 60) {
-    finalMinutes = 0;
-    finalHours = (hours + 1) % 24;
-  }
-
-  return `${datePart}T${String(finalHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
-}
-
-// Stable reference for "no routes yet" — `reportRow?.routes || []` would otherwise
-// produce a brand-new array every render, which would re-trigger the publish effect
-// below on every render (it depends on `routes`) and loop forever.
-const EMPTY_ROUTES = [];
-const EMPTY_SECTIONS = [];
-
-// The report's routes live in exactly one row of a `reports_snap_2`-shaped dataset —
-// one row per report page, keyed by `report_id` = the page's own id. This is a
-// genuine DMS `:data` row (the same split-table storage Card/Spreadsheet write
-// through via `updateItem`/`addItem`), which is the only truly schema-free
-// persistence layer in this system: page/component rows go through a declared
-// attribute schema (`page.format.js`/`cmsSection`) that a client-side allowlist can
-// silently strip unknown keys from (this is exactly what happened when routes lived
-// in this section's own `element-data` — dataWrapper's save effect round-trips
-// `element-data` through a fixed set of known fields whenever it fires, dropping
-// anything else). A `:data` row has no such allowlist.
-//
-// Which dataset this is is an author decision, not a hardcoded one: `externalSource`
-// is this section's normal sectionMenu "Dataset" binding (the one every
-// `useDataWrapper` component gets). The Report Page template pre-wires it to
-// `reports_snap_2`, but nothing in this file hardcodes that source/view id anymore.
-
-// Finds sibling page sections carrying an enabled `comparison_series` subscriber
-// wired to the `$self` sentinel (see `buildUdaConfig.js`) — i.e. graphs ready to
-// receive a per-instance route list. Each match's own key is derived from its own
-// section id via `selfParamKey`, so publishing needs no author-typed param key.
-// Ordinal labels number only the discovered graphs, not their position among all
-// sections, so interleaved non-graph sections don't create label gaps.
-function findSelfBoundGraphs(sectionList) {
-  return (sectionList || [])
-    .map((section) => {
-      if (section?.id == null) return null;
-      const elementData = section?.element?.['element-data'];
-      if (typeof elementData !== 'string') return null;
-      let parsed;
-      try {
-        parsed = JSON.parse(elementData);
-      } catch (e) {
-        return null;
-      }
-      const subscribers = parsed?.display?._functions?.subscribers;
-      const sub = Array.isArray(subscribers)
-        ? subscribers.find((s) => s?.functionId === 'comparison_series' && s?.enabled && s?.paramKey === SELF_PARAM_KEY_SENTINEL)
-        : null;
-      if (!sub) return null;
-      // Prefer trackingId (stable across publish) over the DB row id (reminted on
-      // every publish — see the draft/published section-identity task notes) —
-      // must match usePageFilterSync's own trackingId-first resolution exactly, or
-      // this discovery and the graph's own self-key diverge.
-      return { sectionId: String(section.trackingId || section.id) };
-    })
-    .filter(Boolean)
-    .map((g, i) => ({ ...g, paramKey: selfParamKey(g.sectionId), label: `Graph ${i + 1}` }));
-}
-
-export default function ReportRouteList() {
-  const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
-  const { state:{join, externalSource} } = useContext(ComponentContext) || {};
-  // NOT `props.isEdit` — that's dataWrapper's per-section "is THIS component's own
-  // settings editor open" flag (almost always false in normal interactive use, since
-  // this panel renders via SectionView even on an /edit/... page). `editPageMode`
-  // (from PageContext, set only on the /edit/... route) is whichever sections array
-  // (`draft_sections` vs `sections`) sibling components are ACTUALLY rendering from
-  // right now — that's what sectionsKey below must track, since graphIds stored on a
-  // route only mean anything if they reference the ids of the sections actually on
-  // screen.
+export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
+  const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
+  const { state: { join, externalSource } } = useContext(ComponentContext) || {};
+  // Two independent flags, not one — conflating them is what let every RRL mutation
+  // fire the instant the PAGE opened at /edit/..., without this section ever being
+  // individually put into its own edit mode (see planning/transportny/tasks/current/reportroutelist.md,
+  // "Section edit-mode gating").
+  // `editPageMode` (from PageContext) is whichever sections array (`draft_sections` vs
+  // `sections`) sibling components are ACTUALLY rendering from right now — that's what
+  // useGraphPublish's sectionsKey tracks, and what decides whether an author sees raw
+  // Dynamic Report slot placeholders vs a viewer's resolved routes. It says nothing
+  // about whether THIS section has been opened for editing.
+  // `props.isEdit` (destructured above as `sectionEditorOpen`) IS that per-section signal
+  // — dataWrapper's Edit path (mounted only for the one section a user clicked the
+  // section's own "Edit" pencil on, sectionArray.jsx's `edit.index === i`) always sets it
+  // true; the View path (every other section, even on an /edit/... page) always sets it
+  // false. See dataWrapper/index.jsx lines 197/457.
   const isEdit = Boolean(editPageMode);
+  // Gates every actual mutation (route add/remove/reorder/rename/date-edit,
+  // graph-chip toggling, the Dynamic Report switch, +Add Route/Route Slot/Graph) —
+  // requires BOTH being on the page's /edit/... route AND having this section's own
+  // pencil open, matching how Card/Spreadsheet gate row CRUD via SectionEdit vs
+  // SectionView. `isEdit &&` is redundant given dataWrapper's own invariant (the Edit
+  // path only exists inside the page's edit route to begin with) but kept explicit —
+  // see useReportRow.js's persistRoutes for why a single, obvious choke point matters.
+  const canMutate = isEdit && Boolean(sectionEditorOpen);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Input, Icon } = UI || {};
+  const { Icon, ColorPicker, Switch, Popup } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [pendingRoute, setPendingRoute] = useState(null);
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
   const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
@@ -206,522 +53,556 @@ export default function ReportRouteList() {
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
-  // The route CATALOG binding — read-only, used only to resolve `add_route_id` into
-  // a route to copy from. Bound via the sectionMenu's "Add Join Source" slot rather
-  // than `externalSource` (which is this component's STORAGE binding, see below):
-  // an author picks a join source + view and stops there (never configures join
-  // columns), which leaves `isJoinComplete()` false and keeps this from ever being
-  // sent to the query engine as a real SQL join (`buildUdaConfig.js`'s per-alias
-  // `isJoinComplete` filter) — while still populating full `sourceInfo` the moment
-  // the source is picked (`useDataSource.js`'s `onJoinSourceChange`). Read the first
-  // (only) join source rather than hardcoding an alias name — there's only ever one
-  // for this component, so no ambiguity, and it's robust to whatever alias ends up
-  // assigned.
+  // Mechanism B authoring buffer (relativeDateResolution.js) — mirrors the editStartDateValue/
+  // editEndDateValue pattern above: parent owns the edit-buffer state, RouteRow is presentational.
+  // 'fixed' | 'derived'; editDeriveFromValue is the picked base's route_comp_id; editDeriveFormulaValue
+  // is the composed (or hand-typed, via the Advanced pattern) formula string.
+  const [editDateMode, setEditDateMode] = useState('fixed');
+  const [editDeriveFromValue, setEditDeriveFromValue] = useState('');
+  const [editDeriveFormulaValue, setEditDeriveFormulaValue] = useState('');
+  // Rendering-only — filters which already-added routes are displayed, never the
+  // underlying `routes` array that persistence/graph publishing operate on.
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddGraphModalOpen, setIsAddGraphModalOpen] = useState(false);
+  // Copy/paste a route's date span across routes — `from` is a route_comp_id (survives
+  // reordering, unlike index). Design push #2 (2026-08-06) shrunk this to date-span only:
+  // weekday mask/time-of-day moved off the route entirely (see useGraphPublish.js).
+  const [clipboard, setClipboard] = useState(null);
+
+  // The route CATALOG binding — read-only, backs the "Add Route" tag-browser modal
+  // (see `RouteTagBrowserModal`). Bound via the sectionMenu's "Add Join Source" slot rather
+  // than `externalSource` (which is this component's STORAGE binding, see
+  // useReportRow): an author picks a join source + view and stops there (never
+  // configures join columns), which leaves `isJoinComplete()` false and keeps this
+  // from ever being sent to the query engine as a real SQL join (`buildUdaConfig.js`'s
+  // per-alias `isJoinComplete` filter) — while still populating full `sourceInfo` the
+  // moment the source is picked (`useDataSource.js`'s `onJoinSourceChange`). Read the
+  // first (only) join source rather than hardcoding an alias name — there's only ever
+  // one for this component, so no ambiguity, and it's robust to whatever alias ends
+  // up assigned.
   const routeSourceInfo = Object.values(join?.sources || {})[0]?.sourceInfo;
-  // The report STORAGE binding — this section's normal sectionMenu "Dataset" pick.
-  // The Report Page template pre-wires this to `reports_snap_2`, but nothing here
-  // hardcodes that source/view id; an author could point it anywhere with the same
-  // shape (a `report_id` + `routes` column).
-  const sourceType = externalSource?.type || (externalSource?.name ? nameToSlug(externalSource.name) : undefined);
-  const storageDataFormat = externalSource?.view_id && sourceType
-    ? { ...externalSource, type: `${sourceType}|${externalSource.view_id}:data` }
-    : externalSource;
-  // `reportRow` is this report's one dedicated row in the storage dataset — `null`
-  // while loading, `{id: null, routes: []}` once loaded if no row exists yet (first
-  // route add creates it), `{id, routes}` once one exists. Loaded/persisted directly
-  // via apiLoad/apiUpdate below — independent of this section's own `element-data`
-  // and of the page's routes/draft_routes (removed; see the README's "Storage"
-  // section for why).
-  const [reportRow, setReportRow] = useState(null);
-  // Synchronous mirror of reportRow.id — persistRoutes reads/writes this
-  // instead of the closed-over `reportRow` state so a create's id is never
-  // lost to a stale closure (e.g. two persistRoutes calls overlapping before
-  // a re-render lands). React state updates are async and batched; a ref is
-  // not, so it can't go stale between "row created" and "next edit persisted".
-  const reportRowIdRef = useRef(null);
-  const routes = reportRow?.routes || EMPTY_ROUTES;
 
-  // Sibling graphs on this same page that are ready to receive a per-instance route
-  // list (see findSelfBoundGraphs above). Read-only — never written to; each graph
-  // resolves its own key from its own section id. Unrelated to routes storage
-  // (see storageDataFormat/persistRoutes below) — this is purely for discovering
-  // which graphs are on the page right now.
-  const sectionsKey = isEdit ? 'draft_sections' : 'sections';
-  const sectionList = item?.[sectionsKey] || EMPTY_SECTIONS;
-  const graphs = useMemo(() => findSelfBoundGraphs(sectionList), [sectionList]);
-  // Must derive from the identical trackingId-first fallback findSelfBoundGraphs uses —
-  // graphIds are stored using that same value (see toggleRouteGraph), so comparing
-  // against plain DB ids here would treat every trackingId-identified graph as unknown
-  // and immediately strip it right back out (this is what caused the toggle-then-revert
-  // bug found live 2026-07-06).
-  const knownSectionIds = useMemo(() => new Set(sectionList.map((s) => s?.id != null ? String(s.trackingId || s.id) : null).filter(Boolean)), [sectionList]);
+  // Dynamic Reports: a `page.filters` entry tagged `type: 'routeSlots'` marks this page as a
+  // shared, reused report — routes are filled at view time from its URL param, never persisted
+  // per-viewer. Absence means a normal report; every dynamic-only branch below gates on
+  // `isDynamicReport` so a normal report is completely unaffected. See
+  // dynamic-reports-and-route-tags.md item 3.
+  const routeSlotFilter = pageState?.filters?.find(f => f.type === 'routeSlots');
+  const isDynamicReport = !!routeSlotFilter;
+  const routeIds = isDynamicReport
+    ? (Array.isArray(routeSlotFilter.values) ? routeSlotFilter.values : [routeSlotFilter.values]).filter(Boolean)
+    : [];
 
-  const getDateValue = (val) => (val || '').split('T')[0];
-  const getTimeValue = (val) => (val || '').split('T')[1] || '';
-  const onDateChange = (e, currentValue, setter) => {
-    const time = currentValue?.split('T')[1] || '';
-    setter(time ? `${e.target.value}T${time}` : e.target.value);
+  const {
+    reportRow,
+    routes,
+    saving,
+    error,
+    setError,
+    persistRoutes,
+    addRoutes,
+    removeRoute,
+    reorderRoutes,
+    updateRoute,
+    pasteWindowToRoutes,
+  } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit: canMutate });
+
+  // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/color
+  // assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
+  // the real route ids the viewer's URL supplies. Never persisted; a pure in-memory overlay.
+  const { resolvedRoutes, resolvedGroupRoutes } = useDynamicReportRoutes({
+    apiLoad,
+    routeSourceInfo,
+    slots: routes,
+    routeIds,
+    enabled: isDynamicReport && !isEdit && routeIds.length > 0,
+  });
+  // Grouped, not raw route count (2026-08-03): several slot rows can share one `route_slot_group`
+  // when they're different date/settings VIEWS of the same one real route a viewer picks once (see
+  // useDynamicReportRoutes.js) — the required/expected URL id count is the number of DISTINCT
+  // groups, not the number of persisted route rows. Falls back to one group per row (identical to
+  // `routes.length`) for every Dynamic Report authored before this field existed.
+  const routeSlotGroups = distinctRouteSlotGroups(routes);
+  const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routeSlotGroups.length;
+
+  // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3): a
+  // route can derive its date from a synthetic "Today (view time)" base exactly like it would
+  // derive from any other real route — no changes needed to relativeDateResolution.js's resolver,
+  // just one extra entry in the array it resolves (see effectiveRoutes below). `usesTodayAnchor` is
+  // checked against the raw (unresolved) `routes`/slots, since dateFormula/derivedFromRoute are
+  // authored fields that persist regardless of which real route fills a slot.
+  const usesTodayAnchor = routes.some((r) => r.derivedFromRoute === TODAY_ANCHOR_COMP_ID);
+  // Dynamic Reports only: a viewer can override "today" via a `type: 'baseDate'` page filter
+  // (searchKey 'asOf'), registered alongside `routeSlots` by toggleDynamicReport below — mirrors
+  // the routes URL param exactly. A normal report, or an author in edit mode previewing a formula,
+  // always sees the real wall-clock date; there's no URL-driven "open" flow to attach an override
+  // to outside Dynamic Reports' own entry gate (Ryan's call: fold the override into that gate only,
+  // not a persistent always-visible control).
+  const baseDateFilter = pageState?.filters?.find(f => f.type === 'baseDate');
+  // Same array-or-scalar normalization `routeIds` already applies to `routeSlotFilter.values`
+  // above — a URL-bound filter's `values` arrives wrapped in an array (even for a single value),
+  // so a bare truthiness check on the array itself would always pass, even when it only contains
+  // an empty string (e.g. `['']`, the default before any viewer has picked a date).
+  const baseDateRawValues = Array.isArray(baseDateFilter?.values) ? baseDateFilter.values : [baseDateFilter?.values];
+  const asOfOverride = isDynamicReport && !isEdit ? (baseDateRawValues.filter(Boolean)[0] || null) : null;
+  // defaultAnchorDate() is real wall-clock today MINUS NPMRDS_DATA_LAG_DAYS, not literal today —
+  // NPMRDS's own ClickHouse speed table publishes on a ~15-21 day lag (confirmed live 2026-08-10,
+  // see relativeDateResolution.js), so a literal-today anchor would silently query a date range
+  // with zero real rows. A viewer's explicit `?asOf=` override is never adjusted this way — that's
+  // their own deliberate pick, same as picking any other historical date.
+  const anchorDateStr = asOfOverride || defaultAnchorDate();
+  const todayAnchorEntry = useMemo(
+    () => ({ route_comp_id: TODAY_ANCHOR_COMP_ID, name: 'Today (view time)', startDate: anchorDateStr, endDate: anchorDateStr }),
+    [anchorDateStr]
+  );
+
+  // A viewer sees the resolved real routes (both in this panel and in every self-bound graph);
+  // an author always authors against the raw placeholders. Identical to `routes` for every normal
+  // (non-dynamic) report.
+  //
+  // Wrapped through resolveRouteDates (Mechanism B — relativeDate/isRelativeDateBase, see
+  // dynamic-reports-and-route-tags.md item 3): a route/slot converted from an old relativeDate
+  // comp carries a `dateFormula`/`derivedFromRoute` pair instead of (or alongside, as a frozen
+  // conversion-time fallback) a plain literal date — this recomputes it live against whichever
+  // sibling entry currently holds that `route_comp_id`, so editing a base route's date (in edit
+  // mode, via RouteRow's normal date editor) recomputes every derived row immediately, same
+  // "never persist a stale value" architecture as applyDerivedPageVariables. A no-op, identity-
+  // stable pass-through for every route/slot without a formula.
+  //
+  // `todayAnchorEntry` rides along in the SAME array passed to resolveRouteDates so a route
+  // deriving from TODAY_ANCHOR_COMP_ID resolves through the exact same lookup-by-route_comp_id
+  // path as deriving from any real sibling — then it's filtered back out, since it was never a
+  // real persisted route to render as its own row.
+  const effectiveRoutes = resolveRouteDates([...((isDynamicReport && !isEdit) ? resolvedRoutes : routes), todayAnchorEntry])
+    .filter((rt) => rt.route_comp_id !== TODAY_ANCHOR_COMP_ID);
+
+  const { mileageByRouteCompId } = useRouteMileage({ apiLoad, routes: effectiveRoutes });
+
+  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
+
+  // Design push #2 (2026-08-06) removed the per-graph assignment CHIPS a route used to show
+  // (see RouteRow.jsx) — that's still gone, graph assignment is a QuickControls-owned field on
+  // each graph's own state, not a route-side toggle. But `graphs` (the discovered self-bound
+  // sibling graphs, already computed here for the publish/broadcast effects below) is exactly
+  // the live source of truth for a lighter ask: how many graphs does each route feed, right now
+  // — found live 2026-08-07, Ryan: "I don't see the number of graphs each route feeds, it should
+  // be in the RRL." `routes[].graphIds` (the old per-route field the Python converter still
+  // writes) is NOT used for this — it's write-once at conversion time and never updated when an
+  // author reassigns a route via QuickControls' Routes pill (which only ever writes the GRAPH's
+  // own `_measurePick.routeIds`), so it goes stale the moment anyone touches Quick Controls.
+  const { graphs } = useGraphPublish({
+    item,
+    isEdit,
+    routes: effectiveRoutes,
+    pageState,
+    setActionParam,
+    clearActionParam,
+  });
+  const graphCountByCompId = useMemo(() => {
+    const counts = new Map();
+    graphs.forEach((g) => (g.routeIds || []).forEach((id) => counts.set(id, (counts.get(id) || 0) + 1)));
+    return counts;
+  }, [graphs]);
+
+  // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
+  // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
+  // draft_sections. Does NOT retroactively convert any already-added concrete routes into slots —
+  // build a Dynamic Report starting from a blank routes list. Also registers the `baseDate`-typed
+  // filter (searchKey 'asOf') alongside `routeSlots` — inert unless some route is later wired to
+  // derive from the Today anchor, but registered unconditionally here so that capability is always
+  // available on a Dynamic Report without needing to re-toggle this switch off and on.
+  const toggleDynamicReport = async (enabled) => {
+    if (!canMutate || !apiUpdate || !item?.id) return;
+    const withoutDynamicFilters = (item.filters || []).filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
+    const nextFilters = enabled
+      ? [
+          ...withoutDynamicFilters,
+          { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' },
+          { id: 'dyn-report-asof', searchKey: 'asOf', useSearchParams: true, values: '', type: 'baseDate' },
+        ]
+      : withoutDynamicFilters;
+    updateAttribute?.('', '', { filters: nextFilters });
+    await apiUpdate({ data: { id: item.id, filters: nextFilters }, skipNavigate: true });
   };
-  const onTimeChange = (e, currentValue, setter) => {
-    const date = currentValue?.split('T')[0] || '';
-    setter(e.target.value ? `${date}T${e.target.value}` : date);
-  };
+
+  // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
+  // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
+  // `isPlaceholderName: true` marks this generated name as meaningless (see
+  // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
+  // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
+  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
 
   const toggleRoute = (index) => {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
-  const addRouteId = pageState?.filters?.find(f => f.searchKey === 'add_route_id' && f.type === 'action')?.values?.[0];
+  // Pairs each visible route with its real index in `effectiveRoutes` — every mutation handler
+  // (reorder/rename/remove/toggle-graph) keys off that real index, not the filtered list's
+  // position, so filtering never disturbs them. `effectiveRoutes === routes` for every normal
+  // report and for a Dynamic Report in edit mode; mutation controls are inert in view mode
+  // anyway (RouteRow gates every one of them on `isEdit`), so a Dynamic Report viewer rendering
+  // off the resolved array is safe even though its indices don't correspond to the persisted one.
+  const filteredEntries = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return effectiveRoutes
+      .map((r, i) => ({ r, i }))
+      .filter(({ r }) => !q || (r.name || '').toLowerCase().includes(q));
+  }, [effectiveRoutes, searchQuery]);
 
-  const getTmcArray = (tmcArray) => {
-    if (!tmcArray) return [];
-    if (Array.isArray(tmcArray)) return tmcArray;
-    try {
-      return JSON.parse(tmcArray);
-    } catch (e) {
-      console.error('Failed to parse tmc_array', e);
-      return [];
-    }
-  };
-
-  const fetchDynamicRoute = async () => {
-    if (!isEdit || !addRouteId || !apiLoad || !routeSourceInfo) return;
-    setLoading(true);
-
-    const udaConfig = buildUdaConfig({
-      externalSource: routeSourceInfo,
-      columns: routeSourceInfo.columns.map(c => ({...c, show: true})),
-      filters: { op: "AND", groups: [{ col: "data->>'route_id'", op: "filter", value: addRouteId.value }] }
+  // Mechanism B (relativeDateResolution.js) authoring support. Eligible "Derive From" bases are
+  // every route that isn't itself already derived — single-hop only, matches the resolver's own
+  // constraint (a base is never itself derived by construction). RouteRow further excludes the row
+  // being edited from this same list (it can't derive from itself). Carries startDate/endDate too
+  // so RouteRow can show a live "resolves to" preview without a second lookup. `todayAnchorEntry`
+  // is always prepended — "Today (view time)" is an eligible base for any route on any report,
+  // Dynamic or not (Ryan's call: available everywhere, not gated to Dynamic Reports).
+  const derivableSiblings = useMemo(
+    () => [
+      todayAnchorEntry,
+      ...effectiveRoutes
+        .filter((rt) => !rt.dateFormula)
+        .map((rt) => ({ route_comp_id: rt.route_comp_id, name: rt.name, startDate: rt.startDate, endDate: rt.endDate })),
+    ],
+    [effectiveRoutes, todayAnchorEntry]
+  );
+  // Per-row "used as a base for: ..." lookup — purely a render-time convenience so an author
+  // editing a route can see it has dependents before switching it TO a derived row itself (the
+  // eligibility filter above already prevents deriving FROM an already-derived row, but doesn't by
+  // itself warn a would-be base about who's relying on it).
+  const baseForNamesByCompId = useMemo(() => {
+    const map = new Map();
+    effectiveRoutes.forEach((rt) => {
+      if (!rt.dateFormula || !rt.derivedFromRoute) return;
+      const list = map.get(rt.derivedFromRoute) || [];
+      list.push(rt.name);
+      map.set(rt.derivedFromRoute, list);
     });
+    return map;
+  }, [effectiveRoutes]);
 
-    const config = {
-      format: { ...routeSourceInfo },
-      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options) }, params: {} }]
-    };
+  // `id` (the row's own DMS id) is the universal identity — every catalog row has one
+  // regardless of provenance. `route_id` only ever existed on legacy-imported rows, kept as a
+  // fallback purely to still catch dupes among routes added to a report BEFORE this fix shipped
+  // (their stored copy predates fetching `id` at all) — never load-bearing for anything added
+  // going forward. Never clutter the modal's default/browse views with routes already on this
+  // report — re-adding one is still allowed (a different date range is a legitimate use case),
+  // just not surfaced as a default suggestion.
+  const excludeRouteIds = useMemo(
+    () => routes.flatMap((r) => [r.id, r.route_id]).filter((v) => v != null),
+    [routes]
+  );
 
+  const handleConfirmAddRoutes = async (selectedRoutes) => {
     try {
-      const data = await apiLoad(config, "/");
-      if (data && data[0]) setPendingRoute(data[0].data.value);
+      await addRoutes(selectedRoutes);
     } catch (e) {
-      console.error('<ReportRouteList:fetchDynamic>', e);
-      setError('Could not fetch route details.');
-    } finally {
-      setLoading(false);
+      // addRoutes already records the error in useReportRow's `error` state.
     }
   };
 
-  useEffect(() => {
-    if(isEdit && addRouteId) {
-      fetchDynamicRoute();
-    }
-  },[isEdit, addRouteId]);
-
-  // Load this report's one row from the storage dataset (`externalSource`), keyed by
-  // `report_id` = the page's own id (a real column filter, same `data->>'col'` UDA
-  // query shape fetchDynamicRoute uses above — just against a different dataset). No
-  // row yet is a normal, expected state for a freshly created report page, not an
-  // error.
-  const loadReportRow = async () => {
-    if (!apiLoad || !item?.id || !externalSource?.columns) return;
-    const udaConfig = buildUdaConfig({
-      externalSource,
-      columns: externalSource.columns.map(c => ({ ...c, show: true })),
-      filters: { op: "AND", groups: [{ col: "data->>'report_id'", op: "filter", value: String(item.id) }] }
-    });
-    const config = {
-      format: { ...externalSource },
-      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options) }, params: {} }]
-    };
-    try {
-      const data = await apiLoad(config, "/");
-      const row = data?.[0]?.data?.value;
-      if (row) {
-        let parsedRoutes = [];
-        try {
-          parsedRoutes = JSON.parse(row.routes || '[]') || [];
-        } catch (e) {
-          parsedRoutes = [];
-        }
-        reportRowIdRef.current = row.id;
-        setReportRow({ id: row.id, routes: parsedRoutes });
-      } else {
-        reportRowIdRef.current = null;
-        setReportRow({ id: null, routes: [] });
-      }
-    } catch (e) {
-      console.error('<ReportRouteList:loadReportRow>', e);
-      reportRowIdRef.current = null;
-      setReportRow({ id: null, routes: [] });
-    }
+  // Design push #2 (2026-08-06): `routeIds` now rides in `pick` itself (composed straight into
+  // the new section's own `display._measurePick` by useAddGraphSection.js/applyMeasurePickToState)
+  // instead of a separate post-create route-side write — a graph owns its own route assignment
+  // now, RRL's `routes` storage row is never touched by adding a graph at all.
+  const handleConfirmAddGraph = async ({ pick, selectedRouteIds }) => {
+    await addGraphSection({ ...pick, routeIds: selectedRouteIds || [] });
   };
 
-  useEffect(() => {
-    loadReportRow();
-  }, [item?.id, externalSource?.source_id, externalSource?.view_id]);
+  // A Dynamic Report with no (or a mismatched) `?routes=` still needs to show its
+  // blocking route-selection gate to a real viewer, or they'd hit a permanently blank
+  // page with no way to ever pick routes. Hoisted to a variable rather than inlined
+  // twice below: it's needed both in the normal authenticated-author render and in the
+  // viewer-only early return just past it.
+  const routeSelectionModal = reportRow && needsRouteSelection ? (
+    <RouteTagBrowserModal
+      open={true}
+      setOpen={() => {}}
+      dismissible={false}
+      apiLoad={apiLoad}
+      routeSourceInfo={routeSourceInfo}
+      selectionMode="exact"
+      requiredCount={routeSlotGroups.length}
+      initialSelectedRoutes={resolvedGroupRoutes}
+      // Ryan's call: fold the "as of" override into this same blocking gate rather than a
+      // persistent always-visible control — only shown when this report actually has a route
+      // deriving from the Today anchor, so every Dynamic Report that doesn't use it is unaffected.
+      showAsOfDate={usesTodayAnchor}
+      asOfDateValue={asOfOverride || anchorDateStr}
+      onConfirm={(selectedRoutes, asOfDate) => {
+        // Rebuild by GROUP POSITION rather than trusting the modal's Map insertion order —
+        // `selectedRoutes` mixes routes pre-populated from the URL (already resolved) with
+        // newly-picked ones for whichever group(s) were still missing, and a missing group
+        // isn't always the last one. Keep every already-resolved id in its original slot,
+        // fill the gaps with the newly-picked ids in the order they were selected.
+        const stillNeededIds = selectedRoutes.map((r) => r.id).filter((id) => !routeIds.includes(id));
+        let cursor = 0;
+        const fullIds = routeSlotGroups.map((_, j) => routeIds[j] ?? stillNeededIds[cursor++]);
+        const paramsObj = { [routeSlotFilter.searchKey]: fullIds };
+        // `baseDateFilter` may not be registered yet on a report authored before this feature
+        // shipped (toggleDynamicReport only adds it going forward) — silently skip the URL param
+        // in that case rather than writing an unbound one nothing will ever read.
+        // convertToUrlParams silently drops any key whose value isn't itself an array
+        // (`!Array.isArray(values)` check, _utils/index.js) — `fullIds` above already satisfies
+        // this; a bare scalar date string here would too, and vanish from the URL with no error.
+        if (usesTodayAnchor && baseDateFilter) paramsObj[baseDateFilter.searchKey] = [asOfDate || anchorDateStr];
+        const params = convertToUrlParams(paramsObj);
+        navigate(`${pathname}?${params}`);
+      }}
+    />
+  ) : null;
 
-  // Persist a route mutation to this report's row in the storage dataset — creating
-  // it on the first-ever route add (no row yet → `apiUpdate` with no `id` inserts
-  // one, same as dataWrapper's own `addItem` elsewhere), updating it on every
-  // mutation after. This is a genuine DMS data row (split-table, schema-free), not a
-  // page attribute and not this section's own `element-data` — see the README's
-  // "Storage" section for why those two were both dead ends.
-  const persistRoutes = async (nextRoutes) => {
-    // Page-level edit-mode gate: mirrors the convention every other dataWrapper
-    // component follows (mutations only happen while the page is open on /edit/...).
-    // This is a single choke point — every mutating handler and the orphan-cleanup
-    // effect below both funnel through here, so gating here is sufficient on its own
-    // to guarantee no write ever fires while a report is merely being viewed. This is
-    // what caused a real report's route→graph assignments to be silently wiped: the
-    // orphan-cleanup effect compared draft-captured graphIds against the published
-    // section-id set (a different, separately-materialized set of ids — see the
-    // README) while just viewing the published page, concluded they were stale, and
-    // persisted the "cleaned" (assignment-stripped) result.
-    if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
-    const currentId = reportRowIdRef.current;
-    const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };
-    if (currentId) payload.id = currentId;
-    const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
-    const nextId = currentId || res?.id;
-    reportRowIdRef.current = nextId;
-    setReportRow({ id: nextId, routes: nextRoutes });
-  };
+  // A real viewer (not an author on the page's /edit/... route) never sees this panel
+  // at all — mirrors the old tool, whose route sidebar never rendered outside
+  // authoring either. Deliberately NOT implemented via the generic `hideInView` section
+  // flag: that flag filters the whole section (this component included) out of the tree
+  // before it ever mounts, which would also silently swallow `routeSelectionModal` above
+  // — confirmed live, 2026-08-05, a Dynamic Report with `hideInView` on and no
+  // `?routes=` rendered nothing, forever, with no way to pick routes. Self-hiding here
+  // instead keeps that one exception alive; it's also unconditional (no per-report
+  // author toggle to forget), which is what was actually wanted.
+  if (!isEdit) {
+    // Render an invisible marker instead of bare `null` when there's no modal either —
+    // sectionGroup.jsx's rail wrapper looks for `.dms-rail-collapsed` via a CSS `:has()`
+    // selector to collapse its own width/chrome (see its "collapseRailIfEmpty" comment).
+    // A `:has(...:empty)` check was tried first and doesn't work: SectionArrayComp/
+    // dataWrapper always emit real wrapper markup (grid + padding divs) around this
+    // component regardless of what it returns, so the rail's DOM is never actually
+    // `:empty` even when this returns bare `null` — `:has()` finding this explicit,
+    // deliberately-rendered marker (at any depth) is what actually works.
+    return routeSelectionModal || <span className="hidden dms-rail-collapsed" />;
+  }
 
-  const addRoute = async () => {
-    if (!apiUpdate || !item?.id || !pendingRoute || saving || !reportRow) return;
-    setSaving(true);
-    setError('');
-    try {
-      // Find max ID
-      let maxId = -1;
-      routes.forEach(r => {
-        if (r.route_comp_id && r.route_comp_id.startsWith('comp-')) {
-          const id = parseInt(r.route_comp_id.replace('comp-', ''), 10);
-          if (!isNaN(id) && id > maxId) {
-            maxId = id;
-          }
-        }
-      });
-
-      const newRoute = {
-        ...pendingRoute,
-        route_comp_id: `comp-${maxId + 1}`
-      };
-
-      await persistRoutes([...routes, newRoute]);
-
-      setPendingRoute(null);
-      clearActionParam('add_route_id');
-    } catch (e) {
-      console.error('<ReportRouteList:add>', e);
-      setError('Could not add route.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const removeRoute = async (indexToRemove) => {
-    if (!apiUpdate || !item?.id || saving || !reportRow) return;
-    setSaving(true);
-    setError('');
-    try {
-      await persistRoutes(routes.filter((_, i) => i !== indexToRemove));
-    } catch (e) {
-      console.error('<ReportRouteList:remove>', e);
-      setError('Could not remove route.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const reorderRoutes = async (index, direction) => {
-    if (!apiUpdate || !item?.id || saving || !reportRow) return;
-
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= routes.length) return;
-
-    setSaving(true);
-    setError('');
-    try {
-      const updatedRoutes = [...routes];
-      const temp = updatedRoutes[index];
-      updatedRoutes[index] = updatedRoutes[newIndex];
-      updatedRoutes[newIndex] = temp;
-
-      await persistRoutes(updatedRoutes);
-    } catch (e) {
-      console.error('<ReportRouteList:reorder>', e);
-      setError('Could not reorder route.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const updateRoute = async ({index, updates}) => {
-    if (!apiUpdate || !item?.id || saving || !updates || !reportRow) return;
-    setSaving(true);
-    setError('');
-    try {
-      const newRoutes = cloneDeep(routes)
-      Object.entries(updates).forEach(([field, value]) => {
-          let finalValue = value;
-          if ((field === 'startDate' || field === 'endDate') && typeof finalValue === 'string' && finalValue.includes('T')) {
-            finalValue = roundToFiveMinutes(finalValue);
-          }
-          newRoutes[index][field] = finalValue;
-      });
-      await persistRoutes(newRoutes);
-    } catch (e) {
-      console.error('<ReportRouteList:update>', e);
-      setError('Could not update route.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Toggle whether a route feeds a given graph's route list. `graphIds` is a hidden
-  // per-route field (section ids of the graphs this route has been clicked onto) —
-  // never surfaced as an abstract "group"; the UI is just "this route is on Graph N."
-  // A route feeds no graph until explicitly toggled onto one (no implicit sharing).
-  const toggleRouteGraph = async (index, sectionId) => {
-    if (!apiUpdate || !item?.id || saving || !reportRow) return;
-    setSaving(true);
-    setError('');
-    try {
-      const newRoutes = cloneDeep(routes);
-      const current = new Set(newRoutes[index].graphIds || []);
-      if (current.has(sectionId)) current.delete(sectionId); else current.add(sectionId);
-      newRoutes[index].graphIds = Array.from(current);
-      await persistRoutes(newRoutes);
-    } catch (e) {
-      console.error('<ReportRouteList:toggleGraph>', e);
-      setError('Could not update route.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Publish each discovered graph's filtered route subset to its own self-derived
-  // key (see findSelfBoundGraphs/selfParamKey). Each graph's `comparison_series`
-  // subscriber reads back the identical key, so no author-typed param key is ever
-  // needed. The isEqual guard is load-bearing per key: setActionParam unconditionally
-  // writes pageState, which re-renders this component and recomputes `routes`/`graphs`
-  // — without the guard that write→re-render cycle never settles (mirrors the same
-  // guard in usePageFilterSync's comparison-series resolver).
-  useEffect(() => {
-    if (!setActionParam) return;
-    graphs.forEach(({ sectionId, paramKey }) => {
-      const next = transformReportRoutes(routes.filter(r => r.graphIds?.includes(sectionId))) || [];
-      // setActionParam stores an already-array value as-is (see its `Array.isArray(value)
-      // ? value : [value]` check) — `values` IS the variants list here, not a 1-element
-      // wrapper around it. Reading `.values?.[0]` (the single-scalar convention most other
-      // providers use) would compare against the first variant instead of the whole list,
-      // so isEqual would almost never match and this guard would never actually stop the
-      // write→re-render cycle.
-      const current = pageState?.filters?.find(f => f.searchKey === paramKey && f.type === 'action')?.values;
-      if (isEqual(current, next)) return;
-      setActionParam(paramKey, next);
-    });
-
-    // Clear any previously-published self-key whose graph is no longer on the page
-    // (removed, or its subscriber disabled) — nothing reads it anymore.
-    if (!clearActionParam) return;
-    const liveParamKeys = new Set(graphs.map(g => g.paramKey));
-    (pageState?.filters || [])
-      .filter(f => f.type === 'action' && typeof f.searchKey === 'string' && f.searchKey.startsWith('__self__'))
-      .forEach(f => {
-        if (!liveParamKeys.has(f.searchKey)) clearActionParam(f.searchKey);
-      });
-  }, [routes, graphs, pageState?.filters, setActionParam, clearActionParam]);
-
-  // Orphan cleanup (v1): once a graph section is actually removed from the page
-  // (not merely disabled), strip its id from every route's graphIds so stale
-  // membership doesn't silently linger. Guarded on sectionList being non-empty —
-  // every report page always has at least this panel's own section, so an empty
-  // list means "not loaded yet," not "everything was removed."
-  useEffect(() => {
-    // isEdit guard is redundant with persistRoutes' own guard (defense in depth) —
-    // kept here too so this effect never even computes/attempts a cleanup write
-    // while the page is merely being viewed, where knownSectionIds reflects the
-    // published sections (a different id set than whatever graphIds were captured
-    // against during editing).
-    if (!isEdit || !apiUpdate || !item?.id || !sectionList.length || !reportRow) return;
-    const needsCleanup = routes.some(r => (r.graphIds || []).some(id => !knownSectionIds.has(id)));
-    if (!needsCleanup) return;
-    const cleaned = routes.map(r => {
-      if (!r.graphIds?.length) return r;
-      const filtered = r.graphIds.filter(id => knownSectionIds.has(id));
-      return filtered.length === r.graphIds.length ? r : { ...r, graphIds: filtered };
-    });
-    persistRoutes(cleaned);
-  }, [isEdit, routes, knownSectionIds, sectionList.length, reportRow]);
-
-  const cancelAdd = () => {
-    setPendingRoute(null);
-    clearActionParam('add_route_id');
-  };
   return (
     <div className={t.wrapper}>
-      <div className={t.title}>{item?.title}</div>
-      <div className={t.titleWrapper}>
-        <div>Routes</div>
-        <Button themeOptions={{ size: "xs", color:"transparent" }} onClick={() => setIsRoutesExpanded(!isRoutesExpanded)}>
-          {isRoutesExpanded ? <Icon icon="ChevronUp" /> : <Icon icon="ChevronDown" />}
-        </Button>
+      {routeSelectionModal}
+      <div className={t.panelHead}>
+        <Icon icon="Road" className={t.panelHeadIcon} />
+        <span className={t.title}>Routes</span>
+        {reportRow ? <span className={t.routeCount}>{effectiveRoutes.length}</span> : null}
+        <button type="button" className={t.panelCollapseBtn} title={isRoutesExpanded ? 'Collapse routes' : 'Expand routes'} onClick={() => setIsRoutesExpanded(!isRoutesExpanded)}>
+          <Icon icon={isRoutesExpanded ? "ChevronUp" : "ChevronDown"} />
+        </button>
       </div>
       {isRoutesExpanded && (
         <>
-          {(loading || !reportRow) ? <div className={t.loading}>Loading…</div> : null}
-          <div className={t.list}>
-            {routes.map((r, i) => {
-              const tmcArray = getTmcArray(r.tmc_array);
-              const isExpanded = expandedRoutes[i];
-              return (
-                <div key={r.route_comp_id ?? i} className={t.row}>
-                  <div className={t.rowContainer}>
-                    <div className={t.rowHeader}>
-                      <div className={t.iconContainer}>
-                        <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
-                          {isExpanded ? '-' : '+'}
-                        </Button>
-                        {editingRouteNameIndex === i ? (
-                          <div className={t.editContainer}>
-                            <div className={t.editInputWrapper}>
-                              <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
-                            </div>
-                            <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                              updateRoute({ index: i, updates: { name: editNameValue } });
-                              setEditingRouteNameIndex(null);
-                            }}>
-                              <Icon icon={"FloppyDisk"} />
-                            </Button>
-                            <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
-                              <Icon icon={"CancelCircle"} />
-                            </Button>
-                          </div>
-
-                        ) : (
-                          <div className={t.editContainer}>
-                            <div className={t.routeTitle}>{r.name}</div>
-                            {isEdit && isExpanded && (
-                              <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
-                                setEditingRouteNameIndex(i);
-                                setEditNameValue(r.name);
-                              }}>
-                                <Icon icon={'PencilSquare'} />
-                              </Button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      {isEdit && (
-                        <div className={t.reorderButtons}>
-                          <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderRoutes(i, 'up')}>
-                            <Icon icon={'ChevronUp'} />
-                          </Button>
-                          <Button themeOptions={{ size: "xs" }} disabled={i === routes.length - 1 || saving} onClick={() => reorderRoutes(i, 'down')}>
-                            <Icon icon={'ChevronDown'} />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                    {isExpanded && (
-                      <div className={t.expandedContainer}>
-                        {tmcArray.length > 0 && (
-                          <div className={t.tmcWrapper}>
-                            <div className={t.tmcLabel}>TMCs:</div>
-                            <div className={t.tmcList}>
-                              {tmcArray.join(", ")}
-                            </div>
-                          </div>
-                        )}
-                        <div className={t.dateInputsContainer}>
-                          <div className={t.rowHeaderWrapper}>
-                            <div className={t.dateRangeLabel}>Date Range</div>
-                            {editingRouteDatesIndex === i ? (
-                              <div className={t.editContainer}>
-                                <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                                  updateRoute({ index: i, updates: { startDate: editStartDateValue, endDate: editEndDateValue } });
-                                  setEditingRouteDatesIndex(null);
-                                }}>
-                                  <Icon icon={"FloppyDisk"} />
-                                </Button>
-                                <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteDatesIndex(null)}>
-                                  <Icon icon={"CancelCircle"} />
-                                </Button>
-                              </div>
-                            ) : isEdit ? (
-                              <Button themeOptions={{ size: "xs" }} title="Edit Dates" onClick={() => {
-                                setEditingRouteDatesIndex(i);
-                                setEditStartDateValue(r.startDate);
-                                setEditEndDateValue(r.endDate);
-                              }}>
-                                <Icon icon={'PencilSquare'} />
-                              </Button>
-                            ) : null}
-                          </div>
-                          <div className={t.dateInputWrapper}>
-                            <label className={t.dateLabel}>Start Date:</label>
-                            <div className={t.dateInputFlex}>
-                              <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
-                              <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
-                            </div>
-                          </div>
-                          <div className={t.dateInputWrapper}>
-                            <label className={t.dateLabel}>End Date:</label>
-                            <div className={t.dateInputFlex}>
-                              <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
-                              <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
-                            </div>
-                          </div>
-                        </div>
-                        {graphs.length > 0 && (
-                          <div className={t.graphChipsWrapper}>
-                            <span className={t.graphChipsLabel}>On:</span>
-                            {graphs.map((g) => {
-                              const isOn = (r.graphIds || []).includes(g.sectionId);
-                              return (
-                                <span
-                                  key={g.sectionId}
-                                  className={`${isOn ? t.graphChipActive : t.graphChip} ${isEdit ? 'cursor-pointer' : 'cursor-default'}`}
-                                  onClick={() => isEdit && !saving && toggleRouteGraph(i, g.sectionId)}
-                                  title={isEdit ? (isOn ? `Remove from ${g.label}` : `Add to ${g.label}`) : (isOn ? `On ${g.label}` : undefined)}
-                                >
-                                  {g.label}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        )}
-                        {isEdit && (
-                          <div className={t.removeButtonWrapper}>
-                            <Button
-                              themeOptions={{ size: "xs", color: "danger" }}
-                              disabled={saving}
-                              onClick={() => removeRoute(i)}
-                            >
-                              <Icon icon="Trash" /> Remove Route from Report
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-            {!loading && reportRow && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
-          </div>
-          {isEdit && pendingRoute && (
-            <div className={t.addForm}>
-              <div>Add “{pendingRoute.name}”?</div>
-              <Button disabled={saving} onClick={addRoute}>
-                {saving ? "Adding…" : "Confirm"}
-              </Button>
-              <Button disabled={saving} onClick={cancelAdd}>
-                Cancel
-              </Button>
+          {canMutate && (
+            <div className={t.actionsRow}>
+              {isDynamicReport ? (
+                <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
+                  <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
+                </button>
+              ) : (
+                <>
+                  <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
+                    <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route</span>
+                  </button>
+                  <RouteTagBrowserModal
+                    open={isAddModalOpen}
+                    setOpen={setIsAddModalOpen}
+                    apiLoad={apiLoad}
+                    routeSourceInfo={routeSourceInfo}
+                    selectionMode="any"
+                    excludeRouteIds={excludeRouteIds}
+                    onConfirm={handleConfirmAddRoutes}
+                  />
+                </>
+              )}
+              <button type="button" className={t.addGraphBtn} onClick={() => setIsAddGraphModalOpen(true)}>
+                <Icon icon="Plus" className={t.addGraphBtnIcon} /><span className={t.addBtnLabel}>Add Graph</span>
+              </button>
+              <AddGraphModal
+                open={isAddGraphModalOpen}
+                setOpen={setIsAddGraphModalOpen}
+                routes={routes}
+                onConfirm={handleConfirmAddGraph}
+              />
             </div>
           )}
+          {canMutate && (
+            <div className={t.dynamicToggleWrapper}>
+              <Switch enabled={isDynamicReport} setEnabled={toggleDynamicReport} label="Dynamic Report" size="small" />
+              <span className={t.dynamicToggleLabel}>Dynamic Report</span>
+            </div>
+          )}
+          {canMutate && clipboard && (() => {
+            // Every route except the copy source and any derived-date route (its dates come
+            // from a sibling, not a span it can accept a paste onto).
+            const pasteAllTargets = effectiveRoutes
+              .map((r, i) => ({ r, i }))
+              .filter(({ r }) => r.route_comp_id !== clipboard.from && !r.dateFormula);
+            return (
+              <div className={t.clipboardStrip}>
+                <div className={t.clipboardStripHead}>
+                  <Icon icon="Copy" className={t.clipboardStripIcon} />
+                  <span className={t.clipboardStripLabel}>date span copied · {clipboard.fromName}</span>
+                  <button type="button" className={t.clipboardStripClear} title="Forget the copied date span" onClick={() => setClipboard(null)}>
+                    <Icon icon="XMark" />
+                  </button>
+                </div>
+                <div className={t.clipboardStripPreview}>
+                  {(formatDateShort(clipboard.start) || formatDateShort(clipboard.end))
+                    ? `${formatDateShort(clipboard.start) || '?'} – ${formatDateShort(clipboard.end) || '?'}`
+                    : 'No dates set'}
+                </div>
+                {pasteAllTargets.length > 0 && (
+                  <button
+                    type="button"
+                    className={t.clipboardStripPasteAll}
+                    onClick={() => pasteWindowToRoutes(pasteAllTargets.map(({ i }) => i), { startDate: clipboard.start, endDate: clipboard.end })}
+                  >
+                    <Icon icon="Paste" /> paste into all ({pasteAllTargets.length})
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+          {!reportRow ? (
+            <div className={t.skeletonWrapper}>
+              <div className={t.skeletonRow} />
+              <div className={t.skeletonRow} />
+            </div>
+          ) : null}
+          {reportRow && effectiveRoutes.length > 0 && (
+            <div className={t.searchOuterWrapper}>
+              <div className={t.searchInnerBox}>
+                <Icon icon="Search" className={t.searchIcon} />
+                <input
+                  type="text"
+                  placeholder="Search routes…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 min-w-0 bg-transparent font-proxima text-[12.5px] text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                />
+                {searchQuery ? (
+                  <button type="button" className={t.searchClearBtn} title="Clear search" onClick={() => setSearchQuery('')}>
+                    <Icon icon="CancelCircle" />
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          )}
+          <div className={t.list}>
+            {filteredEntries.map(({ r, i }) => (
+              <RouteRow
+                key={r.route_comp_id ?? i}
+                route={r}
+                miles={mileageByRouteCompId.get(r.route_comp_id)}
+                graphCount={graphCountByCompId.get(r.route_comp_id) || 0}
+                theme={t}
+                Icon={Icon}
+                ColorPicker={ColorPicker}
+                Popup={Popup}
+                onChangeColor={(c) => updateRoute({ index: i, updates: { color: c } })}
+                onCopyWindow={() => setClipboard({
+                  from: r.route_comp_id,
+                  fromName: r.name,
+                  start: r.startDate,
+                  end: r.endDate,
+                })}
+                onPasteWindow={() => clipboard && updateRoute({
+                  index: i,
+                  updates: { startDate: clipboard.start, endDate: clipboard.end },
+                })}
+                clipboard={clipboard}
+                isEdit={canMutate}
+                saving={saving}
+                isExpanded={!!expandedRoutes[i]}
+                onToggleExpand={() => toggleRoute(i)}
+                isEditingName={editingRouteNameIndex === i}
+                editNameValue={editNameValue}
+                onEditNameValueChange={setEditNameValue}
+                onStartEditName={() => { setEditingRouteNameIndex(i); setEditNameValue(r.name); }}
+                onSaveEditName={() => {
+                  // Unlike addRoute's auto-suffix (the name came from the catalog, not
+                  // typed by the user), a rename is an explicit user choice — block it
+                  // instead of silently rewriting what they typed. See the dedupeRouteName
+                  // comment in useReportRow.js for why names must stay unique at all.
+                  const collision = routes.some((rt, idx) => idx !== i && rt.name === editNameValue);
+                  if (collision) {
+                    setError(`A route named "${editNameValue}" already exists.`);
+                    return;
+                  }
+                  // A deliberate rename — even to something generic — is a real editorial
+                  // decision from here on; clears isPlaceholderName so a future Dynamic Report
+                  // resolution never overwrites it with the resolved route's own name again.
+                  updateRoute({ index: i, updates: { name: editNameValue, isPlaceholderName: false } });
+                  setEditingRouteNameIndex(null);
+                }}
+                onCancelEditName={() => setEditingRouteNameIndex(null)}
+                derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
+                baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
+                derivableSiblings={derivableSiblings}
+                isEditingDates={editingRouteDatesIndex === i}
+                editStartDateValue={editStartDateValue}
+                editEndDateValue={editEndDateValue}
+                onEditStartDateValueChange={setEditStartDateValue}
+                onEditEndDateValueChange={setEditEndDateValue}
+                editDateMode={editDateMode}
+                onEditDateModeChange={setEditDateMode}
+                editDeriveFromValue={editDeriveFromValue}
+                onEditDeriveFromValueChange={setEditDeriveFromValue}
+                editDeriveFormulaValue={editDeriveFormulaValue}
+                onEditDeriveFormulaValueChange={setEditDeriveFormulaValue}
+                onStartEditDates={() => {
+                  setEditingRouteDatesIndex(i);
+                  // Seeded from `r` (effectiveRoutes' already-resolved entry, see the
+                  // resolveRouteDates wiring above) — a row currently deriving its dates shows the
+                  // real current resolved value here, not a stale/frozen literal, so switching to
+                  // Fixed mode starts from the right dates instead of blank or stale ones.
+                  setEditStartDateValue(r.startDate);
+                  setEditEndDateValue(r.endDate);
+                  setEditDateMode(r.dateFormula ? 'derived' : 'fixed');
+                  setEditDeriveFromValue(r.derivedFromRoute || '');
+                  setEditDeriveFormulaValue(r.dateFormula || '');
+                }}
+                onSaveEditDates={() => {
+                  if (editDateMode === 'derived') {
+                    // Atomic: both fields together in one updateRoute call, matching the
+                    // resolver's own requirement (relativeDateResolution.js only resolves when
+                    // BOTH dateFormula and derivedFromRoute are present) — never persist one
+                    // without the other. startDate/endDate are deliberately left as whatever's
+                    // already stored: resolveRouteDates recomputes the displayed value live on
+                    // every read, and the untouched literal becomes a safe frozen fallback if the
+                    // base or formula is ever removed later — the same convention
+                    // convert_old_reports.py's own resolver uses.
+                    updateRoute({
+                      index: i,
+                      updates: { dateFormula: editDeriveFormulaValue, derivedFromRoute: editDeriveFromValue },
+                    });
+                  } else {
+                    updateRoute({
+                      index: i,
+                      updates: {
+                        startDate: editStartDateValue,
+                        endDate: editEndDateValue,
+                        // Switching back to Fixed removes the relationship — editStartDateValue/
+                        // editEndDateValue above were seeded from the live-resolved value (see
+                        // onStartEditDates), so nothing goes blank.
+                        dateFormula: undefined,
+                        derivedFromRoute: undefined,
+                      },
+                    });
+                  }
+                  setEditingRouteDatesIndex(null);
+                }}
+                onCancelEditDates={() => setEditingRouteDatesIndex(null)}
+                canMoveUp={i > 0}
+                canMoveDown={i < effectiveRoutes.length - 1}
+                onReorderUp={() => reorderRoutes(i, 'up')}
+                onReorderDown={() => reorderRoutes(i, 'down')}
+                onRemove={() => removeRoute(i)}
+              />
+            ))}
+            {reportRow && effectiveRoutes.length === 0 ? (
+              <div className={t.empty}>
+                {isDynamicReport && !isEdit ? 'Select routes to view this report.' : 'No routes added — add one above.'}
+              </div>
+            ) : null}
+            {reportRow && effectiveRoutes.length > 0 && filteredEntries.length === 0 ? (
+              <div className={t.empty}>No routes match “{searchQuery}”.</div>
+            ) : null}
+          </div>
         </>
       )}
       {error ? <div className={t.error}>{error}</div> : null}
