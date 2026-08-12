@@ -45,6 +45,10 @@ async function setup() {
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 const TMC = '104+04107';
+// Extra TMCs so the concurrent phase runs for real: the first is the serial
+// warm-up, the rest go through runPool.
+const EXTRA_TMCS = ['104+04108', '104+04109', '104+04110', '104+04111'];
+const ALL_TMCS = [TMC, ...EXTRA_TMCS];
 
 // Deliberately a row map21's strict checkMeta REJECTS (urban_code null,
 // isprimary '0') — pm3 must still process it end-to-end.
@@ -86,7 +90,7 @@ function stubChDb() {
     async query({ query }) {
       queries.push(query);
       if (/distinct\(tmc\)/i.test(query)) {
-        return { json: async () => ({ rows: 1, data: [{ tmc: TMC }] }) };
+        return { json: async () => ({ rows: ALL_TMCS.length, data: ALL_TMCS.map((tmc) => ({ tmc })) }) };
       }
       if (/avg_speed_all_vehicles/.test(query)) {
         return { json: async () => ({
@@ -130,8 +134,9 @@ function fakeDataDb() {
           ],
         };
       }
-      if (/^\s*SELECT/i.test(sql) && sql.includes(`tmc = '${TMC}'`)) {
-        return { rows: [{ ...TMC_META_ROW }] };
+      const metaMatch = /tmc = '([^']+)'/.exec(sql);
+      if (/^\s*SELECT/i.test(sql) && metaMatch && ALL_TMCS.includes(metaMatch[1])) {
+        return { rows: [{ ...TMC_META_ROW, tmc: metaMatch[1] }] };
       }
       return { rows: [] };
     },
@@ -243,8 +248,9 @@ async function runTests() {
     const inserts = dataDb.queries.filter(
       (q) => /ON CONFLICT ON CONSTRAINT tmc_year_/.test(q) && !/\(tmc, year\) VALUES/.test(q)
     );
-    assert(inserts.length === METRIC_NAMES.length,
-      `should issue ${METRIC_NAMES.length} per-metric upserts (got ${inserts.length})`);
+    const expected = METRIC_NAMES.length * ALL_TMCS.length;
+    assert(inserts.length === expected,
+      `should issue ${METRIC_NAMES.length} upserts x ${ALL_TMCS.length} TMCs = ${expected} (got ${inserts.length})`);
     const sql = dataDb.joined();
     for (const m of ['speed_pctl', 'lottr', 'tttr', 'phed', 'phed_freeflow', 'phed_truck',
                      'phed_truck_freeflow', 'ted', 'ted_freeflow', 'ted_truck', 'ted_truck_freeflow']) {
@@ -365,6 +371,60 @@ async function runTests() {
     assert(dataDb2.queries.some((q) => /DELETE FROM[\s\S]*year in \(2023\)/i.test(q)),
       'clears existing rows by year IN (...)');
     assert(!dataDb2.joined().includes('begindate'), 'must not use map21 begindate regex delete');
+  });
+
+  await test('pre-creates all metric columns once instead of ALTERing per TMC per metric', async () => {
+    // ALTER TABLE takes ACCESS EXCLUSIVE, so under concurrency a per-TMC ALTER
+    // would serialize the whole pool behind a lock convoy. All metric columns
+    // are enumerable from the registry, so they are created up front; only the
+    // serial warm-up TMC keeps the legacy per-metric ALTER as a safety net.
+    const alters = dataDb.queries.filter((q) => /ADD COLUMN IF NOT EXISTS/i.test(q));
+    const bulk = alters.filter((q) => (q.match(/ADD COLUMN IF NOT EXISTS/g) || []).length > 20);
+    assert(bulk.length === 1, `expected exactly 1 bulk metric-column ALTER (got ${bulk.length})`);
+    // 120 metadata.columns = 25 meta + 95 metric, so the bulk ALTER creates 95
+    const created = (bulk[0].match(/ADD COLUMN IF NOT EXISTS/g) || []).length;
+    assert(created === 95, `bulk ALTER should create 95 metric columns (got ${created})`);
+    // warm-up TMC only: 11 metrics -> at most 11 small ALTERs, NOT 11 x 5 TMCs
+    // The +1 allowance is the one-off (tmc, year) join-key ALTER.
+    const perMetric = alters.filter((q) => (q.match(/ADD COLUMN IF NOT EXISTS/g) || []).length <= 20);
+    const maxSmall = METRIC_NAMES.length + 1;
+    assert(perMetric.length <= maxSmall,
+      `per-metric ALTERs must be warm-up only: expected <= ${maxSmall}, got ${perMetric.length}`);
+    assert(perMetric.length < METRIC_NAMES.length * ALL_TMCS.length,
+      'must not ALTER per metric per TMC');
+  });
+
+  await test('processes every TMC through the pool, one metric upsert set each', async () => {
+    const seeds = dataDb.queries.filter((q) => /INSERT INTO pm3\.\S+_metrics \(tmc, year\) VALUES/.test(q));
+    assert(seeds.length === ALL_TMCS.length,
+      `expected one join-key seed per TMC (${ALL_TMCS.length}), got ${seeds.length}`);
+    const upserts = dataDb.queries.filter(
+      (q) => /ON CONFLICT ON CONSTRAINT tmc_year_/.test(q) && !/\(tmc, year\) VALUES/.test(q));
+    assert(upserts.length === METRIC_NAMES.length * ALL_TMCS.length,
+      `expected ${METRIC_NAMES.length} x ${ALL_TMCS.length} metric upserts, got ${upserts.length}`);
+    for (const tmc of ALL_TMCS) {
+      assert(dataDb.queries.some((q) => q.includes(`tmc = '${tmc}'`)), `TMC ${tmc} was read`);
+    }
+  });
+
+  await test('concurrency is capped and configurable down to serial', async () => {
+    const { MAX_CONCURRENCY } = workerModule;
+    const dataDb3 = fakeDataDb();
+    const worker3 = makeWorker({
+      getChDb: () => stubChDb(), createDamaView: metadata.createDamaView,
+      ensureSchema: metadata.ensureSchema, dataDb: dataDb3,
+    });
+    const r3 = await worker3({
+      pgEnv: DAMA_TEST_DB, db,
+      task: { task_id: 9, descriptor: {
+        source_id: pm3Src.source_id, npmrdsSourceId: prodSrc.source_id,
+        years: [2023], view_id: result.view_id, percentTmc: 100, user_id: 1,
+        concurrency: 999,
+      } },
+      dispatchEvent: async () => {}, updateProgress: async () => {},
+    });
+    assert(r3.view_id === result.view_id, 'run completes with an out-of-range concurrency');
+    assert(MAX_CONCURRENCY < 10, 'cap must stay under the pg pool default of 10');
   });
 
   console.log(`\n  ${passed} passing, ${failed} failing\n`);
