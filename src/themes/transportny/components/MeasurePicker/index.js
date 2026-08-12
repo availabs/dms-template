@@ -140,6 +140,9 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
         state.display.yAxis = { ...(state.display.yAxis || {}), ...composed.displayPatch.yAxis };
     }
     if (composed.displayPatch.colors) state.display.colors = composed.displayPatch.colors;
+    if (composed.displayPatch.legend) {
+        state.display.legend = { ...(state.display.legend || {}), ...composed.displayPatch.legend };
+    }
 
     if (composed.comparisonSeriesCombine) {
         state.comparisonSeries = { ...(state.comparisonSeries || {}), combine: composed.comparisonSeriesCombine };

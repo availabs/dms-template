@@ -35,7 +35,7 @@
       "seriesCount": 0
     },
     {
-      "decodedKey": "http://localhost:3001/graph?paths=[[\"uda\",\"npmrds2\",\"viewsById\",3464,\"options\",\"{\\\"join\\\":null,\\\"filterGroups\\\":{\\\"op\\\":\\\"AND\\\",\\\"groups\\\":[{\\\"col\\\":\\\"tmc\\\",\\\"op\\\":\\\"filter\\\",\\\"value\\\":[\\\"120+29712\\\",\\\"120+29713\\\",\\\"120+29714\\\",\\\"120-29711\\\",\\\"120-29712\\\",\\\"120-29713\\\"]}]},\\\"groupBy\\\":[],\\\"orderBy\\\":{},\\\"filter\\\":{},\\\"exclude\\\":{},\\\"normalFilter\\\":[],\\\"meta\\\":{},\\\"serverFn\\\":{}}\",\"dataByIndex\",{\"from\":0,\"to\":5},[\"tmc\",\"miles\"]]]&method=get",
+      "decodedKey": "http://localhost:3001/graph?paths=[[\"uda\",\"npmrds2\",\"viewsById\",983,\"options\",\"{\\\"join\\\":null,\\\"filterGroups\\\":{\\\"op\\\":\\\"AND\\\",\\\"groups\\\":[{\\\"col\\\":\\\"tmc\\\",\\\"op\\\":\\\"filter\\\",\\\"value\\\":[\\\"120+29712\\\",\\\"120+29713\\\",\\\"120+29714\\\",\\\"120-29711\\\",\\\"120-29712\\\",\\\"120-29713\\\"]}]},\\\"groupBy\\\":[],\\\"orderBy\\\":{},\\\"filter\\\":{},\\\"exclude\\\":{},\\\"normalFilter\\\":[],\\\"meta\\\":{},\\\"serverFn\\\":{}}\",\"dataByIndex\",{\"from\":0,\"to\":65},[\"tmc\",\"miles\",\"year\"]]]&method=get",
       "status": 200,
       "seriesCount": 0
     },

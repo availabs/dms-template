@@ -227,6 +227,14 @@ INFO_BOX_TRAVELTIME_BUCKET = ("avgTT-byDateRange", "travel_time_all")
 # same `{grain}_info_box_traveltime` template.
 INFO_BOX_TRAVELTIME_BUCKETS = {INFO_BOX_TRAVELTIME_BUCKET, ("travelTime", "travel_time_all")}
 INFO_BOX_TRAVELTIME_TITLES = {"route": "Route Travel Time", "tmc": "TMC Travel Time"}
+# 2026-08-12: the real plain speed measure (miles/time, SPEED_EXPR — same
+# expression the AVL Graph "speed" measure uses) — NOT the same bucket as
+# INFO_BOX_BUCKET/INFO_BOX_TITLES above, which is actually the pm3 LOTTR/TTTR/
+# freeflow reliability join under a confusingly-reused old internal "speed" key
+# (see section_builders.py's INFO_BOX_SPEC_MEASURES comment). This is the
+# measure Ryan's old-tool comparison found genuinely missing: `one_week_study`/
+# `annual_average_study`'s old Route Info Box panels showed this, not reliability.
+INFO_BOX_SPEED_TITLES = {"route": "Route Speed", "tmc": "TMC Speed"}
 # Round 40: TMC_ATTRIBUTES' `length` key (group 'tmcAttribute', reducer
 # sumReducer) — the route's total length in miles, summed once per DISTINCT
 # assigned TMC (not per fetched row/epoch — the underlying CH rows are still
