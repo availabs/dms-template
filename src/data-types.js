@@ -16,7 +16,9 @@ import osm from '../data-types/osm/pages/index.jsx';
 const dataTypesByApp = {
   'mitigat-ny-prod' : {
     fima_nfip_claims_v2_enhanced: enhanceNfipClaimsV2,
-    actions_location
+    actions_location,
+    tmas_volume_uploader: TMASvolume,
+    tmas_stations_uploader: TMASstations
   },
   'npmrdsv5': {
     map21,
