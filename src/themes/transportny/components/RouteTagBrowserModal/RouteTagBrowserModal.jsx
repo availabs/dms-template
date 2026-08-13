@@ -30,6 +30,15 @@ export default function RouteTagBrowserModal({
   // back to. Only affects Cancel's disabled styling here — the caller's own no-op `setOpen`
   // already makes backdrop-click/Escape (see Modal.jsx/useModalOverlay.js) inert either way.
   dismissible = true,
+  // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3):
+  // ReportRouteList.jsx's blocking entry gate is the one place a Dynamic Report viewer can
+  // override the "Today (view time)" anchor a route's date might derive from — Ryan's call was to
+  // fold this into the existing route-picking gate rather than a separate always-visible control.
+  // `asOfDateValue` seeds the internal buffer below (same convention as `initialSelectedRoutes`);
+  // the picked value is handed back as onConfirm's second argument. Both props are no-ops for
+  // every other caller (the plain "Add Route" flow never sets `showAsOfDate`).
+  showAsOfDate = false,
+  asOfDateValue,
 }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon, Modal } = UI || {};
@@ -44,6 +53,7 @@ export default function RouteTagBrowserModal({
   const [withinSearchTerm, setWithinSearchTerm] = useState('');
   const [otherTagTerm, setOtherTagTerm] = useState('');
   const [selected, setSelected] = useState(new Map()); // id -> route row
+  const [asOfDate, setAsOfDate] = useState(asOfDateValue || '');
 
   // Reset all transient state on open — a stale drill-down/selection from a previous open would
   // otherwise persist across unrelated add-route sessions. `selected` seeds from
@@ -60,6 +70,7 @@ export default function RouteTagBrowserModal({
     setWithinSearchTerm('');
     setOtherTagTerm('');
     setSelected(new Map((initialSelectedRoutes || []).filter((r) => r?.id != null).map((r) => [r.id, r])));
+    setAsOfDate(asOfDateValue || '');
   }, [open]);
 
   const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
@@ -121,7 +132,7 @@ export default function RouteTagBrowserModal({
 
   const selectedCount = selected.size;
   const isExact = selectionMode === 'exact';
-  const canConfirm = isExact ? selectedCount === requiredCount : selectedCount >= 1;
+  const canConfirm = (isExact ? selectedCount === requiredCount : selectedCount >= 1) && (!showAsOfDate || !!asOfDate);
   const countMessage = isExact
     ? (selectedCount < requiredCount
         ? `Select ${requiredCount - selectedCount} more (${selectedCount}/${requiredCount})`
@@ -131,7 +142,7 @@ export default function RouteTagBrowserModal({
     : `${selectedCount} selected`;
 
   const handleConfirm = () => {
-    onConfirm?.(Array.from(selected.values()));
+    onConfirm?.(Array.from(selected.values()), showAsOfDate ? asOfDate : undefined);
     setOpen?.(false);
   };
 
@@ -279,6 +290,19 @@ export default function RouteTagBrowserModal({
           {view === 'value' ? renderRouteList(visibleResults) : null}
           {view === 'other' ? (otherTagTerm.trim() ? renderRouteList(visibleResults) : <div className={t.empty}>Type a tag to search.</div>) : null}
         </div>
+
+        {showAsOfDate ? (
+          <div className={t.asOfDateRow}>
+            <label className={t.asOfDateLabel} htmlFor="route-tag-browser-as-of-date">Viewing as of</label>
+            <input
+              id="route-tag-browser-as-of-date"
+              type="date"
+              className={t.asOfDateInput}
+              value={asOfDate}
+              onChange={(e) => setAsOfDate(e.target.value)}
+            />
+          </div>
+        ) : null}
 
         <div className={t.footer}>
           <div className={t.footerCount}>{countMessage}</div>

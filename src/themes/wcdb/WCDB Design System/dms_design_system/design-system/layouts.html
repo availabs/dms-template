@@ -13,33 +13,6 @@
 <body class="dms-annotated">
 
 <!-- ============================================================
-     META-NAV — documentation chrome, NOT part of the DMS theme
-     ============================================================ -->
-<nav class="wcdb-meta-nav">
-  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">design-system</span>
-    <a href="./theme.html">theme</a>
-    <a href="./layouts.html" data-active="true">layouts</a>
-    <a href="./grid.html">grid</a>
-    <a href="./components.html">components</a>
-    <a href="./patterns.html">patterns</a>
-  </span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">pages</span>
-    <a href="../pages/home.html">home</a>
-    <a href="../pages/listen.html">listen</a>
-    <a href="../pages/schedule.html">schedule</a>
-    <a href="../pages/show.html">show</a>
-    <a href="../pages/djs.html">djs</a>
-    <a href="../pages/spins.html">spins</a>
-    <a href="../pages/blog.html">blog</a>
-    <a href="../pages/events.html">events</a>
-    <a href="../pages/login.html">login</a>
-  </span>
-</nav>
-
-<!-- ============================================================
      LAYOUT · default (theme.js layout.styles[0])
      The doc page itself uses the same Layout shipped in theme.js.
      childWrapper collapses to single-column flow when only one
@@ -59,30 +32,34 @@
            ============================================================ -->
       <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
         <div class="flex items-center h-14 px-4">
-          <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+          <a href="./theme.html" class="no-underline"><div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
             WCDB
-          </div>
+          </div></a>
           <span class="ml-2 pl-2 border-l border-[var(--line-2)]
                        font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
                        text-[color:var(--ink-3)]">
-            90.9 FM
+            Design System
           </span>
         </div>
         <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Theme</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Layouts</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Grid</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Patterns</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./theme.html">Theme</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" href="./layouts.html" data-active="true">Layouts</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./grid.html">Grid</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./components.html">Components</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./patterns.html">Patterns</a>
         </div>
         <div class="hidden md:flex h-full items-center pr-4 gap-2">
-          <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
-                         text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
-                  title="Toggle theme mode">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
-              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-            </svg>
+          <!-- ThemeModeToggle · theme.js widgets.ThemeModeToggle.
+               Live in these mockups — the shared mockup runtime wires it to the same
+               `wcdb-mode` key and `data-mode` attribute the real widget uses.
+               The glyph shows the mode you are IN: Moon while dark. -->
+          <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                  class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)]
+                         text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+            <!-- icon: Moon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </button>
+          <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)] tabular-nums" title="Design system page 2 of 5">02 / 05</span>
         </div>
       </header>
 
@@ -189,9 +166,13 @@ Site                              app="wcdb"  type="prod:site"
                       <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
                         <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper2 &middot; flex-1 flex flex-col items-stretch</div>
 
-                        <!-- TopNav placeholder -->
-                        <div class="h-10 rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] flex items-center px-3 mb-3">
-                          <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">TopNav &middot; theme.topnav.styles[0]</span>
+                        <!-- TopNav placeholder — drawn short on purpose: the nav is a
+                             NOTCH that shrink-wraps to its content, not a full-width bar. -->
+                        <div class="flex items-start mb-3">
+                          <div class="h-10 rounded-[8px] rounded-br-[20px] border border-[var(--line-2)] bg-[var(--bg-2)] flex items-center px-3">
+                            <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">TopNav &middot; fixed top-0 z-50 &middot; shrink-wrapped</span>
+                          </div>
+                          <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] pl-3 pt-3">&larr; bar stops here; the panel below shows through</span>
                         </div>
 
                         <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
@@ -290,18 +271,54 @@ Site                              app="wcdb"  type="prod:site"
                     </ul>
                   </div>
 
+                  <!-- Breakpoint warning — the single most common mistake once
+                       the rail is on every page. -->
+                  <div class="md:col-span-2 rounded-[18px] bg-[var(--on-air-soft)] border border-[rgba(255,59,47,0.25)] p-7">
+                    <div class="wcdb-eyebrow mb-3 text-[color:var(--on-air)]">Watch out</div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-4">
+                      Half a viewport is not a viewport.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] max-w-[720px]">
+                      Because the rail takes one of two columns, the
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code>
+                      group is <em class="italic">half the viewport</em> &mdash; so a Tailwind viewport
+                      breakpoint describes twice the space the content actually has.
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">xl:</code>
+                      fires at a 1280px window, where this column is only ~640px wide.
+                      Double the threshold and use an arbitrary variant:
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">min-[1800px]:</code>
+                      on the spins table, <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">min-[1100px]:</code>
+                      / <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">min-[1750px]:</code>
+                      on the schedule's day picker. Size against the width the
+                      <em class="italic">column</em> has, not the window.
+                    </p>
+                  </div>
+
                   <!-- header card -->
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
                     <div class="wcdb-eyebrow mb-3">header</div>
                     <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-4">
-                      Left column &middot; sticky cutaway.
+                      Left column &middot; the live rail.
                     </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-4">
+                      <strong class="font-semibold text-[color:var(--ink-1)]">Every main page carries this group</strong> &mdash; it is a
+                      standing rail, not a home-page hero, so the on-air show and the
+                      player follow the reader around the site. Only the auth page is
+                      without it. That makes the cutaway grid the site's default page
+                      shape rather than a special case, and it means the
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code>
+                      group is only ever <em class="italic">half</em> the viewport &mdash; see the
+                      breakpoint warning below.
+                    </p>
                     <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-5">
                       Boxed, rounded-<code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">[18px]</code>,
                       sticky at <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:top-0</code> with
-                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:h-screen</code>. The TopNav floats absolutely over its top edge
-                      on a solid <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">var(--page-bg)</code> strip so the hero panel reads as if it
-                      "cuts up" under the navigation. Below <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md</code>
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:h-screen</code>. The TopNav is
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">fixed</code> at the page level and shrink-wraps to its own
+                      content &mdash; the <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">var(--page-bg)</code> sits on its
+                      <em class="italic">menu</em> containers, never on the header &mdash; so this panel shows
+                      beside the bar and "cuts up" under it. See the notch anatomy on
+                      <a href="./components.html" class="border-b border-[var(--line-2)] hover:text-[color:var(--ink-1)]">components.html</a>. Below <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md</code>
                       the panel drops its sticky behaviour and scrolls inline.
                     </p>
 
@@ -309,9 +326,8 @@ Site                              app="wcdb"  type="prod:site"
                     <div class="rounded-[12px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)] h-[240px] relative">
                       <div class="rounded-[12px] bg-[var(--card-bg)] h-full relative overflow-hidden">
                         <!-- nav strip -->
-                        <div class="absolute top-0 left-0 right-0 h-7 bg-[var(--page-bg)] border-b border-[var(--line-1)] flex items-center px-3">
-                          <span class="font-[family-name:var(--font-display)] italic text-[14px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</span>
-                          <span class="ml-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.14em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+                        <div class="absolute top-0 left-0 h-7 bg-[var(--page-bg)] rounded-br-[14px] flex items-center px-3 pr-4">
+                          <img src="../assets/logo_white.svg" alt="WCDB" class="h-5 wcdb-logo-img">
                         </div>
                         <!-- hero panel cutaway -->
                         <div class="absolute inset-0 pt-7 flex flex-col">
@@ -328,7 +344,8 @@ Site                              app="wcdb"  type="prod:site"
                     <ul class="mt-2 space-y-1 font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">
                       <li>&middot; boxed surface (<code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">bg-[var(--card-bg)]</code> &middot; <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rounded-[18px]</code>)</li>
                       <li>&middot; sticky at <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:top-0</code>, <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:h-screen</code></li>
-                      <li>&middot; TopNav floats over the top edge</li>
+                      <li>&middot; the TopNav notch cuts into its top-left corner</li>
+                      <li>&middot; present on every main page (auth excepted)</li>
                       <li>&middot; hosts one Section, typically <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights: fill</code></li>
                     </ul>
                   </div>
@@ -632,43 +649,11 @@ Site                              app="wcdb"  type="prod:site"
   </div>
 </div>
 
-<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
-<footer class="wcdb-meta-footer">
-  <div>
-    <h3>Design system</h3>
-    <ul>
-      <li><a href="./theme.html">theme</a></li>
-      <li><a href="./layouts.html" data-active="true">layouts</a></li>
-      <li><a href="./grid.html">grid</a></li>
-      <li><a href="./components.html">components</a></li>
-      <li><a href="./patterns.html">patterns</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages &middot; editorial</h3>
-    <ul>
-      <li><a href="../pages/home.html">home</a></li>
-      <li><a href="../pages/listen.html">listen</a></li>
-      <li><a href="../pages/blog.html">blog</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages &middot; catalogue</h3>
-    <ul>
-      <li><a href="../pages/schedule.html">schedule</a></li>
-      <li><a href="../pages/show.html">show</a></li>
-      <li><a href="../pages/djs.html">djs</a></li>
-      <li><a href="../pages/spins.html">spins</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages &middot; misc</h3>
-    <ul>
-      <li><a href="../pages/events.html">events</a></li>
-      <li><a href="../pages/login.html">login</a></li>
-    </ul>
-  </div>
-</footer>
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
 
 </body>
 </html>

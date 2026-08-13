@@ -7,14 +7,18 @@ import excessiveDelay from '../data-types/excessive_delay/pages/index.jsx';
 import pm3 from '../data-types/pm3/pages/index.jsx';
 import nowPlaying from '../data-types/now_playing/pages/index.jsx';
 import actions_location from "../data-types/mny/actions_location/pages/index.js"
-import TMASvolume from "../data-types/traffic_counts/TMAS/pages/index.js"
+
+import TMASvolume from "../data-types/traffic_counts/TMAS/volume/pages/index.js"
+import TMASstations from "../data-types/traffic_counts/TMAS/stations/pages/index.js"
+
 import osm from '../data-types/osm/pages/index.jsx';
 
 const dataTypesByApp = {
   'mitigat-ny-prod' : {
     fima_nfip_claims_v2_enhanced: enhanceNfipClaimsV2,
     actions_location,
-    tmas_volume_uploader: TMASvolume
+    tmas_volume_uploader: TMASvolume,
+    tmas_stations_uploader: TMASstations
   },
   'npmrdsv5': {
     map21,
@@ -27,6 +31,8 @@ const dataTypesByApp = {
     transcom_congestion: { defaultPages: ['table'] },
     excessive_delay: excessiveDelay,
     pm3,
+    tmas_volume_uploader: TMASvolume,
+    tmas_stations_uploader: TMASstations,
     OSM: osm,
   },
   'wcdb': {

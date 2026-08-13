@@ -23,6 +23,8 @@ const PLUGINS = [
   ['now_playing', './now_playing'],
   ['enhance_nfip_claims_v2', './mny/enhance_nfip_claims_v2'],
   ['actions_location', './mny/actions_location'],
+  ['TMAS_volume_uploader', './traffic_counts/TMAS/volume'],
+  ['TMAS_station_uploader', './traffic_counts/TMAS/stations']
 ];
 
 module.exports = function registerExtra({ registerDatatype }) {

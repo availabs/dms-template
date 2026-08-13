@@ -1,0 +1,42 @@
+{
+  "title": "Monthly Speed Comparisons",
+  "slug": "converted_reports/monthly_speed_comparisons",
+  "dynamicReport": true,
+  "description": "For route performance comparing the latest full year to all-time, and analyzing the performance by month for the latest year.",
+  "tags": ["category:change_over_time"],
+  "difficulty": "",
+  "_note": "Reconstructed via --from-page 2210632. Dates were already correctly live from the earlier working round. KNOWN, ALREADY-DOCUMENTED platform limit, not attempted here: 'Trailing 6-Year Average' (year-2year->... wait, year-5year->6year, a 6-year window) can exceed ClickHouse's query-size limit — see dynamic-reports-and-route-tags.md's open questions. Dropped 2 of 9 graphs ('Average Speed by Peak', 'Hours of Delay by Peak') — both are Bar Graph Summary panels needing AM/PM/Off-Peak sub-routes that no longer exist (zero overlap with current routes, confirmed via live routeIds). UNLIKE the fully-dropped Bar-Graph-Summary cases elsewhere, this one has a real, NOT YET VERIFIED path to rebuild properly: report-spec.md documents startTime/endTime as a per-ROUTE spec field (report_build.mjs's own 'wire route -> graph' comment: 'weekdays/startTime/endTime are still spec'd per-route'), so 3 slot routes sharing the SAME dateFormula but different startTime/endTime (AM/PM/Off-Peak sub-windows of Current Year) could in principle recreate 3 real comparisonSeries arms without any dead route. NOT attempted here because report_build.mjs's own slot-write path doesn't currently thread startTime/endTime through for slot routes at all (only the concrete-route branch does), and it's unverified whether resolveRouteDates' formula-resolved (bare-date) output correctly recombines with a separately-carried startTime/endTime downstream — verify before relying on this, don't assume.",
+  "graphs": [
+    { "key": "speed_wholeday", "title": "Speed - Current Year - Whole Day",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "5-minutes",
+      "why": "Whole-day speed profile for the current year." },
+    { "key": "delay_wholeday", "title": "Avg. Hours of Delay - Current Year - Whole Day",
+      "graphType": "BarGraph", "measure": "avgHoursOfDelay", "resolution": "5-minutes",
+      "why": "Whole-day avg-hours-of-delay profile for the current year." },
+    { "key": "speed_by_month", "title": "Daily Average Speed By Month",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "month",
+      "why": "Current year grouped by month — re-pointed at Current Year (its original routeId is an orphaned comp id)." },
+    { "key": "line_speed", "title": "Route Line Graph, Speed",
+      "graphType": "LineGraph", "measure": "speed", "resolution": "5-minutes", "comparisonMode": "plain",
+      "why": "Overlays Current Year and the Trailing 6-Year Average as their own 5-minute speed profiles." },
+    { "key": "grid_speed", "title": "Average Speed by TMC by Epoch",
+      "graphType": "GridGraph", "measure": "speed", "resolution": "5-minutes",
+      "why": "Per-TMC speed grid for the current year." },
+    { "key": "speed_by_weekday", "title": "Average Speed by Day of Week",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "weekday",
+      "why": "Current year grouped by day of week — re-pointed at Current Year (same re-pointing as speed_by_month)." },
+    { "key": "delay_by_weekday", "title": "Total Hours of Delay by Day of Week",
+      "graphType": "BarGraph", "measure": "hoursOfDelay", "resolution": "weekday",
+      "why": "Current year grouped by day of week, hours of delay — same re-pointing." }
+  ],
+  "routes": [
+    { "id": "current_year", "slot": true, "name": "Current Year", "route_slot_group": "$0",
+      "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
+      "color": "#840596",
+      "graphs": ["speed_wholeday", "delay_wholeday", "speed_by_month", "line_speed", "grid_speed", "speed_by_weekday", "delay_by_weekday"] },
+    { "id": "trailing_6yr", "slot": true, "name": "Trailing 6-Year Average", "route_slot_group": "$0",
+      "dateFormula": "startDate=>year-5year->6year", "derivedFromRoute": "__TODAY__",
+      "color": "#ffffff", "weekdays": { "sunday": false, "saturday": false },
+      "graphs": ["line_speed"] }
+  ]
+}

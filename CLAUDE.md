@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is AVAIL DMS (Data Management System) - a React-based documentation/content management site built with Vite. The site uses the `@availabs/dms` library (included as a git submodule in `src/dms/`) to provide dynamic page routing, admin patterns, and content management.
 
+## Before starting any non-trivial task
+
+**Check [`src/dms/skills/README.md`](./src/dms/skills/README.md) first.** It's an indexed library of how-to guides for recurring authoring/scoping/live-verification tasks (theming, building sections, creating pages/reports/routes, navigating a live page's DOM, testing conventions). Do this at the start of the task, not only when stuck — the answer, or a relevant gotcha, may already be written down. See the "Skills" section below for more detail.
+
 ## Core principle: author empowerment
 
 **A central design goal of DMS is that an author with admin access should be able to do almost everything a developer can do.** Page layout, data binding, theming, content authoring, swapping sources — all of that lives in the admin UI, not in code. When a developer answers an authoring request with a custom React component, that capability moves out of the author's hands and into the codebase. The next person who wants something similar has to file a ticket.

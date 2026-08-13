@@ -2,7 +2,8 @@
 
 **Project:** TransportNY
 
-**Status:** IN PROGRESS — 5 of 15 gaps fixed so far (#4 `route_id` overwrite labeling,
+**Status:** IN PROGRESS — 5 of 16 gaps fixed so far (#16 added 2026-08-12, found while scoping
+Info Box/Route Compare multi-measure support — see `dynamic-reports-and-route-tags.md`; #4 `route_id` overwrite labeling,
 #5 TMC Search-to-add, both live-verified 2026-07-27 in transportNY; #11 peak-hour filtering,
 both spec and UI halves, live-verified 2026-07-28 in dms-template AND ported + re-verified
 in transportNY the same day — see its entry below, including a correction to the "inert for
@@ -305,6 +306,21 @@ directly in this workflow's first-run experience.
     by hand-setting `xAxis.label`/`yAxis.label`/`customName`/`title.title` to match the Measure
     Picker's own conventions. That fix only corrects the one-time starting point; it does nothing
     for the *ongoing* Measure Picker flow going forward, which is what this gap (#15) is about.
+
+### Missing authoring surface entirely (found 2026-08-12)
+
+16. **There is no live UI to author an Info Box or Route Compare graph at all — checked,
+    confirmed genuinely absent, not just hard to find.** `AddGraphModal.jsx` (the only entry
+    point for adding a new graph section) has zero references to either type — grep confirms.
+    Both types are fully real and render correctly (Info Box: 5 measures via
+    `build_route_info_box_section_state`; Route Compare: 2 measures via
+    `ensure_route_compare_template`, live-verified 2026-08-12 on `annual_average_study`'s
+    recovered year-over-year panel) — they just can't be CREATED except via
+    `report_build.mjs`'s spec grammar or the old Python converter
+    (`--route-info-box-section`/`--route-compare-section`). Different in kind from every other
+    gap on this list: those are all friction on a graph type that already has SOME authoring
+    path; this is a complete absence of one. Not scoped/estimated — flagged for prioritization
+    alongside the other 15, not folded into any of them.
 
 ## Suggested priority order
 

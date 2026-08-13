@@ -127,7 +127,24 @@
  * ───────────────────────────────────────────────────────────── */
 
 * { box-sizing: border-box; }
-html, body {
+
+/* The root font-size MUST stay at the browser default (16px).
+ *
+ * Every rem-based Tailwind utility — `h-14`, `p-2`, `gap-4`, `size-8` — is
+ * resolved against the ROOT, so setting `font-size: 15px` on `html` silently
+ * scaled the entire deliverable to 93.75% of what the live theme renders.
+ * `h-14` came out 52.5px instead of 56px, which is what left a ~3px sliver of
+ * hero art showing between the TopNav's bottom edge and the
+ * NavLeftStyleWidget curve pinned at `top-[56px]`: the curve was right and the
+ * bar was short. The brand's 15px body baseline belongs on `body`, where it
+ * sets text size without touching the spacing scale.
+ */
+html {
+  margin: 0;
+  padding: 0;
+  background: var(--page-bg);
+}
+body {
   margin: 0;
   padding: 0;
   background: var(--page-bg);
@@ -276,82 +293,96 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 [data-mode="light"] .wcdb-logo-img { filter: invert(1); }
 
 /* ─────────────────────────────────────────────────────────────
- * META-NAV — documentation chrome, NOT part of the DMS theme
- * (per skill §7.0). Single class so it doesn't leak into theme.js.
+ * THE NOTCH — the brand's signature join, generalized
+ *
+ * The TopNav is a notch cut into the hero panel (see components.html).
+ * The same move appears throughout the Hanssen source material as a
+ * LABEL CHIP notched into a card's corner. Both are the same shape:
+ * a surface that ends in a rounded corner, with two inverse-corner
+ * masks smoothing the joins where it meets the surface behind it.
+ *
+ * `.wcdb-notch` is that mask on its own — the CSS equivalent of the
+ * 20x20 SVG the theme's NavLeft/NavRightStyleWidget draw. A radial
+ * mask keeps the quarter-disc transparent and everything outside it
+ * opaque, which is exactly that SVG path.
+ *
+ * `.wcdb-chip` is the composed label: pin it inside a `relative`
+ * surface, set `--chip` to the colour of whatever it belongs to (the
+ * page behind a card, or the card behind an image), and it carries
+ * its own two masks.
+ *
+ *   <div class="relative rounded-[18px] overflow-hidden … ">
+ *     <img …>
+ *     <span class="wcdb-chip" style="--chip: var(--card-bg)">Dispatch</span>
+ *   </div>
+ *
+ * NOTE the parent must NOT be `overflow-hidden` if you want the masks
+ * to read past the corner — clip the art in its own child instead.
  * ───────────────────────────────────────────────────────────── */
-.wcdb-meta-nav {
-  position: sticky; top: 0; z-index: 100;
-  width: 100%;
-  display: flex; align-items: center; gap: 14px;
-  padding: 8px 14px;
-  background: var(--bg-0);
-  border-bottom: 1px solid var(--line-1);
+.wcdb-notch {
+  position: absolute;
+  width: 20px; height: 20px;
+  background: var(--chip, var(--page-bg));
+  -webkit-mask: radial-gradient(circle 20px at 100% 100%, transparent 0 20px, #000 20px);
+          mask: radial-gradient(circle 20px at 100% 100%, transparent 0 20px, #000 20px);
+}
+.wcdb-chip {
+  position: absolute; top: 0; left: 0; z-index: 3;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px 11px 14px;
+  background: var(--chip, var(--page-bg));
+  border-bottom-right-radius: 18px;
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-3);
-  overflow-x: auto;
+  color: var(--ink-2);
   white-space: nowrap;
 }
-.wcdb-meta-nav__brand {
-  color: var(--ink-1);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 14px;
-  text-transform: none;
-  letter-spacing: -0.02em;
-  padding-right: 14px;
-  border-right: 1px solid var(--line-1);
+.wcdb-chip::before,
+.wcdb-chip::after {
+  content: "";
+  position: absolute;
+  width: 20px; height: 20px;
+  background: inherit;
+  -webkit-mask: radial-gradient(circle 20px at 100% 100%, transparent 0 20px, #000 20px);
+          mask: radial-gradient(circle 20px at 100% 100%, transparent 0 20px, #000 20px);
 }
-.wcdb-meta-nav__group {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding-right: 14px;
-}
-.wcdb-meta-nav__group + .wcdb-meta-nav__group { border-left: 1px solid var(--line-1); padding-left: 14px; }
-.wcdb-meta-nav__group-label {
-  color: var(--ink-4);
-  font-size: 9px;
-}
-.wcdb-meta-nav a {
-  color: var(--ink-3);
-  padding: 4px 0;
-  border-bottom: 1px solid transparent;
-  transition: color 120ms ease, border-color 120ms ease;
-}
-.wcdb-meta-nav a:hover { color: var(--ink-1); }
-.wcdb-meta-nav a[data-active="true"] {
-  color: var(--ink-1);
-  border-bottom-color: var(--ink-1);
-}
+.wcdb-chip::before { top: 0; left: 100%; }   /* smooths the join to the right */
+.wcdb-chip::after  { top: 100%; left: 0; }   /* smooths the join below */
 
-/* Footer link block — same content as the meta-nav, repeated at the
- * bottom for long-scroll pages. Documentation chrome, not theme. */
-.wcdb-meta-footer {
-  margin-top: 48px;
-  padding: 24px 14px;
-  border-top: 1px solid var(--line-1);
-  background: var(--bg-0);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+/* Bottom-left variant — Hanssen's "View Project ↗" position. */
+.wcdb-chip--bl {
+  top: auto; bottom: 0;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 18px;
+  padding: 11px 16px 9px 14px;
 }
-@media (min-width: 768px) {
-  .wcdb-meta-footer { grid-template-columns: repeat(4, 1fr); }
-}
-.wcdb-meta-footer h3 {
-  margin: 0 0 12px;
-  font-size: 10px;
-  color: var(--ink-4);
-}
-.wcdb-meta-footer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.wcdb-meta-footer a { color: var(--ink-2); }
-.wcdb-meta-footer a:hover { color: var(--ink-1); }
+.wcdb-chip--bl::before { top: auto; bottom: 0; left: 100%; transform: scaleY(-1); }
+.wcdb-chip--bl::after  { top: auto; bottom: 100%; left: 0; transform: scaleY(-1); }
+
+/* ─────────────────────────────────────────────────────────────
+ * DOCUMENTATION CHROME — what is NOT here, and why
+ *
+ * Two blocks used to live at this spot and both are gone:
+ *
+ * `.wcdb-meta-nav`   — a sticky strip of every page's link, inline in
+ *                      all 14 files. Removed in v0.2: §7.0.2 rules out
+ *                      per-page nav markup. The TopNav (real Layout
+ *                      chrome) carries the in-section links now.
+ * `.wcdb-meta-footer`— the section link block at the bottom of every
+ *                      page. Removed in v0.3, a DELIBERATE deviation
+ *                      from §7.0.3: the shared `ds-nav.js` widget is
+ *                      fixed to the viewport and reachable at any
+ *                      scroll position, which is the reason §7.0.3
+ *                      wants a bottom mechanism at all — and
+ *                      production wcdb.fm ships no footer, so the
+ *                      block also made these pages read less like the
+ *                      real product surfaces they document.
+ *
+ * If you are about to add either one back, read the README's
+ * "Navigation" section first.
+ * ───────────────────────────────────────────────────────────── */
 
 /* ─────────────────────────────────────────────────────────────
  * DMS ANNOTATION OVERLAY — opt-in by adding class="dms-annotated"

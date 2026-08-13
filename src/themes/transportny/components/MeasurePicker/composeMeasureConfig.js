@@ -70,6 +70,7 @@ const RESOLUTION_LABELS = {
     'day': 'Day',
     'weekday': 'Weekday',
     'month': 'Month',
+    'summary': 'Summary (one bar per route)',
 };
 export const RESOLUTION_OPTIONS = Object.keys(vocab.resolutions).map(value => ({
     value, label: RESOLUTION_LABELS[value] || value,
@@ -129,11 +130,76 @@ function buildXAxisColumn(resolutionKey, externalSourceColumns) {
         const src = (externalSourceColumns || []).find(c => c.name === xAxis.column);
         return { ...(src || { name: xAxis.column, type: 'string' }), show: true, target: 'xAxis', group: true, sort: 'asc', origin: MEASURE_PICKER_COLUMN_ORIGIN };
     }
+    if (xAxis.type === 'series') {
+        // "Summary" resolution — no time bucket at all; the x-axis IS the
+        // comparisonSeries discriminator (one bar per route, a whole-range
+        // aggregate each), the exact shape convert_old_reports_lib/
+        // template_specs.py's old "Bar Graph Summary" templates hand-built
+        // (`"xAxis": "__series", "categorize": False`). Deliberately tagged
+        // `origin: 'comparison-series'`, NOT MEASURE_PICKER_COLUMN_ORIGIN —
+        // reconcileComparisonSeriesColumn(OnState) looks up an existing
+        // column by `c.origin === 'comparison-series'` and, when found, only
+        // ever touches `.name`/`.alias`, never `.target` (see
+        // useDataWrapperAPI.js/report_build.mjs's shared reconcile body) —
+        // giving this column that origin up front means reconcile treats it
+        // as "already exists" and leaves `target: 'xAxis'` alone, instead of
+        // ALSO pushing a second, separate `target: 'categorize'` column for
+        // the same `__series` name (which — per template_specs.py's own
+        // comment on `"categorize": False` — would collide in every
+        // name-keyed column map downstream; the same column can't be both
+        // axes). No `sort` — omitting it (rather than `'asc'`) keeps bars in
+        // comparisonSeries' own arm order instead of being re-sorted
+        // alphabetically by whatever `__series` label text each arm has.
+        return { name: '__series', alias: '__series', type: 'text', show: true, target: 'xAxis', group: !!xAxis.group, origin: 'comparison-series' };
+    }
     // Calculated grouping (15-minutes/hour/weekday/month) — vocabulary's
     // `expr` field becomes the column's `name` (TEMPLATE_SPECS' own
     // convention: the SQL string, including its own "as <alias>", lives in
     // the column dict's `name` key).
     return { type: 'calculated', show: true, name: xAxis.expr, target: 'xAxis', group: !!xAxis.group, sort: xAxis.sort, origin: MEASURE_PICKER_COLUMN_ORIGIN };
+}
+
+// GridGraph's per-row dimension. GridGraphWrapper (graph_new/components/GridGraph.jsx)
+// builds grid rows from a column targeted "yAxis" — never "categorize" (that's
+// BarGraph's per-TMC convention) — and silently renders a single collapsed
+// row when no such column exists. convert_old_reports_lib/template_specs.py
+// hit exactly this live (round 42, report 914's "Winter Average Day" TMC Grid
+// Graph): a first fix attempt used `categorize: "tmc"` and still rendered one
+// aggregate strip; only supplying the tmc column pre-targeted "yAxis" worked.
+// This picker had no equivalent at all — every GridGraph it composed set only
+// xAxis (time) + color (value), so every GridGraph built through it (the live
+// Measure Picker AND report_build.mjs, which calls the same applyMeasurePick)
+// collapsed all of a route's TMCs into one row. SPEED_EXPR/TRAVEL_TIME_EXPR/etc.
+// are self-aggregating map combinators that already degrade to the correct
+// per-TMC value once grouped by (epoch, tmc) — round 35/42's own proof — so no
+// measure-level change is needed, only this missing column. "TMC Grid Graph"
+// is a per-TMC space-time diagram by definition, so this is unconditional for
+// every GridGraph pick, not an author-facing toggle (matches GRAPH_TEMPLATE_MAP
+// being fully repointed to the `_tmc`-breakdown templates, not left optional).
+function buildGridBreakdownColumn(externalSourceColumns) {
+    const src = (externalSourceColumns || []).find(c => c.name === 'tmc' && c.source_id === 583)
+        || (externalSourceColumns || []).find(c => c.name === 'tmc');
+    return { ...(src || { name: 'tmc', type: 'string', source_id: 583 }), show: true, target: 'yAxis', group: true, sort: 'asc', origin: MEASURE_PICKER_COLUMN_ORIGIN };
+}
+
+// "Summary" (one bar per route, no time bucket) reuses every measure's
+// existing `expr`/`fn` verbatim EXCEPT avgHoursOfDelay — confirmed by reading
+// convert_old_reports_lib/expressions.py: SPEED_SUMMARY_EXPR/TRAVEL_TIME_EXPR/
+// DELAY_EXPR are literal aliases of the SAME vocabulary.json expressions
+// every time-bucketed chart already uses (they're map/array ClickHouse
+// aggregates that fold correctly at any grain, from a 5-minute bucket up to
+// the whole date range) — so no measure-level change was needed for those.
+// avgHoursOfDelay is the one real exception: its summary value is
+// bucket-grain-dependent (a weighted average of daily averages isn't the
+// same number as a weighted average of 5-minute averages), needing a
+// dedicated per-grain expression (`_avg_delay_summary_expr` in
+// expressions.py) the live picker has no equivalent for — already flagged
+// out of scope in MeasurePicker/README.md's "Explicitly NOT in this file"
+// section before this resolution existed. Guarded here (not silently wrong)
+// rather than gated from the picker entirely, matching this file's own
+// "any combo is offered" author-empowerment stance for every OTHER combo.
+function isUnsupportedSummaryMeasure(resolutionKey, measureKey) {
+    return resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
 }
 
 function buildJoin(measure) {
@@ -172,10 +238,21 @@ function buildDiffColors(measure, graphType) {
  * Resolution + Comparison Mode pick. Returns null if measureKey is unknown.
  * `defaultColors` should be the component's own defaultState.display.colors,
  * used to restore a sane palette when comparisonMode is 'plain'.
+ * `seriesCount` (optional) is how many routes/arms will feed this graph —
+ * only used to decide BarGraph's plain-mode color treatment (see the colors
+ * block below); omit when unknown, which keeps the existing categorical
+ * default (BC).
  */
-export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors }) {
+export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors, seriesCount }) {
     const measure = vocab.measures[measureKey];
     if (!measure) return null;
+    // See isUnsupportedSummaryMeasure's own comment — avgHoursOfDelay's summary value is
+    // bucket-grain-dependent and this picker has no equivalent of expressions.py's
+    // per-grain `_avg_delay_summary_expr`. Returning null here (rather than composing a
+    // confidently-wrong number) reuses the exact same "nothing to apply" contract an
+    // unknown measureKey already gets — callers already skip downstream bookkeeping
+    // when this happens.
+    if (isUnsupportedSummaryMeasure(resolutionKey, measureKey)) return null;
 
     // GridGraph's value column targets "color" (per-cell heat), every other
     // graph type targets "yAxis" — same rule TEMPLATE_SPECS' own entries use.
@@ -186,6 +263,7 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         origin: MEASURE_PICKER_COLUMN_ORIGIN,
     };
     const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
+    const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
     const join = buildJoin(measure);
     const isDifference = comparisonModeKey === 'difference';
 
@@ -195,7 +273,7 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     // shows preloaded/cached data, never fetches live). The Report Page
     // template's pre-wired starter graph has "fetchMode": "force" baked in by
     // hand; a from-scratch section has no template to inherit that from, so
-    // (same class of gap as BASE_SOURCE/TMC_IDENTIFICATION_JOIN) it must be
+    // (same class of gap as BASE_SOURCE/META_JOIN) it must be
     // set explicitly here. Without it, a report graph never issues a single
     // /graph request, no matter how correctly everything else is composed —
     // confirmed live 2026-07-20: the network tab showed only the
@@ -229,11 +307,76 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     }
     if (yAxisTarget === 'yAxis' && measure.label) {
         displayPatch.yAxis = { label: measure.label };
+    } else if (graphType === 'GridGraph') {
+        // Same "applyMeasurePick MERGES display, so a stale value survives a re-pick"
+        // hazard the xAxis branch above already guards against — a fresh AVL Graph
+        // section's inherited default display.yAxis carries a numeric `format`
+        // (e.g. "integer", meant for a LineGraph/BarGraph's real numeric y-axis).
+        // GridGraph's row axis now carries the tmc breakdown column (a string, see
+        // buildGridBreakdownColumn) — applying that stale numeric format to it goes
+        // through d3-format and renders every row label as the literal text "NaN"
+        // (live-caught fixing the missing-breakdown bug above: the labels only
+        // started rendering at all once a yColumn existed, surfacing this dormant
+        // format for the first time). Explicit `format: null` is a no-op format
+        // (GridGraph.jsx only calls d3format() when `format` is a truthy string),
+        // so the tmc value renders as its own raw string.
+        displayPatch.yAxis = { format: null };
     }
-    displayPatch.colors = isDifference ? buildDiffColors(measure, graphType) : (defaultColors || null);
+    // Plain-mode color scale. `defaultColors` is the base template's own
+    // flat palette of distinct route-identity swatches — correct for a
+    // LineGraph (each swatch marks a different route/year) but wrong for a
+    // GridGraph, which always colors cells by raw measure VALUE regardless
+    // of route count (GridGraphWrapper never reads the categorize/__series
+    // column, see GridGraph.jsx) — a scaleLinear built across ~20 visually
+    // unrelated hues turns ordinary epoch-to-epoch noise into "confetti"
+    // (reported live 2026-08-12). A single-route BarGraph (a day/weekday/
+    // month magnitude breakdown, no real second series) has the same root
+    // cause: with only one category, it just picks one flat swatch instead
+    // of a value scale. Multi-route BarGraphs (2+ series sharing an x-axis,
+    // e.g. comparing years by weekday) and "summary" BarGraphs (one bar per
+    // route arm — the categorize column IS the x-axis there) are genuinely
+    // categorical and keep the inherited palette; `seriesCount` is how the
+    // caller tells us which case this is (report_build.mjs knows it from
+    // the spec's route→graph assignment; the live picker from the graph's
+    // already-assigned `_measurePick.routeIds`, when a route was picked
+    // before the measure).
+    const isSingleSeriesBarGraph = graphType === 'BarGraph' && resolutionKey !== 'summary' && seriesCount === 1;
+    if (isDifference) {
+        displayPatch.colors = buildDiffColors(measure, graphType);
+    } else if (graphType === 'GridGraph' || isSingleSeriesBarGraph) {
+        // measure.reverseColors already encodes which raw-value direction is
+        // "good" (see its use in buildDiffColors) — reuse it here to orient
+        // the same red(bad)-yellow-green(good) scale for a raw (non-diff)
+        // magnitude value.
+        displayPatch.colors = {
+            type: 'scheme', scheme: 'rdylgn', reverse: measure.reverseColors,
+            ...(graphType === 'BarGraph' ? { byValue: true } : {}),
+        };
+    } else {
+        displayPatch.colors = defaultColors || null;
+    }
+    // "(Line Total)" / per-series totals only make sense for a measure
+    // that's genuinely additive across whatever's being summed here (time
+    // buckets) — vocabulary.json already flags this via `fn: "sum"`
+    // (hoursOfDelay, the co2 totals) vs "avg"/"exempt" for rate-like
+    // measures (speed, travelTime, avgHoursOfDelay) where a raw sum is
+    // meaningless. Reported live 2026-08-12: a Route Line Graph showed a
+    // large, unitless "Line Total" next to each year's speed value.
+    displayPatch.tooltip = { showTotal: measure.fn === 'sum' };
+    // "summary" has no categorize-targeted column to key a legend off (the categorize
+    // column IS the x-axis here — see buildXAxisColumn), so the legend would otherwise
+    // fall back to the yAxis column's own raw SQL expression as its label — confirmed,
+    // real, live-observed bug in the old converter's equivalent template (see
+    // template_specs.py's "Bar Graph Summary" comment): BarGraph.jsx lays the legend out
+    // as an unconstrained flex sibling of the chart, so a label that long squeezes the
+    // chart to 0 width. Always set explicitly (never left to a stale merge) — same
+    // "re-picking must fully determine every display field it touches" rule the xAxis
+    // format clearing above already follows, so switching AWAY from "summary" back to a
+    // normal resolution doesn't leave the legend stuck hidden.
+    displayPatch.legend = { show: resolutionKey !== 'summary' };
 
     return {
-        columns: [yAxisColumn, xAxisColumn].filter(Boolean),
+        columns: [yAxisColumn, xAxisColumn, gridBreakdownColumn].filter(Boolean),
         join,
         comparisonSeriesCombine: isDifference ? { mode: 'difference', ...(anchorInvert ? { invert: true } : {}) } : null,
         displayPatch,

@@ -105,17 +105,14 @@ const Create = ({ context, source }) => {
   		.then(res => res.json())
 	  	.then(res => {
 	  		if (res.ok) {
-	  			return new Promise(resolve => {
-			  		setTimeout(() => {
-			  			resolve();
-			  			stopLoading();
-			  			navigate(`${ baseUrl }/source/${ res.source_id }`);
-			  		}, 5000);
-	  			});
+	  			navigate(`${ baseUrl }/task/${ res.etl_context_id }`);
+	  		}
+	  		else {
+	  			throw new Error(res.error);
 	  		}
 	  	}).catch(e => {
 	  		setError(e.message || e);
-	  	});
+	  	}).finally(() => stopLoading());
   }, [okToSend, API_HOST, pgEnv, tmasFile, source, user,
   		usePre2020Format, baseUrl, startLoading, stopLoading]);
 
@@ -161,7 +158,7 @@ const Create = ({ context, source }) => {
 		  			Select File
 		  		</Button>
 		  	</div>
-	  		{ source.name.length >= 4 ? null :
+	  		{ source.name.length >= MIN_SOURCE_NAME_LENGTH ? null :
 	  			<div className="bg-red-100 rounded text-red-600 px-3 flex items-center">
 	  				{ "You must enter a Dataset name of length 4 or more" }
 	  			</div>
@@ -174,7 +171,7 @@ const Create = ({ context, source }) => {
 	  					fileName={ tmasFile?.name }
 	  					fileSize={ tmasFile?.size }
 	  					fileContent={ fileContent } theme={ t }/>
-						<div className={t.divider}/>
+						<div className={ t.divider }/>
 						<div className="my-1"/>
 	  			</>
   		}

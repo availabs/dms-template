@@ -107,7 +107,7 @@ The most-used helpers (full list in `_example-hello-world/index.js`):
   `ctx.task.descriptor.*`.
 - `helpers.createDamaSource({ name, type, user_id }, pgEnv)` → creates a row in
   `data_manager.sources`, returns `{ source_id }`.
-- `helpers.createDamaView({ source_id, user_id, etl_context_id, view_dependencies }, pgEnv)`
+- `helpers.createDamaView({ source_id, user_id, metadata, view_dependencies }, pgEnv)`
   → creates a `data_manager.views` row. **Also exported from
   `@availabs/dms-server/src/dama/upload/metadata`** and called directly inside
   the worker in the NFIP analog — do it the same way.
@@ -282,8 +282,8 @@ already wired to the production geometry tables on the Mitigate-NY pgEnv).
 Follow the NFIP worker step-for-step:
 
 1. `dispatchEvent('gis_dataset:WORKER_INIT', …)`, `updateProgress(0.05)`.
-2. `createDamaView({ source_id, user_id, etl_context_id: task.task_id, view_dependencies })`
-   → `{ view_id }`.
+2. `createDamaView({ source_id, user_id, metadata: { task_id: task.task_id }, view_dependencies })`
+   → `{ view_id }`. (`views.etl_context_id` is deprecated — never pass it.)
 3. `CREATE SCHEMA IF NOT EXISTS gis_datasets` (the standard schema for
    `gis_dataset` outputs; `createDamaView` already defaults table naming to
    `gis_datasets.s{source_id}_v{view_id}`).

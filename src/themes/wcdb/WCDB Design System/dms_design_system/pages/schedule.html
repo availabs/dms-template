@@ -12,31 +12,6 @@
 </head>
 <body>
 
-<!-- META-NAV — documentation chrome only -->
-<nav class="wcdb-meta-nav">
-  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">design-system</span>
-    <a href="../design-system/theme.html">theme</a>
-    <a href="../design-system/layouts.html">layouts</a>
-    <a href="../design-system/grid.html">grid</a>
-    <a href="../design-system/components.html">components</a>
-    <a href="../design-system/patterns.html">patterns</a>
-  </span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">pages</span>
-    <a href="./home.html">home</a>
-    <a href="./listen.html">listen</a>
-    <a href="./schedule.html" data-active="true">schedule</a>
-    <a href="./show.html">show</a>
-    <a href="./djs.html">djs</a>
-    <a href="./spins.html">spins</a>
-    <a href="./blog.html">blog</a>
-    <a href="./events.html">events</a>
-    <a href="./login.html">login</a>
-  </span>
-</nav>
-
 <!-- ============================================================
      LAYOUT · default — single-column.
      schedule.html is a single-column page, so we render only the
@@ -47,45 +22,269 @@
 <div data-dms-layout="default"
      class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
 
+  <!-- ============================================================
+       TOPNAV · theme.topnav.styles[0] "wcdb" — A NOTCH, NOT A BAR.
+       layoutContainer1 is `fixed top-0 z-50` with NO width, so the whole
+       nav shrink-wraps to its content. The page background is carried by
+       each MENU container, never by the header — that is what lets the
+       hero card sit beside the bar and cut up underneath it. The right
+       menu closes the notch with `lg:rounded-br-[28px]`.
+  
+       The two 20x20 curve widgets mask the joins. They position against
+       this FIXED container (no menu container is `relative`), which is
+       why left-[7px]/top-[56px] lands just below the bar on the left and
+       -right-[20px]/top-[8px] lands just past its right end.
+       Source: wcdb_theme.js layout.options.topNav + widgets.jsx.
+       ============================================================ -->
+  <header class="fixed top-0 z-50">
+    <div class="w-full">
+      <div class="w-full h-14 flex items-center">
+        <div class="flex items-center w-full h-full">
+
+          <!-- leftMenuContainer · [NavLeftStyleWidget, Logo] -->
+          <div class="flex items-center bg-[var(--page-bg)] h-14">
+            <!-- NavLeftStyleWidget -->
+            <div class="absolute left-[7px] top-[56px]">
+              <!-- decorative -->
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+            </div>
+            <a href="./home.html" class="items-center flex pt-1 pl-4">
+              <!-- theme.logo — live theme serves /themes/wcdb/logo_white.svg -->
+              <img src="../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-12 wcdb-logo-img">
+            </a>
+          </div>
+
+          <!-- centerMenuContainer -->
+          <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2 bg-[var(--page-bg)]">
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./schedule.html" data-active="true">Schedule</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./events.html">Events</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./station-info.html">Station Info</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./djs.html">DJs</a>
+          </div>
+
+          <!-- rightMenuContainer · [UserMenu, ThemeModeToggle, NavRightStyleWidget]
+               NOTE: wcdb_theme.js lists the toggle FIRST in its default
+               rightMenu array; live wcdb.fm renders sign-in first. The site
+               overrides the order, and production is what we mirror here. -->
+          <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)] lg:rounded-br-[28px]">
+            <!-- UserMenu — signed-out state -->
+            <a href="./login.html" aria-label="Sign in" title="Sign in"
+               class="inline-flex items-center justify-center size-8 rounded-full text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+              <!-- icon: SignIn -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M11 8l4 4-4 4M15 12H7"/></svg>
+            </a>
+            <!-- ThemeModeToggle — renders Moon while data-mode="dark" (the default) -->
+            <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                    class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+              <!-- icon: Moon -->
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            <!-- NavRightStyleWidget -->
+            <div class="absolute -right-[20px] top-[8px]">
+              <!-- decorative -->
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
   <!-- LAYOUT.wrapper -->
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
 
     <!-- LAYOUT.wrapper2 -->
     <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
 
-      <!-- TOPNAV — top-of-page strip. Active state: Schedule. -->
-      <header class="w-full h-14 flex items-center bg-[var(--page-bg)] border-b border-[var(--line-1)]">
-        <div class="flex items-center bg-[var(--page-bg)] h-14 pl-4">
-          <div class="font-[family-name:var(--font-display)] italic text-[20px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
-          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
-                       font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
-        </div>
-        <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2 bg-[var(--page-bg)]">
-          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Listen</a>
-          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" data-active="true">Schedule</a>
-          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Shows</a>
-          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">DJs</a>
-          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Spins</a>
-          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Blog</a>
-          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Events</a>
-        </div>
-        <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)]">
-          <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">am3081@gmail.com</span>
-        </div>
-      </header>
-
       <!-- LAYOUT.wrapper3 -->
       <div class="flex flex-1 items-start">
 
-        <!-- LAYOUT.childWrapper · single-column collapse -->
+        <!-- LAYOUT.childWrapper · THE CUTAWAY GRID -->
         <div class="flex-1 flex flex-col md:grid md:grid-cols-2">
+
+          <!-- ============================================================
+               LAYOUTGROUP · header — THE LIVE RAIL
+               The same sticky panel every main page carries, so "what is
+               on air / what is playing" follows the reader around the site
+               instead of living only on the home page.
+               GENERATED from home.html, which is the canonical copy — edit
+               it there and re-run scripts/sync-rail.mjs, never here.
+               Below md the grid collapses and this scrolls above the feed.
+               ============================================================ -->
+          <div data-dms-group="header"
+               class="w-full p-2 md:sticky md:top-0 md:h-screen">
+            <div class="overflow-hidden rounded-[18px] bg-[var(--card-bg)] text-[color:var(--ink-1)] md:h-full relative">
+
+              <!-- ============================================================
+                   TWO components live in this panel, and they answer two
+                   different questions. Previously they were one continuous
+                   run of rows over a gradient, which made them hard to tell
+                   apart and spent the whole panel on decoration:
+
+                     1. ON AIR   — "what show is on right now?"  A show
+                        photograph, full bleed, with the show's identity set
+                        over it. This is the block that carries the image.
+                     2. LISTEN LIVE — "what song is playing, and how do I
+                        hear it?"  A distinct tinted band with its own
+                        eyebrow, a large cover-art slot, and the play button.
+
+                   The theme gives this LayoutGroup ONE rounded card
+                   (layoutGroup.styles[1].wrapper2), so the separation is done
+                   with surface tone + a hairline rather than two cards.
+                   ============================================================ -->
+              <section data-dms-section="card:on-air" class="h-full flex flex-col">
+
+                <!-- ── 1 · ON AIR ────────────────────────────────────────
+                     portrait_banner: a real show photo from the station's
+                     picture library (see assets/photos/README.md), scrimmed
+                     so the show identity reads over it. The genre rides a
+                     NOTCH CHIP at the bottom-left — the brand's other use of
+                     the TopNav's cut-corner join (patterns.html §A). -->
+                <div class="relative flex-1 min-h-[300px] overflow-hidden">
+                  <!-- `data-mockup-photo` — mockup.js swaps this among the five
+                       photos in assets/photos on each load, so the panel gets
+                       exercised against varied real content rather than one
+                       lucky crop. On the live site the image comes from the
+                       show record. -->
+                  <img data-mockup-photo src="../assets/photos/live-spring-show-2024.jpg" alt="WCDB Spring Show 2024"
+                       class="absolute inset-0 w-full h-full object-cover object-center">
+
+                  <!-- Scrim. Fixed dark in BOTH modes, and so is every value set
+                       over it: this block is a photograph, and a photo does not
+                       become light because the page did. Using --ink-1 here
+                       would turn the show title black-on-black in light mode. -->
+                  <div class="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,10,0.94)] via-[rgba(10,10,10,0.58)] to-[rgba(10,10,10,0.12)]"></div>
+
+                  <!-- Show identity, pinned to the bottom of the photo. `pb-14`
+                       keeps it clear of the notch chip, which owns the corner. -->
+                  <div class="absolute inset-x-0 bottom-0 px-6 pb-14 pt-10">
+
+                    <!-- Slot line. Carries real weight — after "is it live?",
+                         "when is this on?" is the question this panel answers. -->
+                    <div class="flex items-center gap-2.5 mb-3">
+                      <!-- now_indicator column type -->
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)]"
+                            style="padding:4px 10px;">
+                        <span class="wcdb-on-air-dot"></span>
+                        <span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] font-semibold" style="font-size:10px">On Air</span>
+                      </span>
+                      <span class="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.10em] uppercase font-medium text-[#f5f5f5]">
+                        Thu · 11 pm – 1 am
+                      </span>
+                    </div>
+
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[clamp(32px,3.4vw,44px)] leading-[0.98] tracking-[-0.03em] text-[#f5f5f5] m-0">
+                      Late Modernism
+                    </h2>
+
+                    <!-- The DJ is a name, so it gets the display voice rather
+                         than a mono caption — second in the hierarchy after the
+                         show itself, ahead of the genre. -->
+                    <div class="mt-1.5 flex items-baseline justify-between gap-6">
+                      <span class="font-[family-name:var(--font-display)] italic text-[24px] leading-[1.1] tracking-[-0.02em] text-[rgba(245,245,245,0.86)]">
+                        w/ DJ Halftone
+                      </span>
+                      <span class="hidden lg:block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[rgba(245,245,245,0.5)] shrink-0">
+                        Krautrock, drones, long winters
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- The chip takes the LISTEN LIVE band's tone, not the card's: it is the
+                       surface directly beneath it, so the chip reads as that band
+                       pushing up into the photo. -->
+                  <span class="wcdb-chip wcdb-chip--bl" style="--chip: var(--bg-2)">Metal/Hardcore</span>
+                </div>
+
+                <!-- ── 2 · LISTEN LIVE ──────────────────────────────────
+                     Its own surface tone (bg-2), so it reads as a separate
+                     instrument rather than more rows of the show block.
+
+                     The header row is the block's LABEL ROW: what this is
+                     ("Now playing"), when it started, and the two things you
+                     can do about it — see how many others are on, or open the
+                     full history. Nothing here says "Listen live · 90.9 FM":
+                     the play button says that, and the rail is on every page,
+                     so the station never needed re-announcing at this size.
+                     No duration or progress: the stream reports a title, not
+                     a length, so a progress bar would be inventing a number. -->
+                <div class="shrink-0 bg-[var(--bg-2)]">
+                  <div class="px-6 pt-4 pb-5">
+
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                      <div class="flex items-baseline gap-2.5 min-w-0">
+                        <!-- The on-air accent, the same signal the show's
+                             on-air pill uses, so the page's two live claims
+                             match. -->
+                        <span class="inline-flex items-center rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)]
+                                     font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase font-semibold shrink-0"
+                              style="padding:3px 8px;">
+                          Now playing
+                        </span>
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] tabular-nums">11:47 pm</span>
+                      </div>
+
+                      <div class="flex items-center gap-4 shrink-0">
+                        <span class="hidden sm:inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">
+                          <span class="wcdb-eq"><span></span><span></span><span></span><span></span></span>
+                          184 listening
+                        </span>
+                        <a href="./spins.html"
+                           class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] border-b border-[var(--line-2)] hover:border-[var(--line-3)] pb-0.5 transition-colors">
+                          Full playlist
+                          <!-- icon: ArrowRight -->
+                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-5">
+                      <!-- Cover art — the big slot. Sized for the playlist
+                           dataset's album thumbnails; gradient placeholder
+                           until that source is wired (assets/photos/README.md). -->
+                      <div class="size-[104px] shrink-0 rounded-[10px] wcdb-art wcdb-art--ember overflow-hidden relative">
+                        <span class="absolute inset-x-0 bottom-0 text-center font-[family-name:var(--font-mono)] uppercase tracking-[0.10em] text-[color:var(--ink-3)] bg-[rgba(10,10,10,0.45)]"
+                              style="font-size:8px; padding:2px 0;">cover art</span>
+                      </div>
+
+                      <!-- The track is the content; with the label row lifted
+                           out there is room to set it at something close to a
+                           headline. -->
+                      <div class="flex-1 min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[32px] leading-[1.02] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">
+                          Sowiesoso
+                        </div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[19px] leading-[1.2] tracking-[-0.02em] text-[color:var(--ink-2)] mt-1 truncate">
+                          Cluster
+                        </div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-4)] mt-1.5 truncate">
+                          Sowiesoso · 1976 · Sky Records
+                        </div>
+                      </div>
+
+                      <!-- stream_player column type · round play button -->
+                      <button aria-label="Play live stream"
+                              class="shrink-0 size-[60px] rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                     grid place-items-center transition-transform hover:scale-105 active:scale-100">
+                        <!-- icon: Play -->
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </section>
+
+            </div>
+          </div>
 
           <!-- ============================================================
                LAYOUTGROUP · content
                ============================================================ -->
           <div data-dms-group="content"
-               class="md:col-span-2 w-full flex-1 flex flex-row p-2">
-            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1080px] mx-auto">
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 px-4 pt-4 min-h-[200px]">
 
               <!-- ============================================================
                    SECTION · lexical:page-header (BARE)
@@ -107,15 +306,19 @@
               </section>
 
               <!-- ============================================================
-                   SECTION · card:day-strip (CARDED)
-                   Mon–Sun horizontal pill row. Today (Friday) highlighted.
+                   SECTION · card:schedule-filters (CARDED)
+                   TWO axes, one card: the week runs across the top, the ten
+                   departments below it. Keeping them in the same card is what
+                   makes them read as filters on one list rather than two
+                   unrelated nav strips — and the departments are why the
+                   schedule rows carry a leading icon (patterns.html §F/§G).
                    ============================================================ -->
-              <section data-dms-section="card:day-strip" class="mb-12">
+              <section data-dms-section="card:schedule-filters" class="mb-12">
                 <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
                   <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
-                    Jump to a day
+                    Filter by day
                   </div>
-                  <div class="grid grid-cols-7 gap-2">
+                  <div class="grid grid-cols-2 min-[1100px]:grid-cols-4 min-[1750px]:grid-cols-7 gap-2">
 
                     <button class="rounded-[14px] bg-[var(--card-bg-soft)] hover:bg-[var(--bg-3)] p-4 text-left transition-colors">
                       <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Monday</div>
@@ -153,6 +356,71 @@
                       <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Sunday</div>
                       <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">3 shows</div>
                     </button>
+                  </div>
+
+                  <hr class="wcdb-hairline my-6"/>
+
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                    Filter by department
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <!-- Selected state: filled, not just tinted, so it reads as a
+                         CHOICE rather than a hover. Only one department can be
+                         active at a time; "All" is the default. -->
+                    <a href="#" data-active="true"
+                       class="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-1)] bg-[color:var(--ink-1)] text-[color:var(--page-bg)] pl-3.5 pr-3.5 py-1.5">
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase font-semibold">All</span>
+                    </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Microphone -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Hip-Hop</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Heart -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.35-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 2.5C19 15.65 12 20 12 20z"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">R&amp;B</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Globe -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">World</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Pick -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 0 7 2.4 7 5.5 0 4-4.2 8.4-5.6 10.2a1.8 1.8 0 0 1-2.8 0C9.2 16.9 5 12.5 5 8.5 5 5.4 8 3 12 3z"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Rock</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Bolt -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Metal</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Note -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="15" r="2.5"/><path d="M9.5 18V6l10-2v11"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Jazz</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Sliders -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v18M12 3v18M18 3v18"/><circle cx="6" cy="8" r="2"/><circle cx="12" cy="15" r="2"/><circle cx="18" cy="10" r="2"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Electronic</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Newspaper -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v15H5a1 1 0 0 1-1-1z"/><path d="M17 8h3v10a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">News</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Trophy -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M10 17h4M12 13v4M9 20h6"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Sports</span>
+                          </a>
+    <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                            <!-- icon: Star -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.4l6-.8z"/></svg>
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Specialty</span>
+                          </a>
                   </div>
                 </div>
               </section>
@@ -316,7 +584,7 @@
               <!-- ============================================================
                    SECTION · card:footer (INVERTED CARD)
                    ============================================================ -->
-              <section data-dms-section="card:footer" class="pb-4">
+              <section data-dms-section="card:footer">
                 <div class="wcdb-card-inv p-10">
                   <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
                     <div>
@@ -376,43 +644,11 @@
   </div>
 </div>
 
-<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
-<footer class="wcdb-meta-footer">
-  <div>
-    <h3>Design system</h3>
-    <ul>
-      <li><a href="../design-system/theme.html">theme</a></li>
-      <li><a href="../design-system/layouts.html">layouts</a></li>
-      <li><a href="../design-system/grid.html">grid</a></li>
-      <li><a href="../design-system/components.html">components</a></li>
-      <li><a href="../design-system/patterns.html">patterns</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · editorial</h3>
-    <ul>
-      <li><a href="./home.html">home</a></li>
-      <li><a href="./listen.html">listen</a></li>
-      <li><a href="./blog.html">blog</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · catalogue</h3>
-    <ul>
-      <li><a href="./schedule.html" data-active="true">schedule</a></li>
-      <li><a href="./show.html">show</a></li>
-      <li><a href="./djs.html">djs</a></li>
-      <li><a href="./spins.html">spins</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · misc</h3>
-    <ul>
-      <li><a href="./events.html">events</a></li>
-      <li><a href="./login.html">login</a></li>
-    </ul>
-  </div>
-</footer>
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
 
 </body>
 </html>
