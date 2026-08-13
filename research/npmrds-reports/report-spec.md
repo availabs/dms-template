@@ -43,10 +43,18 @@ corrected before anything is built.
 | `description` | no | Written to the snap row's `description` — **not visible anywhere on the page.** For a client-visible summary use `intro` instead. |
 | `intro` | no | Prose paragraph(s), rendered on the page. See "The title block" below. |
 | `request` | no | The literal client ask, verbatim. Printed by `--summary`, stored on the snap row as `_client_request`. |
+| `tags` | no | Array, e.g. `["category:floating_car"]`. **Load-bearing for the `/reports` catalog**, not just display — each of its category tiles filters `reports_snap_2` on this exact field; a spec-built row without the right tag simply doesn't appear on the catalog, not "appears wrong." Round-tripped by `--from-page`. |
+| `difficulty` | no | Free text (`"beginner"`/`"intermediate"`/`"advanced"`/`""`), catalog display only. Round-tripped by `--from-page`. |
 | `graphs` | yes | Non-empty array — see below. |
 | `routes` | yes | Non-empty array — see below. |
 
-The snap row also records `_built_from_spec` (the spec's path) automatically.
+The snap row also records `_built_from_spec` (the spec's path) automatically, plus three fields
+computed fresh from the spec on every build rather than accepted as input — `page_path` (`/${slug}`),
+`graph_count` (`graphs.length`), `counts_label` (`"${routes.length} routes · ${graphs.length}
+graphs"`) — all three exist only to feed the `/reports` catalog's Card cells, and computing them from
+the spec itself (rather than requiring an author to keep a redundant number in sync) avoids the exact
+staleness the old Python-converted rows had (a frozen `graph_count` that didn't update when a template
+was edited).
 
 ## `graphs[]`
 
@@ -55,7 +63,7 @@ The snap row also records `_built_from_spec` (the spec's path) automatically.
 | `key` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` and `graphs[].anchor`. Never written to the DB. |
 | `graphType` | yes | `BarGraph` \| `LineGraph` \| `GridGraph` \| `Map` \| `InfoBox` \| `RouteCompare` — see "Route Map graphs", "Route/TMC Info Box graphs", and "Route Compare graphs" below, three different shapes entirely. |
 | `measure` | yes | A vocabulary measure — see the enum note below (Map, InfoBox, and RouteCompare each have their own, separate list). |
-| `resolution` | AVL Graph only | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month`. Map graphs only need this for `measure: avgHoursOfDelay` (`day` \| `5-minutes`); every other Map measure omits it. InfoBox/RouteCompare never use it (neither old-tool component ever read `resolution` either). |
+| `resolution` | AVL Graph only | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month` \| `summary`. Map graphs only need this for `measure: avgHoursOfDelay` (`day` \| `5-minutes`); every other Map measure omits it. InfoBox/RouteCompare never use it (neither old-tool component ever read `resolution` either). `summary` (added 2026-08-11, `BarGraph` only) is the old tool's "Bar Graph Summary" shape — no time bucket at all, one bar per assigned route showing that route's whole-window aggregate. **Not supported with `measure: "avgHoursOfDelay"`** — that measure's summary value is bucket-grain-dependent and there's no equivalent expression built for it yet; fails the build with a clear message rather than silently computing a wrong number. |
 | `grain` | InfoBox only | `route` (default) \| `tmc` — see below. |
 | `bin` | InfoBox `reliability` only | `amp` \| `midd` \| `pmp` \| `we` — the FHWA time-of-day period, required only for the `reliability` measure. |
 | `title` | no | Sets both the section row's `title` and `display.title.title`. |
@@ -78,20 +86,114 @@ those rather than this list.
 
 Each entry is a route **instance** — a catalog route plus a date window. Two instances routinely
 share one `route_id` and differ only by window; that is how before/after comparisons are expressed.
+A route instance can instead be a **Dynamic Report route slot** (`slot: true`, no `route_id` at all)
+— see "Dynamic Report fields" below.
 
 | field | required | meaning |
 |---|---|---|
-| `id` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` targets and `graphs[].anchor`. Never written. |
-| `route_id` | yes | The route's DMS id in the Routes Data catalog (source `2107426` / view `2107427`). Resolved at build time to pull its `tmc_array`. |
+| `id` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` targets, `graphs[].anchor`, and `derivedFromRoute`. Never written. |
+| `route_id` | yes, unless `slot: true` | The route's DMS id in the Routes Data catalog (source `2107426` / view `2107427`). Resolved at build time to pull its `tmc_array`. |
 | `name` | yes | The series label. See the duplicate-name rule below. |
 | `graphs` | yes in practice | Array of `graphs[].key`. Empty means this instance feeds nothing — the build warns and fails the structural check. |
-| `startDate` | no | Inclusive window start. Omit both dates for all available data. |
+| `startDate` | no | Inclusive window start. Omit both dates for all available data, or if deriving via `dateFormula` (see below). |
 | `endDate` | no | Window end. |
 | `startTime` | no | Time-of-day window start, `"HH:mm"` 24-hour (e.g. `"07:00"`). Requires `endTime` and a `startDate`/`endDate` window — see the semantics below. |
 | `endTime` | no | Time-of-day window end. Requires `startTime`. |
 | `color` | no | Series color, hex. |
 | `weekdays` | no | Day mask — see the semantics below. |
 | `confidence` | no | `{level: "low"\|"medium"\|"high", note}` — flags an inferred, not-determinate choice (typically segment extent — "around Verplank Ave and Beekman St" has no exact answer). Guess-and-flag, not a gate: `level: "low"` prints a "NEEDS REVIEW" banner in both `--summary` and a real build, but never blocks the build. See "Intake checklist" in `creating-reports.md`. |
+| `slot` | no | `true` marks this as a Dynamic Report route slot — no `route_id` yet, resolved by whoever views the page via `?routes=`. Requires `dynamicReport: true` on the spec. See "Dynamic Report fields" below. |
+| `route_slot_group` | no, slots only | Groups several slot rows (different date/settings VIEWS of the same one real route — e.g. `one_week_study`'s 8 day/average comps) so a viewer picks ONE route to fill all of them, not one per row. Slots with no `route_slot_group` are each their own group (one viewer pick per row). |
+| `isPlaceholderName` | no, slots only | Marks `name` as a meaningless auto-generated placeholder ("Route Slot 3") that should be overwritten by the resolved route's real name at view time. Omit for a slot with a real, deliberately-chosen name (the normal case in a hand-authored spec). |
+| `dateFormula` | no | A Mechanism B relative-date formula string (see `relativeDateResolution.js`'s `RELATIVE_DATE_REGEX`/`CALENDAR_POSITION_REGEX`) — the date is computed LIVE against `derivedFromRoute`'s own resolved date, never persisted as a literal. Requires `derivedFromRoute`. Works on ANY report, Dynamic or not — this is a general Mechanism B field, not slot-specific. See "Dynamic Report fields" below. |
+| `derivedFromRoute` | no | Paired with `dateFormula`. Either another `routes[].id` in this spec, or the literal `"__TODAY__"` to derive from the synthetic "Today (view time)" anchor. Single-hop only — the named base must not itself have a `dateFormula`. |
+
+## Dynamic Report fields
+
+A Dynamic Report is a shared, reusable template — one page serves every viewer, who picks their own
+route(s) (and optionally a base date) via the page's entry gate rather than an author picking a fixed
+route/date once. There are exactly 12 of these today (the `converted_reports` catalog); route slots
+have no meaning outside this class of page. **A real Dynamic Report never ships with a concrete route
+or a literal date** — the whole point is minimal viewer input, so every route on a Dynamic Report is
+either a `slot` or (for a route that does have a real `route_id`, as in a mixed report) still derives
+its date via `dateFormula` rather than a frozen literal. See
+`planning/transportny/tasks/current/dynamic-reports-and-route-tags.md` item 3 and
+`report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full design
+record and status.
+
+- **`dynamicReport: true`** (top-level spec field) — the only thing that turns a page into a Dynamic
+  Report. Writes the `routeSlots`/`baseDate` page filters (mirrors `ReportRouteList.jsx`'s
+  `toggleDynamicReport` exactly) so the page's entry gate/route-picker/"Viewing as of" field all work.
+  Required (hard build error otherwise) on any spec using `slot: true` routes.
+- A **slot** route (`slot: true`) has no `route_id` — it's resolved live from the page's `?routes=`
+  URL param. Several slot rows can share one `route_slot_group` so a viewer fills them all with one
+  pick (e.g. 8 day/average comps, 1 route). The persisted shape carries only `name`/`route_comp_id`/
+  `route_slot_group`/`color`/`weekdays`/the `dateFormula` pair — never a real catalog field; those get
+  overlaid live on every page load.
+- **`dateFormula`/`derivedFromRoute`** (Mechanism B) let a route's date be computed live instead of
+  frozen — from another route's resolved date, or from the synthetic Today anchor
+  (`derivedFromRoute: "__TODAY__"`, real wall-clock today minus NPMRDS's ~21-day publish lag — see
+  `relativeDateResolution.js`'s `NPMRDS_DATA_LAG_DAYS`/`defaultAnchorDate()`). Validated against the
+  REAL grammar (`relativeDateResolution.js`, loaded via a plain Node dynamic import — it has no
+  imports of its own, so no Vite boot needed) — a bad formula string fails the build the same way a
+  bad measure enum does. A route with `dateFormula` should omit literal `startDate`/`endDate`
+  entirely; if both are given, the literal is inert (always superseded live) and the build warns.
+
+Example (from `scripts/npmrds-reports/dynamic_report_specs/one_week_study.json`, live-verified 2026-08-11
+against a real published test page — 0 console/page/SQL errors, real ClickHouse data confirmed on
+every buildable graph, the resolved "4 days ago" date matching the expected lag-adjusted anchor
+exactly):
+
+```json
+{
+  "title": "One Week Study",
+  "dynamicReport": true,
+  "routes": [
+    { "id": "r1", "slot": true, "name": "4 Days Ago", "route_slot_group": "$0",
+      "dateFormula": "startDate=>day-4day->1day", "derivedFromRoute": "__TODAY__",
+      "weekdays": { "sunday": false, "saturday": false },
+      "graphs": ["daily_line", "map_all"] }
+  ]
+}
+```
+
+**Known gaps, found while building this (see `report-spec-and-build-script.md` for full detail),
+none of them slot/dateFormula-specific:**
+- A real, previously-latent bug (now fixed): a real (non-`--dry-run`) build of a Map graph with zero
+  resolvable dates across every assigned route used to write `element-data: undefined` (silently
+  dropped, not the documented placeholder-paint fallback) — the graceful-degradation claim below had
+  only ever been verified via `--dry-run`.
+- `--from-page` used to double-count every graph section on an already-published page (draft +
+  published rows share a trackingId, deduped only by row id upstream, not by trackingId) — fixed.
+- `--from-page` cannot recover `measure`/`resolution`/`comparisonMode` for any AVL Graph section
+  built by `convert_old_reports.py` (i.e. every one of the 12 catalog templates today) — its
+  Design-Push-2 routing retrofit overwrites `_measurePick` wholesale, wiping whatever a shared
+  graph-template row originally carried. Now flagged `_needsReview` instead of silently writing
+  `undefined`; `display.graphType` survives independently and is recovered as a fallback.
+- ~~"Bar Graph Summary" has no `applyMeasurePick` path at all~~ — **built 2026-08-11** as
+  `resolution: "summary"` (see the field table above) once checking the actual render/query code
+  showed both already fully supported this shape, just never wired into the vocabulary. Not a gap
+  anymore; `one_week_study`'s previously-dropped 2 panels are back.
+- Info Box's `reliability` measure still has no fallback when every assigned route lacks a literal
+  date (needs a year to pick a per-year join template, which a Dynamic Report never has at build
+  time) — not fixed, since no known template hits it yet; still needs checking against the other 11.
+- **Route/comp names don't reflect a viewer-picked base date, flagged not fixed.** `one_week_study`'s
+  route names are static English relative-time phrases ("Today", "4 Days Ago") written when the old
+  template assumed "today" meant real wall-clock today. With a viewer-pickable `?asOf=`, these
+  actively mislead — should read like "{resolved base date}" / "N days prior" instead. Likely affects
+  every one of the 12 templates, not just this one. See `report-spec-and-build-script.md`'s Dynamic
+  Report follow-on section for the full writeup; not risky to fix, just not top priority.
+- **Dynamic Report pages have no way to show a viewer which base date they're looking at**, beyond
+  reading it off individual route labels. Scoped as a `ReportPageHeader.jsx` enhancement (same doc) —
+  not built.
+- `tags`/`difficulty`/`page_path`/`graph_count`/`counts_label` (catalog metadata) are now spec fields
+  (see "Top-level fields" above) — found live while reconciling `one_week_study`'s real page: the
+  `/reports` catalog filters on `tags`, so a spec missing it is invisible on the catalog, not just
+  under-labeled. Fixed, not a remaining gap.
+- ~~Reconciling a pre-existing (non-`report_build.mjs`-built) page onto a spec needs `--update` to
+  bootstrap a `_specKeyMap`~~ — **not being built.** Ryan's call: the accepted process is manual —
+  delete the old page + sections + snap row, then build fresh under the same slug. Done exactly this
+  way for `one_week_study` itself.
 
 ---
 
@@ -301,28 +403,52 @@ Live-verified 2026-07-27: a one-route `measure: "speed"` Map graph built end-to-
 matching a direct ClickHouse query over the same TMC/date range, with a populated legend and zero
 console/page errors.
 
-### Route/TMC Info Box graphs (added 2026-07-28)
+### Route/TMC Info Box graphs (added 2026-07-28; `speed` measure + multi-measure added 2026-08-12)
 
-`{graphType: "InfoBox", measure: "reliability"|"travelTime"|"length"|"aadt"|"hoursOfDelay", grain?:
-"route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or per-TMC) summary table — the
-single most consistent panel across the old corpus after Route Map (Route Info Box appears in 100%
-of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
+`{graphType: "InfoBox", measure: "speed"|"reliability"|"travelTime"|"length"|"aadt"|"hoursOfDelay",
+grain?: "route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or per-TMC) summary table —
+the single most consistent panel across the old corpus after Route Map (Route Info Box appears in
+100% of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
 `route_comparison` — see the composition-rules analysis in
 `planning/transportny/tasks/current/client-request-to-report-skill.md`).
+
+**`measure` may also be an array of 2+ of the above, for a multi-measure box** — N columns in one
+table, matching the old tool's real shape (e.g. `measure: ["speed", "travelTime"]` renders exactly
+like the old tool's combined "Speed, Travel Time" Route Info Box). Composed fresh per report (each
+measure's own value column pulled from its already-existing single-measure template, assembled into
+a new state — never a combinatorially-named shared template) rather than through
+`build_route_info_box_section_state`'s single-measure clone path. **Not every combination is valid**:
+`reliability` can never combine with anything else (a completely different join mechanism — see
+below); `hoursOfDelay` can't combine with `speed`/`length`/`aadt` (their join requirements collide on
+the same table slot). An invalid combination fails the build with a clear message
+(`check_info_box_measure_combo()` in `info_box_templates.py`) rather than composing silently-wrong
+SQL. `speed`+`travelTime`+`length`+`aadt` all combine freely with each other.
+
+**`measure: "speed"` (added 2026-08-12) is the real plain speed-in-mph measure** (`miles / time`,
+the same `SPEED_EXPR` the AVL Graph `speed` measure uses) — verified against the actual old tool
+source (`dataTypes.js`'s `toSpeed`/`speedReducer`) that Route Info Box's "Speed" column was always
+this, never the reliability/LOTTR-TTTR bucket below. Do not confuse the two: `"speed"` here is
+plain mph; `"reliability"` (next paragraph) is a completely different pm3-backed measure that the
+old tool's own internal code confusingly also called "speed" internally.
 
 **This is not an AVL Graph.** Its element-type is `Spreadsheet`, not `AVL Graph`, and like Route Map
 it's composed by shelling out to `convert_old_reports.py --route-info-box-section` (new
 `build_route_info_box_section_state` function) rather than `applyMeasurePick` — same reuse principle,
-reusing the exact template-minting machinery (`ensure_pm3_join_template`/
+reusing the exact template-minting machinery (`ensure_pm3_join_template`/`ensure_info_box_speed_template`/
 `ensure_info_box_traveltime_template`/`ensure_info_box_length_template`/`ensure_info_box_aadt_template`/
 `ensure_info_box_delay_template`) built for old-report conversion (rounds 18/38/40).
 
-**Unlike Route Map, there is no per-report baking step.** Every one of the five measure buckets
+**Unlike Route Map, there is no per-report baking step.** Every one of the six measure buckets
 queries live at render time via the cloned template's own join (a cross-engine `pgFederated` join
-against source 1410's per-year view for `reliability`; a plain ClickHouse join for the other four) —
-the same `fetchMode:"force"`/`comparisonSeries` mechanism an AVL Graph section already uses. So an
-Info Box graph composes in one pass, before route resolution, and there is no placeholder-vs-baked
-distinction the way Route Map has one.
+against source 1410's per-year view for `reliability`; a plain ClickHouse join against `META_JOIN`
+— source 582/983, joined on `(tmc, year)` so every row resolves against its own date's year, not a
+frozen snapshot — for the other five) — the same `fetchMode:"force"`/`comparisonSeries` mechanism
+an AVL Graph section already uses. So an Info Box graph composes in one pass, before route
+resolution, and there is no placeholder-vs-baked distinction the way Route Map has one. See
+`src/dms/documentation/npmrds-data-sources.md`'s `META_JOIN` entry for the full
+year-correctness fix (2026-08-12) — `speed`/`length`/`aadt` used to read a different, static,
+year-agnostic join (`TMC_IDENTIFICATION_JOIN`, since removed) that silently returned a
+possibly-wrong-vintage `miles`/`aadt` value regardless of what year was actually being queried.
 
 `grain` defaults to `"route"`: each assigned route renders as its own row via the `__series`
 comparison-series discriminator (same fan-out mechanism as an AVL Graph section — the structural
@@ -378,6 +504,13 @@ resolve live at render time via `comparisonSeries` + dms-server's `__ANCHOR__(<e
 reading whichever route the page's own route list currently has first — same convention a difference
 graph's implicit anchor uses (see "Difference graphs: anchor and sign" above), and no `anchor` field
 of its own: reorder `routes[]` to change which one is first instead.
+
+**`measure` may also be `["speed", "travelTime"]` (added 2026-08-12) for a multi-measure box** — a
+value+delta column PAIR per measure (`__series`, Speed, % vs Main, Travel Time, % vs Main — 5
+columns total), matching the old tool's real combined shape. Only these two measures exist for
+Route Compare and they already share the same join, so (unlike Info Box) there's no combination to
+reject. `speed`'s own join was corrected 2026-08-12 to `META_JOIN` (year-matched), same fix as
+Info Box/AVL Graph's `speed` — see `src/dms/documentation/npmrds-data-sources.md`.
 
 No `resolution`, no `comparisonMode` (a `RouteCompare` graph's delta column already *is* the
 %-diff-from-anchor; `comparisonMode: "difference"` is rejected as redundant), no `caption`
@@ -493,7 +626,17 @@ wrong date window or a mis-assigned arm before anything is written.
 node scripts/npmrds-reports/report_build.mjs <spec>.json --dry-run 2>/dev/null | jq '.[].key'
 ```
 
-Working specs live in `scratchpad/npmrds-sub/report-specs/`.
+Throwaway/experimental specs (scratch tests, one-off dev-time probes) live in
+`scratchpad/npmrds-sub/report-specs/` — gitignored, ephemeral, never treated as fixtures (see
+`feedback_specs_are_ephemeral_not_fixtures` memory; the DB page, not the file, is the source of
+truth for anything built from one of these).
+
+**Specs meant to be the durable source of truth for a real page** — currently the 12 Dynamic Report
+catalog templates — are the deliberate exception (Ryan's direction, 2026-08-11): those live
+git-committed at `scripts/npmrds-reports/dynamic_report_specs/<slug>.json`, one file per template, named
+after its page slug. The point of committing them is exactly to stop needing the old DB as an input
+for this class of page — `--update` rebuilds the live page from the committed file, so the file (not
+a DB row) is what a reviewer reads and what a future edit starts from.
 
 ---
 

@@ -41,6 +41,11 @@ export const routeTagBrowserModalTheme = {
   loading: 'text-gray-500 text-sm p-2',
   empty: 'text-gray-400 italic text-sm p-2',
   error: 'text-red-500 mt-1 text-xs',
+  // "As of date" row (Dynamic Reports' entry gate only, when the report uses a Today-derived
+  // date) — sits between the route list and the footer, same weight as a plain form field.
+  asOfDateRow: 'flex items-center gap-2 pt-2 mt-1 border-t border-slate-100',
+  asOfDateLabel: 'text-xs font-semibold text-slate-600',
+  asOfDateInput: 'text-sm border border-slate-300 rounded px-2 py-1',
   footer: 'flex items-center justify-between gap-2 pt-3 mt-2 border-t border-slate-200',
   footerCount: 'text-xs text-slate-500',
   footerButtons: 'flex items-center gap-2',

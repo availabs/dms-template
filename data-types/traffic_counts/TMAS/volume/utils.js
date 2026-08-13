@@ -168,13 +168,6 @@ const TMAS_POST_2020_KEYS = [
 	},
 	{ key: "Day_of_Week",
 		name: "Day of Week"
-	},
-	{ key: "Restrictions",
-		name: "Restrictions",
-		homogenize: v => !v ? '0' : v
-	},
-	{ key: "Time_Increment",
-		name: "Time Increment"
 	}
 ]
 for (let i = 0; i < 24; ++i) {
@@ -183,6 +176,11 @@ for (let i = 0; i < 24; ++i) {
 		name: `Traffic Volume, hour ${ i }`
 	});
 }
+TMAS_POST_2020_KEYS.push({
+	key: "Restrictions",
+	name: "Restrictions",
+	homogenize: v => !v ? '0' : v
+})
 
 const homogenizeTMAS_POST_2020 = (i, c) => {
 	const func = TMAS_POST_2020_KEYS[i].homogenize || identity;
@@ -265,8 +263,6 @@ const processPost2020row = row => {
 
 const getTMASrowProcessor = format =>
 	format === "pre-2020-format" ? processPre2020row : processPost2020row;
-
-
   
 const TMAScolumns = [
   { 'name': 'ogc_fid',

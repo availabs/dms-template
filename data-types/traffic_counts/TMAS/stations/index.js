@@ -1,5 +1,3 @@
-// const { buffer } = require('stream/consumers');
-const { Buffer } = require('node:buffer');
 const { pipeline } = require("node:stream/promises");
 const { createWriteStream } = require("node:fs");
 const { join } = require("node:path");
@@ -13,14 +11,14 @@ const Worker = require("./worker");
 
 module.exports = {
   workers: {
-    'TMAS_volume_uploader/worker': Worker,
+    'TMAS_station_uploader/worker': Worker,
   },
 
   routes: (router, helpers) => {
     // Mounts as POST /dama-admin/:pgEnv/actions_location/publish
     router.post('/publish', async (req, res) => {
 
-      console.log("TMAS_volume_uploader/publish REQUEST RECEIVED", req.params.pgEnv);
+      console.log("TMAS_station_uploader/publish REQUEST RECEIVED", req.params.pgEnv);
 
       try {
 
@@ -46,9 +44,9 @@ module.exports = {
           if (!args.source_id) {
             const newDamaSource = await helpers.createDamaSource({
                 name: args.source_name,
-                type: 'tmas_volume_data',
+                type: 'gis_dataset',
                 user_id: args.user_id,
-                categories: [["TMAS", "Volume Data"]]
+                categories: [["TMAS", "Station Data"]]
               },
               req.params.pgEnv
             );
@@ -56,7 +54,7 @@ module.exports = {
           }
 
           const taskId = await helpers.queueTask({
-            workerPath: 'TMAS_volume_uploader/worker',
+            workerPath: 'TMAS_station_uploader/worker',
             args
           }, req.params.pgEnv);
 
@@ -66,7 +64,7 @@ module.exports = {
         req.pipe(bb);
       }
       catch (err) {
-        console.error('[TMAS_volume_uploader/publish] route failed:', err);
+        console.error('[TMAS_station_uploader/publish] route failed:', err);
         res.status(500).json({ ok: false, error: err.message || err });
       }
     });

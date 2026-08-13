@@ -1,0 +1,31 @@
+{
+  "title": "Weekly Average",
+  "slug": "converted_reports/weekly_average",
+  "dynamicReport": true,
+  "description": "Compares a route's current-year weekday-vs-weekend speed pattern against the same route one and two years ago.",
+  "tags": ["category:behavioral", "difficulty:beginner"],
+  "difficulty": "beginner",
+  "_note": "Reconstructed via --from-page 2210402, cross-referenced against the snap row's route_comps->graphIds (this page predates _measurePick, same as Bi-directional/Snapshot). Smallest template in the catalog: only 2 real graphs, 3 comps, all fed by the SAME live graphId for the LineGraph (comp-1/2/3) plus one comp-1-only BarGraph. Per apply_today_relative_patches.py's own REPORTS[2210402] patch ('nothing dropped, already exactly 3 comps'), comp-1/2/3 map to Current Year/1 Year Ago/2 Years Ago (comp-1's live name, 'Long Long Long Long Long Name Here', was flagged in the patch script itself as 'placeholder-looking test name' -- not real content to preserve). Unified the 3 comps under one shared route_slot_group (the live DB had comp-1 on group $0 but comp-2/3 on a separate group 5899 -- an inconsistent legacy split, not a real 2nd-corridor concept; this report's own name/description imply a single corridor viewed across 3 relative periods, matching every other single-direction template's one-slot-group pattern). The single BarGraph's resolution wasn't recoverable from the section itself (pre-_measurePick), but the report's own name ('Weekly Average') and its snap row's description text ('an average weekday profile with the weekend separated out') directly names a weekday/weekend split -- used resolution:\"weekday\" on Current Year only, matching its live single-comp feed exactly.",
+  "graphs": [
+    { "key": "line_speed", "title": "Route Line Graph, Speed",
+      "graphType": "LineGraph", "measure": "speed", "resolution": "5-minutes", "comparisonMode": "plain",
+      "why": "Overlays Current Year, 1 Year Ago, and 2 Years Ago as their own 5-minute speed profiles." },
+    { "key": "bar_speed_weekday", "title": "Average Speed by Day of Week",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "weekday",
+      "why": "Weekday-vs-weekend speed split for the current year — named directly by the report's own title/description." }
+  ],
+  "routes": [
+    { "id": "current_year", "slot": true, "name": "Current Year", "route_slot_group": "$0",
+      "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
+      "color": "#f781bf",
+      "graphs": ["line_speed", "bar_speed_weekday"] },
+    { "id": "y1ago", "slot": true, "name": "1 Year Ago", "route_slot_group": "$0",
+      "dateFormula": "startDate=>year-1year->1year", "derivedFromRoute": "__TODAY__",
+      "color": "#a65628", "weekdays": { "sunday": false, "saturday": false },
+      "graphs": ["line_speed"] },
+    { "id": "y2ago", "slot": true, "name": "2 Years Ago", "route_slot_group": "$0",
+      "dateFormula": "startDate=>year-2year->1year", "derivedFromRoute": "__TODAY__",
+      "color": "#999999", "weekdays": { "sunday": false, "saturday": false },
+      "graphs": ["line_speed"] }
+  ]
+}

@@ -34,11 +34,13 @@
 <!--
   DATA REPORT — first of a three-report series on the MitigateNY admin panel's place in the county
   planning workflow. Every number was pulled live from the DMS server (dmsserver.availabs.org, app
-  mitigat-ny-prod) on 2026-08-06: the admin pattern 566466 (112 pages / 1,251 sections), the county
+  mitigat-ny-prod) on 2026-08-12: the admin pattern 566466 (75 pages / 1,057 sections), the county
   template 1300890 (58 / 3,859), the three active county drafts (schenectady_draft 2304223,
-  westchester-draft 2244223, suffolk_draft 2249247), the planning guide 1603896, the actions
-  pattern 2265530, and the app's 51 internal datasets. Raw pulls, scripts, and the full findings
-  ledger: references/admin IA/ (git-ignored). Companion direction reports:
+  westchester-draft 2244223, suffolk_draft 2249247), the planning guide 1603896, and the LHMP_IA
+  registry. Deep-dive audits (guide link inventory, dataset row counts, admin staleness) are from
+  the 2026-08-06 pull of the same sources, re-verified in summary on 2026-08-12. Raw pulls,
+  scripts, and the full findings ledger: references/admin IA/ (git-ignored; §17 is this refresh).
+  Companion direction reports (their inventories cite the 2026-08-06 snapshot):
   admin-direction-consolidate.html and admin-direction-dissolve.html.
 -->
 
@@ -67,15 +69,16 @@
                     </div>
                   </div>
                   <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
-                    The admin panel was built in August 2024. The way counties actually write their plans —
-                    live drafts, in-page annotation slots, one annex page driven by URL state — took shape in
-                    2025&ndash;26 and never looked back. This report measures the gap: what the panel contains,
-                    which of its datasets the plan really uses, and how a planner is (and isn't) routed into it.
+                    The admin panel dates to August 2024 and is mid-renovation today — legacy trees gone, a
+                    plain-language data landing prototyped, its Forms hub being redesigned in draft. The way
+                    counties actually write their plans took shape elsewhere. This report measures the gap
+                    that remains: what the panel holds, which of its datasets the plan really uses, and how
+                    a planner is (and isn't) routed into it.
                   </div>
                   <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
-                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">admin pattern 566466 &middot; created 2024-08-26</span>
-                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-mny-900">county template 1300890 &middot; created 2025-05-29</span>
-                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">pulled live 2026-08-06</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">admin pattern 566466 &middot; 75 pages</span>
+                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-mny-900">county template 1300890 &middot; 58 pages</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">pulled live 2026-08-12</span>
                   </div>
                 </div>
               </div>
@@ -113,8 +116,8 @@
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
               <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Live admin pages</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">112</p>
-              <p class="font-proxima text-[11px] text-mny-400 mt-1">98 under the Forms hub &middot; 78 hidden from nav</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">75</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">24 in the nav &middot; 51 hidden &middot; Forms hub mid-redesign (in draft)</p>
             </div>
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
               <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Forms a planner needs</p>
@@ -122,14 +125,14 @@
               <p class="font-proxima text-[11px] text-mny-400 mt-1">Actions &middot; Capabilities &middot; Hazards of Concern &middot; Dams &middot; Participation &middot; Roles — the guide's own list</p>
             </div>
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Duplicate / legacy / archived</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">33%</p>
-              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">37 of 112 pages — "(old)" trees, Dups, surplus variants</p>
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Pages serving data the plan never reads</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">21</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">of 75 — plus 4 edit pages bound to the wrong source</p>
             </div>
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">"Add Data" links dead</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">7<span class="text-[18px] text-mny-400">/10</span></p>
-              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">the plan's routes into admin point at pages that no longer exist</p>
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">"Add Data" doors that work</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">5<span class="text-[18px] text-mny-400">/10</span></p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">and ~94 sections per county still render dead cached links</p>
             </div>
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
               <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Test junk in the data env</p>
@@ -139,7 +142,7 @@
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
               <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Admin links in county chapters</p>
               <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">0</p>
-              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">chapters route to /guide; the workflow already left the panel behind</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">chapters route to /guide; the workflow lives in the county sites</p>
             </div>
           </div>
         </div>
@@ -162,46 +165,45 @@
                 <div class="lg:col-span-7">
                   <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
                   <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
-                    The workflow moved into the county sites.<br>The admin panel stayed behind.
+                    A cleaner panel — still standing outside the workflow.
                   </h2>
                   <p class="font-proxima text-[15px] text-mny-700 leading-[1.65] mb-3">
-                    Three counties are actively writing plans today — Suffolk (163 annotation slots drafted),
-                    Schenectady (55), Westchester (54) — and every bit of that work happens <em>inside their own
-                    county site</em>: filling the light-blue Annotation slots the template marks for them, reading
-                    the Inline Guidance next to each one, and rendering jurisdictional annexes through a single
-                    page driven by <code class="text-[13px] bg-mny-50 px-1 rounded">?geoid_juris=</code> URL state.
-                    The template even carries its own hidden data-entry workbench now — Actions Edit List, Action
-                    View/Edit, a Hazards-of-Concern form prototype, a critical-infrastructure intake form — all
-                    built <em>in plan context</em>, plus the new <code class="text-[13px] bg-mny-50 px-1 rounded">/actions</code>
-                    pattern with its jurisdiction-picker &rarr; workspace flow.
+                    Three counties are actively writing plans today — Suffolk (169 annotation slots drafted,
+                    104 published), Schenectady (55), Westchester (54) — and that work happens <em>inside their
+                    own county sites</em>: filling the light-blue Annotation slots the template marks for them,
+                    reading the Inline Guidance beside each one, rendering jurisdictional annexes through a
+                    single page driven by <code class="text-[13px] bg-mny-50 px-1 rounded">?geoid_juris=</code>
+                    URL state. The template carries its own hidden data-entry workbench (Actions Edit List,
+                    Action View/Edit, form prototypes), and the <code class="text-[13px] bg-mny-50 px-1 rounded">/actions</code>
+                    pattern runs the jurisdiction-picker &rarr; workspace flow in plan context.
                   </p>
                   <p class="font-proxima text-[15px] text-mny-700 leading-[1.65] mb-3">
-                    The admin panel predates all of it. It has grown to 112 pages by cloning variants
-                    (<code class="text-[13px]">create_full</code> / <code class="text-[13px]">create_simple</code> /
-                    <code class="text-[13px]">create_new</code>, two "(old)" trees, two "Dup" roots) without a
-                    cleanup pass; a third of it is duplicate, legacy, or archived; its most-maintained surfaces
-                    duplicate pages the county template already has. The only thing that still routes a planner
-                    into it — the "Add Data" cards on plan pages and two guide pages — is mostly broken:
-                    <strong class="text-mny-900 font-[600]">7 of the 10 "Add Data" rows point at admin pages that no
-                    longer exist.</strong>
+                    The admin panel is 75 pages, and it is visibly being worked on: a single page-set per
+                    dataset, a new <strong class="text-mny-900 font-[600]">"Your Plan Data"</strong> landing that
+                    explains each dataset in plain language, a Forms hub carrying a draft redesign. What remains
+                    around that active core is the old pattern's residue: <strong class="text-mny-900 font-[600]">21
+                    pages serve datasets no county plan displays</strong>, four edit pages are bound to the wrong
+                    source, a third giant copy of the annex form lives here beside the template's two, and the
+                    only doors from the plan into the panel are dataset rows — half of which point at pages
+                    that don't exist, with dead URLs still cached into ~94 sections of every county site.
                   </p>
                   <p class="font-proxima text-[15px] text-mny-700 leading-[1.65]">
                     None of this means the panel's <em>job</em> disappeared. Six forms datasets are genuinely
                     county-entered, required, and rendered throughout every plan. The question the two companion
-                    reports take up is <em>where that job should live</em> — in a cleaned-up panel, or inside the
-                    plan the way actions already went.
+                    reports take up is <em>where that job should live</em> — in this panel, finished properly, or
+                    inside the plan the way actions already went.
                   </p>
                 </div>
                 <div class="lg:col-span-5">
                   <div class="bg-mny-50 rounded-[12px] p-5 border border-mny-100 h-full">
-                    <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-700 mb-3">The timeline that explains the gap</p>
+                    <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-700 mb-3">How the current state came to be</p>
                     <div class="space-y-3 font-proxima text-[13px] text-mny-700 leading-[1.5]">
-                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2024-08</span><span><strong class="text-mny-900">/admin created</strong> — forms hub for a workflow that didn't exist yet</span></div>
+                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2024-08</span><span><strong class="text-mny-900">/admin created</strong> — a forms hub for a workflow that didn't exist yet</span></div>
                       <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2025-05</span><span><strong class="text-mny-900">County Template V2</strong> — Annotation slots, Inline Guidance, shared LHMP_IA narrative</span></div>
-                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2025-09</span><span>Jurisdictional Entry mega-page built <em>in admin</em>; the template grows its own twin</span></div>
-                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2026 H1</span><span><strong class="text-mny-900">Real county drafts</strong> — Westchester (06-25), Suffolk (07-01), Schenectady (07-22) clone the template and start filling it</span></div>
-                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2026-07</span><span><strong class="text-mny-900">/actions pattern</strong> ships the in-plan-context entry flow; county-actions mockups extend it; admin cleanup mockups built, then superseded the same day</span></div>
-                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2026-08</span><span>This review: is /admin the right home for any planner-facing work?</span></div>
+                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2026 H1</span><span><strong class="text-mny-900">Real county drafts</strong> — Westchester, Suffolk, Schenectady clone the template and start filling it in-site</span></div>
+                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2026-07</span><span><strong class="text-mny-900">/actions pattern</strong> ships the in-plan-context entry flow; the county-actions design set extends it</span></div>
+                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">2026-08</span><span><strong class="text-mny-900">Panel renovation underway</strong> — legacy trees deleted, one page-set per dataset, a "Your Plan Data" landing, hub redesign in draft</span></div>
+                      <div class="flex gap-3"><span class="font-display text-mny-400 font-[500] min-w-[76px]">now</span><span>The open decision: finish the panel as the data home — or move the work into the plan</span></div>
                     </div>
                   </div>
                 </div>
@@ -223,14 +225,14 @@
                     <p class="font-display text-[20px] text-mny-900 uppercase leading-tight mb-2">The county site</p>
                     <p class="font-proxima text-[13px] text-mny-700 leading-[1.55] mb-3">
                       One pattern per county (<code class="text-[12px]">suffolk_draft</code>, &hellip;), cloned from the
-                      template: 58 public pages, 267 Annotation slots to fill, 323 Inline Guidance cards, the annex
-                      page, and a hidden actions workbench. Planners hold edit rights here
-                      (<em>Suffolk County HMP Admin</em> group: edit / create / publish).
+                      template: 58 pages, 267 Annotation slots to fill, 323 Inline Guidance cards, the annex page
+                      (one page &times; N jurisdictions via URL state), and a hidden actions workbench. Planners hold
+                      edit rights here (<em>Suffolk County HMP Admin</em> group: edit / create / publish).
                     </p>
                     <div class="font-proxima text-[12px] text-mny-700 space-y-1">
-                      <div class="flex justify-between border-b border-mny-100 pb-1"><span>Suffolk — slots drafted</span><span class="font-[700] text-mny-900 tabular-nums">163 / 276</span></div>
-                      <div class="flex justify-between border-b border-mny-100 pb-1"><span>Schenectady</span><span class="font-[700] text-mny-900 tabular-nums">55 / 267</span></div>
-                      <div class="flex justify-between"><span>Westchester</span><span class="font-[700] text-mny-900 tabular-nums">54 / 269</span></div>
+                      <div class="flex justify-between border-b border-mny-100 pb-1"><span>Suffolk — drafted / published</span><span class="font-[700] text-mny-900 tabular-nums">169 / 104</span></div>
+                      <div class="flex justify-between border-b border-mny-100 pb-1"><span>Schenectady</span><span class="font-[700] text-mny-900 tabular-nums">55 / 19</span></div>
+                      <div class="flex justify-between"><span>Westchester</span><span class="font-[700] text-mny-900 tabular-nums">54 / 10</span></div>
                     </div>
                   </div>
                   <!-- Guide -->
@@ -238,14 +240,15 @@
                     <p class="font-display text-[12px] font-[600] uppercase tracking-wider text-mny-y700 mb-1">The instructions</p>
                     <p class="font-display text-[20px] text-mny-900 uppercase leading-tight mb-2">/guide</p>
                     <p class="font-proxima text-[13px] text-mny-700 leading-[1.55] mb-3">
-                      44 pages: FEMA's Tasks 1&ndash;8 (1&ndash;5 genuinely strong), an "Enter Forms Data" page listing
-                      the six forms, one detailed form how-to (Actions only), and a technical guide. It is the
-                      <em>only</em> surface that tells a planner the admin panel exists — and it does so in prose,
-                      because <strong class="text-mny-900">the entire Task flow contains zero working hyperlinks</strong>.
+                      45 pages: FEMA's Tasks 1&ndash;8 (1&ndash;5 genuinely strong), an "Enter Forms Data" page listing
+                      the six forms, one detailed form how-to (Actions only), a technical guide — and two parallel
+                      versions of its own home page. It is the <em>only</em> surface that tells a planner the admin
+                      panel exists, and it does so entirely in prose: <strong class="text-mny-900">not one working link
+                      to /admin exists anywhere in the guide</strong>.
                     </p>
                     <div class="font-proxima text-[12px] text-mny-700 space-y-1.5 leading-[1.45]">
-                      <div>&bull; 59 of its 122 links (48%) are broken or placeholders — including every navigation card on its own two hub pages, and the six form cards sitting under "Click below to visit the Admin Page" that carry <em>no links at all</em></div>
-                      <div>&bull; Its admin walkthrough cites a hardcoded county dev URL (<code class="text-[11px]">chemung2025.devmny.org/admin/</code>); the "Data Management" how-tos that Tasks 3&ndash;4 defer to are five empty pages</div>
+                      <div>&bull; 63 of its 131 published links are bare <code class="text-[11px]">https://</code> placeholders — including every navigation card on both of its home pages</div>
+                      <div>&bull; the "Data Management" how-tos that Tasks 3&ndash;4 defer to are still empty pages; five of six forms still have no how-to</div>
                     </div>
                   </div>
                   <!-- Admin -->
@@ -254,13 +257,13 @@
                     <p class="font-display text-[20px] text-mny-900 uppercase leading-tight mb-2">/admin</p>
                     <p class="font-proxima text-[13px] text-mny-700 leading-[1.55] mb-3">
                       Shared across every county subdomain, scoped by 66 per-subdomain geoid filter sets. Login
-                      required; county groups get <em>view-page only</em>. Nav shows three entries — Home, Forms,
-                      PDF Export — in a developer's vocabulary
-                      (<code class="text-[12px]">single_edit_simple</code>, <code class="text-[12px]">list_search_old</code>).
+                      required; county groups get <em>view-page only</em>. One page-set per dataset now, plus a
+                      plain-language "Your Plan Data" landing — with the hub's own redesign sitting unpublished
+                      in its draft sections.
                     </p>
                     <div class="font-proxima text-[12px] text-mny-700 space-y-1.5 leading-[1.45]">
-                      <div>&bull; 112 pages; a planner's six forms are ~15 of them</div>
-                      <div>&bull; No status, no "what's left", no link back into the plan you came from</div>
+                      <div>&bull; 75 pages; a planner's six forms are ~30 of them, and 21 more serve datasets no plan displays</div>
+                      <div>&bull; No status, no "what's left", and no link back into the plan you came from — the new landing included</div>
                     </div>
                   </div>
                 </div>
@@ -282,31 +285,31 @@
                         <td class="px-3 py-2.5 font-[600] text-mny-900 whitespace-nowrap">Plan chapter &rarr; guide</td>
                         <td class="px-3 py-2.5">"This page supports Task N" links inside Inline Guidance cards (editor-only view)</td>
                         <td class="px-3 py-2.5">34 sections</td>
-                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-mny-y50 text-mny-y700 font-[700] text-[11px] uppercase">Shallow</span> <span class="text-[12px]">all point at the guide root, not the Task; "[ link to guide ]" placeholders remain</span></td>
+                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-mny-y50 text-mny-y700 font-[700] text-[11px] uppercase">Shallow</span> <span class="text-[12px]">all point at the guide root, not the Task; "[ link to guide ]" placeholders remain in the copy</span></td>
                       </tr>
                       <tr class="border-b border-mny-100">
                         <td class="px-3 py-2.5 font-[600] text-mny-900 whitespace-nowrap">Plan page &rarr; admin form ("Add Data" cards)</td>
                         <td class="px-3 py-2.5">LHMP_IA rows rendered by Cards; the URL is <em>data</em> — column <code class="text-[12px]">shmp_component_name_location</code>, link text "Add Data"</td>
-                        <td class="px-3 py-2.5">~112 card placements (Capabilities &times;46, HoC &times;34, Actions &times;24, &hellip;)</td>
-                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-red-50 text-mny-red font-[700] text-[11px] uppercase">Broken</span> <span class="text-[12px]">7 of 10 rows target <code class="text-[11px]">*_add_new</code> pages that no longer exist; 3 repaired rows still render stale cached URLs in section snapshots</span></td>
+                        <td class="px-3 py-2.5">~150 card placements; ~94 of them render dead cached URLs, ~56 render live hub links</td>
+                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-red-50 text-mny-red font-[700] text-[11px] uppercase">Half-repaired</span> <span class="text-[12px]">5 of the 10 rows resolve to form hubs; 5 target <code class="text-[11px]">*_add_new</code> pages that don't exist — and cached section snapshots keep serving old dead URLs either way (Section 04)</span></td>
                       </tr>
                       <tr class="border-b border-mny-100">
                         <td class="px-3 py-2.5 font-[600] text-mny-900 whitespace-nowrap">Annex page &rarr; admin form</td>
-                        <td class="px-3 py-2.5">Parameterized links on Select Jurisdiction, e.g. <code class="text-[12px]">/admin/forms/roles?geoid_juris=&hellip;</code></td>
-                        <td class="px-3 py-2.5">32 links across the two 91-section annex pages</td>
-                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-green-50 text-mny-grn font-[700] text-[11px] uppercase">Works</span> <span class="text-[12px]">hub pages exist; lands on a bare table with no way back</span></td>
+                        <td class="px-3 py-2.5">Parameterized links on Select Jurisdiction, e.g. <code class="text-[12px]">/admin/forms/roles?geoid_juris=&hellip;</code> and the annex entry page</td>
+                        <td class="px-3 py-2.5">~40 links across the annex pages</td>
+                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-green-50 text-mny-grn font-[700] text-[11px] uppercase">Works</span> <span class="text-[12px]">lands on a bare table or the 106-section entry form, with no way back</span></td>
                       </tr>
                       <tr class="border-b border-mny-100">
                         <td class="px-3 py-2.5 font-[600] text-mny-900 whitespace-nowrap">Guide &rarr; admin</td>
-                        <td class="px-3 py-2.5">~15 prose directives ("Go to the Admin Page &rarr; Forms &rarr; Actions"); exactly ONE actual link in all 44 pages</td>
+                        <td class="px-3 py-2.5">~15 prose directives ("Go to the Admin Page &rarr; Forms &rarr; Actions"); zero actual links in all 45 pages</td>
                         <td class="px-3 py-2.5">2 guide pages</td>
-                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-mny-y50 text-mny-y700 font-[700] text-[11px] uppercase">Fragile</span> <span class="text-[12px]">the one link is another county's dev domain (<code class="text-[11px]">chemung2025.devmny.org/admin/</code>); companion links are <code class="text-[11px]">https://https://</code> malformed</span></td>
+                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-mny-y50 text-mny-y700 font-[700] text-[11px] uppercase">Prose only</span> <span class="text-[12px]">the planner is told where to go but never handed a link</span></td>
                       </tr>
                       <tr class="border-b border-mny-100">
                         <td class="px-3 py-2.5 font-[600] text-mny-900 whitespace-nowrap">Admin &rarr; back to the plan</td>
                         <td class="px-3 py-2.5">&mdash;</td>
-                        <td class="px-3 py-2.5">0</td>
-                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-red-50 text-mny-red font-[700] text-[11px] uppercase">Missing</span> <span class="text-[12px]">the new /actions pattern shows the fix: a "Back to Plan" card on every page</span></td>
+                        <td class="px-3 py-2.5">0 — including the new "Your Plan Data" landing</td>
+                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-full bg-red-50 text-mny-red font-[700] text-[11px] uppercase">Missing</span> <span class="text-[12px]">the /actions pattern shows the fix: a "Back to Plan" card on every page</span></td>
                       </tr>
                       <tr>
                         <td class="px-3 py-2.5 font-[600] text-mny-900 whitespace-nowrap">Plan chapter &rarr; admin (navigation)</td>
@@ -322,13 +325,11 @@
               <!-- ============================ SECTION: WHAT'S IN THE PANEL ============================ -->
               <div class="border-t border-mny-100 pt-8 mb-10">
                 <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-1">Section 02</p>
-                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase mb-1">What the 112 pages actually are</h3>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase mb-1">What the 75 pages actually are</h3>
                 <p class="font-proxima text-[14px] text-mny-700 leading-[1.6] max-w-[900px] mb-6">
-                  87.5% of the panel is the Forms hub — one organically-grown subtree per dataset, iterated by
-                  cloning pages instead of replacing them. The suffixes tell the story on their own:
-                  <code class="text-[13px]">_old</code>, <code class="text-[13px]">_new</code>,
-                  <code class="text-[13px]">_simple</code>, <code class="text-[13px]">_full</code>, "Dup",
-                  "(Needs Version Update)".
+                  An active core — one page-set per dataset, a new landing, a redesign in draft — surrounded by
+                  a residue the renovation hasn't reached: the Other Forms cluster, a third copy of the annex
+                  mega-form, and a handful of relics.
                 </p>
 
                 <div class="overflow-x-auto rounded-[12px] border border-mny-100 mb-4">
@@ -337,26 +338,22 @@
                       <tr class="text-left">
                         <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Area</th>
                         <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Pages</th>
-                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Last real touch</th>
                         <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">Notes</th>
                       </tr>
                     </thead>
                     <tbody class="align-top">
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Forms &middot; Actions + Actions (old)</td><td class="px-3 py-2 tabular-nums">14 + 9</td><td class="px-3 py-2">2026-08</td><td class="px-3 py-2">3 create variants, 3 single_edit variants, 2 list_search (one named <code class="text-[12px]">list_search_old</code>); legacy tree keeps Upload + Dashboard nothing replaced</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Forms &middot; Capabilities + (old)</td><td class="px-3 py-2 tabular-nums">11 + 5</td><td class="px-3 py-2">2026-08</td><td class="px-3 py-2">3 single_edit variants; the "(old)" tree hides an abandoned draft stub ("Actions 2") and an empty dashboard</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Forms &middot; HoC / Dams / Participation / Roles / Capacities</td><td class="px-3 py-2 tabular-nums">4 / 2 / 5 / 5 / 4</td><td class="px-3 py-2">2026-08 (Capacities hidden)</td><td class="px-3 py-2">the actively-maintained entry surfaces — these single_edit pages are where recent organic edits concentrate</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Forms &middot; Jurisdictional Entry &times;2</td><td class="px-3 py-2 tabular-nums">2 <span class="text-mny-400">(88 + 91 sections)</span></td><td class="px-3 py-2">2026-07/08</td><td class="px-3 py-2">the newest admin work — and it's a deep copy ("w Modals", 2026-07-27) of a page that itself mirrors the county template's annex page; the original sits untouched beside it</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Forms &middot; Other Forms</td><td class="px-3 py-2 tabular-nums">37</td><td class="px-3 py-2">mostly 2025</td><td class="px-3 py-2">12 sub-areas; four have <em>mis-bound</em> edit pages (Hazard Events &amp; Data Mgmt Plan edit &rarr; Jurisdictions source; Comments &amp; Goals-and-Objectives edit &rarr; R_and_V_Matrix) — clone-artifacts nobody caught</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Home + Home Dup</td><td class="px-3 py-2 tabular-nums">2</td><td class="px-3 py-2">2026-03 / 07</td><td class="px-3 py-2">Home Dup is the <em>newer</em> dashboard (County Plan Status on top) but was never promoted; live Home repeats the Capabilities blurb verbatim for Mitigation Measures and Policies</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Scenario Tools &times;2</td><td class="px-3 py-2 tabular-nums">2</td><td class="px-3 py-2">2026-04</td><td class="px-3 py-2">flood-scenario map + a "Zones" spreadsheet experiment (1 test row); both hidden</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Archived Pages</td><td class="px-3 py-2 tabular-nums">6</td><td class="px-3 py-2">2025-06</td><td class="px-3 py-2">four Actions reports parked 14 months; one spreadsheet titled "(Needs Version Update)"</td></tr>
-                      <tr><td class="px-3 py-2 font-[600] text-mny-900">Plan Manager / PDF Export / Web Analytics / County Template</td><td class="px-3 py-2 tabular-nums">4</td><td class="px-3 py-2">2024-12 &rarr; 2026-05</td><td class="px-3 py-2">Plan Manager untouched since <strong>2024-12-16</strong> (the stalest page); County Template root is an empty 2024 placeholder; PDF Export is one of only three nav-visible entries</td></tr>
+                      <tr class="border-b border-mny-100 bg-mny-y50/40"><td class="px-3 py-2 font-[600] text-mny-900">"Your Plan Data" landing (Forms Redesign)</td><td class="px-3 py-2 tabular-nums">1</td><td class="px-3 py-2">new (2026-08-07): one plain-language band per dataset — <em>"One row per jurisdiction per hazard&hellip; Your risk assessment chapter is written from this grid"</em> — with county-figure Cards. Describes each dataset well; doesn't score coverage, has no next-task, no back-to-plan link</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Forms hub + the six planner datasets</td><td class="px-3 py-2 tabular-nums">31</td><td class="px-3 py-2">one page-set each: Actions 6 &middot; Capabilities 6 &middot; Hazards of Concern 3 &middot; High Hazard Dams 2 &middot; Participation 5 &middot; Roles 4, plus the hidden Capacities set (4). Names are still developer-facing (<code class="text-[12px]">single_edit_new</code>, <code class="text-[12px]">edit_simple</code>), and only Participation has a create page — the hub itself carries an unpublished redesign (11 published vs 18 draft sections)</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Jurisdictional Annex Entry Page</td><td class="px-3 py-2 tabular-nums">1 <span class="text-mny-400">(106-section draft)</span></td><td class="px-3 py-2">the admin-side mirror of the county template's own annex page — which exists twice over there too (Select Jurisdiction, 92 sections, plus a hidden twin). Three copies of one giant form across two patterns, evolving separately</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Other Forms</td><td class="px-3 py-2 tabular-nums">37</td><td class="px-3 py-2">12 sub-areas: County Plan Status (5, DHSES's own tracker), Jurisdictions (3), LHMP Template (6), Mitigation Measures (3), R&amp;V Matrix (2), Policies (6), Content Resources (2) — plus four page shells whose edit pages bind the <em>wrong source</em> (Hazard Events &amp; Data Mgmt Plan &rarr; Jurisdictions; Comments &amp; Goals-and-Objectives &rarr; R_and_V_Matrix) and the superseded 88-section entry page</td></tr>
+                      <tr><td class="px-3 py-2 font-[600] text-mny-900">Singletons</td><td class="px-3 py-2 tabular-nums">5</td><td class="px-3 py-2">Home (a statewide-totals dashboard whose Mitigation Measures and Policies intros still describe Capabilities), Scenario Tools (hidden flood-scenario map), Plan Manager (hidden; untouched since 2024-12), Web Analytics (hidden), PDF Export</td></tr>
                     </tbody>
                   </table>
                 </div>
                 <p class="font-proxima text-[13px] text-mny-400 leading-[1.5]">
-                  Staleness computed from <code class="text-[12px]">data.updated_at</code> + section timestamps — every page row's
-                  top-level <code class="text-[12px]">updated_at</code> was bulk-touched by a script on 2026-08-04 and can't be trusted alone.
+                  Of the 75, only 24 appear in navigation. The planner-facing surface a county actually needs —
+                  six forms plus the annex entry — is roughly 30 pages; the Other Forms cluster and the
+                  singletons are DHSES tooling, orphans, and relics sharing the same front door.
                 </p>
               </div>
 
@@ -386,12 +383,12 @@
                     </thead>
                     <tbody class="align-top">
                       <tr class="bg-mny-y50"><td colspan="5" class="px-3 py-2 font-display text-[12px] font-[600] uppercase tracking-wider text-mny-900">County-entered form data — the planner's six (the guide's own list)</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Actions_Revised (1029065)</td><td class="px-3 py-2 tabular-nums">18,382<div class="text-[11px] text-mny-400">17,792 valid &middot; growing</div></td><td class="px-3 py-2 tabular-nums">23</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">29 pages &middot; 184 sections</td><td class="px-3 py-2">the one <em>mandatory</em> dataset ("counties are required to enter mitigation actions" — guide) and the only statewide-scale one; already has its in-context replacement designed (the /actions flow)</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Capabilities_Catalogue (1068273)</td><td class="px-3 py-2 tabular-nums">269<div class="text-[11px] text-mny-400">Chemung only</div></td><td class="px-3 py-2 tabular-nums">16</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">23 pages &middot; 62 sections</td><td class="px-3 py-2 text-mny-red font-[600]">live divergence: the template <em>displays</em> this pilot dataset, but Sullivan's current capability work is going into Capacities V2 — two schemas for one concept, unresolved</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Capacities V2 (2142341)</td><td class="px-3 py-2 tabular-nums">323<div class="text-[11px] text-mny-400">Sullivan &middot; growing</div></td><td class="px-3 py-2 tabular-nums">4 <span class="text-[11px] text-mny-400">(hidden)</span></td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">0</td><td class="px-3 py-2">the dataset counties are <em>actually filling</em> is hidden in admin and invisible in the plan; owner intent (July) was to merge it into Capabilities — decision still open</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Hazards_of_Concern (1473470)</td><td class="px-3 py-2 tabular-nums">119<div class="text-[11px] text-mny-400">Chemung only</div></td><td class="px-3 py-2 tabular-nums">4</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">22 pages &middot; 84 sections</td><td class="px-3 py-2">rendered on every hazard chapter; the template already hides a per-hazard entry prototype (HoC Form Prototype)</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Participation (1473468)</td><td class="px-3 py-2 tabular-nums">216<div class="text-[11px] text-mny-400">3 counties &middot; growing</div></td><td class="px-3 py-2 tabular-nums">5</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">3 pages &middot; 6 sections</td><td class="px-3 py-2">meeting log; feeds About the Process + annexes</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Roles (1473295)</td><td class="px-3 py-2 tabular-nums">144<div class="text-[11px] text-mny-400">2 counties</div></td><td class="px-3 py-2 tabular-nums">5</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">4 pages &middot; 8 sections</td><td class="px-3 py-2">committee/contact roster; feeds About the Process + annexes</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Actions_Revised (1029065)</td><td class="px-3 py-2 tabular-nums">18,382<div class="text-[11px] text-mny-400">17,792 valid &middot; growing</div></td><td class="px-3 py-2 tabular-nums">6</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">29 pages &middot; 184 sections</td><td class="px-3 py-2">the one <em>mandatory</em> dataset ("counties are required to enter mitigation actions" — guide) and the only statewide-scale one; its in-context replacement is designed and partly live (the /actions flow)</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Capabilities_Catalogue (1068273)</td><td class="px-3 py-2 tabular-nums">269<div class="text-[11px] text-mny-400">Chemung only</div></td><td class="px-3 py-2 tabular-nums">6</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">23 pages &middot; 62 sections</td><td class="px-3 py-2 text-mny-red font-[600]">live divergence: the template <em>displays</em> this pilot dataset, but Sullivan's current capability work goes into Capacities V2 — two schemas for one concept, unresolved</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Capacities V2 (2142341)</td><td class="px-3 py-2 tabular-nums">323<div class="text-[11px] text-mny-400">Sullivan &middot; growing</div></td><td class="px-3 py-2 tabular-nums">4 <span class="text-[11px] text-mny-400">(hidden)</span></td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">0</td><td class="px-3 py-2">the dataset counties are <em>actually filling</em> is hidden in admin and invisible in the plan; the merge decision is still open</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Hazards_of_Concern (1473470)</td><td class="px-3 py-2 tabular-nums">119<div class="text-[11px] text-mny-400">Chemung only</div></td><td class="px-3 py-2 tabular-nums">3</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">22 pages &middot; 84 sections</td><td class="px-3 py-2">rendered on every hazard chapter; the template hides a per-hazard entry prototype (HoC Form Prototype)</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Participation (1473468)</td><td class="px-3 py-2 tabular-nums">216<div class="text-[11px] text-mny-400">3 counties &middot; growing</div></td><td class="px-3 py-2 tabular-nums">5</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">3 pages &middot; 6 sections</td><td class="px-3 py-2">meeting log; feeds About the Process + annexes; the only form that still has a create page</td></tr>
+                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Roles (1473295)</td><td class="px-3 py-2 tabular-nums">144<div class="text-[11px] text-mny-400">2 counties</div></td><td class="px-3 py-2 tabular-nums">4</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">4 pages &middot; 8 sections</td><td class="px-3 py-2">committee/contact roster; feeds About the Process + annexes</td></tr>
                       <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">NYS_Dams (1459525)</td><td class="px-3 py-2 tabular-nums">5,970</td><td class="px-3 py-2 tabular-nums">2</td><td class="px-3 py-2 tabular-nums font-[600] text-mny-900">2 pages &middot; 18 sections</td><td class="px-3 py-2">state registry counties <em>annotate</em>, never create — the one form that correctly has no create page</td></tr>
 
                       <tr class="bg-mny-50"><td colspan="5" class="px-3 py-2 font-display text-[12px] font-[600] uppercase tracking-wider text-mny-900">State-maintained data the plan reads (planners should never be asked to edit these)</td></tr>
@@ -406,8 +403,7 @@
                       <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Policy Database (1068983)</td><td class="px-3 py-2 tabular-nums">126</td><td class="px-3 py-2 tabular-nums">6</td><td class="px-3 py-2 tabular-nums text-mny-red font-[700]">0</td><td class="px-3 py-2">graphed on the admin's own Home, bound nowhere in any county plan</td></tr>
                       <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Content_Resources (&times;3 sources!)</td><td class="px-3 py-2 tabular-nums">551 <span class="text-[11px] text-mny-400">(live copy)</span></td><td class="px-3 py-2 tabular-nums">2</td><td class="px-3 py-2 tabular-nums text-mny-red font-[700]">0</td><td class="px-3 py-2">triplicated source (1413317 dead, 1415559 frozen, 1480595 live); admin pages bind via an older path</td></tr>
                       <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">Hazard Events / Data Mgmt Plan / Comments / Goals &amp; Objectives</td><td class="px-3 py-2 tabular-nums">&mdash;</td><td class="px-3 py-2 tabular-nums">8</td><td class="px-3 py-2 tabular-nums text-mny-red font-[700]">0</td><td class="px-3 py-2">page shells whose edit pages bind the <em>wrong sources</em>; their "Add Data" cards exist in LHMP_IA but were never placed on any plan page</td></tr>
-                      <tr class="border-b border-mny-100"><td class="px-3 py-2 font-[600] text-mny-900">SHMP_Narrative (1427079)</td><td class="px-3 py-2 tabular-nums">66</td><td class="px-3 py-2 tabular-nums">0</td><td class="px-3 py-2 tabular-nums text-mny-red font-[700]">0</td><td class="px-3 py-2">serves the statewide 2025 site, not county plans</td></tr>
-                      <tr><td class="px-3 py-2 font-[600] text-mny-900">Capacities v1 / Zones / Actions (old) / LHMP Template Seal</td><td class="px-3 py-2 tabular-nums">2 / 1 / n/a / 0</td><td class="px-3 py-2 tabular-nums">&mdash;</td><td class="px-3 py-2 tabular-nums text-mny-red font-[700]">0</td><td class="px-3 py-2">dead prototypes; Actions (old) has zero views so its data is unreachable</td></tr>
+                      <tr><td class="px-3 py-2 font-[600] text-mny-900">SHMP_Narrative / Capacities v1 / Zones / Actions (old)</td><td class="px-3 py-2 tabular-nums">66 / 2 / 1 / n·a</td><td class="px-3 py-2 tabular-nums">&mdash;</td><td class="px-3 py-2 tabular-nums text-mny-red font-[700]">0</td><td class="px-3 py-2">statewide-site content and dead prototypes; Actions (old) has zero views so its data is unreachable</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -423,7 +419,7 @@
                   </div>
                   <div class="bg-mny-50 rounded-[12px] p-4 border border-mny-100">
                     <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-700 mb-1">Two kinds of "data"</p>
-                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">The plan also reads ~30 <em>external</em> risk-library sources (fusion events, NRI, floodplains, boundaries) from <code class="text-[12px]">hazmit_dama</code>. Planners never touch those — and the UI never tells them which kind they're looking at.</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">The plan also reads ~30 <em>external</em> risk-library sources (fusion events, NRI, floodplains, boundaries) from <code class="text-[12px]">hazmit_dama</code>. Planners never touch those — and outside the new landing's blurbs, the UI never tells them which kind they're looking at.</p>
                   </div>
                 </div>
               </div>
@@ -433,8 +429,8 @@
                 <div class="absolute inset-0 opacity-[0.05] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
                 <div class="relative">
                   <p class="font-proxima text-[12px] text-mny-y500 font-[600] uppercase tracking-wider mb-2">The detail that explains everything &middot; Section 04</p>
-                  <h3 class="font-display font-[500] text-[26px] text-white uppercase leading-tight mb-4 max-w-[720px]">
-                    The plan's doors into the admin panel are dataset rows — and most of them are dead
+                  <h3 class="font-display font-[500] text-[26px] text-white uppercase leading-tight mb-4 max-w-[760px]">
+                    The plan's doors into the admin panel are dataset rows — and even repaired rows keep serving dead links
                   </h3>
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
@@ -443,31 +439,29 @@
                         panel."</em> Mechanically, those cards are Card components bound to
                         <strong class="text-white">LHMP_IA</strong> — the admin URL is a <em>value</em> in column
                         <code class="text-[12px] bg-white/10 px-1 rounded">shmp_component_name_location</code>, rendered
-                        as an "Add Data" link. Ten rows carry admin URLs. Seven point at
-                        <code class="text-[12px] bg-white/10 px-1 rounded">*_add_new</code> pages that no longer exist
-                        anywhere in the 112-page pattern.
+                        as an "Add Data" link. Ten rows carry admin URLs. Five resolve to real form hubs. Five point
+                        at <code class="text-[12px] bg-white/10 px-1 rounded">*_add_new</code> pages that exist nowhere
+                        in the 75-page pattern.
                       </p>
                       <p class="font-proxima text-[14px] text-mny-100 leading-[1.65]">
-                        Worse: three rows <em>were</em> repaired (Actions, HoC, Roles now target real
-                        <code class="text-[12px] bg-white/10 px-1 rounded">create</code> pages) — but template Card
-                        sections cache row snapshots, so ~58 sections per county site still hold the old dead URLs.
-                        Fixing the data didn't fix the sites. That fragility is itself a finding: the platform's most
-                        important workflow hand-off is an unvalidated string column.
+                        The sharper finding is what repair looks like: template Card sections cache row snapshots, so
+                        <strong class="text-white">~94 sections in every county site still render old dead URLs</strong>
+                        (hazards-of-concern ×34, capabilities ×34, actions ×22&hellip;) while ~56 sections show the new
+                        hub links — which one a visitor gets depends on each Card's fetch mode. Fixing the data does
+                        not fix the sites. The platform's most important workflow hand-off is an unvalidated string
+                        column plus a cache.
                       </p>
                     </div>
                     <div class="bg-white/5 rounded-[10px] p-4 border border-white/10">
                       <p class="font-display text-[12px] font-[600] uppercase tracking-wider text-mny-y500 mb-2">The 10 rows (LHMP_IA 1478042&ndash;52)</p>
                       <div class="font-proxima text-[13px] space-y-1.5">
-                        <div class="flex justify-between gap-3 text-mny-100"><span>Capabilities &middot; placed on 46 sections/site</span><span class="text-[#F1A099] font-[700] whitespace-nowrap">dead</span></div>
-                        <div class="flex justify-between gap-3 text-mny-100"><span>Participation &middot; 2 sections</span><span class="text-[#F1A099] font-[700] whitespace-nowrap">dead</span></div>
-                        <div class="flex justify-between gap-3 text-mny-100"><span>High Hazard Dams &middot; 2 sections</span><span class="text-[#F1A099] font-[700] whitespace-nowrap">dead</span></div>
-                        <div class="flex justify-between gap-3 text-mny-100"><span>Roles (row 1) &middot; 4 sections</span><span class="text-[#F1A099] font-[700] whitespace-nowrap">dead</span></div>
+                        <div class="flex justify-between gap-3 text-mny-100"><span>Actions &middot; Capabilities &middot; Hazards of Concern &middot; Participation &middot; Roles (row 2)</span><span class="text-[#8FD9C2] font-[700] whitespace-nowrap">&rarr; form hubs, work</span></div>
+                        <div class="flex justify-between gap-3 text-mny-100"><span>Roles (row 1) &middot; placed on plan pages</span><span class="text-[#F1A099] font-[700] whitespace-nowrap">dead</span></div>
+                        <div class="flex justify-between gap-3 text-mny-100"><span>High Hazard Dams &middot; placed on plan pages</span><span class="text-[#F1A099] font-[700] whitespace-nowrap">dead</span></div>
                         <div class="flex justify-between gap-3 text-mny-100"><span>Comments / Goals &amp; Obj. / Hazard Events</span><span class="text-[#F1A099] font-[700] whitespace-nowrap">dead &middot; never placed</span></div>
-                        <div class="flex justify-between gap-3 text-mny-100"><span>Actions &middot; snapshots stale on 24 sections</span><span class="text-mny-y500 font-[700] whitespace-nowrap">fixed, cached-dead</span></div>
-                        <div class="flex justify-between gap-3 text-mny-100"><span>Hazards of Concern &middot; stale on 34 sections</span><span class="text-mny-y500 font-[700] whitespace-nowrap">fixed, cached-dead</span></div>
-                        <div class="flex justify-between gap-3 text-mny-100"><span>Roles (row 2)</span><span class="text-[#8FD9C2] font-[700] whitespace-nowrap">works</span></div>
+                        <div class="flex justify-between gap-3 text-mny-100 pt-1 border-t border-white/10"><span>Cached snapshots per county site</span><span class="text-mny-y500 font-[700] whitespace-nowrap">~94 dead &middot; ~56 live</span></div>
                       </div>
-                      <p class="font-proxima text-[12px] text-mny-200 mt-3 pt-3 border-t border-white/10">Because the URLs live in one shared dataset, <strong class="text-white">fixing 7 rows fixes every county at once</strong> — the cheapest single improvement available, whatever direction is chosen.</p>
+                      <p class="font-proxima text-[12px] text-mny-200 mt-3 pt-3 border-t border-white/10">Because the URLs live in one shared dataset, finishing the last 5 rows fixes every county at once — but the sites aren't fixed until the cached Card snapshots refresh too. Both halves belong to any direction chosen.</p>
                     </div>
                   </div>
                 </div>
@@ -494,21 +488,22 @@
                     <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-red mb-2">In the admin panel (foreign, unexplained)</p>
                     <ul class="font-proxima text-[14px] text-mny-700 leading-[1.6] space-y-2">
                       <li>&bull; A different app: side-nav instead of the plan's chrome, tables instead of pages, no county identity, no way back.</li>
-                      <li>&bull; The nav offers "Forms" — then 14 Actions pages whose names (<code class="text-[13px]">create_full</code>, <code class="text-[13px]">single_edit_simple</code>) describe implementation history, not tasks.</li>
-                      <li>&bull; Nothing says <em>why</em> this table matters: that each row they add here will appear on their hazard chapters, their annexes, their dashboards.</li>
+                      <li>&bull; The forms still speak in implementation names — <code class="text-[13px]">single_edit_new</code>, <code class="text-[13px]">edit_simple</code> — and four of the six datasets no longer offer any page named for adding a record.</li>
+                      <li>&bull; Beyond the landing's blurbs, nothing says <em>why</em> a table matters: that each row added here appears on their hazard chapters, their annexes, their dashboards.</li>
                     </ul>
                   </div>
                 </div>
                 <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-5">
-                  <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-900 mb-2">The concept the platform never teaches</p>
+                  <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-900 mb-2">The concept the platform is starting to teach — in the wrong place</p>
                   <p class="font-proxima text-[14px] text-mny-900 leading-[1.65]">
                     The real distinction isn't "pages vs admin" — it's
                     <strong class="font-[700]">"words you write in place" vs "records you enter once that appear everywhere."</strong>
-                    An action entered once surfaces on the hazard chapter, the annex, the actions database, and the
-                    state's rollups. That's the platform's superpower, and it is currently invisible: entry happens in a
-                    separate app, displays happen in the plan, and no UI ever draws the line between them. Whichever
-                    direction is chosen, the fix is the same — <em>put the entry point next to the display it feeds</em>
-                    ("Edit the data behind this table"), so the concept teaches itself at the moment it matters.
+                    The panel's newest page finally writes this down, and well: <em>"One row per jurisdiction per
+                    hazard&hellip; Your risk assessment chapter is written from this grid."</em> But that sentence lives
+                    in the admin panel — the app planners visit least — while the tables it explains sit unlabeled
+                    across their plans. Whichever direction is chosen, the fix is the same:
+                    <em>put the explanation and the entry point next to the display they feed</em>, so the concept
+                    teaches itself at the moment it matters.
                   </p>
                 </div>
               </div>
@@ -516,21 +511,24 @@
               <!-- ============================ SECTION: WHAT'S MISSING — STATUS ============================ -->
               <div class="border-t border-mny-100 pt-8 mb-10">
                 <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-1">Section 06</p>
-                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase mb-1">The page nobody built: "How is my plan doing?"</h3>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase mb-1">The page nobody has built: "How is my plan doing?"</h3>
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <div class="lg:col-span-7">
                     <p class="font-proxima text-[14px] text-mny-700 leading-[1.65] mb-3">
-                      Neither surface answers the planner's first question. The admin panel opens on charts of
-                      statewide totals; the plan opens on its public homepage. Nowhere is there a
-                      <strong class="text-mny-900 font-[600]">status overview: everything this plan must fill out, and
+                      Neither surface answers the planner's first question. The plan opens on its public homepage;
+                      the admin opens on statewide totals, and its new "Your Plan Data" landing — the closest thing
+                      to an answer — describes each dataset and shows county figures without ever scoring them:
+                      no coverage against the guide's rules, no narrative fill, no "do this next." Nowhere is there
+                      a <strong class="text-mny-900 font-[600]">status overview: everything this plan must fill out, and
                       whether it has been</strong> — the page that would orient a new planner, drive the work order,
-                      and give DHSES an honest progress signal. (Owner requirement, captured 2026-08-06: a status
-                      page, and possibly a status band on the landing page, in whatever the next admin becomes.)
+                      and give DHSES an honest progress signal. (Owner requirement, captured 2026-08-06; designed
+                      since as the <a href="../pages/lhmp-admin/plan-status-admin.html" class="text-mny-700 font-[600] underline decoration-mny-y500 hover:decoration-mny-700">Plan Status mockups</a>,
+                      in <a href="../pages/lhmp-admin/plan-status-plan.html" class="text-mny-700 font-[600] underline decoration-mny-y500 hover:decoration-mny-700">both direction chromes</a>.)
                     </p>
                     <p class="font-proxima text-[14px] text-mny-700 leading-[1.65]">
-                      The measured publish-lag makes this concrete: Westchester has 54 slots drafted and
-                      <em>zero</em> net published — to the public (and to any naive progress query) the county looks
-                      untouched. A real status page must read <code class="text-[13px] bg-mny-50 px-1 rounded">draft_sections</code>,
+                      The measured publish-lag makes draft-awareness non-negotiable: Westchester has 54 slots
+                      drafted and 10 published — to the public (and to any naive progress query) the county looks
+                      barely started. A real status page must read <code class="text-[13px] bg-mny-50 px-1 rounded">draft_sections</code>,
                       count form rows per jurisdiction, and say so.
                     </p>
                   </div>
@@ -538,10 +536,10 @@
                     <div class="bg-mny-50 rounded-[12px] p-5 border border-mny-100">
                       <p class="font-display text-[13px] font-[600] uppercase tracking-wider text-mny-700 mb-2">Everything needed to drive it already exists</p>
                       <ul class="font-proxima text-[13px] text-mny-700 leading-[1.55] space-y-2">
-                        <li><strong class="text-mny-900">Annotation fill-state</strong> — 267&ndash;276 slots per county, filled/empty is one text-length test (measured for this report)</li>
+                        <li><strong class="text-mny-900">Annotation fill-state</strong> — 267 slots per county, filled/empty is one text-length test (measured for this report)</li>
                         <li><strong class="text-mny-900">Form-row coverage per jurisdiction</strong> — the rules are already written in the guide: &ge;1 action per hazard of concern per jurisdiction, &ge;2 new/carryover actions, SFHA flood-action rule, ~16 HoC rows per jurisdiction</li>
-                        <li><strong class="text-mny-900">LHMP_IA's own columns</strong> — <code class="text-[12px]">mny_required</code>, <code class="text-[12px]">complete</code>, <code class="text-[12px]">dhses_review</code>, <code class="text-[12px]">control_number</code> (CN&hellip;) — a requirements checklist embedded in the template's config dataset, currently unused</li>
-                        <li><strong class="text-mny-900">FEMA review-element tags on the sections themselves</strong> (found 2026-08-07) — 1,866 template sections carry <code class="text-[12px]">data.tags</code> codes like <code class="text-[12px]">B2-a</code>, <code class="text-[12px]">C4-b</code>, <code class="text-[12px]">A1-a</code>, including 173 of the 256 narrative slots — the review-tool mapping Task 7 alludes to already exists in the data</li>
+                        <li><strong class="text-mny-900">FEMA review-element tags on the sections themselves</strong> — 1,866 template sections carry <code class="text-[12px]">data.tags</code> codes (<code class="text-[12px]">B2-a</code>, <code class="text-[12px]">C4-b</code>&hellip;), including 173 of the 256 narrative slots — the review-tool mapping Task 7 alludes to</li>
+                        <li><strong class="text-mny-900">LHMP_IA's own columns</strong> — <code class="text-[12px]">mny_required</code> (42 Required components), <code class="text-[12px]">control_number</code> — a requirements checklist in the template's config dataset, currently unused</li>
                         <li><strong class="text-mny-900">DHSES_County_Database</strong> — the 62-county plan-status registry, the natural cross-county rollup</li>
                       </ul>
                     </div>
@@ -555,16 +553,17 @@
                 <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase mb-1">Where this can go — two directions, three end-states</h3>
                 <p class="font-proxima text-[14px] text-mny-700 leading-[1.6] max-w-[900px] mb-6">
                   Each direction gets its own report. Four moves are <strong class="text-mny-900 font-[600]">no-regret</strong>
-                  and shared by every end-state: repair the 7 dead "Add Data" rows (+ refresh cached sections), fix the
-                  guide's hardcoded/malformed links, archive the "(old)"/Dup/Archived trees, and decide the
-                  Capabilities-vs-Capacities schema before more counties fill either.
+                  and shared by every end-state: finish the "Add Data" repair (5 remaining rows <em>and</em> the cached
+                  section snapshots), give the guide working links and the five missing form how-tos, delete or re-bind
+                  the orphaned Other-Forms shells, and decide the Capabilities-vs-Capacities schema before more
+                  counties fill either.
                 </p>
                 <div class="overflow-x-auto rounded-[12px] border border-mny-100 mb-6">
                   <table class="w-full min-w-[880px] font-proxima text-[13px] text-mny-700">
                     <thead class="bg-mny-50">
                       <tr class="text-left">
                         <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[180px]"></th>
-                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">A &middot; Consolidate the panel</th>
+                        <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">A &middot; Finish the panel</th>
                         <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">B1 &middot; Move planner work into the plan; keep a slim state console</th>
                         <th class="px-3 py-2.5 font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">B2 &middot; Retire the panel entirely</th>
                       </tr>
@@ -572,7 +571,7 @@
                     <tbody class="align-top">
                       <tr class="border-b border-mny-100">
                         <td class="px-3 py-2.5 font-[600] text-mny-900">The planner's world</td>
-                        <td class="px-3 py-2.5">still two apps, but the second one becomes coherent: ~30 role-adaptive pages, status landing, human names</td>
+                        <td class="px-3 py-2.5">still two apps, but the second one becomes coherent: task-named role-adaptive pages, a status landing, working doors — the current renovation is this direction's opening act</td>
                         <td class="px-3 py-2.5 bg-mny-y50/50">one app — every form entered inside the plan, next to the display it feeds; status on the plan itself</td>
                         <td class="px-3 py-2.5">same as B1</td>
                       </tr>
@@ -584,14 +583,14 @@
                       </tr>
                       <tr class="border-b border-mny-100">
                         <td class="px-3 py-2.5 font-[600] text-mny-900">Build size</td>
-                        <td class="px-3 py-2.5">smallest — mockups + IA already exist (July report)</td>
+                        <td class="px-3 py-2.5">smallest — the deletion half is largely done; what's left is the status landing, naming, and seam repairs</td>
                         <td class="px-3 py-2.5 bg-mny-y50/50">largest for planner surfaces — but the actions flow is designed, its mechanics are live, and the template already hides half the workbench</td>
                         <td class="px-3 py-2.5">B1 + migration of state tooling</td>
                       </tr>
                       <tr class="border-b border-mny-100">
                         <td class="px-3 py-2.5 font-[600] text-mny-900">Risk</td>
                         <td class="px-3 py-2.5">polishes a context-switch planners already resist; the panel must still be taught</td>
-                        <td class="px-3 py-2.5 bg-mny-y50/50">role-gating inside county sites; template grows heavier; clone-drift must be solved for form pages</td>
+                        <td class="px-3 py-2.5 bg-mny-y50/50">role-gating inside county sites; template grows heavier; form surfaces must be shared patterns, not clones</td>
                         <td class="px-3 py-2.5">loses the one place DHSES sees all counties at once — highest operational risk</td>
                       </tr>
                       <tr>
@@ -604,33 +603,33 @@
                   </table>
                 </div>
                 <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] max-w-[900px]">
-                  <strong class="text-mny-900 font-[600]">Why B1 is the recommendation:</strong> the platform has already voted.
-                  The actions workflow moved into plan context and became the design precedent; the template grew its own
-                  form prototypes; the newest admin work (the Jurisdictional Entry copy) duplicates a template page rather
-                  than improving the panel. Direction A would make the panel a better version of a place planners were
-                  already routing around — worth doing only if build capacity rules out B1, and its status-landing work
-                  carries forward into B1 unchanged either way.
+                  <strong class="text-mny-900 font-[600]">Why B1 is the recommendation:</strong> the platform keeps voting
+                  with its feet. The actions workflow moved into plan context and became the design precedent; the
+                  template grew its own form prototypes; the counties do their real work in-site and Suffolk just
+                  published a hundred sections of it. A leaner, better-explained panel is genuinely better — and it is
+                  still a second app on the far side of a broken bridge. The renovation's deletions and its
+                  plain-language landing carry forward into B1 unchanged; the direction reports say where the rest goes.
                 </p>
               </div>
 
               <p class="font-proxima text-[11px] text-mny-400 mt-8">
                 Source: live Falcor queries against <code>https://dmsserver.availabs.org/graph</code>, app
-                <code>mitigat-ny-prod</code>, 2026-08-06. Patterns pulled in full (pages + published and draft
-                sections): admin 566466 (112 pages / 1,251 sections), county template 1300890 (58 / 3,859),
-                schenectady_draft 2304223 (58 / 3,855), westchester-draft 2244223 (54 / 3,734; one page
-                permission-restricted), suffolk_draft 2249247 (56 / 3,719), planning-guide 1603896 (44 / 751),
-                actions 2265530 (5 / 66). Dataset rows via the DMS CLI (<code>dataset dump/query</code>; row counts are
-                latest-view UDA totals and include <code>isValid:false</code> rows — Actions_Revised is 17,792 valid of
-                18,382). Source-binding matrix from walking every section's parsed <code>element-data</code> for
-                <code>sourceInfo</code> objects; "Add Data" link inventory from LHMP_IA rows 1478042&ndash;1478052 crossed
-                against all 112 admin page slugs; staleness from <code>data.updated_at</code> + section timestamps (page-row
-                <code>updated_at</code> was bulk-touched 2026-08-04 and excluded). Full findings ledger, raw pulls, and
-                scripts: <code>references/admin IA/</code> (git-ignored). Prior related work:
-                <a href="admin-panel-information-architecture.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Admin Panel IA (2026-07-29)</a> —
-                the within-panel consolidation study this series builds on — and the
-                <a href="../pages/county-actions/dashboard.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">county-actions workflow mockups</a>.
-                Owner input captured during this analysis: the redesigned admin should include a plan-status page and
-                possibly a landing-page status overview (2026-08-06).
+                <code>mitigat-ny-prod</code>, 2026-08-12. Patterns pulled in full (pages + published and draft
+                sections): admin 566466 (75 pages / 1,057 sections; 24 nav-visible), county template 1300890
+                (58 / 3,859), schenectady_draft 2304223 (58 / 3,855), westchester-draft 2244223 (54 / 3,734),
+                suffolk_draft 2249247 (56 / 3,719), planning-guide 1603896 (45 / 810). "Add Data" inventory from
+                LHMP_IA rows 1478042&ndash;1478052 crossed against all 75 admin page slugs; cached-snapshot counts
+                from string-scanning every county-template section's <code>element-data</code> (94 sections carry
+                <code>*_add_new</code> URLs, 56 carry live hub links). Guide link states re-scanned 2026-08-12
+                (131 published link nodes, 63 bare, 3 malformed, 0 to /admin); the guide's page-by-page completeness
+                audit, dataset row counts (via <code>dataset dump/query</code>; totals include <code>isValid:false</code>
+                rows — Actions_Revised is 17,792 valid of 18,382), and admin staleness analysis are from the
+                2026-08-06 pull of the same sources. Source-binding matrix from walking every template section's
+                parsed <code>element-data</code> for <code>sourceInfo</code> objects. Full findings ledger (§17 = this
+                refresh), raw pulls, and scripts: <code>references/admin IA/</code> (git-ignored). Prior related work:
+                <a href="admin-panel-information-architecture.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Admin Panel IA (2026-07-29)</a>,
+                the <a href="../pages/county-actions/dashboard.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">county-actions workflow mockups</a>,
+                and the <a href="../pages/lhmp-admin/plan-status-admin.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Plan Status mockups</a>.
               </p>
 
             </div>
@@ -654,7 +653,7 @@
     <span class="font-[700] text-mny-700 uppercase tracking-wide ml-4">Related:</span>
     <a href="admin-panel-information-architecture.html" class="hover:text-mny-700">Admin Panel IA (July)</a>
     <a href="../pages/county-actions/dashboard.html" class="hover:text-mny-700">County Actions Flow</a>
-    <a href="../pages/admin-home.html" class="hover:text-mny-700">Admin Home Mockup</a>
+    <a href="../pages/lhmp-admin/plan-status-admin.html" class="hover:text-mny-700">Plan Status Mockups</a>
   </div>
 </div>
 

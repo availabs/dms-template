@@ -86,14 +86,26 @@ const CONVERTER_SCRIPT = resolve(REPO, 'scripts/npmrds-reports/convert_old_repor
 
 // A `graphType: "InfoBox"` graph is likewise not an AVL Graph — it shells out to
 // convert_old_reports.py's `--route-info-box-section` (see composeInfoBoxGraphState
-// below), reusing the five INFO_BOX_*_BUCKET measure buckets already built for
+// below), reusing the INFO_BOX_*_BUCKET measure buckets already built for
 // old-report conversion (rounds 18/38/40) rather than a second implementation.
 // Mirrors Python's INFO_BOX_SPEC_MEASURES exactly — keep in sync if that list
 // changes. "reliability" is the LOTTR/TTTR/Freeflow pm3 join (old code's own
 // internal key for this bucket is the confusingly-reused "speed" measure — this
 // spec-facing name avoids colliding with AVL Graph's real speed-in-mph measure).
-const INFO_BOX_MEASURES = ['reliability', 'travelTime', 'length', 'aadt', 'hoursOfDelay'];
+// "speed" (added 2026-08-12) is that real plain speed-in-mph measure — see
+// ensure_info_box_speed_template's docstring in info_box_templates.py.
+const INFO_BOX_MEASURES = ['speed', 'reliability', 'travelTime', 'length', 'aadt', 'hoursOfDelay'];
 const INFO_BOX_BINS = ['amp', 'midd', 'pmp', 'we'];
+// A graph's `measure` may be a single string or an array of >= 2 (multi-measure
+// — N columns in one box, matching the old tool's real shape; see
+// build_route_info_box_section_state_multi/build_route_compare_section_state_multi
+// in the Python lib). Which combinations are actually join-compatible is
+// deliberately NOT duplicated here — Python (INFO_BOX_MULTI_JOIN_GROUP) is the
+// single source of truth, and composeInfoBoxGraphState surfaces its rejection
+// as a clean build failure instead of re-implementing the same compatibility
+// matrix in a second language (the exact "two independent implementations of
+// one fact" risk this whole arc kept finding).
+const measureList = m => Array.isArray(m) ? m : [m];
 
 // A `graphType: "RouteCompare"` graph is likewise not an AVL Graph — it shells
 // out to convert_old_reports.py's `--route-compare-section` (see
@@ -132,6 +144,25 @@ function splitDateTime(combined) {
   const [date, time] = combined.split('T');
   return { date, time };
 }
+
+// Dynamic Report support (route slots + Mechanism B's relative-date formula
+// grammar) — see planning/transportny/tasks/current/report-spec-and-build-script.md's
+// "Follow-on: Dynamic Report spec support". `relativeDateResolution.js` has zero
+// imports of its own (no JSX, no bare specifiers), so it loads via a plain Node
+// dynamic import — no need to boot the Vite SSR server just to validate a
+// formula string against the real grammar. Hoisted above `runFromPage`'s own
+// definition (not down by the spec-load/validation code that actually consumes
+// most of it) because `--from-page` exits before ever reaching that section —
+// both directions need the same sentinel/regexes. `spec.dynamicReport: true`
+// is the only thing that turns a route slot on; the formula grammar itself is
+// general (works on any report, Dynamic or not — Ryan's direction 2026-08-11),
+// so it is NOT gated on this flag.
+const { RELATIVE_DATE_REGEX, CALENDAR_POSITION_REGEX, TODAY_ANCHOR_COMP_ID } =
+  await import(resolve(REPO, 'src/themes/transportny/components/ReportRouteList/relativeDateResolution.js'));
+const DYNAMIC_REPORT_FILTERS = [
+  { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' },
+  { id: 'dyn-report-asof', searchKey: 'asOf', useSearchParams: true, values: '', type: 'baseDate' },
+];
 
 // ── args ───────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
@@ -254,18 +285,44 @@ function writeSpecOut(spec, outPath) {
 
 // AVL Graph/Map are unambiguous graph element-types; Spreadsheet is NOT — an
 // Info Box graph, a Route Compare graph, and the page's own Add-a-Route
-// section all share it. Only count a Spreadsheet section as a graph here if
-// it actually carries the `_infoBoxPick` or `_routeComparePick` marker
-// composeInfoBoxGraphState/composeRouteCompareGraphState stamps onto every
-// build of that type (mirrors `_routeMapPick`) — the Add-a-Route section, a
-// verbatim template clone, never has either.
+// section all share it.
+//
+// CORRECTED 2026-08-12: this used to gate on the `_infoBoxPick`/`_routeComparePick`
+// marker composeInfoBoxGraphState/composeRouteCompareGraphState stamp onto every
+// build THIS SCRIPT makes — but that marker is a report_build.mjs-only convention
+// invented after Design Push #2; convert_old_reports.py (grep confirms: zero hits
+// anywhere in convert_old_reports_lib) NEVER stamps it on any section it builds.
+// So any Route Compare or Info Box section the Python converter built —
+// successfully, no gap logged — was completely invisible to `--from-page`: not
+// flagged `_needsReview` like an AVL Graph section with the same problem, just
+// silently absent from graphSections and therefore the reconstructed spec. Found
+// live 2026-08-12 comparing `annual_average_study`'s old template (id 278) against
+// its current spec: 2 real "Route Compare Component" panels existed in the old
+// template's graph_comps and were converted into real sections on the original
+// page (confirmed via that conversion's own gap log showing `extra_measures_dropped`
+// activity for both) — neither survived into the spec-driven rebuild.
+//
+// Fixed by matching structure instead of a marker only this script's own output
+// carries:
+//  - self-bound at all: an enabled `comparison_series` subscriber wired to the
+//    `$self` sentinel (`SELF_PARAM_KEY_SENTINEL`, buildUdaConfig.js) — the EXACT
+//    condition the live runtime's own `findSelfBoundGraphs` uses to decide a
+//    section is a graph/stat consumer at all, not just this script's own
+//    convention. Rules out the page's own Add-a-Route section (a verbatim
+//    template clone with no such subscriber) the same as the marker check did.
+//  - Route Compare vs Info Box, once self-bound: `ensure_route_compare_template`
+//    (route_compare_template.py:53) always mints a `type: "delta"` column — Info
+//    Box templates never have one. A durable, marker-independent tell.
 function isGraphSectionElement(s) {
   const type = s.data.element['element-type'];
   if (['AVL Graph', 'Map'].includes(type)) return true;
   if (type !== 'Spreadsheet') return false;
   try {
     const state = JSON.parse(s.data.element['element-data']);
-    return !!(state._infoBoxPick || state._routeComparePick);
+    if (state._infoBoxPick || state._routeComparePick) return true;
+    const subscribers = state.display?._functions?.subscribers;
+    return Array.isArray(subscribers) && subscribers.some(
+      sub => sub?.functionId === 'comparison_series' && sub?.enabled && sub?.paramKey === '$self');
   } catch { return false; }
 }
 
@@ -274,6 +331,13 @@ function runFromPage(pageArg, outPath) {
   const page = dms(['page', 'show', pageArg, '--pattern', PATTERN]);
   const pageId = page?.id;
   if (!pageId) fail(`page "${pageArg}" not found.`);
+  // `page show` doesn't return `filters` — only `raw get` returns the full row.
+  // Needed to detect whether this page is a Dynamic Report (a `routeSlots`-typed
+  // filter) — a page built before this feature (every old-report/template
+  // conversion, including all 12 Dynamic Report catalog templates) has this
+  // exact shape too, just never round-tripped through report_build.mjs before.
+  const rawPage = dms(['raw', 'get', String(pageId)]);
+  const isDynamicReport = (rawPage?.data?.filters || []).some(f => f.type === 'routeSlots');
   const snap = findSnapRow(pageId);
   if (!snap) fail(`no reports_snap_2 row found for page ${pageId} — this page was never built by `
     + `report_build.mjs, so there's nothing to reverse.`);
@@ -284,7 +348,27 @@ function runFromPage(pageArg, outPath) {
   }
 
   const dump = dms(['page', 'dump', String(pageId), '--sections']);
-  const sections = dump?._expanded_sections || [];
+  // `_expanded_sections` is built by unioning `page.data.sections` (published)
+  // and `page.data.draft_sections` (draft) ids, deduped only by ROW id — a
+  // page with `has_changes: false` (published matches draft, the common case)
+  // has TWO rows per trackingId, so every downstream trackingId-keyed lookup
+  // would silently double-count unless deduped here first. Found while wiring
+  // Dynamic Report slot support, 2026-08-11, against `one_week_study` (its
+  // first real exercise against an already-published page) — a real,
+  // separate, pre-existing gap in this reconstruction, not introduced by
+  // slots. Prefer the draft copy (what `--update` always edits and what a
+  // rebuild should reproduce) when both exist.
+  const draftIds = new Set((dump?.data?.draft_sections || []).map(s => s.id || s));
+  function dedupeByTrackingId(list) {
+    const byTid = new Map();
+    for (const s of list) {
+      const tid = s.data.trackingId;
+      const existing = byTid.get(tid);
+      if (!existing || (draftIds.has(String(s.id)) && !draftIds.has(String(existing.id)))) byTid.set(tid, s);
+    }
+    return [...byTid.values()];
+  }
+  const sections = dedupeByTrackingId(dump?._expanded_sections || []);
   const specKeyMap = snap.data._specKeyMap ? JSON.parse(snap.data._specKeyMap) : null;
 
   if (snap.data._spec) {
@@ -354,14 +438,29 @@ function runFromPage(pageArg, outPath) {
 
   const routeEntries = JSON.parse(snap.data.routes || '[]');
   const graphSections = sections.filter(isGraphSectionElement);
-  const keyByTrackingId = new Map();
+  // Route→graph assignment must be reconstructed from each GRAPH's own live
+  // `_measurePick.routeIds` (design push #2's real routing field, keyed by
+  // `route_comp_id`), never from a route's own `graphIds` — that field is
+  // dead write-once bookkeeping from conversion time (see useGraphPublish.js's
+  // own header comment) and can reference `route_comp_id`s that no longer
+  // exist at all (a route deleted/consolidated after conversion, its old
+  // comp ids never scrubbed from the graphs that used to reference them).
+  // Found live 2026-08-11 on `Single Route`: its AVL Graph sections' routeIds
+  // included `comp-1`/`comp-3`/`comp-5`, none of which match any of the
+  // page's 3 CURRENT routes (`comp-0`/`comp-2`/`comp-4`) — using `graphIds`
+  // instead would have silently produced a spec with wrong/broken route
+  // assignments. Index-aligned with `graphSections`/`graphs` below; filled in
+  // per-branch since Map/Spreadsheet sections don't already parse `state`
+  // the same way AVL Graph sections do.
+  const graphLiveRouteIds = [];
   const graphs = graphSections.map((s, i) => {
     const key = `g${i + 1}`;
-    keyByTrackingId.set(s.data.trackingId, key);
     const elType = s.data.element['element-type'];
     if (elType === 'Map') {
-      let pick = null;
-      try { pick = JSON.parse(s.data.element['element-data'])._routeMapPick || null; } catch { /* leave null */ }
+      let mapState = {};
+      try { mapState = JSON.parse(s.data.element['element-data']); } catch { /* leave {} */ }
+      const pick = mapState._routeMapPick || null;
+      graphLiveRouteIds[i] = mapState.display?._measurePick?.routeIds || [];
       return {
         key, title: s.data.title || undefined, graphType: 'Map',
         measure: pick?.measure ?? null,
@@ -372,27 +471,69 @@ function runFromPage(pageArg, outPath) {
     if (elType === 'Spreadsheet') {
       let state = {};
       try { state = JSON.parse(s.data.element['element-data']); } catch { /* leave {} */ }
+      graphLiveRouteIds[i] = state.display?._measurePick?.routeIds || [];
       if (state._routeComparePick) {
+        // RouteCompare's anchor/compare rows are order-based (whichever route
+        // is first on the page), not a per-graph routeIds field — report-spec.md
+        // documents it has no `_measurePick` concept of its own. If a live
+        // section somehow does carry routeIds anyway, use them; otherwise this
+        // stays [] and the route-assignment pass below falls back to "every
+        // current route" for it, matching how it actually behaves at runtime.
         return { key, title: s.data.title || undefined, graphType: 'RouteCompare', measure: state._routeComparePick.measure };
       }
-      const pick = state._infoBoxPick || null;
-      return {
-        key, title: s.data.title || undefined, graphType: 'InfoBox',
-        measure: pick?.measure ?? null, grain: pick?.grain || 'route',
-        ...(pick?.bin ? { bin: pick.bin } : {}),
-        ...(pick ? {} : { _needsReview: 'Info Box/Route Compare measure not recoverable from this section (built before the _infoBoxPick/_routeComparePick marker existed) — re-pick manually' }),
-      };
+      if (state._infoBoxPick) {
+        const pick = state._infoBoxPick;
+        return {
+          key, title: s.data.title || undefined, graphType: 'InfoBox',
+          measure: pick.measure, grain: pick.grain || 'route',
+          ...(pick.bin ? { bin: pick.bin } : {}),
+        };
+      }
+      // No marker (a convert_old_reports.py-built section — see
+      // isGraphSectionElement's 2026-08-12 correction above) — tell Route
+      // Compare and Info Box apart by the one structural difference between
+      // them (route_compare_template.py always mints a `type: "delta"`
+      // column; Info Box never does), and flag the measure `_needsReview`
+      // rather than guess it from a column's `customName` text, same honesty
+      // rule the AVL Graph/Route Map fallbacks above already follow.
+      const isRouteCompare = (state.columns || []).some(c => c.type === 'delta');
+      return isRouteCompare
+        ? { key, title: s.data.title || undefined, graphType: 'RouteCompare', measure: null,
+            _needsReview: 'Route Compare measure not recoverable from this section (built by convert_old_reports.py, which never stamped the _routeComparePick marker) — re-pick manually' }
+        : { key, title: s.data.title || undefined, graphType: 'InfoBox', measure: null, grain: 'route',
+            _needsReview: 'Info Box measure/grain not recoverable from this section (built by convert_old_reports.py, which never stamped the _infoBoxPick marker) — re-pick manually' };
     }
     let state = {};
     try { state = JSON.parse(s.data.element['element-data']); } catch { /* leave {} */ }
     const pick = state.display?._measurePick || {};
+    graphLiveRouteIds[i] = pick.routeIds || [];
     const invert = !!state.comparisonSeries?.combine?.invert;
+    // Old-report/template conversions (convert_old_reports.py) never call
+    // applyMeasurePick — they clone a shared graph-template row instead — and
+    // Design-Push-2's later routing retrofit (section_builders.py) OVERWRITES
+    // `_measurePick` wholesale with only weekdays/start/end/routeIds, wiping
+    // whatever the template row may have carried. Found while wiring Dynamic
+    // Report slot support, 2026-08-11 — a real, separate, pre-existing gap in
+    // this reconstruction, not introduced by slots (every one of the 12
+    // catalog templates hits this for every AVL Graph section). `display.
+    // graphType` is the renderer's own field and survives independently, so
+    // it's a reliable fallback; there's no equally durable field for measure/
+    // resolution/comparisonMode without reverse-matching the raw column
+    // expression against the live vocabulary (would need booting Vite here,
+    // deliberately not done) — flag those as unrecoverable instead of
+    // silently writing `undefined`, the same honesty this function already
+    // gives Map/InfoBox/RouteCompare above.
+    const graphType = pick.graphType || state.display?.graphType;
+    const missing = ['measure', 'resolution', 'comparisonMode'].filter(f => pick[f] == null);
+    const notes = [];
+    if (invert) notes.push('comparisonMode is "difference" with combine.invert set — the original `anchor` route id is not recoverable; re-specify anchor by hand');
+    if (missing.length) notes.push(`${missing.join('/')} not recoverable from this section (converted before applyMeasurePick ever composed it; display.graphType survives as a fallback but the rest was wiped by Design-Push-2's _measurePick retrofit) — re-pick manually`);
     return {
       key, title: s.data.title || undefined,
-      graphType: pick.graphType, measure: pick.measure, resolution: pick.resolution,
+      graphType, measure: pick.measure, resolution: pick.resolution,
       comparisonMode: pick.comparisonMode,
       ...(state.display?.description ? { caption: state.display.description } : {}),
-      ...(invert ? { _needsReview: 'comparisonMode is "difference" with combine.invert set — the original `anchor` route id is not recoverable; re-specify anchor by hand' } : {}),
+      ...(notes.length ? { _needsReview: notes.join('; ') } : {}),
     };
   });
 
@@ -410,28 +551,86 @@ function runFromPage(pageArg, outPath) {
     }
   }
 
+  // `route_comp_id` -> spec-local id, built from ALL entries (slot or concrete)
+  // before the main pass — a route's `derivedFromRoute` may point at either
+  // kind of sibling, and forward references (deriving from a route declared
+  // later in the array) are legal, same as the forward build direction allows.
+  const specIdByCompId = new Map(routeEntries.map((e, i) => [e.route_comp_id, `r${i + 1}`]));
+  // Reverse-lookup: which graphs' live routeIds include this route's
+  // route_comp_id (see graphLiveRouteIds' own note above for why this, not
+  // `e.graphIds`, is the correct source). A RouteCompare graph with no
+  // per-graph routeIds recorded (the normal case — see its branch above)
+  // falls back to "every current route", matching its real order-based,
+  // not field-based, runtime behavior; any OTHER graph type with an empty
+  // routeIds list genuinely feeds nothing, and stays that way.
+  function feedsGraphKeysFor(compId) {
+    return graphs
+      .filter((g, gi) => (graphLiveRouteIds[gi]?.length ? graphLiveRouteIds[gi].includes(compId) : g.graphType === 'RouteCompare'))
+      .map(g => g.key);
+  }
   const routes = routeEntries.map((e, i) => {
-    const start = splitDateTime(e.startDate);
-    const end = splitDateTime(e.endDate);
+    // A Dynamic Report route slot (see useDynamicReportRoutes.js) has no `id`/
+    // `route_id`/`tmc_array` — those get overlaid live, never persisted. This
+    // is the only reliable discriminator: a concrete route entry always has
+    // one or the other (report_build.mjs writes `id: r.route_id`; the old
+    // converter writes both `id` and `route_id`).
+    const isSlot = e.route_id == null && e.id == null;
+    // A derived date's persisted literal startDate/endDate is inert (always
+    // superseded live once the formula resolves, which it always will for a
+    // valid base) — reconstruct the clean formula-only shape rather than
+    // carrying the stale literal forward. `derivedFromRoute` translates the
+    // persisted `route_comp_id` back to a spec-local id (or passes `__TODAY__`
+    // through unchanged) — the reverse of the write-time translation.
+    const derived = e.dateFormula ? {
+      dateFormula: e.dateFormula,
+      derivedFromRoute: e.derivedFromRoute === TODAY_ANCHOR_COMP_ID
+        ? TODAY_ANCHOR_COMP_ID
+        : (specIdByCompId.get(e.derivedFromRoute)
+          ?? (() => { throw new Error(`route ${i + 1} ("${e.name}") has derivedFromRoute "${e.derivedFromRoute}", which matches no sibling's route_comp_id — data looks corrupt.`); })()),
+    } : {};
+    const start = derived.dateFormula ? {} : splitDateTime(e.startDate);
+    const end = derived.dateFormula ? {} : splitDateTime(e.endDate);
+    if (isSlot) {
+      return {
+        id: `r${i + 1}`,
+        slot: true,
+        name: e.name,
+        ...(e.route_slot_group ? { route_slot_group: e.route_slot_group } : {}),
+        ...(e.isPlaceholderName ? { isPlaceholderName: true } : {}),
+        ...derived,
+        ...(e.color ? { color: e.color } : {}),
+        ...(e.weekdays ? { weekdays: e.weekdays } : {}),
+        graphs: feedsGraphKeysFor(e.route_comp_id),
+      };
+    }
     return {
       id: `r${i + 1}`,
       route_id: Number(e.route_id ?? e.id),
       name: e.name,
+      ...derived,
       ...(start.date ? { startDate: start.date } : {}),
       ...(end.date ? { endDate: end.date } : {}),
       ...(start.time ? { startTime: start.time } : {}),
       ...(end.time ? { endTime: end.time } : {}),
       ...(e.color ? { color: e.color } : {}),
       ...(e.weekdays ? { weekdays: e.weekdays } : {}),
-      graphs: (e.graphIds || []).map(tid => keyByTrackingId.get(tid)).filter(Boolean),
+      graphs: feedsGraphKeysFor(e.route_comp_id),
     };
   });
 
+  // `tags`/`difficulty` round-trip (catalog metadata) — `page_path`/`graph_count`/
+  // `counts_label` deliberately don't: they're derived fresh from the spec at build
+  // time (see the `catalogFields` note near the snap-row write), so recovering their
+  // OLD persisted values here would just reintroduce the exact staleness problem this
+  // whole design avoids.
   writeSpecOut({
     title: page.title,
     slug: page.url_slug,
+    ...(isDynamicReport ? { dynamicReport: true } : {}),
     ...(snap.data.description ? { description: snap.data.description } : {}),
     ...(intro ? { intro } : {}),
+    ...(snap.data.tags ? { tags: snap.data.tags } : {}),
+    ...(snap.data.difficulty !== undefined ? { difficulty: snap.data.difficulty } : {}),
     graphs, routes,
   }, outPath);
 }
@@ -464,7 +663,18 @@ for (const g of spec.graphs) {
 const seenNames = new Set();
 for (const r of spec.routes) {
   if (!r.id) fail('every route needs a spec-local `id` (used by graphs[].anchor and routes[].graphs).');
-  if (!r.route_id) fail(`route "${r.id}" needs a \`route_id\` (its DMS id in the Routes Data dataset).`);
+  // A `slot` route (Dynamic Report only) has no route_id yet — it's resolved by
+  // whoever views the page, via `?routes=`. Route slots have no meaning outside
+  // a Dynamic Report (there are exactly 12 of these today, all gated on
+  // `spec.dynamicReport`) — never inferred from a missing `route_id` alone, so a
+  // plain typo (forgetting `route_id`) fails loudly instead of silently becoming
+  // a slot.
+  if (r.slot) {
+    if (!spec.dynamicReport) fail(`route "${r.id}" has \`slot: true\`, but \`dynamicReport\` isn't set on the spec — a route slot only means something on a Dynamic Report (see report-spec.md).`);
+    if (r.route_id) fail(`route "${r.id}" has both \`slot: true\` and \`route_id\` — a slot has no route yet by definition; drop one or the other.`);
+  } else if (!r.route_id) {
+    fail(`route "${r.id}" needs a \`route_id\` (its DMS id in the Routes Data dataset), or \`slot: true\` if this is a Dynamic Report route slot.`);
+  }
   if (!r.name) fail(`route "${r.id}" needs a \`name\`.`);
   let name = r.name;
   if (seenNames.has(name)) {
@@ -495,6 +705,39 @@ for (const r of spec.routes) {
     if (!r.startDate || !r.endDate) {
       fail(`route "${r.id}" has \`startTime\`/\`endTime\` but no \`startDate\`/\`endDate\` — a time-of-day window needs a date window to apply within.`);
     }
+  }
+}
+
+// ── relative-date formula validation (Mechanism B) ─────────────────────────
+// `dateFormula`/`derivedFromRoute` are paired: a route deriving its date live
+// (from another route in this same spec, or the synthetic "Today (view time)"
+// anchor) never carries a literal startDate/endDate — those get computed at
+// VIEW time by the exact same resolver loaded above, never persisted. Runs as
+// its own pass (after every route's `id` is known) so `derivedFromRoute` can
+// reference a route declared later in the array — forward references are
+// legal, same as `routes[].graphs`/`graphs[].anchor` already allow.
+const routeById = new Map(spec.routes.map(r => [r.id, r]));
+for (const r of spec.routes) {
+  if (!r.dateFormula && !r.derivedFromRoute) continue;
+  if (!r.dateFormula || !r.derivedFromRoute) {
+    fail(`route "${r.id}" has \`${r.dateFormula ? 'dateFormula' : 'derivedFromRoute'}\` but not the other — both are required together.`);
+  }
+  if (!CALENDAR_POSITION_REGEX.test(r.dateFormula) && !RELATIVE_DATE_REGEX.test(r.dateFormula)) {
+    fail(`route "${r.id}" has an invalid \`dateFormula\` "${r.dateFormula}" — see relativeDateResolution.js's RELATIVE_DATE_REGEX/CALENDAR_POSITION_REGEX (or report-spec.md) for the grammar.`);
+  }
+  if (r.derivedFromRoute === r.id) fail(`route "${r.id}" has \`derivedFromRoute\` pointing at itself.`);
+  if (r.derivedFromRoute !== TODAY_ANCHOR_COMP_ID) {
+    const base = routeById.get(r.derivedFromRoute);
+    if (!base) fail(`route "${r.id}" has \`derivedFromRoute: "${r.derivedFromRoute}"\`, which is not any route's \`id\` in this spec (use the literal "${TODAY_ANCHOR_COMP_ID}" to derive from the Today anchor instead).`);
+    // Single-hop only — mirrors resolveRouteDates' own constraint (a base is
+    // never itself derived). A spec that violates this would silently fail to
+    // resolve at view time with no error, so this is a hard build error, not a
+    // warning — see "A derive-from base can never itself be derived" in
+    // traversing-report-pages.md.
+    if (base.dateFormula) fail(`route "${r.id}" derives from "${r.derivedFromRoute}", but that route is itself derived (has its own \`dateFormula\`) — no 2-hop chaining. Point "${r.id}" at whatever "${r.derivedFromRoute}" itself derives from instead.`);
+  }
+  if (r.startDate || r.endDate) {
+    console.warn(`  note: route "${r.id}" has both \`dateFormula\` and a literal \`startDate\`/\`endDate\` — the literal is inert and will be superseded live by the formula every time it resolves (which it always will, for a valid "${r.derivedFromRoute}" base). Drop the literal unless you specifically want a fallback for the (should-never-happen) case the formula fails to resolve.`);
   }
 }
 
@@ -607,6 +850,10 @@ if (UPDATE_PAGE) {
     + `converter. Run \`--from-page ${pageId} --out <spec.json>\`, review the reconstructed spec, then `
     + `build it fresh (no --update) once to adopt this feature before --update can reconcile it.`);
   const dump = dms(['page', 'dump', String(pageId), '--sections']);
+  // `page show` doesn't return `filters` (confirmed by reading its output) —
+  // only `raw get` returns the full row. Needed to decide whether this page
+  // already has the routeSlots/baseDate pair `dynamicReport: true` requires.
+  const rawPage = dms(['raw', 'get', String(pageId)]);
   updateCtx = {
     pageId,
     slug: page.url_slug,
@@ -616,6 +863,7 @@ if (UPDATE_PAGE) {
     oldKeyMap: JSON.parse(snap.data._specKeyMap),
     oldRevisions: snap.data._specRevisions ? JSON.parse(snap.data._specRevisions) : [],
     sections: dump?._expanded_sections || [],
+    existingFilters: rawPage?.data?.filters || [],
   };
   console.log(`reconciling into existing page ${pageId} (${updateCtx.slug})`);
 }
@@ -657,10 +905,16 @@ try {
     if (g.graphType === 'InfoBox') {
       // Route/TMC Info Box is not an AVL Graph either — no `resolution`, no
       // `applyMeasurePick`. See composeInfoBoxGraphState below for how its
-      // state is actually built.
-      if (!INFO_BOX_MEASURES.includes(g.measure)) fail(`graph "${g.key}": unknown Info Box measure "${g.measure}". Known: ${INFO_BOX_MEASURES.join(', ')}`);
+      // state is actually built. `measure` may be a string or an array of
+      // >= 2 (multi-measure — join-compatibility is checked build-side in
+      // Python, not duplicated here, see the const above).
+      const infoBoxMeasures = measureList(g.measure);
+      if (!infoBoxMeasures.length) fail(`graph "${g.key}": Info Box needs \`measure\` (a string, or an array of 2+ for a multi-measure box).`);
+      for (const m of infoBoxMeasures) {
+        if (!INFO_BOX_MEASURES.includes(m)) fail(`graph "${g.key}": unknown Info Box measure "${m}". Known: ${INFO_BOX_MEASURES.join(', ')}`);
+      }
       if (g.grain && !['route', 'tmc'].includes(g.grain)) fail(`graph "${g.key}": Info Box grain must be "route" or "tmc", got "${g.grain}".`);
-      if (g.measure === 'reliability' && !INFO_BOX_BINS.includes(g.bin)) fail(`graph "${g.key}": Info Box measure "reliability" needs \`bin\` — one of ${INFO_BOX_BINS.join(', ')} (AM Peak/Midday/PM Peak/Weekend — the only four periods source 1410 precomputes).`);
+      if (infoBoxMeasures.includes('reliability') && !INFO_BOX_BINS.includes(g.bin)) fail(`graph "${g.key}": Info Box measure "reliability" needs \`bin\` — one of ${INFO_BOX_BINS.join(', ')} (AM Peak/Midday/PM Peak/Weekend — the only four periods source 1410 precomputes).`);
       if (g.caption) fail(`graph "${g.key}": Info Box has no caption/description render path (Spreadsheet has no GraphTitle-equivalent, unlike AVL Graph) — drop \`caption\` or move this graph to an AVL Graph type.`);
       continue;
     }
@@ -668,13 +922,27 @@ try {
       // Route Compare Component is not an AVL Graph either — no `resolution`,
       // no `applyMeasurePick`, and (like Info Box) no caption render path.
       // See composeRouteCompareGraphState below for how its state is built.
-      if (!ROUTE_COMPARE_MEASURES.includes(g.measure)) fail(`graph "${g.key}": unknown Route Compare measure "${g.measure}". Known: ${ROUTE_COMPARE_MEASURES.join(', ')}`);
+      // `measure` may be a string or array of both ROUTE_COMPARE_MEASURES
+      // entries (multi-measure — no join-compatibility concern here, both
+      // measures already share the same join, see the const above).
+      const compareMeasures = measureList(g.measure);
+      if (!compareMeasures.length) fail(`graph "${g.key}": Route Compare needs \`measure\` (a string, or an array of both for a 2-measure box).`);
+      for (const m of compareMeasures) {
+        if (!ROUTE_COMPARE_MEASURES.includes(m)) fail(`graph "${g.key}": unknown Route Compare measure "${m}". Known: ${ROUTE_COMPARE_MEASURES.join(', ')}`);
+      }
       if (g.caption) fail(`graph "${g.key}": Route Compare has no caption/description render path (Spreadsheet has no GraphTitle-equivalent, unlike AVL Graph) — drop \`caption\` or move this graph to an AVL Graph type.`);
       continue;
     }
     if (!graphTypes.has(g.graphType)) fail(`graph "${g.key}": unknown graphType "${g.graphType}". Known: ${[...graphTypes].join(', ')}`);
     if (!vocab.measures[g.measure]) fail(`graph "${g.key}": unknown measure "${g.measure}". Known: ${Object.keys(vocab.measures).join(', ')}`);
     if (!vocab.resolutions[g.resolution]) fail(`graph "${g.key}": unknown resolution "${g.resolution}". Known: ${Object.keys(vocab.resolutions).join(', ')}`);
+    // composeMeasureConfig returns null (composes nothing) for this one combo — its own
+    // comment explains why (avgHoursOfDelay's summary value is bucket-grain-dependent, no
+    // equivalent of expressions.py's per-grain _avg_delay_summary_expr exists in the live
+    // picker). report_build.mjs never checks applyMeasurePick's return value (matching the
+    // live UI's own fire-and-forget call), so without this check a build would silently
+    // write an uncomposed, broken section instead of failing loudly.
+    if (g.resolution === 'summary' && g.measure === 'avgHoursOfDelay') fail(`graph "${g.key}": Bar Graph "summary" resolution doesn't support measure "avgHoursOfDelay" yet — its whole-range value depends on which time grain it's averaged from (day/weekday/5-minutes all give different numbers), and there's no live-picker equivalent of the old converter's per-grain expression. Pick a different measure, or use a normal time-bucketed resolution instead.`);
     if (g.comparisonMode && !['plain', 'difference'].includes(g.comparisonMode)) fail(`graph "${g.key}": comparisonMode must be "plain" or "difference".`);
   }
 
@@ -719,6 +987,14 @@ try {
       measure: g.measure,
       resolution: g.resolution,
       comparisonMode: g.comparisonMode || 'plain',
+      // Lets composeMeasureConfig tell a real single-route magnitude BarGraph
+      // (day/weekday/month breakdown of ONE route) apart from a genuine
+      // multi-route comparison sharing the same x-axis — see its own comment
+      // on `isSingleSeriesBarGraph`. Known here (unlike the live picker,
+      // which only has this if a route was already assigned) because the
+      // spec's route→graph assignment (`g._assigned`) is already resolved
+      // above.
+      seriesCount: g._assigned.length,
     });
     // The spec's explicit anchor, honored without reordering routes. Only set
     // when true so a normal-order difference graph's state stays byte-identical
@@ -769,8 +1045,15 @@ function composeMapGraphState(g, { tmcs, startDate, endDate } = {}) {
   const years = (g._assigned || [])
     .map(r => (r.endDate || r.startDate || '').slice(0, 4))
     .filter(Boolean).map(Number);
-  if (!years.length) fail(`graph "${g.key}": Route Map needs at least one assigned route with a startDate/endDate to pick a network year.`);
-  const year = Math.max(...years);
+  // No literal date anywhere across every assigned route — the normal case for a
+  // Dynamic Report graph fed only by slot/derived routes, which never have a
+  // build-time-resolvable date at all (their date is computed live, at view time).
+  // Fall back to the current calendar year for the network geometry rather than
+  // hard-failing the build: this only affects WHICH TMC-network vintage's geometry
+  // renders as the placeholder backdrop (cosmetic), not the live choropleth
+  // query/color, which re-bakes from the viewer's actually-resolved route/date once
+  // picked (see the re-bake loop below, called again after route resolution).
+  const year = years.length ? Math.max(...years) : new Date().getFullYear();
   const args = [CONVERTER_SCRIPT, '--route-map-section', '--measure', g.measure, '--year', String(year)];
   if (g.measure === 'avgHoursOfDelay') args.push('--resolution', g.resolution);
   if (DRY_RUN) args.push('--dry-run');
@@ -809,9 +1092,10 @@ function composeMapGraphState(g, { tmcs, startDate, endDate } = {}) {
 // placeholder-then-baked two-phase compose keyed off route resolution.
 function composeInfoBoxGraphState(g) {
   const grain = g.grain || 'route';
+  const infoBoxMeasures = measureList(g.measure);
   const args = [CONVERTER_SCRIPT, '--route-info-box-section',
-    '--info-box-measure', g.measure, '--grain', grain];
-  if (g.measure === 'reliability') {
+    '--info-box-measure', infoBoxMeasures.join(','), '--grain', grain];
+  if (infoBoxMeasures.includes('reliability')) {
     const years = (g._assigned || [])
       .map(r => (r.endDate || r.startDate || '').slice(0, 4))
       .filter(Boolean).map(Number);
@@ -826,7 +1110,18 @@ function composeInfoBoxGraphState(g) {
     args.push('--year', String(year), '--bin', g.bin);
   }
   if (DRY_RUN) args.push('--dry-run');
-  const out = execFileSync('python3', args, { cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'inherit'] });
+  let out;
+  try {
+    out = execFileSync('python3', args, { cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (e) {
+    // Python's argparse ap.error() (used for both bad-measure-name and the
+    // multi-measure join-compatibility rejection — see
+    // check_info_box_measure_combo in info_box_templates.py) prints a clean
+    // one-line reason to stderr before exiting nonzero; surface just that
+    // instead of a raw execFileSync stack trace.
+    const stderr = (e.stderr || '').toString().trim().split('\n').filter(Boolean);
+    fail(`graph "${g.key}": Info Box builder rejected this spec:\n${stderr[stderr.length - 1] || e.message}`);
+  }
   const lines = out.trim().split('\n').filter(Boolean);
   let built;
   try {
@@ -838,8 +1133,10 @@ function composeInfoBoxGraphState(g) {
   // --from-page recover an Info Box graph's measure/grain/bin exactly,
   // and lets isGraphSectionElement tell an Info Box section apart from the
   // page's own Add-a-Route section (both are element-type "Spreadsheet").
+  // `measure` stores whatever shape the spec gave (string or array) —
+  // round-trips through --from-page unchanged either way.
   built.state._infoBoxPick = { measure: g.measure, grain,
-    ...(g.measure === 'reliability' ? { bin: g.bin } : {}) };
+    ...(infoBoxMeasures.includes('reliability') ? { bin: g.bin } : {}) };
   return built;
 }
 
@@ -853,9 +1150,16 @@ function composeInfoBoxGraphState(g) {
 // whichever route the page's own route list currently has first — so this
 // composes in a single pass, immediately, exactly like Info Box.
 function composeRouteCompareGraphState(g) {
-  const args = [CONVERTER_SCRIPT, '--route-compare-section', '--compare-measure', g.measure];
+  const compareMeasures = measureList(g.measure);
+  const args = [CONVERTER_SCRIPT, '--route-compare-section', '--compare-measure', compareMeasures.join(',')];
   if (DRY_RUN) args.push('--dry-run');
-  const out = execFileSync('python3', args, { cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'inherit'] });
+  let out;
+  try {
+    out = execFileSync('python3', args, { cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (e) {
+    const stderr = (e.stderr || '').toString().trim().split('\n').filter(Boolean);
+    fail(`graph "${g.key}": Route Compare builder rejected this spec:\n${stderr[stderr.length - 1] || e.message}`);
+  }
   const lines = out.trim().split('\n').filter(Boolean);
   let built;
   try {
@@ -867,7 +1171,8 @@ function composeRouteCompareGraphState(g) {
   // --from-page recover a Route Compare graph's measure exactly, and lets
   // isGraphSectionElement tell a Route Compare section apart from Info Box
   // and the page's own Add-a-Route section (all three are element-type
-  // "Spreadsheet").
+  // "Spreadsheet"). `measure` stores whatever shape the spec gave (string or
+  // array) — round-trips through --from-page unchanged either way.
   built.state._routeComparePick = { measure: g.measure };
   return built;
 }
@@ -914,6 +1219,14 @@ if (DRY_RUN) {
 // route's own tmc_array/name/etc, so fetch each one.
 console.log('resolving routes from the catalog...');
 for (const r of spec.routes) {
+  // A Dynamic Report route slot has no route_id — it's resolved by whoever
+  // views the page, via `?routes=` (see useDynamicReportRoutes.js). Nothing to
+  // look up at build time; `r._row` stays unset, same as it would for a route
+  // no one has ever picked yet.
+  if (r.slot) {
+    console.log(`  [slot] "${r._name}" — resolved at view time (route_slot_group: ${r.route_slot_group || '(none — one slot per group)'})`);
+    continue;
+  }
   // Must go through `dataset query`, NOT `raw get`: Routes Data rows are
   // split-table (`:data`) rows, and the `dms.data.byId` route behind `raw get`
   // is app-namespaced — with no type it cannot address a per-type split table
@@ -952,7 +1265,20 @@ for (const [i, g] of spec.graphs.entries()) {
     if (r.endDate) ends.push(r.endDate);
   }
   if (!tmcs.size || !starts.length || !ends.length) {
+    // Real, previously-latent gap found while wiring Dynamic Report slot support,
+    // 2026-08-11: leaving `composedStates[i]` untouched here means it stays the
+    // `undefined` this graph started as (Map graphs are seeded `undefined` up
+    // front, unlike every other graph type) — `JSON.stringify(undefined)` is the
+    // JS value `undefined`, not a string, so the section would be WRITTEN WITH NO
+    // `element-data` AT ALL, not the "placeholder paint renders" behavior
+    // report-spec.md documents (that claim was only ever verified via --dry-run,
+    // which calls composeMapGraphState unconditionally — a real build never did
+    // until now). Call the same bare compose --dry-run already uses so a real
+    // build gets the same valid placeholder shape instead of a broken section.
     console.warn(`  note: graph "${g.key}" (Route Map) has no resolvable tmcs/date range across its assigned routes — choropleth left unbaked, template placeholder paint renders instead`);
+    const built = composeMapGraphState(g);
+    composedStates[i] = built.state;
+    g._mapElementType = built.elementType;
     continue;
   }
   const startDate = [...starts].sort()[0];
@@ -964,6 +1290,11 @@ for (const [i, g] of spec.graphs.entries()) {
 }
 
 // ── wire route → graph routing onto `_measurePick.routeIds` ────────────────
+// Changing this field's shape? Every corpus entry in
+// scripts/npmrds-reports/report_probe_fixtures/golden-corpus.json tagged
+// "display._measurePick.routeIds" needs re-verifying (`node
+// scripts/npmrds-reports/probe_corpus.mjs --only <key>` before/after) — see
+// src/dms/skills/regression-testing-npmrds-reports.md.
 // Design push #2 (2026-08-06, see useGraphPublish.js's own header comment) moved
 // route routing OFF the route (`routes[].graphIds` on the snap row) and ONTO each
 // GRAPH's own `display._measurePick.routeIds` — `findSelfBoundGraphs` treats any
@@ -1262,6 +1593,21 @@ if (updateCtx) {
     dms(['raw', 'update', String(pageId)], { title: spec.title });
     console.log(`updated page title (slug left unchanged: /${slug})`);
   }
+  // `dynamicReport: true` only ever ADDS the routeSlots/baseDate pair if
+  // missing — never removes it, and never touches `filters` at all when the
+  // spec doesn't say `dynamicReport: true` (this script never touched
+  // `item.filters` before this feature; the safest default is to keep not
+  // touching it unless explicitly asked). Idempotent: a page that already has
+  // both is left alone, so re-running `--update` on an already-adopted Dynamic
+  // Report is a no-op here.
+  if (spec.dynamicReport) {
+    const hasBoth = ['routeSlots', 'baseDate'].every(t => updateCtx.existingFilters.some(f => f.type === t));
+    if (!hasBoth) {
+      const kept = updateCtx.existingFilters.filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
+      dms(['raw', 'update', String(pageId)], { filters: [...kept, ...DYNAMIC_REPORT_FILTERS] });
+      console.log('added routeSlots/baseDate page filters (this page is now a Dynamic Report)');
+    }
+  }
 } else {
   // ── create a new page ───────────────────────────────────────────────────
   const parentSlug = spec.parent || DEFAULT_PARENT_SLUG;
@@ -1278,6 +1624,12 @@ if (updateCtx) {
     sidebar: pageTemplate.sidebar || 'left',
     ...(pageTemplate.sidebarHideInView !== undefined ? { sidebarHideInView: pageTemplate.sidebarHideInView } : {}),
     ...(pageTemplate.draft_section_groups ? { draft_section_groups: pageTemplate.draft_section_groups } : {}),
+    // `dynamicReport: true` is the ONLY thing that turns a page into a Dynamic
+    // Report — mirrors `toggleDynamicReport` (ReportRouteList.jsx) exactly: both
+    // filters always register together, `baseDate` included even though it's only
+    // ever consulted once some route on the page actually derives from the Today
+    // anchor (Ryan's call: keep the capability available without re-toggling).
+    ...(spec.dynamicReport ? { filters: DYNAMIC_REPORT_FILTERS } : {}),
   });
   pageId = pageRes?.id;
   if (!pageId) fail('page create returned no id.');
@@ -1315,7 +1667,39 @@ if (DO_PUBLISH) {
 // ── reports_snap_2 row: the route instances ───────────────────────────────
 // graphIds is COMPUTED from the spec's declared assignments — this is the step
 // that, done by clicking, can silently fail to persist.
+// `derivedFromRoute` in the spec is a spec-local `routes[].id` (or the literal
+// `__TODAY__` sentinel) — the persisted shape needs the BASE's own
+// `route_comp_id` instead (what `resolveRouteDates` actually looks up by), same
+// translation `graphs[].anchor` already does for graphs. Built once, up front,
+// so both branches below (slot and concrete) can share it.
+const compIdByRouteId = new Map(spec.routes.map((r, i) => [r.id, `comp-${i}`]));
 const routeEntries = spec.routes.map((r, i) => {
+  const graphIds = (r.graphs || []).map(gk => graphTrackingIds[spec.graphs.findIndex(g => g.key === gk)]);
+  const derived = r.dateFormula ? {
+    dateFormula: r.dateFormula,
+    derivedFromRoute: r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? TODAY_ANCHOR_COMP_ID : compIdByRouteId.get(r.derivedFromRoute),
+  } : {};
+  if (r.slot) {
+    // A slot's persisted shape mirrors exactly what `handleAddRouteSlot`/
+    // `addRoutes` write by hand today (see ReportRouteList.jsx/useReportRow.js) —
+    // no `id`/`route_id`/`tmc_array`/any other catalog field, since those get
+    // overlaid live by `useDynamicReportRoutes` on every page load, never
+    // persisted. No literal startDate/endDate either — see the "inert literal"
+    // warning above; a slot with a dateFormula never needs one, and a slot
+    // without one (not expected today, but not forbidden) simply has no date
+    // until a viewer picks a route AND the report gains a formula for it.
+    return {
+      name: r._name,
+      route_comp_id: `comp-${i}`,
+      ...(r.route_slot_group ? { route_slot_group: r.route_slot_group } : {}),
+      ...(r.isPlaceholderName ? { isPlaceholderName: true } : {}),
+      graphIds,
+      ...derived,
+      ...(r.color ? { color: r.color } : {}),
+      ...(r.weekdays ? { weekdays: r.weekdays } : {}),
+      isValid: true,
+    };
+  }
   const d = r._row;
   return {
     ...d,
@@ -1323,7 +1707,8 @@ const routeEntries = spec.routes.map((r, i) => {
     route_id: d.route_id ?? String(r.route_id),
     id: r.route_id,
     route_comp_id: `comp-${i}`,
-    graphIds: (r.graphs || []).map(gk => graphTrackingIds[spec.graphs.findIndex(g => g.key === gk)]),
+    graphIds,
+    ...derived,
     ...(r.startDate ? { startDate: combineDateTime(r.startDate, r.startTime) } : {}),
     ...(r.endDate ? { endDate: combineDateTime(r.endDate, r.endTime) } : {}),
     ...(r.color ? { color: r.color } : {}),
@@ -1337,6 +1722,27 @@ const specKeyMap = Object.fromEntries([
   ['title_block', titleBlockTrackingId],
   ...spec.graphs.map((g, i) => [g.key, graphTrackingIds[i]]),
 ]);
+
+// Catalog metadata (`/reports`'s category tiles, e.g. `converted_reports/reports` id
+// 2208581) — read directly from each Card section's `filterGroups`: every one of the 5
+// category tiles filters `reports_snap_2` on `{col: 'tags', op: 'filter', value:
+// ['category:<x>']}`, so `tags` is the actual row-selection mechanism, not just display —
+// a spec-built row missing it is invisible on the catalog, not just under-labeled.
+// `page_path`/`graph_count`/`counts_label` are pure display cells on the same Card and are
+// fully derivable from the spec itself (see reports-page-template-catalog.md's "graph_count/
+// counts_label are static, authored at curation time" — that was true for the Python
+// converter, which has no live source for them; report_build.mjs does, so compute rather
+// than require an author to keep a redundant number in sync by hand). `tags`/`difficulty`
+// stay author-supplied spec fields — there's no way to derive "which category" from graphs/
+// routes alone. Written unconditionally (harmless on a non-catalog report; a `tags`-less
+// row just never matches any category filter, same as today).
+const catalogFields = {
+  page_path: `/${slug}`,
+  graph_count: spec.graphs.length,
+  counts_label: `${spec.routes.length} routes · ${spec.graphs.length} graphs`,
+  ...(spec.tags ? { tags: spec.tags } : {}),
+  ...(spec.difficulty !== undefined ? { difficulty: spec.difficulty } : {}),
+};
 
 let snapRes;
 if (updateCtx) {
@@ -1359,6 +1765,7 @@ if (updateCtx) {
     routes: JSON.stringify(routeEntries),
     name: spec.title,
     description: spec.description || '',
+    ...catalogFields,
     _built_from_spec: specPath,
     ...(spec.request ? { _client_request: spec.request } : {}),
     _spec: JSON.stringify(cleanSpec),
@@ -1373,6 +1780,7 @@ if (updateCtx) {
     routes: JSON.stringify(routeEntries),
     name: spec.title,
     description: spec.description || '',
+    ...catalogFields,
     _built_from_spec: specPath,
     ...(spec.request ? { _client_request: spec.request } : {}),
     _spec: JSON.stringify(cleanSpec),

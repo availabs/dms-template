@@ -2,8 +2,20 @@ import json
 
 from .config import GRAPH_TEMPLATE_TYPE
 from .vocab import GOOD_DIRECTION_BY_MEASURE, MEASURE_NAMES
+from .expressions import META_JOIN
 from .template_specs import MEASURE_EXPR, TEMPLATE_BASE_NAME
 from .db import dms, now_iso
+
+# META_JOIN explicitly, NOT the base template's default (TMC Identification,
+# 455/3464) — 2026-08-12 fix, same reasoning as
+# ensure_info_box_speed_template's own comment: `speed`'s expression reads
+# `table1.miles` for real, and only META_JOIN's `(tmc, year)` join key gets
+# every query the TMC's actual metadata for the year it's actually querying.
+# `travelTime` doesn't reference table1 at all so it doesn't care which join
+# it gets (same reasoning as ensure_info_box_traveltime_template) — using
+# META_JOIN unconditionally for both measures is simpler than branching, and
+# keeps every Info Box/Route Compare template on one consistent join.
+ROUTE_COMPARE_JOIN = {"sources": {"table1": META_JOIN}}
 
 def ensure_route_compare_template(measure, templates, dry_run):
     """Mint (or reuse) a SHARED, generic Route Compare Component Spreadsheet
@@ -86,21 +98,33 @@ def ensure_route_compare_template(measure, templates, dry_run):
         # MEASURE_EXPR changed (exactly what the round-35 speed/TT backport
         # does). Column 0 is the __series col this function itself minted;
         # only the value/delta columns are spec-derived.
+        # 2026-08-12: added join drift detection — this row's `join` used to
+        # never change (always the base's default), so there was nothing to
+        # check; now that `speed` needs META_JOIN specifically, an
+        # already-live `route_compare_speed` row (id 2189364, confirmed via
+        # `dms raw list` — minted before this fix existed) would otherwise
+        # silently keep the old TMC-Identification join forever.
         ex_state = json.loads(existing["data"]["stateJson"])
         ex_cols = ex_state.get("columns") or []
-        if len(ex_cols) == 3 and ex_cols[1] == value_col and ex_cols[2] == delta_col:
+        col_drift = not (len(ex_cols) == 3 and ex_cols[1] == value_col and ex_cols[2] == delta_col)
+        join_drift = ex_state.get("join") != ROUTE_COMPARE_JOIN
+        if not (col_drift or join_drift):
             return templates  # no drift
-        ex_state["columns"] = [ex_cols[0], value_col, delta_col]
+        if col_drift:
+            ex_state["columns"] = [ex_cols[0], value_col, delta_col]
+        if join_drift:
+            ex_state["join"] = json.loads(json.dumps(ROUTE_COMPARE_JOIN))
         new_data = {**existing["data"],
                     "stateJson": json.dumps(ex_state),
                     "updatedAt": now_iso()}
+        note = ", ".join(k for k, fired in (("value/delta expr", col_drift), ("join", join_drift)) if fired)
         if dry_run:
             print(f"[dry-run] would update drifted template '{name}' "
-                  f"id={existing['id']} (value/delta expr changed)")
+                  f"id={existing['id']} ({note} changed)")
         else:
             dms(["raw", "update", str(existing["id"])], data=new_data)
             print(f"updated template '{name}' id={existing['id']} "
-                  f"(value/delta expr drift fix)")
+                  f"({note} drift fix)")
         templates[name] = {"id": existing["id"], "data": new_data}
         return templates
     base = templates.get(TEMPLATE_BASE_NAME)
@@ -121,7 +145,7 @@ def ensure_route_compare_template(measure, templates, dry_run):
             "showAttribution": True, "fetchMode": "force",
             "_functions": base_state["display"]["_functions"],
         },
-        "join": base_state.get("join"),
+        "join": ROUTE_COMPARE_JOIN,
         "customBuckets": base_state.get("customBuckets"),
         "comparisonSeries": base_state.get("comparisonSeries"),
     }
@@ -146,5 +170,54 @@ def ensure_route_compare_template(measure, templates, dry_run):
     templates[name] = {"id": r["id"], "data": data}
     print(f"created template '{name}' id={r['id']}")
     return templates
+
+
+# ── Multi-measure Route Compare composition (2026-08-12) ─────────────────────
+# Same "compose fresh, don't mint a combo-named template" shape as Info Box's
+# build_route_info_box_section_state_multi — see that function's header
+# comment for the full reasoning. Route Compare only ever has 2 possible
+# measures (ROUTE_COMPARE_MEASURES = ['speed', 'travelTime']), and both already
+# share the same join (just the base template's default TMC Identification
+# join, carried forward unconditionally above) — no join-compatibility check
+# needed here, unlike Info Box's up-to-5-measure combinations.
+def build_route_compare_section_state_multi(measures, templates, dry_run):
+    """Multi-measure counterpart to ensure_route_compare_template. `measures`
+    must be >= 2 entries from ROUTE_COMPARE_MEASURES. Returns (element_type,
+    state) — mirrors build_route_info_box_section_state's return shape, not
+    persisted as a named/shared template."""
+    value_delta_pairs = []
+    join = None
+    for m in measures:
+        templates = ensure_route_compare_template(m, templates, dry_run)
+        state = json.loads(templates[f"route_compare_{m}"]["data"]["stateJson"])
+        # Every single-measure template is [series_col, value_col, delta_col].
+        value_delta_pairs.append((state["columns"][1], state["columns"][2]))
+        if state.get("join"):
+            join = state["join"]
+
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+    series_col = next(c for c in base_state["columns"] if c.get("name") == "__series")
+    series_col.setdefault("customName", "Route")
+    columns = [series_col] + [c for pair in value_delta_pairs for c in pair]
+
+    title = " / ".join(MEASURE_NAMES.get(m, m) for m in measures)
+    state = {
+        "externalSource": base_state["externalSource"],
+        "columns": columns,
+        "filters": base_state.get("filters") or {"op": "AND", "groups": []},
+        "display": {
+            "usePagination": True, "pageSize": 50, "hideExternalToggle": True,
+            "title": {"title": f"Route Compare, {title}"},
+            "showAttribution": True, "fetchMode": "force",
+            "_functions": base_state["display"]["_functions"],
+        },
+        "join": join or base_state.get("join"),
+        "customBuckets": base_state.get("customBuckets"),
+        "comparisonSeries": base_state.get("comparisonSeries"),
+    }
+    return "Spreadsheet", state
 
 

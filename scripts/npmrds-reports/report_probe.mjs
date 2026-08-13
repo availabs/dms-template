@@ -5,6 +5,8 @@
 //   - console errors + uncaught page errors
 //   - every dms-server response (count, non-200 list)
 //   - requests still pending at close (signal for unbounded/hung ClickHouse queries)
+//   - SQL/ClickHouse errors that come back as a 200 with an error payload (status-code checks
+//     alone miss these, and the page often just renders blank with no console error either)
 //   - decoded /graph traffic (URL-encoded Falcor paths + POST bodies decoded to readable text)
 //   - per-section SVG census (distinguishes "rendered blank" from "never rendered")
 //   - visible body text
@@ -114,7 +116,12 @@ for (let i = 1; i < argv.length; i++) {
   else { console.error(`unknown option: ${a}`); process.exit(2); }
 }
 const url = target.startsWith('http') ? target : `${opts.host}/${target}`;
-const slug = target.startsWith('http') ? new URL(target).pathname.replace(/\W+/g, '_').replace(/^_+|_+$/g, '') || 'index' : target;
+// Sanitize in both branches — a bare slug target can itself contain '/' (parent/slug, the norm
+// for every converted-report page) or a '?query=param' (e.g. Dynamic Report's `?routes=`), and an
+// unsanitized slug silently lands the JSON/screenshot output in a nested subdirectory instead of
+// erroring (Playwright's screenshot `path` option auto-creates missing parent dirs, masking it).
+const rawSlug = target.startsWith('http') ? new URL(target).pathname : target;
+const slug = rawSlug.replace(/\W+/g, '_').replace(/^_+|_+$/g, '') || 'index';
 mkdirSync(opts.out, { recursive: true });
 
 // ---- collect -------------------------------------------------------------
@@ -130,10 +137,18 @@ const consoleErrors = [];
 const pageErrors = [];
 const badResponses = [];
 const graphCaptures = [];
+const sqlErrors = []; // /graph responses whose 200 body still carries a DB error string — see below
 const pending = new Map(); // api-origin requests with no response yet
 let apiResponses = 0;
 let graphTotal = 0;
 const navStart = Date.now(); // ms reference for graphCaptures[].tMs — diagnoses render-vs-fetch timing gaps
+
+// A ClickHouse/Postgres query error can come back as a 200 with an error payload — status-code
+// checks alone (badResponses above) miss it entirely, and the page often just renders blank with
+// no console/page error either. Borrowed from qa_skills/tools/qa_assess.mjs's identical check
+// (same regex core), extended with ClickHouse's own "DB::Exception"/"Code: N" error shape since
+// these are ClickHouse-backed queries, not just Postgres.
+const SQL_ERROR_RE = /(syntax error[^"]{0,160}|column [^"]{0,80} does not exist|relation [^"]{0,80} does not exist|DB::Exception[^"]{0,160}|Code:\s*\d+[^"]{0,160})/i;
 
 page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 400)); });
 page.on('pageerror', e => pageErrors.push(String(e.message).slice(0, 400)));
@@ -158,11 +173,17 @@ page.on('response', async resp => {
   if (!u.includes('/graph')) return;
   graphTotal++;
   const decoded = decodeURIComponent(u) + (req.postData() ? ' ' + decodeURIComponent(req.postData()) : '');
+  let body = null;
+  try { body = await resp.json(); } catch {}
+  // Scan every /graph response regardless of --grep — a query the caller didn't grep for can
+  // still be the one silently returning an error.
+  if (body) {
+    const m = JSON.stringify(body).match(SQL_ERROR_RE);
+    if (m) sqlErrors.push({ match: m[1].slice(0, 200), decoded: decoded.slice(0, 160) });
+  }
   const matched = opts.greps.length === 0 || opts.greps.some(g => decoded.includes(g));
   if (!matched) return;
-  let body = null;
-  if (opts.bodies || matched) { try { body = await resp.json(); } catch {} }
-  graphCaptures.push({ method: req.method(), status: resp.status(), decoded, body, tMs: Date.now() - navStart });
+  graphCaptures.push({ method: req.method(), status: resp.status(), decoded, body: (opts.bodies || matched) ? body : null, tMs: Date.now() - navStart });
 });
 
 console.log(`probing ${url} (wait ${opts.wait}ms after networkidle)`);
@@ -190,6 +211,14 @@ const sections = await page.evaluate(() => {
     .map(svgInfo)
     .filter(s => s.w >= 100 && s.h >= 60); // skip icons/chevrons
 
+  // Map sections render via a MapLibre <canvas> (WebGL), never SVG — an SVG-only census reads a
+  // correctly-rendered map as permanently blank (found live 2026-08-10 probing the Dynamic Report
+  // corpus candidate: a real choropleth with real data still showed "NO SVG"). Same size filter as
+  // graphSvgs, since a canvas's drawn content can't be introspected the way path/rect counts can —
+  // presence + real size is the only signal available.
+  const canvasInfo = c => ({ w: Math.round(c.getBoundingClientRect().width), h: Math.round(c.getBoundingClientRect().height) });
+  const graphCanvases = el => [...el.querySelectorAll('canvas')].map(canvasInfo).filter(c => c.w >= 100 && c.h >= 60);
+
   const cells = [...document.querySelectorAll('div.relative.group')]
     .filter(el => !el.parentElement.closest('div.relative.group')); // outermost only
   const out = cells
@@ -200,8 +229,9 @@ const sections = await page.evaluate(() => {
       // building --expect: every census title came back "Add", silently).
       title: ([...el.querySelectorAll('.font-display')].map(e => e.textContent.trim()).find(t => t !== 'Add') || '').slice(0, 80),
       svgs: graphSvgs(el),
+      canvases: graphCanvases(el),
     }))
-    .filter(s => s.title || s.svgs.length);
+    .filter(s => s.title || s.svgs.length || s.canvases.length);
   if (out.length) return out;
 
   document.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
@@ -210,10 +240,14 @@ const sections = await page.evaluate(() => {
     let el = h.closest('div');
     for (let i = 0; i < 6 && el; i++) {
       const svgs = el.querySelectorAll('svg');
-      if (svgs.length) { out.push({ title, svgs: [...svgs].map(svgInfo) }); return; }
+      const canvases = el.querySelectorAll('canvas');
+      if (svgs.length || canvases.length) {
+        out.push({ title, svgs: [...svgs].map(svgInfo), canvases: [...canvases].map(canvasInfo) });
+        return;
+      }
       el = el.parentElement;
     }
-    out.push({ title, svgs: [] });
+    out.push({ title, svgs: [], canvases: [] });
   });
   return out;
 });
@@ -253,21 +287,27 @@ const stillPending = [...pending.values()];
 await browser.close();
 
 // ---- report ---------------------------------------------------------------
-const blankSections = sections.filter(s =>
-  !s.svgs.length || s.svgs.every(v => v.paths + v.rects + v.circles === 0));
+// "Has content" = real SVG ink OR a real-sized canvas (Map sections render via MapLibre
+// WebGL/canvas, never SVG — see graphCanvases above).
+const hasSvgInk = s => s.svgs.length > 0 && s.svgs.some(v => v.paths + v.rects + v.circles > 0);
+const hasCanvas = s => (s.canvases || []).length > 0;
+const blankSections = sections.filter(s => !hasSvgInk(s) && !hasCanvas(s));
 console.log(`\n== ${slug} ==`);
 console.log(`api responses: ${apiResponses}  /graph: ${graphTotal} (captured ${graphCaptures.length})` +
   `  non-200: ${badResponses.length}  console errors: ${consoleErrors.length}` +
-  `  page errors: ${pageErrors.length}  pending-at-close: ${stillPending.length}`);
+  `  page errors: ${pageErrors.length}  pending-at-close: ${stillPending.length}  sql errors: ${sqlErrors.length}`);
 for (const e of pageErrors.slice(0, 5)) console.log(`  pageerror: ${e}`);
 for (const e of consoleErrors.slice(0, 5)) console.log(`  console: ${e}`);
 for (const b of badResponses.slice(0, 5)) console.log(`  non200: ${b.status} ${b.url}`);
 for (const p of stillPending.slice(0, 5)) console.log(`  PENDING (possible hung/unbounded query): ${p}`);
-console.log(`sections with svg content: ${sections.length - blankSections.length}/${sections.length}`);
+for (const s of sqlErrors.slice(0, 5)) console.log(`  SQL ERROR (200 but error payload): ${s.match}  — query: ${s.decoded}`);
+console.log(`sections with content: ${sections.length - blankSections.length}/${sections.length}`);
 for (const s of sections) {
   const v = s.svgs[0];
-  const state = !s.svgs.length ? 'NO SVG'
-    : s.svgs.every(x => x.paths + x.rects + x.circles === 0) ? 'EMPTY SVG'
+  const c = (s.canvases || [])[0];
+  const state = hasCanvas(s) ? `canvas ${s.canvases.length}, first: ${c.w}x${c.h}`
+    : !s.svgs.length ? 'NO SVG/CANVAS'
+    : !hasSvgInk(s) ? 'EMPTY SVG'
     : `${s.svgs.length} svg(s), first: ${v.w}x${v.h} paths=${v.paths} rects=${v.rects} circles=${v.circles}`;
   console.log(`  [${state}] ${s.title}`);
 }
@@ -316,13 +356,15 @@ if (opts.expect) {
 
     if (g.title) {
       const section = sections.find(s => s.title === g.title);
-      const rendered = section && section.svgs.length && section.svgs.some(v => v.paths + v.rects + v.circles > 0);
+      const rendered = section && (hasSvgInk(section) || hasCanvas(section));
       record(`graph "${g.key}": section "${g.title}" rendered non-empty`, Boolean(rendered),
-        !section ? 'no census section with this title' : rendered ? 'has non-empty SVG content' : 'NO SVG or EMPTY SVG');
+        !section ? 'no census section with this title' : rendered ? 'has non-empty SVG/canvas content' : 'NO SVG/CANVAS or EMPTY SVG');
     }
   }
   record('no console errors', consoleErrors.length === 0, `${consoleErrors.length} error(s)`);
   record('no page errors', pageErrors.length === 0, `${pageErrors.length} error(s)`);
+  record('no SQL errors in /graph responses', sqlErrors.length === 0,
+    sqlErrors.length ? sqlErrors.map(s => s.match).join('; ') : '0 error(s)');
 
   const failed = checks.filter(c => !c.ok);
   expectResult = { pass: failed.length === 0, checks };
@@ -335,7 +377,7 @@ if (opts.json) {
   const jsonPath = path.join(opts.out, `probe_${slug}.json`);
   writeFileSync(jsonPath, JSON.stringify({
     url, when: new Date().toISOString(), opts: { ...opts, out: undefined },
-    consoleErrors, pageErrors, badResponses, stillPending, sections, bodyText,
+    consoleErrors, pageErrors, badResponses, stillPending, sqlErrors, sections, bodyText,
     graphTotal, graphCaptures, evalResult, expectResult,
   }, null, 1));
   console.log(`json: ${jsonPath}`);
