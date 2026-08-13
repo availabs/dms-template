@@ -8,6 +8,11 @@ import { generateDateRange, generateEpochRange } from './utils';
 // QuickControls/index.jsx reads the identical key rather than a second, driftable copy.
 export const ROUTE_CATALOG_PARAM_KEY = '__report_routes_catalog__';
 
+// Changing this file's read of `_measurePick`? Every golden-corpus entry tagged
+// "display._measurePick.routeIds" (scripts/npmrds-reports/report_probe_fixtures/
+// golden-corpus.json) needs re-verifying — `node scripts/npmrds-reports/probe_corpus.mjs
+// --only <key>` before/after — see src/dms/skills/regression-testing-npmrds-reports.md.
+//
 // Design push #2 (2026-08-06): a route's weekday mask / time-of-day window and its graph
 // assignment both moved OFF the route and onto each GRAPH's own `display._measurePick`
 // (`weekdays`/`start`/`end`/`routeIds` — see MeasurePicker/composeMeasureConfig.js's

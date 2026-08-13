@@ -8,6 +8,7 @@ import { ROUTE_COLOR_PALETTE } from './useReportRow';
 import { resolveRelativeDateFormula } from './relativeDateResolution';
 import {
   SPAN_OPTIONS,
+  MONTH_OPTIONS,
   PATTERN_OPTIONS,
   DIRECTION_OPTIONS,
   DEFAULT_PRESET,
@@ -334,7 +335,7 @@ export default function RouteRow({
                     {PATTERN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
-                {derivePreset.pattern !== 'advanced' && (
+                {(derivePreset.pattern === 'offset' || derivePreset.pattern === 'snap') && (
                   <div className={t.dateModeWrapper}>
                     <label className={t.dateModeLabel}>Span:</label>
                     <select className={t.dateFieldInput} value={derivePreset.span} onChange={(e) => setDerivePresetField({ span: e.target.value })}>
@@ -355,6 +356,32 @@ export default function RouteRow({
                     <label className={t.dateModeLabel}>How many:</label>
                     <input type="number" min="0" className={t.dateFieldInput} value={derivePreset.amount} onChange={(e) => setDerivePresetField({ amount: e.target.value })} />
                   </div>
+                )}
+                {derivePreset.pattern === 'calendarMonth' && (
+                  <div className={t.dateModeWrapper}>
+                    <label className={t.dateModeLabel}>Month:</label>
+                    <select className={t.dateFieldInput} value={derivePreset.calMonth} onChange={(e) => setDerivePresetField({ calMonth: e.target.value })}>
+                      {MONTH_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                )}
+                {derivePreset.pattern === 'calendarRange' && (
+                  <>
+                    <div className={t.dateModeWrapper}>
+                      <label className={t.dateModeLabel}>From:</label>
+                      <select className={t.dateFieldInput} value={derivePreset.calMonth1} onChange={(e) => setDerivePresetField({ calMonth1: e.target.value })}>
+                        {MONTH_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                      <input type="number" min="1" max="31" className={t.dateFieldInput} value={derivePreset.calDay1} onChange={(e) => setDerivePresetField({ calDay1: e.target.value })} />
+                    </div>
+                    <div className={t.dateModeWrapper}>
+                      <label className={t.dateModeLabel}>To:</label>
+                      <select className={t.dateFieldInput} value={derivePreset.calMonth2} onChange={(e) => setDerivePresetField({ calMonth2: e.target.value })}>
+                        {MONTH_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                      <input className={t.dateFieldInput} placeholder="day or L" value={derivePreset.calDay2} onChange={(e) => setDerivePresetField({ calDay2: e.target.value })} />
+                    </div>
+                  </>
                 )}
                 {derivePreset.pattern === 'advanced' && (
                   <div className={t.dateModeWrapper}>

@@ -13,34 +13,6 @@
 <body class="dms-annotated">
 
 <!-- ============================================================
-     META-NAV — documentation chrome, NOT part of the DMS theme.
-     Mirrors home.html; this page is the active link.
-     ============================================================ -->
-<nav class="wcdb-meta-nav">
-  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">design-system</span>
-    <a href="./theme.html">theme</a>
-    <a href="./layouts.html">layouts</a>
-    <a href="./grid.html">grid</a>
-    <a href="./components.html" data-active="true">components</a>
-    <a href="./patterns.html">patterns</a>
-  </span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">pages</span>
-    <a href="../pages/home.html">home</a>
-    <a href="../pages/listen.html">listen</a>
-    <a href="../pages/schedule.html">schedule</a>
-    <a href="../pages/show.html">show</a>
-    <a href="../pages/djs.html">djs</a>
-    <a href="../pages/spins.html">spins</a>
-    <a href="../pages/blog.html">blog</a>
-    <a href="../pages/events.html">events</a>
-    <a href="../pages/login.html">login</a>
-  </span>
-</nav>
-
-<!-- ============================================================
      LAYOUT · default (theme.js layout.styles[0])
      Single column scroll — this doc page ships one `content`
      LayoutGroup so the md:grid collapses to a single child.
@@ -58,30 +30,34 @@
          ============================================================ -->
     <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
       <div class="flex items-center h-14 px-4">
-        <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+        <a href="./theme.html" class="no-underline"><div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
           WCDB
-        </div>
+        </div></a>
         <span class="ml-2 pl-2 border-l border-[var(--line-2)]
                      font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
                      text-[color:var(--ink-3)]">
-          90.9 FM
+          Design System
         </span>
       </div>
       <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Theme</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Layouts</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Grid</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Components</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Patterns</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./theme.html">Theme</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./layouts.html">Layouts</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./grid.html">Grid</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" href="./components.html" data-active="true">Components</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./patterns.html">Patterns</a>
       </div>
       <div class="hidden md:flex h-full items-center pr-4 gap-2">
-        <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
-                       text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
-                title="Toggle theme mode">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
-            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-          </svg>
+        <!-- ThemeModeToggle · theme.js widgets.ThemeModeToggle.
+             Live in these mockups — the shared mockup runtime wires it to the same
+             `wcdb-mode` key and `data-mode` attribute the real widget uses.
+             The glyph shows the mode you are IN: Moon while dark. -->
+        <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)]
+                       text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+          <!-- icon: Moon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
+        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)] tabular-nums" title="Design system page 4 of 5">04 / 05</span>
       </div>
     </header>
 
@@ -140,42 +116,114 @@
                 <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">TopNav · theme.topnav.styles[0] "wcdb"</div>
                 <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] m-0 mb-4">The app crown.</h3>
 
-                <!-- TopNav anatomy: leftMenu (logo) + centerMenu (primary nav) + rightMenu (utility) -->
-                <div class="rounded-[18px] bg-[var(--card-bg)] p-2 mb-6 relative overflow-visible">
-                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] absolute -top-2.5 left-4 bg-[var(--card-bg)] px-2">
-                    topnavWrapper · h-14
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[14px] leading-[1.5] text-[color:var(--ink-2)] mb-5">
+                  The WCDB TopNav is <em class="italic">a notch, not a bar</em>. <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">layoutContainer1</code>
+                  is <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">fixed top-0 z-50</code> with
+                  <em class="italic">no width</em>, so the whole nav shrink-wraps to its content, and the page
+                  background is carried by each <em class="italic">menu</em> container rather than by the header.
+                  That is what lets the hero panel sit beside the nav and cut up underneath it. The right menu
+                  closes the notch with <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">lg:rounded-br-[28px]</code>,
+                  and two 20&times;20 curve widgets mask the two joins.
+                </p>
+
+                <!-- TopNav anatomy — the notch, shown over a stand-in hero panel so
+                     the cut is visible. leftMenu (NavLeftStyleWidget + Logo) +
+                     centerMenu (primary nav) + rightMenu (utility + NavRightStyleWidget). -->
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-2 mb-3 relative">
+                  <div class="relative rounded-[14px] bg-[var(--page-bg)] p-2 h-[210px] overflow-hidden">
+
+                    <!-- stand-in for the `header` LayoutGroup panel the notch cuts into.
+                         Deliberately the art gradient, not a flat surface: the whole point
+                         of the notch only reads against something that contrasts. -->
+                    <div class="wcdb-art absolute inset-2 rounded-[18px]"></div>
+
+                    <!-- layoutContainer1 · `fixed top-0 z-50` in the live theme; absolute
+                         here so the demo stays inside this card. Positioned either way —
+                         which is what the two curve widgets resolve against. -->
+                    <div class="absolute top-0 left-0 h-14 flex items-center">
+                      <div class="flex items-center h-full">
+
+                        <!-- leftMenuContainer · [NavLeftStyleWidget, Logo] -->
+                        <div class="flex items-center bg-[var(--page-bg)] h-14 rounded-tl-[18px]">
+                          <!-- NavLeftStyleWidget · masks the join below the nav -->
+                          <div class="absolute left-[7px] top-[56px]">
+                            <!-- decorative -->
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+                          </div>
+                          <span class="flex items-center pt-1 pl-4">
+                            <img src="../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-12 wcdb-logo-img">
+                          </span>
+                        </div>
+
+                        <!-- centerMenuContainer · gap-1 px-2 -->
+                        <div class="hidden lg:flex items-center h-full overflow-visible gap-1 px-2 bg-[var(--page-bg)]">
+                          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] flex items-center gap-1.5" data-active="true">Schedule</a>
+                          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] flex items-center gap-1.5">Events</a>
+                          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] flex items-center gap-1.5">
+                            Station Info
+                            <!-- icon: ChevronDown -->
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M6 9l6 6 6-6"/></svg>
+                          </a>
+                          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] flex items-center gap-1.5">DJs</a>
+                        </div>
+
+                        <!-- rightMenuContainer · [UserMenu, ThemeModeToggle, NavRightStyleWidget] -->
+                        <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)] lg:rounded-br-[28px]">
+                          <span class="inline-flex items-center justify-center size-8 rounded-full text-[var(--ink-1)]">
+                            <!-- icon: SignIn -->
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M11 8l4 4-4 4M15 12H7"/></svg>
+                          </span>
+                          <span class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)]">
+                            <!-- icon: Moon -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                          </span>
+                          <!-- NavRightStyleWidget · masks the join past the nav's right end -->
+                          <div class="absolute -right-[20px] top-[8px]">
+                            <!-- decorative -->
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <!-- mobileButton — replaces the center menu below lg -->
+                    <div class="absolute bottom-4 right-4 lg:hidden">
+                      <button class="rounded-br-[28px] py-4 pr-4 pl-3 bg-[var(--page-bg)] inline-flex items-center justify-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                        <!-- icon: Menu -->
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                      </button>
+                    </div>
                   </div>
-                  <div class="w-full h-14 flex items-center bg-[var(--page-bg)] rounded-[14px]">
-                    <!-- leftMenuContainer -->
-                    <div class="flex items-center h-14 px-4">
-                      <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
-                      <span class="ml-2 pl-2 border-l border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
-                    </div>
-                    <!-- centerMenuContainer · gap-1 px-2 -->
-                    <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
-                      <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Listen</a>
-                      <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)] flex items-center gap-1.5">
-                        Schedule
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M6 9l6 6 6-6"/></svg>
-                      </a>
-                      <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Shows</a>
-                      <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">DJs</a>
-                      <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Spins</a>
-                      <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Blog</a>
-                    </div>
-                    <!-- rightMenuContainer -->
-                    <div class="hidden md:flex h-full items-center pr-4 gap-2">
-                      <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]" title="Theme mode">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-                      </button>
-                      <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]" title="User menu">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
-                      </button>
-                    </div>
-                    <!-- mobileButton -->
-                    <button class="lg:hidden rounded-br-[28px] py-4 pr-4 pl-3 bg-[var(--page-bg)] inline-flex items-center justify-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                  <div class="rounded-[14px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">The shrink-wrap</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-2)] m-0">
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">fixed</code> with no width shrinks to content;
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">w-full</code> on the inner containers then means
+                      "the shrink-wrapped width". Never put the page background on the header itself.
+                    </p>
+                  </div>
+                  <div class="rounded-[14px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">The two curves</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-2)] m-0">
+                      No menu container is <code class="font-[family-name:var(--font-mono)] text-[11px]">relative</code>, so both widgets
+                      position against the fixed container:
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">left-[7px] top-[56px]</code> lands below the bar,
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">-right-[20px] top-[8px]</code> just past its right end.
+                    </p>
+                  </div>
+                  <div class="rounded-[14px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">The logo</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-2)] m-0">
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">theme.logo.img</code> — the boxed wordmark at
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">h-12</code>, wrapper <code class="font-[family-name:var(--font-mono)] text-[11px]">pt-1 pl-4</code>.
+                      Live theme serves <code class="font-[family-name:var(--font-mono)] text-[11px]">/themes/wcdb/logo_white.svg</code>;
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">.wcdb-logo-img</code> inverts it in light mode.
+                      Never set the wordmark as type.
+                    </p>
                   </div>
                 </div>
 
@@ -206,6 +254,7 @@
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">With indicator icon</div>
                     <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)] flex items-center gap-1.5">
                       Schedule
+                      <!-- icon: ChevronDown -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M6 9l6 6 6-6"/></svg>
                     </a>
                     <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] mt-3">
@@ -222,6 +271,7 @@
                     <div class="relative">
                       <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)] flex items-center gap-1.5" data-active="true">
                         Schedule
+                        <!-- icon: ChevronDown -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M6 9l6 6 6-6"/></svg>
                       </a>
                       <!-- subMenuWrapper · absolute top-full left-0 mt-2 -->
@@ -233,6 +283,7 @@
                           </a>
                           <a class="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">
                             <span>By show</span>
+                            <!-- icon: ChevronRight -->
                             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M9 6l6 6-6 6"/></svg>
                           </a>
                           <a class="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">
@@ -277,8 +328,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3">
                   <!-- SideNav mock -->
                   <aside class="rounded-[18px] bg-[var(--card-bg)] p-4 min-h-[420px]">
-                    <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)] mb-1">WCDB</div>
-                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+                    <img src="../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-10 wcdb-logo-img mb-1">
 
                     <nav class="mt-6 flex flex-col">
                       <a class="px-3 py-2 rounded-md text-[14px] font-medium text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)]">Listen</a>
@@ -286,6 +336,7 @@
                       <div>
                         <a class="px-3 py-2 rounded-md text-[14px] font-medium text-[color:var(--ink-1)] bg-[var(--accent-soft)] flex items-center justify-between" data-active="true">
                           <span>Schedule</span>
+                          <!-- icon: ChevronDown -->
                           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M6 9l6 6 6-6"/></svg>
                         </a>
                         <!-- level 2 -->
@@ -293,6 +344,7 @@
                           <a class="px-3 py-1.5 text-[13px] text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]">This week</a>
                           <a class="px-3 py-1.5 text-[13px] text-[color:var(--ink-1)] bg-[var(--accent-soft)] rounded-md flex items-center justify-between" data-active="true">
                             <span>By show</span>
+                            <!-- icon: ChevronDown -->
                             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M6 9l6 6 6-6"/></svg>
                           </a>
                           <!-- level 3 -->
@@ -344,6 +396,7 @@
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">Closed</div>
                     <button class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--line-3)] text-[14px] font-medium text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">
                       <span>Sort by · Most recent</span>
+                      <!-- icon: ChevronDown -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9l6 6 6-6"/></svg>
                     </button>
                   </div>
@@ -352,6 +405,7 @@
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">Open</div>
                     <button class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--line-3)] text-[14px] font-medium text-[color:var(--ink-1)] bg-[var(--accent-soft)]">
                       <span>Sort by · Most recent</span>
+                      <!-- icon: ChevronDown -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" style="transform:rotate(180deg)"><path d="M6 9l6 6 6-6"/></svg>
                     </button>
                     <div class="mt-2 inline-block bg-[var(--card-bg)] rounded-xl shadow-lg ring-1 ring-[var(--line-2)] py-1 min-w-[220px]">
@@ -375,6 +429,7 @@
                   <ul class="list-none p-0 m-0 flex flex-col">
                     <li class="flex items-center gap-3 px-3 py-3 rounded-md hover:bg-[var(--accent-soft)] cursor-grab">
                       <span class="text-[color:var(--ink-4)] hover:text-[color:var(--ink-2)]">
+                        <!-- icon: Grip -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
                       </span>
                       <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] w-6 text-right">01</span>
@@ -384,6 +439,7 @@
                     <!-- dragging state -->
                     <li class="flex items-center gap-3 px-3 py-3 rounded-md bg-[var(--bg-3)] ring-1 ring-[var(--line-3)] shadow-lg cursor-grabbing">
                       <span class="text-[color:var(--ink-1)]">
+                        <!-- icon: Grip -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
                       </span>
                       <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] w-6 text-right">02</span>
@@ -394,6 +450,7 @@
                     <li class="h-2 my-1 rounded-full bg-[var(--accent-soft)] ring-1 ring-dashed ring-[var(--line-3)]"></li>
                     <li class="flex items-center gap-3 px-3 py-3 rounded-md hover:bg-[var(--accent-soft)] cursor-grab">
                       <span class="text-[color:var(--ink-4)]">
+                        <!-- icon: Grip -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
                       </span>
                       <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] w-6 text-right">03</span>
@@ -402,6 +459,7 @@
                     </li>
                     <li class="flex items-center gap-3 px-3 py-3 rounded-md hover:bg-[var(--accent-soft)] cursor-grab">
                       <span class="text-[color:var(--ink-4)]">
+                        <!-- icon: Grip -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
                       </span>
                       <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] w-6 text-right">04</span>
@@ -513,10 +571,12 @@
                              class="w-full bg-transparent border-0 border-b border-[var(--line-2)] focus:border-[color:var(--ink-1)] py-3 font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] outline-none pr-16"/>
                       <div class="absolute inset-y-0 right-0 flex items-center gap-1">
                         <button class="p-1.5 text-[color:var(--ink-3)] hover:text-[color:var(--on-air)]" title="Cancel">
+                          <!-- icon: XMark -->
                           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
                         </button>
                         <button class="p-1.5 text-[color:var(--ink-1)] rounded-full hover:bg-[var(--accent-soft)]" title="Confirm">
-                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 13l4 4L19 7"/></svg>
+                          <!-- icon: Check -->
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg>
                         </button>
                       </div>
                     </div>
@@ -544,6 +604,7 @@
                     <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] block mb-2">Programming block</label>
                     <button class="w-full flex items-center justify-between rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] text-[14px] text-[color:var(--ink-1)]">
                       <span>Overnight (12 am – 6 am)</span>
+                      <!-- icon: ChevronDown -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M6 9l6 6 6-6"/></svg>
                     </button>
                   </div>
@@ -553,6 +614,7 @@
                     <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] block mb-2">Programming block</label>
                     <button class="w-full flex items-center justify-between rounded-[8px] border border-[color:var(--ink-3)] bg-[var(--bg-2)] px-[14px] py-[12px] text-[14px] text-[color:var(--ink-1)]">
                       <span>Overnight (12 am – 6 am)</span>
+                      <!-- icon: ChevronDown -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" style="transform:rotate(180deg)"><path d="M6 9l6 6 6-6"/></svg>
                     </button>
                     <div class="mt-1 bg-[var(--card-bg)] rounded-xl shadow-lg ring-1 ring-[var(--line-2)] py-1 max-w-full">
@@ -561,7 +623,8 @@
                       <a class="block px-3 py-2 text-[14px] text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)]">Afternoon (2 – 6 pm)</a>
                       <a class="flex items-center justify-between px-3 py-2 text-[14px] text-[color:var(--ink-1)] bg-[var(--accent-soft)]" data-active="true">
                         <span>Overnight (12 am – 6 am)</span>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 13l4 4L19 7"/></svg>
+                        <!-- icon: Check -->
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg>
                       </a>
                     </div>
                   </div>
@@ -574,16 +637,19 @@
                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-3)] text-[12px] font-[family-name:var(--font-mono)] tracking-[0.06em] uppercase text-[color:var(--ink-1)]">
                         Krautrock
                         <button class="text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                          <!-- icon: XMark -->
                           <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
                         </button>
                       </span>
                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-3)] text-[12px] font-[family-name:var(--font-mono)] tracking-[0.06em] uppercase text-[color:var(--ink-1)]">
                         Ambient
-                        <button class="text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                        <button class="text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]"><!-- icon: XMark -->
+<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
                       </span>
                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-3)] text-[12px] font-[family-name:var(--font-mono)] tracking-[0.06em] uppercase text-[color:var(--ink-1)]">
                         Minimalism
-                        <button class="text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                        <button class="text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]"><!-- icon: XMark -->
+<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
                       </span>
                       <input type="text" class="bg-transparent flex-1 min-w-[100px] outline-none text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)]" placeholder="+ add genre"/>
                     </div>
@@ -595,7 +661,8 @@
                     <div class="border border-[var(--line-2)] rounded-[8px] divide-y divide-[var(--line-1)]">
                       <label class="flex items-center gap-3 px-3 py-2 hover:bg-[var(--accent-soft)] cursor-pointer">
                         <span class="size-4 rounded-sm border border-[var(--line-3)] grid place-items-center bg-[color:var(--ink-1)]">
-                          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--page-bg)" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+                          <!-- icon: Check -->
+                          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg>
                         </span>
                         <span class="font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] flex-1">DJ Halftone</span>
                         <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Mon · Wed</span>
@@ -768,6 +835,7 @@
                         <h4 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] m-0 mt-1">Tell us the working title.</h4>
                       </div>
                       <button class="p-1 text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                        <!-- icon: XMark -->
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
                       </button>
                     </div>
@@ -812,6 +880,7 @@
                     <div class="px-7 py-5 border-b border-[var(--line-1)] flex items-center justify-between">
                       <h4 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] m-0">Run sheet · Late Modernism</h4>
                       <button class="p-1 text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                        <!-- icon: XMark -->
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
                       </button>
                     </div>
@@ -857,6 +926,7 @@
                         <h4 class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.03em] m-0 mt-0.5">Spins archive</h4>
                       </div>
                       <button class="p-1 text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                        <!-- icon: XMark -->
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
                       </button>
                     </div>
@@ -865,6 +935,7 @@
                         <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] block mb-2">DJ</span>
                         <button class="w-full flex items-center justify-between rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-3 py-2 text-[13px] text-[color:var(--ink-1)]">
                           <span>Any</span>
+                          <!-- icon: ChevronDown -->
                           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-3)]"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
                       </div>
@@ -926,7 +997,8 @@
                 <div class="rounded-[18px] bg-[var(--bg-2)] p-12">
                   <div class="bg-[var(--card-bg)] rounded-[18px] p-7 shadow-2xl max-w-[440px] mx-auto ring-1 ring-[var(--line-2)]">
                     <div class="size-10 rounded-full bg-[var(--accent-soft)] grid place-items-center mb-4">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" class="text-[color:var(--ink-1)]"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                      <!-- icon: Trash -->
+                      <svg viewBox="0 0 24 24" width="16" height="16" class="text-[color:var(--ink-1)]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>
                     </div>
                     <h4 class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] m-0 mb-2">Delete this run sheet?</h4>
                     <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.5] text-[color:var(--ink-2)] mb-5">
@@ -1088,6 +1160,7 @@
                     <div>
                       <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">With icon</div>
                       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[11px] tracking-[0.06em] uppercase text-[color:var(--ink-2)]">
+                        <!-- icon: Dot -->
                         <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
                         Recording
                       </span>
@@ -1117,6 +1190,7 @@
                   <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Showing 21 – 40 of 1,204 spins</span>
                   <div class="inline-flex items-center gap-1">
                     <button class="size-8 rounded-full grid place-items-center border border-[var(--line-2)] text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)]" title="Previous">
+                      <!-- icon: ChevronLeft -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 6l-6 6 6 6"/></svg>
                     </button>
                     <button class="size-8 rounded-full font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">1</button>
@@ -1126,6 +1200,7 @@
                     <span class="px-1 text-[color:var(--ink-4)]">…</span>
                     <button class="size-8 rounded-full font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">61</button>
                     <button class="size-8 rounded-full grid place-items-center border border-[var(--line-2)] text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)]" title="Next">
+                      <!-- icon: ChevronRight -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg>
                     </button>
                   </div>
@@ -1145,18 +1220,22 @@
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">Icon in button</div>
                     <div class="flex flex-wrap items-center gap-2">
                       <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] text-[14px] font-medium">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- icon: Play -->
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
                         Listen live
                       </button>
                       <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-[var(--line-3)] text-[color:var(--ink-1)] text-[14px] font-medium hover:bg-[var(--accent-soft)]">
+                        <!-- icon: Plus -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
                         Add to playlist
                       </button>
                       <button class="size-9 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]">
+                        <!-- icon: Plus -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
                       </button>
                       <button class="size-9 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+                        <!-- icon: Clock -->
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                       </button>
                     </div>
                   </div>
@@ -1165,6 +1244,7 @@
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">Icon in input · leading</div>
                     <div class="relative">
                       <span class="absolute inset-y-0 left-3 grid place-items-center text-[color:var(--ink-3)]">
+                        <!-- icon: Search -->
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
                       </span>
                       <input type="text" placeholder="Search the archive…"
@@ -1179,28 +1259,39 @@
               <!-- ── SECTION · Logo ───────────────────────────────── -->
               <section data-dms-section="component:logo" class="py-8">
                 <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">Logo · Logo.theme.js</div>
-                <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] m-0 mb-4">Two lockups.</h3>
+                <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] m-0 mb-4">One mark, and it is an image.</h3>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[14px] leading-[1.5] text-[color:var(--ink-2)] mb-5">
+                  <strong class="font-semibold text-[color:var(--ink-1)]">The WCDB logo is never set as type.</strong>
+                  <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">theme.logo</code> points
+                  <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">img</code> at the boxed wordmark
+                  and leaves <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">title</code> empty,
+                  so the widget renders an <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">&lt;img&gt;</code> —
+                  there is no italic-serif "WCDB" lockup anywhere in the product. Earlier passes of this
+                  design system drew one, and every mockup inherited it; compare
+                  <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">references/wcdb/screenshots/production-home-1440.png</code>.
+                </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
-                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">Wordmark lockup · default</div>
-                    <div class="flex items-baseline gap-2">
-                      <span class="font-[family-name:var(--font-display)] italic text-[36px] tracking-[-0.02em] text-[color:var(--ink-1)] leading-none">WCDB</span>
-                      <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)] border-l border-[var(--line-2)] pl-2">90.9 FM</span>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">The mark · dark mode</div>
+                    <div class="h-12 flex items-center">
+                      <img src="../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-12 wcdb-logo-img">
                     </div>
                     <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] mt-4">
-                      The default `Logo` widget renders this in <code class="font-[family-name:var(--font-mono)] text-[11px]">logo.titleWrapper</code>.
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">img: "/themes/wcdb/logo_white.svg"</code> ·
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">imgClass: "h-12 wcdb-logo-img"</code> ·
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">imgWrapper: "pt-1 pl-4"</code> ·
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">linkPath: "/"</code>.
                     </p>
                   </div>
-                  <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
-                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">SVG fallback · logo_white.svg</div>
-                    <div class="h-12 flex items-center gap-3">
-                      <!-- Stylised SVG glyph (placeholder for /themes/wcdb/logo_white.svg) -->
-                      <svg viewBox="0 0 120 40" width="120" height="40" fill="none">
-                        <text x="0" y="30" font-family="Instrument Serif, serif" font-style="italic" font-size="36" fill="var(--ink-1)" letter-spacing="-1">WCDB</text>
-                      </svg>
+                  <div class="rounded-[18px] bg-[var(--inv-bg)] p-7">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)] mb-4">The mark · light mode</div>
+                    <div class="h-12 flex items-center">
+                      <img src="../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-12" style="filter: invert(1)">
                     </div>
-                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] mt-4">
-                      <code class="font-[family-name:var(--font-mono)] text-[11px]">img: "/themes/wcdb/logo_white.svg"</code>; in light mode the <code class="font-[family-name:var(--font-mono)] text-[11px]">.wcdb-logo-img</code> filter inverts to black.
+                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--inv-ink-2)] mt-4">
+                      One asset, both modes: <code class="font-[family-name:var(--font-mono)] text-[11px]">.wcdb-logo-img</code> applies
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">filter: invert(1)</code> under
+                      <code class="font-[family-name:var(--font-mono)] text-[11px]">[data-mode="light"]</code>. There is no second file to keep in sync.
                     </p>
                   </div>
                 </div>
@@ -1218,6 +1309,7 @@
                       <tr>
                         <th class="text-left font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] font-normal px-3 py-3 border-b border-[var(--line-2)] flex items-center gap-1">
                           Time
+                          <!-- icon: SortAsc -->
                           <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
                         </th>
                         <th class="text-left font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)] bg-[var(--accent-soft)] font-normal px-3 py-3 border-b border-[var(--line-2)]">Artist</th>
@@ -1343,6 +1435,7 @@
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-1">Bar · weekly listeners</div>
                     <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.03em] text-[color:var(--ink-1)] mb-3">Late Modernism</div>
+                    <!-- decorative -->
                     <svg viewBox="0 0 320 160" width="100%" height="160">
                       <g fill="var(--ink-3)">
                         <rect x="10" y="70" width="28" height="80"/>
@@ -1369,6 +1462,7 @@
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-1">Line · signal strength · last 24 h</div>
                     <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.03em] text-[color:var(--ink-1)] mb-3">90.9 MHz</div>
+                    <!-- decorative -->
                     <svg viewBox="0 0 320 160" width="100%" height="160">
                       <line x1="0" y1="150" x2="320" y2="150" stroke="var(--line-2)"/>
                       <path d="M0 110 L40 95 L80 105 L120 70 L160 55 L200 80 L240 60 L280 75 L320 50" stroke="var(--ink-3)" stroke-width="1.5" fill="none"/>
@@ -1390,6 +1484,7 @@
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-1">Pie · airtime by genre</div>
                     <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.03em] text-[color:var(--ink-1)] mb-3">This month</div>
                     <div class="flex items-center gap-6">
+                      <!-- decorative -->
                       <svg viewBox="0 0 100 100" width="120" height="120">
                         <circle cx="50" cy="50" r="40" fill="none" stroke="var(--ink-1)" stroke-width="20" stroke-dasharray="100 251" transform="rotate(-90 50 50)"/>
                         <circle cx="50" cy="50" r="40" fill="none" stroke="var(--ink-3)" stroke-width="20" stroke-dasharray="70 251" stroke-dashoffset="-100" transform="rotate(-90 50 50)"/>
@@ -1409,6 +1504,7 @@
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
                     <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-1">Scatter · listeners vs hour</div>
                     <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.03em] text-[color:var(--ink-1)] mb-3">Last 7 nights</div>
+                    <!-- decorative -->
                     <svg viewBox="0 0 320 160" width="100%" height="160">
                       <line x1="0" y1="150" x2="320" y2="150" stroke="var(--line-2)"/>
                       <line x1="0" y1="0" x2="0" y2="150" stroke="var(--line-2)"/>
@@ -1580,14 +1676,16 @@
                   <!-- idle -->
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7 flex flex-col items-center justify-center min-h-[220px]">
                     <button class="rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] grid place-items-center hover:bg-[color:var(--ink-2)]" style="width:52px; height:52px">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      <!-- icon: Play -->
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
                     </button>
                     <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-4">Idle · play</span>
                   </div>
                   <!-- playing -->
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7 flex flex-col items-center justify-center min-h-[220px]">
                     <button class="rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] grid place-items-center" style="width:52px; height:52px">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+                      <!-- icon: Pause -->
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
                     </button>
                     <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-4 flex items-center gap-2">
                       <span class="wcdb-eq text-[color:var(--on-air)]"><span></span><span></span><span></span><span></span></span>
@@ -1597,7 +1695,8 @@
                   <!-- hover -->
                   <div class="rounded-[18px] bg-[var(--card-bg)] p-7 flex flex-col items-center justify-center min-h-[220px]">
                     <button class="rounded-full bg-[color:var(--ink-2)] text-[color:var(--page-bg)] grid place-items-center ring-4 ring-[var(--accent-soft)]" style="width:52px; height:52px">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      <!-- icon: Play -->
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
                     </button>
                     <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-4">Hover</span>
                   </div>
@@ -1679,7 +1778,8 @@
                     <!-- stream_player cell -->
                     <div class="col-span-2 flex items-center justify-center border-l border-[var(--line-1)]">
                       <button class="rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] grid place-items-center hover:bg-[color:var(--ink-2)]" style="width:52px; height:52px">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- icon: Play -->
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
                       </button>
                     </div>
                   </div>
@@ -1719,52 +1819,11 @@
   </div>
 </div>
 
-<!-- ============================================================
-     META-FOOTER — repeats meta-nav links at the bottom
-     ============================================================ -->
-<footer class="wcdb-meta-footer">
-  <div>
-    <h3>Design system</h3>
-    <ul>
-      <li><a href="./theme.html">Theme · tokens</a></li>
-      <li><a href="./layouts.html">Layouts</a></li>
-      <li><a href="./grid.html">Grid</a></li>
-      <li><a href="./components.html" data-active="true">Components</a></li>
-      <li><a href="./patterns.html">Patterns</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages</h3>
-    <ul>
-      <li><a href="../pages/home.html">Home</a></li>
-      <li><a href="../pages/listen.html">Listen</a></li>
-      <li><a href="../pages/schedule.html">Schedule</a></li>
-      <li><a href="../pages/show.html">Show</a></li>
-      <li><a href="../pages/djs.html">DJs</a></li>
-      <li><a href="../pages/spins.html">Spins</a></li>
-      <li><a href="../pages/blog.html">Blog</a></li>
-      <li><a href="../pages/events.html">Events</a></li>
-      <li><a href="../pages/login.html">Login</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>References</h3>
-    <ul>
-      <li>src/themes/wcdb/wcdb_theme.js</li>
-      <li>src/themes/wcdb/tokens.css</li>
-      <li>src/themes/wcdb/columnTypes/</li>
-      <li>src/dms/skills/designing-a-dms-design-system.md</li>
-    </ul>
-  </div>
-  <div>
-    <h3>WCDB · 90.9 FM</h3>
-    <ul>
-      <li>SUNY Albany · 1977–2026</li>
-      <li>Listener-supported broadcast</li>
-      <li>Submit a show · Aug 1 – Sep 15</li>
-    </ul>
-  </div>
-</footer>
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
 
 </body>
 </html>

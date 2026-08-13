@@ -6,7 +6,7 @@
       "expr": "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) as speed",
       "fn": "exempt",
       "requiresJoin": [
-        "TMC_IDENTIFICATION_JOIN"
+        "META_JOIN"
       ],
       "reverseColors": false
     },
@@ -15,7 +15,7 @@
       "expr": "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_freight_trucks)), ds.travel_time_freight_trucks != 0))) as speed",
       "fn": "exempt",
       "requiresJoin": [
-        "TMC_IDENTIFICATION_JOIN"
+        "META_JOIN"
       ],
       "reverseColors": false
     },
@@ -453,18 +453,21 @@
     }
   },
   "joins": {
-    "TMC_IDENTIFICATION_JOIN": {
-      "source": 455,
-      "view": 3464,
+    "META_JOIN": {
+      "joinColumns": [
+        {
+          "dsColumn": "tmc",
+          "joinSourceColumn": "tmc"
+        },
+        {
+          "dsColumn": "toYear(ds.date) as meta_year",
+          "joinSourceColumn": "year"
+        }
+      ],
+      "mergeStrategy": "join",
+      "source": 582,
       "sourceInfo": {
-        "name": "NPMRDS TMC Identification V5 / V6",
-        "source_id": 455,
-        "env": "npmrds2",
-        "srcEnv": "npmrds2",
-        "isDms": false,
         "baseUrl": "",
-        "type": "npmrds_tmc_identification_v5__v6",
-        "view_id": 3464,
         "columns": [
           {
             "name": "tmc",
@@ -637,40 +640,13 @@
           {
             "name": "aadt_combi_unidir",
             "type": "string"
-          }
-        ]
-      },
-      "joinColumns": [
-        {
-          "dsColumn": "tmc",
-          "joinSourceColumn": "tmc"
-        }
-      ],
-      "mergeStrategy": "join",
-      "type": "left"
-    },
-    "META_JOIN": {
-      "joinColumns": [
-        {
-          "dsColumn": "tmc",
-          "joinSourceColumn": "tmc"
-        },
-        {
-          "dsColumn": "toYear(ds.date) as meta_year",
-          "joinSourceColumn": "year"
-        }
-      ],
-      "mergeStrategy": "join",
-      "source": 582,
-      "sourceInfo": {
-        "baseUrl": "",
-        "columns": [
+          },
           {
-            "name": "tmc",
+            "name": "congestion_level",
             "type": "string"
           },
           {
-            "name": "miles",
+            "name": "year",
             "type": "string"
           },
           {
@@ -678,35 +654,51 @@
             "type": "string"
           },
           {
-            "name": "aadt",
-            "type": "string"
-          },
-          {
-            "name": "aadt_singl",
-            "type": "string"
-          },
-          {
-            "name": "aadt_combi",
-            "type": "string"
-          },
-          {
-            "name": "congestion_level",
-            "type": "string"
-          },
-          {
             "name": "directionality",
             "type": "string"
           },
           {
-            "name": "f_system",
+            "name": "avg_vehicle_occupancy",
             "type": "string"
           },
           {
-            "name": "faciltype",
+            "name": "state_code",
             "type": "string"
           },
           {
-            "name": "year",
+            "name": "county_code",
+            "type": "string"
+          },
+          {
+            "name": "region_code",
+            "type": "string"
+          },
+          {
+            "name": "mpo_code",
+            "type": "string"
+          },
+          {
+            "name": "ua_code",
+            "type": "string"
+          },
+          {
+            "name": "state_name",
+            "type": "string"
+          },
+          {
+            "name": "county_name",
+            "type": "string"
+          },
+          {
+            "name": "ua_name",
+            "type": "string"
+          },
+          {
+            "name": "is_interstate",
+            "type": "string"
+          },
+          {
+            "name": "wkb_geometry",
             "type": "string"
           }
         ],
@@ -804,6 +796,12 @@
         "target": "xAxis",
         "group": true,
         "sort": "asc"
+      }
+    },
+    "summary": {
+      "xAxis": {
+        "type": "series",
+        "group": true
       }
     }
   },
