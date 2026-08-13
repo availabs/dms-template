@@ -94,9 +94,9 @@ const getStationRow = string => {
 }
 const getTableValues = row => {
 	const latitudeIndex = TMAS_STATION_KEY_INDICES["latitude"];
-	const latitude = row[latitudeIndex];
+	const latitude = row[latitudeIndex].value;
 	const longitudeIndex = TMAS_STATION_KEY_INDICES["longitude"];
-	const longitude = row[longitudeIndex];
+	const longitude = row[longitudeIndex].value;
 	row.splice(latitudeIndex, 2);
 	const point = {
 		type: "Point",
