@@ -13,33 +13,6 @@
 <body class="dms-annotated">
 
 <!-- ============================================================
-     META-NAV — documentation chrome, NOT part of the DMS theme
-     ============================================================ -->
-<nav class="wcdb-meta-nav">
-  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">design-system</span>
-    <a href="./theme.html">theme</a>
-    <a href="./layouts.html">layouts</a>
-    <a href="./grid.html" data-active="true">grid</a>
-    <a href="./components.html">components</a>
-    <a href="./patterns.html">patterns</a>
-  </span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">pages</span>
-    <a href="../pages/home.html">home</a>
-    <a href="../pages/listen.html">listen</a>
-    <a href="../pages/schedule.html">schedule</a>
-    <a href="../pages/show.html">show</a>
-    <a href="../pages/djs.html">djs</a>
-    <a href="../pages/spins.html">spins</a>
-    <a href="../pages/blog.html">blog</a>
-    <a href="../pages/events.html">events</a>
-    <a href="../pages/login.html">login</a>
-  </span>
-</nav>
-
-<!-- ============================================================
      LAYOUT · default (theme.js layout.styles[0])
      ============================================================ -->
 <div data-dms-layout="default"
@@ -51,30 +24,34 @@
       <!-- TOPNAV -->
       <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
         <div class="flex items-center h-14 px-4">
-          <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+          <a href="./theme.html" class="no-underline"><div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
             WCDB
-          </div>
+          </div></a>
           <span class="ml-2 pl-2 border-l border-[var(--line-2)]
                        font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
                        text-[color:var(--ink-3)]">
-            90.9 FM
+            Design System
           </span>
         </div>
         <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Theme</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Layouts</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Grid</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
-          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Patterns</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./theme.html">Theme</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./layouts.html">Layouts</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" href="./grid.html" data-active="true">Grid</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./components.html">Components</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./patterns.html">Patterns</a>
         </div>
         <div class="hidden md:flex h-full items-center pr-4 gap-2">
-          <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
-                         text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
-                  title="Toggle theme mode">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
-              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-            </svg>
+          <!-- ThemeModeToggle · theme.js widgets.ThemeModeToggle.
+               Live in these mockups — the shared mockup runtime wires it to the same
+               `wcdb-mode` key and `data-mode` attribute the real widget uses.
+               The glyph shows the mode you are IN: Moon while dark. -->
+          <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                  class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)]
+                         text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+            <!-- icon: Moon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </button>
+          <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)] tabular-nums" title="Design system page 3 of 5">03 / 05</span>
         </div>
       </header>
 
@@ -313,7 +290,7 @@
                   Rare, but documented.
                 </h2>
                 <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
-                  WCDB's home and listen pages don't use <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rowspan</code> on Sections &mdash; the
+                  WCDB's home page doesn't use <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rowspan</code> on Sections &mdash; the
                   now-playing card uses <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights: fill</code> + flex on the
                   <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> LayoutGroup to occupy the sticky column. <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rowspan</code> is
                   available to authors and interacts with the section's
@@ -555,43 +532,11 @@
   </div>
 </div>
 
-<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
-<footer class="wcdb-meta-footer">
-  <div>
-    <h3>Design system</h3>
-    <ul>
-      <li><a href="./theme.html">theme</a></li>
-      <li><a href="./layouts.html">layouts</a></li>
-      <li><a href="./grid.html" data-active="true">grid</a></li>
-      <li><a href="./components.html">components</a></li>
-      <li><a href="./patterns.html">patterns</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages &middot; editorial</h3>
-    <ul>
-      <li><a href="../pages/home.html">home</a></li>
-      <li><a href="../pages/listen.html">listen</a></li>
-      <li><a href="../pages/blog.html">blog</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages &middot; catalogue</h3>
-    <ul>
-      <li><a href="../pages/schedule.html">schedule</a></li>
-      <li><a href="../pages/show.html">show</a></li>
-      <li><a href="../pages/djs.html">djs</a></li>
-      <li><a href="../pages/spins.html">spins</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages &middot; misc</h3>
-    <ul>
-      <li><a href="../pages/events.html">events</a></li>
-      <li><a href="../pages/login.html">login</a></li>
-    </ul>
-  </div>
-</footer>
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
 
 </body>
 </html>

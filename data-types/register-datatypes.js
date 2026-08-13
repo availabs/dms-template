@@ -23,22 +23,11 @@ const PLUGINS = [
   ['now_playing', './now_playing'],
   ['enhance_nfip_claims_v2', './mny/enhance_nfip_claims_v2'],
   ['actions_location', './mny/actions_location'],
+  ['TMAS_volume_uploader', './traffic_counts/TMAS/volume'],
+  ['TMAS_station_uploader', './traffic_counts/TMAS/stations']
 ];
 
 module.exports = function registerExtra({ registerDatatype }) {
-<<<<<<< HEAD
-  // registerDatatype('map21', require('./map21'));
-  // registerDatatype('npmrds_raw', require('./npmrds_raw'));
-  // registerDatatype('npmrds', require('./npmrds'));
-  // registerDatatype('transcom', require('./transcom'));
-  // registerDatatype('excessive_delay', require('./excessive_delay'));
-  // registerDatatype('pm3', require('./pm3'));
-  // registerDatatype('now_playing', require('./now_playing'));
-  // registerDatatype('enhance_nfip_claims_v2', require('./mny/enhance_nfip_claims_v2'));
-  // registerDatatype('actions_location', require('./mny/actions_location'));
-  registerDatatype('TMAS_volume_uploader', require('./traffic_counts/TMAS/volume'));
-  registerDatatype('TMAS_station_uploader', require('./traffic_counts/TMAS/stations'));
-=======
   const failed = [];
   for (const [name, modulePath] of PLUGINS) {
     try {
@@ -54,5 +43,4 @@ module.exports = function registerExtra({ registerDatatype }) {
       `${failed.join(', ')}. Their /dama-admin/:pgEnv/<name>/* routes will 404.`
     );
   }
->>>>>>> f9073f2a590365dfe3f2f9b89b26229bf0b9ea5e
 };

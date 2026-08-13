@@ -13,33 +13,6 @@
 <body class="dms-annotated">
 
 <!-- ============================================================
-     META-NAV — documentation chrome, NOT part of the DMS theme
-     ============================================================ -->
-<nav class="wcdb-meta-nav">
-  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">design-system</span>
-    <a href="./theme.html">theme</a>
-    <a href="./layouts.html">layouts</a>
-    <a href="./grid.html">grid</a>
-    <a href="./components.html">components</a>
-    <a href="./patterns.html" data-active="true">patterns</a>
-  </span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">pages</span>
-    <a href="../pages/home.html">home</a>
-    <a href="../pages/listen.html">listen</a>
-    <a href="../pages/schedule.html">schedule</a>
-    <a href="../pages/show.html">show</a>
-    <a href="../pages/djs.html">djs</a>
-    <a href="../pages/spins.html">spins</a>
-    <a href="../pages/blog.html">blog</a>
-    <a href="../pages/events.html">events</a>
-    <a href="../pages/login.html">login</a>
-  </span>
-</nav>
-
-<!-- ============================================================
      LAYOUT · default (theme.js layout.styles[0])
      Single-column doc page: the cutaway grid collapses because we
      only ship a `content` LayoutGroup here.
@@ -55,30 +28,34 @@
          ============================================================ -->
     <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
       <div class="flex items-center h-14 px-4">
-        <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+        <a href="./theme.html" class="no-underline"><div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
           WCDB
-        </div>
+        </div></a>
         <span class="ml-2 pl-2 border-l border-[var(--line-2)]
                      font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
                      text-[color:var(--ink-3)]">
-          90.9 FM
+          Design System
         </span>
       </div>
       <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Theme</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Layouts</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Grid</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Patterns</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./theme.html">Theme</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./layouts.html">Layouts</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./grid.html">Grid</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./components.html">Components</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" href="./patterns.html" data-active="true">Patterns</a>
       </div>
       <div class="hidden md:flex h-full items-center pr-4 gap-2">
-        <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
-                       text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
-                title="Toggle theme mode">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
-            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-          </svg>
+        <!-- ThemeModeToggle · theme.js widgets.ThemeModeToggle.
+             Live in these mockups — the shared mockup runtime wires it to the same
+             `wcdb-mode` key and `data-mode` attribute the real widget uses.
+             The glyph shows the mode you are IN: Moon while dark. -->
+        <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)]
+                       text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+          <!-- icon: Moon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
+        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)] tabular-nums" title="Design system page 5 of 5">05 / 05</span>
       </div>
     </header>
 
@@ -135,6 +112,7 @@
                 <div class="flex flex-col items-center text-center max-w-[440px] mx-auto py-10">
                   <!-- Icon · Search -->
                   <div class="size-12 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] mb-5">
+                    <!-- icon: Search -->
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
                       <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
                     </svg>
@@ -151,6 +129,7 @@
                                  bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
                                  font-[family-name:var(--font-sans)] text-[13px] font-medium">
                     Browse archive
+                    <!-- icon: ArrowRight -->
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
                   </button>
                 </div>
@@ -247,6 +226,7 @@
               <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
                 <div class="flex flex-col items-center text-center max-w-[440px] mx-auto py-10">
                   <div class="size-12 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] mb-5">
+                    <!-- icon: Alert -->
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
                       <path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                     </svg>
@@ -265,6 +245,7 @@
                     <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
                                    bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
                                    font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                      <!-- icon: Refresh -->
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
                       Retry
                     </button>
@@ -299,6 +280,7 @@
                 <div class="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-[var(--line-1)]">
                   <div class="flex items-center gap-3">
                     <div class="size-7 rounded-full bg-[var(--bg-3)] grid place-items-center text-[color:var(--ink-3)]">
+                      <!-- icon: Clock -->
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                     </div>
                     <div>
@@ -313,6 +295,7 @@
                   <button class="inline-flex items-center gap-2 px-4 py-2 rounded-full
                                  border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
                                  font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase">
+                    <!-- icon: Refresh -->
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
                     Refresh
                   </button>
@@ -388,6 +371,7 @@
                   </div>
                   <!-- Search input · bordered variant -->
                   <div class="relative flex-1 min-w-[200px] max-w-[320px]">
+                    <!-- icon: Search -->
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
                          class="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]">
                       <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
@@ -401,6 +385,7 @@
                   <button class="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-full
                                  border border-[var(--line-2)] text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]
                                  font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">
+                    <!-- icon: SortLines -->
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
                     Sort · newest
                   </button>
@@ -455,6 +440,7 @@
                   </span>
                   <div class="flex items-center gap-1">
                     <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                      <!-- icon: ChevronLeft -->
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 6l-6 6 6 6"/></svg>
                     </button>
                     <button class="size-8 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-mono)] text-[11px]">1</button>
@@ -463,9 +449,45 @@
                     <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-4)] px-1">…</span>
                     <button class="size-8 rounded-full text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] font-[family-name:var(--font-mono)] text-[11px]">257</button>
                     <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                      <!-- icon: ChevronRight -->
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg>
                     </button>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Data-source attribution (pages.attribution)
+                 The pattern-level chip every data-backed section can show
+                 beneath its content. Skill §2 "pattern-level components".
+                 ============================================================ -->
+            <section data-dms-section="pages:attribution" class="py-6">
+              <div class="wcdb-eyebrow mb-3">05b — Source attribution</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Where the data came from.
+              </h2>
+              <p class="max-w-[640px] text-[15px] leading-[1.45] text-[color:var(--ink-2)] mb-6">
+                <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">pages.attribution</code>
+                renders under a data section when the author enables it. WCDB
+                treats it as quiet chrome — mono, <code class="font-[family-name:var(--font-mono)] text-[12px]">--ink-4</code>,
+                hairline above, never a card of its own.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <div class="font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-2)] mb-5">
+                  &hellip; the section's own content sits here &hellip;
+                </div>
+                <div class="border-t border-[var(--line-1)] pt-3 flex flex-wrap items-center gap-x-3 gap-y-1
+                            font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                  <span>Source</span>
+                  <a class="text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5" href="./patterns.html">Spinitron &middot; wcdb_spins</a>
+                  <span class="text-[color:var(--ink-4)]">&middot;</span>
+                  <span>Updated 4 min ago</span>
+                  <span class="text-[color:var(--ink-4)]">&middot;</span>
+                  <span>View 12</span>
                 </div>
               </div>
             </section>
@@ -623,6 +645,7 @@
                             <option>Friday · 1am – 3am</option>
                             <option>Saturday · 8pm – 10pm</option>
                           </select>
+                          <!-- icon: ChevronDown -->
                           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
                                class="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)] pointer-events-none">
                             <path d="M6 9l6 6 6-6"/>
@@ -639,6 +662,7 @@
                             <option>1 hour</option>
                             <option>3 hours</option>
                           </select>
+                          <!-- icon: ChevronDown -->
                           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
                                class="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)] pointer-events-none">
                             <path d="M6 9l6 6 6-6"/>
@@ -651,17 +675,20 @@
                           <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-1)]
                                        px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase">
                             Krautrock
-                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                            <!-- icon: XMark -->
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
                           </span>
                           <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-1)]
                                        px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase">
                             Ambient
-                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                            <!-- icon: XMark -->
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
                           </span>
                           <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-1)]
                                        px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase">
                             Post-punk
-                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                            <!-- icon: XMark -->
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
                           </span>
                           <input type="text" placeholder="Add a genre…"
                                  class="flex-1 min-w-[120px] bg-transparent px-2 py-1 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none">
@@ -710,6 +737,7 @@
                                                   bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
                                                   font-[family-name:var(--font-sans)] text-[13px] font-medium">
                       Submit proposal
+                      <!-- icon: ArrowRight -->
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
                     </button>
                   </div>
@@ -760,7 +788,8 @@
                         </div>
                       </div>
                       <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                        <!-- icon: XMark -->
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
                       </button>
                     </div>
                     <!-- Body -->
@@ -962,7 +991,8 @@
                   <div class="flex items-center gap-3">
                     <!-- Drag handle -->
                     <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] cursor-grab" title="Drag to reorder">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+                      <!-- icon: Grip -->
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
                     </button>
                     <span class="wcdb-eyebrow">Section · card</span>
                     <!-- Editable title -->
@@ -972,13 +1002,16 @@
                   </div>
                   <div class="flex items-center gap-1">
                     <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]" title="Duplicate">
+                      <!-- icon: Copy -->
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
                     </button>
                     <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]" title="Section settings">
+                      <!-- icon: Settings -->
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     </button>
                     <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--on-air)]" title="Delete section">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                      <!-- icon: Trash -->
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>
                     </button>
                   </div>
                 </div>
@@ -989,6 +1022,7 @@
                   <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)]
                                  font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">
                     Time
+                    <!-- icon: ChevronDown -->
                     <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
                   </button>
                   <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)]
@@ -1004,6 +1038,7 @@
                     Show
                   </button>
                   <button class="size-7 ml-1 grid place-items-center rounded-full border border-dashed border-[var(--line-2)] text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]" title="Add column">
+                    <!-- icon: Plus -->
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                   </button>
                   <div class="ml-auto flex items-center gap-2">
@@ -1066,11 +1101,13 @@
                     <div class="wcdb-eyebrow mb-3">Page tree</div>
                     <ul class="space-y-0.5 font-[family-name:var(--font-sans)] text-[13px]">
                       <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
-                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        <!-- icon: ChevronRight -->
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
                         Home
                       </li>
                       <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] bg-[var(--accent-soft)] text-[color:var(--ink-1)]">
-                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 10l5 5 5-5"/></svg>
+                        <!-- icon: ChevronDown -->
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                         Listen
                       </li>
                       <li class="flex items-center gap-1.5 pl-7 pr-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
@@ -1086,15 +1123,18 @@
                         Up next
                       </li>
                       <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
-                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        <!-- icon: ChevronRight -->
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
                         Schedule
                       </li>
                       <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
-                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        <!-- icon: ChevronRight -->
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
                         DJs
                       </li>
                       <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
-                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        <!-- icon: ChevronRight -->
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
                         Spins
                       </li>
                     </ul>
@@ -1108,7 +1148,8 @@
                       <button class="px-2 py-1 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Image</button>
                       <button class="px-2 py-1 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Title</button>
                       <button class="px-2 py-1 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Time</button>
-                      <button class="size-6 ml-1 grid place-items-center rounded-full border border-dashed border-[var(--line-2)] text-[color:var(--ink-3)]"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+                      <button class="size-6 ml-1 grid place-items-center rounded-full border border-dashed border-[var(--line-2)] text-[color:var(--ink-3)]"><!-- icon: Plus -->
+<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
                     </div>
 
                     <!-- The editable card -->
@@ -1137,14 +1178,17 @@
                     <div class="absolute right-6 top-20 w-[200px] rounded-[12px] bg-[var(--bg-2)] border border-[var(--line-2)] shadow-2xl p-1.5">
                       <div class="wcdb-eyebrow px-2 py-1">Section</div>
                       <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
+                        <!-- icon: Square -->
                         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
                         Change type…
                       </button>
                       <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                        <!-- icon: Menu -->
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                         Layout · height
                       </button>
                       <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
+                        <!-- icon: Globe -->
                         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
                         Data source…
                       </button>
@@ -1185,10 +1229,80 @@
             <hr class="wcdb-hairline my-6"/>
 
             <!-- ============================================================
+                 SECTION · Cut-corner label chip (the notch, generalized)
+                 ============================================================ -->
+            <section data-dms-section="card:notch-chip" class="py-6">
+              <div class="wcdb-eyebrow mb-3">A — Cut-corner label chip</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                The notch is not just the nav.
+              </h2>
+              <p class="max-w-[680px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] text-[color:var(--ink-2)] mb-6">
+                The TopNav is a surface that ends in a rounded corner with two inverse-corner
+                masks smoothing its joins (see
+                <a href="./components.html" class="border-b border-[var(--line-2)] hover:text-[color:var(--ink-1)]">components.html</a>).
+                The same move, shrunk to a label, is the brand's card chip: a strip of the
+                <em class="italic">surface behind</em> notched into a piece of art.
+                <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">.wcdb-chip</code>
+                carries its own two masks; set
+                <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--chip</code>
+                to whatever colour it belongs to — the page behind a bare card, the card behind
+                an inset image. Add
+                <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">.wcdb-chip--bl</code>
+                for the bottom-left position.
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- top-left, on the page background -->
+                <div>
+                  <div class="relative rounded-[18px] h-[190px]">
+                    <div class="wcdb-art absolute inset-0 rounded-[18px]"></div>
+                    <span class="wcdb-chip">Late Modernism</span>
+                  </div>
+                  <div class="mt-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">
+                    top-left · --chip: page-bg
+                  </div>
+                </div>
+
+                <!-- bottom-left, on the page background -->
+                <div>
+                  <div class="relative rounded-[18px] h-[190px]">
+                    <div class="wcdb-art wcdb-art--ember absolute inset-0 rounded-[18px]"></div>
+                    <span class="wcdb-chip wcdb-chip--bl">Metal/Hardcore</span>
+                  </div>
+                  <div class="mt-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">
+                    bottom-left · .wcdb-chip--bl
+                  </div>
+                </div>
+
+                <!-- inset in a card: the chip takes the CARD's colour -->
+                <div>
+                  <div class="rounded-[18px] bg-[var(--card-bg)] p-2">
+                    <div class="relative rounded-[14px] h-[174px]">
+                      <div class="wcdb-art absolute inset-0 rounded-[14px]"></div>
+                      <span class="wcdb-chip" style="--chip: var(--card-bg)">Mar 03</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">
+                    inset in a card · --chip: card-bg
+                  </div>
+                </div>
+              </div>
+
+              <p class="mt-5 max-w-[680px] font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)]">
+                Gotcha: the chip's parent must not be
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">overflow-hidden</code>,
+                or the masks get clipped at the corner. Round and clip the art in its own child
+                instead — which is what all three examples above do.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
                  SECTION · Bare-vs-carded mix (right column rhythm)
                  ============================================================ -->
             <section data-dms-section="card:bare-vs-carded" class="py-6">
-              <div class="wcdb-eyebrow mb-3">A — Bare-vs-carded mix</div>
+              <div class="wcdb-eyebrow mb-3">B — Bare-vs-carded mix</div>
               <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
                 The right column breathes.
               </h2>
@@ -1280,65 +1394,94 @@
                  SECTION · Now-playing composition (the canonical pattern)
                  ============================================================ -->
             <section data-dms-section="card:now-playing-composition" class="py-6">
-              <div class="wcdb-eyebrow mb-3">B — Now-playing composition</div>
+              <div class="wcdb-eyebrow mb-3">C — Now-playing composition</div>
               <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
-                Six cells, one Card section.
+                Two components, one Card section.
               </h2>
               <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
-                The single most important authoring pattern in WCDB. Every column
-                below sits in the same Card cells-grid — no custom section
-                component is needed.
+                The single most important authoring pattern in WCDB, and the one
+                place the panel has to answer two questions at once: <em class="italic">what
+                show is on</em>, and <em class="italic">what song is playing and how do I hear
+                it</em>. Keep them visually separate — the show block carries the
+                photograph and its identity sits on the image; the player gets its own
+                surface tone, its own eyebrow, and a cover-art slot big enough to read.
+                Run them together as undifferentiated rows and neither is legible.
+                Every column below still sits in the same Card cells-grid — no custom
+                section component is needed.
+                <br><br>
+                <em class="italic">Now playing</em> is set in the on-air accent, the same
+                signal the on-air pill uses, so the page's two live claims match. It sits
+                in a <strong class="font-semibold text-[color:var(--ink-1)]">label row</strong> with the start
+                time, the listener count and the way into the play history &mdash; which
+                leaves the whole width below it for the track, set close to a headline.
+                Two things deliberately absent: a "Listen live &middot; 90.9 FM" caption (the
+                play button says that, and the rail is on every page, so the station
+                never needed re-announcing at this size), and
+                <strong class="font-semibold text-[color:var(--ink-1)]">any progress bar or duration</strong>
+                &mdash; the stream reports a title, not a length, so a progress bar would be
+                inventing a number.
               </p>
 
               <div class="grid md:grid-cols-[1fr_360px] gap-6 items-start">
-                <!-- The card itself -->
+                <!-- The card itself — TWO components in one Card section -->
                 <div class="rounded-[18px] bg-[var(--card-bg)] overflow-hidden">
-                  <!-- portrait_banner -->
-                  <div class="wcdb-art relative h-[200px] flex items-end pl-6 pb-3">
-                    <div class="wcdb-initials" aria-hidden="true" style="font-size:120px">L.M.</div>
-                    <span class="absolute top-3 left-3 wcdb-eyebrow text-[color:rgba(255,255,255,0.7)]">portrait_banner</span>
-                  </div>
-                  <hr class="wcdb-hairline"/>
-                  <!-- Editorial caption -->
-                  <div class="px-6 pt-4 pb-3 relative">
-                    <span class="absolute -top-2 right-3 wcdb-eyebrow bg-[var(--card-bg)] px-1.5">text cell</span>
-                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
-                      Late Modernism · w/ DJ Halftone · Mar 05
-                    </div>
-                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">
-                      Cluster, Harmonia, and the long winters
-                    </div>
-                  </div>
-                  <hr class="wcdb-hairline"/>
-                  <!-- Now-playing strip -->
-                  <div class="px-6 py-4 flex items-center gap-4 relative">
-                    <!-- 64px album art · image cell (imgFill) -->
-                    <div class="size-16 shrink-0 rounded-[8px] wcdb-art wcdb-art--ember overflow-hidden relative">
-                      <span class="absolute -top-2 left-0 wcdb-eyebrow bg-[var(--card-bg)] px-1 whitespace-nowrap">image · imgFill</span>
-                    </div>
-                    <div class="flex-1 min-w-0 relative">
-                      <span class="absolute -top-3 left-0 wcdb-eyebrow">now_indicator + title</span>
-                      <div class="flex items-center gap-2 mb-1 mt-1">
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)]" style="padding:2px 7px;">
+
+                  <!-- 1 · ON AIR — portrait_banner carries a real show photo -->
+                  <div class="relative h-[230px] overflow-hidden">
+                    <img src="../assets/photos/live-spring-show-2023.jpg" alt="" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-[rgba(10,10,10,0.55)] to-[rgba(10,10,10,0.10)]"></div>
+                    <span class="absolute top-3 left-3 wcdb-eyebrow text-[color:rgba(255,255,255,0.75)]">portrait_banner</span>
+                    <div class="absolute inset-x-0 bottom-0 px-5 pb-11 pt-8">
+                      <div class="flex items-center gap-2 mb-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)]" style="padding:3px 9px;">
                           <span class="wcdb-on-air-dot"></span>
                           <span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] font-medium" style="font-size:9px">On Air</span>
                         </span>
-                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">NOW · 11:47 PM</span>
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-2)]">Thu &middot; 11 pm &ndash; 1 am</span>
                       </div>
-                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">
-                        Sowiesoso
+                      <div class="font-[family-name:var(--font-display)] italic text-[32px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)]">Late Modernism</div>
+                      <div class="mt-1 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-2)]">w/ DJ Halftone</div>
+                    </div>
+                    <span class="wcdb-chip wcdb-chip--bl" style="--chip: var(--bg-2)">Metal/Hardcore</span>
+                  </div>
+
+                  <!-- 2 · LISTEN LIVE — its own surface tone, no hairline needed.
+                       The header row is the LABEL ROW: what this is, when it
+                       started, and the two things you can do about it. -->
+                  <div class="bg-[var(--bg-2)] px-5 pt-4 pb-5 relative">
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                      <div class="flex items-baseline gap-2.5 min-w-0">
+                        <span class="inline-flex items-center rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase font-semibold shrink-0" style="padding:3px 8px;">Now playing</span>
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] tabular-nums">11:47 pm</span>
                       </div>
-                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">
-                        Cluster · 1976 · Sky Records
+                      <div class="flex items-center gap-4 shrink-0">
+                        <span class="hidden min-[1500px]:inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">
+                          <span class="wcdb-eq"><span></span><span></span><span></span><span></span></span>
+                          184 listening
+                        </span>
+                        <a href="#" class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] border-b border-[var(--line-2)] hover:border-[var(--line-3)] pb-0.5">
+                          Full playlist
+                          <!-- icon: ArrowRight -->
+                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                        </a>
                       </div>
                     </div>
-                    <!-- stream_player -->
-                    <button aria-label="Play live stream"
-                            class="shrink-0 size-[52px] rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
-                                   grid place-items-center relative">
-                      <span class="absolute -top-3 left-1/2 -translate-x-1/2 wcdb-eyebrow whitespace-nowrap">stream_player</span>
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
-                    </button>
+                    <div class="flex items-center gap-5">
+                      <div class="size-[104px] shrink-0 rounded-[10px] wcdb-art wcdb-art--ember overflow-hidden relative">
+                        <span class="absolute -top-3 left-0 wcdb-eyebrow bg-[var(--bg-2)] px-1 whitespace-nowrap">image &middot; imgFill</span>
+                      </div>
+                      <div class="flex-1 min-w-0 relative">
+                        <span class="absolute -top-3 left-0 wcdb-eyebrow">text cells</span>
+                        <div class="font-[family-name:var(--font-display)] italic text-[30px] leading-[1.02] tracking-[-0.02em] text-[color:var(--ink-1)] truncate mt-1">Sowiesoso</div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[19px] leading-[1.2] tracking-[-0.02em] text-[color:var(--ink-2)] mt-1 truncate">Cluster</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-4)] mt-1.5 truncate">Sowiesoso &middot; 1976 &middot; Sky Records</div>
+                      </div>
+                      <button aria-label="Play live stream" class="shrink-0 size-[60px] rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] grid place-items-center relative">
+                        <span class="absolute -top-3 left-1/2 -translate-x-1/2 wcdb-eyebrow whitespace-nowrap">stream_player</span>
+                        <!-- icon: Play -->
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1348,11 +1491,11 @@
                   <dl class="space-y-3">
                     <div>
                       <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">portrait_banner</dt>
-                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">Hero art · spans full Card width, fills available height</dd>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">The show photograph · spans full Card width, fills available height. Scrim it so the show identity can sit on the image instead of in a box below it.</dd>
                     </div>
                     <div>
-                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">text · editorial caption</dt>
-                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">Eyebrow + show title · displayXS</dd>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">text · show identity</dt>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">Slot + show title + DJ, over the photo. The genre rides a notch chip in the corner (§A).</dd>
                     </div>
                     <div>
                       <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">now_indicator</dt>
@@ -1381,7 +1524,7 @@
                  SECTION · Inverted footer card (.wcdb-card-inv)
                  ============================================================ -->
             <section data-dms-section="card:inverted-footer" class="py-6">
-              <div class="wcdb-eyebrow mb-3">C — Inverted footer card</div>
+              <div class="wcdb-eyebrow mb-3">D — Inverted footer card</div>
               <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
                 The Hanssen move.
               </h2>
@@ -1481,7 +1624,7 @@
                  SECTION · Italic-display H1 + mono eyebrow pair
                  ============================================================ -->
             <section data-dms-section="card:eyebrow-h1-pair" class="py-6">
-              <div class="wcdb-eyebrow mb-3">D — Italic-display H1 + mono eyebrow pair</div>
+              <div class="wcdb-eyebrow mb-3">E — Italic-display H1 + mono eyebrow pair</div>
               <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
                 Every page opens the same way.
               </h2>
@@ -1548,50 +1691,255 @@
                  SECTION · Schedule row pattern
                  ============================================================ -->
             <section data-dms-section="card:schedule-row" class="py-6">
-              <div class="wcdb-eyebrow mb-3">E — Schedule row</div>
+              <div class="wcdb-eyebrow mb-3">F — Schedule row</div>
               <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
-                <code class="font-[family-name:var(--font-mono)] text-[28px] not-italic tracking-[-0.01em]">[80px_1fr_auto]</code>
+                <code class="font-[family-name:var(--font-mono)] text-[26px] not-italic tracking-[-0.01em]">[34px_64px_1fr_auto]</code>
               </h2>
-              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+              <p class="max-w-[680px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
                 Used on
                 <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">home.html</code>
                 and
                 <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">schedule.html</code>.
-                Three columns: time (mono) · show name (italic display) ·
-                status (on-air pill or relative time). The live row gets
-                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">bg-[var(--on-air-soft)]</code>.
+                Four columns: <em class="italic">department icon</em> · time (mono) · show +
+                DJ (italic display) · status. The leading icon is what makes a
+                long grid scannable by kind without printing a genre label on
+                every line — pair it with the department legend (§G) so the
+                glyph is learnable rather than a rebus, and always give it a
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">title</code>.
+                The live row takes an accent tint <em class="italic">and</em> a 2px left rule:
+                colour alone doesn't survive a squint, and the pill is small.
               </p>
 
               <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
-                <!-- Live row · highlighted -->
-                <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-3 rounded-[8px] px-3 -mx-3 bg-[var(--on-air-soft)]">
-                  <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">11 pm</span>
-                  <div>
-                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Late Modernism</div>
-                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ DJ Halftone</div>
-                  </div>
-                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] px-2.5 py-1 border border-[rgba(255,59,47,0.25)]">
-                    <span class="wcdb-on-air-dot"></span>
-                    <span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] font-medium text-[10px]">Live</span>
+                <a href="#" class="relative grid grid-cols-[34px_64px_1fr_auto] gap-x-4 items-center py-3.5 rounded-[8px] px-3 -mx-3 bg-[var(--on-air-soft)]">
+                  <span class="absolute left-0 top-2 bottom-2 w-[2px] rounded-full bg-[var(--on-air)]"></span>
+                  <span class="grid place-items-center size-[34px] rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)]" title="Metal">
+                    <!-- icon: Bolt -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
                   </span>
-                </div>
-                <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">11 pm</span>
+                  <span>
+                    <span class="block font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Late Modernism</span>
+                    <span class="block font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ DJ Halftone</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air)] text-[color:var(--page-bg)] px-2.5 py-1"><span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] font-semibold text-[10px]">Live</span></span>
+                </a>
+                <a href="#" class="relative grid grid-cols-[34px_64px_1fr_auto] gap-x-4 items-center py-3.5 rounded-[8px] px-3 -mx-3 border-t border-[var(--line-1)] hover:bg-[var(--accent-soft)]">
+
+                  <span class="grid place-items-center size-[34px] rounded-full bg-[var(--bg-3)] text-[color:var(--ink-2)]" title="Rock">
+                    <!-- icon: Pick -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 0 7 2.4 7 5.5 0 4-4.2 8.4-5.6 10.2a1.8 1.8 0 0 1-2.8 0C9.2 16.9 5 12.5 5 8.5 5 5.4 8 3 12 3z"/></svg>
+                  </span>
                   <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">1 am</span>
-                  <div>
-                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Off-Year Pop</div>
-                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Jada R.</div>
-                  </div>
-                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">in 1h 13m</span>
-                </div>
-                <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                  <span>
+                    <span class="block font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Off-Year Pop</span>
+                    <span class="block font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Jada R.</span>
+                  </span>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] tabular-nums">in 1h 13m</span>
+                </a>
+                <a href="#" class="relative grid grid-cols-[34px_64px_1fr_auto] gap-x-4 items-center py-3.5 rounded-[8px] px-3 -mx-3 border-t border-[var(--line-1)] hover:bg-[var(--accent-soft)]">
+
+                  <span class="grid place-items-center size-[34px] rounded-full bg-[var(--bg-3)] text-[color:var(--ink-2)]" title="Electronic">
+                    <!-- icon: Sliders -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v18M12 3v18M18 3v18"/><circle cx="6" cy="8" r="2"/><circle cx="12" cy="15" r="2"/><circle cx="18" cy="10" r="2"/></svg>
+                  </span>
                   <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">3 am</span>
-                  <div>
-                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Insomnia Hour</div>
-                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Glass &amp; Smith</div>
-                  </div>
-                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">3h 13m</span>
+                  <span>
+                    <span class="block font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Insomnia Hour</span>
+                    <span class="block font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Glass &amp; Smith</span>
+                  </span>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] tabular-nums">3h 13m</span>
+                </a>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Department legend (the genre chip row)
+                 ============================================================ -->
+            <section data-dms-section="card:department-legend" class="py-6">
+              <div class="wcdb-eyebrow mb-3">G — Department legend</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Ten departments, ten glyphs.
+              </h2>
+              <p class="max-w-[680px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                WCDB programmes by department, so these chips are the second axis of
+                the schedule filter — the week runs across the top of
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">schedule.html</code>'s
+                filter card, the ten departments sit below it, and they read as filters on
+                one list precisely because they share a card. They are also what teaches
+                the leading icon in each schedule row (§F): an icon column without a
+                legend is a rebus, and a legend without the icons is a filter bar nobody
+                connects to the grid.
+                <br><br>
+                Put them where they can <em class="italic">do</em> something. They were briefly on
+                the home page's schedule card, where they could only be a legend — the
+                home card shows the next three hours, which is not a list worth filtering.
+                The selected chip is <em class="italic">filled</em>, not tinted, so it reads as a choice
+                rather than a hover; "All" is the default.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--bg-2)] px-7 py-5">
+                <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-3.5">
+                  Browse by department
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Microphone -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Hip-Hop</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Heart -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.35-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 2.5C19 15.65 12 20 12 20z"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">R&amp;B</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Globe -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">World</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Pick -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 0 7 2.4 7 5.5 0 4-4.2 8.4-5.6 10.2a1.8 1.8 0 0 1-2.8 0C9.2 16.9 5 12.5 5 8.5 5 5.4 8 3 12 3z"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Rock</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Bolt -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Metal</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Note -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="15" r="2.5"/><path d="M9.5 18V6l10-2v11"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Jazz</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Sliders -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v18M12 3v18M18 3v18"/><circle cx="6" cy="8" r="2"/><circle cx="12" cy="15" r="2"/><circle cx="18" cy="10" r="2"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Electronic</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Newspaper -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v15H5a1 1 0 0 1-1-1z"/><path d="M17 8h3v10a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">News</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Trophy -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M10 17h4M12 13v4M9 20h6"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Sports</span>
+                  </a>
+                  <a href="#" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] pl-2.5 pr-3.5 py-1.5 text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] hover:bg-[var(--accent-soft)] transition-colors">
+                    <!-- icon: Star -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.4l6-.8z"/></svg>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Specialty</span>
+                  </a>
                 </div>
               </div>
+
+              <p class="mt-5 max-w-[680px] font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)]">
+                The glyphs are deliberately concrete objects (a mic, a pick, a
+                bolt, faders) rather than abstract marks — at 14&ndash;16px a
+                concrete silhouette survives where an abstract one turns to
+                mush. <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">World</code>
+                reuses the existing <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">Globe</code>
+                rather than adding a near-duplicate; all ten are in the registry on
+                <a href="./theme.html" class="border-b border-[var(--line-2)] hover:text-[color:var(--ink-1)]">theme.html</a>.
+                <br><br>
+                The labels are the <em class="italic">station&#39;s own</em>, taken from the legacy
+                site&#39;s DJ Profiles filter and matched against the live data &mdash; which is
+                why the last one is <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">Specialty</code>
+                and not &ldquo;Special&rdquo;. One vocabulary has to serve the DJ records, the
+                schedule rows, these chips and the icon registry at once; where the data
+                disagrees with it (<code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">Alternative Rock</code>,
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">R.P.M. (Electronic Music)</code>,
+                the single <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">Hip-Hop/R&amp;B</code>
+                value sitting behind two chips) the migration maps it &mdash; see the admin task.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Admin patterns (list default, subset modal, version bar)
+                 ============================================================ -->
+            <section data-dms-section="card:admin-patterns" class="py-6">
+              <div class="wcdb-eyebrow mb-3">H — Admin patterns</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Three rules for an editing surface.
+              </h2>
+              <p class="max-w-[680px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                From <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">pages/admin/</code>.
+                Each one is a response to something the live data actually does, not a
+                preference — the numbers are in the admin task and in the README.
+              </p>
+
+              <div class="grid grid-cols-1 min-[1150px]:grid-cols-3 gap-3">
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-3">1 &middot; The default is the design</div>
+                  <div class="inline-flex items-center rounded-full border border-[var(--line-2)] p-1 gap-1 mb-4">
+                    <span class="rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase font-semibold">Current &middot; 84</span>
+                    <span class="rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Alumni &middot; 807</span>
+                  </div>
+                  <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)] m-0">
+                    A segmented control with <em class="italic">counts on the segments</em>, so the
+                    default argues for itself. 891 DJs exist and 84 are current; opening on
+                    "all" would answer a question nobody asked.
+                  </p>
+                </div>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-3">2 &middot; Create asks for less</div>
+                  <div class="rounded-[10px] bg-[var(--bg-2)] p-4 mb-4">
+                    <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] mb-2">Add DJ &mdash; 6 fields</div>
+                    <div class="flex flex-wrap gap-1.5">
+                      <span class="rounded-full bg-[var(--bg-3)] px-2 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.06em] uppercase text-[color:var(--ink-2)]">on-air name</span>
+                      <span class="rounded-full bg-[var(--bg-3)] px-2 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.06em] uppercase text-[color:var(--ink-2)]">real name</span>
+                      <span class="rounded-full bg-[var(--bg-3)] px-2 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.06em] uppercase text-[color:var(--ink-2)]">email</span>
+                      <span class="rounded-full bg-[var(--bg-3)] px-2 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.06em] uppercase text-[color:var(--ink-2)]">department</span>
+                      <span class="rounded-full bg-[var(--bg-3)] px-2 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.06em] uppercase text-[color:var(--ink-2)]">start</span>
+                      <span class="rounded-full bg-[var(--bg-3)] px-2 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.06em] uppercase text-[color:var(--ink-2)]">status</span>
+                    </div>
+                  </div>
+                  <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)] m-0">
+                    The create modal is a <em class="italic">strict subset</em> of the editor. The legacy
+                    form asked ~40 questions and produced 20 columns with under five answers
+                    each; that is what asking everything up front buys you.
+                  </p>
+                </div>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-3">3 &middot; State three things at once</div>
+                  <div class="rounded-[10px] bg-[var(--bg-2)] p-4 mb-4 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">open</span>
+                      <span class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">v4 draft</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">live</span>
+                      <span class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]"><span class="wcdb-on-air-dot"></span> v2</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">unsaved</span>
+                      <span class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[var(--on-air)]">3 edits</span>
+                    </div>
+                  </div>
+                  <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)] m-0">
+                    A version bar that says which version is <em class="italic">open</em>, which is
+                    <em class="italic">live</em>, and whether there is unsaved work. Miss one and the
+                    editor becomes a guessing game about what the public can see.
+                  </p>
+                </div>
+              </div>
+
+              <p class="mt-5 max-w-[680px] font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)]">
+                A fourth, which is really the first: <strong class="font-semibold text-[color:var(--ink-1)]">tint
+                bad rows in place, never filter them out of sight</strong>. The schedule editor
+                shows clashes, missing times and missing DJs where they sit. An editor that
+                hides its problems is how 663 shows ended up with no time at all.
+              </p>
             </section>
 
             <hr class="wcdb-hairline my-6"/>
@@ -1600,7 +1948,7 @@
                  SECTION · Spin row pattern
                  ============================================================ -->
             <section data-dms-section="card:spin-row" class="py-6">
-              <div class="wcdb-eyebrow mb-3">F — Spin row</div>
+              <div class="wcdb-eyebrow mb-3">I — Spin row</div>
               <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
                 <code class="font-[family-name:var(--font-mono)] text-[28px] not-italic tracking-[-0.01em]">[60px_64px_1fr_auto]</code>
               </h2>
@@ -1661,7 +2009,7 @@
                  SECTION · Event tile pattern
                  ============================================================ -->
             <section data-dms-section="card:event-tile" class="py-6">
-              <div class="wcdb-eyebrow mb-3">G — Event tile</div>
+              <div class="wcdb-eyebrow mb-3">J — Event tile</div>
               <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
                 Giant italic day number.
               </h2>
@@ -1781,45 +2129,11 @@
   </div>
 </div>
 
-<!-- ============================================================
-     META-FOOTER — documentation chrome, repeating meta-nav links
-     ============================================================ -->
-<footer class="wcdb-meta-footer">
-  <div>
-    <h3>Design system</h3>
-    <ul>
-      <li><a href="./theme.html">theme</a></li>
-      <li><a href="./layouts.html">layouts</a></li>
-      <li><a href="./grid.html">grid</a></li>
-      <li><a href="./components.html">components</a></li>
-      <li><a href="./patterns.html" data-active="true">patterns</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · editorial</h3>
-    <ul>
-      <li><a href="../pages/home.html">home</a></li>
-      <li><a href="../pages/listen.html">listen</a></li>
-      <li><a href="../pages/blog.html">blog</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · catalogue</h3>
-    <ul>
-      <li><a href="../pages/schedule.html">schedule</a></li>
-      <li><a href="../pages/show.html">show</a></li>
-      <li><a href="../pages/djs.html">djs</a></li>
-      <li><a href="../pages/spins.html">spins</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · misc</h3>
-    <ul>
-      <li><a href="../pages/events.html">events</a></li>
-      <li><a href="../pages/login.html">login</a></li>
-    </ul>
-  </div>
-</footer>
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
 
 </body>
 </html>
