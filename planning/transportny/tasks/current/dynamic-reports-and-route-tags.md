@@ -869,11 +869,90 @@ sections clean; unrelated to anything touched this session (its own spec/code we
 
 ---
 
+### `one_week_study` hand-by-hand comparison — 3 fixes, 2 of them real pre-existing platform bugs (2026-08-13)
+
+Ryan's next hand-by-hand comparison, same session
+(`https://npmrds.devtny.org/template/view/276/route/268052D2026-07-22%7C2026-07-22` vs.
+`.../converted_reports/one_week_study?routes=2195805&asOf=2026-07-22`), flagged 3 things. Verified all
+3 directly against both live pages via browser automation rather than guessing from docs/gap logs:
+
+1. **Route Info Box (Speed, Travel Time) — genuinely missing entirely, not narrowed.** Confirmed via
+   the old template's own gap log (`scratchpad/npmrds-sub/old-reports/gaps/template_276.json`):
+   `graph-idx-1` is the Info Box (`extra_measures_dropped: ["travelTime"]` +
+   `info_box_bin_undetermined`), and it's the ONLY one of the old template's 8 real graphs
+   (`graph-idx-0`..`7`) never rebuilt into any spec version — every OTHER graph-idx is accounted for
+   by the spec's existing 7 panels. Ryan's ask: build it with one row per weekday only (skip
+   Average-for-Week/Month/Year — mixing a per-day grain and a per-range grain in one table is the same
+   unbuilt "mixed resolution" gap as the Bar Graph Summary case above), and asked directly whether this
+   hits the same-route-used-multiple-times gap (item 3's still-undecided `routeWindows`/composite-key
+   design). **It doesn't** — each weekday (`4 Days Ago`..`Today`) is already its own distinct route
+   (`r1`..`r5`) in the spec, exactly the same 5 routes `daily_line`/`daily_bar` already consume; adding
+   Info Box as a 6th consumer of those same 5 routes needs no new mechanism. Added `weekday_info_box`
+   (`graphType: "InfoBox"`, `measure: ["speed","travelTime"]`, grain defaults to `"route"`) assigned to
+   `r1`-`r5` only. This is also the multi-measure Info Box mechanism's first-ever real usage — it was
+   built and dry-run-verified 2026-08-12 but never actually applied to the one template it was scoped
+   around, per that round's own note.
+2. **A second "missing Bar Graph Summary" — investigated directly, NOT actually missing.** Ryan
+   flagged this as a suspected 2nd instance of the mixed-resolution gap. Loaded both pages fully
+   (scrolled through every section) via browser automation instead of trusting a doc/gap-log inference:
+   the old page has exactly 2 Bar Graph Summary panels (5-bar daily, 3-bar week/month/year averages),
+   and the new page already has both, correctly rendering with real data — confirmed nothing to fix
+   here, closing this out as a false alarm rather than silently leaving it unclear.
+3. **TMC Grid Graph rainbow/confetti colors — confirmed, root cause already known.** This page had
+   simply never been rebuilt+republished since the 2026-08-12 color-scale fix (`composeMeasureConfig.js`'s
+   `rdylgn` scheme for GridGraph) — a compose-time fix, not spec-driven, so it only takes effect on the
+   next `--publish`. The live page's attribution line also still read `NPMRDS TMC IDENTIFICATION V5 / V6
+   (3464)` (the OLD join), confirming this page had missed EVERY compose-layer fix from that whole
+   session, not just the color one: the metadata-join unification and the LineGraph tooltip fixes too.
+
+**Two real, pre-existing platform bugs found while building item 1** (multi-measure Info Box's first
+real usage exposed both — neither was hypothetical, both changed a live rendered value):
+- **`ensure_info_box_traveltime_template` missed the 2026-08-12 join-drift-detection fix** that its
+  sibling functions (`_ensure_static_info_box_template`, `ensure_info_box_delay_template`) got — its
+  pre-existing `route_info_box_traveltime`/`tmc_info_box_traveltime` rows kept carrying the STALE
+  `TMC_IDENTIFICATION_JOIN` (455/3464) forward forever, frozen from before the base template's own
+  default moved to `META_JOIN`. Invisible standalone (`TRAVEL_TIME_EXPR` never reads `table1`), but it
+  broke `build_route_info_box_section_state_multi`'s join union — a plain dict `update()` over each
+  measure's `join.sources`, last-measure-wins per shared key — so `measure: ["speed","travelTime"]`'s
+  correct `table1=META_JOIN` from `speed` was silently overwritten by `travelTime`'s stale value. Fixed
+  with the same drift-check pattern as its siblings, checking against the base's CURRENT default (not
+  a hardcoded expectation, since travelTime has no join preference of its own).
+- **`speed`'s (and the shared `length`/`aadt` builder's) Info Box column had no `formatFn` at all** —
+  full float precision leaked straight to the cell (`20.56702084355448` instead of `20.57`). Never
+  surfaced before because none of `route_info_box_speed`/`tmc_info_box_speed`/`route_info_box_aadt` had
+  ever actually been used live until this round. No existing formatFn fit (`comma`/`abbreviate` both
+  floor to an integer under their K/M threshold — wrong for a sub-1000 rate-like value). Added a new
+  shared registry entry, **`decimal_2`**, to `utils.jsx`'s `formatFunctions` (same file/pattern as
+  `minutes_clock`, travelTime's own format) — a real, reusable Card/Spreadsheet primitive enrichment,
+  not a one-off. Applied to `speed_col` only; `length`/`aadt` have the identical gap, flagged but not
+  fixed (no live consumer yet, unlike speed — same "guess and flag" posture as everything else in this
+  arc).
+
+**Live-verified** via screenshot comparison against the old tool: Info Box shows exactly 5 rows
+(4/3/2 Days Ago, Yesterday, Today) with Speed (mph) and Travel Time columns, speed rounded to 2
+decimals, attribution line correctly reading `NPMRDS_V6_TMC_META (983)`; GridGraph shows the same
+green→red gradient as the old tool instead of confetti. `report_probe.mjs --wait 25000`: 0
+console/page/SQL errors, 0 stillPending, all 10 sections rendering.
+
+**Golden-corpus**: `dynamic_report_one_week_study` re-baselined (9→10 sections); full suite re-run
+clean (7/7) after a brief cooldown — mid-session it repeatedly showed the SAME cold-load
+blank-LineGraph/pending-request pattern on `one_week_study` (this page has the most panels sharing the
+most routes, so the most concurrent queries per load — makes it the most susceptible), and for one
+run the identical pattern also hit `seasonality`/`annual_average_study` (untouched pages), confirming
+it's backend load from this session's own back-to-back probing, not a regression anywhere. Per
+[[feedback_test_every_rrl_report_touch]], [[feedback_check_fix_side_effects_for_deeper_issues]].
+
+---
+
 ## Open questions for triage
 
-- **The other 11 live catalog pages need `--update <id> --publish` to pick up the 2026-08-12
-  color-scale/tooltip fix** (see the section above) — deliberately not run yet, Ryan's explicit
-  call to fix+verify on `annual_average_study` alone first before touching the others.
+- **The remaining catalog pages need `--update <id> --publish` to pick up the 2026-08-12
+  color-scale/tooltip/metadata-join fixes** (see the sections above) — `annual_average_study` and
+  `one_week_study` are now done (rebuilt for other reasons, picking these up as a side effect); the
+  other 10 have not been touched yet.
+- **`length`/`aadt`'s Info Box columns have the same missing-`formatFn` gap `speed`'s did** (see the
+  `one_week_study` section above) — flagged, not fixed, since neither has a live consumer yet. Cheap
+  to fix the same way (`decimal_2` for length, likely `comma` for aadt) once one does.
 
 Mostly resolved — see the archive's own "Open questions" section for the full resolved list. Still
 live:
