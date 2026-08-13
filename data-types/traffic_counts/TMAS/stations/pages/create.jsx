@@ -95,10 +95,12 @@ const Create = ({ context, source }) => {
   	fetch(url, { method: 'POST', body: formData })
   		.then(res => res.json())
 	  	.then(res => {
-	  		// if (res.ok) {
-	  		// 	navigate(`${ baseUrl }/task/${ res.etl_context_id }`);
-	  		// }
-	  		console.log("RES:", res);
+	  		if (res.ok) {
+	  			navigate(`${ baseUrl }/task/${ res.etl_context_id }`);
+	  		}
+	  		else {
+	  			throw new Error(res.error);
+	  		}
 	  	}).catch(e => {
 	  		setError(e.message || e);
 	  	}).finally(() => stopLoading());;

@@ -97,12 +97,15 @@ const getTableValues = row => {
 	const latitude = row[latitudeIndex];
 	const longitudeIndex = TMAS_STATION_KEY_INDICES["longitude"];
 	const longitude = row[longitudeIndex];
+	row.splice(latitudeIndex, 2);
 	const point = {
 		type: "Point",
 		coordinates: [longitude, latitude]
 	}
-	row.push(JSON.stringify(point));
-	return row;
+	return [
+		...row.slice(1).map(di => di.value),
+		JSON.stringify(point)
+	].map(d => d.toString().trim());
 }
 
 const TMAScolumns = [
