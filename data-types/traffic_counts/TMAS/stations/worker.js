@@ -40,11 +40,16 @@ const Worker = async ctx => {
   const pgClient = new pgStuff.Client(pgCreds);
   await pgClient.connect();
 
+  // etl_context_id is deliberately NOT set: data_manager.views has
+  // views_etl_ctx_id_fkey → the LEGACY data_manager.etl_contexts table, and a
+  // new-runner task_id has no row there, so passing it fails the insert
+  // outright on any pgEnv that still has the FK (npmrds2 does). The new-path
+  // convention is to carry the task id in metadata instead — see
+  // dms-server/src/dama/upload/workers/csv-publish.js:28.
   const newDamaView = await createDamaView({
     source_id,
     user_id,
-    etl_context_id: task.task_id,
-    table_schema: "tmas"
+    metadata: { task_id: task.task_id }
   }, pgEnv);
 
   const { table_name, data_table, view_id } = newDamaView;
