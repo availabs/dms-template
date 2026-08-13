@@ -29,6 +29,10 @@ import parcelPlate from './columnTypes/parcelPlate.config';
 import { parcelPlateTheme } from './columnTypes/parcelPlate.theme';
 import statusDot from './columnTypes/statusDot.config';
 import { statusDotTheme } from './columnTypes/statusDot.theme';
+import iconText from './columnTypes/iconText.config';
+import { iconTextTheme } from './columnTypes/iconText.theme';
+import iconLink from './columnTypes/iconLink.config';
+import { iconLinkTheme } from './columnTypes/iconLink.theme';
 
 /* ---------- Brand palette (design_system/theme.html#color) ----------------- */
 
@@ -427,8 +431,24 @@ const layoutGroup = {
     {
       // Admin-dashboard page header: plain paper, no plat texture, tight —
       // matches admin-dashboard.html (title area sits on the pane, not a band).
+      // `pt-6` IS the mockup's `<main class="py-6">`: on an admin page the console
+      // chrome is the frame, so the band adds nothing more, and the 12px section
+      // gutter supplies the rest of the inset. NO bottom padding — the gap to the
+      // next band is the two sections' gutters (12+12), as in the mockup's grid.
       name: 'admin_header',
-      wrapper1: `w-full lb-paper pt-8`,
+      wrapper1: `w-full lb-paper pt-6`,
+      wrapper2: `mx-auto w-full max-w-[1240px] px-6`,
+    },
+    {
+      // Admin body band — the partner of `admin_header`, and the reason an admin
+      // page reads tight: the public `content` band's `py-12` (48px top AND bottom)
+      // is right for a marketing page whose bands are full-bleed sections, but on a
+      // console it stacks on top of the section gutters and pushes every band ~50px
+      // apart. Here the band contributes NO top padding (the gutters own the rhythm)
+      // and just `pb-6` to close the pane above the footer — the mockup's
+      // `main py-6`. Use this for every band on an admin page.
+      name: 'admin_content',
+      wrapper1: `w-full lb-paper pb-6`,
       wrapper2: `mx-auto w-full max-w-[1240px] px-6`,
     },
     {
@@ -725,16 +745,36 @@ const button = {
   ],
 };
 
-/* ---------- Input (flat) ---------------------------------------------------- */
+/* ---------- Input — promoted to options/styles ------------------------------
+   styles[0] is the flat default verbatim. `filter_trigger` is the bare box for a
+   text-search filter rendered INSIDE a scope-bar chip: the chip (filters
+   `scope_bar`) owns the border, fill and applied state, so the input draws
+   nothing. Callers select it by NAME — the Filter design's `controlStyle` is
+   passed to the value control as `activeStyle`, and Input resolves it via
+   getComponentTheme. So one name (`filter_trigger`) styles both the select
+   triggers (theme.multiselect) and the search box (theme.input).             */
 
 const input = {
-  input: `relative w-full block appearance-none h-10 px-3 rounded bg-white border border-[${C.ink}]/15 ${FONT_PROSE} text-[13.5px] text-[${C.ink}] placeholder:text-[${C.mist}] hover:border-[${C.ink}]/25 focus:border-[${C.skydeep}] focus:outline-none aria-invalid:border-[${C.rose}] aria-invalid:hover:border-[${C.rose}] disabled:bg-[${C.papertint}] disabled:text-[${C.mist}] disabled:border-[${C.ink}]/10 transition-colors`,
-  inputContainer: `group flex relative w-full`,
-  textarea: `relative block h-full w-full appearance-none p-3 rounded bg-white border border-[${C.ink}]/15 ${FONT_PROSE} text-[13.5px] text-[${C.ink}] placeholder:text-[${C.mist}] hover:border-[${C.ink}]/25 focus:border-[${C.skydeep}] focus:outline-none aria-invalid:border-[${C.rose}] disabled:bg-[${C.papertint}] disabled:text-[${C.mist}] resize-y transition-colors`,
-  confirmButtonContainer: `absolute right-0 hidden group-hover:flex items-center`,
-  editButton: `py-1.5 px-2 text-[${C.mist}] hover:text-[${C.skydeep}] cursor-pointer bg-white/10`,
-  cancelButton: `text-[${C.mist}] hover:text-[${C.rosedeep}] cursor-pointer py-1.5 pr-1`,
-  confirmButton: `text-[${C.field}] hover:text-white hover:bg-[${C.field}] cursor-pointer rounded-full`,
+  options: { activeStyle: 0 },
+  styles: [
+    {
+      name: 'default',
+      input: `relative w-full block appearance-none h-10 px-3 rounded bg-white border border-[${C.ink}]/15 ${FONT_PROSE} text-[13.5px] text-[${C.ink}] placeholder:text-[${C.mist}] hover:border-[${C.ink}]/25 focus:border-[${C.skydeep}] focus:outline-none aria-invalid:border-[${C.rose}] aria-invalid:hover:border-[${C.rose}] disabled:bg-[${C.papertint}] disabled:text-[${C.mist}] disabled:border-[${C.ink}]/10 transition-colors`,
+      inputContainer: `group flex relative w-full`,
+      textarea: `relative block h-full w-full appearance-none p-3 rounded bg-white border border-[${C.ink}]/15 ${FONT_PROSE} text-[13.5px] text-[${C.ink}] placeholder:text-[${C.mist}] hover:border-[${C.ink}]/25 focus:border-[${C.skydeep}] focus:outline-none aria-invalid:border-[${C.rose}] disabled:bg-[${C.papertint}] disabled:text-[${C.mist}] resize-y transition-colors`,
+      confirmButtonContainer: `absolute right-0 hidden group-hover:flex items-center`,
+      editButton: `py-1.5 px-2 text-[${C.mist}] hover:text-[${C.skydeep}] cursor-pointer bg-white/10`,
+      cancelButton: `text-[${C.mist}] hover:text-[${C.rosedeep}] cursor-pointer py-1.5 pr-1`,
+      confirmButton: `text-[${C.field}] hover:text-white hover:bg-[${C.field}] cursor-pointer rounded-full`,
+    },
+    {
+      name: 'filter_trigger',
+      // min-w keeps a text box usable inside a `w-fit` chip (a bare w-full input
+      // in a fit-content parent collapses to nothing).
+      input: `block appearance-none w-full min-w-[9rem] h-7 px-0 bg-transparent border-0 ${FONT_PROSE} text-[13px] text-[${C.ink}] placeholder:text-[${C.mist}] focus:outline-none`,
+      inputContainer: `flex relative w-full`,
+    },
+  ],
 };
 
 /* ---------- MultiSelect — white trigger, sky token chips, check menu -------- */
@@ -780,6 +820,30 @@ const multiselect = {
       error: `p-1 ${FONT_PROSE} text-[12px] text-[${C.rosedeep}] font-medium`,
       selectedValueIconName: `CircleCheck`,
       selectedValueIcon: `size-4 text-[${C.skydeep}]`,
+    },
+    {
+      // Borderless control for the `scope_bar` filter design (the admin-dashboard
+      // scope band). The chip's border, fill and APPLIED state all live on
+      // `filters.scope_bar.conditionRowInline`; this control supplies only the
+      // text, so it must draw no box of its own. The `group-data-[active]:`
+      // variants read the row's `data-active` (stamped by RenderFilters /
+      // ExternalFilters) — that is how the value + caret turn skydeep the moment a
+      // filter is applied, with no per-state theme key and no code change.
+      name: 'filter_trigger',
+      inputWrapper: `relative flex flex-wrap items-center gap-1 w-fit min-w-[2.5rem] min-h-7 cursor-pointer pl-0 pr-5 py-0 bg-transparent border-0 ${FONT_PROSE} text-[13px] text-[${C.ink}]`,
+      caretWrapper: `pointer-events-none absolute inset-y-0 right-0 flex items-center pr-0.5`,
+      caretIconName: `ChevronDown`,
+      caretIcon: `size-3.5 text-[${C.mist}] group-data-[active]:text-[${C.skydeep}]`,
+      // Selected values. Multi filters render one token per value (with its own ×);
+      // single filters render `singleValue`. Both go skydeep-semibold when applied.
+      tokenWrapper: `inline-flex items-center gap-1 ${FONT_PROSE} text-[13px] font-semibold text-[${C.skydeep}] whitespace-nowrap`,
+      removeIcon: `inline-flex items-center self-center cursor-pointer text-[${C.skydeep}] hover:text-[${C.rosedeep}]`,
+      removeIconName: `XMark`,
+      removeIconClass: `size-3`,
+      singleValue: `truncate ${FONT_PROSE} text-[13px] text-[${C.ink}] group-data-[active]:text-[${C.skydeep}] group-data-[active]:font-semibold`,
+      singlePlaceholder: `truncate ${FONT_PROSE} text-[13px] text-[${C.mist}]`,
+      singleClearWrapper: `absolute inset-y-0 right-4 flex items-center cursor-pointer text-[${C.skydeep}] hover:text-[${C.rosedeep}]`,
+      statusWrapper: `flex items-center ${FONT_PROSE} text-[13px] text-[${C.ink}]`,
     },
     {
       // Borderless control for use INSIDE the filter chip design — the
@@ -1027,6 +1091,27 @@ const dataCard = {
     { name: 'kpi_field', ...mkKpi(C.field) },
     { name: 'kpi_amber', ...mkKpi(C.amber) },
     { name: 'kpi_ink',   ...mkKpi(C.ink) },
+    {
+      // The tinted footer note a card pins under its content — the design set's
+      // `rounded-md bg-papertint p-3.5` inset (admin-dashboard.html:396, the
+      // "Needs attention" block). Distinct from the other styles because the
+      // TINT IS THE CARD, not the section: the section stays white and its
+      // padding becomes the gutter the tint floats inside. Turn it on with
+      // `display.cardBorder: true` and set `cardsPadding: 14` (= p-3.5).
+      //
+      // ⚠ Section frame XOR card frame — a section using this must NOT also
+      // draw its own tint/border, or the two boxes nest (the trap logged in
+      // sessions 7b and 8c).
+      name: 'note_tint',
+      // No border and no shadow: the inset reads as a recess in the card, not
+      // as a second card sitting on it.
+      cardBorder: `bg-[${C.papertint}] rounded-md`,
+      itemBorder: `bg-[${C.papertint}] rounded-md`,
+      // The note's own lines carry no padding — the card's `cardsPadding` is the
+      // only inset, exactly as the mockup's single `p-3.5` does it.
+      cellGutter: 0,
+      headerValueWrapper: `w-full flex flex-col items-start justify-start`,
+    },
   ],
 };
 
@@ -1195,17 +1280,20 @@ const lexical = {
     editorShell: `${FONT_PROSE} text-[15px] leading-[1.65] text-[${C.slate}]`,
     contentEditable: `border-none relative [tab-size:1] outline-none outline-0`,
 
-    // Paragraph
-    paragraph: `${FONT_PROSE} text-[15px] leading-[1.65] text-[${C.slate}] mb-4`,
+    // Paragraph. `last:mb-0` — the bottom margin is spacing BETWEEN blocks; on the
+    // last block it is dead space inside the section, and it reads as the section
+    // being over-padded (the admin header's meta strip carried 16px of it under the
+    // final line). Same reason every heading level below drops its trailing margin.
+    paragraph: `${FONT_PROSE} text-[15px] leading-[1.65] text-[${C.slate}] mb-4 last:mb-0`,
 
     // Headings — the display ladder, explicit so the codebase default's
     // font-display-with-wrong-sizes rule can't shadow the brand tokens.
-    heading_h1: `${T.displayHero} mt-0 mb-4`,
-    heading_h2: `${T.displayXL} mt-0 mb-3`,
-    heading_h3: `${T.displayLG} mt-0 mb-3`,
-    heading_h4: `${T.displayMD} mt-0 mb-2`,
-    heading_h5: `${T.displaySM} mt-0 mb-1`,
-    heading_h6: `${T.displayXS} mt-0 mb-1`,
+    heading_h1: `${T.displayHero} mt-0 mb-4 last:mb-0`,
+    heading_h2: `${T.displayXL} mt-0 mb-3 last:mb-0`,
+    heading_h3: `${T.displayLG} mt-0 mb-3 last:mb-0`,
+    heading_h4: `${T.displayMD} mt-0 mb-2 last:mb-0`,
+    heading_h5: `${T.displaySM} mt-0 mb-1 last:mb-0`,
+    heading_h6: `${T.displayXS} mt-0 mb-1 last:mb-0`,
 
     // Lists
     list_ol: `${FONT_PROSE} list-decimal pl-5 mb-4 marker:text-[${C.mist}]`,
@@ -1241,6 +1329,19 @@ const lexical = {
     layoutContainer: `grid gap-3 mt-2`,
     layoutItem: `min-w-0 max-w-full`,
     layoutItemEditable: `border border-dashed border-[${C.sky}]/40 rounded-md`,
+  },
+  {
+    // admin_title — the page-title block of a STAFF CONSOLE page. Sparse: it
+    // inherits everything from `default` and only shrinks the title ladder one
+    // step, because an admin page's h1 is `displayXL` (38px, as drawn in
+    // admin-dashboard.html), not the public `displayHero` (54px) — the console's
+    // chrome already says where you are, so the title doesn't have to shout, and
+    // 16px of the header band's height was coming from that type step alone.
+    // Author-selectable from the Rich Text section's "Style" dropdown, so every
+    // admin page's title block can pick it. Keeps the semantic <h1>.
+    name: 'admin_title',
+    heading_h1: `${T.displayXL} mt-0 mb-2 last:mb-0`,
+    heading_h2: `${T.displayLG} mt-0 mb-2 last:mb-0`,
   }],
 
   // /Columns presets — brand grid-aligned (read by InsertLayoutDialog).
@@ -1410,6 +1511,43 @@ const filters = {
       searchKeyMenuItem: `p-1.5 hover:bg-[${C.sky}]/10 hover:text-[${C.skydeep}] cursor-pointer rounded`,
     },
     {
+      // scope_bar — the admin dashboard's scope band (pages/admin-dashboard.html
+      // §"scope / filter band"). Each filter is a compact h-9 white trigger whose
+      // LABEL SITS INSIDE it ("Municipality: Cohoes ▾"), and an APPLIED filter turns
+      // skydeep on a sky tint. The band's "Scope" eyebrow is NOT part of this style:
+      // it is a one-cell static Card fused to the left of the filter section (the
+      // gap-0 compound-card model), which is what puts it inline with the filters
+      // instead of above them.
+      name: 'scope_bar',
+      placement: 'inline',
+      controlStyle: 'filter_trigger',
+      // No box: the SECTION chrome draws the white card. Section frame XOR component
+      // frame, never both — `panel`'s own bordered card nested inside a white section
+      // is exactly the double frame this avoids.
+      filtersWrapper: `w-full flex flex-wrap items-center gap-2`,
+      // Overrides styles[0]'s `grid`: the chips size to content and wrap, they are not
+      // equal grid thirds. (RenderFilters still appends grid-cols-N — inert on a flex box.)
+      conditionsGrid: `flex flex-wrap items-center gap-2`,
+      // The trigger chip. `group` is load-bearing — it is what lets the paired
+      // `filter_trigger` control styles (multiselect + input) and filterLabel below
+      // react to the row's `data-active`. `data-[active]:` (no `group-`) styles the
+      // chip itself. Every control inside is frameless (see the `filter_trigger`
+      // styles), so a text-search filter reads as the same chip as a select.
+      conditionRowInline: `group inline-flex items-center gap-1.5 w-fit max-w-full h-9 pl-3 pr-1.5 rounded-md border border-[${C.ink}]/15 bg-white hover:border-[${C.skydeep}]/50 transition-colors data-[active]:border-[${C.skydeep}]/40 data-[active]:bg-[${C.sky}]/[0.07]`,
+      labelWrapperInline: `shrink-0 inline-flex items-center gap-1`,
+      filterSettingsWrapperInline: `w-fit min-w-0`,
+      // 13px mist, colon supplied by the theme so the author's column name stays a
+      // plain label ("Municipality", not "Municipality:").
+      filterLabel: `${FONT_PROSE} text-[13px] leading-[1.2] font-normal text-[${C.mist}] after:content-[':'] group-data-[active]:text-[${C.skydeep}] group-data-[active]:font-semibold`,
+      loadingText: `${FONT_PROSE} text-[12px] font-normal text-[${C.mist}]`,
+      // Reset (the mockup's ghost link). `contents` dissolves the foot row so the
+      // link lands on the SAME flex line as the chips instead of below them —
+      // opt in per section with display.showClearAll.
+      activeTokensWrapper: `contents`,
+      clearAllText: `Reset`,
+      clearAll: `ml-1 cursor-pointer ${FONT_PROSE} text-[12px] font-semibold text-[${C.skydeep}] hover:text-[${C.ink}]`,
+    },
+    {
       // Inline chip design — label inside a bordered chip, borderless control.
       name: 'chip',
       placement: 'inline',
@@ -1419,6 +1557,24 @@ const filters = {
       filtersWrapper: `w-full flex flex-wrap items-start gap-2`,
     },
   ],
+};
+
+/* ---------- Richtext — the lexical section's shell (TOP-LEVEL key) ----------
+   `contentPadding` is the SITE default for a rich-text block's inner padding
+   (kept at the platform's `p-4` so every existing prose section is unchanged).
+   `paddings` is the author-selectable override map — it surfaces as the "Padding"
+   dropdown on a Rich Text section. `none` is what puts an admin page's title
+   flush with the cards under it: the section's 12px gutter is already the inset,
+   so the block's own 16px only pushed the h1 in and down.                    */
+
+const richtext = {
+  contentPadding: `p-4`,
+  paddings: {
+    none: `p-0`,
+    tight: `p-2`,
+    default: `p-4`,
+    roomy: `p-6`,
+  },
 };
 
 /* ---------- Attribution — the white chip strip (TOP-LEVEL key) -------------- */
@@ -1750,6 +1906,7 @@ const landbankTheme = {
 
   // Rich content / data
   lexical,
+  richtext,
   graph,
   avlGraph,
   map,
@@ -1764,13 +1921,18 @@ const landbankTheme = {
   // barColorKey 'sky' for inventory bars, 'field' for for-sale bars.
   dataBar: {
     wrapper: 'w-full flex items-center gap-2',
-    track: `relative flex-1 min-w-0 h-2.5 rounded-sm bg-[${C.papertint}] overflow-hidden`,
+    // h-3 = the mockup's 12px neighborhood bars (admin-dashboard.html:360-366).
+    track: `relative flex-1 min-w-0 h-3 rounded-sm bg-[${C.papertint}] overflow-hidden`,
     fill: 'absolute inset-y-0 left-0',
     value: `${FONT_META} text-[11px] font-medium tabular-nums text-[${C.ink}] shrink-0`,
     fills: {
       primary: `bg-[${C.sky}]`,
       sky: `bg-[${C.sky}]`,
       field: `bg-[${C.field}]`,
+      // `field_muted` = the mockup's faded "All others" bar (bg-field/45): the same
+      // hue at 45%, so a tail/other bucket reads as present but not a real place.
+      // Pick it per ROW with the data_bar column's `barColorColumn`.
+      field_muted: `bg-[${C.field}]/45`,
       muted: `bg-[${C.steel}]/45`,
     },
   },
@@ -1781,10 +1943,20 @@ const landbankTheme = {
   // status pill and map pin. `showLegend` renders the counts line beneath.
   stackedBar: {
     wrapper: 'w-full',
-    track: `w-full flex h-2.5 rounded-sm bg-[${C.papertint}] overflow-hidden`,
+    // The disposition bar as drawn in admin-dashboard.html: a 36px track whose
+    // segments are separated by a 2px gap (the gaps overflow the 100% of widths —
+    // `overflow-hidden` clips them, same as the mockup).
+    track: `w-full flex gap-0.5 h-9 rounded-md bg-[${C.papertint}] overflow-hidden`,
     segment: 'h-full shrink-0',
     legend: `pt-1.5 ${FONT_META} text-[11px] font-medium tabular-nums text-[${C.slate}]`,
     empty: `pt-1.5 ${FONT_META} text-[11px] font-medium text-[${C.mist}]`,
+    // `legendLayout: 'rows'` — the mockup's key: a 2/3-column grid of
+    // swatch · label · count, instead of the single mono line.
+    legendRows: `pt-5 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2.5 ${FONT_PROSE} text-[12.5px]`,
+    legendItem: `flex items-center gap-2 min-w-0`,
+    legendSwatch: `size-2.5 rounded-sm shrink-0`,
+    legendLabel: `flex-1 min-w-0 truncate text-[${C.slate}]`,
+    legendValue: `${FONT_META} font-medium text-[11px] tabular-nums text-[${C.ink}]`,
     fills: {
       // Canonical status keys (mirror the pill / map-pin system).
       for_sale:       `bg-[${C.field}]`,
@@ -1807,6 +1979,8 @@ const landbankTheme = {
   },
   parcelPlate: parcelPlateTheme,
   statusDot: statusDotTheme,
+  iconText: iconTextTheme,
+  iconLink: iconLinkTheme,
 
   // Pattern-level
   pages: pagesTheme,
@@ -1817,6 +1991,8 @@ const landbankTheme = {
   columnTypes: {
     parcel_plate: parcelPlate,
     status_dot: statusDot,
+    icon_text: iconText,
+    icon_link: iconLink,
   },
   pageComponents: {},
 };
