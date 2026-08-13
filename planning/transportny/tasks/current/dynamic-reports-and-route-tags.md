@@ -830,6 +830,45 @@ leftover browser-profile route selection).
 
 ---
 
+### `annual_average_study`'s missing "Bar Graph Summary" — ADDED 2026-08-13
+
+Ryan's continued hand-by-hand comparison against the old tool
+(`https://npmrds.devtny.org/template/view/278/route/268052D2026-07-22%7C2026-07-22`) found the whole
+"Bar Graph Summary — Speed" panel was missing from the new page, not just narrowed. The old panel had
+4 bars: the whole requested year plus AM/PM/Off-Peak sub-bars — the exact peak-hour breakdown already
+documented above as genuinely unbuildable (Design Push #2 removed per-route time-of-day sub-views, so
+today there's only one real "Current Year" route to bar). Ryan's call: rather than leave the panel
+dropped, show the SAME 4 current+trailing-year routes as one bar per year — the identical
+`resolution:'summary'` shape already proven for `this_month_vs_last_month_vs_last_year`'s
+`bar_summary_traveltime` (see "'Bar Graph Summary' built" in `report-spec-and-build-script.md`), not a
+new mechanism.
+
+**Added** `bar_summary` (`graphType: "BarGraph"`, `measure: "speed"`, `resolution: "summary"`) to
+`scripts/npmrds-reports/dynamic_report_specs/annual_average_study.json`, assigned to all 4 routes
+(Current Year + 1/2/3 Years Ago). Rebuilt via `report_build.mjs --update 2210974 --publish` (revision
+#8: graph `bar_summary` added, all 4 routes modified) — structural checks passed.
+**Live-verified** via `report_probe.mjs` against route `2207838`: 0 console/page/SQL errors; the new
+"Route Bar Graph Summary, Speed" section renders 4 rects (one bar per year), correct categorical
+colors (multi-route summary keeps the route-identity palette per the color-scale fix above, which
+doesn't apply to `resolution:'summary'`).
+
+Golden-corpus `dynamic_report_annual_average_study` re-baselined (9→10 sections) and full suite
+re-run clean (7/7), per [[feedback_test_every_rrl_report_touch]].
+
+**Follow-on, same session: pinned `asOf` into every Dynamic Report corpus URL.** Ryan's ask —
+without a fixed anchor, every Today-anchored page's baseline drifts by a day between runs, forcing
+a needless daily re-capture. No code change needed: `?asOf=` is already a fully-built, viewer-facing
+override (the entry gate's own "Viewing as of" field, `ReportRouteList.jsx`'s `asOfOverride`) — just
+pinned `&asOf=2026-07-23` into `dynamic_report_one_week_study`/`monthly_congestion`/`seasonality`/
+`annual_average_study`'s `url` fields in `golden-corpus.json` and re-captured. From now on the
+corpus won't drift on its own; bump the pinned date only once it ages out of real ClickHouse
+coverage. While re-baselining, reproduced (multiple times, on `one_week_study` specifically) the
+already-documented cold-load LineGraph/pending-request flake (`traversing-report-pages.md`'s "cold-
+load timing gotcha") — confirmed non-regression via a `--wait 20000` re-probe rendering all 9
+sections clean; unrelated to anything touched this session (its own spec/code weren't touched).
+
+---
+
 ## Open questions for triage
 
 - **The other 11 live catalog pages need `--update <id> --publish` to pick up the 2026-08-12
