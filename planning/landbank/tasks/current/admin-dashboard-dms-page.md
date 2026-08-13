@@ -1,6 +1,6 @@
 # Landbank admin dashboard → live DMS page
 
-**Project:** Landbank · **Topic:** content · **Status:** IN PROGRESS — **ALL bands A–K built & live-verified** (admin pattern + draft dashboard page 1077: header, scope cross-filter, KPIs, by-year, by-status, map, neighborhood, pipeline, table, footer, add-parcel modal). **Design-alignment passes 1, 2 and the header/KPI pass all DONE 2026-08-07** (sessions 6/6b/6c: 11→4 section groups, white-card framing + per-band titles + mockup-order reflow, map held-only default, mockup table columns, header meta-strip + action buttons with no new sections, KPI sub-stats, title-case headings — all live-verified via the Playwright harness). **The page is feature-complete against the mockup except the flagged/blocked items.** **Session 7 (2026-08-10) fixed a broken production build (missing `colorbrewer` install) and ran the live create test, which surfaced 🔴 G12 — the add-parcel create path is BLOCKED by a defaultless `ogc_fid` PK on the source table (data-layer DDL fix needed; no data was written).** **Session 7c (2026-08-10) closed the last design gap: the grouped 2-series "Acquisitions vs. sales" chart is BUILT from calculated columns alone (an `unnest` unpivot) — the previously-recorded "needs a SQL view" blocker was wrong.** Remaining: **fix G12** (the only hard blocker), then **publish** (still draft-only — and publishing before G12 ships a button that always 500s), **run `npm run deploy-landbank`** (blocked: Netlify CLI not installed/authenticated), the composition-legend 6-bucket regroup (needs owner bucket definition), and escalate the library gaps (G7/G8/G11/G13 + the G4 follow-up). · **Created:** 2026-08-04
+**Project:** Landbank · **Topic:** content · **Status:** IN PROGRESS — **Session 9b (2026-08-13) built the table's View / Edit row actions (gap G9 CLOSED)** via a new `icon_link` theme column type, linking to the not-yet-built `/admin/property-view?id=` and `/admin/property-edit?id=`. **The page now mirrors the design across every band**; per the owner (2026-08-13) the next work is the remaining admin-panel pages — **property view, property edit, and the full inventory table**. — **Session 9 (2026-08-13) finished the "Needs attention" inset** — moved the tint from the section to the card (new `note_tint` dataCard style) so it reads as the design's inset panel rather than a full-bleed strip, pinned it to the card floor with a new library option `cardsVerticalAlign: 'bottom'`, and replaced the literal `▲` with a real amber `TriangleAlert` via a new `icon_text` column type; measured against the mockup's computed values. — **Session 8 (2026-08-12) rebuilt Band B (the Scope filter bar) to the mockup** — inline `SCOPE` eyebrow as a fused left card, chip triggers with the label inside, an APPLIED-filter state (new library `data-active` convention), a Reset link, and a chip-styled search box; five additive library changes escalated as `src/dms/planning/tasks/current/filter-bar-applied-state-and-controls.md`. — **ALL bands A–K built & live-verified** (admin pattern + draft dashboard page 1077: header, scope cross-filter, KPIs, by-year, by-status, map, neighborhood, pipeline, table, footer, add-parcel modal). **Design-alignment passes 1, 2 and the header/KPI pass all DONE 2026-08-07** (sessions 6/6b/6c: 11→4 section groups, white-card framing + per-band titles + mockup-order reflow, map held-only default, mockup table columns, header meta-strip + action buttons with no new sections, KPI sub-stats, title-case headings — all live-verified via the Playwright harness). **The page is feature-complete against the mockup except the flagged/blocked items.** **Session 7 (2026-08-10) fixed a broken production build (missing `colorbrewer` install) and ran the live create test, which surfaced 🔴 G12 — the add-parcel create path is BLOCKED by a defaultless `ogc_fid` PK on the source table (data-layer DDL fix needed; no data was written).** **Session 7c (2026-08-10) closed the last design gap: the grouped 2-series "Acquisitions vs. sales" chart is BUILT from calculated columns alone (an `unnest` unpivot) — the previously-recorded "needs a SQL view" blocker was wrong.** Remaining: **fix G12** (the only hard blocker), then **publish** (still draft-only — and publishing before G12 ships a button that always 500s), **run `npm run deploy-landbank`** (blocked: Netlify CLI not installed/authenticated), the composition-legend 6-bucket regroup (needs owner bucket definition), and escalate the library gaps (G7/G8/G11/G13 + the G4 follow-up). · **Created:** 2026-08-04
 
 ## Working method (IMPORTANT — read before resuming)
 
@@ -693,6 +693,286 @@ scripted bulk writes, but plain `dms page|section|raw …` commands are fine now
     footer action row. Those need at least one more section in the modal group; worth doing but it is
     a scope decision, not a formatting fix.
 
+- **2026-08-12 (session 8) — Band B (the Scope filter bar) rebuilt to the mockup. LIVE-VERIFIED by
+  measurement.** Reference: `admin-dashboard.html:160-172` — ONE card holding an inline `SCOPE`
+  eyebrow, compact `h-9` white triggers whose **label sits inside** them, an **applied** filter in
+  skydeep on a sky tint, and a **Reset** link. Before this session the band was: a 21px section title
+  *above* the component, a nested bordered `panel` card inside the section's own white card (a double
+  frame), and three equal grid thirds of `label │ full-width empty select`.
+  - **The eyebrow is inline because it is its own card, fused to the left.** Section **1209** (new,
+    `Card`, size **1**) holds a single `static` column `staticValue: "Scope"`,
+    `valueFontStyle: "metaXS"`; 1093 dropped its `title` and went to size **11**. Fused with the
+    shipped gap-0 compound-card model — 1209 `padding.right: 0` + borders top/left/bottom + radius
+    tl/bl, 1093 `padding.left: 0` + borders top/right/bottom + radius tr/br, both `height: 'fill'`.
+    **Measured seam: 0.0px** (chrome boxes 286→373 and 373→1454), band height **58px** = the mockup's
+    `p-2.5` + `h-9` + borders.
+  - **⚠ A section row created without an `element` renders an empty chrome box** — silently, like the
+    session-7b "no `group`" trap. My create call built the Card element-data and never attached it;
+    the band showed an 87×70 empty white box. Worth adding to the page-creation skill's trap list.
+  - **⭐ NEW filters design `scope_bar`** (+ paired `multiselect` **and** `input` style
+    `filter_trigger`) in `src/themes/landbank/theme.js`. `filtersWrapper`/`conditionsGrid` are flex
+    (chips size to content and wrap, not equal grid thirds); `conditionRowInline` IS the chip
+    (`group … h-9 pl-3 pr-1.5 rounded-md border bg-white`); `filterLabel` is 13px mist with the colon
+    supplied by the theme (`after:content-[':']`) so the author's column name stays a plain label; no
+    card frame, because the section chrome draws it (**section frame XOR component frame** — the old
+    `panel` nesting was exactly that double frame).
+  - **⭐ The APPLIED state is now expressible at all** — five small library changes, escalated as
+    `src/dms/planning/tasks/current/filter-bar-applied-state-and-controls.md`: (1) both filter paths
+    stamp **`data-active`** on the condition row, so a theme styles the applied look with
+    `group-data-[active]:` variants and the component owns no brand classes (same convention as the
+    unary toggle's `data-on`); (2) `RenderFilters` gained the `display.showClearAll` link
+    `ExternalFilters` already had, with (3) a themeable `clearAllText` (landbank: **"Reset"**, with
+    `activeTokensWrapper: 'contents'` so it joins the chips' flex line); (4) `caretIconName` makes the
+    caret glyph themeable (`ChevronDown` — it was hardcoded `ArrowDown`); (5) **`theme.input` may be
+    promoted to `options/styles`**, which `Input` already had a comment inviting — it now resolves the
+    `activeStyle` it was already being passed, so a filter design's `controlStyle` styles the
+    **text-search box** as well as the select triggers. Plus `cardsVerticalAlign`/
+    `cellsVerticalAlign: 'center'` on Card (the eyebrow must sit on the chips' mid-line; `'top'`
+    floats it at the ceiling and `'stretch'` inflates its rows).
+  - **⚠ Bug found and fixed while building the Reset:** the first version collected the page-filter
+    keys to clear *inside* the `setState` recipe. Immer runs that recipe when React processes the
+    update, so the map was still empty on the next line and `updatePageStateFilters({})` computed no
+    URL change — the click did nothing, with no error. Collect from the current state first.
+  - **Verified live** (`s10g.band.png`, `s10.v0-v3.png`, port 5176): with `?city=Cohoes` the
+    Municipality row carries `data-active="true"`, border `#0A6E99`/0.4, fill sky/0.07, label
+    `rgb(10,110,153)`, and the ✕ token — the mockup's active chip; the other two rows unchanged.
+    Clicking **Reset** drops `?city=` from the URL, takes "Currently held" 3 → **198** and
+    `div[data-active]` 1 → **0**. The add-parcel form's inputs (same `Input`, no `activeStyle`) render
+    unchanged, so the `input` promotion is BC. `cardLayout.test.js` 29/29.
+  - **Deliberately NOT done (flagged, not guessed):**
+    - The mockup's right-aligned note "every chart, the map & the table share this slice" — the
+      filters markup has no slot for it, and on the page it would need a **third** fused card (owner
+      rule: avoid adding sections). Wants a `filters` text key or a Filter `display.note` → **G16**.
+    - An unselected trigger reads "Status: ▾" where the mockup reads "Municipality: **All**" — a
+      multi-select with no values renders *blank* and there is no author-facing empty label → **G15**.
+    - The mockup's third filter is **Years: 2015–2026**; ours are Status / Municipality / Search
+      (the search lives in the mockup's *topbar*, which this admin pattern doesn't have). Left alone
+      — that is the deferred data-categorization/editorial question, not a formatting one.
+
+- **2026-08-12 (session 8b) — the header band's excess space removed, at the THEME level so every
+  admin page inherits it. MEASURED against the mockup, not eyeballed.**
+  Owner's read was right that the space was section/page padding, and the measurement pinned which
+  boxes: **the header→scope gap was 74px against the mockup's 24px**, the title was **indented 16px**
+  relative to every card below it (x=302 vs 286), and the title block was 45px taller than the
+  mockup's. Four separate boxes, none of them the header section's own gutter:
+  | Culprit | Was | Now | Fix |
+  |---|---|---|---|
+  | the **`content` band's `py-12`** (48px top+bottom) stacking on top of the section gutters | 48px | 0 | NEW `layoutGroup` style **`admin_content`** (`pb-6` only); the Dashboard group switched to it |
+  | `admin_header` `pt-8` vs the mockup's `main py-6` | 32px | 24px | `pt-6` |
+  | the rich-text block's own `p-4` — the 16px indent AND 32px vertical | 16px | 0 | NEW per-section `display.contentPadding` (library) + `richtext.paddings` map (theme); header block set to `none` |
+  | trailing `mb-4` under the block's LAST line (dead space, read as over-padding) | 16px | 0 | `last:mb-0` on `lexical` `paragraph` + `heading_h1..h6` |
+  | the title at `displayHero` 54px where the mockup's admin title is `displayXL` 38px | 56px tall | 42px | NEW sparse `lexical` style **`admin_title`** (h1→`displayXL`), picked from the Rich Text section's existing **Style** dropdown — keeps the semantic `<h1>` |
+  - **Why `admin_content` rather than editing `content`:** `content`'s `py-12` is correct for the
+    public site, where a band IS a full-bleed section of a marketing page. On a console the sections'
+    12px gutters already carry the rhythm, so the band must contribute nothing at the top — otherwise
+    every band sits ~50px from its neighbour. `admin_header` + `admin_content` are now a **pair**: use
+    both on any admin page. (The alternative the owner floated — moving the header components into the
+    page band — was rejected for the reason they suspected: it hides the band grammar in one page's
+    content instead of fixing the grammar.)
+  - **Verified live by measurement** (`s12.v0.png`, port 5176 restarted for the theme edits): h1 at
+    **y=36 / x=286** — flush with the scope + KPI cards and 36px below the pane top, matching the
+    mockup's h1 offset within its `main` exactly; h1 height **42px** = the mockup's 42; **24px** from
+    the header block to the scope card = the mockup's two `p-3` gutters. Page scroll height 3575 →
+    **3404**. Everything below (KPIs, charts, map, table, footer, add-parcel form) unchanged.
+  - **Remaining ~9px vs the mockup is edit-mode chrome** (the lexical editor's scroller reserves a
+    little space below the content); it does not exist in view mode.
+  - **Library escalation:** `src/dms/planning/tasks/current/richtext-per-section-content-padding.md`
+    (+ todo entry). The `contentPadding` default resolves to today's value, so mny (`p-0`) and
+    transportny (`p-4`) are untouched; 213/213 package tests pass.
+  - **NOT changed (flag, not guess):** the h1 text is title-case ("Portfolio **D**ashboard") where the
+    mockup is sentence case — session 6c's title-case decision covers headings, so left alone; the
+    mockup's 56px **topbar** (breadcrumb · parcel search · user chip) still doesn't exist on this
+    pattern (`topNav.size: 'none'`), which is why our title starts at the very top of the pane; and the
+    Export button has no leading icon (icons inside a Card cell's value aren't wired).
+
+- **2026-08-12 (session 8c) — the bottom four blocks (neighborhood · pipeline · needs-attention ·
+  held-inventory table) diffed against `admin-dashboard.html:353-530` and the straightforward half
+  aligned. LIVE-VERIFIED by measurement.**
+  - **⭐ The biggest finding is structural: "Needs attention" is NOT a band in the design.** It is a
+    tinted inset pinned to the BOTTOM of the Disposition pipeline card (`mt-auto pt-4` →
+    `rounded-md bg-papertint p-3.5`), holding ONE sentence under an eyebrow. Ours was a full-width
+    12-col band of three bordered `displayLG` numbers. Rebuilt: **1089 → size 6, fused under 1090**
+    (no top border/radius, `padding.top: 0`, `bg-[#EAEFF1] px-6 py-4`), content replaced by an
+    eyebrow cell + ONE aliased concat calc column ("▲ 6 title problems · 6 tabled by board · 69
+    parcels held > 8 years"). **1088 got `rowspan: 2`** so the neighborhood card stays a single card
+    beside the two stacked right-hand sections.
+    - ⚠ **A rowspan sibling distributes its extra height across BOTH spanned rows**, so the taller
+      left card left ~90px of unpainted paper under the tint strip. Fixed with `height:'fill'` +
+      the new `cardsVerticalAlign/cellsVerticalAlign: 'center'` on 1089, so the tint fills its row
+      and its two lines sit on the panel's mid-line. **Measured: left card 1589→2030, right column
+      1589→2031 — the two columns now end flush.**
+  - **Pipeline card (1090) — eyebrow/title/subtitle WITHOUT a new section.** This Card renders one
+    record (`pageSize: 1`), so static cells appear once instead of per row (the KPI-tile trick):
+    added `● Pipeline` (`eyebrow`), `Disposition pipeline` (`displayMD`) and an aliased
+    `('status of the ' || count(*) || ' held parcels')` caption (`proseXS`) as cells, and dropped
+    `data.title`. That also drops the section-title hairline rule, which the design's card titles
+    don't have.
+  - **⚠ Also fixed: the pipeline card had `cardBorder: true` AND a section border** — the box drawn
+    around the bar in every screenshot since session 2c. Section frame XOR card frame (the session-7b
+    rule) — now `cardBorder: false`.
+  - **⭐ NEW library capability — `stacked_bar` `legendLayout: 'rows'`** (escalated:
+    `src/dms/planning/tasks/current/stacked-bar-legend-rows.md`). The legend could only be ONE joined
+    string, so the design's swatch/label/count key was unreachable from a theme. Now one row per
+    segment (same `fills` resolution as the bar, so a chip can't drift from its segment) with
+    `legendRows`/`legendItem`/`legendSwatch`/`legendLabel`/`legendValue` keys — **the theme** decides
+    stack vs grid. Landbank ships `grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2.5`, and the
+    `stackedBar.track` became the mockup's **36px `h-9` bar with `gap-0.5` between segments**
+    (`rounded-md`; the gaps overflow the 100% of widths and are clipped, exactly as the mockup does).
+  - **Neighborhood card (1088) — no library work needed for any of it.** The row layout was already
+    the mockup's (label+count row, full-width bar below, via `cellsGridSize: 2` + the bar at
+    `cellSpan: 2`). Aligned: bar track `h-2.5 → h-3` (theme), row label → `labelSM` (12px semibold
+    ink), card padding `p-4 → p-6`, and — the one that looked like it needed code — the mockup's
+    **faded "All others" bar**: `data_bar` already accepts **`barColorColumn`**, a sibling column
+    holding the `fills` key per row, so a `CASE`-column emitting `field` / `field_muted` drives it
+    from the data. New theme fill `field_muted` = `bg-[#4C9129]/45`. **Measured: six bars
+    `rgb(76,145,41)`, the tail bar the same hue at 0.45.** ⚠ `barColorColumn` must be the column's
+    FULL name string, not the SQL alias (the same row-keying gotcha as `stacked_bar.segments[].col`).
+  - **Table (1091):** already matched the design closely (papertint header, zebra rows, sky hover,
+    status pills, right-aligned numerals, pagination). Added `showAttribution` so the footer carries
+    the source, as the mockup's footer does.
+  - **The plan for what is NOT done, in priority order:**
+    1. **Eyebrow + subtitle on the neighborhood card** ("GEOGRAPHY" / "top areas · N parcels") and a
+       **table header strip** (subtitle "N parcels · sorted by days in inventory" + an "Edit in
+       table" button). Both need a fused static Card per band — the neighborhood one is *not* free
+       because that Card renders 10 rows, so its title cannot live in-card the way the pipeline's
+       does. Doing it also means a 3-row rowspan layout for that row (title r1c1 · pipeline r1-r2c2 ·
+       bars r2-r3c1 · attention r3c2) — mechanical but exactly the kind of grid work that took
+       session 7b a full pass. **Recommended next step; ~1 session.**
+    2. **Section-title hairline rule.** The design draws NO rule under a card title, but landbank's
+       `heading` key adds `mb-3 pb-2 border-b`. The two side-by-side cards now disagree (pipeline's
+       title is a cell, neighborhood's is a section title with the rule). Dropping the rule is a
+       one-line theme edit that touches **every** section title on every landbank page — an owner
+       call, not a formatting fix.
+    3. ~~**Actions column** (view/edit icon links)~~ — ✅ **DONE 2026-08-13 (session 9b)**, gap G9
+       closed via the new `icon_link` column type. Its targets (`property-view` / `property-edit`)
+       still don't exist — the links are live but land on nothing until those pages are built.
+    4. **Sort by days held desc** — still blocked on NULLS-LAST support (session 6b).
+    5. **Data/editorial, deferred with the bucket question:** the mockup's neighborhood roster (West
+       Hill / Arbor Hill / N. Albany) doesn't match the source's own vocabulary; its "On hold /
+       other" 38 vs our "On hold" 16; the short `Class` labels ("Vacant lot" vs "Residential Vacant
+       Lot"); the muted *label* on the "All others" row (per-row font style isn't a Card knob); and
+       the neighborhood card's footer sentence, which is authored copy plus a link to a page that
+       doesn't exist.
+
+- **2026-08-13 (session 9) — "Needs attention" finished against the design. MEASURED against the
+  mockup, not eyeballed.** Session 8c got the STRUCTURE right (it belongs to the pipeline card, not
+  its own band) but shipped the block itself wrong in four ways. The mockup
+  (`admin-dashboard.html:395-403`) is `mt-auto pt-4` → `rounded-md bg-papertint p-3.5`, holding a
+  9.5px mist eyebrow over a 12px slate sentence led by an **amber warning triangle**. Ours was a
+  full-bleed tinted strip, ~240px tall, vertically centred, with a literal `▲` in the SQL.
+  | | Mockup | Was | Now |
+  |---|---|---|---|
+  | the tint | inset `rounded-md`, 24px gutter | full-bleed strip, square top | inset, **25/25/26px** gutter, radius 6px |
+  | its height | 66px (content) | ~240px (centred in a filled row) | **64px** |
+  | position | pinned to the card floor (`mt-auto`) | mid-row | pinned to the floor |
+  | the glyph | `size-3.5` TriangleAlert in amberdeep | `▲` text, inherits the line color | 14×14 icon, `rgb(143,94,8)` |
+  - **⭐ The tint had to move from the SECTION to the CARD.** A section's `bg` paints the whole
+    chrome box, so it can only ever produce a full-bleed strip — the design's inset needs a white
+    box with padding *and* a tinted box inside it. New `dataCard` style **`note_tint`** (papertint
+    surface, `rounded-md`, no border/shadow, `cellGutter: 0`) painted via `display.cardBorder: true`
+    with `cardsPadding: 14` (= the mockup's `p-3.5`); the section went `bg-white px-6 pt-0 pb-6`, so
+    its own padding IS the gutter. `pt-0` because the design's 16px `pt-4` above the note is already
+    section 1090's `pb-4` on the other side of the fused seam. **This is the session-7b rule read
+    forwards:** section frame XOR card frame — so when a design nests two boxes, decide which one is
+    the section's and which is the card's, rather than trying to get one box to be both.
+  - **⭐ NEW library option `cardsVerticalAlign: 'bottom'`** (+ the matching `cellsVerticalAlign`),
+    escalated as `src/dms/planning/tasks/current/card-vertical-align-bottom.md`. The design pins the
+    note with `mt-auto` and the three existing values all render that wrong: `'top'` drops the slack
+    below it, `'center'` floats it mid-card, `'stretch'` (what 8c used) pours the slack **into the
+    tint**, which is why the strip was 240px tall. `'bottom'` → `alignContent: 'end'` on
+    content-sized rows, resolved before the v1/v2 branch so it behaves the same on either model.
+    Two new tests; they also close the pre-existing gap that `'center'` had no coverage at all.
+    215/215.
+  - **⭐ NEW theme column type `icon_text`** (`columnTypes/iconText.{jsx,theme.js,config.js}`) +
+    the **`TriangleAlert`** glyph in `icons.jsx` (and in the design system's own icon page, kept in
+    sync per the icons skill). A Card cell can style a value but cannot put anything in FRONT of it,
+    so every `⚠ <sentence>` line in the design set was being faked with a literal character in the
+    data — which inherits the text color (so the design's amber warning read as slate prose) and
+    sits on the wrong baseline. `icon_text` renders one glyph + its own value, with `iconName` /
+    `iconColor` / `iconSize` as per-column selects **built from the registries themselves**, so a
+    new glyph or hue appears in the picker the moment it lands. Same one-visual-element shape as
+    `status_dot` and `parcel_plate`; typography stays the cell's `valueFontStyle` (now `proseXS`, the
+    honest token for the mockup's 12px slate, replacing the equivalent-but-misnamed `kpiSub`).
+    ⚠ Reuses the `status_dot` wrapper lesson — `flex w-full`, not `inline-flex`, or a long sentence
+    overruns its cell instead of wrapping in it.
+  - **The `▲` came out of the SQL.** The calc column is now just the three counts and their
+    separators; the warning is chrome, rendered as chrome. Worth generalizing: **a glyph in a
+    concat expression is a smell** — it means a presentation decision got written into the data.
+  - **Verified live by measurement** (`s18.band.png`, port 5174, `attention-geom.mjs live|mockup`):
+    tint `rgb(234,239,241)` / radius 6px / padding 14px / inset 25-25-26 against the mockup's
+    25-25-25; eyebrow 9.5px, `letter-spacing 1.33px`, uppercase, `rgb(140,160,171)` — identical to
+    the mockup's computed values; line 12px `rgb(71,90,102)`; icon 14×14 `rgb(143,94,8)` (=
+    `#8F5E08` amberdeep), optically centred with the text (both centre on y=1983). The band's two
+    columns still end flush (left card 1589→2031, right column 1869→2031).
+  - ⚠ **Two environment traps that cost time, for the next session:**
+    1. **`mint-token.mjs` prints a second line** (`token ok (293 chars)`). Redirecting its whole
+       stdout into `token.txt` gives you a file whose `.trim()` is still not a JWT — the graph API
+       tolerated it, but seeding it into `localStorage.userToken` made **every** XHR die at
+       `setRequestHeader` ("failed to execute … on XMLHttpRequest"), which renders as a **404 page
+       with a login form** and looks exactly like an expired token. Take line 1 only.
+    2. `scratchpad/landbank/auth.json` carries a **stale** token from the previous session — refresh
+       its `userToken` for every origin whenever you re-mint, or the harness screenshots a sign-in
+       page and reports `scrollHeight 1000`.
+  - **Still open on this card** — unchanged and still the recommended next step: the neighborhood
+    card's eyebrow/subtitle + the table header strip (item 1 below), which need the 3-row rowspan
+    layout. Nothing in this session changed that plan.
+
+- **2026-08-13 (session 9b) — the table's View / Edit row actions built (gap G9 CLOSED).**
+  `admin-dashboard.html:445-450` ends every inventory row with two 28px icon buttons — an eye and a
+  pencil, mist at rest, skydeep on a faint sky wash — linking to the property view/edit pages.
+  - **⭐ Neither core path could render an icon, and the reason is worth recording.** `isLink`
+    renders TEXT and, critically, **short-circuits before the column-type lookup**
+    (`TableCell.jsx:290-292`), so a column can be a link *or* a typed cell, never both. The other
+    path, `actionType: 'url'`, *accepts* an `icon` and then **throws it away** — `RenderActions.jsx`'s
+    `getIcon` returns `() => <span>{name}</span>` with the icon branch commented out — and hardcodes
+    `bg-blue-300 hover:bg-blue-500` brand classes, which `packages/dms/CLAUDE.md` forbids outright.
+    So this is not "the platform can't do it yet"; it is one stubbed function and one unthemed
+    literal. Both are flagged upstream in G9 but left alone here.
+  - **⭐ NEW theme column type `icon_link`** + the **`Eye`** glyph (design-system icon page kept in
+    sync). One glyph, one destination: `iconName` / `iconTitle` / `location` / `linkParamColumn` /
+    `iconColor` / `external`. **Theme-registered types work in a TABLE, not just a Card** —
+    `siteConfig.jsx` calls `registerColumnType`, which mutates the very registry object
+    `TableCell.jsx` imports. Worth knowing: it means every landbank column type is already
+    available to the Spreadsheet.
+  - **⚠ Three live-only findings, each of which rendered something plausible-but-wrong:**
+    1. **`row.id` was empty, so every action rendered disabled.** The server *does* alias the PK
+       (a direct read of `['id','ogc_fid']` returns both, verified), but **a section only fetches
+       the columns it lists** — neither was listed, so the rows had no PK at all. Fixed by adding
+       `ogc_fid` as a `selectOnly` column (fetched, renders no cell —
+       `spreadsheet/index.jsx:127` filters `show && !selectOnly`) and pointing
+       `linkParamColumn` at it. **Generalize: a column type that reads a sibling must have that
+       sibling fetched; "the server can return it" is not "the row has it".**
+    2. **`justify` was silently dropped.** A table composes `cellInner` + the column's justify into
+       the `className` it hands the cell component; a type that renders only its own themed root
+       (as `status_dot` does) discards it, so a `justify:'right'` action column rendered hard left.
+       `icon_link` now wraps its button in a span carrying the host's `className`. **Any future
+       column type should do the same** — the host's class string is not decoration.
+    3. **Sizing is not optional in a table.** The table is a CSS grid; an unsized column gets an
+       elastic `minmax(default, 1fr)` track, so the two action columns each claimed ~200px and
+       truncated Address and Class. Sized 78 (view — wide enough that its "Actions" header isn't
+       truncated to "A…") and 52 (edit — exactly the 28px button plus `cellInner`'s px-3). And the
+       second header must be a **space**: `""` falls back to the raw column name, so the band read
+       "action_edit".
+  - **Library fix — chrome columns no longer pollute the xlsx export.** `triggerDownload` builds
+    the sheet from every `show` column, so the two action cells would have added two always-blank
+    columns under their headers to every download. Now a static column with no `staticValue` is
+    excluded (a static column *with* one is a real constant and still exports).
+    ⚠ **Verified by reading the code path, NOT by a downloaded file** — the download control
+    didn't fire under headless automation across several attempts. Worth one manual click.
+  - **Link targets are placeholders:** `/admin/property-view?id=<ogc_fid>` and
+    `/admin/property-edit?id=<ogc_fid>`. **Neither page exists yet** — `property-edit` is the same
+    slug the add-parcel modal already navigates to (`navigateUrlOnAdd`, session 6b), so when those
+    pages are built the slug must match in **both** places, or be renamed in both.
+  - **Verified live** (`s19c.table.png`): 20 links over 10 rows with correct per-row hrefs
+    (`?id=1`, `?id=2`, …), 28×28 buttons holding 16×16 glyphs, rest `rgb(140,160,171)` (mist) at
+    `border-radius: 4px`, hover `rgb(10,110,153)` (skydeep) on sky/0.08 — the mockup's values;
+    "Actions" header intact; the data columns no longer truncated.
+  - **Deviation from the mockup, flagged not hidden:** the design puts both icons in ONE cell with
+    `gap-1` (4px). Two columns can't be that tight — each carries `cellInner`'s own px-3 — so the
+    pair sits ~24px apart. Closing it would need either a per-column cell-padding knob or a
+    composite `row_actions` type; the single-icon primitive is the more reusable one and matches
+    what G9 scoped, so the gap stays.
+
 **Design source:** `src/themes/landbank/design_system/pages/admin-dashboard.html` (ADMIN PANEL 1 of 5,
 Phase 1 mockup — see [`landbank-admin-panel/README.md`](./landbank-admin-panel/README.md))
 **Target site:** `VITE_DMS_APP=landbank`, `VITE_DMS_TYPE=dev2`, `VITE_DMS_PG_ENVS=landbank_dama`
@@ -1097,10 +1377,12 @@ the planning rules.
 | **G6** ✅ DONE (2026-08-04) | `stacked_bar` reads its colors from a `stackedBar` theme key the landbank theme doesn't ship (only `dataBar`) | **landbank theme** | ~~Add~~ **Added** a top-level `stackedBar` key mirroring `dataBar` (papertint track) with `fills` for the 7 status colors (canonical status keys + brand aliases) in `src/themes/landbank/theme.js`, so the pipeline bar and its legend match the pills exactly |
 | **G7** | Export button on a **Card** — `dataWrapper` has the xlsx export, but only Spreadsheet's config exposes `allowDownload` | **library** (1-line config) | Add the same `{type:'toggle', label:'Allow Download', key:'allowDownload'}` control to `Card.config.jsx`. Until then: put the export on the Spreadsheet (Band I) only, and drop the header Export button |
 | **G8** | Create-form `select` fields need **option lists**; `mapped_options` loads rows from a lookup source (this source has none), so options must be hand-listed | **library** (optional) | Ship hand-listed `options` now (harvest via one distinct pass). Enrichment worth considering: let `mapped_options` take `{distinctColumn}` against the section's own source so an author can say "options = the distinct values of this column" |
-| **G9** | Table row **icon-only** view/edit actions; link cells render text (`isLink` + `linkText`) | **landbank theme** | A small `icon_link` column type (icon name + `location`/`searchParams` template, per the theme's own icon registry) — pure chrome, one concern, exactly the `portrait_banner`/`stream_player` shape sanctioned in `src/themes/CLAUDE.md`. Interim: `linkText:"View"`/`"Edit"` text links |
+| **G9** ✅ **DONE (2026-08-13)** | Table row **icon-only** view/edit actions. Two core paths exist and neither can render one: `isLink` renders TEXT (`linkText \|\| value`) and short-circuits **before** the column-type lookup, so a column can be a link or a type but never both; `actionType:'url'` renders an unthemed blue pill whose `icon` is accepted and then **discarded** (`RenderActions.jsx`'s `getIcon` returns the name in a `<span>` — the icon branch is commented out) | **landbank theme** | ~~A small~~ **Added** `columnTypes.icon_link` (`columnTypes/iconLink.{jsx,config.js,theme.js}`): one glyph, one destination, per-column `iconName`/`iconTitle`/`location`/`linkParamColumn`/`iconColor`/`external`, disabled-state when the row's param is empty. Pure chrome, one concern — the `parcel_plate`/`status_dot` shape sanctioned in `src/themes/CLAUDE.md`. **Also worth fixing upstream** (not done): `RenderActions.getIcon` should resolve `theme.Icons[action.icon]` instead of throwing the prop away, and its `bg-blue-300` pill classes belong in the table theme per `packages/dms/CLAUDE.md` |
 | **G10** | Mockup's flow is **address → geocode → prefilled modal**; DMS has no geocoding step | out of scope | Ship the single-step modal with manual `latitude`/`longitude`. A geocode-on-create step is a server/datatype concern (geocodio is already the source's provenance) — separate task if the owner wants it |
 | **G11** | No CLI command inspects or sets **external (DAMA) source metadata** (`isEditable`, PK) — `dms dataset *` only covers internal DMS sources | **library (CLI)** | Add `dms dataset external show <source-id> --env <pgEnv>` (+ optionally `set-editable`) so prereq 1 is verifiable from the terminal instead of only through the admin UI |
 | **G12** 🔴 **BLOCKER (found 2026-08-10)** | **Create fails on any external source whose PK has no default.** `landbank_dama.s3_v3_landbank_properties.ogc_fid` is `NOT NULL` with no sequence/identity, and the server never sends `ogc_fid` (absent from `metadata.columns` → stripped by `buildRowPayload`), so every insert violates the not-null constraint. Breaks the whole add-parcel flow; reads unaffected | **data layer** (primary) + **library** (defensive) | **Primary (owner/data team):** give the PK a default on the materialized table — `ALTER TABLE …s3_v3_landbank_properties ALTER COLUMN ogc_fid ADD GENERATED BY DEFAULT AS IDENTITY;` then `SELECT setval(pg_get_serial_sequence('…','ogc_fid'), (SELECT max(ogc_fid) FROM …));` (verify the exact DDL against the live table first — the `s3_v3_` materialization is what dropped the original serial). **Defensive (library):** `resolveEditableTable`/`createExternalRow` should detect a defaultless NOT NULL PK and fail with an actionable message (or offer an explicit opt-in `max(pk)+1` fallback) instead of surfacing a raw Postgres 500 — right now an author gets no clue what is wrong. Also worth folding into **G11**, so `dataset external show` reports "PK has default: yes/no" and prereq 1 becomes verifiable before a form is ever built |
+| **G15** ✅ *filter-bar work DONE (2026-08-12)* — remaining piece | **A multi-select with nothing selected renders blank.** `MultiSelect`'s multi + `displayDetailedValues` path maps over the selected values, so an empty filter shows no text where the mockup shows "Municipality: **All**". The `placeholder` prop is only read by the single-select path, and its text ("Search Municipality...") is not what a chip wants | **library** | An author-facing `emptyLabel` on the filter column, threaded control-ward like `placeholder`, defaulting to today's blank so nothing changes for existing sections. (The rest of the scope bar — applied state, Reset, chevron, chip-styled text search, Card vertical centering — shipped: `src/dms/planning/tasks/current/filter-bar-applied-state-and-controls.md`) |
+| **G16** | **No slot for a note inside the filter bar.** The mockup's right-aligned "every chart, the map & the table share this slice" has nowhere to live in the filters markup; on the page it would need a third fused card (owner rule: avoid adding sections) | **library** (small) | A text key on the filter style (like the new `clearAllText`) or a Filter-section `display.note`, rendered in the same foot row as the clear-all so an inline design can `ml-auto` it |
 
 ## Documented deviations from the mockup (no code, decisions already made above)
 
