@@ -1911,7 +1911,7 @@
                 </div>
 
                 <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
-                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-3">3 &middot; State three things at once</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-3">3 &middot; One control per decision</div>
                   <div class="rounded-[10px] bg-[var(--bg-2)] p-4 mb-4 space-y-2">
                     <div class="flex items-center justify-between gap-2">
                       <span class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">open</span>
@@ -1927,18 +1927,24 @@
                     </div>
                   </div>
                   <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)] m-0">
-                    A version bar that says which version is <em class="italic">open</em>, which is
-                    <em class="italic">live</em>, and whether there is unsaved work. Miss one and the
-                    editor becomes a guessing game about what the public can see.
+                    The bar states what you cannot infer &mdash; which version is
+                    <em class="italic">open</em>, which is <em class="italic">live</em>, whether there is
+                    unsaved work &mdash; and the dropdown is the <em class="italic">only</em> way to change
+                    which one you are editing. A list of every version beside it was a second
+                    control for the same decision, on a bar that follows you down the page.
                   </p>
                 </div>
               </div>
 
               <p class="mt-5 max-w-[680px] font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)]">
-                A fourth, which is really the first: <strong class="font-semibold text-[color:var(--ink-1)]">tint
-                bad rows in place, never filter them out of sight</strong>. The schedule editor
-                shows clashes, missing times and missing DJs where they sit. An editor that
-                hides its problems is how 663 shows ended up with no time at all.
+                Two more the schedule editor turns on. <strong class="font-semibold text-[color:var(--ink-1)]">Draw
+                the empty state, don&rsquo;t describe it</strong>: the week grid renders all
+                7&times;24 hours, so an open slot is something you click rather than an absence
+                you infer &mdash; 663 shows have no time, and you cannot fill a gap you cannot see.
+                And <strong class="font-semibold text-[color:var(--ink-1)]">point and click, never
+                drag</strong>: a block opens the edit modal, an empty hour opens the add modal
+                already knowing its day and hour. Drag-and-drop is a lot of interaction surface
+                to build, test and make accessible, and it buys nothing a click doesn&rsquo;t.
               </p>
             </section>
 

@@ -312,13 +312,32 @@ Three decisions worth knowing about:
 
 ## The admin section
 
-`pages/admin/` — three pages behind the same TopNav notch as the public site,
-with the admin menu and an `Admin` marker: **`djs.html`** (roster + add modal),
+`pages/admin/` — three pages: **`djs.html`** (roster + add modal),
 **`dj-profile.html`** (the editor), **`schedule.html`** (week editor + versions).
 
-**Admin pages do not carry the live rail.** The rail is public-site chrome; an
-editing surface is a working context, not a listening one. `sync-rail.mjs` skips
-the folder deliberately — if an admin page has no rail, that is why.
+### Layout `app` — a SideNav, not the notch
+
+Admin is the brand's **second Layout style** (skill §3.3: `app` = "authoring /
+admin / dashboard surfaces, SideNav visible, narrower content gutters, denser").
+The public cutaway is `default`; this is `app`, and the difference is real chrome,
+not a restyle:
+
+- a persistent 64-wide rail (`layoutContainer1: lg:pl-64`,
+  `layoutContainer2: fixed inset-y-0 left-0 w-64`), collapsing to a bar below `lg`
+- the content hugs the rail — **`mr-auto`, never `mx-auto`** (skill §7.3.1);
+  `mx-auto` centres between the rail and the right edge and drifts away from it
+- **no live rail.** That is public-site chrome; an editing surface is a working
+  context, not a listening one. `sync-rail.mjs` skips the folder deliberately.
+
+> **Use the keys `SideNav.jsx` actually reads.** `translating-design-system-to-dms-theme.md`
+> §3.1 documents exactly this trap: plausible-looking invented keys (`wrapper`,
+> `inner`, `menu`) silently no-op. The real set is in
+> `ui/components/SideNav.theme.jsx` — `layoutContainer1/2`, `sidenavWrapper`,
+> `logoWrapper`, `itemsWrapper`, `menuItemWrapper`, `navitemSide` /
+> `navitemSideActive`, `menuIconSide` / `menuIconSideActive`, `sectionHeading`,
+> `sectionDivider`, `bottomMenuWrapper`, and the `topnav*` keys used only by the
+> mobile collapse. The mockup is built on those names so the translation is a
+> transcription rather than a redesign.
 
 ### Decisions the live data forced
 
@@ -337,13 +356,22 @@ rows actually say (verified 2026-08-13 via the DMS CLI):
   **20 columns with fewer than five non-empty values** — MySpace, MSN, Yahoo,
   favourite magazines, favourite places to hang out. Asking for everything up
   front is how that happens. Everything else is filled in after saving.
-- **The schedule editor leads with what is *not* placed.** Only **106 of 769**
-  shows have a start time. The job is not correcting times, it is entering them,
-  so unplaced shows are a queue at the top of the page rather than a filter you
-  have to go looking for.
-- **Bad rows are tinted in place, never hidden.** A clash, a missing time and a
-  missing DJ each stay visible where they are. An editor that filters its
-  problems out of sight is how 663 shows ended up with no time.
+- **The schedule shows the whole broadcast day, so an open hour is a thing you
+  can see.** Seven days × 24 hours, every cell drawn. Only **106 of 769** shows
+  have a start time, and you cannot fill a gap you cannot see — an "unplaced"
+  queue described the gap, a grid *shows* it. One hour is the minimum slot, which
+  is why the grid's unit is an hour.
+- **Point and click, never drag.** A placed block opens the edit modal; an empty
+  hour opens the add modal already knowing its day and hour. Drag-and-drop is a
+  large amount of interaction surface to build, test and make accessible, and it
+  buys nothing a click doesn't.
+- **Bad rows are tinted in place, never hidden.** A show with no DJ stays visible
+  where it sits. An editor that filters its problems out of sight is how 663
+  shows ended up with no time.
+- **One control per decision.** The version *dropdown* is the only way to change
+  which version you are editing. An always-visible list of every version beside
+  it was a second control for the same choice — on a sticky bar, following you
+  down the page.
 
 ### Versions, and the pointer
 
