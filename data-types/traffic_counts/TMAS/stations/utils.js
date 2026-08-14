@@ -92,17 +92,32 @@ const getStationRow = string => {
 									return a;
 								}, []);
 }
+// TMAS station files use a literal NUL byte (0x00) as the blank-field filler,
+// not a space — the sample NY 2025 file carries 1295 of them across 713 rows.
+// String.prototype.trim() does NOT strip NUL (it isn't WhiteSpace per spec), so
+// the byte survives into the COPY stream and Postgres rejects the whole load
+// with `invalid byte sequence for encoding "UTF8": 0x00`. Strip NUL and any
+// other C0 control byte, then trim.
+const cleanValue = d =>
+	(d === null || d === undefined ? "" : d.toString())
+		// eslint-disable-next-line no-control-regex
+		.replace(/[\u0000-\u001F]/g, "")
+		.trim();
+
 const getTableValues = row => {
 	const latitudeIndex = TMAS_STATION_KEY_INDICES["latitude"];
 	const latitude = row[latitudeIndex];
 	const longitudeIndex = TMAS_STATION_KEY_INDICES["longitude"];
 	const longitude = row[longitudeIndex];
+	row.splice(latitudeIndex, 2);
 	const point = {
 		type: "Point",
 		coordinates: [longitude, latitude]
 	}
-	row.push(JSON.stringify(point));
-	return row;
+	return [
+		...row.slice(1).map(di => di.value),
+		JSON.stringify(point)
+	].map(d => cleanValue(d));
 }
 
 const TMAScolumns = [

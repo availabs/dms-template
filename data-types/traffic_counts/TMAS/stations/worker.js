@@ -40,11 +40,16 @@ const Worker = async ctx => {
   const pgClient = new pgStuff.Client(pgCreds);
   await pgClient.connect();
 
+  // etl_context_id is deliberately NOT set: data_manager.views has
+  // views_etl_ctx_id_fkey → the LEGACY data_manager.etl_contexts table, and a
+  // new-runner task_id has no row there, so passing it fails the insert
+  // outright on any pgEnv that still has the FK (npmrds2 does). The new-path
+  // convention is to carry the task id in metadata instead — see
+  // dms-server/src/dama/upload/workers/csv-publish.js:28.
   const newDamaView = await createDamaView({
     source_id,
     user_id,
-    etl_context_id: task.task_id,
-    table_schema: "tmas"
+    metadata: { task_id: task.task_id }
   }, pgEnv);
 
   const { table_name, data_table, view_id } = newDamaView;
@@ -94,15 +99,20 @@ const Worker = async ctx => {
   `;
   await db.query(createDamaViewSql);
 
-  await dispatchEvent(`TMAS_station_data:DATA_TABLE', 'create new data table: ${ data_table }`);
+  await dispatchEvent(`TMAS_station_data:DATA_TABLE', 'created new data table: ${ data_table }`);
   await updateProgress(0.3);
 
   let foundFirstRow = false;
+
+  let i = 0;
 
   async function* parseResults(source) {
     for await (const row of source) {
       if (foundFirstRow) {
         const data = getTableValues(row);
+        if (i++ < 5) {
+          console.log("ROW:", row, data, csvFormatRow(data));
+        }
         yield `${ csvFormatRow(data) }\n`;
       }
       else {
@@ -145,6 +155,36 @@ const Worker = async ctx => {
         WHERE source_id = $2
   `;
   await db.query(updateSourceMetadataSql, [JSON.stringify({ columns: TMAScolumns }), source_id]);
+
+  const tiles = {
+    sources: [
+      { 'id': table_name,
+        'source': {
+          'tiles': [`https://dmsserver.availabs.org/dama-admin/${ pgEnv }/tiles/${ view_id }/{z}/{x}/{y}/t.pbf`],
+          'format': 'pbf',
+          'type': 'vector',
+        },
+      }
+    ],
+    layers: [
+      {
+        'id': `s${ source_id }_v${ view_id }_locations`,
+        'type': 'circle',
+        'paint': { 'circle-color': '#000', 'circle-radius': 4 },
+        'source': table_name,
+        'source-layer': `view_${ view_id }`,
+      }
+    ]
+  };
+  const viewsTable = db.type === 'postgres' ? 'data_manager.views' : 'views';
+  const updateViewMetadataSql = `
+    UPDATE ${ viewsTable }
+      SET metadata = COALESCE(metadata, '{}') || $1
+        WHERE view_id = $2
+  `;
+  await dispatchEvent('TMAS_station_data:TILES_METADATA', 'updating view table with tiles metadata');
+  await updateProgress(0.9);
+  await db.query(updateViewMetadataSql, [JSON.stringify({ tiles }), view_id]);
 
   result.completedAt = new Date().toLocaleString();
 

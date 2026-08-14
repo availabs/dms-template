@@ -106,13 +106,9 @@ const Create = ({ context, source }) => {
 	  	.then(res => {
 	  		if (res.ok) {
 	  			navigate(`${ baseUrl }/task/${ res.etl_context_id }`);
-	  			// return new Promise(resolve => {
-			  	// 	setTimeout(() => {
-			  	// 		resolve();
-			  	// 		stopLoading();
-			  	// 		navigate(`${ baseUrl }/source/${ res.source_id }`);
-			  	// 	}, 5000);
-	  			// });
+	  		}
+	  		else {
+	  			throw new Error(res.error);
 	  		}
 	  	}).catch(e => {
 	  		setError(e.message || e);

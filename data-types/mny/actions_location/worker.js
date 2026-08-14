@@ -307,7 +307,7 @@ const Worker = async ctx => {
   const newDamaView = await createDamaView({
     source_id: sourceId,
     user_id: userId,
-    etl_context_id: task.task_id
+    metadata: { task_id: task.task_id }
   }, pgEnv);
   console.log("GOT NEW DAMA VIEW:", newDamaView);
 
