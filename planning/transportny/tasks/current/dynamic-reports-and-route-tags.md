@@ -630,11 +630,84 @@ direction covered this ("idc how stale things are... just scope and fix it... te
      series-identity mechanism would need to accept a composite key, not just a bare
      `route_comp_id`, for this path — not yet checked how large that touches
      `useGraphPublish.js`/`applyMeasurePick`'s series-keying.
-   - Author-facing UI still undecided either way (RouteRow sidebar explicitly excluded — Ryan: users
-     should not configure this per-route in the sidebar; some new surface on the graph's own settings
-     is implied) — **Ryan is checking with Alex (doing design work) before any of this gets built.**
-     Medium-large regardless of which representation wins: new storage field, a
-     `useGraphPublish.js` read-path change, and new settings UI with no existing analog to build from.
+   - **The runtime/spec-authoring half of this is DONE + live-verified, 2026-08-14 — see "Per-route
+     window overrides (`routeWindows`)" below for the full build record.** Only the LIVE UI surface
+     (a settings-panel control an author clicks, as opposed to a git-committed spec) remains
+     undecided — RouteRow sidebar is still explicitly excluded, some new surface on the graph's own
+     settings is still implied, and **Ryan is still checking with Alex (doing design work) before
+     that UI gets built.** The array-under-one-key representation question this bullet originally
+     raised is resolved: nested array, not a composite key — see below for why.
+
+### Per-route window overrides (`routeWindows`) — DONE + live-verified 2026-08-14, applied to Snapshot
+
+Triggered by Ryan's own hand-by-hand review of `snapshot` (below) surfacing this exact gap in
+concrete form — Route Compare/Bar Graph Summary panels needing AM/PM/Off-Peak rows that the
+graph-wide shared `weekdays`/`start`/`end` scalar (Design Push #2's shape) couldn't express without
+either forcing every row uniform or silently dropping the window for all of them.
+
+**What shipped**, across `useGraphPublish.js`, `report_build.mjs`, and `report-spec.md` (full field
+docs, semantics, and a worked example are there — not duplicated here):
+- `weekdays`/`startTime`/`endTime` moved OFF `routes[]` entirely, onto `graphs[]` — matching the
+  real runtime (`transformReportRoutes` never read anything but `route.startDate`/`route.endDate`
+  off the route to begin with) and Ryan's own correction mid-session: a route is now exactly
+  tmc/route_id + date window + name/color, nothing else. A route still carrying any of the three
+  fails the build with a message pointing at the new location.
+- `routeWindows: { [routes[].id]: [{weekdays, startTime, endTime, color}, ...] }` — an optional
+  per-route override on a graph, for when that graph's own assigned routes need genuinely different
+  windows. Array-of-variants per id (not a bare object) specifically so the same route shown twice
+  on one graph under different filters (Ryan's own example: AM/PM as two bars of the same route,
+  instead of the old tool's route-duplication workaround) needs no composite-key change anywhere
+  else — `routeIds` still lists the route once, the array's length alone governs how many output
+  series it becomes. Each variant needs its own `color` once a route expands to 2+ (else every
+  variant renders identically) and its own auto-derived label (reusing `RouteRow.jsx`'s existing
+  weekday-summary/time-of-day-pill wording, not a new phrasing).
+- Confirmed empirically, not assumed: rebuilt the exact AM/PM LineGraph example from
+  `report-spec.md`'s 2026-07-28 section against TODAY's code before touching anything — it silently
+  dropped the epoch filter (routes disagreeing → graph-wide window left unset), confirming this
+  needed fixing, not just reading about. Re-verified the identical case against the new mechanism
+  post-build: 2 correct, distinct `seriesVariants` with correct `epoch` ranges and auto-derived
+  labels (`"Current (6a–10a)"`/`"Current (4p–7p)"`), live network capture, not just a structural
+  check.
+- `resolution` was considered for the same per-route treatment and rejected after checking where
+  it's actually consumed: `composeMeasureConfig.js` uses it to build the graph's shared `xAxis`
+  COLUMN shape once, at compose time, before any route resolves — a fundamentally different kind of
+  thing than a per-arm WHERE-filter value. Making it per-route would mean different routes on one
+  graph querying different column shapes, not just different filters — genuinely bigger, unasked-for
+  scope. (A suspected counterexample — "Bar Graph Summary sometimes needs 2 different resolutions" —
+  checked and turned out to just be a date-filter difference, still one resolution throughout.)
+- **CORRECTION, same session: `RouteRow.jsx` needed no removal work — checked the actual code
+  before touching it, and gaps #10/#11's route-level weekday/peak-hour UI was already retired by
+  Design Push #2 itself (2026-08-06), rebuilt as QuickControls' graph-level "When" pill.
+  `RouteRow.jsx`'s own header comment says so directly ("used to also own the Days/Time of day
+  facets... gone, not just hidden") — an initial claim that this still existed and needed removing
+  was wrong, caught before any code was deleted based on it.** What today's migration broke was that
+  QuickControls pill: it read/wrote `_measurePick`'s bare scalar directly, which
+  `report_build.mjs`/`useGraphPublish.js` no longer write/read at all post-`routeWindows` — a real,
+  confirmed silent no-op (displayed "all day · all" always, clicking a preset did nothing). **FIXED
+  same session, per Ryan's direction to apply one uniform window to every route on the graph
+  (matching the pill's original behavior), not build the per-route case.** Live-verified via a real
+  edit/save/publish cycle: `dms raw get` confirmed `_measurePick.routeWindows` held the identical
+  window for both routes on a 2-route test graph after one pill interaction, and the chart's x-axis
+  updated live to match. See `report-route-ui-parity-gaps.md` gap #17 for the full record. A
+  SEPARATE, larger gap (#18 there, still open, not attempted): no UI exists yet for a genuine
+  PER-ROUTE override within one graph — even this fixed pill only controls one shared default.
+- **The color-consistency problem is a real, separate wrinkle for whenever the live UI gets built**,
+  flagged by Ryan directly: for a hand-authored spec, keeping "AM" the same color across every graph
+  that uses it is just repeating the same literal hex (`snapshot.json` does exactly this across 3
+  graphs). A live UI has no such shortcut — `routeWindows` is deliberately scoped per-GRAPH (the
+  entire point, to avoid recreating Design Push #2's staleness bug), so there is no single place
+  "the AM variant of Current Year" lives that a color picker could default from. Needs either a
+  manual "copy from another section" affordance or a new shared-but-overridable per-route "named
+  variant" concept — real design work, not scoped here, written down now so it isn't rediscovered
+  cold later. Full writeup in `report-spec.md`'s "Live-authoring UI" section.
+
+**Applied to `snapshot.json` the same session** (Ryan's hand-by-hand review, item below) — Current
+Year's weekend-exclusion on `map_speed`/`line_speed` (previously silently inert, since it disagreed
+with the unrestricted Current Year sharing those graphs) now actually applies to Trailing 3 Years
+only; the day-of-week bars got their own independent Weekdays-only mask with zero risk to the other
+6 graphs sharing Current Year; a consolidated 4-row Info Box and 2 AM/PM/Off-Peak Bar Graph Summary
+panels were built using the array-expansion mechanism directly (first real usage). See the
+`snapshot` review entry below for the full list and the specific measure/color choices made.
 4. **Audit the other 11 templates for other dropped Info Box measures** (same `extra_measures_dropped`
    class as `one_week_study`'s). Ryan's direction: do this LAST, and it may not need live
    browser comparison at all — every one of the original conversions wrote a gap log to
@@ -944,12 +1017,159 @@ it's backend load from this session's own back-to-back probing, not a regression
 
 ---
 
+### `single_route` — real Info-Box-adjacent formatFn gap found, plus a rebuild+caption fix (2026-08-13)
+
+Ryan's question, comparing `single_route`'s Bar Graphs (Speed, Hours of Delay) against the old tool:
+"looks like they use the series color... is this something that would get fixed just from
+rebuilding? sounds familiar." Confirmed live before touching anything: both bars were the exact same
+"static purple" single-series-BarGraph bug already fixed in `composeMeasureConfig.js` on 2026-08-12 —
+both `delay_bar`/`speed_bar` are fed by exactly one route (`Trailing 3 Years`), and this page had never
+been rebuilt since that fix (confirmed independently: `speed_bar`'s attribution line still read the old
+`TMC_IDENTIFICATION_JOIN (3464)`, and its GridGraph panel still showed rainbow confetti — same 3
+symptoms `one_week_study` had before its own rebuild last round).
+
+**One real wrinkle found before rebuilding, not just a mechanical fix**: this graph's own `caption`
+field (author-facing copy, not code) explicitly said *"Purple colors indicate more hours of delay...
+orange indicates less... darker purple = slower, orange = faster"* — but the fix's actual scheme is
+`rdylgn` (red→yellow→green), a completely different hue. Flagged this to Ryan before rebuilding rather
+than silently leaving stale color-wording in place; his call: rebuild AND fix the caption. Updated the
+caption text (purple/orange → red/green) in `dynamic_report_specs/single_route.json`, rebuilt via
+`report_build.mjs --update 2210948 --publish`. Live-verified: both bars now show a real red(bad)→
+green(good) gradient (correctly oriented — confirmed `hoursOfDelay.reverseColors: true` flips the scale
+so red=more delay, matching `speed.reverseColors: false` so red=slower/less speed), caption text now
+matches, GridGraph shows a smooth gradient, attribution lines read the corrected `META_JOIN (983)`.
+`probe_corpus.mjs` full suite re-run clean (7/7), first try, no re-baselining needed (this page isn't
+in the corpus).
+
+**Takeaway for the remaining un-rebuilt catalog pages**: the reliable 3-symptom tell that a page hasn't
+picked up the 2026-08-12 round yet is (1) any single-series BarGraph or GridGraph showing a flat/
+confetti color instead of a real gradient, (2) a `speed`/`length`/`aadt` panel's attribution line still
+naming `TMC IDENTIFICATION V5/V6 (3464)` instead of `NPMRDS_V6_TMC_META (983)`, (3) a LineGraph tooltip
+showing full float precision. Check all 3 before assuming a rebuild is a no-op. Also worth a pass
+across every remaining un-rebuilt template's own `caption`/description text for other stale
+purple-orange (or any other non-rdylgn) color-scheme wording — `single_route` is very unlikely to be
+the only old-converter caption describing a color scheme the rebuild changes out from under it.
+
+---
+
+### `snapshot` hand-by-hand comparison — 5 gaps triaged, routeWindows built as a direct result, all 5 closed (2026-08-14)
+
+Ryan's hand-by-hand review against the old tool (`npmrds.devtny.org/template/edit/246/route/268052_163186_163187`
+vs. `.../converted_reports/snapshot?routes=2111018&asOf=2026-07-24`) flagged 5 gaps. Grounded every
+one directly in the old DB (`admin2.templates` row 246's real `graph_comps`/`route_comps`, not the
+live old-tool page) before triaging, per Ryan's own instruction not to parse the old page solo.
+
+1. **Route Compare Component missing.** Confirmed genuinely unbuildable as originally authored: the
+   old panel (graph-comp-8) compared AM/PM sub-windows of a SECOND corridor (route_id 6476/6475, "I-490
+   36055" — an input the new 1-route Snapshot has no source for) against "All-time Average," and its
+   own caption doesn't even match its real wiring (no Off-Peak arm in `activeRouteComponents`, the
+   All-time comp isn't included at all — an old-authoring inconsistency, not a spec to match). Built an
+   interim substitute instead (`compare_years`: Current Year vs. Trailing 3 Years, speed+travelTime,
+   same mechanism as `annual_average_study`'s `compare_years`) — a different comparison than the old
+   caption describes, approved by Ryan explicitly.
+2. **"Hours of Delay by Month" bar missing.** Genuine converter gap, not hypothetical — the old
+   `graph-comp-5` hit `unmapped_graph`/"no template mapping" in the original Python conversion's own
+   gap log. Added `bar_delay_month`, mirroring the existing `bar_speed_month` shape.
+3. **A second Map for a second route.** Confirmed already deliberately handled — the spec's own note
+   already recorded merging 2 redundant single-comp old Maps into one Map covering both real routes,
+   because the new tool takes 1 route input. No action needed.
+4. **4 TMC Info Boxes missing entirely.** Confirmed via the old `graph_comps` directly: 4 separate
+   graph-comps (comp-1 whole-day, comp-14 AM, comp-13 PM, comp-15 "All-time Average"). Built as ONE
+   consolidated `info_box_snapshot` (Ryan's correction to an initial 4-separate-sections draft — the old
+   tool's 4-sections shape was itself just the old tool's own workaround for not having per-route
+   window variants, not intent worth preserving) using `routeWindows` array-expansion: Current Year 3x
+   (whole-day/AM/PM) + Trailing 3 Years once = 4 rows in one box.
+5. **2 AM/PM/Off-Peak Bar Graph Summary panels missing** (`bar_speed_peak_summary`/
+   `bar_delay_peak_summary`, reproducing old graph-comp-11/12). Same `routeWindows` mechanism, 3
+   variants each.
+
+**Items 1 and 5 were initially triaged as blocked** (a scalar `_measurePick.weekdays/start/end` can't
+express multiple routes on one graph disagreeing) **— this was the direct trigger for building
+`routeWindows` this session**, not a separate, unrelated piece of work. See "Per-route window
+overrides (`routeWindows`)" above for the full mechanism build/verification record. Two real
+mid-build corrections, both Ryan's own catches:
+- **Colors**: every `routeWindows` variant of one route inherited the SAME base color until Ryan
+  flagged it — fixed by adding an optional `color` per variant, applied consistently across all 3
+  graphs using the AM/PM/Off-Peak variants (`#E07A00`/`#7B3294`/`#1B75BC`) via plain literal repetition
+  (no shared-constant mechanism exists in this spec format). The live-UI version of this problem
+  (there's no single place "the AM variant of Current Year" lives that a picker could default a color
+  from, since `routeWindows` is deliberately graph-scoped) is flagged, not solved — see
+  `report-spec.md`'s "Live-authoring UI" section.
+- **`avgHoursOfDelay` + `resolution: summary`** — attempted for `bar_delay_peak_summary` first,
+  rejected by the build's own pre-existing validation (bucket-grain-dependent, no summary expression
+  built). Switched to `hoursOfDelay` (total), matching `bar_delay_weekday` elsewhere on the same page.
+
+**A real, additional finding surfaced while migrating this template's `trailing_3yr.weekdays` off the
+route**: `map_speed`/`line_speed` (both fed by Current Year AND Trailing 3 Years) had been silently
+dropping Trailing 3 Years' weekend exclusion the whole time, since Current Year (unrestricted) and
+Trailing 3 Years (weekend-excluded) disagreed under the old scalar mechanism — exactly the `routeWindows`
+failure mode, confirmed live on THIS page, not hypothetical. Fixed as part of the same migration (Ryan's
+own framing: not a regression to be alarmed about, a known, accepted tradeoff of the 2026-08-06 Design
+Push #2 migration that this round's work happens to resolve for good, not "broke it").
+
+**Live-verified 2026-08-14** via `report_probe.mjs` against `?routes=2111018&asOf=2026-07-24`: 0
+console/page/SQL errors across 3 successive rebuilds (routeWindows migration → new content → colors).
+Screenshot-confirmed: Info Box shows exactly 4 rows with the expected auto-derived labels; both Bar
+Graph Summary panels show 3 bars in the same 3 distinct, consistent colors. `probe_corpus.mjs` full
+suite re-run after the `useGraphPublish.js`/`report_build.mjs` changes (mandatory, per
+[[feedback_test_every_rrl_report_touch]]) — 2 of 8 entries (`dynamic_report_one_week_study`,
+`dynamic_report_seasonality`) initially flagged "blank → has content" findings, both confirmed as stale
+baselines (the real ClickHouse data cliff had advanced from ~2026-07-26 to 2026-08-02 since last
+capture — see `traversing-report-pages.md`'s data-cliff section) rather than anything caused by this
+session's code changes; re-baselined per Ryan's explicit instruction not to "fix" a stale-baseline
+finding. Full suite re-run clean, 8/8, after re-baselining.
+
+**Not done, explicitly out of scope this round**: `RouteRow.jsx`'s weekday-toggle/peak-hour-preset UI
+now writes to a route field nothing reads — flagged for removal, Ryan's call to scope and test that
+separately (tracked as its own item). No live UI exists for setting a graph's own
+`weekdays`/`startTime`/`endTime`/`routeWindows` at all yet — same missing-authoring-surface category
+as gap #16.
+
+**Migration scope note, UPDATED 2026-08-14 — all 12 catalog templates now migrated.** `snapshot.json`
+was converted first, alone, per Ryan's explicit call to validate one Dynamic Report before converting
+the rest; once that held up, the remaining 7 (`annual_average_study`, `bi_directional`,
+`monthly_speed_comparisons`, `one_week_study`, `single_day_advanced`, `weekly_average`,
+`year_over_year`) were converted the same session, each individually rebuilt and live-verified via
+`report_probe.mjs` (0 console/page/SQL errors on every one). Per-template specifics:
+
+- **`annual_average_study`** — real bug fix, not just a schema move: `r1` (Current Year, unrestricted)
+  shares `map_years`/`line_current`/`compare_years`/`bar_summary` with `r2`/`r3`/`r4` (weekend-excluded)
+  — the exact disagreement pattern already found on `snapshot`. The weekend exclusion had been silently
+  dropped on all 4 graphs since Design Push #2; confirmed restored via `dms raw get` (r1 unrestricted,
+  r2/r3/r4 correctly weekend-excluded, per-graph, via `routeWindows`).
+- **`year_over_year`** — same disagreement pattern, 4 shared graphs (`map_traveltime`/
+  `routecompare_speed`/`line_traveltime_all`/`map_speed_all`) fixed via `routeWindows`; 4 more
+  single-route graphs (`bar_avgdelay_2yr`/`bar_traveltime_2yr`/`bar_delay_trailing`/
+  `bar_traveltime_trailing`) got a plain graph-level `weekdays` default (no divergence, no
+  `routeWindows` needed).
+- **`monthly_speed_comparisons`**, **`weekly_average`** — same disagreement pattern, one shared graph
+  each (`line_speed`), fixed via a 1-2-entry `routeWindows` map. `monthly_speed_comparisons`'s own
+  `_note` also had its previously-blocked "AM/PM/Off-Peak Bar Graph Summary" gap corrected to reflect
+  that the underlying blocker is gone (routeWindows removes the slot-route startTime/endTime coupling
+  that gap was waiting on) — flagged as a real, ready-to-build follow-up, not built this pass (scope
+  was the mechanical migration only).
+- **`one_week_study`** — all 8 routes already shared the identical weekday mask (no divergence) — a
+  pure schema move, zero behavior change, applied as a plain graph-level default on all 8 graphs.
+- **`bi_directional`**, **`single_day_advanced`** — the existing `weekdays` values (`{sunday:true,
+  saturday:true}` and `{}` respectively) were already functional no-ops under the real "absent means
+  included, only explicit `false` excludes" semantics — removed outright, confirmed zero behavior
+  change (the rebuild's own diff reported no graph changes, only the route fields disappearing).
+
+**Golden-corpus**: `dynamic_report_annual_average_study` and `dynamic_report_one_week_study`
+re-baselined (both already in the corpus); the former gained a `routeWindows` covers tag as the first
+real corpus coverage of the divergent-routeWindows case. Full suite re-run clean, 7/8 — the 8th
+(`one_week_study`) reproduced its own already-documented cold-load pending-request flake (confirmed
+non-regression via a longer `--wait`, same as earlier this session). The other 6 newly-migrated
+templates are not in the golden corpus and weren't added — out of scope for this pass, a separate
+coverage-expansion decision.
+
+---
+
 ## Open questions for triage
 
 - **The remaining catalog pages need `--update <id> --publish` to pick up the 2026-08-12
-  color-scale/tooltip/metadata-join fixes** (see the sections above) — `annual_average_study` and
-  `one_week_study` are now done (rebuilt for other reasons, picking these up as a side effect); the
-  other 10 have not been touched yet.
+  color-scale/tooltip/metadata-join fixes** (see the sections above) — `annual_average_study`,
+  `one_week_study`, and `single_route` are now done; the other 9 have not been touched yet.
 - **`length`/`aadt`'s Info Box columns have the same missing-`formatFn` gap `speed`'s did** (see the
   `one_week_study` section above) — flagged, not fixed, since neither has a live consumer yet. Cheap
   to fix the same way (`decimal_2` for length, likely `comma` for aadt) once one does.
@@ -960,12 +1180,24 @@ live:
 - The multi-year query-size platform limit (`Monthly Speed Comparisons`'s 6-year comp).
 - **`report_build.mjs`'s Dynamic Report support: all 12 catalog templates now spec-built, DONE
   2026-08-11** — see item 3's table entry above and `report-spec-and-build-script.md`. Two real
-  gaps surfaced along the way, still unbuilt (not hypothetical — each now blocks 2-3 real templates):
-  the `avgHoursOfDelay`+`summary` combo (needs a bucket-grain-parameterized expression; blocks
-  `Single Route`, `This Month vs. Last Month vs. Last Year`, `Seasonality`) and
-  `startTime`/`endTime` on a `dateFormula`-driven slot route (confirmed genuinely blocking by reading
-  `report_build.mjs`'s own validation, not just unverified; blocks `Monthly Speed Comparisons`'s and
-  `Snapshot`'s AM/PM/Off-Peak panels).
+  gaps surfaced along the way:
+  - `startTime`/`endTime` on a `dateFormula`-driven slot route — **RESOLVED as a side effect of the
+    2026-08-14 `routeWindows` migration, not separately fixed.** The old blocker was specifically
+    about `routes[]`-level `startTime`/`endTime` requiring a literal `startDate`/`endDate` on the
+    SAME route, which a slot route never has at spec-write time. Now that `startTime`/`endTime` live
+    on `graphs[]` instead, that coupling doesn't exist — confirmed by actually building it:
+    `snapshot`'s `info_box_snapshot`/`bar_speed_peak_summary`/`bar_delay_peak_summary` all apply
+    `startTime`/`endTime` to `current_year` (a `slot: true`, `dateFormula`-driven route with no
+    literal date at spec-write time) without issue. `Monthly Speed Comparisons` hasn't been migrated
+    off `routes[].weekdays`/`startTime`/`endTime` yet (only `snapshot.json` was this session, per
+    Ryan's own scoping) — still blocked until that migration happens, but the underlying platform gap
+    is gone.
+  - The `avgHoursOfDelay`+`summary` combo (needs a bucket-grain-parameterized expression) is still
+    real, hit again independently 2026-08-14 building `snapshot`'s delay Bar Graph Summary (the
+    build's own pre-existing validation rejected it) — worked around there with `hoursOfDelay`
+    (total) instead, same as `bar_delay_weekday` elsewhere on that page. Still blocks `Single Route`,
+    `This Month vs. Last Month vs. Last Year`, `Seasonality` if they want a summary-resolution
+    average (as opposed to total) delay bar.
 - Route/comp labels ("Today", "4 Days Ago") don't reflect a viewer-picked base date — flagged by
   Ryan 2026-08-11, likely affects all 12 templates, not risky but not top priority. A related, scoped-
   not-built follow-up: show the resolved base date in `ReportPageHeader.jsx` so a viewer isn't stuck

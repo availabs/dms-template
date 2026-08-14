@@ -9,16 +9,36 @@
   "graphs": [
     { "key": "map_years", "title": "Route Map, Speed",
       "graphType": "Map", "measure": "speed",
-      "why": "All 4 years (current + 3 prior) as their own choropleth layer, matching the live page's all-comps Map panel." },
+      "routeWindows": {
+        "r2": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r3": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r4": [{ "weekdays": { "sunday": false, "saturday": false } }]
+      },
+      "why": "All 4 years (current + 3 prior) as their own choropleth layer, matching the live page's all-comps Map panel. 2026-08-14 routeWindows migration: r2/r3/r4's weekend exclusion moved here from routes[] — it had been SILENTLY DROPPED on this graph (and line_current/compare_years/bar_summary, which share the same 4 routes) since r1 (unrestricted) disagreed with r2/r3/r4 (weekend-excluded) and the old scalar mechanism couldn't express that, confirmed by re-checking report_build.mjs's own pre-migration warning output against this exact file." },
     { "key": "line_current", "title": "Route Line Graph, Speed — By Year",
       "graphType": "LineGraph", "measure": "speed", "resolution": "5-minutes", "comparisonMode": "plain",
-      "why": "Re-scoped 2026-08-12 (Ryan's call): 1 line per year (Current + 1/2/3 Years Ago), no peak filter — strictly better than the old template's peak-based sub-series, which can't be rebuilt (those routes collapsed into 'Current Year', see note)." },
+      "routeWindows": {
+        "r2": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r3": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r4": [{ "weekdays": { "sunday": false, "saturday": false } }]
+      },
+      "why": "Re-scoped 2026-08-12 (Ryan's call): 1 line per year (Current + 1/2/3 Years Ago), no peak filter — strictly better than the old template's peak-based sub-series, which can't be rebuilt (those routes collapsed into 'Current Year', see note). Same 2026-08-14 routeWindows fix as map_years." },
     { "key": "compare_years", "title": "Route Compare, Speed / Travel Time — Year over Year",
       "graphType": "RouteCompare", "measure": ["speed", "travelTime"],
-      "why": "Recovered 2026-08-12 — the old template's real year-over-year comparison panel (graph-comp-7), missing from this spec until report_build.mjs's --from-page marker-blindness bug (see note) was fixed. Current Year is the anchor (first-listed route). Both measures now included (multi-measure Route Compare support built 2026-08-12) — matches the old panel's real Speed + Travel Time shape exactly, nothing dropped." },
+      "routeWindows": {
+        "r2": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r3": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r4": [{ "weekdays": { "sunday": false, "saturday": false } }]
+      },
+      "why": "Recovered 2026-08-12 — the old template's real year-over-year comparison panel (graph-comp-7), missing from this spec until report_build.mjs's --from-page marker-blindness bug (see note) was fixed. Current Year is the anchor (first-listed route). Both measures now included (multi-measure Route Compare support built 2026-08-12) — matches the old panel's real Speed + Travel Time shape exactly, nothing dropped. Same 2026-08-14 routeWindows fix as map_years." },
     { "key": "bar_summary", "title": "Route Bar Graph Summary, Speed",
       "graphType": "BarGraph", "measure": "speed", "resolution": "summary",
-      "why": "Added 2026-08-13 (Ryan's call) to replace the old template's Bar Graph Summary (whole-year bar + AM/PM/Off-Peak bars), which can't be rebuilt since Design Push #2 removed per-route time-of-day sub-views. Reuses the SAME 4 already-live year routes (Current + 1/2/3 Years Ago) as one bar per year, the identical resolution:'summary' pattern already used for this_month_vs_last_month_vs_last_year's bar_summary_traveltime." },
+      "routeWindows": {
+        "r2": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r3": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "r4": [{ "weekdays": { "sunday": false, "saturday": false } }]
+      },
+      "why": "Added 2026-08-13 (Ryan's call) to replace the old template's Bar Graph Summary (whole-year bar + AM/PM/Off-Peak bars), which can't be rebuilt since Design Push #2 removed per-route time-of-day sub-views. Reuses the SAME 4 already-live year routes (Current + 1/2/3 Years Ago) as one bar per year, the identical resolution:'summary' pattern already used for this_month_vs_last_month_vs_last_year's bar_summary_traveltime. Same 2026-08-14 routeWindows fix as map_years." },
     { "key": "bar_weekday", "title": "Route Bar Graph, Speed — Day of Week",
       "graphType": "BarGraph", "measure": "speed", "resolution": "weekday",
       "why": "Current year grouped by day of week — re-pointed at 'Current Year' (its original dedicated sub-route is an orphaned comp id, gone from the live route array; the weekday breakdown itself is unaffected)." },
@@ -39,15 +59,15 @@
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary", "bar_weekday", "bar_by_day", "grid_current", "bar_by_month"] },
     { "id": "r2", "slot": true, "name": "1 Year Ago", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-1year->1year", "derivedFromRoute": "__TODAY__",
-      "color": "#1b9e77", "weekdays": { "sunday": false, "saturday": false },
+      "color": "#1b9e77",
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary"] },
     { "id": "r3", "slot": true, "name": "2 Years Ago", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-2year->1year", "derivedFromRoute": "__TODAY__",
-      "color": "#666666", "weekdays": { "sunday": false, "saturday": false },
+      "color": "#666666",
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary"] },
     { "id": "r4", "slot": true, "name": "3 Years Ago", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-3year->1year", "derivedFromRoute": "__TODAY__",
-      "color": "#a6761d", "weekdays": { "sunday": false, "saturday": false },
+      "color": "#a6761d",
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary"] }
   ]
 }
