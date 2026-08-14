@@ -55,11 +55,13 @@
  *       → out-of-band event from a route (rare).
  *
  *   helpers.createDamaSource({ name, type, user_id, ... }, pgEnv)
- *   helpers.createDamaView({ source_id, user_id, etl_context_id, metadata,
+ *   helpers.createDamaView({ source_id, user_id, metadata,
  *                            view_dependencies }, pgEnv)
  *       → metadata helpers. createDamaView auto-sets table_schema/_name to
  *         `gis_datasets.s{source_id}_v{view_id}`; override via UPDATE if
  *         your plugin needs different naming.
+ *       → views.etl_context_id is DEPRECATED — do not pass it. Record the
+ *         producing task as `metadata: { task_id: task.task_id }` instead.
  *
  *   helpers.ensureSchema(db, schemaName)
  *       → CREATE SCHEMA IF NOT EXISTS (no-op on sqlite).

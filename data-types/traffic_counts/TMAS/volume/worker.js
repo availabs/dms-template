@@ -1,8 +1,5 @@
 const { pipeline } = require("node:stream/promises");
-const { Readable } = require("node:stream");
-const { createReadStream, createWriteStream } = require("node:fs");
-const { tmpdir } = require("node:os");
-const { join } = require("node:path");
+const { createReadStream } = require("node:fs");
 
 const split2 = require("split2");
 const pgStuff = require("pg");
@@ -38,21 +35,25 @@ const Worker = async ctx => {
 		tempFilePath
   } = task.descriptor.args;
 
-  await dispatchEvent('TMAS_volume_data:INITIAL', 'request received');
+  await dispatchEvent('TMAS_volume_data:INITIAL', `TMAS Volume Data task started: ${ task.task_id }`);
   await updateProgress(0.1);
 
 	const pgCreds = getPostgresCredentials(pgEnv);
 	const pgClient = new pgStuff.Client(pgCreds);
 	await pgClient.connect();
 
+  // Task provenance goes in metadata, not the etl_context_id column — see
+  // dms-server/src/dama/upload/workers/csv-publish.js.
   const newDamaView = await createDamaView({
     source_id,
     user_id,
-    etl_context_id: task.task_id,
-    table_schema: "tmas"
+    metadata: { task_id: task.task_id }
   }, pgEnv);
 
   const { table_name, data_table, view_id } = newDamaView;
+
+  await dispatchEvent(`TMAS_volume_data:DAMA_VIEW', 'created new DAMA view: ${ view_id }`);
+  await updateProgress(0.2);
 
   const createDamaViewSql = `
   	CREATE TABLE ${ data_table }(
@@ -92,7 +93,8 @@ const Worker = async ctx => {
   `;
   await db.query(createDamaViewSql);
 
-  await updateProgress(0.2);
+  await dispatchEvent(`TMAS_volume_data:DATA_TABLE', 'create new data table: ${ data_table }`);
+  await updateProgress(0.3);
 
   // skip the first row of POST-2020 formats since it is a header row
   let foundFirstPost2020row = format === "pre-2020-format";
@@ -115,7 +117,7 @@ const Worker = async ctx => {
   `;
 
   await dispatchEvent(`TMAS_volume_data:STREAM', 'streaming data into DB table ${ data_table }`);
-  await updateProgress(0.3);
+  await updateProgress(0.4);
 
   await pipeline(
   	createReadStream(tempFilePath),

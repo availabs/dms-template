@@ -115,7 +115,7 @@ module.exports = {
         const view = await createDamaView({
           source_id,
           user_id,
-          etl_context_id: task.task_id,
+          metadata: { task_id: task.task_id },
           view_dependencies: view_dependencies ? JSON.parse(view_dependencies) : null,
         }, pgEnv);
         const { view_id } = view;

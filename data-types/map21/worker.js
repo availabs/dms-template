@@ -184,13 +184,13 @@ module.exports = async function map21Publish(ctx) {
     damaView = await createDamaView({
       source_id,
       user_id,
-      etl_context_id: task.task_id,
       metadata: {
         ...(customViewAttributes || {}),
         ...(viewMetadata || {}),
         npmrds_prod_source_id: npmrdsSourceId,
         years,
         email,
+        task_id: task.task_id,
       },
       view_dependencies: viewDependency,
     }, pgEnv);
