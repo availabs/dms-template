@@ -14,7 +14,7 @@ to read" rule (same pattern as `report-page-redesign.md`/`-archive.md`).
 |---|---|
 | 1. Add Route Flow (RRL) | **DONE.** Tag-browser modal, Add-Graph modal, Route Row visual redesign all built + live-verified. One prototyped lever (sidebar width) stashed by Ryan, not merged. |
 | 2. Route Tags ("folder approximation") | **DONE** (tag taxonomy + manual editing UI). TMC-linear auto-generation: **2024 pilot DONE** (8,660 routes); 10 other years not yet generated (scripts are already generic over year). |
-| 3. Dynamic Reports | **Core mechanism DONE.** Old-template porting: 12 catalog templates converted (`converted_reports/reports`). Mechanism B (route-relative dates) DONE. **Relative-dates-relative-to-today: DONE 2026-08-10/11 — all 12 catalog templates now have zero fixed dates**, including the calendar-position grammar enrichment. **`report_build.mjs` Dynamic Report spec support: DONE 2026-08-11 — all 12 catalog templates are now spec-built** (git-committed JSON under `scripts/npmrds-reports/dynamic_report_specs/`, no old-DB dependency) and live-verified for real, superseding the earlier direct-DB-patch round whose comp-date fixes had silently failed to persist. See `report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full record. |
+| 3. Dynamic Reports | **Core mechanism DONE.** Old-template porting: 12 catalog templates converted (`converted_reports/reports`). Mechanism B (route-relative dates) DONE. **Relative-dates-relative-to-today: DONE 2026-08-10/11 — all 12 catalog templates now have zero fixed dates**, including the calendar-position grammar enrichment. **`report_build.mjs` Dynamic Report spec support: DONE 2026-08-11 — all 12 catalog templates are now spec-built** (git-committed JSON under `scripts/npmrds-reports/dynamic_report_specs/`, no old-DB dependency) and live-verified for real, superseding the earlier direct-DB-patch round whose comp-date fixes had silently failed to persist. See `report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full record. **Per-route window overrides (`routeWindows`): DONE 2026-08-14 — weekdays/startTime/endTime moved off `routes[]` onto `graphs[]`/`routeWindows` platform-wide, all 12 catalog templates confirmed consistent (8 migrated, 4 never needed it), `snapshot`'s 5-gap hand-by-hand review fully closed.** See "Per-route window overrides" section below for the mechanism build and `snapshot` review write-up for the applied fixes. |
 
 **Context that applies to all three items:** Ryan's coworker (Alex) did separate visual/design work
 across these repos (`dms_design_system_v2` NPMRDS category) — see
@@ -1125,7 +1125,8 @@ separately (tracked as its own item). No live UI exists for setting a graph's ow
 `weekdays`/`startTime`/`endTime`/`routeWindows` at all yet — same missing-authoring-surface category
 as gap #16.
 
-**Migration scope note, UPDATED 2026-08-14 — all 12 catalog templates now migrated.** `snapshot.json`
+**Migration scope note, UPDATED 2026-08-14 — all 12 catalog templates confirmed consistent: 8
+migrated, 4 never needed it.** `snapshot.json`
 was converted first, alone, per Ryan's explicit call to validate one Dynamic Report before converting
 the rest; once that held up, the remaining 7 (`annual_average_study`, `bi_directional`,
 `monthly_speed_comparisons`, `one_week_study`, `single_day_advanced`, `weekly_average`,
@@ -1154,6 +1155,14 @@ the rest; once that held up, the remaining 7 (`annual_average_study`, `bi_direct
   saturday:true}` and `{}` respectively) were already functional no-ops under the real "absent means
   included, only explicit `false` excludes" semantics — removed outright, confirmed zero behavior
   change (the rebuild's own diff reported no graph changes, only the route fields disappearing).
+- **`monthly_congestion`, `seasonality`, `single_route`, `this_month_vs_last_month_vs_last_year`
+  (the remaining 4 of 12) — checked directly, confirmed to need NO migration at all**, not just
+  unexamined. None has ever had a `routes[].weekdays`/`startTime`/`endTime` field (grepped all 4
+  files directly, zero hits). `seasonality`/`this_month_vs_last_month_vs_last_year` each mention
+  "weekday" only as a `resolution: "weekday"` GRAPH field (day-of-week bar-chart bucketing,
+  unrelated to the weekday exclusion mask this migration is about — already correctly graph-level
+  from the start, per the settled "resolution is per-graph, not per-route" finding earlier this
+  session). Not rebuilt — nothing to rebuild.
 
 **Golden-corpus**: `dynamic_report_annual_average_study` and `dynamic_report_one_week_study`
 re-baselined (both already in the corpus); the former gained a `routeWindows` covers tag as the first
