@@ -69,6 +69,9 @@ was edited).
 | `title` | no | Sets both the section row's `title` and `display.title.title`. |
 | `comparisonMode` | no | `plain` (default) — each assigned route renders as its own series — or `difference`. **Not supported on `Map`/`InfoBox`/`RouteCompare`** — fails the build if set (each assigned route already renders as its own choropleth-colored layer / comparisonSeries row / %-vs-anchor delta row, not a subtraction). |
 | `anchor` | difference only | A `routes[].id`. Names the arm the others are subtracted *from*. RouteCompare has no field of its own for this — its anchor is always whichever route is first in `routes[]`, same convention a difference graph's implicit anchor uses. |
+| `weekdays` | no | Day mask, this graph's default for every route assigned to it — see the semantics below. **Lives here, not on `routes[]`** (moved 2026-08-14 — see below). No graph-type restriction: applies identically to AVL Graph, Map, InfoBox, and RouteCompare (all four ride the same `comparison_series`/`findSelfBoundGraphs` mechanism, confirmed by reading `useGraphPublish.js` directly). |
+| `startTime`/`endTime` | no | Time-of-day window, `"HH:mm"` 24-hour, this graph's default for every route assigned to it — see the semantics below. Same "lives on the graph, not the route" move as `weekdays`. |
+| `routeWindows` | no | `{ [routes[].id]: [{weekdays, startTime, endTime, color}, ...] }` — per-route override for when routes assigned to THIS graph need genuinely different windows (an AM/PM/Off-Peak Bar Graph Summary; a Route Compare comparing a peak sub-window against an all-day baseline), instead of the graph's own `weekdays`/`startTime`/`endTime` default. The array holds 2+ entries only for the same route shown more than once on one graph under different filters (each entry becomes its own output series, auto-labeled — see the semantics below); today that's almost always length 1. Keys must be routes actually assigned to this graph (`routes[].graphs` still decides "which routes feed this graph" — `routeWindows` only refines how). Each variant's own `color` overrides the route's base `color` for that one series — needed the moment a route expands into 2+ variants (they'd otherwise all render in the route's one color, indistinguishable from each other); write the SAME literal hex for the same variant (e.g. "AM") everywhere it's used across a report's graphs, since there's no shared-constant mechanism in this format to enforce it for you. |
 | `size` | no | Colspan, `"1"`–`"12"`, written as the section row's own `size` field. |
 | `colorRange` | Map only | Array of hex colors, low→high. Defaults to a neutral speed ramp if omitted. |
 | `caption` | AVL Graph only | Prose, rendered as a subtitle line under the chart's own title (`GraphComponent.jsx`'s `GraphTitle`, reading `display.description` — already wired on the render side; this is the write path). **Not supported on `Map`/`InfoBox`/`RouteCompare`** — fails the build if set (none of the three has a title/description render path — Spreadsheet, Info Box's and RouteCompare's shared element-type, has no GraphTitle-equivalent). |
@@ -97,10 +100,7 @@ A route instance can instead be a **Dynamic Report route slot** (`slot: true`, n
 | `graphs` | yes in practice | Array of `graphs[].key`. Empty means this instance feeds nothing — the build warns and fails the structural check. |
 | `startDate` | no | Inclusive window start. Omit both dates for all available data, or if deriving via `dateFormula` (see below). |
 | `endDate` | no | Window end. |
-| `startTime` | no | Time-of-day window start, `"HH:mm"` 24-hour (e.g. `"07:00"`). Requires `endTime` and a `startDate`/`endDate` window — see the semantics below. |
-| `endTime` | no | Time-of-day window end. Requires `startTime`. |
 | `color` | no | Series color, hex. |
-| `weekdays` | no | Day mask — see the semantics below. |
 | `confidence` | no | `{level: "low"\|"medium"\|"high", note}` — flags an inferred, not-determinate choice (typically segment extent — "around Verplank Ave and Beekman St" has no exact answer). Guess-and-flag, not a gate: `level: "low"` prints a "NEEDS REVIEW" banner in both `--summary` and a real build, but never blocks the build. See "Intake checklist" in `creating-reports.md`. |
 | `slot` | no | `true` marks this as a Dynamic Report route slot — no `route_id` yet, resolved by whoever views the page via `?routes=`. Requires `dynamicReport: true` on the spec. See "Dynamic Report fields" below. |
 | `route_slot_group` | no, slots only | Groups several slot rows (different date/settings VIEWS of the same one real route — e.g. `one_week_study`'s 8 day/average comps) so a viewer picks ONE route to fill all of them, not one per row. Slots with no `route_slot_group` are each their own group (one viewer pick per row). |
@@ -231,7 +231,8 @@ mistake, it's an acknowledged guess, and the correction mechanism is AVAIL feedb
 
 ### The weekday mask excludes only on an explicit `false`
 
-Per `useGraphPublish.js:34`, an **absent** key means the day is *included*. So:
+Per `useGraphPublish.js`'s `transformReportRoutes`, an **absent** key means the day is *included*.
+So:
 
 ```json
 "weekdays": { "saturday": false, "sunday": false }
@@ -240,11 +241,21 @@ Per `useGraphPublish.js:34`, an **absent** key means the day is *included*. So:
 means Monday–Friday, not "only Saturday and Sunday excluded from nothing". An empty or absent
 `weekdays` means all seven days. (Easy to read backwards — it was, on the first pass.)
 
-`weekdays` got a UI control 2026-07-30 — a "Days of Week" toggle row (plus Weekdays/Weekends/All
-Days presets) next to `RouteRow.jsx`'s date-edit inputs, saving down to only the `false` entries on
-this same normalized shape. See `report-route-ui-parity-gaps.md` gap #10 for the live verification.
+**Lives on `graphs[]`, not `routes[]`, as of 2026-08-14** (see "`weekdays`/`startTime`/`endTime`
+moved to `graphs[]`" below for the full story). `weekdays` had a UI control on `RouteRow.jsx` from
+2026-07-30 — already retired, not by this migration: Design Push #2 itself (2026-08-06) removed it
+from `RouteRow.jsx` entirely and rebuilt it as QuickControls' graph-level "When" pill (confirmed
+directly in the current code — `RouteRow.jsx`'s own header comment states the day/time facets "are
+gone, not just hidden"). What's actually broken by today's migration is that pill itself, not
+`RouteRow.jsx` — see "Live-authoring UI" below.
 
 ### `startTime`/`endTime`: a peak-hour (or any time-of-day) sub-window (added 2026-07-28)
+
+**SUPERSEDED 2026-08-14 — the JSON example below (`routes[].startTime`/`endTime`) is no longer
+valid spec syntax; a route carrying either now fails the build.** Kept verbatim as the historical
+record of how this mechanism was discovered and first verified (still accurate on ITS OWN terms —
+the runtime facts below are all still true); see "`weekdays`/`startTime`/`endTime` moved to
+`graphs[]`" further below for the current, valid shape and why it moved.
 
 Closes the gap tracked as `report-route-ui-parity-gaps.md` gap #11 and
 `client-request-to-report-skill.md` next-steps item #11: no way to express "just the AM/PM peak"
@@ -345,6 +356,118 @@ drift with a hand-edited section title, the live-reconstruction path (which spli
 combined date+time string back into clean `startTime`/`endTime` fields). Test page `2196692` +
 sections `2196693`-`2196696` + snap row `2196698` deleted after, confirmed gone via `page show`
 and the split-table dataset query.
+
+**This exact two-routes-one-graph-different-windows capability was re-verified 2026-08-14 via the
+current `routeWindows` mechanism** (same shape, different authoring surface — see below): a fresh
+`AM Peak`/`PM Peak` LineGraph build produced the identical result shape (2 `seriesVariants`, correct
+distinct `epoch` ranges, auto-derived labels). Worth knowing if you're wondering whether this
+capability was ever lost in between — `routes[].startTime`/`endTime` (this section's own mechanism)
+predates the 2026-08-06 Design Push #2 storage migration, which moved weekday/window storage onto
+the GRAPH as a single shared scalar; that intermediate scalar-only shape genuinely could not express
+two disagreeing routes on one graph (confirmed by rebuilding this exact example against it: the
+build silently dropped the epoch filter for both series). `routeWindows` (2026-08-14) is what
+restores per-route independence within one graph — not a regression fix, a real design evolution
+that happened to pass back through the same capability on its way to a better one.
+
+### `weekdays`/`startTime`/`endTime` moved to `graphs[]` (2026-08-14)
+
+**The current, valid shape.** `weekdays`/`startTime`/`endTime` are fields on a `graphs[]` entry
+(same table as `resolution`/`measure`), not `routes[]` — a route carrying either now fails the
+build with a message pointing here. This matches the actual runtime: `useGraphPublish.js`'s
+`transformReportRoutes` reads a route's `startDate`/`endDate` and nothing else off the route itself;
+weekday mask and time-of-day window come from wherever the assigned GRAPH's own `_measurePick`
+says, confirmed by reading the function directly. `routes[]` is now exactly: which catalog route
+(or slot), its date window, its name/color, `dateFormula`/`derivedFromRoute` — never weekday or
+time-of-day.
+
+The common case — one window shared by every route on a graph:
+
+```json
+{ "key": "peak_line", "graphType": "LineGraph", "measure": "travelTime", "resolution": "5-minutes",
+  "startTime": "06:00", "endTime": "10:00", "weekdays": { "saturday": false, "sunday": false } }
+```
+
+The divergent case — routes on the SAME graph need genuinely different windows — uses
+`routeWindows`, keyed by `routes[].id`:
+
+```json
+{ "key": "peak_compare", "graphType": "RouteCompare", "measure": "speed",
+  "routeWindows": {
+    "am_route":  [{ "startTime": "06:00", "endTime": "10:00" }],
+    "pm_route":  [{ "startTime": "16:00", "endTime": "20:00" }]
+  } }
+```
+
+Any route assigned to the graph but not named in `routeWindows` gets the graph's own
+`weekdays`/`startTime`/`endTime` as its default (which may itself be unset — meaning fully
+unrestricted). No graph-type restriction, unlike `resolution`/`comparisonMode`/`caption` — Map,
+InfoBox, and RouteCompare all go through the identical `comparison_series`/`findSelfBoundGraphs`
+path as AVL Graph (confirmed directly, not assumed — `composeInfoBoxGraphState`/
+`composeRouteCompareGraphState` both set a real `composedStates[i]`, and both carry the same
+`$self` subscriber `findSelfBoundGraphs` looks for).
+
+**The same route shown twice on one graph, under different filters** (e.g. one Bar Graph Summary
+bar for AM, another for PM, both from the same underlying route) — the old tool's own answer to
+this was to duplicate the route into a new id; the array under one `routeWindows` key is the
+replacement, so a report doesn't need a second `routes[]` entry (and a second minted DB row) just
+to express a filter variant:
+
+```json
+"routeWindows": {
+  "current_year": [
+    { "startTime": "06:00", "endTime": "10:00", "color": "#E07A00" },
+    { "startTime": "16:00", "endTime": "20:00", "color": "#7B3294" }
+  ]
+}
+```
+
+Each array entry becomes its own output series. `routes[].id` (and `_measurePick.routeIds`) still
+lists the route exactly once — how many series it becomes is entirely governed by this array's
+length, so no composite-key identity change was needed anywhere else. Two series can't share a
+name (see "Route names are the only series discriminator" above), so 2+ entries get an
+auto-derived label appended to the route's own name — e.g. `"Current Year (6a–10a)"` — built from
+the exact same wording `RouteRow.jsx`'s weekday summary line and QuickControls' time-of-day pill
+already use (`summarizeWeekdays`/`timeOfDayToken` in `ReportRouteList/utils.js`), not a third
+phrasing invented for this. A single-entry array (today, almost always) keeps the bare route name
+AND the route's own base color, unchanged. **2+ entries need their own `color` each** — without
+it every expanded variant renders in the route's one shared color, indistinguishable on any chart
+that actually uses color (a Bar Graph Summary's bars, a Line Graph's legend); with it, write the
+identical hex for "AM" (or whichever variant) on every graph that uses it across one report, since
+nothing in this spec format enforces that consistency for you — it's plain literal repetition, the
+same as how `routes[].color` for a report's 2 "real" routes is already just repeated verbatim
+wherever that route appears. Snapshot's AM/PM/Off-Peak panels (built 2026-08-14, live-verified) are
+the first real usage — see `dynamic_report_specs/snapshot.json`'s `info_box_snapshot`/
+`bar_speed_peak_summary`/`bar_delay_peak_summary` for the 3 places the same 3 colors are repeated.
+
+**Live-authoring UI**: `RouteRow.jsx`'s weekday-toggle/peak-hour-preset controls (gaps #10/#11) do
+NOT need removal — checked directly, they were already retired by Design Push #2 itself
+(2026-08-06), well before this migration, and rebuilt as QuickControls' graph-level "When" pill
+(`QuickControls/index.jsx`'s `whenToken`/`renderWhenSection`). **Today's migration broke that pill,
+and it was fixed the same day**: it used to read/write `state.display._measurePick.weekdays`/
+`start`/`end` directly — the bare scalar `report_build.mjs` no longer writes at all (`routeWindows`
+is the only thing it composes now) and `useGraphPublish.js` no longer reads — confirmed live before
+the fix (the pill displayed "all day · all" regardless of the graph's real window, and any preset
+click was a silent no-op). **Fix, per Ryan's explicit call**: apply one uniform window to every
+route on the graph (matching the pill's original behavior exactly), not a per-route control — see
+`report-route-ui-parity-gaps.md` gap #17 for the full fix/live-verification record. A SEPARATE,
+larger gap (#18 there, still open): no UI anywhere lets an author set a PER-ROUTE override within a
+multi-route graph — even this fixed "When" pill only ever controls the graph's one shared default.
+Both are the same "missing authoring surface" category
+as gap #16 (Info Box/Route Compare creation).
+
+**The color-consistency problem specifically will be harder than the rest of this UI gap, flagged
+here for whoever scopes it.** For a hand-authored spec (today's only path), keeping "AM" the same
+color everywhere is just copy-pasting the same literal hex into every graph's `routeWindows` block
+— tedious but trivial, and it's what `snapshot.json` actually does. A live UI doesn't have that
+option: `routeWindows` is deliberately scoped per-GRAPH (the whole point, so one graph's routes
+disagreeing with another's never recreates the Design-Push-2 staleness bug this migration fixed) —
+which means there's no single place "the AM variant of Current Year" lives that a picker could read
+a remembered color from. An author setting AM's color on one graph has no way to make a LATER graph
+default to that same color, short of either a manual "copy from another section" affordance or an
+entirely new shared-but-overridable per-route "named variant" concept that doesn't exist today and
+would need real design (where does it live, does a graph-level override still win, how does an
+author even reference "the AM variant" as a stable thing). Not a reason to avoid building the UI,
+just a real wrinkle worth having written down before that design work starts.
 
 ### Difference graphs: anchor and sign
 
@@ -597,13 +720,24 @@ textarea control in the shared `graph_new/config.jsx`.
 Route Map sections have no equivalent — Map's view component doesn't render a title/description at
 all — so `caption` on a `Map` graph fails the build rather than silently doing nothing.
 
-### `resolution` is per-graph today, and that is expected to change
+### `resolution` is per-graph, and that is settled (corrected 2026-08-14)
 
-In the old tool, resolution is a property of the *attached route*
-(`GeneralGraphComp.getResolution()` reads `activeRouteComponents[0].settings.resolution`) and is
-read at render time. Deriving it dynamically is explicitly deferred in the report-page-redesign
-findings. So `graphs[].resolution` is the current shape, **not the settled one** — expect it to
-migrate to `routes[]`. Don't build anything that depends on it staying where it is.
+In the old tool, resolution was a property of the *attached route*
+(`GeneralGraphComp.getResolution()` read `activeRouteComponents[0].settings.resolution`). This
+section used to predict `graphs[].resolution` would migrate to `routes[]` to match — that never
+happened, and having now checked directly where `resolution` is actually consumed, it shouldn't:
+`composeMeasureConfig.js`'s `buildXAxisColumn` uses it to build the graph's `xAxis` COLUMN
+definition (the GROUP BY / bucketing expression) once for the whole graph, at compose time, before
+any route is resolved — every route sharing that graph shares that column shape by construction
+(that's what lets them be plotted/compared together at all). This is a fundamentally different
+kind of thing than `weekdays`/`startTime`/`endTime` (WHERE-clause filter values, genuinely built
+per-route inside `transformReportRoutes` — see "`weekdays`/`startTime`/`endTime` moved to
+`graphs[]`" above), which is why THEY moved to a per-route-capable shape (`routeWindows`) and
+`resolution` did not: making resolution per-route would mean different routes on one graph
+literally querying different column shapes, not just different filters — a materially bigger,
+unasked-for change. (Checked concretely once, 2026-08-14: a suspected "Bar Graph Summary needs two
+different resolutions on one graph" case turned out, on inspection, to just be a date-filter
+difference — still `summary` resolution throughout — not a real counterexample.)
 
 ---
 
@@ -683,28 +817,30 @@ missing; see the task file for the trigger.
   "graphs": [
     { "key": "overview", "title": "Travel Time - all periods",
       "graphType": "LineGraph", "measure": "travelTime", "resolution": "5-minutes",
-      "comparisonMode": "plain",
+      "comparisonMode": "plain", "weekdays": { "saturday": false, "sunday": false },
       "caption": "The line graph above overlays both periods. A lower after-trace during peak hours indicates the signals reduced delay.",
       "why": "One overlaid trace per direction and period, so the client can see the peak shape shift." },
     { "key": "nb_diff", "title": "Northbound Travel Time Difference",
       "graphType": "BarGraph", "measure": "travelTime", "resolution": "5-minutes",
-      "comparisonMode": "difference", "anchor": "nb_before",
+      "comparisonMode": "difference", "anchor": "nb_before", "weekdays": { "saturday": false, "sunday": false },
       "why": "Before minus after per bucket. Positive bars mean travel time fell." }
   ],
   "routes": [
     { "id": "nb_before", "route_id": 2195805,
       "name": "NY-9D Northbound (I-84 to Main St) - Jan-Feb 2025",
       "startDate": "2025-01-01", "endDate": "2025-02-28",
-      "color": "#D72638", "weekdays": { "saturday": false, "sunday": false },
+      "color": "#D72638",
       "graphs": ["overview", "nb_diff"] },
     { "id": "nb_after", "route_id": 2195805,
       "name": "NY-9D Northbound (I-84 to Main St) - Jan-Feb 2026",
       "startDate": "2026-01-01", "endDate": "2026-02-28",
-      "color": "#007F5F", "weekdays": { "saturday": false, "sunday": false },
+      "color": "#007F5F",
       "graphs": ["overview", "nb_diff"] }
   ]
 }
 ```
 
 Note both route instances share `route_id: 2195805` — same corridor, different window. That is the
-before/after idiom.
+before/after idiom. `weekdays` is set once per graph here (both routes on each graph want the same
+Monday–Friday mask) rather than per route — see "`weekdays`/`startTime`/`endTime` moved to
+`graphs[]`" above.

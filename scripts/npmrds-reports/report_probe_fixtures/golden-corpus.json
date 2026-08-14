@@ -8,7 +8,16 @@
     "finds exactly which corpus entries are at risk and need re-verifying before/after the change.",
     "baselineCapturedAt/lastVerifiedAt are stamped ONLY by probe_corpus.mjs itself (--capture / a clean",
     "diff pass respectively) — never hand-edit them, they're the tool's own record of what it has",
-    "actually machine-checked, not a claim about when a human last looked at the page."
+    "actually machine-checked, not a claim about when a human last looked at the page.",
+    "Every dynamic_report_* entry pins `&asOf=2026-07-23` in its url — Ryan's ask 2026-08-13: without",
+    "it, every Today-anchored page's literal query dates drift by a day between runs, forcing a daily",
+    "re-baseline for no real reason. `asOf` is the SAME viewer-facing override the entry-gate's own",
+    "'Viewing as of' field writes (a `type:'baseDate'` page filter, see ReportRouteList.jsx's",
+    "asOfOverride) — no code change needed, just pinning the existing mechanism into the corpus URLs.",
+    "2026-07-23 was picked because it's exactly defaultAnchorDate()'s value on the day this was pinned",
+    "(today minus NPMRDS_DATA_LAG_DAYS), so it matched the baselines already captured that day with no",
+    "second re-capture needed. Bump this date (and re-capture) only if it ages out of real ClickHouse",
+    "data coverage — it will NOT drift on its own like an unpinned anchor would."
   ],
   "entries": [
     {
@@ -25,7 +34,7 @@
       ],
       "notes": "Representative for the plain (non-difference) LineGraph code path, 2-route travelTime. Session-scoped page from 2026-08-07 was cleaned up per feedback_golden_corpus_pages_session_scoped — rebuild from the spec before first --capture.",
       "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": null
     },
     {
@@ -42,7 +51,7 @@
       ],
       "notes": "Representative for the BarGraph code path AND the Layer-3 known-good-value PoC (see expectedValue) — chosen because `speed` is a near-raw average, the class of measure the team is most confident is already correctly computed (any discrepancy is most likely rounding, not a wrong formula). Rebuild before first --capture, same as linegraph.",
       "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": {
         "description": "NY-9D Northbound (route 2195805, TMCs 120+29712/120+29713/120+29714) average speed, Monday (toDayOfWeek(date,1)=1), 2025-01-01..2025-02-28. Computed independently: per-TMC avgIf(travel_time_all_vehicles, !=0) via direct ClickHouse SQL against npmrds.s583_v982_NPMRDS_V6, summed, combined with per-TMC miles from the UDA view-3464 reference-data endpoint (a static geometry lookup, not derived from this report's own rendering), via the report's own formula (sum(miles)*3600/sum(avg_travel_time_s)). Matched the live rendered value EXACTLY (19.57234077140305, to 15 significant digits) when computed 2026-08-10 — confirms the speed formula is correct for this measure, not just close.",
         "matchRoute": "NY-9D Northbound",
@@ -66,7 +75,7 @@
       ],
       "notes": "Representative for the per-TMC/day heat-grid code path — see graph-new-single-categorize-limit memory (GridGraph's yAxis-not-categorize quirk lives here). Rebuild before first --capture.",
       "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": null
     },
     {
@@ -83,12 +92,12 @@
       ],
       "notes": "Representative for the Route Map / choropleth-baking code path — a real per-report choropleth baked server-side at build time, distinct from the other AVL Graph types. Rebuild before first --capture; the bake step's own dependencies (dama-tiles pg) must be reachable, not just ClickHouse.",
       "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": null
     },
     {
       "key": "dynamic_report_one_week_study",
-      "url": "converted_reports/one_week_study?routes=2207838",
+      "url": "converted_reports/one_week_study?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/one_week_study.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/one_week_study.json --update 2210906 --publish",
       "authRequired": false,
@@ -106,16 +115,20 @@
         "relativeDateResolution.TODAY_ANCHOR_COMP_ID",
         "relativeDateResolution.resolveRelativeDateFormula",
         "reportBuild.routeSlot",
-        "reportBuild.catalogFields"
+        "reportBuild.catalogFields",
+        "InfoBox.multiMeasure",
+        "info_box_templates.ensure_info_box_traveltime_template",
+        "vocabulary.joins.META_JOIN",
+        "formatFunctions.decimal_2"
       ],
-      "notes": "PRIORITY entry — the Dynamic Report / catalog-template code path. Re-baselined 2026-08-11: the real live page (old id 2210438, convert_old_reports.py-built) was DELETED and rebuilt fresh under the identical slug from the committed spec (new id 2210906) — no longer 'NOT spec-built'; that was true only before this round. Now 7 real panels (was 5 mid-round, briefly missing the 2 Bar Graph Summary ones until `resolution: \"summary\"` was built the same day — see report-spec-and-build-script.md's Dynamic Report follow-on for the full record). MUST keep the `?routes=` param (bypasses the Add-Routes entry-gate modal deterministically) — probing the bare slug tests only the empty-slot placeholder state, see report-probe-expect-and-golden-corpus.md's 2026-08-07 finding. `authRequired: false` confirmed live 2026-08-10 (renders publicly with real data despite the row's own `published` field reading back empty — that field isn't what gates public rendering here). Its Day-1..Day-5/Average-for-Week/Month/Year comps exercise the Today-anchor mechanism (`dateFormula`/`derivedFromRoute`/`TODAY_ANCHOR_COMP_ID`).",
-      "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "notes": "PRIORITY entry — the Dynamic Report / catalog-template code path. Re-baselined 2026-08-11: the real live page (old id 2210438, convert_old_reports.py-built) was DELETED and rebuilt fresh under the identical slug from the committed spec (new id 2210906) — no longer 'NOT spec-built'; that was true only before this round. Now 7 real panels (was 5 mid-round, briefly missing the 2 Bar Graph Summary ones until `resolution: \"summary\"` was built the same day — see report-spec-and-build-script.md's Dynamic Report follow-on for the full record). MUST keep the `?routes=` param (bypasses the Add-Routes entry-gate modal deterministically) — probing the bare slug tests only the empty-slot placeholder state, see report-probe-expect-and-golden-corpus.md's 2026-08-07 finding. `authRequired: false` confirmed live 2026-08-10 (renders publicly with real data despite the row's own `published` field reading back empty — that field isn't what gates public rendering here). Its Day-1..Day-5/Average-for-Week/Month/Year comps exercise the Today-anchor mechanism (`dateFormula`/`derivedFromRoute`/`TODAY_ANCHOR_COMP_ID`). Re-baselined again 2026-08-13 purely to pin `asOf` (see `_readme`) — same content, no code/spec change. **Reproduced the pre-existing cold-load LineGraph/pending-request flake (see traversing-report-pages.md's 'cold-load timing gotcha' section) on 2 separate runs during this session**, both against an already-hours-old page — its trigger isn't strictly 'just published,' just probing under load right after other back-to-back probe runs; confirmed non-regression by re-running with `--wait 20000`, which rendered all 9 sections clean with 0 pending, then re-captured. If this entry flags blank LineGraph sections or pending-request Blockers again, re-probe standalone with a longer `--wait` before treating it as real.\n\nRe-baselined a 3rd time 2026-08-13 (10 sections, was 9): added `weekday_info_box` (graphType InfoBox, measure [\"speed\",\"travelTime\"], grain route) assigned to the 5 daily routes only — the old template's real Info Box (graph-idx-1 in its gap log), dropped from every prior spec build. First real live usage of `speed`/multi-measure Info Box in this whole arc, which surfaced 2 real pre-existing bugs, both fixed same session: (1) `ensure_info_box_traveltime_template` never got the 2026-08-12 metadata-join-drift-detection fix its sibling functions got, so its pre-existing `route_info_box_traveltime` row kept a stale TMC_IDENTIFICATION_JOIN(3464) forever — and since `build_route_info_box_section_state_multi` unions each measure's `join.sources` with a plain dict `update()` (last-measure-wins per key), travelTime's stale join silently overwrote speed's correct META_JOIN(983) in the combined row. Fixed with real join-drift detection, same pattern as `_ensure_static_info_box_template`. (2) `ensure_info_box_speed_template`'s `speed_col` (and the shared length/aadt builder) had no `formatFn` at all — full float precision leaked to the cell (`20.56702084355448`). Added a new shared registry entry, `formatFunctions.decimal_2` (`utils.jsx`), applied to `speed_col`. Both fixed at the shared Python/JS layer, not per-report — benefits every future Info Box use of these measures, not just this page. length/aadt's identical missing-formatFn gap is flagged, not fixed (no live consumer yet, unlike speed). Re-baselined 2026-08-14: migrated off routes[].weekdays onto graphs[]/routeWindows — all 8 routes shared an identical weekday mask already (no divergence), so this is a pure schema move with zero behavior change, confirmed via 0-diff structural checks at build time.",
+      "baselineCapturedAt": "2026-08-14",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": null
     },
     {
       "key": "dynamic_report_monthly_congestion",
-      "url": "converted_reports/monthly_congestion?routes=2207838",
+      "url": "converted_reports/monthly_congestion?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/monthly_congestion.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/monthly_congestion.json --publish",
       "authRequired": false,
@@ -126,13 +139,13 @@
         "derivedFromRoute"
       ],
       "notes": "Added 2026-08-10 alongside the calendar-position grammar enrichment (see dynamic-reports-and-route-tags.md item 3) — the 12 individual-month comps (`comp-1`..`comp-12`) were migrated off frozen static dates onto `startDate=>calendar:{m}-1..{m}-L` derived from `__TODAY__`; this is the only corpus entry exercising that formula shape for a plain (non-wrapping) month. Several 'Hours of Delay' panels show EMPTY SVG even on a passing baseline — a pre-existing, unrelated per-year AADT-data-coverage gap (see the task doc), not something this entry's diff should ever flag as new. Months past the real ClickHouse data cliff (`SELECT max(date) FROM npmrds.s583_v982_NPMRDS_V6`) will legitimately have less content than earlier months at any given capture time — re-verify by re-running the probe, don't assume a diff here is a regression before checking the real cliff date first.",
-      "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "baselineCapturedAt": "2026-08-13",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": null
     },
     {
       "key": "dynamic_report_seasonality",
-      "url": "converted_reports/seasonality?routes=2207838",
+      "url": "converted_reports/seasonality?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/seasonality.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/seasonality.json --publish",
       "authRequired": false,
@@ -146,13 +159,13 @@
         "reportBuild.catalogFields"
       ],
       "notes": "Re-baselined 2026-08-11: the real live page (old id 2210658, convert_old_reports.py-built) was DELETED and rebuilt fresh under the identical slug from the committed spec (new id 2211130) — no longer 'NOT spec-built'. 18 sections, 6 real routes (current_year/winter/winter_weekday/spring/summer/fall). The 5 seasonal-window comps' `calendar:` formulas (including the ONLY corpus example of the year-wrap case, Winter: `calendar:12-19..3-19` derived from `__TODAY__`) carried over unchanged from the earlier working round. Two real fixes made this round: (1) the 4 'Speed in <season> Compared to Year Average' difference GridGraphs had a dead anchor comp, re-pointed at the live Current Year route; (2) 3 of 4 seasons' 'Avg. Hours of Delay by Weekday' panels were missing (dead sub-routes) — reconstructed as one consolidated `bar_weekday_allseasons` graph using `resolution: weekday` on the live Avg Day routes directly. Dropped 1 graph needing the still-unbuilt avgHoursOfDelay+summary combo (3rd template needing it, after Single Route and This Month vs. Last Month vs. Last Year). Verified 2026-08-11: 0 console/page/SQL errors; 'Avg. Hours of Delay per Season by 5-Min' (LineGraph, avgHoursOfDelay) renders EMPTY — the same AADT-distributions-join data-coverage gap seen elsewhere for this test TMC, not a regression. 'Fall Average Day - Speed' and its diff graph render visibly sparser (1 rect vs. ~289 for the other 3 seasons) — explained, not a bug: Fall's window (`9-20..12-19`) is mostly FUTURE relative to today (2026-08-11), unlike Winter/Spring/Summer whose windows are fully in the past — most of Fall's range is beyond the real ClickHouse data cliff. Re-verify by checking the real cliff date before treating either as a regression. Re-baselined again 2026-08-12 (unrelated to that day's GridGraph/multi-measure/metadata-join work, found only as noise while re-running the full corpus): 'Avg. Hours of Delay by Weekday (All Seasons)' flipped from blank to rendering real content between the 08-11 and 08-12 captures — the underlying AADT-distributions-join gap for this test TMC closed on its own (more data landed), not a code change. Confirms the gap is transient/data-driven as documented, not permanent.",
-      "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "baselineCapturedAt": "2026-08-14",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": null
     },
     {
       "key": "dynamic_report_annual_average_study",
-      "url": "converted_reports/annual_average_study?routes=2207838",
+      "url": "converted_reports/annual_average_study?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/annual_average_study.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/annual_average_study.json --update 2210974 --publish",
       "authRequired": false,
@@ -168,11 +181,12 @@
         "reportBuild.isGraphSectionElement",
         "measure.speed",
         "measure.travelTime",
-        "display._measurePick.routeIds"
+        "display._measurePick.routeIds",
+        "routeWindows"
       ],
-      "notes": "Added 2026-08-12 — the single page that end-to-end exercises all the AVL Graph compose-layer fixes made that day: the GridGraph per-TMC yAxis-breakdown fix (grid_current section), the multi-measure Route Compare grammar (compare_years, measure: [\"speed\",\"travelTime\"]), the TMC_IDENTIFICATION_JOIN→META_JOIN metadata-join unification (every speed/length/aadt-bearing section here now attributes to NPMRDS_V6_TMC_META (983), not the removed 3464 join — see traversing-report-pages.md's attribution-line gotcha for how to verify this live), AND (later the same day) the GridGraph/single-route-BarGraph magnitude color-scale fix (rdylgn scheme replacing the 20-swatch route palette that produced 'confetti' coloring — grid_current/bar_weekday/bar_by_day/bar_by_month all affected, verified live via browser screenshot) plus the LineGraph tooltip fixes (getTooltipFormatFunc wired to yFormat so values round to 1 decimal instead of leaking full float precision; \"(Line Total)\" hidden for non-additive measures via the existing `fn: \"sum\"` vocabulary flag — both verified live via hover on line_current). `url` MUST keep `?routes=2207838` — this is a route_slot_group Dynamic Report (like one_week_study), and the bare slug only shows the Add-Routes entry-gate modal, not real content. No golden-corpus entry previously covered multi-measure Route Compare/Info Box or GridGraph on a real Dynamic Report page (golden_corpus_gridgraph exercises GridGraph but on a synthetic non-Dynamic-Report page, and predates the color-scale fix). 9 real panels (Map/LineGraph/RouteCompare/2x BarGraph/GridGraph/BarGraph — see the spec's own graphs array); one graph (peak-hour Bar Graph Summary) and one Route Compare panel (Current-Year-vs-its-own-peak-windows) were deliberately dropped as not rebuildable — see the spec's `_note` for the full history. Verified 2026-08-12: 0 console/page/SQL errors, 0 stillPending, all 9 sections rendering.",
-      "baselineCapturedAt": "2026-08-12",
-      "lastVerifiedAt": "2026-08-12",
+      "notes": "Added 2026-08-12 — the single page that end-to-end exercises all the AVL Graph compose-layer fixes made that day: the GridGraph per-TMC yAxis-breakdown fix (grid_current section), the multi-measure Route Compare grammar (compare_years, measure: [\"speed\",\"travelTime\"]), the TMC_IDENTIFICATION_JOIN→META_JOIN metadata-join unification (every speed/length/aadt-bearing section here now attributes to NPMRDS_V6_TMC_META (983), not the removed 3464 join — see traversing-report-pages.md's attribution-line gotcha for how to verify this live), AND (later the same day) the GridGraph/single-route-BarGraph magnitude color-scale fix (rdylgn scheme replacing the 20-swatch route palette that produced 'confetti' coloring — grid_current/bar_weekday/bar_by_day/bar_by_month all affected, verified live via browser screenshot) plus the LineGraph tooltip fixes (getTooltipFormatFunc wired to yFormat so values round to 1 decimal instead of leaking full float precision; \"(Line Total)\" hidden for non-additive measures via the existing `fn: \"sum\"` vocabulary flag — both verified live via hover on line_current). `url` MUST keep `?routes=2207838` — this is a route_slot_group Dynamic Report (like one_week_study), and the bare slug only shows the Add-Routes entry-gate modal, not real content. No golden-corpus entry previously covered multi-measure Route Compare/Info Box or GridGraph on a real Dynamic Report page (golden_corpus_gridgraph exercises GridGraph but on a synthetic non-Dynamic-Report page, and predates the color-scale fix). 9 real panels (Map/LineGraph/RouteCompare/2x BarGraph/GridGraph/BarGraph — see the spec's own graphs array) at capture time; a 10th, `bar_summary` (Bar Graph Summary, Speed, resolution:summary, one bar per year on the same 4 routes) was added 2026-08-13 replacing the still-unbuildable peak-hour version — see dynamic-reports-and-route-tags.md's dated section. One Route Compare panel (Current-Year-vs-its-own-peak-windows) were deliberately dropped as not rebuildable — see the spec's `_note` for the full history. Verified 2026-08-12: 0 console/page/SQL errors, 0 stillPending, all 9 sections rendering. Re-verified 2026-08-13 with `bar_summary` added: 0 console/page/SQL errors, all 10 sections rendering (4 bars on the new panel, matching the 4 assigned routes). Re-baselined 2026-08-14: migrated off routes[].weekdays onto graphs[]/routeWindows (dynamic-reports-and-route-tags.md's \"Per-route window overrides\" section) — this is the first real corpus coverage of the DIVERGENT routeWindows case (Current Year unrestricted vs. 1/2/3 Years Ago weekend-excluded, on map_years/line_current/compare_years/bar_summary), which had been silently dropped under the old scalar mechanism the whole time (confirmed via dms raw get: r2/r3/r4 now correctly carry the weekend exclusion, r1 does not).",
+      "baselineCapturedAt": "2026-08-14",
+      "lastVerifiedAt": "2026-08-14",
       "expectedValue": null
     }
   ]

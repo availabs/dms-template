@@ -364,6 +364,20 @@ MEASURE_NAMES = {
     "avg_speedlimit": "Average Speed Limit", "aadt": "AADT", "vmt": "VMT",
 }
 
+# The Spreadsheet-cell `formatFn` a measure's plain VALUE column should carry
+# in ANY Spreadsheet-shaped section (Info Box, Route Compare) — a single
+# source of truth so the two builders (info_box_templates.py,
+# route_compare_template.py) can't independently drift, the same class of bug
+# already found once for `join` (2026-08-13, ensure_info_box_traveltime_
+# template missed a join-drift fix its siblings got). Chart sections (Line/
+# Bar/Grid Graph, Route Map) format their axis/tooltip/legend values through
+# a completely SEPARATE mechanism (GraphComponent.jsx's getTooltipFormatFunc,
+# display.yAxis.format, Map's colorDomain quantile labels) that shares no code
+# with this dict — fixing one never fixes the other, by construction. Only
+# measures actually used in a live Spreadsheet-shaped column belong here;
+# omit a measure rather than guessing a format for one nothing renders yet.
+TABLE_FORMAT_BY_MEASURE = {"speed": "decimal_2", "travelTime": "minutes_clock"}
+
 # Old graph types whose renderer actually reads `report.colorRange` (the
 # `isColorfull: true` flag in transportNY's tmc_graphs/index.jsx GRAPH_TYPES
 # registry — confirmed against each component's own source, not just the

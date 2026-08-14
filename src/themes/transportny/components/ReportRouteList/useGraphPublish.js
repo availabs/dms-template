@@ -1,7 +1,23 @@
 import { useEffect, useMemo } from 'react';
 import { isEqual } from 'lodash-es';
 import { SELF_PARAM_KEY_SENTINEL, selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
-import { generateDateRange, generateEpochRange } from './utils';
+import { generateDateRange, generateEpochRange, timeOfDayToken, summarizeWeekdays } from './utils';
+
+// One route expanding into 2+ routeWindows variants needs a distinct label per variant (two
+// series sharing a name collapse into one — report-spec.md's "Route names are the only series
+// discriminator"). Reuses the exact wording RouteRow's own read-only summary line already shows
+// an author for a weekday mask (`summarizeWeekdays`) plus QuickControls' own time-of-day pill
+// token (`timeOfDayToken`), rather than inventing a third phrasing for the same two facts.
+// Returns the bare route name, unchanged, when the window has nothing to describe (the common,
+// single-variant case) — so a route with no override still gets a byte-identical label.
+function labelRouteVariant(routeName, weekdays, start, end) {
+  const parts = [];
+  const tod = timeOfDayToken(start, end);
+  if (tod !== 'all day') parts.push(tod);
+  const dow = summarizeWeekdays(weekdays);
+  if (dow) parts.push(dow);
+  return parts.length ? `${routeName} (${parts.join(', ')})` : routeName;
+}
 
 // Page-wide pageState key RRL broadcasts its route catalog to (see the effect at the bottom of
 // this file) — any graph's own QuickControls reads this directly, no second fetch. Exported so
@@ -13,18 +29,26 @@ export const ROUTE_CATALOG_PARAM_KEY = '__report_routes_catalog__';
 // golden-corpus.json) needs re-verifying — `node scripts/npmrds-reports/probe_corpus.mjs
 // --only <key>` before/after — see src/dms/skills/regression-testing-npmrds-reports.md.
 //
-// Design push #2 (2026-08-06): a route's weekday mask / time-of-day window and its graph
-// assignment both moved OFF the route and onto each GRAPH's own `display._measurePick`
-// (`weekdays`/`start`/`end`/`routeIds` — see MeasurePicker/composeMeasureConfig.js's
-// DEFAULT_PICK and QuickControls/index.jsx). This crosses a graph's own window against each of
-// ITS selected routes' own date-span/TMCs, instead of each route supplying an unconditional
-// window to every graph it feeds — the same route can now answer two different questions for
-// two different cards (e.g. AM Peak weekdays on one graph, PM Peak weekends on another).
-function transformReportRoutes(routes, graphWindow) {
+// Design push #2 (2026-08-06) moved a route's weekday mask / time-of-day window off the route
+// and onto the graph. `_measurePick.routeWindows` (this section) is the one and only home for
+// it now: `{ [route_comp_id]: [{weekdays, start, end}, ...] }`, one entry per route, always
+// written by report_build.mjs. Lets one graph's own assigned routes genuinely disagree (e.g. an
+// AM/PM/Off-Peak Bar Graph Summary, or a Route Compare comparing a peak sub-window against an
+// all-day baseline) instead of being forced uniform or silently dropped.
+//
+// An id's array can hold 2+ entries — the same underlying route shown more than once on one
+// graph, each under its own filter (e.g. the SAME "Current Year" route as both the AM bar and
+// the PM bar of a Bar Graph Summary, instead of minting two separate route_comp rows the way the
+// old tool did to work around not having this). Each entry expands into its OWN output series
+// (`labelRouteVariant` above), not just the first one read — `routeIds` itself still lists the
+// route once; how many series it becomes is entirely governed by this array's length. No legacy
+// scalar fallback — the only pages that matter are the Dynamic Report catalog templates
+// report_build.mjs builds, and every one of them gets rebuilt onto this shape as part of the
+// same change that introduces it (no transition window).
+function transformReportRoutes(routes, routeWindows) {
   if (!routes || routes.length < 1) {
     return;
   }
-  const { weekdays, start, end } = graphWindow || {};
 
   return routes
     .map(route => {
@@ -48,31 +72,50 @@ function transformReportRoutes(routes, graphWindow) {
       return { route, parsedTmcArray };
     })
     .filter(({ parsedTmcArray }) => Array.isArray(parsedTmcArray) && parsedTmcArray.length > 0)
-    .map(({ route, parsedTmcArray }) => {
-      // Generates the range based on the route's own date span, masked by the GRAPH's own
-      // weekday selection (not the route's — routes no longer carry one).
-      const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate, weekdays) : [];
-      // The GRAPH's own time-of-day window (plain "HH:mm" strings, no date prefix) — independent
-      // of the route's date span entirely, unlike the old per-route combined-string mechanism.
-      const epochArray = (start && end) ? generateEpochRange(start, end) : [];
+    .flatMap(({ route, parsedTmcArray }) => {
+      // A merged route entry carries `route_comp_ids` (every old comp id it absorbed — see the
+      // comment in useGraphPublish below); check all of them against routeWindows, same fallback
+      // order `routesByCompId` itself uses.
+      const compIds = Array.isArray(route.route_comp_ids) && route.route_comp_ids.length
+        ? route.route_comp_ids
+        : [route.route_comp_id];
+      const variants = compIds.map((id) => (id != null ? routeWindows?.[id] : null)).find(Boolean);
+      // No entry at all (a route report_build.mjs somehow didn't cover) means one unrestricted
+      // variant — same "absent means included" default the weekday mask already uses elsewhere.
+      const windows = Array.isArray(variants) && variants.length ? variants : [{}];
 
-      const groups = [
-        { op: "filter", col: "tmc", value: parsedTmcArray },
-        { op: "filter", col: "date", value: dateArray },
-      ];
+      return windows.map((window) => {
+        const { weekdays, start, end, color } = window || {};
 
-      if (epochArray.length > 0) {
-        groups.push({ op: "filter", col: "epoch", value: epochArray });
-      }
+        // Generates the range based on the route's own date span, masked by this variant's own
+        // weekday selection.
+        const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate, weekdays) : [];
+        // This variant's own time-of-day window (plain "HH:mm" strings, no date prefix) —
+        // independent of the route's date span entirely, unlike the old per-route combined-
+        // string mechanism.
+        const epochArray = (start && end) ? generateEpochRange(start, end) : [];
 
-      return {
-        label: route.name,
-        filters: { op: "AND", groups: groups },
-        // Rides through resolveComparisonVariants (buildUdaConfig.js) into every assigned
-        // graph's state.comparisonSeries.config, consumed there to build colorsByKey — see
-        // comparison-series-explicit-color.md.
-        ...(route.color ? { color: route.color } : {}),
-      };
+        const groups = [
+          { op: "filter", col: "tmc", value: parsedTmcArray },
+          { op: "filter", col: "date", value: dateArray },
+        ];
+
+        if (epochArray.length > 0) {
+          groups.push({ op: "filter", col: "epoch", value: epochArray });
+        }
+
+        return {
+          label: windows.length > 1 ? labelRouteVariant(route.name, weekdays, start, end) : route.name,
+          filters: { op: "AND", groups: groups },
+          // Rides through resolveComparisonVariants (buildUdaConfig.js) into every assigned
+          // graph's state.comparisonSeries.config, consumed there to build colorsByKey — see
+          // comparison-series-explicit-color.md. A variant's own `color` (routeWindows) wins over
+          // the route's base color when set — otherwise every expanded variant of one route (e.g.
+          // AM/PM/Off-Peak, all "Current Year") would render identically, and there'd be no way to
+          // keep "AM" visually consistent across the different sections it appears on.
+          ...((color ?? route.color) ? { color: color ?? route.color } : {}),
+        };
+      });
     });
 }
 
@@ -136,9 +179,7 @@ function findSelfBoundGraphs(sectionList) {
         sectionId: String(section.trackingId || section.id),
         kind,
         routeIds: Array.isArray(pick.routeIds) ? pick.routeIds : [],
-        weekdays: pick.weekdays || {},
-        start: pick.start || '',
-        end: pick.end || '',
+        routeWindows: pick.routeWindows || null,
       };
     })
     .filter(Boolean)
@@ -179,12 +220,12 @@ export function useGraphPublish({ item, isEdit, routes, pageState, setActionPara
       const ids = Array.isArray(r.route_comp_ids) && r.route_comp_ids.length ? r.route_comp_ids : [r.route_comp_id];
       ids.forEach((id) => { if (id != null) routesByCompId.set(id, r); });
     });
-    graphs.forEach(({ sectionId, paramKey, routeIds, weekdays, start, end }) => {
+    graphs.forEach(({ sectionId, paramKey, routeIds, routeWindows }) => {
       // A `routeIds` entry whose route was removed from the report simply resolves to nothing
       // here and is silently dropped — no cleanup effect, no rewrite of the graph's own stored
       // pick (see findSelfBoundGraphs's comment above).
       const selectedRoutes = (routeIds || []).map((id) => routesByCompId.get(id)).filter(Boolean);
-      const next = transformReportRoutes(selectedRoutes, { weekdays, start, end }) || [];
+      const next = transformReportRoutes(selectedRoutes, routeWindows) || [];
       // setActionParam stores an already-array value as-is (see its `Array.isArray(value)
       // ? value : [value]` check) — `values` IS the variants list here, not a 1-element
       // wrapper around it. Reading `.values?.[0]` (the single-scalar convention most other
