@@ -155,6 +155,8 @@ const DYNAMIC_REPORT_FILTERS = [
 // ── args ───────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
 const VALUE_FLAGS = new Set(['--update', '--from-page', '--out', '--note']);
+// `--replace` is a boolean flag (no value) — falls through to the generic
+// `a.startsWith('--')` branch below, same as `--publish`/`--dry-run`/`--summary`.
 const flags = new Set();
 const values = {};
 const positional = [];
@@ -174,6 +176,7 @@ function usage() {
   console.error(`usage:
   node scripts/npmrds-reports/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
   node scripts/npmrds-reports/report_build.mjs <spec.json> --update <page> [--note "..."]
+  node scripts/npmrds-reports/report_build.mjs <spec.json> --replace [--publish]
   node scripts/npmrds-reports/report_build.mjs --from-page <page> [--out <spec.json>]
 
   --summary        print a plain-language description of what the spec will build; no writes, no Vite boot
@@ -184,6 +187,13 @@ function usage() {
                     revision edits sections in place instead of minting a duplicate page. The page's title
                     updates if changed; its slug (URL) never does, even then.
   --note "..."     annotate this --update in the report's revision log (why the spec changed)
+  --replace        delete any existing page at this spec's target slug, then build fresh — same page id
+                    and reports_snap_2 row this template would otherwise reconcile via --update, but
+                    starting clean instead of reconciling. Use when a structural change (a retired
+                    framework section, a renamed key) means --update's sweep wouldn't clean up what's
+                    there, and re-authoring every field by hand isn't worth it — mutually exclusive with
+                    --update. The new page's id changes; anything that linked to the old id (not the
+                    slug) breaks.
   --from-page <page>  reverse a live page (+ its reports_snap_2 row) back into a spec, printed to stdout
                     (or written to --out <path>). Use to bootstrap a spec for a page --update hasn't
                     touched yet, or to check a page hasn't drifted from its last stored spec.
@@ -197,6 +207,7 @@ function usage() {
 const SUMMARY_ONLY = flags.has('--summary');
 const DRY_RUN = flags.has('--dry-run');
 const DO_PUBLISH = flags.has('--publish');
+const REPLACE = flags.has('--replace');
 
 function fail(msg) {
   console.error(`\nSPEC ERROR: ${msg}\n`);
@@ -223,6 +234,16 @@ function findSnapRow(pageId) {
   const res = dms(['dataset', 'query', String(REPORTS_SNAP_SOURCE_ID),
     '--view', String(REPORTS_SNAP_VIEW_ID), '--filter', `report_id=${pageId}`, '--limit', '1']);
   return res?.items?.[0] || null;
+}
+
+// The page slug this spec builds to, absent an explicit `--update` target —
+// shared by the fresh-create branch and the `--replace` preflight above it,
+// so the two can never compute a different slug for the same spec (which
+// would make --replace delete the wrong page, or fail to delete the right
+// one).
+function computeTargetSlug() {
+  const parentSlug = spec.parent || DEFAULT_PARENT_SLUG;
+  return spec.slug || `${parentSlug}/${String(spec.title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
 }
 
 // Strips the `_`-prefixed working fields this script adds onto the spec
@@ -883,6 +904,52 @@ if (UPDATE_PAGE) {
     existingFilters: rawPage?.data?.filters || [],
   };
   console.log(`reconciling into existing page ${pageId} (${updateCtx.slug})`);
+}
+
+// ── --replace preflight: delete any existing page at this spec's target slug,
+// so the build below always takes the fresh-create path — never --update's
+// reconcile path, whose section-deletion sweep only covers AVL Graph/Map/
+// Spreadsheet types (see the comment above it) and so won't clean up e.g. a
+// retired framework section (the title-block section retired 2026-08-17) left
+// over from a page an older version of this script built. ──────────────────
+if (REPLACE) {
+  if (UPDATE_PAGE) fail('--replace and --update are mutually exclusive — --replace deletes and rebuilds fresh, --update reconciles in place.');
+  const targetSlug = computeTargetSlug();
+  // `dms page show` exits non-zero (throws, via execFileSync) for a slug that
+  // doesn't exist yet — a normal, expected case here (the spec's first-ever
+  // build), not a real error, so this is deliberately swallowed rather than
+  // passed to `fail()` the way a genuine --update lookup failure is above.
+  let existing = null;
+  try { existing = dms(['page', 'show', targetSlug, '--pattern', PATTERN]); } catch { /* not found */ }
+  if (existing?.id) {
+    // `page delete` only deletes the page row itself — it does NOT cascade to the
+    // page's own `reports_snap_2` row (a completely separate dataset/type, found the
+    // same way `--update`'s preflight above does). Missing this the first time
+    // --replace shipped left every rebuilt report with an orphaned snap row still
+    // carrying the OLD report_id — invisible on the page itself, but very visible on
+    // `/reports`, whose catalog cards are populated by querying `reports_snap_2`
+    // directly (by tag, not by page reference) and so render BOTH the orphan and the
+    // fresh row as separate cards for the same report. Found live 2026-08-17 the first
+    // time all 12 templates were --replace'd in one session — 16 orphaned rows
+    // accumulated (some templates had 3-4, going back to before --replace even
+    // existed) before this was caught and cleaned up by hand. Delete it BEFORE the
+    // page itself, while `existing.id` still resolves it.
+    const staleSnap = findSnapRow(existing.id);
+    // `--dry-run`'s own contract ("no writes") wins over --replace's delete —
+    // report the deletion that WOULD happen without actually doing it, same
+    // as every other write below being skipped under DRY_RUN.
+    if (DRY_RUN) {
+      console.log(`--replace --dry-run: would delete existing page ${existing.id} (${targetSlug})`
+        + (staleSnap ? ` and its reports_snap_2 row ${staleSnap.id}` : ''));
+    } else {
+      if (staleSnap) dms(['raw', 'delete', APP, REPORTS_SNAP_TYPE, String(staleSnap.id)]);
+      dms(['page', 'delete', String(existing.id), '--pattern', PATTERN]);
+      console.log(`--replace: deleted existing page ${existing.id} (${targetSlug})`
+        + (staleSnap ? ` and its reports_snap_2 row ${staleSnap.id}` : ' (no reports_snap_2 row found)'));
+    }
+  } else {
+    console.log(`--replace: no existing page at ${targetSlug} yet — building fresh`);
+  }
 }
 
 const lowConf = lowConfidenceRoutes(spec);
@@ -1573,7 +1640,7 @@ if (updateCtx) {
   const parentId = parent?.id;
   if (!parentId) fail(`parent page "${parentSlug}" not found — create it first, or set \`parent\` in the spec.`);
 
-  slug = spec.slug || `${parentSlug}/${String(spec.title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+  slug = computeTargetSlug();
   // sidebar/sidebarHideInView/draft_section_groups all copied straight off the
   // template row — see the correction note above `clonedSection` for why this
   // must stay a copy, never a re-hardcoded literal.
