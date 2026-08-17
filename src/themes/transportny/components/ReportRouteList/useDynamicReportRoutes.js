@@ -104,6 +104,13 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
         route_comp_id: slot.route_comp_id,
         color: slot.color,
         name: slot.isPlaceholderName ? (catalogRow.name ?? slot.name) : slot.name,
+        // The resolved catalog row's OWN name — the real corridor ("NY-9D NB"), as opposed to
+        // `name` above (the slot's per-variant label, "Current Year"/"1 Year Ago"). Kept as a
+        // separate field rather than folded into `name` so a consumer that wants "which physical
+        // route is this" (ReportPageHeader's routes disclosure, grouping variants under their
+        // shared base route) can read it without disturbing `name`'s existing, load-bearing
+        // slot-label behavior above.
+        catalogRouteName: catalogRow.name,
       };
     })
     .filter(Boolean);

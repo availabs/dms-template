@@ -2,6 +2,8 @@ import { useEffect, useMemo } from 'react';
 import { isEqual } from 'lodash-es';
 import { SELF_PARAM_KEY_SENTINEL, selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { generateDateRange, generateEpochRange, timeOfDayToken, summarizeWeekdays } from './utils';
+import { resolvedRouteLabel } from './relativeDateResolution';
+import { routeSlotGroupKey } from './useDynamicReportRoutes';
 
 // One route expanding into 2+ routeWindows variants needs a distinct label per variant (two
 // series sharing a name collapse into one — report-spec.md's "Route names are the only series
@@ -104,8 +106,13 @@ function transformReportRoutes(routes, routeWindows) {
           groups.push({ op: "filter", col: "epoch", value: epochArray });
         }
 
+        // `resolvedRouteLabel` swaps a year-relative authored name ("Current Year", "1 Year
+        // Ago") for the real resolved calendar year(s) once a formula-derived route's dates are
+        // known — see its own doc comment. Falls back to the bare authored name for every other
+        // route, byte-identical to before.
+        const routeLabel = resolvedRouteLabel(route);
         return {
-          label: windows.length > 1 ? labelRouteVariant(route.name, weekdays, start, end) : route.name,
+          label: windows.length > 1 ? labelRouteVariant(routeLabel, weekdays, start, end) : routeLabel,
           filters: { op: "AND", groups: groups },
           // Rides through resolveComparisonVariants (buildUdaConfig.js) into every assigned
           // graph's state.comparisonSeries.config, consumed there to build colorsByKey — see
@@ -259,10 +266,22 @@ export function useGraphPublish({ item, isEdit, routes, pageState, setActionPara
     const catalog = routes.map((r) => ({
       route_comp_id: r.route_comp_id,
       name: r.name,
+      // Carried alongside name/startDate/endDate so a consumer can run this same catalog entry
+      // through `resolvedRouteLabel` (relativeDateResolution.js) and get the identical resolved-
+      // year label the chart legend shows for a year-relative route — ReportPageHeader's routes
+      // disclosure does exactly this, so it doesn't disagree with the chart under it.
+      dateFormula: r.dateFormula,
       color: r.color,
       startDate: r.startDate,
       endDate: r.endDate,
       tmc_array: r.tmc_array,
+      // Which routes are really just date/settings VIEWS of the SAME physical route the viewer
+      // picked once (see routeSlotGroupKey's own doc comment) — ReportPageHeader's routes
+      // disclosure groups by this key and labels the group with `baseRouteName` (the real
+      // corridor's own name) rather than repeating each variant's date-relative `name`
+      // ("Current Year") with no indication of which road it even is.
+      groupKey: routeSlotGroupKey(r),
+      baseRouteName: r.catalogRouteName,
     }));
     const current = pageState?.filters?.find(f => f.searchKey === ROUTE_CATALOG_PARAM_KEY && f.type === 'action')?.values;
     if (isEqual(current, catalog)) return;

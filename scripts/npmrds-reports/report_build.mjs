@@ -237,7 +237,7 @@ function stripInternal(obj) {
 // just enough granularity to be useful rule-distilling material later.
 function diffSpecs(oldSpec, newSpec) {
   const changes = [];
-  for (const key of ['title', 'description', 'intro', 'slug', 'parent']) {
+  for (const key of ['title', 'description', 'slug', 'parent']) {
     if (JSON.stringify(oldSpec?.[key]) !== JSON.stringify(newSpec?.[key])) changes.push(`${key} changed`);
   }
   const oldGraphs = new Map((oldSpec?.graphs || []).map(g => [g.key, g]));
@@ -404,18 +404,6 @@ function runFromPage(pageArg, outPath) {
         if ((storedGraph.caption || '') !== (state.display?.description || '')) { drifted = true; break; }
       }
     }
-    // Title-block content drift: heading or intro paragraph hand-edited
-    // without adding/removing the section itself.
-    if (!drifted && specKeyMap?.title_block) {
-      const titleBlockSection = sections.find(s => s.data.trackingId === specKeyMap.title_block);
-      if (!titleBlockSection) drifted = true;
-      else {
-        if ((stored.title || '') !== (titleBlockSection.data.title || '')) drifted = true;
-        let elData = {};
-        try { elData = JSON.parse(titleBlockSection.data.element['element-data']); } catch { /* leave {} */ }
-        if (!drifted && (stored.intro || '') !== lexicalTreeToText(elData.text)) drifted = true;
-      }
-    }
     if (!drifted) {
       console.error(`(page ${pageId} matches its stored spec exactly — echoing it back, no live reconstruction needed)`);
       writeSpecOut(stored, outPath);
@@ -533,20 +521,6 @@ function runFromPage(pageArg, outPath) {
     };
   });
 
-  // Title block: only recoverable via the stored key map (a page predating
-  // this feature, or one never built by report_build.mjs at all, has no
-  // `title_block` key — left unreconstructed rather than guessed).
-  let intro;
-  if (specKeyMap?.title_block) {
-    const titleBlockSection = sections.find(s => s.data.trackingId === specKeyMap.title_block);
-    if (titleBlockSection) {
-      let elData = {};
-      try { elData = JSON.parse(titleBlockSection.data.element['element-data']); } catch { /* leave {} */ }
-      const text = lexicalTreeToText(elData.text);
-      if (text) intro = text;
-    }
-  }
-
   // `route_comp_id` -> spec-local id, built from ALL entries (slot or concrete)
   // before the main pass — a route's `derivedFromRoute` may point at either
   // kind of sibling, and forward references (deriving from a route declared
@@ -628,7 +602,6 @@ function runFromPage(pageArg, outPath) {
     slug: page.url_slug,
     ...(isDynamicReport ? { dynamicReport: true } : {}),
     ...(snap.data.description ? { description: snap.data.description } : {}),
-    ...(intro ? { intro } : {}),
     ...(snap.data.tags ? { tags: snap.data.tags } : {}),
     ...(snap.data.difficulty !== undefined ? { difficulty: snap.data.difficulty } : {}),
     graphs, routes,
@@ -825,7 +798,6 @@ if (SUMMARY_ONLY) {
   console.log(`\n${spec.title}`);
   if (spec.slug) console.log(`  slug: ${spec.slug}`);
   if (spec.request) console.log(`\nClient request:\n  "${spec.request}"`);
-  if (spec.intro) console.log(`\nIntro (title-block section):\n  "${spec.intro}"`);
   console.log(`\nRoutes (${spec.routes.length} instance${spec.routes.length === 1 ? '' : 's'}):`);
   for (const r of spec.routes) {
     const window = r.startDate && r.endDate
@@ -1047,11 +1019,14 @@ try {
     if (g._invert) {
       state.comparisonSeries.combine = { ...(state.comparisonSeries.combine || {}), invert: true };
     }
-    if (g.title) state.display.title = { ...(state.display.title || {}), title: g.title };
-    // Renders as a subtitle line under the chart title (GraphComponent.jsx's
-    // GraphTitle) — already wired on the render side (and already written, to
-    // a dead end, by convert_old_reports.py's old-caption handling); this is
-    // the missing write path from a fresh spec-built graph.
+    // No in-card chart title: the Section's own `title` (graphSectionData,
+    // rendered by the generic section-header band — the same band Quick
+    // Controls attaches to) is the one place a graph's title shows now.
+    // Writing it into state.display.title too used to double it (once above
+    // the card, once inside it) — see report-route-ui-parity-gaps.md.
+    // `state.display.description` (below) is a different field — the
+    // difference-mode subtitle — and keeps rendering inside the card via
+    // GraphComponent.jsx's GraphTitle.
     if (g.caption) {
       state.display.description = g.caption;
     }
@@ -1403,7 +1378,7 @@ function templateFrameworkSections() {
   return sections;
 }
 
-let pageId, slug, parentRef, graphTrackingIds, sectionDatas, titleBlockTrackingId;
+let pageId, slug, parentRef, graphTrackingIds, sectionDatas;
 
 // CORRECTION 2026-08-07 (same day, after Ryan pushed back on maintaining
 // page-scaffolding facts twice across this script and convert_old_reports.py):
@@ -1471,58 +1446,6 @@ function graphSectionData(g, i, trackingId) {
   };
 }
 
-// ── title-block section (Gap 3) ─────────────────────────────────────────────
-// A generic "lexical" (Rich Text) section, reusing the section's own `title`
-// (rendered by every section's header, not something new) plus a body
-// paragraph for `spec.intro`. Always built — even with no `intro` — so every
-// report gets a visible heading; today `item.title` on the page itself is
-// never rendered anywhere in view.jsx.
-//
-// The read-only RichtextView component requires `text` to already be a
-// Lexical tree object ({root:{children:[...]}}) — it checks `text?.root`
-// directly and renders nothing for a bare string (only the *edit* component
-// auto-upgrades plain strings via its own textToLexicalJSON). So build the
-// tree ourselves, matching the exact node shape the editor itself emits
-// (ui/components/lexical/index.jsx's textToLexicalJSON), split on blank
-// lines into paragraphs (that helper only ever makes one).
-function textToLexicalTree(text) {
-  const paragraphs = String(text || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-  const children = (paragraphs.length ? paragraphs : ['']).map(p => ({
-    children: [{ detail: 0, format: 0, mode: 'normal', style: '', text: p, type: 'text', version: 1 }],
-    direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1,
-  }));
-  return { root: { children, direction: 'ltr', format: '', indent: 0, type: 'root', version: 1 } };
-}
-
-// Inverse of textToLexicalTree, for --from-page: flattens paragraph text
-// nodes back to a plain string. Only faithful for trees this script itself
-// wrote (or the plain single-paragraph shape the editor's own
-// textToLexicalJSON produces) — a hand-formatted paragraph (bold, links,
-// multiple runs) still flattens to readable text, just without the
-// formatting, which is fine for drift detection and a reconstructed spec.
-function lexicalTreeToText(tree) {
-  const paragraphs = (tree?.root?.children || [])
-    .map(p => (p.children || []).map(c => c.text || '').join(''));
-  return paragraphs.join('\n\n');
-}
-
-function titleBlockSectionData(trackingId) {
-  return {
-    type: COMPONENT_TYPE,
-    group: 'default',
-    title: spec.title,
-    parent: parentRef,
-    trackingId,
-    element: {
-      'element-type': 'lexical',
-      'element-data': JSON.stringify({
-        bgColor: 'rgba(0,0,0,0)', isCard: '', showToolbar: false,
-        text: textToLexicalTree(spec.intro || ''),
-      }),
-    },
-  };
-}
-
 if (updateCtx) {
   // ── reconcile into the existing page ──────────────────────────────────
   ({ pageId, slug } = updateCtx);
@@ -1532,8 +1455,7 @@ if (updateCtx) {
   // in place); new keys mint one. Keys dropped from the spec are handled
   // below by diffing against the section list itself, not this map.
   graphTrackingIds = spec.graphs.map(g => updateCtx.oldKeyMap[g.key] || randomUUID());
-  titleBlockTrackingId = updateCtx.oldKeyMap['title_block'] || randomUUID();
-  const keptTrackingIds = new Set([...graphTrackingIds, titleBlockTrackingId]);
+  const keptTrackingIds = new Set(graphTrackingIds);
 
   // An Info Box graph is ALSO element-type "Spreadsheet" (unlike AVL Graph/Map,
   // which are unambiguous): exclude any Spreadsheet section this revision's OLD
@@ -1571,9 +1493,8 @@ if (updateCtx) {
   // that change still carries its own frozen copy — untouched by this reconcile
   // (it's excluded from the deletion sweep below the same way it always was),
   // per that task's explicit "don't retroactively touch existing pages" decision.
-  const titleBlockData = titleBlockSectionData(titleBlockTrackingId);
   const graphSectionDatasList = spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i]));
-  sectionDatas = [...frameworkEntries.map(e => e.data), titleBlockData, ...graphSectionDatasList];
+  sectionDatas = [...frameworkEntries.map(e => e.data), ...graphSectionDatasList];
 
   let created = 0, updated = 0, deleted = 0;
   for (const entry of frameworkEntries) {
@@ -1586,15 +1507,6 @@ if (updateCtx) {
       if (!res?.id) fail(`failed to create the "${entry.elementType}" framework section.`);
       created++;
     }
-  }
-  const titleBlockExisting = updateCtx.sections.find(s => s.data?.trackingId === titleBlockTrackingId);
-  if (titleBlockExisting) {
-    dms(['section', 'update', String(titleBlockExisting.id)], titleBlockData);
-    updated++;
-  } else {
-    const res = dms(['section', 'create', String(pageId), '--pattern', PATTERN], titleBlockData);
-    if (!res?.id) fail('failed to create the title-block section.');
-    created++;
   }
   for (const [i, g] of spec.graphs.entries()) {
     const tid = graphTrackingIds[i];
@@ -1610,11 +1522,12 @@ if (updateCtx) {
     }
   }
   // Graph sections whose trackingId this revision no longer references were
-  // dropped — delete them rather than leaving orphans. The title-block
-  // section is never dropped (always built), so it needs no equivalent check
-  // here — and deliberately isn't swept by a generic "any lexical section not
-  // in the key map" rule, which would risk deleting a Rich Text block an
-  // author added by hand elsewhere on the page. AVL Graph/Map are unambiguous
+  // dropped — delete them rather than leaving orphans. Deliberately isn't
+  // swept by a generic "any lexical section not in the key map" rule, which
+  // would risk deleting a Rich Text block an author added by hand elsewhere
+  // on the page (this also means a pre-existing page's old title-block
+  // section, from before that concept was retired, is left alone here rather
+  // than auto-deleted — see report-route-ui-parity-gaps.md). AVL Graph/Map are unambiguous
   // element-types (an author-added one is fair game for the same sweep, same
   // as before); Spreadsheet is NOT — it's also the Add-a-Route section's own
   // element-type, so only count a Spreadsheet section as a graph section here
@@ -1682,10 +1595,8 @@ if (updateCtx) {
 
   parentRef = JSON.stringify({ id: String(pageId), ref: `${APP}+${PAGE_TYPE}` });
   graphTrackingIds = spec.graphs.map(() => randomUUID());
-  titleBlockTrackingId = randomUUID();
   sectionDatas = [
     ...templateFrameworkSections().map(tmpl => clonedSection(tmpl, randomUUID())),
-    titleBlockSectionData(titleBlockTrackingId),
     ...spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i])),
   ];
   const draftIds = sectionDatas.map(sd => dms(['section', 'create', String(pageId), '--pattern', PATTERN], sd)?.id);
@@ -1761,10 +1672,7 @@ const routeEntries = spec.routes.map((r, i) => {
 });
 
 const cleanSpec = stripInternal(spec);
-const specKeyMap = Object.fromEntries([
-  ['title_block', titleBlockTrackingId],
-  ...spec.graphs.map((g, i) => [g.key, graphTrackingIds[i]]),
-]);
+const specKeyMap = Object.fromEntries(spec.graphs.map((g, i) => [g.key, graphTrackingIds[i]]));
 
 // Catalog metadata (`/reports`'s category tiles, e.g. `converted_reports/reports` id
 // 2208581) — read directly from each Card section's `filterGroups`: every one of the 5
