@@ -61,6 +61,7 @@
             <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./events.html">Events</a>
             <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./station-info.html">Station Info</a>
             <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./djs.html">DJs</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./airwaves.html">Airwaves</a>
           </div>
 
           <!-- rightMenuContainer · [UserMenu, ThemeModeToggle, NavRightStyleWidget]
@@ -306,22 +307,14 @@
                   Region. Real DJs, real records, no algorithm. Tune
                   in at 90.9 FM or stream below.
                 </p>
-                <div class="mt-7 flex flex-wrap items-center gap-3">
-                  <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
-                                 bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
-                                 font-[family-name:var(--font-sans)] text-[13px] font-medium">
-                    <!-- icon: Play -->
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
-                    Listen live
-                  </button>
-                  <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
-                                 border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
-                                 font-[family-name:var(--font-sans)] text-[13px] font-medium">
-                    See the schedule
-                    <!-- icon: ArrowRight -->
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-                  </button>
-                </div>
+                <!-- The "Listen live" / "See the schedule" button pair was removed
+                   2026-08-16. Both were already answered elsewhere on the page and
+                   read as duplicates once the rail was in place: the play control
+                   lives on the now-playing block in the rail (which is on EVERY
+                   page, so the station never needed re-announcing here), and the
+                   schedule is one click away in both the top nav and the "Full
+                   schedule →" link on the strip immediately below. The hero is the
+                   station's NAME; it does not also need to be a launchpad. -->
               </section>
 
               <!-- ============================================================

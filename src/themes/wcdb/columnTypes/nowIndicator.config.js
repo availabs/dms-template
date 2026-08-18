@@ -12,6 +12,12 @@ import { NowIndicatorEdit, NowIndicatorView } from "./nowIndicator"
 export default {
     EditComp: NowIndicatorEdit,
     ViewComp: NowIndicatorView,
+    // Author controls, flattened into the Card's per-column toolbar by the
+    // cardControls registry — so the label is reachable without a seed script.
+    cardControls: [
+        { type: 'input', inputType: 'text', label: 'Pill Label', key: 'pillLabel' },
+        { type: 'input', inputType: 'text', label: 'Meta Prefix', key: 'metaPrefix' },
+    ],
     cardHints: {
         // Picker ships new instances with the header hidden — there is no
         // header to render here, just the pill + meta. Runtime behaviour is

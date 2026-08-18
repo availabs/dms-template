@@ -7,9 +7,12 @@
 // `@keyframes wcdb-pulse-dot` from there.
 export const nowIndicatorTheme = {
     pillLabel: "On Air",
-    pillFontSize: 9,
-    pillPadding: "2px 7px",
-    metaFontSize: 10,
+    // One step up from 9/10 (2026-08-16): on the rail this sits alone on the
+    // now-playing block's label row with vertical room to spare, and at the old
+    // size it read as fine print rather than as the block's own heading.
+    pillFontSize: 10,
+    pillPadding: "3px 9px",
+    metaFontSize: 11,
     metaPrefix: "NOW ·",
 };
 

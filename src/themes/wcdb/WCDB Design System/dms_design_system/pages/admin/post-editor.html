@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB Admin · Edit post</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../_shared.css">
+</head>
+<body>
+
+<!-- ============================================================
+     LAYOUT · app — the admin variant (skill §3.3: "SideNav visible,
+     narrower content gutters, denser"). This is the second Layout
+     style the brand ships; `default` is the public cutaway.
+
+     No live rail here: that is public-site chrome, and an editing
+     surface is a working context, not a listening one.
+     ============================================================ -->
+<div data-dms-layout="app"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <!-- ============================================================
+       SIDENAV · theme.sidenav.styles[0] "wcdb"
+       Keys are the ones SideNav.jsx actually reads — see
+       ui/components/SideNav.theme.jsx and the warning in
+       translating-design-system-to-dms-theme.md §3.1: a plausible-looking
+       invented key (`wrapper`, `inner`, `menu`) silently no-ops.
+         layoutContainer1  lg:pl-48          — pushes the content over
+         layoutContainer2  fixed inset-y-0   — the rail itself (w-48)
+         sidenavWrapper / logoWrapper / itemsWrapper / bottomMenuWrapper
+         navitemSide / navitemSideActive / menuIconSide / sectionHeading
+       ============================================================ -->
+  <div class="lg:pl-48">
+
+    <div class="fixed inset-y-0 left-0 w-48 max-lg:hidden z-40">
+      <div class="flex flex-col w-48 h-full bg-[var(--bg-0)] border-r border-[var(--line-1)]">
+
+        <div class="flex items-center h-14 px-3 pt-2">
+          <a href="../home.html" class="flex items-center">
+            <img src="../../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-9 wcdb-logo-img">
+          </a>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-2 py-5">
+          <div class="px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)]">Station admin</div>
+          <div class="flex flex-1 flex-col gap-0.5 mt-1">
+            <a href="./playlist.html" class="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: Note -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="15" r="2.5"/><path d="M9.5 18V6l10-2v11"/></svg></span>
+              Playlist
+            </a>
+            <a href="./schedule.html" class="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: Calendar -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span>
+              Schedule
+            </a>
+            <a href="./djs.html" class="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: User -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></span>
+              DJs
+            </a>
+            <a href="./events.html" class="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-1)]"><!-- icon: Star -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.4l6-.8z"/></svg></span>
+              Events
+            </a>
+            <a href="./airwaves.html" data-active="true" class="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-1)] bg-[var(--accent-soft)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-1)]"><!-- icon: Newspaper -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v15H5a1 1 0 0 1-1-1z"/><path d="M17 8h3v10a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4"/></svg></span>
+              Airwaves
+            </a>
+          </div>
+
+          <div class="my-5 border-t border-[var(--line-1)]"></div>
+          <div class="px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)]">Public site</div>
+          <a href="../home.html" class="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors">
+            <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: ViewPage -->
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            View site
+          </a>
+        </div>
+
+        <div class="mt-auto border-t border-[var(--line-1)] px-3 py-3 flex items-center gap-2">
+          <span class="inline-flex items-center justify-center size-8 rounded-full bg-[var(--bg-3)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.06em] uppercase text-[color:var(--ink-2)] shrink-0">AM</span>
+          <span class="min-w-0 flex-1">
+            <span class="block font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] truncate">Alex Muro</span>
+            <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">Webmaster</span>
+          </span>
+          <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                  class="shrink-0 inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+            <!-- icon: Moon -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- topnavWrapper / topnavMobileContainer — the rail collapses to a bar
+         below lg, which is the only place SideNav's topnav keys are used. -->
+    <div class="lg:hidden w-full h-14 flex items-center px-4 bg-[var(--bg-0)] border-b border-[var(--line-1)] sticky top-0 z-40">
+      <a href="../home.html" class="flex items-center">
+        <img src="../../assets/logo_white.svg" alt="WCDB" class="h-9 wcdb-logo-img">
+      </a>
+      <span class="ml-3 pl-3 border-l border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Admin</span>
+      <div class="ml-auto flex items-center gap-2">
+        <button type="button" data-mockup-theme-toggle aria-label="Light mode"
+                class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)]">
+          <!-- icon: Moon -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)]" aria-label="Menu">
+          <!-- icon: Menu -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="relative isolate flex min-h-svh w-full">
+      <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen min-w-0">
+        <div class="flex flex-1 items-start w-full min-w-0">
+          <div class="flex-1 flex flex-col min-w-0">
+
+            <!-- ============================================================
+                 LAYOUTGROUP · content — the only group on an admin page.
+                 With a persistent SideNav the content hugs the rail
+                 (mr-auto, never mx-auto) per skill §7.3.1.
+                 ============================================================ -->
+            <div data-dms-group="content"
+                 class="w-full flex-1 flex flex-row p-2 min-w-0">
+              <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] px-4 pt-3 min-h-[200px] min-w-0 mr-auto">
+
+              <!-- ============================================================
+                   SECTION · lexical:page-header
+                   Breadcrumb back to the list, the post's own title, and the
+                   two controls that decide what happens to it. Save and Publish
+                   are SEPARATE: saving a draft and making it public are
+                   different decisions, and collapsing them into one button is
+                   how a half-written post ends up on the site.
+                   ============================================================ -->
+              <section data-dms-section="lexical:page-header" class="pt-1 pb-5">
+                <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)] mb-2">
+                  <a href="./airwaves.html" class="hover:text-[color:var(--ink-2)] transition-colors">Airwaves</a>
+                  &nbsp;&rsaquo;&nbsp; Edit post
+                </div>
+                <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+                  <h1 class="font-[family-name:var(--font-display)] italic text-[clamp(28px,3vw,38px)] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-1">
+                    Six hours in Studio B
+                  </h1>
+                  <span class="inline-flex items-center rounded-full bg-[var(--on-air-soft)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase font-semibold text-[var(--on-air)]">Published</span>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">Saved 2 minutes ago</span>
+                  <div class="ml-auto flex items-center gap-2">
+                    <a href="../airwaves.html" class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] px-4 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">Preview</a>
+                    <button class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] px-4 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">Save draft</button>
+                    <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-sans)] text-[13px] font-medium hover:opacity-90 transition-opacity">Update post</button>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:editor
+                   TWO columns, and the split is deliberate: the left column is
+                   the post as a reader will meet it (image, title, dek, body),
+                   the right is everything ABOUT the post (where it files, when
+                   it goes out, who wrote it). Mixing the two is what makes most
+                   CMS editors feel like a form rather than a piece of writing.
+
+                   Every field here is an ordinary Card cell in the live build —
+                   `text`, `textarea`, `select`, and an `image` column whose
+                   empty state is the upload widget the column type already
+                   ships. No new primitives.
+                   ============================================================ -->
+              <section data-dms-section="card:editor" class="mb-6">
+                <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4">
+
+                  <!-- ── the post itself ──────────────────────────────── -->
+                  <div class="rounded-[18px] bg-[var(--card-bg)] p-7 flex flex-col gap-6">
+
+                    <!-- FEATURED IMAGE. First field, because on this blog it is
+                         not optional decoration — the public grid and the rail
+                         are both built on it. Shown at the ratio the grid uses
+                         so an editor judges the crop they will actually get. -->
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-2">Featured image</div>
+                      <div class="relative aspect-[16/9] rounded-[14px] overflow-hidden bg-[var(--bg-3)] group">
+                        <img src="../../assets/photos/in-studio-thelastmiller.jpg" alt="" class="w-full h-full object-cover object-center">
+                        <div class="absolute inset-0 bg-[rgba(10,10,10,0.55)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button class="inline-flex items-center gap-2 rounded-full bg-[#f5f5f5] text-[#0a0a0a] px-4 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Replace</button>
+                          <button class="inline-flex items-center gap-2 rounded-full border border-[rgba(245,245,245,0.4)] text-[#f5f5f5] px-4 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">Remove</button>
+                        </div>
+                        <!-- The chip states the contract: this crop is what the
+                             public grid will show. -->
+                        <span class="wcdb-chip" style="--chip: var(--card-bg)">16&#8202;:&#8202;9 &middot; as the grid crops it</span>
+                      </div>
+                      <div class="mt-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">
+                        Landscape reads best. A post with no image still publishes — the grid falls back to a generated gradient.
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-2">Title</div>
+                      <input type="text" value="Six hours in Studio B with The Last Miller"
+                             class="w-full px-4 py-3 rounded-[12px] bg-transparent border border-[var(--line-2)] font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)] focus:outline-none focus:border-[var(--line-3)]">
+                    </div>
+
+                    <div>
+                      <div class="flex items-baseline justify-between mb-2">
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">Slug</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">wcdbfm.com/airwaves/&hellip;</div>
+                      </div>
+                      <input type="text" value="six-hours-in-studio-b-with-the-last-miller"
+                             class="w-full px-4 py-2.5 rounded-[12px] bg-transparent border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)] focus:outline-none focus:border-[var(--line-3)]">
+                      <div class="mt-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">
+                        Generated from the title, then left alone — it is the public URL
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-2">Excerpt</div>
+                      <textarea rows="2" class="w-full px-4 py-3 rounded-[12px] bg-transparent border border-[var(--line-2)] font-[family-name:var(--font-sans)] text-[14px] leading-[1.5] text-[color:var(--ink-1)] focus:outline-none focus:border-[var(--line-3)]">The band arrived at ten with two amps and a broken pedalboard. What came out of it was the best live session we have recorded in Studio B.</textarea>
+                      <div class="mt-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">Shown on the grid card and in the rail. Two lines, roughly 160 characters.</div>
+                    </div>
+
+                    <div>
+                      <div class="flex items-baseline justify-between mb-2">
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">Body</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">1,840 words &middot; 9 min read</div>
+                      </div>
+                      <!-- The body is the lexical editor, with the brand's own
+                           toolbar. Read time is DERIVED, never typed. -->
+                      <div class="rounded-[12px] border border-[var(--line-2)] overflow-hidden">
+                        <div class="flex items-center gap-1 px-3 py-2 border-b border-[var(--line-1)] bg-[var(--card-bg-soft)]">
+                          <span class="px-2 py-1 rounded-[6px] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] cursor-pointer">H2</span>
+                          <span class="px-2 py-1 rounded-[6px] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] cursor-pointer">H3</span>
+                          <span class="px-2 py-1 rounded-[6px] font-[family-name:var(--font-sans)] text-[12px] font-bold text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] cursor-pointer">B</span>
+                          <span class="px-2 py-1 rounded-[6px] font-[family-name:var(--font-display)] italic text-[13px] text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] cursor-pointer">I</span>
+                          <span class="mx-1 w-px h-4 bg-[var(--line-2)]"></span>
+                          <span class="px-2 py-1 rounded-[6px] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] cursor-pointer">Quote</span>
+                          <span class="px-2 py-1 rounded-[6px] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] cursor-pointer">Link</span>
+                          <span class="px-2 py-1 rounded-[6px] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] cursor-pointer">Image</span>
+                        </div>
+                        <div class="px-5 py-5 font-[family-name:var(--font-sans)] text-[15px] leading-[1.65] text-[color:var(--ink-1)]">
+                          <p class="m-0">The band arrived at ten with two amps and a broken pedalboard.</p>
+                          <p class="mt-4 m-0">Studio B has a reputation among people who have recorded in it: the room is too live, the headphone amp hums, and the only clock is a wall unit that has been eleven minutes fast since 2019. None of that is why bands ask for it.</p>
+                          <h2 class="mt-6 mb-2 font-[family-name:var(--font-display)] italic text-[26px] leading-[1.1] tracking-[-0.03em]">The first take</h2>
+                          <p class="m-0">What came out of it was the best live session we have recorded here — and it was the first take, before anyone had settled in.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ── everything ABOUT the post ─────────────────────── -->
+                  <div class="flex flex-col gap-4">
+
+                    <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">Publishing</div>
+                      <div class="flex flex-col gap-4">
+                        <label class="block">
+                          <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-1.5">Status</span>
+                          <select class="w-full px-3 py-2.5 rounded-[10px] bg-transparent border border-[var(--line-2)] font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] focus:outline-none focus:border-[var(--line-3)]">
+                            <option>Published</option><option>Draft</option><option>Scheduled</option>
+                          </select>
+                        </label>
+                        <label class="block">
+                          <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-1.5">Publish date</span>
+                          <input type="text" value="2026-03-12"
+                                 class="w-full px-3 py-2.5 rounded-[10px] bg-transparent border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-1)] focus:outline-none focus:border-[var(--line-3)]">
+                        </label>
+                        <!-- FEATURED is the highest-consequence switch on this
+                             page: it decides what fills the rail on the public
+                             blog. The copy says so rather than leaving an
+                             editor to find out by publishing. -->
+                        <div class="rounded-[12px] bg-[var(--card-bg-soft)] p-4">
+                          <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                              <div class="font-[family-name:var(--font-sans)] text-[13px] font-medium text-[color:var(--ink-1)]">Featured</div>
+                              <div class="mt-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase leading-[1.5] text-[color:var(--ink-4)]">
+                                The newest featured post fills the panel at the top of Airwaves
+                              </div>
+                            </div>
+                            <button role="switch" aria-checked="true"
+                                    class="shrink-0 mt-0.5 w-[42px] h-[24px] rounded-full bg-[var(--on-air)] relative transition-colors">
+                              <span class="absolute top-[3px] left-[21px] size-[18px] rounded-full bg-white"></span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">Filing</div>
+                      <div class="flex flex-col gap-4">
+                        <label class="block">
+                          <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-1.5">Category</span>
+                          <select class="w-full px-3 py-2.5 rounded-[10px] bg-transparent border border-[var(--line-2)] font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] focus:outline-none focus:border-[var(--line-3)]">
+                            <option>Studio diary</option><option>Album reviews</option><option>Dispatches</option><option>Interviews</option><option>Liner notes</option>
+                          </select>
+                          <span class="block mt-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">One vocabulary — the public filter bar is built from it</span>
+                        </label>
+                        <label class="block">
+                          <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-1.5">Author</span>
+                          <select class="w-full px-3 py-2.5 rounded-[10px] bg-transparent border border-[var(--line-2)] font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] focus:outline-none focus:border-[var(--line-3)]">
+                            <option>Jada R. — DJ Halftone</option><option>Mateo Cordero</option><option>Ada Okonkwo</option><option>&mdash; unattributed &mdash;</option>
+                          </select>
+                          <span class="block mt-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">Picks a DJ from the roster, so the byline links to their profile</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- A live preview of the grid card. The editor's fields and
+                         the reader's card are the same three values; showing
+                         them together is cheaper than a preview round-trip. -->
+                    <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">As the grid will show it</div>
+                      <div class="rounded-[14px] bg-[var(--card-bg-soft)] overflow-hidden">
+                        <div class="aspect-[3/2] overflow-hidden">
+                          <img src="../../assets/photos/in-studio-thelastmiller.jpg" alt="" class="w-full h-full object-cover object-center">
+                        </div>
+                        <div class="p-4">
+                          <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Studio diary &middot; Mar 12</div>
+                          <div class="mt-1.5 font-[family-name:var(--font-display)] italic text-[18px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)]">Six hours in Studio B with The Last Miller</div>
+                          <div class="mt-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">By Jada R. &middot; 9 min read</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- MODAL · new-event ================================================ -->
+              <div data-mockup-dialog="new-event" aria-hidden="true"
+                   class="fixed inset-0 z-[9998] bg-[rgba(10,10,10,0.72)] flex items-start justify-center overflow-y-auto p-6">
+                <div class="w-full max-w-[600px] rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-2)] shadow-[0_24px_60px_rgba(0,0,0,0.5)] mt-[7vh] mb-10" role="dialog" aria-modal="true" aria-label="New event">
+                  <div class="flex items-start justify-between gap-4 px-7 pt-6 pb-2">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-2">New event</div>
+                      <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">Put it on the calendar.</h3>
+                    </div>
+                    <button type="button" data-mockup-dialog-close aria-label="Close"
+                            class="shrink-0 size-8 rounded-full grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+                      <!-- icon: XMark -->
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <div class="px-7 pt-5 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Event name</span>
+                      </span>
+                      <input type="text" value="" placeholder="e.g. Spring Show 2026" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Venue</span>
+                      </span>
+                      <input type="text" value="" placeholder="Where" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Date</span>
+                      </span>
+                      <input type="text" value="" placeholder="YYYY-MM-DD" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Time</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">blank = all day</span>
+                      </span>
+                      <input type="text" value="" placeholder="HH:MM" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Price</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">blank reads Free</span>
+                      </span>
+                      <input type="text" value="" placeholder="$5 / Free" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Status</span>
+                      </span>
+                      <button type="button" class="w-full flex items-center justify-between rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 text-[15px] text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">
+                        <span>Draft</span>
+                        <!-- icon: ChevronDown -->
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                      </button>
+                    </label>
+                  </div>
+                  <div class="px-7 pt-2 pb-6">
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Description</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">shown on the events page</span>
+                      </span>
+                      <textarea rows="3" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors leading-[1.5] resize-y"></textarea>
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between gap-4 px-7 py-5 border-t border-[var(--line-1)] bg-[var(--bg-2)] rounded-b-[18px]">
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">Drafts are invisible on the public site</span>
+                    <div class="flex items-center gap-3">
+                      <button type="button" data-mockup-dialog-close class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors">Cancel</button>
+                      <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap hover:opacity-90 transition-opacity">
+                        <!-- icon: Check --><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg> Save event
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MODAL · edit-event =============================================== -->
+              <div data-mockup-dialog="edit-event" aria-hidden="true"
+                   class="fixed inset-0 z-[9998] bg-[rgba(10,10,10,0.72)] flex items-start justify-center overflow-y-auto p-6">
+                <div class="w-full max-w-[600px] rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-2)] shadow-[0_24px_60px_rgba(0,0,0,0.5)] mt-[7vh] mb-10" role="dialog" aria-modal="true" aria-label="Edit event">
+                  <div class="flex items-start justify-between gap-4 px-7 pt-6 pb-2">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-2">Sat 19 Mar &middot; live on the site</div>
+                      <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">Edit event.</h3>
+                    </div>
+                    <button type="button" data-mockup-dialog-close aria-label="Close"
+                            class="shrink-0 size-8 rounded-full grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+                      <!-- icon: XMark -->
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <div class="px-7 pt-5 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Event name</span>
+                      </span>
+                      <input type="text" value="DJ Halftone, live" placeholder="e.g. Spring Show 2026" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Venue</span>
+                      </span>
+                      <input type="text" value="No Fun Club" placeholder="Where" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Date</span>
+                      </span>
+                      <input type="text" value="2026-03-19" placeholder="YYYY-MM-DD" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Time</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">blank = all day</span>
+                      </span>
+                      <input type="text" value="21:00" placeholder="HH:MM" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Price</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">blank reads Free</span>
+                      </span>
+                      <input type="text" value="$10" placeholder="$5 / Free" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Status</span>
+                      </span>
+                      <button type="button" class="w-full flex items-center justify-between rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 text-[15px] text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">
+                        <span>Live on the site</span>
+                        <!-- icon: ChevronDown -->
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                      </button>
+                    </label>
+                  </div>
+                  <div class="px-7 pt-2 pb-6">
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Description</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">shown on the events page</span>
+                      </span>
+                      <textarea rows="3" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors leading-[1.5] resize-y">Two hours of the Berlin school, loud, in a basement.</textarea>
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between gap-4 px-7 py-5 border-t border-[var(--line-1)] bg-[var(--bg-2)] rounded-b-[18px]">
+                    <button type="button" class="inline-flex items-center gap-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] hover:text-[var(--on-air)] transition-colors">
+                      <!-- icon: Trash --><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg> Delete event
+                    </button>
+                    <div class="flex items-center gap-3">
+                      <button type="button" data-mockup-dialog-close class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors">Cancel</button>
+                      <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap hover:opacity-90 transition-opacity">
+                        <!-- icon: Check --><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg> Save event
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mockup runtime (theme toggle, dialogs, on-air photo rotation). Dev scaffolding only. -->
+<script src="../../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../../ds-nav.js"></script>
+
+</body>
+</html>

@@ -5,7 +5,9 @@
 // Tokens map to css custom properties in src/themes/wcdb/tokens.css so
 // the button honours light/dark.
 export const streamPlayerTheme = {
-    playButtonSize: 52,
+    // 60px — the design's size (`home.html`, `size-[60px]`). Was 52; the rail's
+    // now-playing block has the vertical room for the full size.
+    playButtonSize: 60,
 };
 
 export default streamPlayerTheme;
