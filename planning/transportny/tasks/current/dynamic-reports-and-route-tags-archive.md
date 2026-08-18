@@ -2423,7 +2423,7 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
   — page-variable/URL-param architecture, likely mechanism for item 3
 - `planning/transportny/tasks/completed/client-request-to-report-skill-archive.md` (~lines 20-90) — old tool's
   216-template route-slot analysis
-- `planning/transportny/tasks/current/report-spec-and-build-script.md`,
+- `planning/transportny/tasks/completed/report-spec-and-build-script.md`,
   `research/npmrds-reports/report-spec.md` — declarative report spec, relevant to how Dynamic
   Report templates might get authored
 - `planning/transportny/tasks/current/report-route-ui-parity-gaps.md` — has the same folders-out-of-scope

@@ -127,6 +127,31 @@ dynamic_report_one_week_study`.
 `dates.py`/`expressions.py`/`route_map.py`) is still NOT STARTED; this session's scope was the
 live-page structural layer + the one Layer-3 PoC, both explicitly prioritized ahead of it by Ryan.
 
+### Manifest grown to 8 entries by 2026-08-17 — correction, 2026-08-18
+
+The "5 entries" description above (and the `golden-corpus.json` manifest's own `_readme`) describes
+2026-08-10's state. Checked directly against the live manifest while auditing this project's
+planning docs (`reports-docs-consolidation.md`): 3 more entries were added during the 2026-08-12→17
+hand-by-hand template work documented in `dynamic-reports-and-route-tags.md`, none of which got a
+corresponding update back into this design doc. Current 8 entries, verbatim from the manifest:
+
+| Key | URL | `covers` highlights |
+|---|---|---|
+| `golden_corpus_linegraph` | `converted_reports/golden_corpus_linegraph` | `avlGraph.LineGraph`, `comparisonSeries.plain`, `sectionGroups.sidebarHideInView` |
+| `golden_corpus_bargraph` | `converted_reports/golden_corpus_bargraph` | `avlGraph.BarGraph`, `measure.speed`, `comparisonSeries.plain` |
+| `golden_corpus_gridgraph` | `converted_reports/golden_corpus_gridgraph` | `avlGraph.GridGraph`, `measure.travelTime`, `resolution.day` |
+| `golden_corpus_routemap` | `converted_reports/golden_corpus_routemap` | `Map.choroplethBake`, `measure.speed`, `quantile_breaks` |
+| `dynamic_report_one_week_study` | `converted_reports/one_week_study?routes=2207838&asOf=2026-07-23` | `dynamicReport.routeSlotsFilter`, `BarGraphSummary`, `dateFormula`, `derivedFromRoute`, `relativeDateResolution.TODAY_ANCHOR_COMP_ID` |
+| `dynamic_report_monthly_congestion` **(new)** | `converted_reports/monthly_congestion?routes=2207838&asOf=2026-07-23` | `relativeDateResolution.CALENDAR_POSITION_REGEX`/`resolveCalendarPositionFormula`, `dateFormula`, `derivedFromRoute` |
+| `dynamic_report_seasonality` **(new)** | `converted_reports/seasonality?routes=2207838&asOf=2026-07-23` | same calendar-position coverage as above, plus `vocabulary.resolutions.summary` |
+| `dynamic_report_annual_average_study` **(new)** | `converted_reports/annual_average_study?routes=2207838&asOf=2026-07-23` | `avlGraph.GridGraph`, `RouteCompare.multiMeasure`, `InfoBox.multiMeasure`, `routeWindows` |
+
+All 8 entries now pin `&asOf=2026-07-23` on every `dynamic_report_*` URL (per the manifest's own
+`_readme`, added 2026-08-13 — without it, every Today-anchored page's query dates drift a day
+between runs, forcing a daily re-baseline for no reason). `probe_corpus.mjs --list` renders this
+same table live from the manifest on demand — that's still the actual source of truth; this table
+is a point-in-time copy for anyone reading this doc without running the tool.
+
 ## Next session priority (set 2026-08-07 by Ryan, end of session — superseded by the above)
 
 Everything below this point is groundwork: `--expect` works, three real `report_build.mjs`/
@@ -273,7 +298,7 @@ generalizing the resulting mechanism.
 
 ## The already-designed, already-triggered piece: `report_probe.mjs --expect`
 
-`planning/transportny/tasks/current/report-spec-and-build-script.md` (the design record for
+`planning/transportny/tasks/completed/report-spec-and-build-script.md` (the design record for
 `report_build.mjs`, the declarative spec → live report builder) has a section, **"The `--verify`
 decision (2026-07-27): flag removed, `--expect` deferred"**, worth reading in full before starting.
 Summary:

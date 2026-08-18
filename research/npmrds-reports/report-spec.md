@@ -5,7 +5,7 @@ The declarative input to `scripts/npmrds-reports/report_build.mjs`: one JSON fil
 DMS page plus a `reports_snap_2` route-snapshot row.
 
 Companion docs: `npmrds-report-data-shapes.md` (how the resulting rows are shaped, and the
-inspection gotchas), `../../planning/transportny/tasks/current/report-spec-and-build-script.md` (the design
+inspection gotchas), `../../planning/transportny/tasks/completed/report-spec-and-build-script.md` (the design
 record and progress log).
 
 ---
@@ -487,7 +487,7 @@ route.
 
 **FIXED 2026-07-30** (was: the default difference palette mapped green→lowest and red→highest, so
 for `before − after` on travel time a *positive* bar — the improvement — rendered red). Root cause
-and fix are in `planning/transportny/tasks/current/report-spec-and-build-script.md`'s "Finding: difference-graph
+and fix are in `planning/transportny/tasks/completed/report-spec-and-build-script.md`'s "Finding: difference-graph
 color scale reads backwards" — `composeMeasureConfig.js`'s `buildDiffColors` was reusing the raw-value
 `reverseColors` flag verbatim for difference mode, but the polarity provably inverts between coloring
 a raw value and coloring a before-minus-after delta. No new vocabulary field needed, just negating

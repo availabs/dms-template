@@ -11,10 +11,10 @@ have we recently done" required manually cross-referencing 4 separate doc cluste
 accurate picture. This task scopes — but does not yet execute — a consolidation pass: an inventory of
 every file, what's genuinely stale/duplicate/misfiled, and an ordered plan to fix it.
 
-**Status: Batch 1 DONE 2026-08-18** (the 3 concrete bugs + folding 2 files' open items into the hub
-doc + moving those 2 files to `completed/`). Steps 3–7 of the "Proposed order of operations" below
-remain — each needs its own judgment-call pass, not mechanical execution, per Ryan's explicit call
-to keep the hub-doc archive-split (step 7) separate from batch 1 rather than rushed alongside it.
+**Status: Batches 1 and 2 DONE 2026-08-18** (steps 1–6 of the "Proposed order of operations" below).
+**Step 7 — the hub doc's own overdue archive-split — remains, deliberately deferred both times** per
+Ryan's explicit call to keep it a separate, dedicated pass rather than rushed alongside mechanical
+doc-consolidation work.
 
 The inventory below is the result of 4 parallel read-only agent passes (2026-08-18), each reading a
 cluster of files in full.
@@ -82,10 +82,10 @@ implementation, and the catalog page — plus their `todo.md`/`completed.md` ent
 
 | File | Status | Recommendation |
 |---|---|---|
-| `dynamic-reports-and-route-tags.md` | The current hub — most recent entry 2026-08-17 (updated today, 2026-08-18, with that entry). Lines 331–1253 (the 2026-08-12→17 hand-by-hand bug-hunt log) have not yet been pushed into the paired archive. | Keep as the live doc, but **overdue for its own archive-split** — the same "grows too long to read" trigger that spawned the paired archive originally now applies to its own most-recent section. Not urgent, but next time it's touched, consider splitting the completed 08-12→17 material into the archive, mirroring `report-page-redesign.md`'s pattern. |
-| `dynamic-reports-and-route-tags-archive.md` | Correctly archival, covers through 2026-08-14 (expected lag behind the live doc) | Keep; will need a fresh append once the above split happens |
-| `report-spec-and-build-script.md` | Owns the `report_build.mjs` mechanism + initial 12-template conversion (through 2026-08-11) — genuinely distinct scope from the hub, not absorbed into it | Keep as its own file, but **its status header is stale** (claims "Phase A+B COMPLETE 2026-07-27" without acknowledging its own "Follow-on" section, itself DONE 2026-08-11) — rewrite the header, then it's close to movable to `completed/` once that's done (remaining blockers already live in their own separate task files) |
-| `report-probe-expect-and-golden-corpus.md` | Owns the testing-infrastructure *design* (separate from its *usage*, which lives throughout the hub doc) | Keep as its own file, but its "golden corpus pages currently live" table lists 5 entries while the real manifest (`golden-corpus.json`) now has 8 — **drifted from ground truth**, needs a refresh pass |
+| `dynamic-reports-and-route-tags.md` | The current hub — most recent entry 2026-08-17. Lines 331–1253 (the 2026-08-12→17 hand-by-hand bug-hunt log) have not yet been pushed into the paired archive. | **Still overdue — deliberately not done, twice now** (see Status above). Next time it's touched, split the completed 08-12→17 material into the archive, mirroring `report-page-redesign.md`'s pattern. |
+| `dynamic-reports-and-route-tags-archive.md` | Correctly archival, covers through 2026-08-14 | Keep; will need a fresh append once the above split happens |
+| `report-spec-and-build-script.md` | **DONE 2026-08-18: header rewritten, moved to `tasks/completed/`.** Its Follow-on section (all 12 catalog templates spec-built) was already DONE 2026-08-11 and Phase C was always tracked separately — the header just hadn't caught up. One item spun off rather than blocking: the `minutes_seconds` duration format, tracked in the DMS library's own `duration-value-format-mm-ss.md` (annotated with a real finding: a reusable `duration_mmss` formatter landed 2026-08-17 as a side effect of unrelated tooltip work, though it doesn't itself close that task). | Done |
+| `report-probe-expect-and-golden-corpus.md` | **DONE 2026-08-18: added a dated correction section with the real 8-entry manifest table**, sourced directly from `golden-corpus.json` (3 new `dynamic_report_*` entries since the "5 entries" description was written). Kept the original stale table in place per "don't rewrite history" — appended the correction instead. | Done |
 | `converter-vocabulary-unit-tests.md` | NOT STARTED, confirmed still accurate (no `tests/` dir exists) | Keep as-is — small, accurate backlog item, nothing to consolidate |
 
 ### Cluster 3 — Old-report conversion / design-v2 / catalog
@@ -94,7 +94,7 @@ implementation, and the catalog page — plus their `todo.md`/`completed.md` ent
 |---|---|---|
 | `client-request-to-report-skill.md` | **DONE 2026-08-18: 5 open items folded into the hub doc's "Open questions" section, file moved to `tasks/completed/`.** (The original inventory undercounted this as a 4-item table — it was actually 5: the 4 listed plus a "measure-queryable-for-year check" item.) | Done |
 | `client-request-to-report-skill-archive.md` | **Moved to `completed/` 2026-08-18** alongside the file above | Done |
-| `npmrds-design-v2-implementation.md` | **Stale status header** — claims "IN PROGRESS... top priority, superseding `dynamic-reports-and-route-tags.md`" but every dated entry is 2026-08-06 (12 days stale as of this writing) and all concrete phases are DONE. The framing is now backwards: the hub doc has since raced 12 days past it and correctly treats this file as background context, not the reverse. Only 3 items remain genuinely open: Map graph-type support (blocked), the report library (blocked on Alex, "~90% done" as of 2026-08-06, zero update since), and a 7-item "Post-ship gap review" tabled the same day. | **Not done — deferred past batch 1.** Rewrite the status header honestly, trim the file down to the 3 real open items, move the rest (the two fully-shipped design pushes, ~90% of the file) to `completed/`. Worth explicitly asking Ryan to check with Alex on report-library design status — "~90% done" with no follow-up in 12 days is exactly the kind of thing that silently rots. |
+| `npmrds-design-v2-implementation.md` | **DONE 2026-08-18: split live+archive**, same pattern as `dynamic-reports-and-route-tags.md`/`-archive.md` (used instead of moving wholesale to `completed/`, since real work remains — see below), rather than the originally-planned "move the DONE bulk to completed/, spin off the open items." Full 405-line build history moved verbatim to the new `npmrds-design-v2-implementation-archive.md`; the live file now carries **4** real open items (the inventory undercounted this at 3 — Phase 4's theme tokens are also genuinely not-started, not just background context): Map graph-type support (blocked), the report library (blocked on Alex, still "~90% done" as of 2026-08-06 with zero update since — **still worth asking Ryan to check**), the 7-item Post-ship gap review (tabled, needs re-triage against the since-shipped Design Push #2), and Phase 4 theme tokens. | Done |
 | `catalog-page-slug-naming-fix.md` | **DONE 2026-08-18: placeholder-text open item folded into the hub doc (plus a note that the `--title`-override mechanism is likely superseded), file moved to `tasks/completed/`.** | Done |
 | `route-creation-tool.md` | Thin, self-described orientation pointer to `research/route-creation/findings.md` and a `src/dms` submodule task; covers a genuinely distinct capability (map-based route drawing) that RRL/Route-Tags/Dynamic-Reports work never touches | Keep as-is — not part of the overlap problem |
 
@@ -106,7 +106,7 @@ implementation, and the catalog page — plus their `todo.md`/`completed.md` ent
 | `converter-route-comp-redesign.md` | DONE 2026-08-07, its one follow-on (`seriesLabel` from a picked route) confirmed genuinely tracked in `src/dms/planning/tasks/current/dynamic-report-nongraph-section-binding.md` | Fine as filed |
 | `rrl-relative-dates-and-graph-count.md` | DONE 2026-08-07, no open follow-ons | Minor orphan — not referenced from the hub doc, but self-contained and fully resolved, low risk |
 | `compact-sidenav-margin-bug.md` | DONE 2026-08-07, resolved internal loose ends | Minor orphan, low risk (fully resolved) |
-| `port-transportny-map-plugins.md` | Both phases DONE 2026-07-29, but flags **real untested surface area inline**: routecreation's marker/auto-route mode and save/load path, and macroview's Data Downloader flow (blocked on a `MapEditorContext`/`DAMA_HOST` gap) and untested MapEditor `internalPanel` | **Worth a one-line pointer from the hub doc or wherever this surface would naturally be searched for** — this is a real gap with no trail to it today, unlike the other completed files in this cluster |
+| `port-transportny-map-plugins.md` | Both phases DONE 2026-07-29, but flags **real untested surface area inline**: routecreation's marker/auto-route mode and save/load path, and macroview's Data Downloader flow (blocked on a `MapEditorContext`/`DAMA_HOST` gap) and untested MapEditor `internalPanel` | **DONE 2026-08-18: pointer added to `route-creation-tool.md`'s "Open items" section**, distinguished from that file's existing "Save/load `points` persistence" row (a confirmed design limitation) since this is a separate, genuine testing gap. |
 
 ## Proposed order of operations
 
@@ -119,19 +119,25 @@ implementation, and the catalog page — plus their `todo.md`/`completed.md` ent
    via repo-wide grep (`src/dms/skills/creating-reports.md`, `research/npmrds-reports/report-spec.md`,
    the hub doc + its archive, `reports-page-template-catalog.md`, `dynamic-report-nongraph-section-binding.md`
    in the `src/dms` submodule), and added both to `completed.md`.
-3. **Not started.** Rewrite `npmrds-design-v2-implementation.md`'s status header honestly, trim it to its 3 real open
-   items, move the rest to `completed/`. Ask Ryan about Alex's report-library status first.
-4. Rewrite `report-spec-and-build-script.md`'s stale header, then move it to `completed/`.
-5. Refresh `report-probe-expect-and-golden-corpus.md`'s golden-corpus table against the real
-   8-entry manifest.
-6. Add a one-line pointer to `port-transportny-map-plugins.md`'s untested surface area from
-   wherever it'd naturally be searched for (likely `route-creation-tool.md` or the hub doc).
-7. Lowest priority, do whenever the hub doc is next touched anyway: split its 2026-08-12→17 section
-   into `dynamic-reports-and-route-tags-archive.md`, same pattern as every other split in this
-   project.
+3. **DONE 2026-08-18.** Split `npmrds-design-v2-implementation.md` into a trimmed live file (4 open
+   items) + a new `-archive.md` (full build history). Ryan's question about Alex's report-library
+   status is still outstanding — asking is a conversation, not a doc edit, so it's flagged in the
+   live file rather than resolved here.
+4. **DONE 2026-08-18.** Rewrote `report-spec-and-build-script.md`'s stale header, moved it to
+   `completed/`, fixed all 12 inbound cross-references found via repo-wide grep, and annotated the
+   DMS library's `duration-value-format-mm-ss.md` with a real finding surfaced along the way (a
+   reusable `duration_mmss` formatter that doesn't itself close that task but removes most of the
+   remaining implementation work).
+5. **DONE 2026-08-18.** Refreshed `report-probe-expect-and-golden-corpus.md`'s golden-corpus table
+   against the real 8-entry manifest (3 new `dynamic_report_*` entries since the doc's "5 entries"
+   description).
+6. **DONE 2026-08-18.** Added a pointer to `port-transportny-map-plugins.md`'s untested surface area
+   in `route-creation-tool.md`'s "Open items" section.
+7. **Still not started, deliberately** — do whenever the hub doc is next touched anyway: split its
+   2026-08-12→17 section into `dynamic-reports-and-route-tags-archive.md`, same pattern used for
+   `npmrds-design-v2-implementation.md` in step 3 above.
 
-Steps 1–2 (batch 1) are done. Step 6 remains similarly mechanical and low-risk. Steps 3–5 and 7
-involve judgment calls (what counts as "real open work" vs. safe to archive, how much to condense a
-dated technical narrative) and are better done as their own deliberate pass, reading the current
-file state directly rather than blindly following this list — this doc is a map, not a diff to
-apply mechanically.
+All of steps 1–6 are now done. Step 7 remains the one deliberately-deferred item — same reasoning
+both times it came up: it's a bigger, judgment-heavy rewrite of live technical narrative, not a
+mechanical fix, and deserves its own dedicated pass rather than being squeezed in alongside batch
+work.

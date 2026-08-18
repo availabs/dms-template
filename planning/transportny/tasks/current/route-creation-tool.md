@@ -49,6 +49,13 @@ target — this file does not track whether transportNY's copies still match.
 
 ## Open items worth flagging before picking this arc back up
 
+- **Untested surface carried over from the port itself, flagged here 2026-08-18 since nothing
+  pointed at it before**: `port-transportny-map-plugins.md`'s own testing checklist left two things
+  unverified that this file's phase table doesn't separately call out — routecreation's marker/
+  auto-route mode and its save/load-a-route path (`apiUpdate`/`INTERNAL_ROUTES_*`, distinct from the
+  "Save/load `points` persistence" row above, which is about a confirmed *design* limitation, not a
+  testing gap), and macroview's MapEditor-side `internalPanel` authoring controls (only the
+  published-page render path has been verified). Neither is known-broken, just genuinely unverified.
 - **The routing service's actually-usable year range is unconfirmed beyond one test location.**
   A DB-metadata-based claim that years 2016-2026 all work was directly tested and found **wrong** —
   only 2020-2022 resolved for a real corridor near Albany; every other tested year (2016, 2018,
