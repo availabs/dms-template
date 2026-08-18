@@ -14,7 +14,7 @@ to read" rule (same pattern as `report-page-redesign.md`/`-archive.md`).
 |---|---|
 | 1. Add Route Flow (RRL) | **DONE.** Tag-browser modal, Add-Graph modal, Route Row visual redesign all built + live-verified. One prototyped lever (sidebar width) stashed by Ryan, not merged. |
 | 2. Route Tags ("folder approximation") | **DONE** (tag taxonomy + manual editing UI). TMC-linear auto-generation: **2024 pilot DONE** (8,660 routes); 10 other years not yet generated (scripts are already generic over year). |
-| 3. Dynamic Reports | **Core mechanism DONE.** Old-template porting: 12 catalog templates converted (`converted_reports/reports`). Mechanism B (route-relative dates) DONE. **Relative-dates-relative-to-today: DONE 2026-08-10/11 — all 12 catalog templates now have zero fixed dates**, including the calendar-position grammar enrichment. **`report_build.mjs` Dynamic Report spec support: DONE 2026-08-11 — all 12 catalog templates are now spec-built** (git-committed JSON under `scripts/npmrds-reports/dynamic_report_specs/`, no old-DB dependency) and live-verified for real, superseding the earlier direct-DB-patch round whose comp-date fixes had silently failed to persist. See `report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full record. **Per-route window overrides (`routeWindows`): DONE 2026-08-14 — weekdays/startTime/endTime moved off `routes[]` onto `graphs[]`/`routeWindows` platform-wide, all 12 catalog templates confirmed consistent (8 migrated, 4 never needed it), `snapshot`'s 5-gap hand-by-hand review fully closed.** See "Per-route window overrides" section below for the mechanism build and `snapshot` review write-up for the applied fixes. |
+| 3. Dynamic Reports | **Core mechanism DONE.** Old-template porting: 12 catalog templates converted (`converted_reports/reports`). Mechanism B (route-relative dates) DONE. **Relative-dates-relative-to-today: DONE 2026-08-10/11 — all 12 catalog templates now have zero fixed dates**, including the calendar-position grammar enrichment. **`report_build.mjs` Dynamic Report spec support: DONE 2026-08-11 — all 12 catalog templates are now spec-built** (git-committed JSON under `scripts/npmrds-reports/dynamic_report_specs/`, no old-DB dependency) and live-verified for real, superseding the earlier direct-DB-patch round whose comp-date fixes had silently failed to persist. See `report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full record. **Per-route window overrides (`routeWindows`): DONE 2026-08-14 — weekdays/startTime/endTime moved off `routes[]` onto `graphs[]`/`routeWindows` platform-wide, all 12 catalog templates confirmed consistent (8 migrated, 4 never needed it), `snapshot`'s 5-gap hand-by-hand review fully closed.** See "Per-route window overrides" section below for the mechanism build and `snapshot` review write-up for the applied fixes. **2026-08-17: `ReportPageHeader` routes disclosure + duplicate-title-block removal, `--replace` flag for `report_build.mjs`, `travelTime` tooltip duration formatting.** See "Report header routes disclosure..." section below. |
 
 **Context that applies to all three items:** Ryan's coworker (Alex) did separate visual/design work
 across these repos (`dms_design_system_v2` NPMRDS category) — see
@@ -1174,6 +1174,83 @@ coverage-expansion decision.
 
 ---
 
+### Report header routes disclosure, duplicate-title removal, `--replace` build flag, tooltip fix — 2026-08-17
+
+Three commits (`3f1b986`, `68c8b06`, `9d61e58`), not yet live-verified as part of writing this
+entry (reconstructed from the diffs and commit messages, not a fresh browser session) — flag
+anything below that doesn't hold up under the next live pass.
+
+**`ReportPageHeader` routes disclosure (`3f1b986`).** RRL (where a report's routes have always
+been visible) is edit-mode-only, so a plain viewer had no way to see which routes/dates a report
+was built on without opening edit mode — flagged as an open question below ("show the resolved
+base date..."), now closed. `ReportPageHeader.jsx` reads the same `ROUTE_CATALOG_PARAM_KEY`
+catalog `useGraphPublish.js` already publishes unconditionally (not edit-mode-gated) for the
+per-graph QuickControls Routes pill, and renders a collapsible "N routes in this report" list:
+- Grouped by `routeSlotGroupKey` (`useDynamicReportRoutes.js`) — several catalog entries can be
+  date/settings VIEWS of one physical route a viewer picked once (`weekly_average`'s "Current
+  Year"/"1 Year Ago"/"2 Years Ago" all share one group); each group gets one header naming the
+  real corridor (`baseRouteName`, the resolved catalog row's own `name`) with its variants as
+  pills underneath, so a multi-route report (`bi_directional`'s separate NB/SB groups) doesn't
+  read as an undifferentiated pile of date pills.
+- New `resolvedRouteLabel`/`yearRangeForDateFormula` (`relativeDateResolution.js`): a
+  year-span-formula route ("Current Year", "1 Year Ago") now displays the actual resolved
+  calendar year(s) ("2026", "2024–2026") instead of the relative phrase, once resolved against the
+  real (possibly viewer `?asOf=`-picked) anchor date — a non-relative trailing suffix on the
+  authored name (`bi_directional`'s "(NB)"/"(SB)") is preserved. Wired into BOTH the header pills
+  and `useGraphPublish.js`'s `transformReportRoutes` chart-legend label, so the header and the
+  chart underneath it never disagree. Day/week/month/calendar-span formulas ("Yesterday", "This
+  Month") are untouched — already literal, non-relative names.
+- **Resolves** the open question below about showing a resolved base date in the header instead
+  of leaving a viewer to infer it from route labels alone.
+
+**Duplicate-title removal (`3f1b986`, `report_build.mjs`).** Two separate sources of doubled
+titles, both removed rather than patched:
+1. The `title_block` mechanism (a generic lexical/rich-text section carrying `spec.title` +
+   `spec.intro`, built by every spec-built page since the 2026-08-07 Gap-3 fix) duplicated the
+   title `ReportPageHeader` already renders as the page's own h1. `spec.intro`, `titleBlockSectionData`,
+   `textToLexicalTree`/`lexicalTreeToText`, and the `--from-page` title-block drift-detection branch
+   were all deleted outright — no migration path back, `intro` is no longer a spec field at all.
+2. A spec-built graph wrote its own title into BOTH `state.display.title` (rendered inside the
+   chart card by `GraphComponent.jsx`'s `GraphTitle`) and the Section's own `title` (rendered by the
+   generic section-header band above the card, the same band QuickControls attaches to) —
+   doubling it once above the card and once inside it. `report_build.mjs` no longer writes
+   `state.display.title` at all; the Section's own title is now the only title. `state.display.description`
+   (a different field, the difference-mode subtitle) is unaffected and still renders inside the card.
+
+**`--replace` flag for `report_build.mjs` (`9d61e58`).** `--update` reconciles a spec into an
+existing page in place, but its section-deletion sweep only covers AVL Graph/Map/Spreadsheet
+section types — it can't clean up a retired framework section (e.g. the title-block section just
+removed above) left over from a page an older script version built. `--replace` instead deletes
+the existing page at the spec's target slug and builds fresh (same mechanism `computeTargetSlug()`
+shares with `--update`'s own preflight, so the two can never disagree on which page a given spec
+targets). Mutually exclusive with `--update`; the rebuilt page gets a new id (anything that linked
+to the old id, not the slug, breaks). **Real bug found and fixed the first time all 12 catalog
+templates were `--replace`'d in one session:** `dms page delete` doesn't cascade to the page's own
+`reports_snap_2` row (a separate dataset/type) — since `/reports`' catalog cards are populated by
+querying `reports_snap_2` directly (by tag, not by page reference), the orphaned old row and the
+fresh replacement row both rendered as separate cards for the same report. 16 orphaned rows had
+accumulated (some templates 3-4 deep, predating `--replace`'s existence) before this was caught;
+`--replace` now looks up and deletes the stale `reports_snap_2` row (via the same `findSnapRow`
+`--update` uses) BEFORE deleting the page itself. `--dry-run` reports what `--replace` would
+delete without deleting it. All 12 catalog templates' dynamic-report spec baselines
+(`dynamic_report_annual_average_study`, `dynamic_report_monthly_congestion`,
+`dynamic_report_one_week_study`, `dynamic_report_seasonality`) plus the golden-corpus fixtures
+were regenerated against the post-title-block-removal build and committed
+(`report_probe_fixtures/golden-corpus.json`, `baselines/golden_corpus_{bargraph,gridgraph,linegraph,routemap}.json`)
+— presumed re-run clean given the baselines were committed alongside the code change (matching
+this doc's established re-baseline convention), but not independently re-confirmed while writing
+this entry.
+
+**`travelTime` tooltip duration formatting (`68c8b06`, `composeMeasureConfig.js`).** Reported live:
+a Travel Time chart's decimal-minutes tooltip ("0.3 min") was hard to read as a duration and prone
+to two visibly different series rounding to the identical displayed value. Added
+`valueFormat`/`yFormat: 'duration_mmss'` (`graph_new/utils.js`) specifically for `measureKey ===
+'travelTime'`, formatting as "M:SS" with whole-second precision instead — `yFormat` covers
+LineGraph's own tooltip read, `valueFormat` every other chart type. `showTotal` behavior (added
+2026-08-12, see `annual_average_study` section above) is unchanged.
+
+---
+
 ## Open questions for triage
 
 - **The remaining catalog pages need `--update <id> --publish` to pick up the 2026-08-12
@@ -1211,6 +1288,11 @@ live:
   Ryan 2026-08-11, likely affects all 12 templates, not risky but not top priority. A related, scoped-
   not-built follow-up: show the resolved base date in `ReportPageHeader.jsx` so a viewer isn't stuck
   inferring it from route labels alone. Both detailed in `report-spec-and-build-script.md`.
+  **The `ReportPageHeader.jsx` half RESOLVED 2026-08-17** — see "Report header routes disclosure..."
+  section above (`resolvedRouteLabel`/`yearRangeForDateFormula` show the resolved calendar year(s)
+  for year-relative routes, in both the header and the chart legend). The general
+  "Today"/"4 Days Ago"-style day/week labels are day/week-span formulas, not year-span, and are
+  untouched by that fix — still open.
 - A gap-logged "year-comparison candidate" heuristic for future old-template conversions (2026-08-11
   finding — no reliable automatic detection exists, human-confirmed opt-in only).
 - Section-title text across the 7 templates fixed 2026-08-11 still shows stale conversion-time
@@ -1223,6 +1305,43 @@ live:
 - Whether editing a shared Dynamic Report template's structure needs special draft/publish handling
   to avoid disrupting a concurrent viewer — probably already covered by DMS's existing
   draft-vs-published model, not confirmed.
+
+**Folded in 2026-08-18 from `client-request-to-report-skill.md` and `catalog-page-slug-naming-fix.md`**
+(both moved to `tasks/completed/` as part of the planning-doc consolidation — see
+`reports-docs-consolidation.md` — these items were the only genuinely open content either file
+still carried):
+
+- `--ui-guide` generator — emits the human click-path for a given spec; would double as the
+  Phase C UI-parity harness (any spec field with no UI control would emit a flagged gap instead of
+  silently omitting it). Not started.
+- Route Map `color_range` default — `report_build.mjs` only honors a literal `g.colorRange` array,
+  no default-per-measure palette. Not started.
+- `--verify-routing` — an experimental map-matching route validator; the service appears to ignore
+  the request body (returns a byte-identical wrong-county TMC list regardless of input), and is
+  arguably the wrong oracle anyway since it's bound to one conflation-map vintage while a report
+  queries a different TMC universe. The better fix is a per-year TMC-vintage membership check (data
+  already exists, source 582) — not built. Flagged 2026-07-27, still not fixed.
+- `--from-page` route-field drift — the drift check compares graph-section content
+  (title/`_measurePick`/caption) but never the snap row's own `routes[]`, so a route hand-edited
+  live (dates, weekdays, peak windows) goes undetected as drift. Found 2026-07-28, not fixed.
+- Measure-queryable-for-year check — the intake checklist doesn't yet ask "is this measure bucket
+  even covered for the requested year" (e.g. pm3 `reliability` coverage 2018-2025 vs. raw NPMRDS
+  coverage 2017-present). Found 2026-07-28 on the Poughkeepsie case study; worth a checklist line
+  if it recurs.
+- Header `purpose`/`metaLine` placeholder text — every converted page's `ReportPageHeader` section
+  is cloned verbatim from the master "Report Page" template and still carries that template's own
+  editor-instruction copy (`purpose`: "What question does this report answer?..."; `metaLine`:
+  "region · county · agency") instead of real content, on all 12 catalog pages (and the 4
+  non-catalog `--report-id` conversions from the same day). Confirmed still true as of the
+  2026-08-17 `ReportPageHeader` work (routes disclosure/duplicate-title fixes touched this
+  component but not these two fields). Fix is either author real per-template copy for the 12
+  catalog rows, or explicitly blank both fields (`ReportPageHeader.jsx` already renders cleanly
+  when empty) — recommend real copy for the 12 catalog templates since the effort is the same
+  order as blanking and is more useful. The fix that shipped for this task's *sibling* bug
+  (`catalog-page-slug-naming-fix.md`'s slug/title swap, DONE 2026-08-07) is itself now likely
+  superseded infrastructure — all 12 catalog pages were later deleted and rebuilt via
+  `report_build.mjs` from git-committed JSON specs (2026-08-11 onward, `--replace`'d again
+  2026-08-17), a different code path than the `--title` override that fixed the slug swap.
 
 ## Cross-references
 
@@ -1237,11 +1356,11 @@ live:
   baseline
 - `src/dms/planning/tasks/current/derived-page-variable.md`, skill `creating-interactive-pages.md`
   — page-variable/URL-param architecture item 3 builds on
-- `planning/transportny/tasks/current/client-request-to-report-skill-archive.md` (~lines 20-90) —
+- `planning/transportny/tasks/completed/client-request-to-report-skill-archive.md` (~lines 20-90) —
   old tool's 216-template route-slot analysis
 - `research/npmrds-reports/info-box-speed-and-relative-dates-scoping.md` — Mechanism A/B scoping,
   relative-date grammar grounding
-- `planning/transportny/tasks/current/reports-page-template-catalog.md` — the 12-catalog-template
+- `planning/transportny/tasks/completed/reports-page-template-catalog.md` — the 12-catalog-template
   conversion task (item 3's old-template porting, catalog build specifics)
 - `src/dms/skills/traversing-report-pages.md` — living skill doc, updated with the Today-anchor
   mechanism, both URL-param bugs, and the publish-lag gotcha found this arc

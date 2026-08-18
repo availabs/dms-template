@@ -924,7 +924,7 @@ plus `route_comps`/`graph_comps` referencing `comp-N` placeholders resolved agai
 route IDs get supplied at use time. The old folder browser's bulk "Open in Template" action only
 enables when the number of selected routes exactly matches a template's slot count — i.e. exactly
 the cap/require behavior Ryan described for the picker modal. Full investigation:
-`planning/transportny/tasks/current/client-request-to-report-skill-archive.md` (~lines 20-90).
+`planning/transportny/tasks/completed/client-request-to-report-skill-archive.md` (~lines 20-90).
 
 **Old-template porting — confirmed superseded, 2026-07-31 (not a mechanism-vs-content split).**
 Ryan flagged this tension himself: "may be in conflict with earlier guidance I gave you." The
@@ -2421,7 +2421,7 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
   item 3
 - `src/dms/planning/tasks/current/derived-page-variable.md`, skill `creating-interactive-pages.md`
   — page-variable/URL-param architecture, likely mechanism for item 3
-- `planning/transportny/tasks/current/client-request-to-report-skill-archive.md` (~lines 20-90) — old tool's
+- `planning/transportny/tasks/completed/client-request-to-report-skill-archive.md` (~lines 20-90) — old tool's
   216-template route-slot analysis
 - `planning/transportny/tasks/current/report-spec-and-build-script.md`,
   `research/npmrds-reports/report-spec.md` — declarative report spec, relevant to how Dynamic

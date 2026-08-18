@@ -504,7 +504,7 @@ everything here is dev-environment build work).
 a choropleth Map section — TMC segments colored by the measure's value, live dms-server
 ClickHouse tile-join, the same shape as the old tool's "Route Map" panel (the single most
 consistent panel across the old corpus — see
-`planning/transportny/tasks/current/client-request-to-report-skill.md`'s composition-rules analysis).
+`planning/transportny/tasks/completed/client-request-to-report-skill.md`'s composition-rules analysis).
 
 **This is not composed by `applyMeasurePick`.** `report_build.mjs` has no Map-section code of its
 own; it shells out to `convert_old_reports.py --route-map-section` (new
@@ -533,7 +533,7 @@ grain?: "route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or pe
 the single most consistent panel across the old corpus after Route Map (Route Info Box appears in
 100% of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
 `route_comparison` — see the composition-rules analysis in
-`planning/transportny/tasks/current/client-request-to-report-skill.md`).
+`planning/transportny/tasks/completed/client-request-to-report-skill.md`).
 
 **`measure` may also be an array of 2+ of the above, for a multi-measure box** — N columns in one
 table, matching the old tool's real shape (e.g. `measure: ["speed", "travelTime"]` renders exactly
