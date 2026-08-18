@@ -2,7 +2,157 @@
 
 **Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS · **Started:** 2026-08-06
 
-## Next session priority (set 2026-08-07 by Ryan, end of session)
+## 2026-08-10: batch-corpus mode built, real, and running — priority-ordered per Ryan's steer
+
+Ryan's ask this session: make the test plan/framework easily updatable when the underlying page
+schema changes again (a naming/tagging convention that flags which fixtures to recheck), add real
+observability (structural + a narrow data-value spot-check, not full measure-formula coverage —
+that's explicitly scoped out, see `converter-vocabulary-unit-tests.md`), borrow what's useful from
+`src/themes/transportny/qa_skills/` (the Freight Atlas/TSMO ticket-driven QA system) without
+adopting its DB-backed stage machine (different, much larger surface area). Then, once the
+scaffolding exists, build a concrete test case for Dynamic Reports specifically.
+
+**Borrowed from `qa_skills/` (light-touch, not the ticket/stage machine):** the prove-before-trust
+parity discipline (`fidelity_static.mjs`/`builds/README.md`'s custody table — never trust a matching
+count alone), the Blocker/Major/Minor/Info severity vocabulary, and the general-purpose "SQL error
+surfaced in a 200 response" check (`qa_assess.mjs`'s `graphErrs` regex, extended here with
+ClickHouse's own `DB::Exception`/`Code: N` shape).
+
+**Shipped, all live-verified, not just written:**
+
+1. **`report_probe.mjs`**: general-purpose SQL/ClickHouse-error-in-response detection (any `/graph`
+   response, not just under `--expect`) — catches a query that comes back 200 with an error payload,
+   which neither the status-code check nor the console-error check would catch on its own. Also
+   fixed a real pre-existing bug: slug sanitization only applied to full-URL targets, not bare-slug
+   targets — every corpus page's URL is `parent/slug`-shaped (and Dynamic Report's carries `?routes=`
+   too), so the unsanitized slug was silently landing output in a nested subdirectory (Playwright's
+   screenshot `path` auto-creates missing dirs, masking it). Also added canvas detection to the
+   section census — **Map sections render via MapLibre WebGL/canvas, never SVG**, so an SVG-only
+   census reads a correctly-rendered map as permanently blank; found live probing the Dynamic Report
+   page's Route Map section (screenshot showed a real rendered choropleth, 30.46 mph, while the
+   census said "NO SVG"). `hasContent` is now `svg-ink OR real-sized canvas`, threaded through
+   `--expect`'s "rendered non-empty" check too.
+2. **`report_probe_fixtures/golden-corpus.json`**: the manifest, git-tracked, single source of truth
+   (no separate hand-maintained doc to drift out of sync — `probe_corpus.mjs --list` renders a table
+   from it on demand). 5 entries, each with a `covers` array tagging the real field/function names it
+   exercises (`_measurePick.routeIds`, `sidebarHideInView`, `measure.speed`, etc.) — **this is the
+   "easy to update" mechanism**: when a load-bearing shape changes, `grep` the manifest for that name
+   to find exactly which corpus entries are at risk, re-run just those with `--only`, and `--capture`
+   only once confirmed correct.
+3. **`probe_corpus.mjs`**: the batch runner. `--list` / `--capture [--only k1,k2]` / diff mode
+   (default). Shells out to `report_probe.mjs` per entry (extends, doesn't fork, per that script's
+   own docstring convention) and normalizes its JSON dump into a small comparable shape — per-section
+   render state, deduped console/page/SQL error signatures, and per-`/graph` query series counts —
+   diffed against the git-tracked baseline with Blocker/Major/Minor/Info severity. Baselines live at
+   `report_probe_fixtures/baselines/*.json`, one per entry, git-tracked (Ryan's call — durable across
+   sessions/machines, small since they're the normalized shape not raw dumps, diffable with `git
+   diff`). Screenshots are NOT part of the automated diff (pixel-diffing is fragile) — manual-review
+   artifacts only.
+
+**Three more real bugs found and fixed getting the diff to be actually quiet (not just built) —
+all found by running it repeatedly against itself, the same dogfooding-catches-real-bugs pattern
+this whole task exists to formalize:**
+- **Match-key too short.** `graphSummary`'s match key was a 160-char prefix of the decoded query —
+  not unique: the Dynamic Report page's per-weekday Bar Graph Summary queries all share the same
+  view-id + options-JSON preamble and only diverge past char 160, so 43 distinct queries collapsed
+  into 31 keys, producing false "series count changed" diffs against its own fresh baseline. Fixed
+  to match on the full decoded string, truncating only for display.
+- **Site-infrastructure query noise.** Generic Falcor/UDA plumbing (`dms","data",...,"byId"/
+  "byIndex"/"length"` catalog reads, `uda",...,"sources","byIndex"/"length"` source-picker listings)
+  drifts run-to-run on a shared dev DB purely from unrelated concurrent activity (someone else's
+  work creating rows elsewhere shifts a global byId range) — had nothing to do with the page under
+  test but was flagging false "no longer fires" Major findings. Fixed by scoping `graphSummary` to
+  `isReportContentQuery` (a UDA `viewsById...options`/`colorDomain` call) only.
+- **A network blip can silently poison a baseline.** Chromium returns a 200-shaped dump with a
+  trivial body + `net::ERR_*` console noise instead of throwing when the page never really loaded —
+  without a guard this gets captured as a legitimate "0 sections, all blank" baseline (happened for
+  real this session, mid-run, when the connection dropped). Added `looksLikeFailedLoad()` — refuses
+  to capture or diff an entry whose dump shows this signature, instead of silently trusting it.
+
+**Live-verified end-to-end, both directions, on `golden_corpus_linegraph`** (a throwaway/reversible
+test on this corpus page specifically, backed up and restored after each step): confirmed self-
+consistency first (two consecutive clean diff passes across all 5 entries), then two injected-fault
+attempts. The `routeIds:[]` corruption (mirroring the historical Design-Push-#2 regression class)
+turned out inconclusive for an interesting platform reason, not a framework gap — see the note below.
+The SQL-expression corruption (an unknown-function typo in the ClickHouse expression) surfaced a
+real, separate platform finding (see below) rather than reaching the diff at all. **The framework's
+regression-catching power was ultimately proven by the 3 real bugs above**, all caught live during
+this session's own dogfooding — arguably stronger evidence than a synthetic injected fault, since
+those were genuine, previously-unknown defects in the tooling itself.
+
+**Platform finding, not yet explained, worth a follow-up look (not chased further this session):**
+directly editing a published section's `display._measurePick.routeIds` to `[]` via `dms raw update`
+had no visible effect on the published page's rendered series — the graph kept showing both routes'
+data. `useGraphPublish.js` was confirmed (via direct code read) to re-derive the `$self` action-param
+from `_measurePick.routeIds` live on every render, including on the published view, so `routeIds:[]`
+should have zeroed the series — it didn't. Best guess: an empty comparison-series variants list falls
+back to an unfiltered aggregate query rather than zero results, but this wasn't confirmed by reading
+`useDataSource`/the comparison-series query-builder itself. **Separately**, corrupting the
+`travel_time_all_vehicles` calculated column's SQL expression (an unknown ClickHouse function name)
+had no effect either — the live response kept returning the pre-corruption values even though a
+fresh `dms raw get` confirmed the DB held the corrupted expression. This smells like **server-side
+UDA query-result caching that a raw DB write doesn't invalidate** (a normal edit through the UI
+presumably goes through a cache-busting hook a raw CLI write bypasses) — also not confirmed by
+reading the caching layer itself. Neither finding blocks this task, but both are real enough to be
+worth a dedicated look if they recur or start masking a genuine regression during future use of this
+framework.
+
+**Layer 3 (known-good-value spot check) — one PoC entry, per Ryan's steer ("something EASY, like
+speed — we're almost certainly right, and if not it's rounding").** `golden_corpus_bargraph`'s
+`expectedValue` field: NY-9D Northbound's average speed on Mondays (Jan–Feb 2025), computed two
+independent ways — direct ClickHouse SQL (`avgIf` per TMC on `npmrds.s583_v982_NPMRDS_V6`) combined
+with per-TMC miles from the UDA view-3464 reference-data endpoint (a static geometry lookup, not
+derived from this report's own rendering — never validate a value against itself), applying the
+report's own formula (`sum(miles)*3600/sum(avg_travel_time_s)`). **Matched the live rendered value
+exactly** — 19.57234077140305 mph to 15 significant digits — confirming the speed formula is correct
+for this measure, not just approximately right. Sanity-checked the assertion mechanism itself both
+ways (a deliberately-wrong expected value correctly fails with the real returned values listed; the
+correct value passes) before wiring in the real number. Along the way, fixed the matcher itself
+twice: matching on route name alone can hit a metadata lookup instead of the real measure query, and
+even among report-content-shaped queries a paginated UDA fetch sends a `length`-only preflight before
+the real `dataByIndex` call — now requires both `isReportContentQuery` and `dataByIndex` explicitly.
+
+**Dynamic Report priority entry — `dynamic_report_one_week_study`, DONE.** Confirmed live
+`authRequired: false` (renders publicly at `converted_reports/one_week_study?routes=2207838` with
+zero login — the row's own `published` field reading back empty doesn't gate this). Baseline
+captured and verified clean twice: 8 sections, 6 with real content (Route Line Graph ×2, Bar Graph
+Summary ×2, TMC Grid Graph, Route Map — the only corpus page exercising Bar Graph Summary at all,
+since it's old-tool-only and can't be spec-built), zero console/page/SQL errors, 16 report-content
+queries. **Verify URL:** `http://npmrds.localhost:5173/converted_reports/one_week_study?routes=2207838`
+(public, no auth) — expect all sections except the plain-text header to show real rendered content.
+Re-run the check any time with `node scripts/npmrds-reports/probe_corpus.mjs --only
+dynamic_report_one_week_study`.
+
+**Not done this session** — `converter-vocabulary-unit-tests.md` (the pytest layer for
+`dates.py`/`expressions.py`/`route_map.py`) is still NOT STARTED; this session's scope was the
+live-page structural layer + the one Layer-3 PoC, both explicitly prioritized ahead of it by Ryan.
+
+### Manifest grown to 8 entries by 2026-08-17 — correction, 2026-08-18
+
+The "5 entries" description above (and the `golden-corpus.json` manifest's own `_readme`) describes
+2026-08-10's state. Checked directly against the live manifest while auditing this project's
+planning docs (`reports-docs-consolidation.md`): 3 more entries were added during the 2026-08-12→17
+hand-by-hand template work documented in `dynamic-reports-and-route-tags.md`, none of which got a
+corresponding update back into this design doc. Current 8 entries, verbatim from the manifest:
+
+| Key | URL | `covers` highlights |
+|---|---|---|
+| `golden_corpus_linegraph` | `converted_reports/golden_corpus_linegraph` | `avlGraph.LineGraph`, `comparisonSeries.plain`, `sectionGroups.sidebarHideInView` |
+| `golden_corpus_bargraph` | `converted_reports/golden_corpus_bargraph` | `avlGraph.BarGraph`, `measure.speed`, `comparisonSeries.plain` |
+| `golden_corpus_gridgraph` | `converted_reports/golden_corpus_gridgraph` | `avlGraph.GridGraph`, `measure.travelTime`, `resolution.day` |
+| `golden_corpus_routemap` | `converted_reports/golden_corpus_routemap` | `Map.choroplethBake`, `measure.speed`, `quantile_breaks` |
+| `dynamic_report_one_week_study` | `converted_reports/one_week_study?routes=2207838&asOf=2026-07-23` | `dynamicReport.routeSlotsFilter`, `BarGraphSummary`, `dateFormula`, `derivedFromRoute`, `relativeDateResolution.TODAY_ANCHOR_COMP_ID` |
+| `dynamic_report_monthly_congestion` **(new)** | `converted_reports/monthly_congestion?routes=2207838&asOf=2026-07-23` | `relativeDateResolution.CALENDAR_POSITION_REGEX`/`resolveCalendarPositionFormula`, `dateFormula`, `derivedFromRoute` |
+| `dynamic_report_seasonality` **(new)** | `converted_reports/seasonality?routes=2207838&asOf=2026-07-23` | same calendar-position coverage as above, plus `vocabulary.resolutions.summary` |
+| `dynamic_report_annual_average_study` **(new)** | `converted_reports/annual_average_study?routes=2207838&asOf=2026-07-23` | `avlGraph.GridGraph`, `RouteCompare.multiMeasure`, `InfoBox.multiMeasure`, `routeWindows` |
+
+All 8 entries now pin `&asOf=2026-07-23` on every `dynamic_report_*` URL (per the manifest's own
+`_readme`, added 2026-08-13 — without it, every Today-anchored page's query dates drift a day
+between runs, forcing a daily re-baseline for no reason). `probe_corpus.mjs --list` renders this
+same table live from the manifest on demand — that's still the actual source of truth; this table
+is a point-in-time copy for anyone reading this doc without running the tool.
+
+## Next session priority (set 2026-08-07 by Ryan, end of session — superseded by the above)
 
 Everything below this point is groundwork: `--expect` works, three real `report_build.mjs`/
 `report_probe.mjs` bugs got found and fixed along the way, and 5 real golden-corpus candidate pages
@@ -148,7 +298,7 @@ generalizing the resulting mechanism.
 
 ## The already-designed, already-triggered piece: `report_probe.mjs --expect`
 
-`planning/transportny/tasks/current/report-spec-and-build-script.md` (the design record for
+`planning/transportny/tasks/completed/report-spec-and-build-script.md` (the design record for
 `report_build.mjs`, the declarative spec → live report builder) has a section, **"The `--verify`
 decision (2026-07-27): flag removed, `--expect` deferred"**, worth reading in full before starting.
 Summary:
@@ -260,16 +410,18 @@ Pick pages that between them cover:
 - No attempt to make `report_probe.mjs`'s existing single-page mode go away — the batch mode is
   additive.
 
-## Files likely touched
+## Files touched (2026-08-06/07 `--expect` + 2026-08-10 batch mode)
 
-- `scripts/npmrds-reports/report_probe.mjs` — add `--expect <spec.json>` flag; consider a
-  `--baseline`/`--diff` pair of flags for the batch-corpus mode, or a small sibling script
-  (`probe_corpus.mjs`) that shells out to `report_probe.mjs` per page and does the diffing — prefer
-  extending the existing harness per its own docstring ("If the same `--eval` probe gets written
-  twice, promote it to a flag here" — same spirit applies to a second orchestration script vs. a
-  flag on this one; decide which fits better once the shape of the diffing logic is clear)
-- New: a golden-corpus manifest file (page slugs/ids + what each covers) — likely
-  `scratchpad/npmrds-sub/golden-corpus.json` or similar, plus baseline snapshots alongside it
+- `scripts/npmrds-reports/report_probe.mjs` — `--expect <spec.json>` flag (2026-08-07); general SQL-
+  error detection, slug-sanitization fix, and canvas/Map content detection (2026-08-10)
+- New: `scripts/npmrds-reports/probe_corpus.mjs` — the batch-mode sibling script (resolved the
+  "flag-vs-sibling-script" open question from the original plan: sibling script won, since batch I/O
+  — manifest read, baseline dir read/write, cross-entry aggregation — is genuinely different from
+  `report_probe.mjs`'s own single-page CLI surface)
+- New: `scripts/npmrds-reports/report_probe_fixtures/golden-corpus.json` — the manifest (landed here,
+  not `scratchpad/`, since it's a durable git-tracked artifact, not an ephemeral build input)
+- New: `scripts/npmrds-reports/report_probe_fixtures/baselines/*.json` — one git-tracked baseline per
+  corpus entry
 
 ## Testing checklist
 
@@ -282,7 +434,14 @@ Pick pages that between them cover:
       lands, and passing after — not yet tried against a Map/Info Box graph at all (only AVL Graph
       LineGraph tested so far); the seriesVariants-label matching should generalize per report-
       spec.md's 2026-07-28 finding, but hasn't been live-checked on those two types yet
-- [ ] Golden corpus selected and confirmed with Ryan (the draft list above is a starting point, not
-      final)
-- [ ] Baseline captured for the full corpus; a deliberately-broken re-run (e.g. temporarily reverting
-      a fix) is caught by the diff
+- [x] Golden corpus selected and confirmed with Ryan — 5 entries live 2026-08-10 (LineGraph/BarGraph/
+      GridGraph/RouteMap spec-built + the Dynamic Report priority entry); the 12-catalog-templates and
+      2-3 `--report-id` conversions below are still open, not blocking
+- [x] Baseline captured for the full corpus, git-tracked, confirmed self-consistent across two
+      consecutive clean runs. Regression-catching power proven two ways: (1) the diff mechanism itself
+      correctly flags/clears a deliberately-wrong Layer-3 expected value both directions (2026-08-10);
+      (2) three REAL bugs in `probe_corpus.mjs`/`report_probe.mjs` were caught live during this
+      session's own dogfooding (match-key truncation, site-infrastructure query noise, a network-blip
+      false baseline) — see the 2026-08-10 section above. A direct injected-DB-corruption test on a
+      live section was attempted twice and inconclusive for platform reasons unrelated to this
+      framework (also documented above), not re-attempted further this session.

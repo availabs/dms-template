@@ -298,6 +298,51 @@ function formatYyyyMmDd(input) {
 // and is the metrics⋈geometry VIEW; the metrics table sits beside it.
 const metricsTableName = (table_name) => `${table_name}_metrics`;
 
+// ── Bounded concurrency ──────────────────────────────────────────────────────
+// The per-TMC pass is ~11-13 ClickHouse round-trips, and network latency — not
+// CPU or CH itself — dominates a run from outside the cluster (measured 2.5
+// s/TMC locally ⇒ ~36h for a 52k-TMC year). TMCs are independent, so running
+// them in a pool converts that latency into throughput.
+//
+// Capped because `pg`'s default pool is 10 connections; going above it makes
+// workers queue on `pool.connect()` instead of doing work, and a stuck
+// connection would then stall the whole run.
+const DEFAULT_CONCURRENCY = 8;
+const MAX_CONCURRENCY = 8;
+
+/**
+ * Run `fn(item, index)` over `items` with at most `limit` in flight.
+ *
+ * Unlike Promise.all over the whole list this bounds resource use, and unlike
+ * a chunked `Promise.all` it never idles waiting for a slow item to finish its
+ * chunk — a free slot takes the next item immediately.
+ *
+ * Failure semantics match the old serial loop: the FIRST error aborts the run
+ * (no new items are started) and is rethrown after the in-flight ones settle,
+ * so the task fails loudly rather than silently publishing a partial year.
+ */
+async function runPool(items, limit, fn) {
+  const width = Math.max(1, Math.min(limit, items.length));
+  let next = 0;
+  let firstError = null;
+
+  const runner = async () => {
+    while (firstError === null) {
+      const i = next++;
+      if (i >= items.length) return;
+      try {
+        await fn(items[i], i);
+      } catch (e) {
+        if (firstError === null) firstError = e;
+        return;
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: width }, runner));
+  if (firstError) throw firstError;
+}
+
 // Metric columns actually present on the metrics table. Columns arrive via
 // ADD COLUMN IF NOT EXISTS as each metric is computed, so the view can only be
 // built after the year loop — and a run where a metric produced nothing still
@@ -375,7 +420,11 @@ function makeWorker(depOverrides = {}) {
       email,
       isNewSourceCreate = false,
       skipSpeedPctl = false,
+      concurrency = DEFAULT_CONCURRENCY,
     } = task.descriptor || {};
+
+    // 1 restores the old strictly-serial behavior (useful for golden-diffing).
+    const effectiveConcurrency = Math.max(1, Math.min(Number(concurrency) || 1, MAX_CONCURRENCY));
 
     if (!source_id) throw new Error('source_id is required');
     if (!npmrdsSourceId) throw new Error('npmrdsSourceId is required');
@@ -575,10 +624,31 @@ function makeWorker(depOverrides = {}) {
         year,
       });
 
-      let processed = 0;
-      for (let i = 0; i < numTmcToProcess; i++) {
-        const curTmcId = allTmcIds[i];
+      // ── Column creation, hoisted out of the per-TMC loop ──────────────────
+      // Every metric column is enumerable from the registry, so create them all
+      // once instead of issuing an `ADD COLUMN IF NOT EXISTS` per metric per TMC
+      // (~570k statements for a full year). This is not just a saving: ALTER
+      // TABLE takes an ACCESS EXCLUSIVE lock, so under concurrency the per-TMC
+      // ALTERs would serialize the whole pool behind a lock convoy.
+      if (dataDb.type === 'postgres') {
+        const metricColumnNames = metricNames.flatMap(
+          (n) => metricColumnDescriptors(n, metricConfigs[n]).map((c) => c.name)
+        );
+        await dataDb.query(`
+          ALTER TABLE ${table_schema}.${metricsTable}
+          ${metricColumnNames.map((c) => `ADD COLUMN IF NOT EXISTS "${c}" NUMERIC`).join(',')}
+        `);
+        console.log(`[pm3] pre-created ${metricColumnNames.length} metric columns`);
+      }
 
+      let processed = 0;
+      let skipped = 0;
+
+      // One TMC's full per-metric pass. `allowAlter` is true only for the serial
+      // warm-up TMC: it keeps the legacy per-metric ADD COLUMN path as a safety
+      // net so a calculator key that the registry does NOT enumerate still gets
+      // a column before the concurrent phase starts (where ALTERs are unsafe).
+      const processTmc = async (curTmcId, { allowAlter = false } = {}) => {
         const tmcMetaQuery = generateTmcIdMetaQuery({
           metaTName: `${metaLayer.table_schema}.${metaLayer.table_name}`,
           dataKeys: TMC_META_DATA_KEYS,
@@ -589,7 +659,8 @@ function makeWorker(depOverrides = {}) {
 
         if (!checkMeta({ tmcMeta })) {
           console.log(`[pm3] no meta row for tmc ${curTmcId}, skipping`);
-          continue;
+          skipped++;
+          return;
         }
 
         // Seed the join-key row so the per-metric upserts have something to
@@ -630,10 +701,12 @@ function makeWorker(depOverrides = {}) {
 
           // Per-metric write (METRIC_WRITES_DB=true): lowercase, prefix, upsert.
           const dbRow = toMetricDbRow(result);
-          await dataDb.query(generateUpdateColumnsSql({
-            tmcRow: { ...dbRow, year },
-            metricName, table_schema, table_name: metricsTable,
-          }));
+          if (allowAlter) {
+            await dataDb.query(generateUpdateColumnsSql({
+              tmcRow: { ...dbRow, year },
+              metricName, table_schema, table_name: metricsTable,
+            }));
+          }
           try {
             await dataDb.query(getDataRowInsertSql({
               result: { ...dbRow, year },
@@ -645,21 +718,43 @@ function makeWorker(depOverrides = {}) {
             console.error(`[pm3] ${metricName} insert failed tmc=${curTmcId}: ${e.message}`);
           }
         }
-
         processed++;
-        if (i % everyN === 0) {
-          const pct = Math.floor((i / numTmcToProcess) * 100);
-          await dispatchEvent('pm3:progress', `year=${year} ${pct}%`, {
-            etl_context_id: task.task_id,
-            damaSourceId: source_id,
-            damaViewId: damaView.view_id,
-            data: { progress: pct, year },
-          });
-          const yearProgress = (yi + (i / numTmcToProcess)) / years.length;
-          await updateProgress(0.05 + 0.85 * yearProgress);
-        }
+      };
+
+      const reportProgress = async (doneCount) => {
+        const pct = Math.floor((doneCount / numTmcToProcess) * 100);
+        await dispatchEvent('pm3:progress', `year=${year} ${pct}%`, {
+          etl_context_id: task.task_id,
+          damaSourceId: source_id,
+          damaViewId: damaView.view_id,
+          data: { progress: pct, year },
+        });
+        const yearProgress = (yi + (doneCount / numTmcToProcess)) / years.length;
+        await updateProgress(0.05 + 0.85 * yearProgress);
+      };
+
+      const tmcIds = allTmcIds.slice(0, numTmcToProcess);
+      if (tmcIds.length) {
+        // Serial warm-up: proves the metric-column set is complete before any
+        // concurrency starts.
+        await processTmc(tmcIds[0], { allowAlter: true });
+        await reportProgress(1);
+
+        // The remainder in a bounded pool. Each TMC's queries are independent
+        // (its own upserts against UNIQUE(tmc, year)), so the only shared state
+        // is the connection pool — hence the cap. `pg` defaults to max 10
+        // connections per pool, so keep concurrency below that.
+        await runPool(tmcIds.slice(1), effectiveConcurrency, async (tmcId, idx) => {
+          await processTmc(tmcId);
+          const doneCount = idx + 2;
+          if (doneCount % everyN === 0) await reportProgress(doneCount);
+        });
       }
-      console.log(`[pm3] year=${year} processed ${processed} TMCs (out of ${allTmcIds.length})`);
+      await reportProgress(numTmcToProcess);
+      console.log(
+        `[pm3] year=${year} processed ${processed} TMCs, skipped ${skipped} ` +
+        `(of ${numTmcToProcess} requested / ${allTmcIds.length} total), concurrency=${effectiveConcurrency}`
+      );
     }
     await updateProgress(0.92);
 
@@ -790,4 +885,7 @@ module.exports.PM3_SOURCE_COLUMNS = PM3_SOURCE_COLUMNS;
 module.exports.buildPm3SourceColumns = buildPm3SourceColumns;
 module.exports.metricColumnDescriptors = metricColumnDescriptors;
 module.exports.metricsTableName = metricsTableName;
+module.exports.runPool = runPool;
+module.exports.DEFAULT_CONCURRENCY = DEFAULT_CONCURRENCY;
+module.exports.MAX_CONCURRENCY = MAX_CONCURRENCY;
 module.exports.TMC_META_DATA_KEYS = TMC_META_DATA_KEYS;

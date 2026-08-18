@@ -32,6 +32,14 @@ const VIEW_SCHEMA_TAG = 'now_playing_detection_v1';
 const SECRET_BYTES = 16;
 const PG_ONLY_MSG = 'now_playing currently requires a postgres-backed dama pgEnv';
 
+// How long the detection table may go without a new row before /health calls the
+// stream stale. A monitored stream produces a detection every few minutes (WCDB
+// runs 3-5), so half an hour of silence is well outside normal variance — long
+// enough not to trip on a quiet stretch or a restart, short enough to notice the
+// same shift it breaks in. Override per-request with ?stale_after=<seconds> for
+// a stream on a different cadence.
+const DEFAULT_STALE_AFTER_SECONDS = 30 * 60;
+
 function newSecret() {
   return crypto.randomBytes(SECRET_BYTES).toString('hex');
 }
@@ -399,12 +407,45 @@ module.exports = function routes(router, helpers) {
 
       const view = await loadLatestView(db, sourceId);
       let lastEventAt = null;
+      let rowsLastHour = null;
+      let ageSeconds = null;
       if (view?.data_table) {
-        const { rows } = await db.query(`SELECT MAX(received_at) AS last FROM ${view.data_table}`);
+        // Ask the database for the age directly. Computing it from Date.now()
+        // instead would fold any clock difference between this process and the
+        // database into the answer, and `received_at` is written by the database.
+        const { rows } = await db.query(
+          `SELECT MAX(received_at) AS last,
+                  EXTRACT(EPOCH FROM (NOW() - MAX(received_at)))::int AS age_seconds,
+                  COUNT(*) FILTER (WHERE received_at > NOW() - INTERVAL '1 hour') AS last_hour
+             FROM ${view.data_table}`
+        );
         lastEventAt = rows[0]?.last || null;
+        rowsLastHour = rows[0]?.last_hour != null ? Number(rows[0].last_hour) : null;
+        ageSeconds = rows[0]?.age_seconds != null ? Number(rows[0].age_seconds) : null;
       }
 
-      res.json({ ok: true, source_id: sourceId, last_event_at: lastEventAt });
+      const staleAfter = Number(req.query.stale_after) > 0
+        ? Number(req.query.stale_after)
+        : DEFAULT_STALE_AFTER_SECONDS;
+
+      // A stream that has never produced a row is not healthy either — an empty
+      // table is the state a stream sits in when its webhook URL never worked.
+      const stale = lastEventAt === null || ageSeconds === null || ageSeconds > staleAfter;
+
+      // `ok` reports whether the FEED is healthy, not whether this request
+      // succeeded. It used to be a hardcoded `true`, which meant the endpoint
+      // answered "yes" every day of a 21-day outage on the WCDB stream
+      // (2026-07-24 to 2026-08-14) — the check existed and still nobody knew.
+      // HTTP stays 200: the request worked, the stream is what is unhealthy.
+      res.json({
+        ok: !stale,
+        stale,
+        source_id: sourceId,
+        last_event_at: lastEventAt,
+        age_seconds: ageSeconds ?? null,
+        rows_last_hour: rowsLastHour,
+        stale_after_seconds: staleAfter,
+      });
     } catch (err) {
       console.error('[now_playing] health failed:', err);
       res.status(500).json({ error: err.message });

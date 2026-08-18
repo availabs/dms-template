@@ -227,6 +227,14 @@ INFO_BOX_TRAVELTIME_BUCKET = ("avgTT-byDateRange", "travel_time_all")
 # same `{grain}_info_box_traveltime` template.
 INFO_BOX_TRAVELTIME_BUCKETS = {INFO_BOX_TRAVELTIME_BUCKET, ("travelTime", "travel_time_all")}
 INFO_BOX_TRAVELTIME_TITLES = {"route": "Route Travel Time", "tmc": "TMC Travel Time"}
+# 2026-08-12: the real plain speed measure (miles/time, SPEED_EXPR — same
+# expression the AVL Graph "speed" measure uses) — NOT the same bucket as
+# INFO_BOX_BUCKET/INFO_BOX_TITLES above, which is actually the pm3 LOTTR/TTTR/
+# freeflow reliability join under a confusingly-reused old internal "speed" key
+# (see section_builders.py's INFO_BOX_SPEC_MEASURES comment). This is the
+# measure Ryan's old-tool comparison found genuinely missing: `one_week_study`/
+# `annual_average_study`'s old Route Info Box panels showed this, not reliability.
+INFO_BOX_SPEED_TITLES = {"route": "Route Speed", "tmc": "TMC Speed"}
 # Round 40: TMC_ATTRIBUTES' `length` key (group 'tmcAttribute', reducer
 # sumReducer) — the route's total length in miles, summed once per DISTINCT
 # assigned TMC (not per fetched row/epoch — the underlying CH rows are still
@@ -355,6 +363,20 @@ MEASURE_NAMES = {
     "dataQuality": "Data Quality", "length": "Length",
     "avg_speedlimit": "Average Speed Limit", "aadt": "AADT", "vmt": "VMT",
 }
+
+# The Spreadsheet-cell `formatFn` a measure's plain VALUE column should carry
+# in ANY Spreadsheet-shaped section (Info Box, Route Compare) — a single
+# source of truth so the two builders (info_box_templates.py,
+# route_compare_template.py) can't independently drift, the same class of bug
+# already found once for `join` (2026-08-13, ensure_info_box_traveltime_
+# template missed a join-drift fix its siblings got). Chart sections (Line/
+# Bar/Grid Graph, Route Map) format their axis/tooltip/legend values through
+# a completely SEPARATE mechanism (GraphComponent.jsx's getTooltipFormatFunc,
+# display.yAxis.format, Map's colorDomain quantile labels) that shares no code
+# with this dict — fixing one never fixes the other, by construction. Only
+# measures actually used in a live Spreadsheet-shaped column belong here;
+# omit a measure rather than guessing a format for one nothing renders yet.
+TABLE_FORMAT_BY_MEASURE = {"speed": "decimal_2", "travelTime": "minutes_clock"}
 
 # Old graph types whose renderer actually reads `report.colorRange` (the
 # `isColorfull: true` flag in transportNY's tmc_graphs/index.jsx GRAPH_TYPES

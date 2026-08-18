@@ -13,33 +13,6 @@
 <body class="dms-annotated">
 
 <!-- ============================================================
-     META-NAV — documentation chrome, NOT part of the DMS theme
-     ============================================================ -->
-<nav class="wcdb-meta-nav">
-  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">design-system</span>
-    <a href="./theme.html" data-active="true">theme</a>
-    <a href="./layouts.html">layouts</a>
-    <a href="./grid.html">grid</a>
-    <a href="./components.html">components</a>
-    <a href="./patterns.html">patterns</a>
-  </span>
-  <span class="wcdb-meta-nav__group">
-    <span class="wcdb-meta-nav__group-label">pages</span>
-    <a href="../pages/home.html">home</a>
-    <a href="../pages/listen.html">listen</a>
-    <a href="../pages/schedule.html">schedule</a>
-    <a href="../pages/show.html">show</a>
-    <a href="../pages/djs.html">djs</a>
-    <a href="../pages/spins.html">spins</a>
-    <a href="../pages/blog.html">blog</a>
-    <a href="../pages/events.html">events</a>
-    <a href="../pages/login.html">login</a>
-  </span>
-</nav>
-
-<!-- ============================================================
      LAYOUT · default (theme.js layout.styles[0])
      The same Layout used at runtime: outerWrapper + wrapper + wrapper2
      + (optional TopNav) + wrapper3 + childWrapper.
@@ -59,31 +32,34 @@
          ============================================================ -->
     <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
       <div class="flex items-center h-14 px-4">
-        <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+        <a href="./theme.html" class="no-underline"><div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
           WCDB
-        </div>
+        </div></a>
         <span class="ml-2 pl-2 border-l border-[var(--line-2)]
                      font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
                      text-[color:var(--ink-3)]">
-          90.9 FM
+          Design System
         </span>
       </div>
       <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Theme</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Layouts</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Grid</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
-        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Patterns</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" href="./theme.html" data-active="true">Theme</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./layouts.html">Layouts</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./grid.html">Grid</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./components.html">Components</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]" href="./patterns.html">Patterns</a>
       </div>
       <div class="hidden md:flex h-full items-center pr-4 gap-2">
-        <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
-                       text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
-                title="Toggle theme mode">
-          <!-- icon: Sun (decorative — see theme.js widgets.ThemeModeToggle) -->
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
-            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-          </svg>
+        <!-- ThemeModeToggle · theme.js widgets.ThemeModeToggle.
+             Live in these mockups — mockup.js wires it to the same
+             `wcdb-mode` key and `data-mode` attribute the real widget uses.
+             The glyph shows the mode you are IN: Moon while dark. -->
+        <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)]
+                       text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+          <!-- icon: Moon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
+        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)] tabular-nums" title="Design system page 1 of 5">01 / 05</span>
       </div>
     </header>
 
@@ -642,96 +618,302 @@
               </p>
 
               <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                <!-- 18 icons covering navigation, action, status, content -->
+                <!-- 49 icons: navigation · action · media/station · data/status.
+                     This grid IS the registry — every icon: name used anywhere in the
+                     deliverable must have a tile here (scripts/icons-audit.mjs enforces it). -->
                 <!-- Menu -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Menu -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Menu</div>
                 </div>
                 <!-- XMark -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: XMark -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M6 6l12 12M18 6L6 18"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">XMark</div>
                 </div>
                 <!-- ChevronDown -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: ChevronDown -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M6 9l6 6 6-6"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ChevronDown</div>
                 </div>
                 <!-- ChevronRight -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: ChevronRight -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M9 6l6 6-6 6"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ChevronRight</div>
                 </div>
                 <!-- ArrowRight -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: ArrowRight -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ArrowRight</div>
                 </div>
                 <!-- Plus -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Plus -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M12 5v14M5 12h14"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Plus</div>
                 </div>
                 <!-- Play -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Play -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Play</div>
                 </div>
                 <!-- Pause -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Pause -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Pause</div>
                 </div>
                 <!-- Search -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Search -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Search</div>
                 </div>
                 <!-- Filter -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Filter -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Filter</div>
                 </div>
                 <!-- Calendar -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Calendar -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Calendar</div>
                 </div>
                 <!-- Clock -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Clock -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Clock</div>
                 </div>
                 <!-- ViewPage -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: ViewPage -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ViewPage</div>
                 </div>
                 <!-- EditPage -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: EditPage -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">EditPage</div>
                 </div>
                 <!-- Trash -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Trash -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Trash</div>
                 </div>
                 <!-- Check -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Check -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M5 12l5 5 9-11"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Check</div>
                 </div>
                 <!-- Download -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Download -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M12 3v13M6 11l6 6 6-6M4 21h16"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Download</div>
                 </div>
                 <!-- User -->
                 <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: User -->
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
                   <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">User</div>
+                </div>
+                <!-- ChevronLeft -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: ChevronLeft -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M15 6l-6 6 6 6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ChevronLeft</div>
+                </div>
+                <!-- ArrowLeft -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: ArrowLeft -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M20 12H4M10 6l-6 6 6 6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ArrowLeft</div>
+                </div>
+                <!-- PlusCircle -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: PlusCircle -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">PlusCircle</div>
+                </div>
+                <!-- Copy -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Copy -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Copy</div>
+                </div>
+                <!-- Refresh -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Refresh -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Refresh</div>
+                </div>
+                <!-- Settings -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Settings -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Settings</div>
+                </div>
+                <!-- Grip -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Grip -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Grip</div>
+                </div>
+                <!-- Broadcast -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Broadcast -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0M12 12v9"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Broadcast</div>
+                </div>
+                <!-- Waveform -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Waveform -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M4 12h4l3-7 2 14 3-7h4"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Waveform</div>
+                </div>
+                <!-- Mobile -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Mobile -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M11 18h2"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Mobile</div>
+                </div>
+                <!-- SortLines -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: SortLines -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">SortLines</div>
+                </div>
+                <!-- SortAsc -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: SortAsc -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 14l5-5 5 5z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">SortAsc</div>
+                </div>
+                <!-- Alert -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Alert -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Alert</div>
+                </div>
+                <!-- Dot -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Dot -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><circle cx="12" cy="12" r="4"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Dot</div>
+                </div>
+                <!-- Square -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Square -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Square</div>
+                </div>
+                <!-- Globe -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Globe -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Globe</div>
+                </div>
+                <!-- Sun -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Sun -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Sun</div>
+                </div>
+                <!-- Moon -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Moon -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Moon</div>
+                </div>
+                <!-- SignIn -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: SignIn -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><circle cx="12" cy="12" r="9"/><path d="M11 8l4 4-4 4M15 12H7"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">SignIn</div>
+                </div>
+                <!-- Microphone -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Microphone -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Microphone</div>
+                </div>
+                <!-- Heart -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Heart -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M12 20s-7-4.35-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 2.5C19 15.65 12 20 12 20z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Heart</div>
+                </div>
+                <!-- Pick -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Pick -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M12 3c4 0 7 2.4 7 5.5 0 4-4.2 8.4-5.6 10.2a1.8 1.8 0 0 1-2.8 0C9.2 16.9 5 12.5 5 8.5 5 5.4 8 3 12 3z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Pick</div>
+                </div>
+                <!-- Bolt -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Bolt -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Bolt</div>
+                </div>
+                <!-- Note -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Note -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="15" r="2.5"/><path d="M9.5 18V6l10-2v11"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Note</div>
+                </div>
+                <!-- Sliders -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Sliders -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M6 3v18M12 3v18M18 3v18"/><circle cx="6" cy="8" r="2"/><circle cx="12" cy="15" r="2"/><circle cx="18" cy="10" r="2"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Sliders</div>
+                </div>
+                <!-- Newspaper -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Newspaper -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M4 5h13v15H5a1 1 0 0 1-1-1z"/><path d="M17 8h3v10a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Newspaper</div>
+                </div>
+                <!-- Trophy -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Trophy -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M10 17h4M12 13v4M9 20h6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Trophy</div>
+                </div>
+                <!-- Star -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Star -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.4l6-.8z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Star</div>
+                </div>
+                <!-- Phone -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Phone -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M15.5 21A12.5 12.5 0 0 1 3 8.5 2.5 2.5 0 0 1 5.5 6h2a1 1 0 0 1 1 .8l.7 3a1 1 0 0 1-.3 1L7.6 12.4a11 11 0 0 0 4 4l1.6-1.3a1 1 0 0 1 1-.2l3 .7a1 1 0 0 1 .8 1v2A2.5 2.5 0 0 1 15.5 21z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Phone</div>
+                </div>
+                <!-- Pin -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Pin -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Pin</div>
+                </div>
+                <!-- Wave -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <!-- icon: Wave -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--ink-1)]"><path d="M3 12h2l2-6 3 13 3-16 3 12 2-3h3"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Wave</div>
                 </div>
               </div>
 
@@ -740,14 +922,17 @@
                 <div class="wcdb-eyebrow mb-3">Sizes — 16 · 24 · 32 px</div>
                 <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-5 flex items-end gap-8">
                   <div class="flex flex-col items-center gap-2">
+                    <!-- icon: Play -->
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
                     <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">16</div>
                   </div>
                   <div class="flex flex-col items-center gap-2">
+                    <!-- icon: Play -->
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
                     <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">24</div>
                   </div>
                   <div class="flex flex-col items-center gap-2">
+                    <!-- icon: Play -->
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
                     <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">32</div>
                   </div>
@@ -878,46 +1063,11 @@
   </div>
 </div>
 
-<!-- ============================================================
-     META-FOOTER — documentation chrome, repeating meta-nav links
-     for long-scroll navigation per skill §7.0.
-     ============================================================ -->
-<footer class="wcdb-meta-footer">
-  <div>
-    <h3>Design system</h3>
-    <ul>
-      <li><a href="./theme.html" data-active="true">theme</a></li>
-      <li><a href="./layouts.html">layouts</a></li>
-      <li><a href="./grid.html">grid</a></li>
-      <li><a href="./components.html">components</a></li>
-      <li><a href="./patterns.html">patterns</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · editorial</h3>
-    <ul>
-      <li><a href="../pages/home.html">home</a></li>
-      <li><a href="../pages/listen.html">listen</a></li>
-      <li><a href="../pages/blog.html">blog</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · catalogue</h3>
-    <ul>
-      <li><a href="../pages/schedule.html">schedule</a></li>
-      <li><a href="../pages/show.html">show</a></li>
-      <li><a href="../pages/djs.html">djs</a></li>
-      <li><a href="../pages/spins.html">spins</a></li>
-    </ul>
-  </div>
-  <div>
-    <h3>Pages · misc</h3>
-    <ul>
-      <li><a href="../pages/events.html">events</a></li>
-      <li><a href="../pages/login.html">login</a></li>
-    </ul>
-  </div>
-</footer>
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
 
 </body>
 </html>

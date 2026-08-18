@@ -24,7 +24,10 @@ grid / components / patterns + three example pages). Translated per
 - `layoutGroup.styles`: `content` (default; `lb-paper` py-12) · `content_tint`
   · `hero` (`lb-plat` py-14) · `header` (`lb-plat` py-10) · `feature`
   (`lb-plat-ink`) · `footer` (`lb-plat-ink` mt-auto) · `auth` (centered
-  max-w-md) · `workbench` (full-bleed canvas)
+  max-w-md) · `workbench` (full-bleed canvas) · **`admin_header` +
+  `admin_content`** (the console pair: plain paper, `pt-6` / `pb-6` only —
+  on an admin page the sections' own gutters carry the rhythm, so a band must
+  not add `py-12` on top. Use both together on any admin page)
 - `button.styles`: `default` (skydeep press) · `cta` (field/forest green) ·
   `secondary` (white + hairline) · `plain` (ghost skydeep) · `danger`
   (rose press)
@@ -34,13 +37,22 @@ grid / components / patterns + three example pages). Translated per
   `red`/`violet`) and `status_good`/`status_warn`/`status_bad`/`status_na`
   mapped onto the same seven recipes
 - `dataCard.styles`: `default` (metaSM mist headers, display-ink values) ·
-  `kpi` (stat tile: border-t-2 field accent, 38px tabular display numeral)
+  `kpi` (stat tile: border-t-2 field accent, 38px tabular display numeral) ·
+  `kpi_sky`/`kpi_field`/`kpi_amber`/`kpi_ink` (the same tile, one per accent,
+  so a KPI row can color-code its tiles from the style dropdown) ·
+  `note_tint` (the tinted footer inset a card pins under its content —
+  `rounded-md` papertint surface, no border/shadow. The TINT IS THE CARD: the
+  section stays white and its padding becomes the gutter the inset floats in.
+  Turn on with `display.cardBorder: true` + `cardsPadding: 14`, and pin it
+  with `cardsVerticalAlign: 'bottom'`)
 - `table.styles`: `default` (the ledger: papertint/60 header band, ink/5 row
   rules, sky-wash hover, mono numerals) · `below-row` (inline open-out)
 - `filters.styles` (promoted to options/styles — author-pickable via the
   Filter section's "Filter style" control): `panel` (the dashboard filter
   band; `controlStyle: 'default'`) · `chip` (inline chips;
-  `controlStyle: 'filter_chip'`)
+  `controlStyle: 'filter_chip'`) · `scope_bar` (the admin scope band: flex
+  chip triggers with the label inside, an applied state via
+  `group-data-[active]:`, and a "Reset" link; `controlStyle: 'filter_trigger'`)
 - `multiselect.styles`: `default` · `filter_chip` (borderless, for the chip
   filter design)
 - `modal.styles`: `default` · `wide`
@@ -81,9 +93,11 @@ pages.searchButton · pages.searchPallet (sparse) · datasets.datasetsList
 
 ## Custom additions
 
-- **Icons** ([`icons.jsx`](./icons.jsx)): the 39-glyph registry from
+- **Icons** ([`icons.jsx`](./icons.jsx)): the 41-glyph registry from
   `design_system/design-system/theme.html#icons` (exact path data; `Lot` is
-  the custom surveyed-parcel glyph) plus platform aliases — `XMark`,
+  the custom surveyed-parcel glyph; `TriangleAlert` the warning glyph from
+  the dashboard's "Needs attention" line and `Eye` the view action from its
+  inventory table) plus platform aliases — `XMark`,
   `Pencil`, `ArrowDown/Left/Up`, `ChevronUp/Left`, `CaretDown/Up`,
   `Settings`/`Gear`, `User`, and the table header-menu glyphs (`TallyMark`,
   `LeftToRightListBullet`, `Sum`, `Avg`, `Group`, `SortAsc`, `SortDesc`).
@@ -115,6 +129,41 @@ pages.searchButton · pages.searchPallet (sparse) · datasets.datasetsList
   + per-column `pillColors` maps onto the theme's seven pill styles.
   In-cell bars are the built-in `data_bar` skinned by the top-level
   `dataBar` theme key (papertint track; `sky`/`field` fills).
+- **Column types** — `columnTypes.status_dot`
+  (`columnTypes/statusDot.{jsx,config.js,theme.js}`): `status_pill`'s
+  unfilled sibling — a colored dot + plain label, which is how the design
+  set draws a chart LEGEND as opposed to a state badge. `dotColorByValue`
+  collapses the raw ACLB status vocabulary onto the six legend hues; an
+  optional per-column `dotColors` overrides it. The count stays a normal
+  right-aligned Card cell.
+- **Column types** — `columnTypes.icon_text`
+  (`columnTypes/iconText.{jsx,config.js,theme.js}`): a leading glyph in
+  front of the cell's own value, for the design set's `⚠ <sentence>` callout
+  lines. Card cells can style a value but can't put anything in front of it,
+  so these were previously faked with a literal character in the data (wrong
+  color, wrong baseline). Per-column `iconName` (any name in `theme.Icons`),
+  `iconColor` (a brand name — `amberdeep`, `field`, …) and `iconSize`
+  (xs–xl), all picked from selects built off the registries themselves.
+  Typography stays the cell's `valueFontStyle`.
+- **Column types** — `columnTypes.icon_link`
+  (`columnTypes/iconLink.{jsx,config.js,theme.js}`): an icon-only link to a
+  per-row destination — the design's View / Edit row actions at the end of
+  every inventory row. Per-column `iconName`, `iconTitle` (tooltip +
+  accessible name), `location` (the path INCLUDING the query key, e.g.
+  `/admin/property-view?id=`), `linkParamColumn` (a sibling row column
+  supplying the param — fetch it `selectOnly`; unset falls back to the row's
+  `id`), `iconColor`, and `external`. Add **`linkText`** and the cell becomes a
+  real labelled button instead of a bare hit target — the design's "Edit
+  record" / "Public listing" actions, which are *links* and so can't be the
+  theme's `button` component; `linkVariant` picks primary / secondary / ghost,
+  mirroring `button.styles`. A row whose param resolves empty
+  renders the glyph disabled rather than a link to nowhere. Works in a
+  Spreadsheet cell as well as a Card cell — `registerColumnType` mutates the
+  registry the table reads too.
+  ⚠ In a table, **size the column** (an unsized column takes an elastic
+  `minmax(default, 1fr)` track and will claim ~200px) and give the second of
+  a pair a **space**, not `""`, as its `customName` — an empty header falls
+  back to the raw column name.
 
 ## Documented deviations
 

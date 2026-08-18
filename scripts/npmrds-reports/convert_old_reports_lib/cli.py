@@ -81,8 +81,11 @@ def main():
                          "as JSON on stdout, for report_build.mjs to embed in a "
                          "spec-driven report — does not touch any old admin2.reports "
                          "row. See build_route_info_box_section_state().")
-    ap.add_argument("--info-box-measure", choices=INFO_BOX_SPEC_MEASURES,
-                    help="--route-info-box-section: reliability/travelTime/length/aadt/hoursOfDelay")
+    ap.add_argument("--info-box-measure",
+                    help="--route-info-box-section: comma-separated, 1 or more of "
+                         f"{'/'.join(INFO_BOX_SPEC_MEASURES)} (2+ composes a multi-measure "
+                         "box, e.g. 'speed,travelTime' — see "
+                         "build_route_info_box_section_state_multi)")
     ap.add_argument("--grain", choices=["route", "tmc"], default="route",
                     help="--route-info-box-section: route (comparisonSeries __series "
                          "discriminator, default) or tmc (single real tmc column)")
@@ -94,8 +97,10 @@ def main():
                          "it as JSON on stdout, for report_build.mjs to embed in a "
                          "spec-driven report — does not touch any old admin2.reports "
                          "row. See build_route_compare_section_state().")
-    ap.add_argument("--compare-measure", choices=sorted(MEASURE_EXPR),
-                    help="--route-compare-section: speed/travelTime")
+    ap.add_argument("--compare-measure",
+                    help="--route-compare-section: comma-separated, 1 or both of "
+                         f"{'/'.join(sorted(MEASURE_EXPR))} (2 composes a multi-measure "
+                         "box — see build_route_compare_section_state_multi)")
     args = ap.parse_args()
 
     if args.route_map_section:
@@ -116,21 +121,35 @@ def main():
     if args.route_info_box_section:
         if not args.info_box_measure:
             ap.error("--route-info-box-section needs --info-box-measure")
-        if args.info_box_measure == "reliability" and not (args.year and args.reliability_bin):
+        info_box_measures = [m.strip() for m in args.info_box_measure.split(",") if m.strip()]
+        for m in info_box_measures:
+            if m not in INFO_BOX_SPEC_MEASURES:
+                ap.error(f"--info-box-measure: unknown measure {m!r} — known: {', '.join(INFO_BOX_SPEC_MEASURES)}")
+        if "reliability" in info_box_measures and not (args.year and args.reliability_bin):
             ap.error("--route-info-box-section --info-box-measure reliability needs --year and --bin")
         templates = load_graph_templates()
-        element_type, state = build_route_info_box_section_state(
-            args.info_box_measure, args.grain, templates, args.dry_run,
-            year=args.year, bin_=args.reliability_bin)
+        try:
+            element_type, state = build_route_info_box_section_state(
+                info_box_measures, args.grain, templates, args.dry_run,
+                year=args.year, bin_=args.reliability_bin)
+        except ValueError as e:
+            ap.error(str(e))
         print(json.dumps({"elementType": element_type, "state": state}))
         return
 
     if args.route_compare_section:
         if not args.compare_measure:
             ap.error("--route-compare-section needs --compare-measure")
+        compare_measures = [m.strip() for m in args.compare_measure.split(",") if m.strip()]
+        for m in compare_measures:
+            if m not in MEASURE_EXPR:
+                ap.error(f"--compare-measure: unknown measure {m!r} — known: {', '.join(sorted(MEASURE_EXPR))}")
         templates = load_graph_templates()
-        element_type, state = build_route_compare_section_state(
-            args.compare_measure, templates, args.dry_run)
+        try:
+            element_type, state = build_route_compare_section_state(
+                compare_measures, templates, args.dry_run)
+        except ValueError as e:
+            ap.error(str(e))
         print(json.dumps({"elementType": element_type, "state": state}))
         return
 

@@ -5,7 +5,7 @@ The declarative input to `scripts/npmrds-reports/report_build.mjs`: one JSON fil
 DMS page plus a `reports_snap_2` route-snapshot row.
 
 Companion docs: `npmrds-report-data-shapes.md` (how the resulting rows are shaped, and the
-inspection gotchas), `../../planning/transportny/tasks/current/report-spec-and-build-script.md` (the design
+inspection gotchas), `../../planning/transportny/tasks/completed/report-spec-and-build-script.md` (the design
 record and progress log).
 
 ---
@@ -43,10 +43,18 @@ corrected before anything is built.
 | `description` | no | Written to the snap row's `description` — **not visible anywhere on the page.** For a client-visible summary use `intro` instead. |
 | `intro` | no | Prose paragraph(s), rendered on the page. See "The title block" below. |
 | `request` | no | The literal client ask, verbatim. Printed by `--summary`, stored on the snap row as `_client_request`. |
+| `tags` | no | Array, e.g. `["category:floating_car"]`. **Load-bearing for the `/reports` catalog**, not just display — each of its category tiles filters `reports_snap_2` on this exact field; a spec-built row without the right tag simply doesn't appear on the catalog, not "appears wrong." Round-tripped by `--from-page`. |
+| `difficulty` | no | Free text (`"beginner"`/`"intermediate"`/`"advanced"`/`""`), catalog display only. Round-tripped by `--from-page`. |
 | `graphs` | yes | Non-empty array — see below. |
 | `routes` | yes | Non-empty array — see below. |
 
-The snap row also records `_built_from_spec` (the spec's path) automatically.
+The snap row also records `_built_from_spec` (the spec's path) automatically, plus three fields
+computed fresh from the spec on every build rather than accepted as input — `page_path` (`/${slug}`),
+`graph_count` (`graphs.length`), `counts_label` (`"${routes.length} routes · ${graphs.length}
+graphs"`) — all three exist only to feed the `/reports` catalog's Card cells, and computing them from
+the spec itself (rather than requiring an author to keep a redundant number in sync) avoids the exact
+staleness the old Python-converted rows had (a frozen `graph_count` that didn't update when a template
+was edited).
 
 ## `graphs[]`
 
@@ -55,12 +63,15 @@ The snap row also records `_built_from_spec` (the spec's path) automatically.
 | `key` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` and `graphs[].anchor`. Never written to the DB. |
 | `graphType` | yes | `BarGraph` \| `LineGraph` \| `GridGraph` \| `Map` \| `InfoBox` \| `RouteCompare` — see "Route Map graphs", "Route/TMC Info Box graphs", and "Route Compare graphs" below, three different shapes entirely. |
 | `measure` | yes | A vocabulary measure — see the enum note below (Map, InfoBox, and RouteCompare each have their own, separate list). |
-| `resolution` | AVL Graph only | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month`. Map graphs only need this for `measure: avgHoursOfDelay` (`day` \| `5-minutes`); every other Map measure omits it. InfoBox/RouteCompare never use it (neither old-tool component ever read `resolution` either). |
+| `resolution` | AVL Graph only | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month` \| `summary`. Map graphs only need this for `measure: avgHoursOfDelay` (`day` \| `5-minutes`); every other Map measure omits it. InfoBox/RouteCompare never use it (neither old-tool component ever read `resolution` either). `summary` (added 2026-08-11, `BarGraph` only) is the old tool's "Bar Graph Summary" shape — no time bucket at all, one bar per assigned route showing that route's whole-window aggregate. **Not supported with `measure: "avgHoursOfDelay"`** — that measure's summary value is bucket-grain-dependent and there's no equivalent expression built for it yet; fails the build with a clear message rather than silently computing a wrong number. |
 | `grain` | InfoBox only | `route` (default) \| `tmc` — see below. |
 | `bin` | InfoBox `reliability` only | `amp` \| `midd` \| `pmp` \| `we` — the FHWA time-of-day period, required only for the `reliability` measure. |
 | `title` | no | Sets both the section row's `title` and `display.title.title`. |
 | `comparisonMode` | no | `plain` (default) — each assigned route renders as its own series — or `difference`. **Not supported on `Map`/`InfoBox`/`RouteCompare`** — fails the build if set (each assigned route already renders as its own choropleth-colored layer / comparisonSeries row / %-vs-anchor delta row, not a subtraction). |
 | `anchor` | difference only | A `routes[].id`. Names the arm the others are subtracted *from*. RouteCompare has no field of its own for this — its anchor is always whichever route is first in `routes[]`, same convention a difference graph's implicit anchor uses. |
+| `weekdays` | no | Day mask, this graph's default for every route assigned to it — see the semantics below. **Lives here, not on `routes[]`** (moved 2026-08-14 — see below). No graph-type restriction: applies identically to AVL Graph, Map, InfoBox, and RouteCompare (all four ride the same `comparison_series`/`findSelfBoundGraphs` mechanism, confirmed by reading `useGraphPublish.js` directly). |
+| `startTime`/`endTime` | no | Time-of-day window, `"HH:mm"` 24-hour, this graph's default for every route assigned to it — see the semantics below. Same "lives on the graph, not the route" move as `weekdays`. |
+| `routeWindows` | no | `{ [routes[].id]: [{weekdays, startTime, endTime, color}, ...] }` — per-route override for when routes assigned to THIS graph need genuinely different windows (an AM/PM/Off-Peak Bar Graph Summary; a Route Compare comparing a peak sub-window against an all-day baseline), instead of the graph's own `weekdays`/`startTime`/`endTime` default. The array holds 2+ entries only for the same route shown more than once on one graph under different filters (each entry becomes its own output series, auto-labeled — see the semantics below); today that's almost always length 1. Keys must be routes actually assigned to this graph (`routes[].graphs` still decides "which routes feed this graph" — `routeWindows` only refines how). Each variant's own `color` overrides the route's base `color` for that one series — needed the moment a route expands into 2+ variants (they'd otherwise all render in the route's one color, indistinguishable from each other); write the SAME literal hex for the same variant (e.g. "AM") everywhere it's used across a report's graphs, since there's no shared-constant mechanism in this format to enforce it for you. |
 | `size` | no | Colspan, `"1"`–`"12"`, written as the section row's own `size` field. |
 | `colorRange` | Map only | Array of hex colors, low→high. Defaults to a neutral speed ramp if omitted. |
 | `caption` | AVL Graph only | Prose, rendered as a subtitle line under the chart's own title (`GraphComponent.jsx`'s `GraphTitle`, reading `display.description` — already wired on the render side; this is the write path). **Not supported on `Map`/`InfoBox`/`RouteCompare`** — fails the build if set (none of the three has a title/description render path — Spreadsheet, Info Box's and RouteCompare's shared element-type, has no GraphTitle-equivalent). |
@@ -78,20 +89,111 @@ those rather than this list.
 
 Each entry is a route **instance** — a catalog route plus a date window. Two instances routinely
 share one `route_id` and differ only by window; that is how before/after comparisons are expressed.
+A route instance can instead be a **Dynamic Report route slot** (`slot: true`, no `route_id` at all)
+— see "Dynamic Report fields" below.
 
 | field | required | meaning |
 |---|---|---|
-| `id` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` targets and `graphs[].anchor`. Never written. |
-| `route_id` | yes | The route's DMS id in the Routes Data catalog (source `2107426` / view `2107427`). Resolved at build time to pull its `tmc_array`. |
+| `id` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` targets, `graphs[].anchor`, and `derivedFromRoute`. Never written. |
+| `route_id` | yes, unless `slot: true` | The route's DMS id in the Routes Data catalog (source `2107426` / view `2107427`). Resolved at build time to pull its `tmc_array`. |
 | `name` | yes | The series label. See the duplicate-name rule below. |
 | `graphs` | yes in practice | Array of `graphs[].key`. Empty means this instance feeds nothing — the build warns and fails the structural check. |
-| `startDate` | no | Inclusive window start. Omit both dates for all available data. |
+| `startDate` | no | Inclusive window start. Omit both dates for all available data, or if deriving via `dateFormula` (see below). |
 | `endDate` | no | Window end. |
-| `startTime` | no | Time-of-day window start, `"HH:mm"` 24-hour (e.g. `"07:00"`). Requires `endTime` and a `startDate`/`endDate` window — see the semantics below. |
-| `endTime` | no | Time-of-day window end. Requires `startTime`. |
 | `color` | no | Series color, hex. |
-| `weekdays` | no | Day mask — see the semantics below. |
 | `confidence` | no | `{level: "low"\|"medium"\|"high", note}` — flags an inferred, not-determinate choice (typically segment extent — "around Verplank Ave and Beekman St" has no exact answer). Guess-and-flag, not a gate: `level: "low"` prints a "NEEDS REVIEW" banner in both `--summary` and a real build, but never blocks the build. See "Intake checklist" in `creating-reports.md`. |
+| `slot` | no | `true` marks this as a Dynamic Report route slot — no `route_id` yet, resolved by whoever views the page via `?routes=`. Requires `dynamicReport: true` on the spec. See "Dynamic Report fields" below. |
+| `route_slot_group` | no, slots only | Groups several slot rows (different date/settings VIEWS of the same one real route — e.g. `one_week_study`'s 8 day/average comps) so a viewer picks ONE route to fill all of them, not one per row. Slots with no `route_slot_group` are each their own group (one viewer pick per row). |
+| `isPlaceholderName` | no, slots only | Marks `name` as a meaningless auto-generated placeholder ("Route Slot 3") that should be overwritten by the resolved route's real name at view time. Omit for a slot with a real, deliberately-chosen name (the normal case in a hand-authored spec). |
+| `dateFormula` | no | A Mechanism B relative-date formula string (see `relativeDateResolution.js`'s `RELATIVE_DATE_REGEX`/`CALENDAR_POSITION_REGEX`) — the date is computed LIVE against `derivedFromRoute`'s own resolved date, never persisted as a literal. Requires `derivedFromRoute`. Works on ANY report, Dynamic or not — this is a general Mechanism B field, not slot-specific. See "Dynamic Report fields" below. |
+| `derivedFromRoute` | no | Paired with `dateFormula`. Either another `routes[].id` in this spec, or the literal `"__TODAY__"` to derive from the synthetic "Today (view time)" anchor. Single-hop only — the named base must not itself have a `dateFormula`. |
+
+## Dynamic Report fields
+
+A Dynamic Report is a shared, reusable template — one page serves every viewer, who picks their own
+route(s) (and optionally a base date) via the page's entry gate rather than an author picking a fixed
+route/date once. There are exactly 12 of these today (the `converted_reports` catalog); route slots
+have no meaning outside this class of page. **A real Dynamic Report never ships with a concrete route
+or a literal date** — the whole point is minimal viewer input, so every route on a Dynamic Report is
+either a `slot` or (for a route that does have a real `route_id`, as in a mixed report) still derives
+its date via `dateFormula` rather than a frozen literal. See
+`planning/transportny/tasks/current/dynamic-reports-and-route-tags.md` item 3 and
+`report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full design
+record and status.
+
+- **`dynamicReport: true`** (top-level spec field) — the only thing that turns a page into a Dynamic
+  Report. Writes the `routeSlots`/`baseDate` page filters (mirrors `ReportRouteList.jsx`'s
+  `toggleDynamicReport` exactly) so the page's entry gate/route-picker/"Viewing as of" field all work.
+  Required (hard build error otherwise) on any spec using `slot: true` routes.
+- A **slot** route (`slot: true`) has no `route_id` — it's resolved live from the page's `?routes=`
+  URL param. Several slot rows can share one `route_slot_group` so a viewer fills them all with one
+  pick (e.g. 8 day/average comps, 1 route). The persisted shape carries only `name`/`route_comp_id`/
+  `route_slot_group`/`color`/`weekdays`/the `dateFormula` pair — never a real catalog field; those get
+  overlaid live on every page load.
+- **`dateFormula`/`derivedFromRoute`** (Mechanism B) let a route's date be computed live instead of
+  frozen — from another route's resolved date, or from the synthetic Today anchor
+  (`derivedFromRoute: "__TODAY__"`, real wall-clock today minus NPMRDS's ~21-day publish lag — see
+  `relativeDateResolution.js`'s `NPMRDS_DATA_LAG_DAYS`/`defaultAnchorDate()`). Validated against the
+  REAL grammar (`relativeDateResolution.js`, loaded via a plain Node dynamic import — it has no
+  imports of its own, so no Vite boot needed) — a bad formula string fails the build the same way a
+  bad measure enum does. A route with `dateFormula` should omit literal `startDate`/`endDate`
+  entirely; if both are given, the literal is inert (always superseded live) and the build warns.
+
+Example (from `scripts/npmrds-reports/dynamic_report_specs/one_week_study.json`, live-verified 2026-08-11
+against a real published test page — 0 console/page/SQL errors, real ClickHouse data confirmed on
+every buildable graph, the resolved "4 days ago" date matching the expected lag-adjusted anchor
+exactly):
+
+```json
+{
+  "title": "One Week Study",
+  "dynamicReport": true,
+  "routes": [
+    { "id": "r1", "slot": true, "name": "4 Days Ago", "route_slot_group": "$0",
+      "dateFormula": "startDate=>day-4day->1day", "derivedFromRoute": "__TODAY__",
+      "weekdays": { "sunday": false, "saturday": false },
+      "graphs": ["daily_line", "map_all"] }
+  ]
+}
+```
+
+**Known gaps, found while building this (see `report-spec-and-build-script.md` for full detail),
+none of them slot/dateFormula-specific:**
+- A real, previously-latent bug (now fixed): a real (non-`--dry-run`) build of a Map graph with zero
+  resolvable dates across every assigned route used to write `element-data: undefined` (silently
+  dropped, not the documented placeholder-paint fallback) — the graceful-degradation claim below had
+  only ever been verified via `--dry-run`.
+- `--from-page` used to double-count every graph section on an already-published page (draft +
+  published rows share a trackingId, deduped only by row id upstream, not by trackingId) — fixed.
+- `--from-page` cannot recover `measure`/`resolution`/`comparisonMode` for any AVL Graph section
+  built by `convert_old_reports.py` (i.e. every one of the 12 catalog templates today) — its
+  Design-Push-2 routing retrofit overwrites `_measurePick` wholesale, wiping whatever a shared
+  graph-template row originally carried. Now flagged `_needsReview` instead of silently writing
+  `undefined`; `display.graphType` survives independently and is recovered as a fallback.
+- ~~"Bar Graph Summary" has no `applyMeasurePick` path at all~~ — **built 2026-08-11** as
+  `resolution: "summary"` (see the field table above) once checking the actual render/query code
+  showed both already fully supported this shape, just never wired into the vocabulary. Not a gap
+  anymore; `one_week_study`'s previously-dropped 2 panels are back.
+- Info Box's `reliability` measure still has no fallback when every assigned route lacks a literal
+  date (needs a year to pick a per-year join template, which a Dynamic Report never has at build
+  time) — not fixed, since no known template hits it yet; still needs checking against the other 11.
+- **Route/comp names don't reflect a viewer-picked base date, flagged not fixed.** `one_week_study`'s
+  route names are static English relative-time phrases ("Today", "4 Days Ago") written when the old
+  template assumed "today" meant real wall-clock today. With a viewer-pickable `?asOf=`, these
+  actively mislead — should read like "{resolved base date}" / "N days prior" instead. Likely affects
+  every one of the 12 templates, not just this one. See `report-spec-and-build-script.md`'s Dynamic
+  Report follow-on section for the full writeup; not risky to fix, just not top priority.
+- **Dynamic Report pages have no way to show a viewer which base date they're looking at**, beyond
+  reading it off individual route labels. Scoped as a `ReportPageHeader.jsx` enhancement (same doc) —
+  not built.
+- `tags`/`difficulty`/`page_path`/`graph_count`/`counts_label` (catalog metadata) are now spec fields
+  (see "Top-level fields" above) — found live while reconciling `one_week_study`'s real page: the
+  `/reports` catalog filters on `tags`, so a spec missing it is invisible on the catalog, not just
+  under-labeled. Fixed, not a remaining gap.
+- ~~Reconciling a pre-existing (non-`report_build.mjs`-built) page onto a spec needs `--update` to
+  bootstrap a `_specKeyMap`~~ — **not being built.** Ryan's call: the accepted process is manual —
+  delete the old page + sections + snap row, then build fresh under the same slug. Done exactly this
+  way for `one_week_study` itself.
 
 ---
 
@@ -129,7 +231,8 @@ mistake, it's an acknowledged guess, and the correction mechanism is AVAIL feedb
 
 ### The weekday mask excludes only on an explicit `false`
 
-Per `useGraphPublish.js:34`, an **absent** key means the day is *included*. So:
+Per `useGraphPublish.js`'s `transformReportRoutes`, an **absent** key means the day is *included*.
+So:
 
 ```json
 "weekdays": { "saturday": false, "sunday": false }
@@ -138,11 +241,21 @@ Per `useGraphPublish.js:34`, an **absent** key means the day is *included*. So:
 means Monday–Friday, not "only Saturday and Sunday excluded from nothing". An empty or absent
 `weekdays` means all seven days. (Easy to read backwards — it was, on the first pass.)
 
-`weekdays` got a UI control 2026-07-30 — a "Days of Week" toggle row (plus Weekdays/Weekends/All
-Days presets) next to `RouteRow.jsx`'s date-edit inputs, saving down to only the `false` entries on
-this same normalized shape. See `report-route-ui-parity-gaps.md` gap #10 for the live verification.
+**Lives on `graphs[]`, not `routes[]`, as of 2026-08-14** (see "`weekdays`/`startTime`/`endTime`
+moved to `graphs[]`" below for the full story). `weekdays` had a UI control on `RouteRow.jsx` from
+2026-07-30 — already retired, not by this migration: Design Push #2 itself (2026-08-06) removed it
+from `RouteRow.jsx` entirely and rebuilt it as QuickControls' graph-level "When" pill (confirmed
+directly in the current code — `RouteRow.jsx`'s own header comment states the day/time facets "are
+gone, not just hidden"). What's actually broken by today's migration is that pill itself, not
+`RouteRow.jsx` — see "Live-authoring UI" below.
 
 ### `startTime`/`endTime`: a peak-hour (or any time-of-day) sub-window (added 2026-07-28)
+
+**SUPERSEDED 2026-08-14 — the JSON example below (`routes[].startTime`/`endTime`) is no longer
+valid spec syntax; a route carrying either now fails the build.** Kept verbatim as the historical
+record of how this mechanism was discovered and first verified (still accurate on ITS OWN terms —
+the runtime facts below are all still true); see "`weekdays`/`startTime`/`endTime` moved to
+`graphs[]`" further below for the current, valid shape and why it moved.
 
 Closes the gap tracked as `report-route-ui-parity-gaps.md` gap #11 and
 `client-request-to-report-skill.md` next-steps item #11: no way to express "just the AM/PM peak"
@@ -244,6 +357,118 @@ combined date+time string back into clean `startTime`/`endTime` fields). Test pa
 sections `2196693`-`2196696` + snap row `2196698` deleted after, confirmed gone via `page show`
 and the split-table dataset query.
 
+**This exact two-routes-one-graph-different-windows capability was re-verified 2026-08-14 via the
+current `routeWindows` mechanism** (same shape, different authoring surface — see below): a fresh
+`AM Peak`/`PM Peak` LineGraph build produced the identical result shape (2 `seriesVariants`, correct
+distinct `epoch` ranges, auto-derived labels). Worth knowing if you're wondering whether this
+capability was ever lost in between — `routes[].startTime`/`endTime` (this section's own mechanism)
+predates the 2026-08-06 Design Push #2 storage migration, which moved weekday/window storage onto
+the GRAPH as a single shared scalar; that intermediate scalar-only shape genuinely could not express
+two disagreeing routes on one graph (confirmed by rebuilding this exact example against it: the
+build silently dropped the epoch filter for both series). `routeWindows` (2026-08-14) is what
+restores per-route independence within one graph — not a regression fix, a real design evolution
+that happened to pass back through the same capability on its way to a better one.
+
+### `weekdays`/`startTime`/`endTime` moved to `graphs[]` (2026-08-14)
+
+**The current, valid shape.** `weekdays`/`startTime`/`endTime` are fields on a `graphs[]` entry
+(same table as `resolution`/`measure`), not `routes[]` — a route carrying either now fails the
+build with a message pointing here. This matches the actual runtime: `useGraphPublish.js`'s
+`transformReportRoutes` reads a route's `startDate`/`endDate` and nothing else off the route itself;
+weekday mask and time-of-day window come from wherever the assigned GRAPH's own `_measurePick`
+says, confirmed by reading the function directly. `routes[]` is now exactly: which catalog route
+(or slot), its date window, its name/color, `dateFormula`/`derivedFromRoute` — never weekday or
+time-of-day.
+
+The common case — one window shared by every route on a graph:
+
+```json
+{ "key": "peak_line", "graphType": "LineGraph", "measure": "travelTime", "resolution": "5-minutes",
+  "startTime": "06:00", "endTime": "10:00", "weekdays": { "saturday": false, "sunday": false } }
+```
+
+The divergent case — routes on the SAME graph need genuinely different windows — uses
+`routeWindows`, keyed by `routes[].id`:
+
+```json
+{ "key": "peak_compare", "graphType": "RouteCompare", "measure": "speed",
+  "routeWindows": {
+    "am_route":  [{ "startTime": "06:00", "endTime": "10:00" }],
+    "pm_route":  [{ "startTime": "16:00", "endTime": "20:00" }]
+  } }
+```
+
+Any route assigned to the graph but not named in `routeWindows` gets the graph's own
+`weekdays`/`startTime`/`endTime` as its default (which may itself be unset — meaning fully
+unrestricted). No graph-type restriction, unlike `resolution`/`comparisonMode`/`caption` — Map,
+InfoBox, and RouteCompare all go through the identical `comparison_series`/`findSelfBoundGraphs`
+path as AVL Graph (confirmed directly, not assumed — `composeInfoBoxGraphState`/
+`composeRouteCompareGraphState` both set a real `composedStates[i]`, and both carry the same
+`$self` subscriber `findSelfBoundGraphs` looks for).
+
+**The same route shown twice on one graph, under different filters** (e.g. one Bar Graph Summary
+bar for AM, another for PM, both from the same underlying route) — the old tool's own answer to
+this was to duplicate the route into a new id; the array under one `routeWindows` key is the
+replacement, so a report doesn't need a second `routes[]` entry (and a second minted DB row) just
+to express a filter variant:
+
+```json
+"routeWindows": {
+  "current_year": [
+    { "startTime": "06:00", "endTime": "10:00", "color": "#E07A00" },
+    { "startTime": "16:00", "endTime": "20:00", "color": "#7B3294" }
+  ]
+}
+```
+
+Each array entry becomes its own output series. `routes[].id` (and `_measurePick.routeIds`) still
+lists the route exactly once — how many series it becomes is entirely governed by this array's
+length, so no composite-key identity change was needed anywhere else. Two series can't share a
+name (see "Route names are the only series discriminator" above), so 2+ entries get an
+auto-derived label appended to the route's own name — e.g. `"Current Year (6a–10a)"` — built from
+the exact same wording `RouteRow.jsx`'s weekday summary line and QuickControls' time-of-day pill
+already use (`summarizeWeekdays`/`timeOfDayToken` in `ReportRouteList/utils.js`), not a third
+phrasing invented for this. A single-entry array (today, almost always) keeps the bare route name
+AND the route's own base color, unchanged. **2+ entries need their own `color` each** — without
+it every expanded variant renders in the route's one shared color, indistinguishable on any chart
+that actually uses color (a Bar Graph Summary's bars, a Line Graph's legend); with it, write the
+identical hex for "AM" (or whichever variant) on every graph that uses it across one report, since
+nothing in this spec format enforces that consistency for you — it's plain literal repetition, the
+same as how `routes[].color` for a report's 2 "real" routes is already just repeated verbatim
+wherever that route appears. Snapshot's AM/PM/Off-Peak panels (built 2026-08-14, live-verified) are
+the first real usage — see `dynamic_report_specs/snapshot.json`'s `info_box_snapshot`/
+`bar_speed_peak_summary`/`bar_delay_peak_summary` for the 3 places the same 3 colors are repeated.
+
+**Live-authoring UI**: `RouteRow.jsx`'s weekday-toggle/peak-hour-preset controls (gaps #10/#11) do
+NOT need removal — checked directly, they were already retired by Design Push #2 itself
+(2026-08-06), well before this migration, and rebuilt as QuickControls' graph-level "When" pill
+(`QuickControls/index.jsx`'s `whenToken`/`renderWhenSection`). **Today's migration broke that pill,
+and it was fixed the same day**: it used to read/write `state.display._measurePick.weekdays`/
+`start`/`end` directly — the bare scalar `report_build.mjs` no longer writes at all (`routeWindows`
+is the only thing it composes now) and `useGraphPublish.js` no longer reads — confirmed live before
+the fix (the pill displayed "all day · all" regardless of the graph's real window, and any preset
+click was a silent no-op). **Fix, per Ryan's explicit call**: apply one uniform window to every
+route on the graph (matching the pill's original behavior exactly), not a per-route control — see
+`report-route-ui-parity-gaps.md` gap #17 for the full fix/live-verification record. A SEPARATE,
+larger gap (#18 there, still open): no UI anywhere lets an author set a PER-ROUTE override within a
+multi-route graph — even this fixed "When" pill only ever controls the graph's one shared default.
+Both are the same "missing authoring surface" category
+as gap #16 (Info Box/Route Compare creation).
+
+**The color-consistency problem specifically will be harder than the rest of this UI gap, flagged
+here for whoever scopes it.** For a hand-authored spec (today's only path), keeping "AM" the same
+color everywhere is just copy-pasting the same literal hex into every graph's `routeWindows` block
+— tedious but trivial, and it's what `snapshot.json` actually does. A live UI doesn't have that
+option: `routeWindows` is deliberately scoped per-GRAPH (the whole point, so one graph's routes
+disagreeing with another's never recreates the Design-Push-2 staleness bug this migration fixed) —
+which means there's no single place "the AM variant of Current Year" lives that a picker could read
+a remembered color from. An author setting AM's color on one graph has no way to make a LATER graph
+default to that same color, short of either a manual "copy from another section" affordance or an
+entirely new shared-but-overridable per-route "named variant" concept that doesn't exist today and
+would need real design (where does it live, does a graph-level override still win, how does an
+author even reference "the AM variant" as a stable thing). Not a reason to avoid building the UI,
+just a real wrinkle worth having written down before that design work starts.
+
 ### Difference graphs: anchor and sign
 
 A difference graph returns **anchor − other**. The server treats `seriesVariants[0]` — the first
@@ -262,7 +487,7 @@ route.
 
 **FIXED 2026-07-30** (was: the default difference palette mapped green→lowest and red→highest, so
 for `before − after` on travel time a *positive* bar — the improvement — rendered red). Root cause
-and fix are in `planning/transportny/tasks/current/report-spec-and-build-script.md`'s "Finding: difference-graph
+and fix are in `planning/transportny/tasks/completed/report-spec-and-build-script.md`'s "Finding: difference-graph
 color scale reads backwards" — `composeMeasureConfig.js`'s `buildDiffColors` was reusing the raw-value
 `reverseColors` flag verbatim for difference mode, but the polarity provably inverts between coloring
 a raw value and coloring a before-minus-after delta. No new vocabulary field needed, just negating
@@ -279,7 +504,7 @@ everything here is dev-environment build work).
 a choropleth Map section — TMC segments colored by the measure's value, live dms-server
 ClickHouse tile-join, the same shape as the old tool's "Route Map" panel (the single most
 consistent panel across the old corpus — see
-`planning/transportny/tasks/current/client-request-to-report-skill.md`'s composition-rules analysis).
+`planning/transportny/tasks/completed/client-request-to-report-skill.md`'s composition-rules analysis).
 
 **This is not composed by `applyMeasurePick`.** `report_build.mjs` has no Map-section code of its
 own; it shells out to `convert_old_reports.py --route-map-section` (new
@@ -301,28 +526,52 @@ Live-verified 2026-07-27: a one-route `measure: "speed"` Map graph built end-to-
 matching a direct ClickHouse query over the same TMC/date range, with a populated legend and zero
 console/page errors.
 
-### Route/TMC Info Box graphs (added 2026-07-28)
+### Route/TMC Info Box graphs (added 2026-07-28; `speed` measure + multi-measure added 2026-08-12)
 
-`{graphType: "InfoBox", measure: "reliability"|"travelTime"|"length"|"aadt"|"hoursOfDelay", grain?:
-"route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or per-TMC) summary table — the
-single most consistent panel across the old corpus after Route Map (Route Info Box appears in 100%
-of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
+`{graphType: "InfoBox", measure: "speed"|"reliability"|"travelTime"|"length"|"aadt"|"hoursOfDelay",
+grain?: "route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or per-TMC) summary table —
+the single most consistent panel across the old corpus after Route Map (Route Info Box appears in
+100% of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
 `route_comparison` — see the composition-rules analysis in
-`planning/transportny/tasks/current/client-request-to-report-skill.md`).
+`planning/transportny/tasks/completed/client-request-to-report-skill.md`).
+
+**`measure` may also be an array of 2+ of the above, for a multi-measure box** — N columns in one
+table, matching the old tool's real shape (e.g. `measure: ["speed", "travelTime"]` renders exactly
+like the old tool's combined "Speed, Travel Time" Route Info Box). Composed fresh per report (each
+measure's own value column pulled from its already-existing single-measure template, assembled into
+a new state — never a combinatorially-named shared template) rather than through
+`build_route_info_box_section_state`'s single-measure clone path. **Not every combination is valid**:
+`reliability` can never combine with anything else (a completely different join mechanism — see
+below); `hoursOfDelay` can't combine with `speed`/`length`/`aadt` (their join requirements collide on
+the same table slot). An invalid combination fails the build with a clear message
+(`check_info_box_measure_combo()` in `info_box_templates.py`) rather than composing silently-wrong
+SQL. `speed`+`travelTime`+`length`+`aadt` all combine freely with each other.
+
+**`measure: "speed"` (added 2026-08-12) is the real plain speed-in-mph measure** (`miles / time`,
+the same `SPEED_EXPR` the AVL Graph `speed` measure uses) — verified against the actual old tool
+source (`dataTypes.js`'s `toSpeed`/`speedReducer`) that Route Info Box's "Speed" column was always
+this, never the reliability/LOTTR-TTTR bucket below. Do not confuse the two: `"speed"` here is
+plain mph; `"reliability"` (next paragraph) is a completely different pm3-backed measure that the
+old tool's own internal code confusingly also called "speed" internally.
 
 **This is not an AVL Graph.** Its element-type is `Spreadsheet`, not `AVL Graph`, and like Route Map
 it's composed by shelling out to `convert_old_reports.py --route-info-box-section` (new
 `build_route_info_box_section_state` function) rather than `applyMeasurePick` — same reuse principle,
-reusing the exact template-minting machinery (`ensure_pm3_join_template`/
+reusing the exact template-minting machinery (`ensure_pm3_join_template`/`ensure_info_box_speed_template`/
 `ensure_info_box_traveltime_template`/`ensure_info_box_length_template`/`ensure_info_box_aadt_template`/
 `ensure_info_box_delay_template`) built for old-report conversion (rounds 18/38/40).
 
-**Unlike Route Map, there is no per-report baking step.** Every one of the five measure buckets
+**Unlike Route Map, there is no per-report baking step.** Every one of the six measure buckets
 queries live at render time via the cloned template's own join (a cross-engine `pgFederated` join
-against source 1410's per-year view for `reliability`; a plain ClickHouse join for the other four) —
-the same `fetchMode:"force"`/`comparisonSeries` mechanism an AVL Graph section already uses. So an
-Info Box graph composes in one pass, before route resolution, and there is no placeholder-vs-baked
-distinction the way Route Map has one.
+against source 1410's per-year view for `reliability`; a plain ClickHouse join against `META_JOIN`
+— source 582/983, joined on `(tmc, year)` so every row resolves against its own date's year, not a
+frozen snapshot — for the other five) — the same `fetchMode:"force"`/`comparisonSeries` mechanism
+an AVL Graph section already uses. So an Info Box graph composes in one pass, before route
+resolution, and there is no placeholder-vs-baked distinction the way Route Map has one. See
+`src/dms/documentation/npmrds-data-sources.md`'s `META_JOIN` entry for the full
+year-correctness fix (2026-08-12) — `speed`/`length`/`aadt` used to read a different, static,
+year-agnostic join (`TMC_IDENTIFICATION_JOIN`, since removed) that silently returned a
+possibly-wrong-vintage `miles`/`aadt` value regardless of what year was actually being queried.
 
 `grain` defaults to `"route"`: each assigned route renders as its own row via the `__series`
 comparison-series discriminator (same fan-out mechanism as an AVL Graph section — the structural
@@ -378,6 +627,13 @@ resolve live at render time via `comparisonSeries` + dms-server's `__ANCHOR__(<e
 reading whichever route the page's own route list currently has first — same convention a difference
 graph's implicit anchor uses (see "Difference graphs: anchor and sign" above), and no `anchor` field
 of its own: reorder `routes[]` to change which one is first instead.
+
+**`measure` may also be `["speed", "travelTime"]` (added 2026-08-12) for a multi-measure box** — a
+value+delta column PAIR per measure (`__series`, Speed, % vs Main, Travel Time, % vs Main — 5
+columns total), matching the old tool's real combined shape. Only these two measures exist for
+Route Compare and they already share the same join, so (unlike Info Box) there's no combination to
+reject. `speed`'s own join was corrected 2026-08-12 to `META_JOIN` (year-matched), same fix as
+Info Box/AVL Graph's `speed` — see `src/dms/documentation/npmrds-data-sources.md`.
 
 No `resolution`, no `comparisonMode` (a `RouteCompare` graph's delta column already *is* the
 %-diff-from-anchor; `comparisonMode: "difference"` is rejected as redundant), no `caption`
@@ -464,13 +720,24 @@ textarea control in the shared `graph_new/config.jsx`.
 Route Map sections have no equivalent — Map's view component doesn't render a title/description at
 all — so `caption` on a `Map` graph fails the build rather than silently doing nothing.
 
-### `resolution` is per-graph today, and that is expected to change
+### `resolution` is per-graph, and that is settled (corrected 2026-08-14)
 
-In the old tool, resolution is a property of the *attached route*
-(`GeneralGraphComp.getResolution()` reads `activeRouteComponents[0].settings.resolution`) and is
-read at render time. Deriving it dynamically is explicitly deferred in the report-page-redesign
-findings. So `graphs[].resolution` is the current shape, **not the settled one** — expect it to
-migrate to `routes[]`. Don't build anything that depends on it staying where it is.
+In the old tool, resolution was a property of the *attached route*
+(`GeneralGraphComp.getResolution()` read `activeRouteComponents[0].settings.resolution`). This
+section used to predict `graphs[].resolution` would migrate to `routes[]` to match — that never
+happened, and having now checked directly where `resolution` is actually consumed, it shouldn't:
+`composeMeasureConfig.js`'s `buildXAxisColumn` uses it to build the graph's `xAxis` COLUMN
+definition (the GROUP BY / bucketing expression) once for the whole graph, at compose time, before
+any route is resolved — every route sharing that graph shares that column shape by construction
+(that's what lets them be plotted/compared together at all). This is a fundamentally different
+kind of thing than `weekdays`/`startTime`/`endTime` (WHERE-clause filter values, genuinely built
+per-route inside `transformReportRoutes` — see "`weekdays`/`startTime`/`endTime` moved to
+`graphs[]`" above), which is why THEY moved to a per-route-capable shape (`routeWindows`) and
+`resolution` did not: making resolution per-route would mean different routes on one graph
+literally querying different column shapes, not just different filters — a materially bigger,
+unasked-for change. (Checked concretely once, 2026-08-14: a suspected "Bar Graph Summary needs two
+different resolutions on one graph" case turned out, on inspection, to just be a date-filter
+difference — still `summary` resolution throughout — not a real counterexample.)
 
 ---
 
@@ -493,7 +760,17 @@ wrong date window or a mis-assigned arm before anything is written.
 node scripts/npmrds-reports/report_build.mjs <spec>.json --dry-run 2>/dev/null | jq '.[].key'
 ```
 
-Working specs live in `scratchpad/npmrds-sub/report-specs/`.
+Throwaway/experimental specs (scratch tests, one-off dev-time probes) live in
+`scratchpad/npmrds-sub/report-specs/` — gitignored, ephemeral, never treated as fixtures (see
+`feedback_specs_are_ephemeral_not_fixtures` memory; the DB page, not the file, is the source of
+truth for anything built from one of these).
+
+**Specs meant to be the durable source of truth for a real page** — currently the 12 Dynamic Report
+catalog templates — are the deliberate exception (Ryan's direction, 2026-08-11): those live
+git-committed at `scripts/npmrds-reports/dynamic_report_specs/<slug>.json`, one file per template, named
+after its page slug. The point of committing them is exactly to stop needing the old DB as an input
+for this class of page — `--update` rebuilds the live page from the committed file, so the file (not
+a DB row) is what a reviewer reads and what a future edit starts from.
 
 ---
 
@@ -540,28 +817,30 @@ missing; see the task file for the trigger.
   "graphs": [
     { "key": "overview", "title": "Travel Time - all periods",
       "graphType": "LineGraph", "measure": "travelTime", "resolution": "5-minutes",
-      "comparisonMode": "plain",
+      "comparisonMode": "plain", "weekdays": { "saturday": false, "sunday": false },
       "caption": "The line graph above overlays both periods. A lower after-trace during peak hours indicates the signals reduced delay.",
       "why": "One overlaid trace per direction and period, so the client can see the peak shape shift." },
     { "key": "nb_diff", "title": "Northbound Travel Time Difference",
       "graphType": "BarGraph", "measure": "travelTime", "resolution": "5-minutes",
-      "comparisonMode": "difference", "anchor": "nb_before",
+      "comparisonMode": "difference", "anchor": "nb_before", "weekdays": { "saturday": false, "sunday": false },
       "why": "Before minus after per bucket. Positive bars mean travel time fell." }
   ],
   "routes": [
     { "id": "nb_before", "route_id": 2195805,
       "name": "NY-9D Northbound (I-84 to Main St) - Jan-Feb 2025",
       "startDate": "2025-01-01", "endDate": "2025-02-28",
-      "color": "#D72638", "weekdays": { "saturday": false, "sunday": false },
+      "color": "#D72638",
       "graphs": ["overview", "nb_diff"] },
     { "id": "nb_after", "route_id": 2195805,
       "name": "NY-9D Northbound (I-84 to Main St) - Jan-Feb 2026",
       "startDate": "2026-01-01", "endDate": "2026-02-28",
-      "color": "#007F5F", "weekdays": { "saturday": false, "sunday": false },
+      "color": "#007F5F",
       "graphs": ["overview", "nb_diff"] }
   ]
 }
 ```
 
 Note both route instances share `route_id: 2195805` — same corridor, different window. That is the
-before/after idiom.
+before/after idiom. `weekdays` is set once per graph here (both routes on each graph want the same
+Monday–Friday mask) rather than per route — see "`weekdays`/`startTime`/`endTime` moved to
+`graphs[]`" above.

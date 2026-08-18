@@ -91,6 +91,21 @@ page by page"):
 Rendered checks: Playwright at 1440px, screenshots in session scratchpad; all relative links
 re-verified.
 
+## Addendum 2026-08-12 — data refresh + current-state report rewritten
+
+The team renovated the admin panel (112 → 75 pages: legacy trees and CRUD variants deleted; a new
+"Your Plan Data" landing at `/forms_redesign`; Forms hub redesign sitting in draft; annex page
+renamed "Jurisdictional Annex Entry Page", 106-section draft) and half-repaired the LHMP_IA
+"Add Data" rows (5/10 now hit form hubs; ~94 county-template sections still render dead cached
+URLs — live confirmation of the cache-staleness fragility). County template page-set unchanged
+(annex twin now hidden; Select Jurisdiction 92 sections); guide gained a "Guide Home Dup" fork
+and now has ZERO links to /admin (prose only); Suffolk published a wave (169 drafted / 104
+published). Full details: findings ledger §17; fresh pulls in `references/admin IA/data/`.
+**`admin-workflow-current-state.html` was rewritten from scratch against this refresh** (owner
+request: fresh-state voice, no change-tracking). The two direction reports still cite the
+2026-08-06 snapshot — their page-move tables reference deleted trees; update them once a
+direction is picked.
+
 ## Open items / next steps
 
 - [ ] **Owner decision: direction** (A / B1 / B2). Recommendation in the series: **B1**, with the
@@ -133,6 +148,38 @@ re-verified.
   was rewritten: two tagging systems exist (section tags + LHMP_IA registry), joining them is the
   remaining work. Findings ledger §16 + `summaries/narrative_inventory.txt` hold the full
   per-page slot inventory.
+
+  **v3 of the in-plan version (2026-08-07, same-day owner feedback: uneven units of work; needs
+  3/4 + 1/4 layout):** `plan-status-plan.html` rebuilt — (1) 3/4 main column + 1/4 **sticky rail**
+  (status overview card + "On this page" anchor nav with per-group counts), per the pages
+  sectionGroup rail convention; (2) the writing plan is now **uniform tables, one row per slot**
+  (What to write · Where in the plan [Chapter › Page hierarchy] · Requirement [FEMA element
+  chips] · Status · Write), task groups 1–6 + Done; (3) **hazards are per-hazard tabs** (16
+  CSS-only radio tabs, 11–12 rows each; absent slots rendered as dashed "Absent · fix template"
+  rows); (4) every row has an **info popup** (CSS hover) carrying the REAL Local-Guidance text
+  extracted from the template beside that slot (234/267 slots have adjacent guidance; 210 wired),
+  a requirement gloss (element letter → review-tool area), and status detail (draft-vs-published
+  explanation). Guidance extraction: `scratchpad session/slot_guidance.json` via
+  `extract_guidance.mjs` (nearest Inline-Guidance neighbor heuristic). The admin twin
+  intentionally stays on the v2 compact form (matrix as the cross-hazard view) until the
+  direction decision; its header comment says so. NOTE: session scratchpad was pruned mid-day —
+  pulls restored from `references/admin IA/data/` (the archive saved the session).
+
+  **v5 (2026-08-07, owner requests): BOTH versions now share the deep layout.** Additions over v3:
+  (1) a dedicated **Guidance column** — book icon only where guidance exists (231 of 256 rows),
+  hover popup shows the REAL "Local Guidance" text the page editor displays above that box
+  (re-extracted at fuller length, preceding-biased window: 234/267 slots have guidance;
+  `extract_guidance3.mjs` → `data/slot_guidance.json` in the admin IA folder); (2) **"Local
+  Context" rows auto-named from the section band they sit under** — "Local Context — for
+  Transportation / Energy / Critical Buildings and Infrastructure / …" (31 rows named; derived
+  from nearest preceding titled section); (3) requirement chips gloss their review-tool area on
+  hover; status chips popup draft-vs-published detail; (4) the admin version got the full v3+v5
+  restructure inside its admin chrome (main 3/4 + sticky rail 1/4; its Write links jump out to
+  the county site — narrative is written in the plan even when status lives in /admin).
+  OPEN ITEM fed back to the template: adopt the derived Local-Context names as real slot titles
+  in pattern 1300890 (31 renames; would make every checklist and the editor itself clearer), and
+  add the 3 missing hazard slots (Wind/Snowstorm "Local Hazard Summary", Extreme Cold "Local
+  Actions").
 - [ ] HoC worklist mockup (Direction B phase 3; promotes hidden template prototype 1676369).
 - [ ] Human visual pass on the three reports (rendered checks done via Playwright at 1440px;
   screenshots in session scratchpad).

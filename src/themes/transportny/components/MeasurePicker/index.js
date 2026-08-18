@@ -102,6 +102,17 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
         anchorInvert: pick.anchorInvert,
         externalSourceColumns,
         defaultColors,
+        // A caller (report_build.mjs, which knows its spec's true route→graph
+        // assignment up front) may pass `seriesCount` straight through
+        // `partial`; otherwise best-effort from whatever route assignment
+        // already made it into `_measurePick.routeIds` via ReportRouteList
+        // BEFORE this measure pick — the common live-authoring order, but not
+        // guaranteed (picking a measure before any route is assigned leaves
+        // this undefined, so composeMeasureConfig falls back to its BC
+        // categorical default; re-opening the picker after routes exist
+        // recomposes with the real count). Stripped back out of `pick` below
+        // before it's persisted — it's a compose-time hint, not stored state.
+        seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
     });
     if (!composed) return false;
 
@@ -140,6 +151,12 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
         state.display.yAxis = { ...(state.display.yAxis || {}), ...composed.displayPatch.yAxis };
     }
     if (composed.displayPatch.colors) state.display.colors = composed.displayPatch.colors;
+    if (composed.displayPatch.tooltip) {
+        state.display.tooltip = { ...(state.display.tooltip || {}), ...composed.displayPatch.tooltip };
+    }
+    if (composed.displayPatch.legend) {
+        state.display.legend = { ...(state.display.legend || {}), ...composed.displayPatch.legend };
+    }
 
     if (composed.comparisonSeriesCombine) {
         state.comparisonSeries = { ...(state.comparisonSeries || {}), combine: composed.comparisonSeriesCombine };
@@ -177,8 +194,10 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
     // `weekdays`/`start`/`end`/`routeIds` (design push #2, 2026-08-06) are NOT: those are read
     // straight back out of this same field by useGraphPublish.js's per-graph transformReportRoutes
     // to build the actual query filters, making this object functionally load-bearing for those
-    // three fields, not just cosmetic.
-    state.display._measurePick = pick;
+    // three fields, not just cosmetic. `seriesCount` (if a caller passed one in `partial`) is
+    // NOT persisted here — it's only a compose-time hint for the colors block above.
+    const { seriesCount: _seriesCountHint, ...pickToStore } = pick;
+    state.display._measurePick = pickToStore;
     return true;
 }
 
@@ -191,13 +210,17 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 // `partial` is merged onto the current pick read from
 // state.display._measurePick — callers only need to pass the field(s)
 // they're changing.
-// The 4 fields every self-bound section type reads back out of `_measurePick` at publish time
+// The fields every self-bound section type reads back out of `_measurePick` at publish time
 // (useGraphPublish.js's transformReportRoutes) — the only ones a Map card's Routes/When pills
 // are allowed to write. `graphType`/`measure`/`resolution`/`comparisonMode`/`anchorInvert` are
 // AVL-Graph-only bookkeeping for fields composeMeasureConfig produced; Map has no such fields to
 // bookkeep (see the Map short-circuit below), so DEFAULT_PICK's AVL-Graph defaults for them must
-// never be merged onto a Map section's stored state.
-const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds'];
+// never be merged onto a Map section's stored state. `routeWindows` added 2026-08-14 alongside the
+// legacy `weekdays`/`start`/`end` scalar — the scalar is what a Map's `_measurePick` happened to
+// carry before that migration and is left alone here (harmless, unread), but `routeWindows` is the
+// only thing `transformReportRoutes` actually consults now; omitting it here would silently drop
+// QuickControls' "When" pill writes on a Map card the exact way it did before this list was fixed.
+const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds', 'routeWindows'];
 
 export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
     // Map has no compose path at all: composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment

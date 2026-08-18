@@ -75,10 +75,10 @@ composition contract note below).
 
 Not a Python-side concept at all: `convert_old_reports.py` never references this source
 explicitly because every template it mints is a deep-copy of an existing `avl_graph_template`
-row that already carries this `externalSource` (same "inherited for free" mechanism as
-`TMC_IDENTIFICATION_JOIN` — see that entry's note below). A from-scratch JS picker has no
-template to clone from, so — same reasoning, same fix — this needed to become an explicit,
-first-class vocabulary entry.
+row that already carries this `externalSource` (same "inherited for free" mechanism `META_JOIN`
+used to have, before it became an explicit constant too — see that entry's note below). A
+from-scratch JS picker has no template to clone from, so — same reasoning, same fix — this
+needed to become an explicit, first-class vocabulary entry.
 
 **Composition contract**: unlike `joins` (which only ever populate `join.sources.tableN`, a
 namespace no other author control writes to), `externalSource` is also the generic "Dataset"
@@ -89,32 +89,39 @@ forced value.
 
 ### `joins`
 
-Three registered DAMA sources, keyed by the same names `TEMPLATE_SPECS`/this file's measures use:
+Two registered DAMA sources, keyed by the same names `TEMPLATE_SPECS`/this file's measures use:
 
-- **`TMC_IDENTIFICATION_JOIN`** (source 455/view 3464, "NPMRDS TMC Identification V5/V6") — backs
-  `table1.miles` for `speed`/`speedTruck`. **Not a pre-existing Python constant** —
-  `convert_old_reports.py` never declares this join explicitly for speed/travel-time
-  `TEMPLATE_SPECS` entries because it inherits it "for free" by deep-copying
-  `tmc_travel_time_line_graph`'s live `stateJson` (`TEMPLATE_BASE_NAME`, see `ensure_graph_templates`)
-  — a hand-authored row that predates the converter and already carries this join. See
-  `src/dms/documentation/npmrds-data-sources.md`'s "Which measures use which source" table for the
-  full trace (confirmed live 2026-07-20 against `scratchpad/npmrds-sub/old-reports/
-  avl_graph_templates.json`, a dump of the 3 hand-built base template rows). **A from-scratch
-  picker has no base template to clone from and must wire this join explicitly** for any `speed`/
-  `speedTruck` measure — this is the whole reason this join needed to become an explicit constant
-  here rather than staying implicit.
 - **`META_JOIN`** (source 582/view 983, "NPMRDS_V6_tmc_meta") — `table1` for
-  `hoursOfDelay`/`avgHoursOfDelay`/`co2Emissions_*`/`avgCo2Emissions_*` (provides
-  `avg_speedlimit`/`aadt`/`congestion_level`/`directionality`/`f_system`/`faciltype`, none of
-  which `TMC_IDENTIFICATION_JOIN`'s source carries). Year-matched via a calculated `dsColumn`
-  (`toYear(ds.date) as meta_year`) — every fact row resolves against its own date's year.
-- **`AADT_DIST_JOIN`** (source 2056/view 3524, "aadt_distributions") — `table2` for the same
+  `speed`/`speedTruck`/`hoursOfDelay`/`avgHoursOfDelay`/`co2Emissions_*`/`avgCo2Emissions_*`, and
+  (Python-side) Info Box's `speed`/`length`/`aadt`/`hoursOfDelay` and Route Compare's `speed`.
+  Provides `miles`/`aadt`/`avg_speedlimit`/`congestion_level`/`directionality`/`f_system`/
+  `faciltype` — everything every one of these measures reads. Year-matched via a calculated
+  `dsColumn` (`toYear(ds.date) as meta_year`) — every fact row resolves against its own date's
+  year, not a frozen snapshot.
+
+  **The ONE canonical TMC-metadata join — corrected 2026-08-12, do not reintroduce a second
+  one.** Used to be split across this join (delay/CO2 only) and a separate
+  `TMC_IDENTIFICATION_JOIN` (source 455/view 3464, "NPMRDS TMC Identification V5/V6", static
+  single-snapshot-per-TMC, no year dimension — `speed`/`speedTruck` and Info Box's
+  `length`/`aadt` used to read this one instead). Found live 2026-08-12 (Ryan's own review):
+  `vocabulary.json`'s old `TMC_IDENTIFICATION_JOIN` column list (11 columns) was itself a stale,
+  hand-trimmed cache — the real live table (`DESCRIBE TABLE
+  npmrds_meta.s582_v983_NPMRDS_V6_tmc_meta`) has 58 columns and is a confirmed **strict
+  superset** of `TMC_IDENTIFICATION_JOIN`'s ~43 columns (literally every column, verbatim names),
+  plus geometry (`wkb_geometry`) and administrative codes it never had. Coverage confirmed
+  complete: 2016–2026, all 11 years, no gaps. So `TMC_IDENTIFICATION_JOIN` was never actually
+  buying anything `META_JOIN` couldn't already provide, while its lack of a year dimension made
+  every query that used it silently wrong for any year other than whatever vintage view 3464
+  happens to be pinned to (confirmed real, not theoretical: ~96% of TMCs have `miles` that
+  genuinely changes across years — real network-vintage changes, not rounding noise). Removed
+  entirely — `speed`/`speedTruck`'s `requiresJoin` repointed to `META_JOIN`, the shared base
+  template (`tmc_travel_time_line_graph`, row 2187310) that every fresh AVL Graph section clones
+  from updated to carry `META_JOIN` as its own default, and `fetchTmcMiles.js` (the one
+  non-report consumer, RRL's route-length display) migrated too — see its own header comment for
+  how it picks a year with no report date-context available.
+- **`AADT_DIST_JOIN`** (source 2056/view 3524, "aadt_distributions") — `table2` for the
   delay/CO2 measure family; AADT-epoch-distribution weighting, joined via a computed `dist_key`
   calculated `dsColumn`.
-
-Note that `speed`/`speedTruck` and the delay/CO2 family use **different** `table1` sources
-(455/3464 vs. 582/983) — both happen to expose a `miles` column, but only 582/983 also carries
-`avg_speedlimit`/`congestion_level`/etc.
 
 ### `resolutions`
 
@@ -123,6 +130,18 @@ physical column by name (`epoch` or `date`, no calculated expression needed); `"
 a full column dict with the given SQL `expr`, targeted `"xAxis"`, grouped, sorted ascending —
 append `"as <alias>"` is already part of `expr`. These reuse `TEMPLATE_SPECS`' exact resolution
 expressions (`WEEKDAY_EXPR`/`HOUR_EXPR`/`QUARTER_HOUR_EXPR`/`MONTH_EXPR`).
+
+A third shape, `xAxis.type: "series"` (`"summary"`, added 2026-08-11) — no time bucket at all; the
+x-axis IS the comparisonSeries `__series` discriminator itself (one bar per route, a whole-range
+aggregate each — the old tool's "Bar Graph Summary" panel). `buildXAxisColumn` in
+`composeMeasureConfig.js` tags this column `origin: 'comparison-series'` rather than the usual
+`MEASURE_PICKER_COLUMN_ORIGIN` — deliberately, so the reconcile step (origin-keyed, never touches
+`target`) treats it as already-existing rather than adding a second, colliding `__series` column
+targeted `categorize`. No `sort`, so bars keep comparisonSeries' own arm order. `composeMeasureConfig`
+also force-sets `displayPatch.legend` (`show: false` for `summary`, `true` otherwise, always
+explicit, never left stale) — a long raw-expression legend label was a real, live-observed bug in
+the old converter's equivalent template (BarGraph.jsx's legend layout can squeeze the chart to 0
+width).
 
 ### `comparisonModes`
 
@@ -151,7 +170,7 @@ not a raw value, and going from "which raw value is good" to "which delta sign i
 polarity for every measure — a positive travelTime delta means time *fell* (good), the opposite end
 of the domain from where a low raw travelTime value (also good) sits. So diff-mode reversal is the
 negation of the raw flag. See "Finding: difference-graph color scale reads backwards" in
-`planning/transportny/tasks/current/report-spec-and-build-script.md` for the full derivation and live evidence.
+`planning/transportny/tasks/completed/report-spec-and-build-script.md` for the full derivation and live evidence.
 
 ## Explicitly NOT in this file (composition-layer or out-of-scope, not omitted by oversight)
 
@@ -169,7 +188,17 @@ negation of the raw flag. See "Finding: difference-graph color scale reads backw
 - **Bar Graph Summary's resolution-parameterized `avgHoursOfDelay` variants**
   (`_avg_delay_summary_expr`/`AVG_DELAY_SUMMARY_5MIN_EXPR`/`_DAY_EXPR`/`_WEEKDAY_EXPR`) — a
   genuinely different composition (map-combinator keyed by a per-resolution bucket, not a plain
-  `sum()/count()`), out of scope for this round's ingredient extraction.
+  `sum()/count()`), out of scope. **Everything else about "Bar Graph Summary" IS now in this
+  file** (added 2026-08-11, the `"summary"` resolution key) — every OTHER measure's summary value
+  is a literal alias of its own normal `expr`/`fn` (confirmed by reading
+  `convert_old_reports_lib/expressions.py`: `SPEED_SUMMARY_EXPR = SPEED_EXPR`, etc. — these are
+  grain-agnostic ClickHouse map/array aggregates, correct whether they fold one 5-minute bucket or
+  the whole date range into one row), so only `avgHoursOfDelay` needed the exclusion above.
+  `composeMeasureConfig` returns `null` (composes nothing) for `resolution: "summary"` +
+  `measure: "avgHoursOfDelay"` specifically, and `report_build.mjs` hard-fails that combo at spec
+  validation time rather than silently building a broken section — see
+  `report-spec-and-build-script.md`'s Dynamic Report follow-on for the full build/verification
+  record.
 - **Route Map choropleth value-expressions** (`SPEED_VALUE_EXPR`, `TRAVEL_TIME_VALUE_EXPR`,
   `HOURS_OF_DELAY_VALUE_EXPR`, `ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION`) — Map is a
   genuinely separate mechanism (per-year template, choropleth paint baking, no `display.colors`)

@@ -57,6 +57,43 @@ One row per ACR callback. Columns prioritize what's useful for filtering / sorti
 
 See `schema.js` for the canonical column list. See `normalize.js` for how each payload is mapped.
 
+## Is it actually running? — `GET /streams/:id/health`
+
+```bash
+curl "https://<host>/dama-admin/<pgEnv>/now_playing/streams/<id>/health?key=<webhook_secret>"
+```
+
+```json
+{
+  "ok": true,
+  "stale": false,
+  "source_id": 7,
+  "last_event_at": "2026-08-14T18:17:03.266Z",
+  "age_seconds": 42,
+  "rows_last_hour": 14,
+  "stale_after_seconds": 1800
+}
+```
+
+`ok` describes the **feed**, not the request — a reachable endpoint returning
+`ok: false` means the stream has stopped producing detections. HTTP is 200 either
+way, because the request itself succeeded. A stream is stale when nothing has
+arrived for `stale_after_seconds` (default 1800; override per call with
+`?stale_after=<seconds>` for a stream on a different cadence), or when it has
+never produced a row at all — an empty table is exactly the state a stream sits
+in when its webhook URL never worked.
+
+> `ok` used to be a hardcoded `true`, so this endpoint answered "healthy" on
+> every day of a 21-day outage on the WCDB stream (2026-07-24 → 2026-08-14). If
+> you are monitoring a stream, alert on `stale`, and remember that `age_seconds`
+> comes from the **database** clock — the same clock that writes `received_at` —
+> so it is not affected by skew on whatever host serves the route.
+
+**Health reads the shared database, not the receiver.** Two dms-server hosts
+pointed at the same pgEnv return identical answers, so a healthy response does
+not tell you *which* host is receiving the webhook. To identify the receiver, set
+`DMS_PUBLIC_URL` per deploy and check which host ACR's callback URL names.
+
 ## Auth model
 
 JWT middleware in dms-server is decorative (sets `req.availAuthContext.user` to `null` if no token, never blocks). Each route enforces:

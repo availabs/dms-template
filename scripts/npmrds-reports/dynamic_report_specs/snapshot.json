@@ -1,0 +1,85 @@
+{
+  "title": "Snapshot",
+  "slug": "converted_reports/snapshot",
+  "dynamicReport": true,
+  "description": "The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.",
+  "tags": ["category:behavioral"],
+  "difficulty": "beginner",
+  "_note": "Reconstructed via --from-page 2210358, cross-referenced against the snap row's route_comps->graphIds (this page predates _measurePick, same as Bi-directional — --from-page could only recover graphType). Only 4 legacy comps survive live (comp-0/'2023'+comp-8/'All-time Average' sharing group 163185; comp-16/comp-17, two separate '2023' groups 6476/6475 that turned out to be a duplicate/redundant slot split, not a real 2nd dimension — no directionality or 2nd-corridor concept is in this report's own description). Per apply_today_relative_patches.py's own REPORTS[2210358] patch (comp-0/16/17 all collapsed to ONE 'Current Year' name+formula, comp-8 to 'Trailing 3 Years' -- 'All-time Average' folded into Trailing 3 Years per Ryan's own prior direction, 'the split data gotcha' -- 'Ryan's \"3 years for all of these\"'), simplified down to exactly 2 real routes sharing one slot group: Current Year (yearof) and Trailing 3 Years (year-2year->3year). Reconstructed 3 completely orphaned graphs (Monthly, Weekday x2 -- 'Daily Average Speed By Month', 'Average Speed by Day of Week', 'Total Hours of Delay by Day of Week' referenced ZERO live routes, their dedicated sub-routes long gone) using graph-level resolution (month/weekday) on Current Year -- no dead routes needed, same pattern as This Month vs. Last Month vs. Last Year and Seasonality. Merged 2 redundant single-comp Maps (g1 fed only by the now-dropped 6476 slot, g11 already covering everything) into one Map fed by both real routes. Dropped 2 graphs needing AM/PM/Off-Peak sub-routes ('Average Speed by Peak', 'Average Avg. Hours of Delay by Peak') -- this is the SAME still-unverified startTime/endTime+dateFormula gap flagged on Monthly Speed Comparisons (report_build.mjs's own validation at line ~649 hard-requires a literal startDate/endDate whenever startTime/endTime are set, which a dateFormula-driven slot route never has at spec-write time -- confirmed genuinely blocking, not just unverified, by reading the validation code directly). Now 2 templates need it -- worth building for real once the sweep is done, not hypothetical anymore. **2026-08-14 routeWindows migration**: weekdays/startTime/endTime moved off routes[] onto graphs[] platform-wide (report_build.mjs/useGraphPublish.js) -- trailing_3yr's weekend exclusion moved from the route object onto map_speed/line_speed's own routeWindows (it only applies to those 2 graphs it's actually assigned to; current_year, sharing those graphs, stays unrestricted). Same change also newly unblocks the 2 AM/PM/Off-Peak graphs dropped above -- see the routeWindows entries under 'Not done' if/when those get built for real, no longer hypothetical-blocked.",
+  "graphs": [
+    { "key": "map_speed", "title": "Route Map, Speed",
+      "graphType": "Map", "measure": "speed",
+      "routeWindows": { "trailing_3yr": [{ "weekdays": { "sunday": false, "saturday": false } }] },
+      "why": "Current Year + Trailing 3 Years choropleths on one Map — merges 2 redundant single-comp legacy Maps into full coverage. Trailing 3 Years keeps its weekend exclusion via routeWindows since Current Year (sharing this graph) has none — see the 2026-08-14 routeWindows migration note below." },
+    { "key": "bar_speed_wholeday", "title": "Average Speed",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "5-minutes",
+      "why": "Whole-day speed profile for the current year." },
+    { "key": "bar_avgdelay_wholeday", "title": "Avg. Hours of Delay",
+      "graphType": "BarGraph", "measure": "avgHoursOfDelay", "resolution": "5-minutes",
+      "why": "Whole-day avg-hours-of-delay profile for the current year." },
+    { "key": "bar_speed_month", "title": "Daily Average Speed By Month",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "month",
+      "why": "Restores the orphaned monthly breakdown (dedicated sub-route gone) via graph-level month resolution on Current Year." },
+    { "key": "bar_delay_month", "title": "Monthly Hours of Delay by Month",
+      "graphType": "BarGraph", "measure": "hoursOfDelay", "resolution": "month",
+      "why": "Added 2026-08-14 — the old template's graph-comp-5 (Route Bar Graph, hoursOfDelay, month resolution) hit the Python converter's unmapped_graph gap during the original conversion and was silently dropped, never a hypothetical gap once checked against the gap log directly. Same graph-level month resolution on Current Year as bar_speed_month, just the delay measure." },
+    { "key": "line_speed", "title": "Route Line Graph, Speed",
+      "graphType": "LineGraph", "measure": "speed", "resolution": "5-minutes", "comparisonMode": "plain",
+      "routeWindows": { "trailing_3yr": [{ "weekdays": { "sunday": false, "saturday": false } }] },
+      "why": "Overlays Current Year and Trailing 3 Years as their own 5-minute speed profiles. Trailing 3 Years keeps its weekend exclusion via routeWindows, same reason as map_speed." },
+    { "key": "grid_speed", "title": "Average Speed by TMC by 5-minute Epoch",
+      "graphType": "GridGraph", "measure": "speed", "resolution": "5-minutes",
+      "why": "Per-TMC speed grid for the current year." },
+    { "key": "bar_speed_weekday", "title": "Average Speed by Day of Week",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "weekday",
+      "weekdays": { "saturday": false, "sunday": false },
+      "why": "Restores the orphaned day-of-week breakdown via graph-level weekday resolution on Current Year. Weekdays-only (2026-08-14): the old comp this was reconstructed from actually excluded Mon/Tue/Sat/Sun uniformly (a copy-paste artifact across every one of this template's old comps, confirmed by checking the raw old-DB route_comps — not a deliberate 3-day choice), so a plain Weekdays-only mask is a more sensible replacement, not a literal match. Set directly on this graph only, thanks to routeWindows — no risk to bar_speed_wholeday/bar_speed_month/etc. sharing the same Current Year route." },
+    { "key": "bar_delay_weekday", "title": "Total Hours of Delay by Day of Week",
+      "graphType": "BarGraph", "measure": "hoursOfDelay", "resolution": "weekday",
+      "weekdays": { "saturday": false, "sunday": false },
+      "why": "Same reconstruction as bar_speed_weekday, hours of delay, same weekdays-only reasoning." },
+    { "key": "compare_years", "title": "Route Compare, Speed / Travel Time — Current Year vs. Trailing 3 Years",
+      "graphType": "RouteCompare", "measure": ["speed", "travelTime"],
+      "why": "Added 2026-08-14 — interim stand-in for the old template's Route Compare Component (graph-comp-8), which is NOT reproducible as originally built: it compared AM/PM/Off-Peak sub-routes of a completely different corridor (route_id 6476/6475, a 2nd input the new 1-route Snapshot has no source for) against 'All-time Average' — a mixed-time-filter comparison this platform still can't express even with routeWindows (the arms and the baseline would need genuinely different windows on ONE RouteCompare graph, and there's no real 2nd corridor to source the arms from regardless). This compares the same 2 real routes every other graph on this page already uses (Current Year as anchor vs. Trailing 3 Years), same multi-measure mechanism already proven on annual_average_study's compare_years panel. A different comparison than the old caption describes, not a faithful reproduction." },
+    { "key": "info_box_snapshot", "title": "Route Info Box, Speed / Travel Time",
+      "graphType": "InfoBox", "measure": ["speed", "travelTime"],
+      "routeWindows": {
+        "current_year": [
+          {},
+          { "startTime": "06:00", "endTime": "10:00", "color": "#E07A00" },
+          { "startTime": "16:00", "endTime": "20:00", "color": "#7B3294" }
+        ]
+      },
+      "why": "Added 2026-08-14, consolidated into ONE component same session — reproduces all 4 of the old template's separate Info Box graph-comps (comp-1 whole-day, comp-14 AM, comp-13 PM, comp-15 'All-time Average'/Trailing 3 Years) as 4 rows in one box via routeWindows array-expansion (Current Year 3x + Trailing 3 Years once), the same mechanism already proven on bar_speed_peak_summary — not 4 separate sections the way the old tool built it (that was itself the old tool's own route-duplication workaround for not having this). AM/PM use the same preset-not-literal reasoning as the peak summaries below (the old comp-13/14's actual startTime/endTime was identical to the unfiltered comp, so there's no real old window to reproduce faithfully)." },
+    { "key": "bar_speed_peak_summary", "title": "Route Bar Graph Summary, Speed — AM/PM/Off-Peak",
+      "graphType": "BarGraph", "measure": "speed", "resolution": "summary",
+      "routeWindows": {
+        "current_year": [
+          { "startTime": "06:00", "endTime": "10:00", "color": "#E07A00" },
+          { "startTime": "16:00", "endTime": "20:00", "color": "#7B3294" },
+          { "startTime": "10:00", "endTime": "16:00", "color": "#1B75BC" }
+        ]
+      },
+      "why": "Added 2026-08-14 — reproduces the INTENT of the old template's graph-comp-11 ('Average Speed by Peak'), dropped at original conversion time since Design Push #2 removed per-route time-of-day sub-views. Now buildable via routeWindows: the SAME Current Year route shown 3 times on one Bar Graph Summary, each under its own window (AM/PM/Off-Peak, using the Midday preset for Off-Peak) instead of the old tool's route-duplication workaround. Same caveat as the Info Boxes: the old comp-5/6/9 this was based on shared one identical literal window regardless of AM/PM/Off label, so this is a real filter, not a literal reproduction of old (seemingly buggy) data." },
+    { "key": "bar_delay_peak_summary", "title": "Route Bar Graph Summary, Total Hours of Delay — AM/PM/Off-Peak",
+      "graphType": "BarGraph", "measure": "hoursOfDelay", "resolution": "summary",
+      "routeWindows": {
+        "current_year": [
+          { "startTime": "06:00", "endTime": "10:00", "color": "#E07A00" },
+          { "startTime": "16:00", "endTime": "20:00", "color": "#7B3294" },
+          { "startTime": "10:00", "endTime": "16:00", "color": "#1B75BC" }
+        ]
+      },
+      "why": "Added 2026-08-14 — same reconstruction as bar_speed_peak_summary, reproduces graph-comp-12 ('Average Avg. Hours of Delay by Peak'). Uses hoursOfDelay (total), not avgHoursOfDelay — resolution:summary doesn't support avgHoursOfDelay (its whole-range value depends on which time grain it would have been averaged from; confirmed by the build's own rejection, not assumed), same reason bar_delay_weekday elsewhere on this page already uses hoursOfDelay over avgHoursOfDelay." }
+  ],
+  "routes": [
+    { "id": "current_year", "slot": true, "name": "Current Year", "route_slot_group": "$0",
+      "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
+      "color": "#360030",
+      "graphs": ["map_speed", "bar_speed_wholeday", "bar_avgdelay_wholeday", "bar_speed_month", "bar_delay_month", "line_speed", "grid_speed", "bar_speed_weekday", "bar_delay_weekday", "compare_years", "info_box_snapshot", "bar_speed_peak_summary", "bar_delay_peak_summary"] },
+    { "id": "trailing_3yr", "slot": true, "name": "Trailing 3 Years", "route_slot_group": "$0",
+      "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
+      "color": "#038203",
+      "graphs": ["map_speed", "line_speed", "compare_years", "info_box_snapshot"] }
+  ]
+}

@@ -5,8 +5,8 @@ from .vocab import COLOR_RANGE_GRAPH_TYPES, DEFAULT_DISPLAY_DATA, DIFFERENCE_GRA
 from .expressions import AADT_OVERRIDE_SUBS, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION
 from .template_specs import MEASURE_EXPR
 from .db import dms, now_iso, old_falcor_get
-from .info_box_templates import ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
-from .route_compare_template import ensure_route_compare_template
+from .info_box_templates import build_route_info_box_section_state_multi, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
+from .route_compare_template import build_route_compare_section_state_multi, ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, REVERSE_COLORS_MEASURES, ROUTE_MAP_MEASURES, ROUTE_MAP_VALUE_EXPR, apply_route_map_paint, bake_route_map_choropleth_paint, bake_route_map_delay_paint, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template, pooled_route_map_values
 
 def build_route_map_section_state(measure, year, templates, dry_run,
@@ -86,14 +86,17 @@ def build_route_map_section_state(measure, year, templates, dry_run,
     return element_type, state, gap
 
 
-# The five measure buckets convert_report's real classifier maps for Route/TMC
+# The measure buckets convert_report's real classifier maps for Route/TMC
 # Info Box (see INFO_BOX_GRAIN/INFO_BOX_*_BUCKET above), named for the
 # spec-driven path below. "reliability" is the LOTTR/TTTR/Freeflow pm3 join —
 # INFO_BOX_BUCKET's old internal key is the confusingly-reused `("speed",
 # "travel_time_all")`, but calling it "speed" here would collide with AVL
 # Graph's real speed-in-mph measure, so the spec-facing name is a deliberate
-# rename, not a new bucket.
-INFO_BOX_SPEC_MEASURES = ("reliability", "travelTime", "length", "aadt", "hoursOfDelay")
+# rename, not a new bucket. "speed" (added 2026-08-12) is that real plain
+# speed-in-mph measure (SPEED_EXPR) — verified against the actual old tool
+# source that Route Info Box's "Speed" column was always this, never
+# reliability; see ensure_info_box_speed_template's own docstring.
+INFO_BOX_SPEC_MEASURES = ("speed", "reliability", "travelTime", "length", "aadt", "hoursOfDelay")
 
 
 def build_route_info_box_section_state(measure, grain, templates, dry_run,
@@ -131,7 +134,24 @@ def build_route_info_box_section_state(measure, grain, templates, dry_run,
     not the intended failure path.
 
     Returns (element_type, state) — no `gap` in the return, unlike
-    build_route_map_section_state, since there is nothing to leave unbaked."""
+    build_route_map_section_state, since there is nothing to leave unbaked.
+
+    `measure` may be a single string (original, single-measure shape, unchanged
+    below) or a list of >= 2 measures (2026-08-12: multi-measure — one column
+    per measure in one box, matching the old tool's real Route Info Box shape;
+    see build_route_info_box_section_state_multi's own header comment for why
+    this composes fresh instead of cloning a template like the single-measure
+    path below still does)."""
+    if isinstance(measure, list):
+        if len(measure) == 1:
+            measure = measure[0]  # falls through to the single-measure path below
+        else:
+            for m in measure:
+                if m not in INFO_BOX_SPEC_MEASURES:
+                    raise ValueError(f"unknown Info Box measure {m!r} — known: {INFO_BOX_SPEC_MEASURES}")
+            if grain not in ("route", "tmc"):
+                raise ValueError(f"unknown Info Box grain {grain!r} — must be 'route' or 'tmc'")
+            return build_route_info_box_section_state_multi(measure, grain, templates, dry_run)
     if measure not in INFO_BOX_SPEC_MEASURES:
         raise ValueError(f"unknown Info Box measure {measure!r} — known: {INFO_BOX_SPEC_MEASURES}")
     if grain not in ("route", "tmc"):
@@ -150,6 +170,9 @@ def build_route_info_box_section_state(measure, grain, templates, dry_run,
             raise ValueError(f"unknown bin {bin_!r} — known: {sorted(RELIABILITY_BIN_LABELS)}")
         templates = ensure_pm3_join_template(grain, year, bin_, templates, dry_run)
         tmpl_name = f"{grain}_info_box_reliability_{year}_{bin_}"
+    elif measure == "speed":
+        templates = ensure_info_box_speed_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_speed"
     elif measure == "travelTime":
         templates = ensure_info_box_traveltime_template(grain, templates, dry_run)
         tmpl_name = f"{grain}_info_box_traveltime"
@@ -193,7 +216,22 @@ def build_route_compare_section_state(measure, templates, dry_run):
     measure, reused across every report.
 
     Returns (element_type, state) — no `gap`, since there is nothing to leave
-    unbaked (mirrors Info Box's return shape, not Route Map's)."""
+    unbaked (mirrors Info Box's return shape, not Route Map's).
+
+    `measure` may be a single string (unchanged below) or a list of >= 2
+    measures (2026-08-12: multi-measure, e.g. Speed + Travel Time — matching
+    the old tool's real Route Compare Component shape, see
+    build_route_compare_section_state_multi's header comment). Only 2 measures
+    exist for Route Compare (ROUTE_COMPARE_MEASURES) and both already share
+    the same join, so unlike Info Box there's no combination to reject."""
+    if isinstance(measure, list):
+        if len(measure) == 1:
+            measure = measure[0]
+        else:
+            for m in measure:
+                if m not in MEASURE_EXPR:
+                    raise ValueError(f"unknown Route Compare measure {m!r} — known: {sorted(MEASURE_EXPR)}")
+            return build_route_compare_section_state_multi(measure, templates, dry_run)
     if measure not in MEASURE_EXPR:
         raise ValueError(f"unknown Route Compare measure {measure!r} — known: {sorted(MEASURE_EXPR)}")
     templates = ensure_route_compare_template(measure, templates, dry_run)
@@ -749,6 +787,11 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
     is_self_bound = any(s.get("functionId") == "comparison_series" and s.get("enabled")
                          and s.get("paramKey") == "$self" for s in subscribers)
     if is_self_bound:
+        # Changing this field's shape? Every golden-corpus entry tagged
+        # "display._measurePick.routeIds" (scripts/npmrds-reports/report_probe_fixtures/
+        # golden-corpus.json) needs re-verifying — `node scripts/npmrds-reports/
+        # probe_corpus.mjs --only <key>` before/after — see
+        # src/dms/skills/regression-testing-npmrds-reports.md.
         window = resolve_measure_pick_window(info["assigned"], comps_by_id or {}, gaps,
                                               old_graph.get("id"))
         state.setdefault("display", {})["_measurePick"] = {

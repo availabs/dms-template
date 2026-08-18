@@ -9,7 +9,7 @@ import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
 import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
 import { useRouteMileage } from './useRouteMileage';
-import { resolveRouteDates } from './relativeDateResolution';
+import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from './relativeDateResolution';
 import { formatDateShort } from './utils';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
@@ -126,6 +126,37 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const routeSlotGroups = distinctRouteSlotGroups(routes);
   const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routeSlotGroups.length;
 
+  // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3): a
+  // route can derive its date from a synthetic "Today (view time)" base exactly like it would
+  // derive from any other real route — no changes needed to relativeDateResolution.js's resolver,
+  // just one extra entry in the array it resolves (see effectiveRoutes below). `usesTodayAnchor` is
+  // checked against the raw (unresolved) `routes`/slots, since dateFormula/derivedFromRoute are
+  // authored fields that persist regardless of which real route fills a slot.
+  const usesTodayAnchor = routes.some((r) => r.derivedFromRoute === TODAY_ANCHOR_COMP_ID);
+  // Dynamic Reports only: a viewer can override "today" via a `type: 'baseDate'` page filter
+  // (searchKey 'asOf'), registered alongside `routeSlots` by toggleDynamicReport below — mirrors
+  // the routes URL param exactly. A normal report, or an author in edit mode previewing a formula,
+  // always sees the real wall-clock date; there's no URL-driven "open" flow to attach an override
+  // to outside Dynamic Reports' own entry gate (Ryan's call: fold the override into that gate only,
+  // not a persistent always-visible control).
+  const baseDateFilter = pageState?.filters?.find(f => f.type === 'baseDate');
+  // Same array-or-scalar normalization `routeIds` already applies to `routeSlotFilter.values`
+  // above — a URL-bound filter's `values` arrives wrapped in an array (even for a single value),
+  // so a bare truthiness check on the array itself would always pass, even when it only contains
+  // an empty string (e.g. `['']`, the default before any viewer has picked a date).
+  const baseDateRawValues = Array.isArray(baseDateFilter?.values) ? baseDateFilter.values : [baseDateFilter?.values];
+  const asOfOverride = isDynamicReport && !isEdit ? (baseDateRawValues.filter(Boolean)[0] || null) : null;
+  // defaultAnchorDate() is real wall-clock today MINUS NPMRDS_DATA_LAG_DAYS, not literal today —
+  // NPMRDS's own ClickHouse speed table publishes on a ~15-21 day lag (confirmed live 2026-08-10,
+  // see relativeDateResolution.js), so a literal-today anchor would silently query a date range
+  // with zero real rows. A viewer's explicit `?asOf=` override is never adjusted this way — that's
+  // their own deliberate pick, same as picking any other historical date.
+  const anchorDateStr = asOfOverride || defaultAnchorDate();
+  const todayAnchorEntry = useMemo(
+    () => ({ route_comp_id: TODAY_ANCHOR_COMP_ID, name: 'Today (view time)', startDate: anchorDateStr, endDate: anchorDateStr }),
+    [anchorDateStr]
+  );
+
   // A viewer sees the resolved real routes (both in this panel and in every self-bound graph);
   // an author always authors against the raw placeholders. Identical to `routes` for every normal
   // (non-dynamic) report.
@@ -138,7 +169,13 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // mode, via RouteRow's normal date editor) recomputes every derived row immediately, same
   // "never persist a stale value" architecture as applyDerivedPageVariables. A no-op, identity-
   // stable pass-through for every route/slot without a formula.
-  const effectiveRoutes = resolveRouteDates((isDynamicReport && !isEdit) ? resolvedRoutes : routes);
+  //
+  // `todayAnchorEntry` rides along in the SAME array passed to resolveRouteDates so a route
+  // deriving from TODAY_ANCHOR_COMP_ID resolves through the exact same lookup-by-route_comp_id
+  // path as deriving from any real sibling — then it's filtered back out, since it was never a
+  // real persisted route to render as its own row.
+  const effectiveRoutes = resolveRouteDates([...((isDynamicReport && !isEdit) ? resolvedRoutes : routes), todayAnchorEntry])
+    .filter((rt) => rt.route_comp_id !== TODAY_ANCHOR_COMP_ID);
 
   const { mileageByRouteCompId } = useRouteMileage({ apiLoad, routes: effectiveRoutes });
 
@@ -171,13 +208,20 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
   // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
   // draft_sections. Does NOT retroactively convert any already-added concrete routes into slots —
-  // build a Dynamic Report starting from a blank routes list.
+  // build a Dynamic Report starting from a blank routes list. Also registers the `baseDate`-typed
+  // filter (searchKey 'asOf') alongside `routeSlots` — inert unless some route is later wired to
+  // derive from the Today anchor, but registered unconditionally here so that capability is always
+  // available on a Dynamic Report without needing to re-toggle this switch off and on.
   const toggleDynamicReport = async (enabled) => {
     if (!canMutate || !apiUpdate || !item?.id) return;
-    const withoutRouteSlots = (item.filters || []).filter(f => f.type !== 'routeSlots');
+    const withoutDynamicFilters = (item.filters || []).filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
     const nextFilters = enabled
-      ? [...withoutRouteSlots, { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' }]
-      : withoutRouteSlots;
+      ? [
+          ...withoutDynamicFilters,
+          { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' },
+          { id: 'dyn-report-asof', searchKey: 'asOf', useSearchParams: true, values: '', type: 'baseDate' },
+        ]
+      : withoutDynamicFilters;
     updateAttribute?.('', '', { filters: nextFilters });
     await apiUpdate({ data: { id: item.id, filters: nextFilters }, skipNavigate: true });
   };
@@ -210,12 +254,17 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // every route that isn't itself already derived — single-hop only, matches the resolver's own
   // constraint (a base is never itself derived by construction). RouteRow further excludes the row
   // being edited from this same list (it can't derive from itself). Carries startDate/endDate too
-  // so RouteRow can show a live "resolves to" preview without a second lookup.
+  // so RouteRow can show a live "resolves to" preview without a second lookup. `todayAnchorEntry`
+  // is always prepended — "Today (view time)" is an eligible base for any route on any report,
+  // Dynamic or not (Ryan's call: available everywhere, not gated to Dynamic Reports).
   const derivableSiblings = useMemo(
-    () => effectiveRoutes
-      .filter((rt) => !rt.dateFormula)
-      .map((rt) => ({ route_comp_id: rt.route_comp_id, name: rt.name, startDate: rt.startDate, endDate: rt.endDate })),
-    [effectiveRoutes]
+    () => [
+      todayAnchorEntry,
+      ...effectiveRoutes
+        .filter((rt) => !rt.dateFormula)
+        .map((rt) => ({ route_comp_id: rt.route_comp_id, name: rt.name, startDate: rt.startDate, endDate: rt.endDate })),
+    ],
+    [effectiveRoutes, todayAnchorEntry]
   );
   // Per-row "used as a base for: ..." lookup — purely a render-time convenience so an author
   // editing a route can see it has dependents before switching it TO a derived row itself (the
@@ -275,7 +324,12 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
       selectionMode="exact"
       requiredCount={routeSlotGroups.length}
       initialSelectedRoutes={resolvedGroupRoutes}
-      onConfirm={(selectedRoutes) => {
+      // Ryan's call: fold the "as of" override into this same blocking gate rather than a
+      // persistent always-visible control — only shown when this report actually has a route
+      // deriving from the Today anchor, so every Dynamic Report that doesn't use it is unaffected.
+      showAsOfDate={usesTodayAnchor}
+      asOfDateValue={asOfOverride || anchorDateStr}
+      onConfirm={(selectedRoutes, asOfDate) => {
         // Rebuild by GROUP POSITION rather than trusting the modal's Map insertion order —
         // `selectedRoutes` mixes routes pre-populated from the URL (already resolved) with
         // newly-picked ones for whichever group(s) were still missing, and a missing group
@@ -284,7 +338,15 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
         const stillNeededIds = selectedRoutes.map((r) => r.id).filter((id) => !routeIds.includes(id));
         let cursor = 0;
         const fullIds = routeSlotGroups.map((_, j) => routeIds[j] ?? stillNeededIds[cursor++]);
-        const params = convertToUrlParams({ [routeSlotFilter.searchKey]: fullIds });
+        const paramsObj = { [routeSlotFilter.searchKey]: fullIds };
+        // `baseDateFilter` may not be registered yet on a report authored before this feature
+        // shipped (toggleDynamicReport only adds it going forward) — silently skip the URL param
+        // in that case rather than writing an unbound one nothing will ever read.
+        // convertToUrlParams silently drops any key whose value isn't itself an array
+        // (`!Array.isArray(values)` check, _utils/index.js) — `fullIds` above already satisfies
+        // this; a bare scalar date string here would too, and vanish from the URL with no error.
+        if (usesTodayAnchor && baseDateFilter) paramsObj[baseDateFilter.searchKey] = [asOfDate || anchorDateStr];
+        const params = convertToUrlParams(paramsObj);
         navigate(`${pathname}?${params}`);
       }}
     />
@@ -468,7 +530,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                   setEditingRouteNameIndex(null);
                 }}
                 onCancelEditName={() => setEditingRouteNameIndex(null)}
-                derivedFromRouteName={r.dateFormula ? effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name : null}
+                derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
                 baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
                 derivableSiblings={derivableSiblings}
                 isEditingDates={editingRouteDatesIndex === i}
