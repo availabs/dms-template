@@ -41,6 +41,29 @@ mny/design/
 │   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
 │   ├── datasets-files.html             the datasets pattern
 │   ├── site-management*.html           admin surfaces
+│   ├── admin-home-v2.html              ADMIN PANEL HOME — redesign of live page 2379993.
+│   │                                   ⚠ THE ONE PAGE HERE DRAWN INSIDE THE ADMIN SHELL: 302px
+│   │                                   sidenav to scale, NO topnav (admin sets topNav.size:'none'),
+│   │                                   bands that are already white cards, and the real
+│   │                                   **908px section canvas** (sectionArray caps every group at
+│   │                                   max-w-[1020px] minus 56px gutters, at ANY viewport width).
+│   │                                   Read its header comment before drawing any admin-pattern
+│   │                                   page — the 1440px full-bleed canvas the other mockups use
+│   │                                   does not exist inside /admin.
+│   │                                   Content: dark identity band · the four 44 CFR 201.6 plan
+│   │                                   elements 4-across · six dataset tiles 3-across · three
+│   │                                   destinations across. No band is split, no rowspan used.
+│   ├── admin-home.html                 earlier admin landing (2026-07 pass; superseded by v2)
+│   ├── admin-forms.html                PLAN DATA · task view — dataset index, statewide scope,
+│   │                                   Browse/Add/Bulk-edit per card. Redesign of Forms (1336681).
+│   ├── admin-forms-insights.html       PLAN DATA · insight view — county-planner audience,
+│   │                                   measured county-scoped metrics, one button per dataset.
+│   │                                   This is the one built live on page 2369408.
+│   ├── admin-forms-lisa-frank.html     PLAN DATA · palette study (Lisa Frank). Same data, for fun.
+│   ├── admin-{state,county,jurisdiction}-actions-*.html
+│   │                                   15 tier-duplicated Actions pages (2026-07 Phase 1;
+│   │                                   superseded shape — see the redesign task doc)
+│   ├── plan-status-dashboard.html      county plan-health metrics (adoption, coverage, NFIP)
 │   └── county-actions/               ← COUNTY ACTIONS WORKFLOW — one linked 6-page flow
 │       ├── dashboard.html              1 · county actions dashboard (stats + map + table + gap hand-off)
 │       ├── jurisdictions.html          2 · pick a jurisdiction, or tier the whole county
@@ -108,7 +131,7 @@ any page is at most two hops from any other. The sections are the site's real IA
 | Public Site | `pages/` | `home.html` |
 | Actions (Statewide) | `pages/` | `actions-dashboard.html` |
 | County Actions Workflow | `pages/county-actions/` | `dashboard.html` |
-| Admin Panel | `pages/` | `admin-forms.html` |
+| Admin Panel | `pages/` | `admin-home-v2.html` |
 | Site Management | `pages/` | `site-management-v2.html` |
 | Authoring Reference | `pages/` | `page-templates.html` |
 | Reports | `reports/` | `actions-qa.html` |

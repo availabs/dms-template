@@ -80,7 +80,11 @@ const theme = {
   },
   "layoutGroup": {
     "options": {
-      "activeStyle": "6"
+      // Was "6" — an index past the end of `styles`, which getComponentTheme
+      // silently resolved to styles[0]. Stating 0 outright keeps that exact
+      // behaviour and stops a newly appended style from becoming the default
+      // for every group that doesn't name a theme.
+      "activeStyle": "0"
     },
     "styles": [
       {
@@ -115,6 +119,23 @@ const theme = {
         "wrapper1": "w-full h-full flex-1 flex flex-row -mt-3",
         "wrapper2": "max-w-[1440px] w-full xl:px-[48px] mx-auto",
         "wrapper3": "flex flex-1 w-full flex-col relative h-full min-h-[200px]"
+      },
+      {
+        // Full-bleed dark band, mirroring mny/theme.js's `darkSection`. This file
+        // spreads over the mny theme, so its `layoutGroup` REPLACES mny's whole
+        // style list — without restating the style here, an admin page cannot
+        // express a dark band at all.
+        //
+        // The wrapper1/wrapper2 split is what makes "full bleed" possible:
+        //   wrapper1 — viewport width, carries the surface (topo line-art under a
+        //              steel-blue wash) so the band runs edge to edge;
+        //   wrapper2 — re-applies the 1440 cap + standard gutters, so content
+        //              inside still lines up with every other band on the page.
+        // Cards on this band need the dataCard `Dark` style to stay legible.
+        "name": "darkSection",
+        "wrapper1": "w-full h-full flex-1 flex flex-row pt-8 pb-10 bg-[linear-gradient(0deg,rgba(33,52,64,.96),rgba(55,87,107,.96)),url('/themes/mny/topolines.png')] bg-[size:500px]",
+        "wrapper2": "max-w-[1440px] w-full xl:px-[64px] md:px-4 mx-auto",
+        "wrapper3": "flex flex-1 w-full flex-col relative text-md font-light leading-7 p-4 h-full min-h-[200px]"
       },
       {
         "name": "full_width",

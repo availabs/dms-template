@@ -324,6 +324,41 @@ since it was the page's only statement that a donut says *which jurisdiction*, n
 so and offer the options rather than silently shipping the no-op — this one round-tripped twice
 before the ambiguity was named.
 
+## Round 12 — dashboard filters + table trim, eligibility rename (2026-08-04)
+
+- [x] **Action Readiness / Project Maturity moved out of the table and into the filter bar.** They
+      were added as columns in Round 9 and have no data on any action, so a column of "not recorded"
+      cost table width and told you nothing; as filter controls they're useful the moment data lands.
+      Table back to 6 columns, `min-w` 1250 → 980px.
+- [x] **All Actions title + narrative removed.** The filter bar now sits directly above the table and
+      labels the region; a heading wedged between the filters and the table they drive pushed the two
+      apart. CSV kept — it exports what the table is showing.
+- [x] **Filter bar moved** from between the cards and the map to directly above the table, still
+      page-scoped (verified `page-filters` is immediately before `actions-table` in section order).
+      Note reworded to "Filters the whole page, not just the table", since its new position no longer
+      implies that on its own.
+- [x] **`Priority` → `Local Priority`** in the table header (width 112 → 132px).
+- [x] **Screening questions → Eligibility questions.** The request named dashboard.html, but that
+      section lives on **action-view.html and action-edit.html** — renamed on both so the view/edit
+      pair agrees. Dropped the now-redundant "eligibility and" from the subtitle. The `#screening`
+      anchor / `data-name` identifiers were left alone (same call as `action-type-mix` when
+      "Mitigation approach" was renamed) so the 6 cross-page anchor links keep working.
+- [x] Bar tightened to a single row at the page cap: search `max-w` 320 → 240 and a shorter trailing
+      note. Verified at a real 1425px viewport — 8 items, 1140px inside a 1223px bar, one 34px row,
+      0 overflowing elements.
+
+### Two measurement traps hit this round (worth remembering)
+
+1. **`indexOf('          </div>')` also matches inside `'            </div>'`** — 10 spaces is a
+   substring of 12. The first run closed the header row at the inner `</div>` and orphaned the outer
+   one (div balance 110/111). Anchor such searches to a line start (`NL + '          </div>'`). A
+   pre-edit backup made the retry a one-liner; the guard caught it before anything shipped.
+2. **A collapsed Browser pane reports `clientWidth: 0`**, which makes every element look like it
+   overflows and every flex row look like it stacked — it briefly read as a horizontal-scroll
+   regression and a 7-row filter bar. Always assert `clientWidth > 0` (or resize the tab first) before
+   trusting layout numbers; `navigate` can also land in a **new** tab that the earlier resize never
+   touched.
+
 ### Incident — document corrupted mid-edit, then repaired
 
 A scripted edit passed HTML through a `String.replace()` **replacement string**. That HTML
