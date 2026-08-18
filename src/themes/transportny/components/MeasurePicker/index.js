@@ -210,13 +210,17 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 // `partial` is merged onto the current pick read from
 // state.display._measurePick — callers only need to pass the field(s)
 // they're changing.
-// The 4 fields every self-bound section type reads back out of `_measurePick` at publish time
+// The fields every self-bound section type reads back out of `_measurePick` at publish time
 // (useGraphPublish.js's transformReportRoutes) — the only ones a Map card's Routes/When pills
 // are allowed to write. `graphType`/`measure`/`resolution`/`comparisonMode`/`anchorInvert` are
 // AVL-Graph-only bookkeeping for fields composeMeasureConfig produced; Map has no such fields to
 // bookkeep (see the Map short-circuit below), so DEFAULT_PICK's AVL-Graph defaults for them must
-// never be merged onto a Map section's stored state.
-const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds'];
+// never be merged onto a Map section's stored state. `routeWindows` added 2026-08-14 alongside the
+// legacy `weekdays`/`start`/`end` scalar — the scalar is what a Map's `_measurePick` happened to
+// carry before that migration and is left alone here (harmless, unread), but `routeWindows` is the
+// only thing `transformReportRoutes` actually consults now; omitting it here would silently drop
+// QuickControls' "When" pill writes on a Map card the exact way it did before this list was fixed.
+const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds', 'routeWindows'];
 
 export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
     // Map has no compose path at all: composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment

@@ -44,7 +44,8 @@
       { f: 'workspace.html', t: 'county workspace' }, { f: 'action-view.html', t: 'action view' },
       { f: 'action-edit.html', t: 'action edit' },
     ]},
-    { key: 'panel', label: 'Admin Panel', dir: 'pages', landing: 'admin-forms.html', pages: [
+    { key: 'panel', label: 'Admin Panel', dir: 'pages', landing: 'admin-home-v2.html', pages: [
+      { f: 'admin-home-v2.html', t: 'home (redesign)' },
       { f: 'admin-forms.html', t: 'plan data · task view' },
       { f: 'admin-forms-insights.html', t: 'plan data · insight view' },
       { f: 'admin-forms-lisa-frank.html', t: 'plan data · lisa frank 🐬' },
@@ -81,6 +82,10 @@
       { f: 'admin-workflow-current-state.html', t: 'admin review 1 · current state' },
       { f: 'admin-direction-consolidate.html', t: 'admin review 2 · direction A' },
       { f: 'admin-direction-dissolve.html', t: 'admin review 3 · direction B' },
+      { f: 'admin-panel-status.html', t: 'admin panel status (aug)' },
+      { f: 'admin-panel-status-v2.html', t: 'admin panel status v2 · planner scope' },
+      { f: 'admin-panel-status-v3.html', t: 'admin panel status v3 · re-run + create/fetch/geo/permissions' },
+      { f: 'admin-panel-status-v4.html', t: 'admin panel status v4 · six families, dropped sections quarantined' },
     ]},
   ];
 

@@ -17,7 +17,8 @@
  * is REUSED from the already-ported map21 helpers.
  */
 
-const { omitPrefixColumns, dataKeyToQueryMap } = require('../map21/helpers.js');
+const { omitPrefixColumns, dataKeyToQueryMap } = require('./lib/helpers.js');
+const { erasForYear } = require('./lib/eras.js');
 
 /**
  * Lowercase a calculator result's keys (legacy LOWER_CASE_COLUMNS=true) and
@@ -173,8 +174,23 @@ const CONSTANT_META_COLUMNS = { metricsource: `'1'`, comments: `''` };
  * table page and ogr2ogr downloads surface columns in relation order — so it is
  * exposed separately from the SQL so it can be asserted without a database.
  */
+// R9/R4 — era tags are view-level columns, emitted per year branch as literals rather than stored.
+// They are listed here (and in buildPm3SourceColumns) because the datasets contract requires every
+// published column to appear in source metadata.columns — without it DataWrapper, the Table page and
+// the column-aware filter UI render an empty grid.
+const ERA_COLUMNS = [
+  { name: 'era_all_vehicles', display_name: 'Coverage Era (all vehicles)', type: 'TEXT',
+    desc: 'NPMRDS coverage era(s) this year falls in. Pipe-separated when the year spans a boundary. See data-types/pm3/lib/eras.js.' },
+  { name: 'era_all_vehicles_crosses_boundary', display_name: 'Crosses Coverage Era Boundary (all vehicles)', type: 'BOOLEAN',
+    desc: 'True when this year spans an all-vehicle coverage-era boundary; such a year must not be compared to another without a coverage control.' },
+  { name: 'era_truck', display_name: 'Coverage Era (truck)', type: 'TEXT',
+    desc: 'Truck-stream coverage era(s). The truck stream steps on DIFFERENT dates from the all-vehicle stream.' },
+  { name: 'era_truck_crosses_boundary', display_name: 'Crosses Coverage Era Boundary (truck)', type: 'BOOLEAN',
+    desc: 'True when this year spans a truck-stream coverage-era boundary.' },
+];
+
 function pm3ViewColumnNames({ metricColumns }) {
-  return ['ogc_fid', ...META_COLUMNS, ...metricColumns];
+  return ['ogc_fid', ...META_COLUMNS, ...metricColumns, ...ERA_COLUMNS.map((c) => c.name)];
 }
 
 function buildMetaSelectParts() {
@@ -218,9 +234,27 @@ function buildPm3ViewSql({ viewName, metricsTable, metaTableByYear, metricColumn
     ...metricColumns.map((c) => `m."${c}"`),
   ];
 
+  // R9/R4 — coverage-era tags. These are a pure function of `year`, so they are emitted as literals
+  // in each per-year UNION branch rather than stored: no duplication across 52,127 rows, and the
+  // value cannot drift out of sync with the row's year. Two tags because the era model differs by
+  // stream (see lib/eras.js), and a `crosses_boundary` flag because four of the nine boundaries fall
+  // mid-year — an annual figure for 2024 blends THREE all-vehicle eras, and reading it against
+  // another year without a coverage control compares feed history as much as traffic.
+  const eraParts = (year) => {
+    const av = erasForYear(year, 'all_vehicles');
+    const tk = erasForYear(year, 'truck');
+    const lit = (v) => (v === null ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`);
+    return [
+      `${lit(av.label)}::TEXT AS "era_all_vehicles"`,
+      `${av.crossesBoundary ? 'TRUE' : 'FALSE'}::BOOLEAN AS "era_all_vehicles_crosses_boundary"`,
+      `${lit(tk.label)}::TEXT AS "era_truck"`,
+      `${tk.crossesBoundary ? 'TRUE' : 'FALSE'}::BOOLEAN AS "era_truck_crosses_boundary"`,
+    ];
+  };
+
   const branches = years.map((year) => `
     SELECT
-      ${selectParts.join(',\n      ')}
+      ${[...selectParts, ...eraParts(year)].join(',\n      ')}
     FROM ${metricsTable} m
     JOIN ${metaTableByYear[year]} t1
       ON t1.tmc = m."tmc" AND t1.year = m."year"
@@ -245,6 +279,7 @@ module.exports = {
   buildMetaSelectParts,
   buildPm3ViewSql,
   pm3ViewColumnNames,
+  ERA_COLUMNS,
   DERIVED_META_COLUMNS,
   CONSTANT_META_COLUMNS,
   stripSqlAlias,

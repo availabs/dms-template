@@ -102,9 +102,16 @@ URLs — live confirmation of the cache-staleness fragility). County template pa
 and now has ZERO links to /admin (prose only); Suffolk published a wave (169 drafted / 104
 published). Full details: findings ledger §17; fresh pulls in `references/admin IA/data/`.
 **`admin-workflow-current-state.html` was rewritten from scratch against this refresh** (owner
-request: fresh-state voice, no change-tracking). The two direction reports still cite the
-2026-08-06 snapshot — their page-move tables reference deleted trees; update them once a
-direction is picked.
+request: fresh-state voice, no change-tracking). **Both direction reports were then aligned to
+the same numbers (same day):** Direction A now frames the renovation as its executed deletion
+half (75 → ~31; ledger math 34 kept + ~8 archived + ~33 deleted; Map 2 badges "today N"; seam
+table = the 5 remaining Add-Data rows + ~94 cached sections; Home-Dup references replaced by the
+"Your Plan Data" landing); Direction B's Map 3 re-tallies where all 75 pages land (Actions 6 ·
+Capabilities 6 · HoC 3 · Part 5 + Roles 4 · Dams 2 · annex copies 2 · Home/landing/CPS 7 ·
+catalogs ~24 · else ~16), retired-pages stat ~63, in-map "replaces admin's N pages" counts
+updated. NOTE also: the team added its own design-system mockups under a new ds-nav "Admin
+Panel" section (admin-forms.html task/insight/lisa-frank variants + plan-status-dashboard.html)
+— not yet reviewed against the Plan Status mockups in pages/lhmp-admin/.
 
 ## Open items / next steps
 

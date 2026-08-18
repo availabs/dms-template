@@ -40,7 +40,16 @@ const B = { crumb: randomUUID(), hdr: randomUUID(), frame: randomUUID() };
 const groups = [
   { name: B.crumb, index: 0, theme: "breadcrumb", position: "content", displayName: "Breadcrumb" },
   { name: B.hdr,   index: 1, theme: "header",     position: "content", displayName: "Header" },
-  { name: B.frame, index: 2, theme: "content",    position: "content", displayName: "Design mockup" },
+  // FULL-BLEED (Alex 2026-08-13: "give the design page the ability to use more width").
+  // The mockups are authored at 1280-1536px; inside the standard `content` band they were
+  // squeezed into max-w-[1480px] MINUS the pl-12/pr-8 gutters, so a 1536-wide mockup could
+  // never render at its own width. Widening needs BOTH caps lifted — they are independent:
+  //   1. layoutGroup `content`.wrapper2 = "… max-w-[1480px] pl-12 pr-8" → use `flush`
+  //      ("w-full", no cap, no gutter — the catalogue's documented full-bleed band);
+  //   2. sectionArray applies theme.layouts[full_width === 'show' ? 'fullwidth' : 'centered']
+  //      and `centered` is ANOTHER "max-w-[1480px] mr-auto" → so `full_width: "show"` too.
+  // Either one alone still caps at 1480 (the same pairing the workbench pages need).
+  { name: B.frame, index: 2, theme: "flush",      position: "content", displayName: "Design mockup", full_width: "show" },
 ];
 const S = [];
 const sec = (g, size, et, data, extra = {}) => S.push({ group: g, size, et, data, ...extra });

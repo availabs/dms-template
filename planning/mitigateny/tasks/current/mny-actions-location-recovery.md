@@ -110,3 +110,9 @@ from 74 to ~456.
 
 ## Log
 - 2026-07-16: task created; Phase 1 + Phase 2 (dry-run) complete; awaiting approval to apply.
+- 2026-08-14: **Phases 2–3 (apply to production) parked** — owner directed that current data stay
+  in place. The `apply=yes` rows of `data/location_updates.csv` are instead consumed by the new
+  derived source (geometry/precision overlay applied there, production untouched): see
+  [`mny-actions-cleaned-source.md`](./mny-actions-cleaned-source.md). This task stays open only
+  for the deferred follow-ups (tier D/E resolvers, rung-1 prose reading, capture-at-intake) and
+  in case a production backfill is ever re-approved.

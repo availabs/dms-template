@@ -9,7 +9,11 @@
   "graphs": [
     { "key": "line_speed", "title": "Route Line Graph, Speed",
       "graphType": "LineGraph", "measure": "speed", "resolution": "5-minutes", "comparisonMode": "plain",
-      "why": "Overlays Current Year, 1 Year Ago, and 2 Years Ago as their own 5-minute speed profiles." },
+      "routeWindows": {
+        "y1ago": [{ "weekdays": { "sunday": false, "saturday": false } }],
+        "y2ago": [{ "weekdays": { "sunday": false, "saturday": false } }]
+      },
+      "why": "Overlays Current Year, 1 Year Ago, and 2 Years Ago as their own 5-minute speed profiles. 2026-08-14 routeWindows migration: y1ago/y2ago's weekend exclusion moved here from routes[] — it had been silently dropped on this graph since Current Year (unrestricted) disagreed with it under the old scalar mechanism." },
     { "key": "bar_speed_weekday", "title": "Average Speed by Day of Week",
       "graphType": "BarGraph", "measure": "speed", "resolution": "weekday",
       "why": "Weekday-vs-weekend speed split for the current year — named directly by the report's own title/description." }
@@ -21,11 +25,11 @@
       "graphs": ["line_speed", "bar_speed_weekday"] },
     { "id": "y1ago", "slot": true, "name": "1 Year Ago", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-1year->1year", "derivedFromRoute": "__TODAY__",
-      "color": "#a65628", "weekdays": { "sunday": false, "saturday": false },
+      "color": "#a65628",
       "graphs": ["line_speed"] },
     { "id": "y2ago", "slot": true, "name": "2 Years Ago", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-2year->1year", "derivedFromRoute": "__TODAY__",
-      "color": "#999999", "weekdays": { "sunday": false, "saturday": false },
+      "color": "#999999",
       "graphs": ["line_speed"] }
   ]
 }

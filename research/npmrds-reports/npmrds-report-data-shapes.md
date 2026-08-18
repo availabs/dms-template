@@ -4,7 +4,7 @@ Field notes for reading/writing NPMRDS report pages (`npmrds_sub|page` + `npmrds
 sections + the `reports_snap_2` route snapshot). Every item here cost real time to rediscover at
 least once. Verified live against the dev DB on 2026-07-27 unless noted.
 
-Companion docs: `planning/transportny/tasks/current/report-spec-and-build-script.md` (the spec/build-script
+Companion docs: `planning/transportny/tasks/completed/report-spec-and-build-script.md` (the spec/build-script
 task), `reportroutelist-cross-repo-sync.md` (dms-template ↔ transportNY porting).
 
 ---

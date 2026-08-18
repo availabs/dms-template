@@ -46,62 +46,17 @@ export const SPEED_PERCENTILE_DOMAIN = [
   { name: "85th Percentile", value: "pctl_85" },
   { name: "95th Percentile", value: "pctl_95" },
 ];
+// The viewer-facing filter vocabulary. `measure` plus the dependent controls that
+// `updateSubMeasures()` switches on and off; geography and year are NOT filters here —
+// they live in pluginData (`geography`, `viewId`) and are rendered by controlsPanel.jsx.
+//
+// Removed 2026-08-12 (npmrds-macro-view-alignment.md P1): the dead commented-out
+// `network` / `conflation` (TMC vs Conflation vs RIS) blocks — the design removed that
+// control, TMC is the only network, and a commented-out remnant is not a decision record.
+// The commented-out `compareYear` filter went with them: compare-years is a follow-on
+// task, not a half-built control (Alex, 2026-08-12), and the View segment in
+// controlsPanel.jsx ships it visibly disabled instead of silently absent.
 const filters = {
-  // geography: {
-  //   name: 'Geography',
-  //   type: 'select',
-  //   domain: [],
-  //   value: [],
-  //   searchable: true,
-  //   accessor: d => d.name,
-  //   valueAccessor: d => d.value,
-  //   multi: true,
-  // },
-  // network: {
-  //   name: "Network",
-  //   type: "select",
-  //   value: "tmc",
-  //   multi: false,
-  //   searchable: false,
-  //   accessor: d => d.name,
-  //   valueAccessor: d => d.value,
-  //   domain: [
-  //     { name: "TMC", value: "tmc" },
-  //     { name: "Conflation", value: "con" },
-  //     // { name: "RIS", value: "ris" }
-  //   ]
-  // },
-  // conflation: {
-  //   name: "Conflation",
-  //   type: "select",
-  //   value: "tmc",
-  //   multi: false,
-  //   searchable: false,
-  //   accessor: d => d.name,
-  //   valueAccessor: d => d.value,
-  //   active: false,
-  //   domain: [
-  //     { name: "TMC", value: "tmc" },
-  //     { name: "RIS", value: "ris" },
-  //     { name: "OSM", value: "osm" }
-  //   ]
-  // },
-
-  // year: {
-  //   name: 'Year',
-  //   type: "select",
-  //   multi: false,
-  //   domain: [...YEARS],
-  //   value: YEARS[0]
-  // },
-  // compareYear: {
-  //   name: 'Compare Year',
-  //   type: 'select',
-  //   multi: false,
-  //   domain: ["none", ...YEARS],
-  //   value: "none",
-
-  // },
   measure: {
     order: 0,
     name: 'Performance Measure',
@@ -602,6 +557,11 @@ const updateLegend = (filters) => {
     case 'ted':
       range = getColorRange(7, "YlOrBr", true)
       format = ",.2~s";
+      // ⚠ MISSING `break` FOUND 2026-08-18: without it TED fell through into `emissions`
+      // and was painted with **Oranges**, i.e. the YlOrBr ramp declared on the line above
+      // has never been on screen. The two formats happen to be identical, so the only
+      // visible effect was the wrong ramp — TED now paints what this case says it does.
+      break;
     case 'emissions':
       range = getColorRange(7, "Oranges", true)
       format = ",.2~s";

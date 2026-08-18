@@ -178,7 +178,15 @@ scoping. Permissions/ACL is now the only piece of the original 2026-07-27 ruling
 10. **`weekdays` day-mask has zero UI control** despite the runtime already honoring it
    (`useGraphPublish.js:34`) — the spec can express "exclude weekends" today and the UI
    cannot. **Cheapest available win**: pure UI addition, no backend/runtime change
-   needed at all. **IMPLEMENTED 2026-07-30** — a "Days of Week" 7-button toggle row
+   needed at all. **SUPERSEDED, not reopened — checked 2026-08-14, no cleanup needed.**
+   `weekdays` moved off `routes[]` onto `graphs[]`/`routeWindows` (see
+   `dynamic-reports-and-route-tags.md`'s "Per-route window overrides" section), but the
+   `RouteRow.jsx` control described below was already retired 2026-08-06 by Design Push #2
+   itself — well before this migration — and rebuilt as QuickControls' graph-level "When" pill.
+   Nothing left in `RouteRow.jsx` to remove (confirmed directly in the current code, not
+   assumed — an initial claim that it still existed was wrong, caught before deleting anything
+   based on it). The pill it was replaced by is what's actually broken now — see gap #17.
+   Original implementation record kept below for history. **IMPLEMENTED 2026-07-30** — a "Days of Week" 7-button toggle row
    (Su–Sa) plus Weekdays/Weekends/All Days presets, added to `RouteRow.jsx`'s existing
    date-edit block (same `isEditingDates` gating as the peak-hour presets from gap #11,
    since a weekday mask is a natural companion to a date range, not its own edit mode).
@@ -206,7 +214,11 @@ scoping. Permissions/ACL is now the only piece of the original 2026-07-27 ruling
    ("Weekdays only"/"Weekends only") also survived a full page reload, confirming it
    reads the persisted shape correctly, not just client-side edit state.
 11. **Peak-hour-only filtering isn't a first-class Resolution/control.** **DONE 2026-07-28**
-    (both halves, same day). **Spec half**: `routes[].startTime`/`endTime` (`"HH:mm"`) expresses
+    (both halves, same day). **SUPERSEDED, not reopened — same correction as gap #10**:
+    `routes[].startTime`/`endTime` moved to `graphs[]`/`routeWindows`, but the `RouteRow.jsx`
+    preset row described below was already retired 2026-08-06 (Design Push #2, before this
+    migration) — nothing to remove there. QuickControls' pill is what's broken now — gap #17.
+    **Spec half**: `routes[].startTime`/`endTime` (`"HH:mm"`) expresses
     it, composed by `report_build.mjs` into the same combined date+time string `useGraphPublish.js`
     already turns into a real `epoch` filter — no runtime change needed, see `report-spec.md`'s
     `startTime`/`endTime` section for the design and live verification. **UI half**: a labeled
@@ -322,6 +334,52 @@ directly in this workflow's first-run experience.
     path; this is a complete absence of one. Not scoped/estimated — flagged for prioritization
     alongside the other 15, not folded into any of them.
 
+### QuickControls' "When" pill vs. the 2026-08-14 `routeWindows` migration (found AND fixed 2026-08-14)
+
+17. **QuickControls' graph-level "When" pill (Design Push #2, gap coverage above) was silently
+    disconnected from the runtime it's supposed to control — not just visually stale, actually
+    inert.** `QuickControlsRow` read `pick.weekdays`/`pick.start`/`pick.end` straight off
+    `state.display._measurePick`'s bare scalar (`QuickControls/index.jsx:78`), and
+    `applyTodPreset`/`setWeekday`/`applyDowPreset` wrote back to that same scalar via
+    `applyMeasurePick`. Since the `routeWindows` migration, `report_build.mjs` never wrote that
+    scalar at all (`DEFAULT_PICK` has no `weekdays`/`start`/`end` keys either), and
+    `useGraphPublish.js`'s `transformReportRoutes` never read it — `routeWindows` is the only
+    thing the runtime consults now. Concretely, on any graph rebuilt under the new mechanism: the
+    pill always displayed "all day · all" regardless of the graph's real window, and clicking a
+    time-of-day or day-of-week preset wrote to a field nothing read — a genuine silent no-op.
+    **FIXED same day, per Ryan's explicit direction: "just have the pill apply its values to all
+    routes on the graph (which matches the functionality it originally did)."** `currentWindow`
+    now derives display from the first assigned route's `routeWindows[id][0]` entry; all 3 handlers
+    (`setWeekday`/`applyDowPreset`/`applyTodPreset`) now write the SAME resulting window to every
+    currently-assigned route's `routeWindows` entry via a new `applyWindowToAllRoutes` helper,
+    merging onto whichever facet isn't changing so time-of-day and day-of-week stay independent
+    (matching the old scalar's behavior exactly). `toggleRoute` (both the multi-route and Map
+    `single` branches) now also copies the current window onto a newly-added route, so it can't
+    silently diverge from what the pill displays for routes already on the card. Also fixed
+    `MeasurePicker/index.js`'s `MAP_MEASURE_PICK_FIELDS` allowlist (Map's `applyMeasurePick`
+    short-circuit only forwards fields on this fixed list) — `routeWindows` was missing, which
+    would have silently dropped the pill's writes on any Map card specifically.
+
+    **Live-verified 2026-08-14** via a real edit/save/publish cycle (a headless-driven scratch page,
+    2 routes on one LineGraph, `find`/`javascript_tool` used to reach the section's true edit state
+    — the Settings-gear-then-pencil click documented in `traversing-dms-pages.md`): clicked "PM
+    Peak" then "Weekdays" in the pill's popover, saved, published. `dms raw get` on the persisted
+    section confirmed `_measurePick.routeWindows` held the IDENTICAL `{start:"16:00", end:"20:00",
+    weekdays:{sunday:false,saturday:false}}` window for BOTH assigned routes (`comp-0`/`comp-1`) —
+    uniform application confirmed, not just one route. The rendered chart's x-axis updated to
+    `16:05→19:50` live, matching the new window. `probe_corpus.mjs` full suite re-run clean (8/8,
+    modulo `one_week_study`'s already-documented cold-load flake, confirmed unrelated by re-probing
+    at a longer wait). Scratch page + sections deleted after.
+18. **No live UI anywhere lets an author set a PER-ROUTE window override within a multi-route
+    graph — a different, larger gap than #17.** Even a fixed QuickControls "When" pill would only
+    ever control the graph's one shared default; there is no control for "this specific route,
+    on this specific graph, gets its own window" (the actual `routeWindows` capability — an
+    AM/PM/Off-Peak Bar Graph Summary, a Route Compare comparing a peak sub-window against a
+    baseline). `report_build.mjs`'s spec format is the only way to author this today. Real design
+    work, not scoped — see `report-spec.md`'s "Live-authoring UI" section for the color-consistency
+    wrinkle this will also need to solve (routeWindows is deliberately graph-scoped, so there's no
+    single place "the AM variant of Current Year" lives that a picker could default a color from).
+
 ## Suggested priority order
 
 Ranked by (fix cost) × (how often it bites someone), not file order above. #4, #5,
@@ -358,6 +416,14 @@ rationale below still reads coherently) — pick up at #7 next.
     graph built through the UI shows it) but needs a real design decision first (the
     don't-clobber-a-custom-title problem, see gap #15's entry above) before it's cheap to
     build — not a same-session fix.
+11. ~~#17 QuickControls' "When" pill silently disconnected from `routeWindows`~~ — **DONE +
+    live-verified 2026-08-14**, same day it was found (it was a currently-live silent no-op, not
+    just missing functionality — ranked ahead of its list position for that reason). Applies one
+    uniform window to every route on the graph, per Ryan's explicit call not to build the
+    per-route case (#18) in the same pass. See gap #17's entry above for the full fix/verification.
+12. **#18 no UI for per-route `routeWindows` overrides** — real design work (composite
+    color-consistency problem, no existing analog), not a same-session fix; see
+    `report-spec.md`'s "Live-authoring UI" section.
 
 ## Testing checklist
 
@@ -392,8 +458,14 @@ rationale below still reads coherently) — pick up at #7 next.
       changing an unrelated field (Resolution) afterward left `invert:true` untouched;
       reverting the pick correctly cleared `invert` entirely rather than leaving
       `false`. Not yet ported to transportNY (same divergence noted for gap #10).
+- [x] Gap #17 (QuickControls "When" pill vs. `routeWindows`) — DONE + live-verified
+      2026-08-14: a real edit/save/publish cycle on a 2-route LineGraph confirmed
+      `_measurePick.routeWindows` persisted the identical `{start,end,weekdays}` window for
+      BOTH assigned routes after one pill interaction (PM Peak + Weekdays), and the rendered
+      chart's x-axis updated live to match. `probe_corpus.mjs` re-run clean afterward. Not
+      ported to transportNY.
 - [ ] Gap #2 investigated 2026-07-27 (could not reproduce, dropped) — remaining gaps
-      (#1, #3, #6, #7, #9, #12, #13, #14, #15) not started. Pick one gap per session per
+      (#1, #3, #6, #7, #9, #12, #13, #14, #15, #18) not started. Pick one gap per session per
       `feedback_isolate_shared_code_changes` if the fix touches shared theme/library
       code (most of these do: `ReportRouteList/`, `MeasurePicker/`, the routecreation
       map component).

@@ -362,7 +362,17 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     // measures (speed, travelTime, avgHoursOfDelay) where a raw sum is
     // meaningless. Reported live 2026-08-12: a Route Line Graph showed a
     // large, unitless "Line Total" next to each year's speed value.
-    displayPatch.tooltip = { showTotal: measure.fn === 'sum' };
+    displayPatch.tooltip = {
+        showTotal: measure.fn === 'sum',
+        // travelTime's own SQL expression is decimal MINUTES (vocabulary.json) — a 1-2 decimal
+        // round of that ("0.3 min") is both hard to read as a duration and prone to two visibly
+        // different bars/lines rounding to the identical tooltip value (reported live on a
+        // Travel Time BarGraph, both series showing "0.3"). `duration_mmss` (graph_new/utils.js)
+        // formats it as "M:SS" instead, which a viewer reads directly as a duration and which
+        // keeps whole-second precision. `yFormat` covers LineGraph's own tooltip read (see
+        // GraphComponent.jsx's hoverComp comment); `valueFormat` covers every other chart type.
+        ...(measureKey === 'travelTime' ? { valueFormat: 'duration_mmss', yFormat: 'duration_mmss' } : {}),
+    };
     // "summary" has no categorize-targeted column to key a legend off (the categorize
     // column IS the x-axis here — see buildXAxisColumn), so the legend would otherwise
     // fall back to the yAxis column's own raw SQL expression as its label — confirmed,

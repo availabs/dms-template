@@ -65,7 +65,7 @@
       "graphs": ["bar_delay_nb", "bar_tt_nb", "routecompare_nb", "map_speed_nb"] },
     { "id": "trailing_nb", "slot": true, "name": "Trailing 3 Years (NB)", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
-      "color": "#999999", "weekdays": { "sunday": true, "saturday": true },
+      "color": "#999999",
       "graphs": ["routecompare_nb", "map_speed_nb", "bar_delay_trailing_nb", "bar_tt_trailing_nb"] },
     { "id": "current_sb", "slot": true, "name": "Current Year (SB)", "route_slot_group": "$1",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
@@ -81,7 +81,7 @@
       "graphs": ["bar_delay_sb", "bar_tt_sb", "routecompare_sb", "map_speed_sb"] },
     { "id": "trailing_sb", "slot": true, "name": "Trailing 3 Years (SB)", "route_slot_group": "$1",
       "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
-      "color": "#f781bf", "weekdays": { "sunday": true, "saturday": true },
+      "color": "#f781bf",
       "graphs": ["routecompare_sb", "map_speed_sb", "bar_delay_trailing_sb", "bar_tt_trailing_sb"] }
   ]
 }
