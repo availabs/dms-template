@@ -52,6 +52,12 @@ const DATASETS = [
   { file: 'shows.csv',    name: 'WCDB Shows',    pk: 'show_id' },
   { file: 'schedule.csv', name: 'WCDB Schedule', pk: 'airing_id' },
   { file: 'events.csv',   name: 'WCDB Events',   pk: 'event_id' },
+  // Added 2026-08-15 for the public build. `administrators` replaces the legacy
+  // `eBoard` source, which is unreachable through every supported read path
+  // (see extract-administrators.mjs); `posts` is new — nothing has ever backed
+  // the blog.
+  { file: 'administrators.csv', name: 'WCDB Administrators', pk: 'admin_id' },
+  { file: 'posts.csv',          name: 'WCDB Posts',          pk: 'post_id' },
 ];
 
 const base = `${API_HOST}/dama-admin/${PG_ENV}`;

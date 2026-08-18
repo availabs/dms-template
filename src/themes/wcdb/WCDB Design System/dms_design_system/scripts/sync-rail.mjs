@@ -10,10 +10,12 @@
  * This is the transform the README tells you to re-run: edit the rail in
  * home.html, run this, done. Never hand-edit a copy.
  *
- * Excluded: `login.html` (an auth surface is a single attentional task) and
- * everything under `pages/admin/` (the rail is public-site chrome; an editing
- * surface is a working context, not a listening one). Both exclusions are
- * deliberate — if a page here has no rail, that is why.
+ * Excluded: `login.html` (an auth surface is a single attentional task),
+ * `airwaves.html` (its rail intentionally swaps the on-air panel for the
+ * featured post — see EXCLUDED below), and everything under `pages/admin/`
+ * (the rail is public-site chrome; an editing surface is a working context,
+ * not a listening one). Every exclusion is deliberate — if a page here has no
+ * rail, or a different one, that is why.
  *
  * The only difference between the canonical copy and a generated one is the
  * opening comment: home's describes the panel, a copy's says where to edit it.
@@ -62,9 +64,23 @@ if (!src.rail.includes(CANONICAL_HEAD)) {
 }
 const generated = src.rail.replace(CANONICAL_HEAD, GENERATED_HEAD);
 
+// Pages that do NOT hold a generated copy of the rail.
+//
+//   home.html      — the canonical copy this script propagates FROM.
+//   login.html     — an auth surface is a single attentional task.
+//   airwaves.html  — its rail is DELIBERATELY different: the featured post
+//                    takes the `card:on-air` slot (README, "Airwaves"). It
+//                    keeps the LISTEN LIVE block, so the page still carries the
+//                    stream — but syncing would overwrite the design decision
+//                    with the show panel. If the shared half of the rail
+//                    changes, update this page by hand and say so here.
+//   post.html      — same, more so: on an article page the rail IS the
+//                    article's photograph, with no text and no scrim.
+const EXCLUDED = new Set(['home.html', 'login.html', 'airwaves.html', 'post.html']);
+
 // Only the top level of pages/ — admin lives in a subfolder and is excluded.
 const targets = readdirSync(P, { withFileTypes: true })
-  .filter((d) => d.isFile() && d.name.endsWith('.html') && d.name !== 'home.html' && d.name !== 'login.html')
+  .filter((d) => d.isFile() && d.name.endsWith('.html') && !EXCLUDED.has(d.name))
   .map((d) => d.name)
   .sort();
 
