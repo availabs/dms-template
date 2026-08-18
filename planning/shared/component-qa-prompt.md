@@ -1,4 +1,4 @@
-# Component QA prompt — data-binding hygiene
+# Component QA prompt — binding hygiene & presentational relics
 
 A reusable prompt for auditing configured DMS data components (`Spreadsheet`,
 `Card`, `Graph`, `FilterComponent` — anything consuming `dataWrapper`) against
@@ -36,8 +36,14 @@ Promote to `src/dms/skills/` after a second site.
 >
 > Run checks A, B, C on any data-bound component; D, H, E and F additionally on
 > any `Map` section — **H before F**, since F's findings are usually H's blast
-> radius; G as a cheap add-on. Report as specified. **Do not modify any DMS
-> row.**
+> radius; G as a cheap add-on. Run I, J, K on any page whose look is in scope.
+> Report as specified. **Do not modify any DMS row.**
+>
+> For the Part 2 (presentational) checks, work at **page and section-order
+> level**, not per component: the defects live in how sections are sequenced and
+> chromed relative to each other. Sweep every page in the pattern — these travel
+> with copied templates, so a defect found on one page is usually on all of its
+> siblings.
 >
 > If the scope contains two components of the same type and title — one usually
 > a draft beside a published one — diff that pair **before** running any check.
@@ -100,6 +106,8 @@ element-data.columns              ← what this component renders
 ```
 
 ---
+
+# Part 1 — Data binding
 
 ## Check A — metadata out-of-date flag
 
@@ -212,6 +220,63 @@ One row per filter, across the scope:
 Suspicion: `high` / `medium` / `low`. State rows-removed as a number wherever
 it can be computed — a filter that removes zero rows and one that removes half
 the table warrant very different attention.
+
+### B2 — filters that resolve to an empty set
+
+**Defect class:** the section renders nothing because its filter matches zero
+rows. The most severe outcome of Check B, and the easiest to detect — but the
+*diagnosis* takes a specific procedure, because "no data" says nothing about
+which predicate is responsible.
+
+**Detection is a one-liner:** `display.totalLength === 0` (or an empty `data`)
+on a section that is supposed to show something. Then compare against siblings
+on the same source — a handful of empties among hundreds of working components
+is unambiguous, and the working ones are also your reference data.
+
+### Diagnosis
+
+1. **Flatten the filter tree** (`dataRequest.filterGroups`, plus `filter` /
+   `exclude` / `like`) into individual predicates.
+2. **Narrow one term at a time** against the source and record the running row
+   count. The term that drops it to zero is the culprit. Report the ladder, not
+   just the conclusion — it shows which predicates are fine and bounds the fix.
+3. **Build the value vocabulary from working siblings.** You often cannot query
+   the dataset directly (split-table row fetches are not always reachable over
+   the standard path). You don't need to: collect the filter values used by
+   every component on the same source **that returns rows**, per column. That is
+   an observed-good vocabulary, and it is usually enough to identify the failing
+   value on its own.
+4. **Classify the failing predicate** against that vocabulary — the three cases
+   have different fixes and different owners:
+
+| What you find | Cause | Fix |
+|---|---|---|
+| A near-identical value differing only by **whitespace, case, or punctuation** | The stored data carries characters the author can't see | Fix the source data, or make the filter tolerant. **Not** a filter-value edit |
+| A **semantically similar** value | The content was renamed and the filter wasn't updated | Retarget the filter |
+| **Nothing close** | The content doesn't exist for this tenant/page | Author the row, or remove the component |
+
+5. **Always `JSON.stringify` the raw values when comparing.** This is the whole
+   ballgame for case 1: a leading newline, a trailing space, a non-breaking
+   space or a smart quote is invisible in every UI that renders or trims text.
+   The author sees the same string in the data and in the filter and has no way
+   to tell why it doesn't match. A similarity score over normalized strings
+   surfaces these instantly — a ~97% match that isn't 100% is almost always
+   invisible characters.
+6. Check the column still exists too (Check B heuristic 4) — a filter on a
+   dropped or renamed **column** produces the same empty result as a filter on a
+   missing **value**, and they are fixed differently.
+
+Note in passing any predicate that matches **the same literal on two different
+columns** — it is redundant, and it doubles the chance that a rename breaks the
+section.
+
+### Output
+
+| Component | Page | Source | Predicate ladder (rows after each term) | Failing term | Nearest known value | Case | Fix owner |
+|---|---|---|---|---|---|---|---|
+
+Group by failing value: these cluster, because one renamed or malformed source
+row strands every component that targets it.
 
 ---
 
@@ -449,7 +514,7 @@ platform's real convention, and it gives any fix a concrete template.
 | `.searchParamKey` | layer | **binds to a page variable named after the tile column instead** — usually a variable that doesn't exist, so the filter never receives a value |
 | `.values` / `.defaultValue` | layer | no fallback when the page var is empty |
 | `.dataType: "numeric"` | layer | numeric tile properties don't coerce and never match |
-| `.zoomToFilterBounds` | layer | no zoom-to-selection |
+| `.zoomToFilterBounds` | layer | no server-side zoom-to-selection; the component falls back to the viewport-dependent `zoomToFitBounds` path (see F3) |
 | `usePageFilters: true` | layer | authored and scripted layers disagree in the Map settings UI |
 | `symbology.activeLayer` | symbology | zoom-to-filter is **active-layer scoped** — it reads only the active layer's `dynamic-filters`, so pointing it at the wrong layer disables zoom silently |
 | `zoomToFitBounds` | component | map doesn't refit |
@@ -548,6 +613,57 @@ than the governed pipeline. Note also when the two columns bind to *different*
 page variables (e.g. `geoid` and `geoid_juris`), since that requires the page to
 actually publish both.
 
+### F3 — bound at the wrong granularity
+
+**Defect class:** the binding is present, valid, and points at a real column —
+but at a **coarser geography (or time, or category) than the behavior it
+drives**. Nothing errors. The behavior simply resolves to the wrong level, and
+the setting that appears responsible is working correctly.
+
+The reported symptom is usually *"zoom-to-fit is on but it doesn't zoom to the
+X"*. The instinct is to check the zoom setting. **Check the filter granularity
+first** — a viewport fit is only as precise as the set of features it is fitting
+to, so a layer filtered to a county will fit to the county no matter what the
+zoom flag says.
+
+**Do:**
+
+1. Establish the **intended** granularity from the component's own naming — the
+   symbology name, the layer name, the section title. A layer called
+   "Jurisdiction Boundary" declares its intent.
+2. Read the **actual** granularity off each `dynamic-filters[]` entry: the tile
+   column *and* the page variable it binds to. A jurisdiction-named layer keyed
+   on a county column, bound to a county page variable, operates at county
+   level.
+3. Check whether the page even **publishes** the finer variable
+   (`page.filters[].searchKey`). If it doesn't, no amount of layer rewiring will
+   help — the fix spans the page and the component, and reporting only the
+   component half produces a fix that can't work.
+4. Look for the **correct binding elsewhere in the pattern**. If some layers
+   already bind at the finer level, that is the template; report it as the
+   target and count how many use each.
+5. Check the **seed values** on the filter (`values`, `defaultValue`). These are
+   overridden at runtime when the page variable resolves, but they are what
+   renders when it doesn't — and they are frequently left over from whichever
+   tenant the template was copied from. Report type inconsistency too: numeric
+   `[36105]` and string `["36105"]` for the same key coerce differently, since
+   coercion is inferred from the first value's shape.
+
+### Know which zoom mechanism you are auditing
+
+Two settings with near-identical names and materially different behavior:
+
+| Setting | Where | How it resolves |
+|---|---|---|
+| `zoomToFitBounds` | **component** level; propagated to every layer | On map `idle`, `queryRenderedFeatures` for that layer's sub-layers → bbox of the features **currently rendered in the viewport**. Viewport-dependent; cannot frame anything off-screen; result varies with where the map already is. |
+| `zoomToFilterBounds` | **per dynamic-filter** | A server-side `ST_Extent` of the *filtered* set, resolved via the active layer (see F1). Independent of the viewport. |
+
+Report which one the component actually uses, and the pattern-wide split. A
+corpus that sets the component flag everywhere and the per-filter flag nowhere is
+relying entirely on the viewport-dependent path — which is worth stating as a
+platform finding, because it explains a whole class of "the zoom is
+inconsistent" reports that look like per-page bugs.
+
 ---
 
 ## Check H — is every layer bound to a *governed* source?
@@ -631,11 +747,320 @@ Cheap add-ons, each of which has broken a live page.
 
 ---
 
+# Part 2 — Presentational relics
+
+Visual defects that a reader registers as "this platform is unpolished" without
+being able to name why: a card whose border doesn't close, labels that disagree
+across one row, a pager on a thing that has one row.
+
+Three properties make these worth auditing from **stored config** rather than by
+eye:
+
+- **They are mechanically detectable.** Every one below is a structure
+  comparison. You do not need to render the page, which matters because
+  rendering needs a live browser and these defects are subtle on screen.
+- **They are systemic by construction.** Page templates get copied per subject
+  (per hazard, per county, per year), so a seam authored once reappears on every
+  copy. Finding one and fixing it in place is nearly always the wrong scope.
+- **They hide in aggregates.** A single unterminated border run is invisible;
+  "openers outnumber closers by 47 pattern-wide" is unmissable.
+
+Report presentational findings **per template, not per page** — one row per
+distinct defect with the list of pages carrying it.
+
+---
+
+## Check I — compound-card seams
+
+**Defect class:** several sections are given partial borders so they read as one
+box, and the box doesn't actually close. Users describe this as *"the borders
+don't touch"* or *"it looks like separate boxes."*
+
+The platform builds one visual card out of **multiple sections**, each drawing
+part of the frame. Three independent things break that composition; check all
+three, since a run can have more than one.
+
+### I1 — the run never closes
+
+A fused run must open and close. In this codebase
+([`sectionArray.theme.jsx`](../../src/dms/packages/dms/src/patterns/page/components/sections/sectionArray.theme.jsx)):
+
+| Preset | Renders | Role |
+|---|---|---|
+| `openBottom` | all sides, bottom transparent, `rounded-t-lg` | **opens** a vertical run |
+| `borderX` | all sides, top+bottom transparent, no radius | **continues** a run |
+| `openTop` | all sides, top transparent, `rounded-b-lg` | **closes** a vertical run |
+| `openRight` / `openLeft` | right / left transparent, radius on the other side | open / close a **horizontal** run |
+| `full` | all sides, `rounded-lg` | a standalone card |
+
+**Do:** walk each page's section order, group consecutive sections carrying a
+non-`none` border into runs, and flag any run whose last member is not the
+matching closer. A run ending on `borderX` has **no bottom edge and square
+bottom corners** — the box is literally open.
+
+Then run the aggregate, which needs no per-page walk and catches the same thing
+in one line: **count openers against closers across the pattern.**
+`openBottom` vs `openTop`, `openRight` vs `openLeft`. A well-formed corpus
+balances; the surplus is your count of broken runs.
+
+### I2 — padding on run members pushes the borders apart
+
+**Section `padding` is the OUTER gutter.** The border, radius and background are
+drawn on an inner box *inside* that padding. So any padding on a run member
+inserts space between the bordered boxes — which is precisely why the borders
+don't touch. This is the opposite of the intuitive reading and is the single
+most common cause.
+
+**Do:** collect the `padding` of every member of a run. **They must agree, and
+the shared edges must be zero.** A run where one member has no padding and the
+next has `p-4` cannot fuse. Inner breathing room is the *component's* job
+(`display.cellsPadding` on a Card), not the section's.
+
+### I3 — legacy string presets can't fuse perfectly
+
+Every legacy preset emits `border` on **all four sides** and makes the open side
+`transparent` — the 1px is still *reserved*. Two stacked members therefore leave
+a **2px break in the side rules** at every junction even when I1 and I2 are
+clean. The modern per-side shape (`border: {top,right,bottom,left}` composing
+from `borderSides`, plus `radius: {tl,tr,bl,br}`) emits classes only for toggled
+sides and has no such gap.
+
+**Do:** report the split between `typeof border === 'string'` (legacy) and the
+object shape. A pattern still entirely on string presets cannot produce a truly
+seamless compound card, and that is a migration finding, not a per-section one.
+
+### Output
+
+| Page(s) | Section ids in run | Presets | Closed? | Paddings | Border shape | Defects |
+|---|---|---|---|---|---|---|
+
+Collapse identical runs across pages into one row — that is the template.
+
+---
+
+## Check J — treatment inconsistency inside a visual group
+
+**Defect class:** sibling components that read as one unit disagree on a
+presentational setting — alignment, font scale, number format, padding. No
+single component looks wrong; the row looks wrong.
+
+**Do not assert a house style.** Assert **uniformity within a group**, then
+report the pattern-wide distribution and let the author choose the target.
+
+**Do:**
+
+1. Define groups structurally — members of a fused border run (Check I),
+   sections sharing a level and size in one band, cells within a Card.
+2. For each presentational key, collect distinct values across the group's
+   **shown** cells. `justify` / alignment is the highest-yield key; also worth
+   checking `valueFontStyle`, `formatFn`, and `cellSpan`.
+3. **More than one distinct value in a group is the finding.** Treat unset and
+   empty-string as distinct third states — an empty-string `justify` is a
+   half-made edit, not a default, and should be reported separately.
+4. Report the pattern-wide distribution of each key so the fix has a target.
+   Say plainly which value is dominant, and note when the requester's preference
+   differs from it — adopting the minority value is a legitimate design
+   decision, but it means changing the convention, not fixing a deviation.
+
+### Output
+
+| Group (page + section ids) | Key | Distinct values in group | Pattern-wide distribution | Dominant |
+|---|---|---|---|---|
+
+---
+
+## Check K — pagination on something that shouldn't paginate
+
+**Defect class:** pager chrome under a component that is presentationally a
+single statement — one callout, one stat, one narrative with a "Learn more"
+link.
+
+There are **two causes that look identical on screen and have opposite fixes.**
+Always say which one you found.
+
+### K1 — the pager can only ever show one page
+
+`usePagination: true` with `totalLength <= pageSize`. The control renders, does
+nothing, and adds visual weight to a card that has a single row.
+
+**Fix is presentational:** turn `usePagination` off.
+
+### K2 — the section is bound to an unfiltered collection
+
+`usePagination: true` with `totalLength > pageSize` on a component whose layout
+is singular (one narrative cell, one link cell, a stat). Here the pager is
+*honest* — the section really did fetch N rows. **The defect is the binding, not
+the pager**, and switching pagination off would hide a data bug behind a
+truncated display.
+
+Signals that separate K2 from a legitimately paginated table:
+
+- **`display.usePageFilters: false`** while the page publishes filters
+  (`page.filters[].searchKey`). The section has opted out of the page's scoping.
+- **Empty `dataRequest.filter` / `.exclude` and no column filter leaves**, on a
+  source that clearly holds many subjects' records (one row per page/section/
+  hazard).
+- **A sibling of the same shape on another page** bound to the same source and
+  view. If they differ only in row count, neither is scoped and the low count is
+  luck or a stale cache.
+
+⚠ **`totalLength` is a cached count** (Check G). Two sections on the same source
+and view with no filters *cannot* legitimately return different counts — if they
+appear to, one number is stale. Verify against the source before concluding
+anything from it.
+
+### Output
+
+| Component | Page | Type | `totalLength` | `pageSize` | `usePageFilters` | Filters? | Case | Fix target |
+|---|---|---|---|---|---|---|---|---|
+
+Report K1 as an aggregate rate (it is usually pervasive) and K2 individually
+(each is a real data-scoping bug).
+
+---
+
+## Check L — colors pinned to a surface that can change
+
+**Defect class:** a child element carries an explicit opaque color that assumes
+what it is sitting on. Users describe it as *"the button has a white background
+that breaks up the beige"* — a patch of the wrong surface inside an otherwise
+uniform block.
+
+### Why this one hides
+
+**On a white section, an explicit white and "inherit" are pixel-identical.** The
+author cannot see the difference at the moment they choose, and the config looks
+deliberate afterwards. The defect only becomes visible later, when the section
+gets a tint, or when the component is copied onto a band that already has one.
+
+So the finding is **not** "this color is wrong." It is: **an opaque literal color
+on a child is a latent defect whenever the correct intent was `inherit`** —
+whether or not it currently shows.
+
+### Detection
+
+1. Build container→child color pairs. Container: section `bg` or
+   `display.bgColor`. Children: per-cell `bgColor` / `cellBgColor`, plus any
+   text, border or icon color keys.
+2. Normalize before comparing — `#FFF` vs `#ffffff` vs `white` vs
+   `rgb(255,255,255)` are one value; `transparent` and `rgba(0,0,0,0)` are the
+   inherit sentinel.
+3. Classify every pair:
+   - **Visible mismatch** — child opaque, differs from container. This is what
+     the user reported.
+   - **Latent match** — child opaque, *equals* the container. Renders correctly
+     today and breaks the moment the container is re-tinted or the component
+     moves. Report these; they are the larger number and the future tickets.
+   - **Correct** — child is transparent/unset.
+4. Count **distinct literal colors** across the pattern. A small set (a handful)
+   means a real palette is being typed in by hand — the values are right and the
+   mechanism is wrong. A large set means genuine color sprawl. The two need
+   different fixes.
+5. Group by cell role. If nearly every hit is the same kind of element (link
+   cells, stat cells), the defect entered through one authoring path, and that
+   path is where it should be fixed.
+
+### Then check whether the author could have done better
+
+**Before writing this up as an authoring error, open the control that sets the
+value** and ask three questions:
+
+- Does the picker offer an **inherit / transparent** option at all?
+- Is it seeded from **theme tokens**, or from a hardcoded literal list?
+- Once set, can the value be **cleared**?
+
+If the answer to any is no, this is a **platform gap, not an author mistake**,
+and the finding belongs against the control. That distinction decides the scope
+of the fix — enriching one picker versus hand-editing every affected component —
+and it is the [author-empowerment principle](../../CLAUDE.md) applied to QA:
+when authors keep making the same "mistake," suspect the affordance first.
+
+Compare the suspect control against its siblings in the same codebase. A picker
+that takes a `colors` palette from the theme, or that defaults to
+`rgba(0,0,0,0)`, is the shape the others should match; one that passes no
+palette and defaults to an opaque color is the outlier.
+
+### Output
+
+| Component | Page | Container color | Child | Child color | Class | Cell role |
+|---|---|---|---|---|---|---|
+
+Close with: distinct-literal-color count, the dominant cell role, and a verdict
+on the control — **offers inherit / theme-seeded / clearable**, yes or no for
+each. Recommend the control fix first and the data fix second; a bulk data fix
+without the control fix guarantees the defect returns.
+
+---
+
+## Check M — coded identifiers rendering instead of names
+
+**Defect class:** a column holds a machine identifier — a GEOID, a FIPS code, a
+foreign key — and the component renders the code, or an outdated label, instead
+of the human name. Users report it as *"it's showing the geoid instead of the
+jurisdiction."*
+
+This is **the user-visible face of Check A**. `meta_lookup`, `options` and
+`mapped_options` are three of the nine attributes Check A diffs, but Check A
+deliberately doesn't rank severity. This check pulls out the subset that a site
+visitor can see and gives it its own triage, because the prior is much stronger:
+an identifier column whose lookup is missing or stale is *always* a defect, and
+it usually has a one-action fix.
+
+### Three variants, in descending order of how obvious they are
+
+1. **Missing lookup — renders the raw code.** The live source defines a
+   `meta_lookup` / `mapped_options`; the component's stored column has none.
+   Loud and obviously broken.
+2. **Partial fallthrough — a mixed column.** A lookup exists, but individual
+   keys aren't present in the meta view, so those rows fall through to the raw
+   value while their neighbours resolve. A column showing *some* names and *some*
+   codes is the clearest visual tell of this whole class, and it also fires when
+   variant 3 changes which keys resolve.
+3. **Stale lookup — renders an outdated label.** A lookup exists but its
+   `valueAttribute` / `labelColumn` no longer matches the source's. **This is the
+   dangerous one**: nothing looks broken, the label is simply the wrong one, and
+   it is typically far more common than variant 1. Only a printed diff reveals
+   it.
+
+### Detection
+
+1. For every **shown** column, resolve the live source column by normalized name
+   and compare `meta_lookup` and `mapped_options`.
+   - live defines one, stored has none → **variant 1**
+   - both present but unequal → **variant 3**; print both `valueAttribute` /
+     `labelColumn` values side by side, or the finding is unreadable
+2. Repeat for **hidden** columns and report separately as **latent** — they
+   surface the moment an author toggles `show`. Same latency logic as Check L.
+3. **Source-free heuristic**, for when the live source can't be resolved: a shown
+   column whose name matches `/geoid|fips|_id$|^id$|_code$/i`, or whose `type` is
+   `select`, carrying no lookup at all, will render a raw code. Flag it even
+   without a reference.
+4. Where neither the component nor the source defines a lookup, the label
+   genuinely doesn't exist yet — that is a **source-side** finding (add the
+   lookup), not a component fix.
+5. Roll up **by (source, column)**. These cluster hard: one source-side label
+   change strands every consumer at once, and the group is the fix unit.
+
+### Output
+
+| Component | Page | Source | Column | Shown? | Variant | Stored label formula | Live label formula |
+|---|---|---|---|---|---|---|---|
+
+### Fix note
+
+Variants 1 and 3 are exactly what the admin's **Refresh Meta** action resolves,
+which makes them unusually cheap to fix in bulk. Carry Check A's caveat through:
+refresh overwrites author overrides on all nine synced attributes, so name the
+columns to refresh rather than recommending a blanket sweep.
+
+---
+
 ## Reporting
 
 Structure the report as: **Check A table → Check B table → Check C table +
 by-column rollup → Check D table → Check E table + tier counts → Check F tables
-→ Check G notes → Source-side recommendations → Coverage.**
+→ Check G notes → Checks I, J, K, L, M tables (per template, not per page)
+→ Source-side recommendations → Control/affordance recommendations → Coverage.**
 
 **First, look for a fixed twin.** Before auditing anything, group the page's
 components by `(element-type, title)` and flag any group larger than one —
@@ -664,7 +1089,12 @@ Classes: `META_DRIFT`, `SNAPSHOT_STALE`, `RELIC_FILTER`, `DEAD_FILTER`,
 `DEPRECATED_COLUMN`, `ASSET_VARIANT_DIVERGENCE`, `SOURCE_HYGIENE`,
 `STALE_TRANSPORT`, `SOURCE_LAYER_MISMATCH`, `UNGOVERNED_SOURCE`,
 `MISSING_TILE_COLUMN`, `UNWIRED_PAGE_VARIABLE`, `WRONG_DESIGNATED_LAYER`,
-`MIXED_KEY_VOCABULARY`, `SUPERSEDING_DUPLICATE`, `CACHED_STATE`, `DEAD_FACET`.
+`MIXED_KEY_VOCABULARY`, `SUPERSEDING_DUPLICATE`, `CACHED_STATE`, `DEAD_FACET`,
+`OPEN_CARD_SEAM`, `LEGACY_BORDER_PRESET`, `INCONSISTENT_TREATMENT`,
+`INERT_PAGINATION`, `UNSCOPED_COLLECTION`, `SURFACE_PINNED_COLOR`,
+`MISSING_AUTHORING_AFFORDANCE`, `RAW_CODE_RENDERED`, `STALE_LABEL_LOOKUP`,
+`WRONG_GRANULARITY_BINDING`, `PAGE_VARIABLE_NOT_PUBLISHED`, `STALE_SEED_VALUE`,
+`EMPTY_RESULT_FILTER`, `INVISIBLE_CHARACTER_MISMATCH`.
 
 Always end with **Source-side recommendations**. Several classes here are only
 permanently fixable at the source — retiring superseded columns, deleting
@@ -829,7 +1259,7 @@ page `the_risk/natural_hazards` on tenant `suffolk_draft` (pattern
 components — **2249527** (published, known issues) and **2389090** (draft, the
 fix). Diffing the pair took minutes and yielded three real differences plus two
 red herrings. Sweep scope for generalization: 358 map components across both
-MitigateNY patterns, 348 (component × symbology) records.
+MitigateNY patterns, 348 (component Ã— symbology) records.
 
 **Red herrings, worth naming so a reviewer doesn't chase them.** The fixed twin
 populates `tabs[0].rows` with a symbology reference and sets
@@ -880,6 +1310,95 @@ counterexample that earns C2's first caution:** the `v2` member is the broken
 one and the unsuffixed original is the fix. Had currency been inferred from the
 name, the audit would have recommended migrating *toward* the defect.
 
+### B2 — reference run (a section filtering itself to nothing)
+
+Reported: component **2249633** on `the_local_environment/people_and_communities`
+filters down to no data; suspected a renamed source value.
+
+`display.totalLength: 0`, `data: []`. Its filter is an AND of four equality
+predicates on `top_nav_section`, `page`, `section`, `component_name`.
+
+The sibling comparison made it immediate: **1,811 components bind `LHMP_IA`,
+and exactly 11 return zero rows.** Building the value vocabulary from the 1,800
+working ones showed all 11 fail on the same two terms — `section` and
+`component_name` — while `top_nav_section` and `page` are fine. The 11 split
+into two clusters with **different root causes**, which is the point of the
+classification step:
+
+**Cluster 1 — invisible characters (9 components, "Infrastructure", page
+2249302).** Similarity scoring against known values returned a **97% match that
+wasn't 100%**: the filter wants `"Infrastructure"`, and the real value is
+`"\nInfrastructure"` — a leading newline. Confirmed decisively by working
+siblings: components 2249502 (`"\nInfrastructure"`), 2249486
+(`"\nWater Infrastructure"`), 2249628 (`"\nEnergy"`) and 2249627
+(`"\nCommunications"`) all filter on the newline-prefixed form and all return
+`totalLength: 1`. So the source data carries the newline and the failing
+components carry the trimmed string.
+
+This is **not** the reported cause, and it cannot be fixed by editing the filter
+value in the UI — the author would be typing a string that looks identical to
+the one already there. The fix belongs to the source data (trim it) or to the
+matching behavior.
+
+**Cluster 2 — content that doesn't exist (2 components, "Neighboring
+Communities", page 2249281 — 2249633 and its twin 2251753).** The best match in
+a 46-value pool was `"Climate Smart Communities"` at 46%. Nothing close exists,
+in filter text or in cached rows. This one *is* the reported cause-shape: the
+row was never authored for this tenant, or was removed.
+
+Two lessons the check now encodes. **`JSON.stringify` every value you compare** —
+had these been printed as plain text, `Infrastructure` and `\nInfrastructure`
+would have looked like the same string and the cluster would have been
+misfiled under "renamed content." And **the working-siblings vocabulary
+substitutes for querying the dataset** — direct split-table row fetches returned
+nothing over the standard falcor path, so the 1,800 working filters were the
+only available ground truth, and they were sufficient.
+
+---
+
+### F3 — reference run (zoom-to-fit that lands on the wrong geography)
+
+Reported: map **2249454** on `the_local_environment/people_and_communities` has
+zoom-to-fit enabled and should zoom into a jurisdiction, but doesn't.
+
+The zoom setting is **not** broken. `zoomToFitBounds: true` is set on the
+component and is correctly propagated to every layer
+([`map/index.jsx:1211`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/index.jsx)),
+and `SymbologyViewLayer.jsx:577` duly fits to the bbox of the rendered features.
+It is doing exactly what it says — the features it is given are the wrong ones.
+
+Two stacked defects produce that:
+
+- **The layer is bound at county granularity.** The "Jurisdiction Boundary"
+  layer (view 2296) filters `county_fip → geoid`. So it renders *every*
+  jurisdiction in the county, and the fit resolves to the county extent.
+  Pattern-wide, **18 jurisdiction-named layers across 7 symbologies** bind
+  `county_fip → geoid`, while **7 layers (symbology 2142101) bind
+  `census_geo → geoid_juris`** — the correct jurisdiction-level pattern already
+  exists and is the minority.
+- **The page doesn't publish the finer variable.** Page 2249281 declares
+  `filters: [{searchKey: "geoid"}]` and nothing else. There is no `geoid_juris`
+  on this page to bind to, so rewiring the layer alone cannot fix it — compare
+  page 2249300, which publishes `geoid`, `hazard` *and* `geoid_juris`. Reporting
+  only the component half would have produced a fix that couldn't work.
+
+The platform-level finding, which no single page would surface: across **468 map
+dynamic-filters, `zoomToFilterBounds` is true on 0**, while **109 components set
+`zoomToFitBounds: true`**. Every map here relies on the viewport-dependent
+client-side fit and none uses the server-side `ST_Extent` path — which is why
+"zoom to fit" behaves inconsistently across pages and reads as a per-page bug
+each time.
+
+Incidental, and a good `STALE_SEED_VALUE` example: the dominant filter seed in
+this pattern is `[36105]` (146×, numeric) and `["36105"]` (39×, string) —
+**Sullivan County**, on a *Suffolk* tenant — against just 6 instances of
+`["36103"]` (Suffolk). Seeds are overridden when the page variable resolves, so
+these are latent; they surface whenever it doesn't. The numeric/string split on
+one key is its own hazard, since coercion is inferred from the first value's
+shape.
+
+---
+
 **H — the root cause, and why the first pass missed it.** The three findings
 above are **not three defects**. They are one wrong source binding and its blast
 radius, and reporting them as peers was an error this section exists to prevent.
@@ -913,6 +1432,170 @@ Everything else in this section follows from that one binding:
 - **C2** — the `v2 (LHMP)` symbology variant exists *because* it is the variant
   carrying this layer; the unsuffixed original doesn't have it, which is why
   dropping back to 2142005 fixed the map.
+
+### Checks I, J, K — reference run (presentational relics)
+
+Fourth triggering report: three visual complaints on
+`the_risk/natural_hazards/extreme_cold` (page 2249263, pattern
+`mitigateny_county_template_suffolk_copy`) — a card group "bordered to look like
+a single box" whose borders don't touch, labels that should be aligned
+consistently, and a "Learn more" section that is inexplicably paginated. Sweep
+scope: 56 pages, 1,880 sections, 6,651 components.
+
+**I — the seam.** The group is sections 2250443 → 2250520 → 2250510 → 2250530,
+with presets `openBottom → borderX → borderX → borderX`. All three failure modes
+are present at once:
+
+- **I1**: the run ends on `borderX`, so there is no closing `openTop` — the box
+  has no bottom edge and square bottom corners. The aggregate confirms it
+  pattern-wide: **`openBottom` 257 vs `openTop` 210**, a surplus of 47 openers;
+  `openRight` 76 vs `openLeft` 70.
+- **I2**: the opener carries no padding while all three continuation members
+  carry `p-4` — 16px of outer gutter inserted between boxes that are supposed to
+  share an edge.
+- **I3**: **2,331 sections use legacy string presets and 0 use the per-side
+  object shape**, so nothing in this pattern can fuse without the 2px
+  transparent-border break. The compound-card migration never reached it.
+
+Run-level totals: **88 fused runs, 18 unterminated, 17 with mixed padding, 16
+with mixed justify.** And the finding is a template, not a page — the identical
+4-section run with the identical defects appears on **avalanche, snowstorm,
+wildfire, flooding, extreme_heat, wind, coastal_hazards, hurricane, extreme_cold,
+landslide, tornado, ice_storm** and more. One authoring mistake, thirteen pages.
+
+**J — alignment.** Inside that one run, `Hazard of Concern` uses
+`justify: "left"`, `Modeled RIsk` leaves it unset, and `Historical Risk` uses
+`justify: "center"` — three treatments in one visual row. Pattern-wide the
+distribution is **left 687, center 77, right 2, empty-string 5**, with 9 Cards
+mixing values internally and 12 carrying an empty-string `justify`.
+
+Note what the distribution says versus what was asked: **`left` is the
+established convention here at 87%.** The request was to center the labels,
+which is a decision to *change the convention*, not to fix a deviation. The
+defensible finding is the three-way inconsistency inside the group; the
+center-vs-left choice belongs to the author, and the report should say so rather
+than quietly adopting the minority value. (Incidental, worth passing along: the
+`Modeled RIsk` title carries a typo.)
+
+**K — the paginated "Learn more".** Section 2250502 is a Card with one lexical
+narrative cell and one `isLink` cell labelled "Learn More", showing
+`usePagination: true`, `pageSize: 5`, `totalLength: 16` — four pages of pager
+under what is visually one callout. This is **K2, not K1**: it binds source
+`LHMP_IA` (1441680 / view 1441681) with an **empty `dataRequest.filter`, zero
+column filter leaves, and `usePageFilters: false`**, while the page publishes
+`geoid`, `hazard` and `geoid_juris`. It is rendering every subject's narrative
+row, not this hazard's. Turning pagination off would have hidden that.
+
+The near-identical sibling 2250547 ("Overview") binds the **same source and the
+same view**, equally unfiltered, yet reports `totalLength: 1` — which is exactly
+the cached-count trap: two unfiltered sections on one view cannot honestly
+disagree, so one number is stale and neither count can be trusted on its own.
+
+K1 is separately pervasive and worth reporting as a rate, not a list:
+**3,015 of 3,356 paginated sections (90%) can only ever render one page, and
+2,804 of those hold a single row.**
+
+**L — the white button on the beige band.** Component 2249429 on
+`the_risk/climate_change` is a Card with `display.bgColor: "#FCF6EC"` (beige) and
+a "Explore More" link cell carrying `bgColor: "#FFFFFF"`. Sweep results:
+
+```
+sections carrying any explicit color            1,409
+cell color differing from its section color       286
+  … white cell on a TINTED section                222
+  … of those, the white cell is a LINK cell       222   (100%)
+distinct literal colors in the whole pattern        3   #f3f8f9 ×1717, #ffffff ×697, #fcf6ec ×152
+section background values                             #f3f8f9 ×1021, #ffffff ×215, #fcf6ec ×72
+```
+
+Every single mismatch is a link/button cell — one authoring path, 222 times.
+Both tints are affected (`#fcf6ec` beige, `#f3f8f9` pale blue), so the report's
+"beige" instance is one of two manifestations. And with only **3 distinct
+literals** in 6,654 components, this is not color sprawl: the palette is
+correct and is being typed in by hand.
+
+**The control is the cause.** In
+[`Card.config.jsx:316`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/Card.config.jsx)
+the cell background control is `<ColorControls … key={'cellBgColor'} />` with
+**no `colors` prop**, so it falls back to
+[`ColorControls.jsx`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/sharedControls/ColorControls.jsx)'s
+`defaultColorOptions = ["#FFFFFF", "#F3F8F9", "#FCF6EC"]` — three opaque
+choices, **no transparent/inherit option, no way to clear**, and the component
+even defaults `value='#FFFFFF'`. An author styling a cell literally cannot
+express "inherit the section."
+
+Its siblings do it correctly, which is what makes this an outlier rather than a
+convention: `sectionMenu.jsx:1432` seeds the picker from the theme
+(`sectionArray.borderColors`), `richtext/config.js` passes its own palette and
+defaults to `rgba(0,0,0,0)`, and `component-overview.md` documents the intended
+shape as `['#FFFFFF', '#F3F8F9', '#FCF6EC', 'rgba(0,0,0,0)']` — transparent
+included.
+
+So the correct primary finding is `MISSING_AUTHORING_AFFORDANCE` against one
+control, with 222 `SURFACE_PINNED_COLOR` instances as its consequence. Bulk-
+editing the 222 without adding the inherit option would leave every future card
+to reintroduce it.
+
+**M — geoids where names belong.** Component 2381040
+(`the_plan/about_the_process`, source `Capabilities_Catalogue`) was reported as
+showing a geoid instead of a jurisdiction name, fixable by Refresh Meta. Both
+mechanisms are present in it, which makes it a good calibration case:
+
+- **Variant 1** — its `geoid_county` column has **no** `meta_lookup`, while the
+  live source defines one (`view 1108098`, `geoid` → `county`). A `select`
+  column with no lookup renders the stored value, i.e. the raw code. It is
+  currently `show: false`, so this instance is **latent**, not visible.
+- **Variant 3** — both shown `geoid_juris` columns *do* carry a lookup, but a
+  stale one:
+
+```
+stored  valueAttribute: "municipality_name"                            → "Bethel"
+live    valueAttribute: "(data->>'municipality_name') || ' (' ||
+                         (data->>'municipality_type') || ')' as dhses_name"  → "Bethel (Town)"
+```
+
+Sweep across both patterns (4,355 components with a bound source; **12 of 40**
+live source configs resolved, one batch 500'd):
+
+```
+variant 1  shown column, live defines a lookup, component has none      0 columns
+variant 3  shown column, lookup present but differs from live         164 columns / 161 components
+             Capabilities_Catalogue :: geoid_juris   84
+             Hazards_of_Concern     :: geoid_juris   65      ← same municipality_name → dhses_name drift
+             Hazards_of_Concern     :: hazard        14      ← inline value map drifted
+             Actions_Revised        :: geoid_juris    1
+no lookup anywhere (source-side gap)                                   10 columns
+unaudited (source config unresolved)                                  389 code-ish shown columns
+```
+
+Two calibration lessons. First, **the silent variant dominates** — 164 stale
+against 0 missing on shown columns. A check that only looked for raw codes would
+have reported this pattern clean while 149 components rendered "Bethel" where
+the source now specifies "Bethel (Town)". Second, **it clusters by source
+column**: one label-formula change at `geoid_juris` stranded every consumer
+across two sources at once, so the fix unit is the (source, column) group, not
+the component.
+
+Honest limit on this run: I confirmed the drift and its scale from stored
+config, but did not visually confirm which variant produced the reported
+symptom. A raw geoid on a *shown* column would most likely be variant 2 —
+individual keys falling through the stale lookup — which only a live render or a
+row-level check of the meta view against the data's distinct keys would settle.
+And with 28 of 40 source configs unresolved, 389 code-ish shown columns remain
+**unaudited, not clean**.
+
+**What Part 2 changed.** Three complaints phrased as one page's polish problems
+resolved into: one template defect replicated across thirteen hazard pages, one
+group-level inconsistency against an 87% convention, and one data-scoping bug
+wearing a pager. Only the middle one is actually a styling decision.
+
+A fourth, reported separately, resolved into a **missing option in one authoring
+control** — the most useful shape a presentational finding can take, because it
+is fixed once rather than 222 times. When a visual relic appears on hundreds of
+components with no exceptions, stop looking for the authoring mistake and go
+read the control.
+
+---
 
 **The lesson, and why Check H now runs before F.** The first pass reported
 F1, F2 and C2 as three independent classes. Each was individually correct and
