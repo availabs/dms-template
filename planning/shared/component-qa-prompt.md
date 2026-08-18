@@ -34,9 +34,15 @@ Promote to `src/dms/skills/` after a second site.
 > routinely years stale; trusting it is the single most common way this audit
 > returns a false clean.
 >
-> Run checks A, B, C on any data-bound component; D and E additionally on any
-> `Map` section; F as a cheap add-on. Report as specified. **Do not modify any
-> DMS row.**
+> Run checks A, B, C on any data-bound component; D, H, E and F additionally on
+> any `Map` section — **H before F**, since F's findings are usually H's blast
+> radius; G as a cheap add-on. Report as specified. **Do not modify any DMS
+> row.**
+>
+> If the scope contains two components of the same type and title — one usually
+> a draft beside a published one — diff that pair **before** running any check.
+> A corrected copy sitting next to a broken one is a specification of the fix;
+> see "First, look for a fixed twin" under Reporting.
 >
 > Checks A, C, D and E are decided by **distribution across the pattern**, not
 > by inspecting one component in isolation. Where a check says "the outlier is
@@ -289,6 +295,26 @@ cannot be fixed component-side:
   every component's column picker.
 - **Deprecated columns with zero consumers** — safe to remove from the source.
 
+### C2 — variant divergence in shared assets
+
+The same "which generation am I on?" defect applies to any **shared, versioned
+asset a component references by id** — symbologies, saved filter sets, templates
+— not just columns. The detector is the name, exactly as above.
+
+**Do:** collect every referenced asset's name across the pattern, strip
+qualifier suffixes (`v2`, `v3`, `(LHMP)`, `(copy)`, `(2)`, trailing years), and
+group. **Any base name resolving to more than one asset id is a family.** For
+each family, report the ids, the full names, and the consumer count of each.
+
+Two cautions, both learned the hard way:
+
+- **A version suffix does not tell you which member is current.** A `v2`
+  variant can be the abandoned experiment and the unsuffixed one the
+  maintained original. Determine currency from consumer behavior and from
+  which member a known-good component uses — never from the name alone.
+- Same for consumer counts: during an in-flight migration the majority sits on
+  the old member. Counts corroborate; they don't decide.
+
 ### Coverage caveat
 
 Report how many bound sources actually resolved to a parseable
@@ -345,16 +371,43 @@ Rendering requires four things to agree, each stored separately:
    purely in the binding. A 204 means the view has no geometry and the problem
    is upstream. Never report "the map is broken" without this probe — the two
    cases have completely different owners.
-4. **Confirm the renderer supports any non-HTTP protocol** the layer declares —
-   search the codebase for a protocol registration (`addProtocol`) and for the
-   protocol's client library in `package.json`. Absent both, the source can
-   never load, no matter how healthy the artifact is. Probing the artifact URL
-   is *not* sufficient evidence: an artifact can return 200 and still be
-   unreadable because nothing is registered to read it.
+4. **Confirm the renderer actually *registers* a handler for any non-HTTP
+   protocol** the layer declares. Two distinct things must be true, and the
+   second is the one that fails: a handler must **exist**, and it must be
+   **wired at the call site**. Find the registration (`addProtocol`) *and*
+   follow it to where it is passed to the map — a vendored handler whose import
+   and wiring are commented out is exactly as dead as no handler at all, and a
+   codebase search alone will tell you it's supported.
+   Probing the artifact URL is *not* sufficient evidence either: an artifact can
+   return 200/206 and still be unreadable because nothing is registered to read
+   it. Also check the URL *form* the handler expects — some protocols require
+   the full inner scheme (`pmtiles://https://host/…`), and a URL missing it
+   fails even under a correctly registered handler.
 5. **Cross-check paint against `data-column`** — collect every `["get", prop]`
    in each sublayer's paint and confirm each is in the comma-joined
    `data-column`. Missing ones fall out of the rebuilt `?cols=` and the feature
    draws in the fallback color.
+6. **Verify every requested column actually exists on the view.** The tile
+   route answers `?cols=<name>` for an unknown column with **204 and a zero-byte
+   body — the entire tile, not just that column**. So one stale name anywhere in
+   the rebuilt `?cols=` (a `data-column`, or any dynamic-filter column that
+   currently has values) blanks the whole layer, silently and completely. This
+   is a high-frequency cause of "the layer just stopped drawing after someone
+   renamed a field."
+
+### The 204 schema probe
+
+That same behavior is the cheapest way to enumerate a view's real schema, and
+it needs no metadata endpoint or database access — useful because the DaMa
+metadata routes are not reliably reachable:
+
+> Request one candidate column at a time. **200 = the column exists; 204 with 0
+> bytes = it does not.** Never batch candidates: a single unknown name 204s the
+> whole request and tells you nothing about the others.
+
+Use it to confirm a filter column before calling a binding correct, and to
+compare two candidate sources — **disjoint schemas prove they are different
+datasets rather than two versions of one.**
 
 ### Output
 
@@ -422,7 +475,141 @@ Close with the reference component id and the tier counts.
 
 ---
 
-## Check F — cached and dangling state
+## Check F — wired to the wrong layer, or to the wrong key
+
+**Defect class:** the component is fully configured and passes Checks D and E —
+tiles load, bindings exist — and still misbehaves, because the wiring points at
+the wrong *member*. Nothing is missing, so nothing looks wrong in the editor.
+
+Two independent detectors. Both are pure structure comparisons and both are
+decided by distribution across the pattern.
+
+> **Run Check H first.** Both detectors below fire reliably on layers bound to
+> an ungoverned source, because a one-off upload brings its own key vocabulary
+> and gets designated as the active layer while someone is wiring it up. If an
+> F1 or F2 finding lands on a layer that Check H flagged, **report it as blast
+> radius of that binding, not as an independent defect** — otherwise the fix
+> gets applied to the symptom and the source stays wrong.
+
+### F1 — the designated layer is a context layer, not the thematic one
+
+Multi-layer components nominate one layer as the one that drives behavior
+(`symbology.activeLayer`). In this codebase that nomination controls **two**
+things, and both silently follow it to the wrong place:
+
+- **Page-filter sync** reads only the designated layer's `dynamic-filters`
+  ([`map/index.jsx:707`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/index.jsx)).
+- **Zoom-to-filter-bounds** resolves its view from the designated layer and
+  queries `ST_Extent` on *that* view
+  ([`map/index.jsx:726`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/index.jsx)).
+  The fallback to other layers only considers layers with
+  `zoomToFilterBounds: true`, so where that flag is unused the designated layer
+  is the *only* source of bounds — and a filter matching nothing yields no zoom
+  at all, not a default zoom.
+
+**Do:** for every symbology, identify the **thematic** layer — the one carrying
+`data-column` (equivalently: the layer the legend describes and the component is
+named after) — and check whether it is the designated layer. Boundary/context
+layers are typically `layer-type: "simple"` with no `data-column`; a `simple`
+layer as the designation is the signature.
+
+Report as a table and, critically, as a **rate**: the norm establishes that the
+exceptions are errors rather than intent.
+
+| Component | Page | Symbology | Designated layer | Its type | Thematic layer | Designated == thematic? |
+|---|---|---|---|---|---|---|
+
+Flag as a stronger finding any case where **the same symbology is designated
+differently across components** — that is drift, not a deliberate choice.
+
+### F2 — one page variable, several key vocabularies
+
+A single page variable can legitimately drive several layers. It is **not**
+legitimate for those layers to identify the same real-world entity through
+different tile columns, because each column is a separate vocabulary that must
+match the page value byte-for-byte. One of them is usually wrong, and the wrong
+one fails silently — a client-side `["in", …]` that matches nothing renders an
+empty layer, not an error.
+
+**Do:** for each symbology, collect the set of
+`dynamic-filters[].column_name` across all layers, grouped by the page variable
+(`searchParamKey || column_name`) they bind to. **More than one column name
+serving one page variable is the finding.**
+
+| Component | Symbology | Page variable | Columns claiming it | Layers | Verdict |
+|---|---|---|---|---|---|
+
+Rank by how divergent the vocabularies are. Columns from a governed source
+(a standard FIPS/GEOID column) versus columns from a locally uploaded dataset
+are the highest-risk pairing — the latter often carry **truncated shapefile
+field names** (10 characters, e.g. `county_fip`, `census_geo`, `county_nam`),
+which is itself a reliable tell that the layer came from an ad-hoc upload rather
+than the governed pipeline. Note also when the two columns bind to *different*
+page variables (e.g. `geoid` and `geoid_juris`), since that requires the page to
+actually publish both.
+
+---
+
+## Check H — is every layer bound to a *governed* source?
+
+**Defect class:** a layer bound to an ad-hoc, hand-uploaded dataset instead of
+the governed source that the rest of the platform uses. This is the **root
+cause** that most often manifests as the symptoms in Checks E and F — a
+one-off upload brings its own column vocabulary, its own key semantics and its
+own idea of what a "jurisdiction" is, and every downstream wiring problem
+follows from that one binding.
+
+**Run this check before F, and treat an F finding on the same layer as a
+symptom of it.**
+
+### Detection — the source-object id carries provenance
+
+Each layer's `sources[0].id` is minted at bind time in the form:
+
+```
+{pgEnv}_{datasetName}_{epochMs}_{layerId}
+    e.g.  hazmit_dama_NRI Tracts Geospatial_1727442020144_hcqeans
+```
+
+The `{datasetName}` slot is the tell. A governed binding embeds a real dataset
+name. An ad-hoc one embeds a placeholder.
+
+**Do:**
+
+1. Parse every layer's `sources[0].id` into its four parts.
+2. Flag layers whose `{datasetName}` is a **placeholder** — `comp`, `tmp`,
+   `temp`, `test`, `new`, `untitled`, `copy`, an empty string, or a bare
+   `s{source_id}_v{view_id}` fallback (that fallback means no name was
+   available at bind time).
+3. Tabulate `{datasetName}` across the whole pattern. As everywhere in this
+   document, **the outlier is the finding** — a placeholder-named source among
+   hundreds of properly named ones is not a naming style, it is an upload that
+   bypassed the catalog.
+4. Read the **`{epochMs}` timestamp**. Ad-hoc sources are usually much newer
+   than the governed ones around them; a binding minted months after every
+   sibling is a strong corroborating signal.
+5. For each flagged source, look for the **governed alternative**: other
+   sources in the same pattern serving the same real-world entity. Report them
+   as candidate replacements with their ids, names, and mint dates.
+6. Probe the flagged view's schema (see Check D's 204 technique) and compare
+   its columns to the governed alternative's. **Disjoint schemas confirm they
+   are different datasets, not versions of one** — which means switching
+   sources also requires rewriting every filter column that referenced it.
+
+### Output
+
+| Component | Symbology | Layer | source/view | `{datasetName}` | Minted | Governed? | Columns | Candidate replacement |
+|---|---|---|---|---|---|---|---|---|
+
+Follow every flagged layer downstream and say so explicitly: is it the
+designated layer (F1)? does it introduce a second key vocabulary (F2)? is it
+present only in one variant of a shared symbology (C2)? Those are the blast
+radius of this one binding, and reporting them as separate findings invites
+three separate partial fixes.
+
+---
+
+## Check G — cached and dangling state
 
 Cheap add-ons, each of which has broken a live page.
 
@@ -447,8 +634,19 @@ Cheap add-ons, each of which has broken a live page.
 ## Reporting
 
 Structure the report as: **Check A table → Check B table → Check C table +
-by-column rollup → Check D table → Check E table + tier counts → Check F notes
-→ Source-side recommendations → Coverage.**
+by-column rollup → Check D table → Check E table + tier counts → Check F tables
+→ Check G notes → Source-side recommendations → Coverage.**
+
+**First, look for a fixed twin.** Before auditing anything, group the page's
+components by `(element-type, title)` and flag any group larger than one —
+typically one published component and one `is_draft` beside it. That is the
+"fixed it by adding a corrected copy next to the broken one" pattern, and it
+changes the whole approach: production still renders the broken one, editors
+can't tell which is live, and **the corrected copy is the best available
+specification of the fix**. Diff the pair first and lead the report with it —
+every difference is either the fix or noise, and sorting those two is far
+cheaper than deriving the defect from scratch. Then generalize each real
+difference through the checks below to find the other components carrying it.
 
 For any individual finding needing narrative:
 
@@ -463,8 +661,10 @@ For any individual finding needing narrative:
 ```
 
 Classes: `META_DRIFT`, `SNAPSHOT_STALE`, `RELIC_FILTER`, `DEAD_FILTER`,
-`DEPRECATED_COLUMN`, `SOURCE_HYGIENE`, `STALE_TRANSPORT`, `SOURCE_LAYER_MISMATCH`,
-`UNWIRED_PAGE_VARIABLE`, `CACHED_STATE`, `DEAD_FACET`.
+`DEPRECATED_COLUMN`, `ASSET_VARIANT_DIVERGENCE`, `SOURCE_HYGIENE`,
+`STALE_TRANSPORT`, `SOURCE_LAYER_MISMATCH`, `UNGOVERNED_SOURCE`,
+`MISSING_TILE_COLUMN`, `UNWIRED_PAGE_VARIABLE`, `WRONG_DESIGNATED_LAYER`,
+`MIXED_KEY_VOCABULARY`, `SUPERSEDING_DUPLICATE`, `CACHED_STATE`, `DEAD_FACET`.
 
 Always end with **Source-side recommendations**. Several classes here are only
 permanently fixable at the source — retiring superseded columns, deleting
@@ -474,6 +674,14 @@ guarantee recurrence.
 Always separate **isolated** from **systemic**. A finding on one component is a
 bug; the same finding on thirty is a process problem, and the remediation and
 the audience differ.
+
+**Collapse co-located findings into their root cause.** When several findings on
+one component all touch the same layer, source, or column, they are almost
+never independent — they are one wrong binding and its blast radius. Before
+reporting, group findings by the object they touch; if a group has a plausible
+root (Check H's ungoverned source is the usual one), report the root as the
+finding and the rest as consequences beneath it. A list of three peer findings
+invites three partial fixes and leaves the cause in place.
 
 ---
 
@@ -562,16 +770,24 @@ layer's view is healthy: `tiles/841/8/74/94/t.pbf` → **200, 875 KB**, and
 `?cols=fld_zone` returns the paint column, so the floodplain data is fine and
 available. Verdict: `binding defect — data available`.
 
-The protocol check (step 4) supplied the mechanism and corrected a wrong first
-read. The `pmtiles://` artifact **exists** — it answers a range request with
-`206`. But there is no `pmtiles` package in `package.json` and no `addProtocol`
-registration anywhere in the codebase; the only pmtiles code is the datasets
-admin UI that *generates* these artifacts. MapLibre therefore has no handler for
-the `pmtiles://` scheme, the source never loads, and nothing draws — silently.
-This is exactly why step 4 warns that probing the artifact is not sufficient
-evidence: a healthy 206 would have read as "the tiles are fine, look elsewhere."
-Compounding it, the runtime `?cols=` rebuild is applied to `source.url` too, so
-it appends a query string to a `pmtiles://` URL — meaningless for that transport.
+The protocol check (step 4) supplied the mechanism, and it took two passes —
+which is why the check is worded the way it is. The `pmtiles://` artifact
+**exists**: it answers a range request with `206`. A pmtiles handler **also
+exists** — vendored at
+[`map/pmtiles/index.ts`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/pmtiles/index.ts),
+exporting `PMTilesProtocol`, which calls `maplibre.addProtocol("pmtiles", …)`.
+Either fact alone reads as "supported, look elsewhere."
+
+The defect is at the **call site**: in
+[`map/index.jsx`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/index.jsx)
+both the import (line 5) and the wiring (`//protocols: [PMTilesProtocol],`,
+line 1340) are **commented out**. Nothing registers the scheme, so MapLibre
+cannot resolve `pmtiles://`, the source never loads, and nothing draws —
+silently. Two secondary confirmations: the layer's URL is
+`pmtiles://graph.availabs.org/…`, missing the inner `https://` the handler's own
+README documents; and the runtime `?cols=` rebuild is applied to `source.url`
+too, appending a query string to a `pmtiles://` URL, which is meaningless for
+that transport.
 
 **Check E.** Binding-key completeness across the 342 layers:
 
@@ -604,3 +820,104 @@ two-layer unfinished migration to a transport the renderer cannot read (with the
 data itself healthy), and a three-tier wiring inconsistency spanning every map on
 the pattern. Both are invisible from a single component; both are unmistakable
 from the distribution.
+
+### Check H — reference run (the wrong-source case, and how it hid)
+
+Third triggering report, and the cleanest example of the fixed-twin shortcut:
+page `the_risk/natural_hazards` on tenant `suffolk_draft` (pattern
+`mitigateny_county_template_suffolk_copy`) carries **two** "County Level EAL Map"
+components — **2249527** (published, known issues) and **2389090** (draft, the
+fix). Diffing the pair took minutes and yielded three real differences plus two
+red herrings. Sweep scope for generalization: 358 map components across both
+MitigateNY patterns, 348 (component × symbology) records.
+
+**Red herrings, worth naming so a reviewer doesn't chase them.** The fixed twin
+populates `tabs[0].rows` with a symbology reference and sets
+`display.layerPanel: "none"`; the broken one leaves `rows` empty. Neither
+matters: `EMPTY_TABS` is the code default
+([`map/index.jsx:61,366`](../../src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/index.jsx)),
+the panel only renders when `layerPanel === 'library'`, and the distribution
+confirms it — 336 of 348 records have empty `rows`. A difference present in a
+known-good component is not automatically the fix.
+
+**F1 — designated layer.** The broken component designates
+`activeLayer: "Jurisdiction Boundary"` (`layer-type: simple`, no `data-column`);
+the fixed twin designates the thematic layer (`data-column: eal_valt`). Across
+the 342 records that have a thematic layer, **316 designate it and 26 do not** —
+a 92% norm that makes the 26 errors rather than intent. Consequence is doubled
+because both mechanisms follow the designation: page-filter sync reads only that
+layer's `dynamic-filters`, and the zoom-bounds probe resolves `ST_Extent` from
+that layer's view (2296, the jurisdictions upload) instead of the data view
+(1410). The fallback can't rescue it — it only considers layers with
+`zoomToFilterBounds: true`, and that flag is set on **zero** layers here. The
+strongest form of the finding also appeared: symbology **2142106 is designated
+differently across its own consumers** — `"Jurisdiction Boundary"` on 2249527
+and 2323790, `"County Boundary"` on 2252947 — which is drift by definition.
+
+**F2 — mixed key vocabulary.** The broken component's layers bind the single
+page variable `geoid` through **two different columns**: `stcofips` (the
+governed NRI views 1410/1416) and `county_fip` (view 2296, a locally uploaded
+jurisdictions shapefile). The fixed twin uses `stcofips` alone. **32 of 348
+records** show mixed vocabularies, and the worst are worse than this one:
+`["stcofips","census_geo"]` split across two *different* page variables
+(`geoid` and `geoid_juris`, 7 components), `["county_fip","stcnty","stcofips"]`
+(2), `["state_id","stcofips"]` (5). The truncated-field tell held exactly as
+described — view 2296's columns are `county_fip`, `county_nam`, `census_geo`,
+`cis_comm_1`, all clipped to 10 characters, marking an ad-hoc upload rather than
+the governed pipeline. Tile probes confirmed both vocabularies are individually
+valid (view 2296 carries `county_fip = "36103"` for Suffolk), which is the point:
+mixed keys fail by *divergence*, not by being individually broken, so probing one
+column proves nothing.
+
+**C2 — symbology variant divergence.** The broken component renders symbology
+**2142106** "FEMA NRI … Total EAL **v2 (LHMP)**"; the fix renders **2142005**
+"FEMA NRI … Total EAL" — identical paint and breaks, one fewer layer. Stripping
+qualifier suffixes across the pattern surfaced **7 families**, all the same
+shape: `Census Tract NRI Total EAL by Hazard` vs `… (LHMP)`, likewise
+Building/Population/Crop EAL, `Fusion Events by Primary Hazard` vs `… (LHMP)`,
+and `Jurisdictions (LHMP)` vs `Jurisdictions v2 (LHMP)`. **This run is the
+counterexample that earns C2's first caution:** the `v2` member is the broken
+one and the unsuffixed original is the fix. Had currency been inferred from the
+name, the audit would have recommended migrating *toward* the defect.
+
+**H — the root cause, and why the first pass missed it.** The three findings
+above are **not three defects**. They are one wrong source binding and its blast
+radius, and reporting them as peers was an error this section exists to prevent.
+
+The broken component's extra layer binds source **1612 / view 2296**. Its
+source-object id is `hazmit_dama_comp_1767815938875_xhzxhpy` — the
+`{datasetName}` slot reads **`comp`**. Across **712 layers** in both patterns,
+those 25 layers are the **only** ones whose source object carries no dataset
+name; every other binding embeds a real one (`NRI Tracts Geospatial`,
+`NRI Counties Geospatial`, `nys_counties`, `avail_merged_floodplains_2025`,
+`cities_towns`, `SVI2022_NEWYORK_tract`, `NYS_DEC_Dams`, …). It is also the
+newest binding in the corpus — minted **2026-01-07**, against 2023–2025 for
+nearly everything around it. An ad-hoc upload that never went through the
+catalog, in other words.
+
+Two properly-named jurisdiction sources already exist as candidate
+replacements: `cities_towns` (src 1559 / view 2074, minted 2025-11-04) and
+`cl_2024_v01_openfemagdba…` (src 1579 / view 2219, minted 2025-11-21).
+The 204 schema probe shows all three are **schema-disjoint** — 2296 exposes
+`county_fip, census_geo, cis_comm_1, county_nam` (10-char truncated shapefile
+fields), 2219 exposes `geoid`, 2074 exposes `name`, with no column in common —
+so they are different datasets, not versions of one, and switching sources
+forces every filter column that referenced 2296 to be rewritten too.
+
+Everything else in this section follows from that one binding:
+
+- **F1** — the ungoverned layer is the one designated `activeLayer`, so it
+  captured page-filter sync and zoom-bounds resolution.
+- **F2** — it could only introduce `county_fip` as a second vocabulary because
+  its schema shares no column with the governed views.
+- **C2** — the `v2 (LHMP)` symbology variant exists *because* it is the variant
+  carrying this layer; the unsuffixed original doesn't have it, which is why
+  dropping back to 2142005 fixed the map.
+
+**The lesson, and why Check H now runs before F.** The first pass reported
+F1, F2 and C2 as three independent classes. Each was individually correct and
+each would have produced a partial fix that left source 1612 in place — the map
+would keep "working" until the next author reused the same symbology. The
+detector that finds the root is cheaper than all three: **parse the
+source-object id and look at the `{datasetName}` slot.** One string comparison
+over 712 layers isolates it.
