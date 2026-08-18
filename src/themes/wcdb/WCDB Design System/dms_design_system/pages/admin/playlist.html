@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB Admin · Playlist</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../_shared.css">
+</head>
+<body>
+
+<!-- ============================================================
+     LAYOUT · app — the admin variant (skill §3.3: "SideNav visible,
+     narrower content gutters, denser"). This is the second Layout
+     style the brand ships; `default` is the public cutaway.
+
+     No live rail here: that is public-site chrome, and an editing
+     surface is a working context, not a listening one.
+     ============================================================ -->
+<div data-dms-layout="app"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <!-- ============================================================
+       SIDENAV · theme.sidenav.styles[0] "wcdb"
+       Keys are the ones SideNav.jsx actually reads — see
+       ui/components/SideNav.theme.jsx and the warning in
+       translating-design-system-to-dms-theme.md §3.1: a plausible-looking
+       invented key (`wrapper`, `inner`, `menu`) silently no-ops.
+         layoutContainer1  lg:pl-64          — pushes the content over
+         layoutContainer2  fixed inset-y-0   — the rail itself
+         sidenavWrapper / logoWrapper / itemsWrapper / bottomMenuWrapper
+         navitemSide / navitemSideActive / menuIconSide / sectionHeading
+       ============================================================ -->
+  <div class="lg:pl-64">
+
+    <div class="fixed inset-y-0 left-0 w-64 max-lg:hidden z-40">
+      <div class="flex flex-col w-64 h-full bg-[var(--bg-0)] border-r border-[var(--line-1)]">
+
+        <div class="flex items-center h-14 px-4 pt-2">
+          <a href="../home.html" class="flex items-center">
+            <img src="../../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-11 wcdb-logo-img">
+          </a>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-2 py-5">
+          <div class="px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)]">Station admin</div>
+          <div class="flex flex-1 flex-col gap-0.5 mt-1">
+            <a href="./playlist.html" data-active="true" class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-1)] bg-[var(--accent-soft)] cursor-pointer">
+              <span class="text-[color:var(--ink-1)]"><!-- icon: Note -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="15" r="2.5"/><path d="M9.5 18V6l10-2v11"/></svg></span>
+              Playlist
+            </a>
+            <a href="./schedule.html" class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: Calendar -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span>
+              Schedule
+            </a>
+            <a href="./djs.html" class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: User -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></span>
+              DJs
+            </a>
+            <a href="./events.html" class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer">
+              <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: Star -->
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.4l6-.8z"/></svg></span>
+              Events
+            </a>
+          </div>
+
+          <div class="my-5 border-t border-[var(--line-1)]"></div>
+          <div class="px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)]">Public site</div>
+          <a href="../home.html" class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-3)] hover:bg-[var(--accent-soft)] hover:text-[color:var(--ink-1)] transition-colors">
+            <span class="text-[color:var(--ink-4)] group-hover:text-[color:var(--ink-2)]"><!-- icon: ViewPage -->
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            View site
+          </a>
+        </div>
+
+        <div class="mt-auto border-t border-[var(--line-1)] p-4 flex items-center gap-3">
+          <span class="inline-flex items-center justify-center size-9 rounded-full bg-[var(--bg-3)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.06em] uppercase text-[color:var(--ink-2)] shrink-0">AM</span>
+          <span class="min-w-0 flex-1">
+            <span class="block font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] truncate">Alex Muro</span>
+            <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">Webmaster</span>
+          </span>
+          <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                  class="shrink-0 inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+            <!-- icon: Moon -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- topnavWrapper / topnavMobileContainer — the rail collapses to a bar
+         below lg, which is the only place SideNav's topnav keys are used. -->
+    <div class="lg:hidden w-full h-14 flex items-center px-4 bg-[var(--bg-0)] border-b border-[var(--line-1)] sticky top-0 z-40">
+      <a href="../home.html" class="flex items-center">
+        <img src="../../assets/logo_white.svg" alt="WCDB" class="h-9 wcdb-logo-img">
+      </a>
+      <span class="ml-3 pl-3 border-l border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Admin</span>
+      <div class="ml-auto flex items-center gap-2">
+        <button type="button" data-mockup-theme-toggle aria-label="Light mode"
+                class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)]">
+          <!-- icon: Moon -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)]" aria-label="Menu">
+          <!-- icon: Menu -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="relative isolate flex min-h-svh w-full">
+      <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen min-w-0">
+        <div class="flex flex-1 items-start w-full min-w-0">
+          <div class="flex-1 flex flex-col min-w-0">
+
+            <!-- ============================================================
+                 LAYOUTGROUP · content — the only group on an admin page.
+                 With a persistent SideNav the content hugs the rail
+                 (mr-auto, never mx-auto) per skill §7.3.1.
+                 ============================================================ -->
+            <div data-dms-group="content"
+                 class="w-full flex-1 flex flex-row p-2 min-w-0">
+              <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] px-4 pt-3 min-h-[200px] min-w-0 mr-auto">
+
+              <section data-dms-section="lexical:page-header" class="pt-1 pb-5">
+                <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 flex-wrap font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase mb-4">
+                  <a href="./playlist.html" class="text-[color:var(--ink-4)] hover:text-[color:var(--ink-2)] transition-colors">Admin</a>
+                  <span class="text-[color:var(--ink-4)]"><!-- icon: ChevronRight --><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                  <span class="text-[color:var(--ink-2)]" aria-current="page">Playlist</span>
+                </nav>
+                <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+                  <div class="flex flex-wrap items-baseline gap-4">
+                    <h1 class="font-[family-name:var(--font-display)] italic text-[clamp(30px,3.2vw,42px)] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">
+                      Playlist.
+                    </h1>
+                    <span class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      <span class="wcdb-on-air-dot"></span>
+                      Logging live
+                    </span>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Late Modernism &middot; w/ DJ Halftone</span>
+                  </div>
+                  <button type="button" data-mockup-dialog-open="add-song"
+                          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap hover:opacity-90 transition-opacity">
+                    <!-- icon: Plus -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Add a song
+                  </button>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:how-it-works
+                   The page's whole premise in one line. The stream is monitored
+                   by ACRCloud (research/now-playing) and each detection arrives
+                   by webhook with a confidence score; unmatched stretches arrive
+                   as no-match events. So a DJ is NOT here to type a playlist —
+                   they are here for the exceptions the matcher could not
+                   resolve, and the page leads with those.
+                   ============================================================ -->
+              <section data-dms-section="card:review-queue" class="mb-3">
+                <div class="rounded-[18px] bg-[var(--card-bg)] px-6 py-5">
+                  <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <div class="flex items-center gap-3">
+                      <span class="grid place-items-center size-[34px] rounded-full bg-[var(--bg-3)] text-[color:var(--ink-2)]"><!-- icon: Wave --><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2l2-6 3 13 3-16 3 12 2-3h3"/></svg></span>
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Detected automatically</div>
+                        <div class="font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)] mt-0.5">The stream is matched every 30s &mdash; you only fix what it got wrong</div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 ml-auto">
+                      <button class="inline-flex items-center gap-2 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] px-4 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase font-semibold">
+                        <!-- icon: Alert --><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                        Needs review &middot; 2
+                      </button>
+                      <button class="inline-flex items-center rounded-full border border-[var(--line-2)] px-4 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors">All &middot; 412</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:log — the spin log itself.
+                   Two failure modes are drawn IN PLACE rather than filtered
+                   away: a GAP (kind:'no-match' — talk, a live set, or a track
+                   the matcher missed) and a LOW-CONFIDENCE match (score < 80,
+                   the field ACRCloud returns). Both are what "missed or
+                   incorrectly added" actually looks like in the feed.
+                   ============================================================ -->
+              <section data-dms-section="card:log" class="mb-6">
+                <div class="rounded-[18px] bg-[var(--card-bg)] px-7 pt-6 pb-5">
+
+                  <div class="flex flex-wrap items-baseline justify-between gap-4 mb-1">
+                    <div class="flex items-baseline gap-3">
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[24px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">Tonight</h2>
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Thu 5 Mar &middot; 11 pm &ndash; 1 am</span>
+                    </div>
+                    <a href="../spins.html" class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] border-b border-transparent hover:border-[var(--line-3)] pb-0.5 transition-colors">
+                      Public spin log
+                      <!-- icon: ArrowRight -->
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </a>
+                  </div>
+
+                  <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 pt-4 pb-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">
+                    <span>Time</span><span></span><span>Track</span><span>Source</span><span class="justify-self-end">&nbsp;</span>
+                  </div>
+
+                  <div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] border-t border-[var(--line-1)]  hover:bg-[var(--accent-soft)] transition-colors group">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">11:47</span>
+                      <span class="size-9 rounded-[6px] wcdb-art wcdb-art--ember overflow-hidden" title="album_cover from the match"></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">Sowiesoso</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">Cluster &middot; Sowiesoso · 1976</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] tabular-nums" title="ACRCloud match confidence">96%</span></span>
+                      <button type="button" data-mockup-dialog-open="edit-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] opacity-0 group-hover:opacity-100 hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-all">
+                        <!-- icon: EditPage --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg> Edit
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] border-t border-[var(--line-1)]  hover:bg-[var(--accent-soft)] transition-colors group">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">11:39</span>
+                      <span class="size-9 rounded-[6px] wcdb-art wcdb-art--ember overflow-hidden" title="album_cover from the match"></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">Sehr Kosmisch</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">Harmonia &middot; Musik von Harmonia · 1974</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] tabular-nums" title="ACRCloud match confidence">94%</span></span>
+                      <button type="button" data-mockup-dialog-open="edit-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] opacity-0 group-hover:opacity-100 hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-all">
+                        <!-- icon: EditPage --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg> Edit
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] bg-[var(--on-air-soft)] border-t border-[var(--line-1)]">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">11:31</span>
+                      <span class="grid place-items-center size-9 rounded-[6px] border border-dashed border-[rgba(255,59,47,0.35)] text-[var(--on-air)]"><!-- icon: Alert --><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-2)]">Nothing identified</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">8 min unidentified &middot; talk, a live set, or a track the matcher missed</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase font-semibold">Gap</span></span>
+                      <button type="button" data-mockup-dialog-open="add-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full border border-[var(--line-3)] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+                        <!-- icon: Plus --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Add
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] border-t border-[var(--line-1)] bg-[rgba(255,59,47,0.06)] hover:bg-[var(--accent-soft)] transition-colors group">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">11:24</span>
+                      <span class="size-9 rounded-[6px] wcdb-art wcdb-art--ember overflow-hidden" title="album_cover from the match"></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">Silver Morning</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">Eno · Moebius · Roedelius &middot; After the Heat · 1978</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[var(--on-air)] tabular-nums" title="ACRCloud match confidence"><!-- icon: Alert --><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>71%</span></span>
+                      <button type="button" data-mockup-dialog-open="edit-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] opacity-0 group-hover:opacity-100 hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-all">
+                        <!-- icon: EditPage --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg> Edit
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] border-t border-[var(--line-1)]  hover:bg-[var(--accent-soft)] transition-colors group">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">11:12</span>
+                      <span class="size-9 rounded-[6px] wcdb-art wcdb-art--ember overflow-hidden" title="album_cover from the match"></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">Zuckerzeit</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">Cluster &middot; Zuckerzeit · 1974</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 rounded-full border border-[var(--line-3)] text-[color:var(--ink-2)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase">By DJ</span></span>
+                      <button type="button" data-mockup-dialog-open="edit-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] opacity-0 group-hover:opacity-100 hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-all">
+                        <!-- icon: EditPage --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg> Edit
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] border-t border-[var(--line-1)]  hover:bg-[var(--accent-soft)] transition-colors group">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">10:59</span>
+                      <span class="size-9 rounded-[6px] wcdb-art wcdb-art--ember overflow-hidden" title="album_cover from the match"></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">Wow and Flutter</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">Stereolab &middot; Transient Random-Noise Bursts · 1993</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] tabular-nums" title="ACRCloud match confidence">98%</span></span>
+                      <button type="button" data-mockup-dialog-open="edit-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] opacity-0 group-hover:opacity-100 hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-all">
+                        <!-- icon: EditPage --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg> Edit
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] border-t border-[var(--line-1)]  hover:bg-[var(--accent-soft)] transition-colors group">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">10:51</span>
+                      <span class="size-9 rounded-[6px] wcdb-art wcdb-art--ember overflow-hidden" title="album_cover from the match"></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">Long Was the Year</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">Broadcast &middot; Haha Sound · 2003</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 rounded-full border border-[var(--line-3)] text-[color:var(--ink-2)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase">Corrected</span></span>
+                      <button type="button" data-mockup-dialog-open="edit-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] opacity-0 group-hover:opacity-100 hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-all">
+                        <!-- icon: EditPage --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg> Edit
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-[58px_44px_1fr_120px_96px] gap-x-4 items-center px-3 py-3 -mx-3 rounded-[8px] border-t border-[var(--line-1)]  hover:bg-[var(--accent-soft)] transition-colors group">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] tabular-nums">10:44</span>
+                      <span class="size-9 rounded-[6px] wcdb-art wcdb-art--ember overflow-hidden" title="album_cover from the match"></span>
+                      <span class="min-w-0">
+                        <span class="block font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">Sirocco</span>
+                        <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">Pram &middot; North Pole Radio Station · 1998</span>
+                      </span>
+                      <span><span class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] tabular-nums" title="ACRCloud match confidence">91%</span></span>
+                      <button type="button" data-mockup-dialog-open="edit-song"
+                              class="justify-self-end inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] opacity-0 group-hover:opacity-100 hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-all">
+                        <!-- icon: EditPage --><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg> Edit
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between gap-4 pt-5 mt-2 border-t border-[var(--line-1)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Showing tonight &middot; 8 of 41</span>
+                    <button class="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] px-4 py-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">
+                      Earlier shows
+                      <!-- icon: ChevronDown -->
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <!-- MODAL · edit-song ================================================ -->
+              <div data-mockup-dialog="edit-song" aria-hidden="true"
+                   class="fixed inset-0 z-[9998] bg-[rgba(10,10,10,0.72)] flex items-start justify-center overflow-y-auto p-6">
+                <div class="w-full max-w-[560px] rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-2)] shadow-[0_24px_60px_rgba(0,0,0,0.5)] mt-[8vh] mb-10" role="dialog" aria-modal="true" aria-label="Edit song">
+                  <div class="flex items-start justify-between gap-4 px-7 pt-6 pb-2">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-2">Played 10:51 &middot; matched at 62%</div>
+                      <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">Fix this track.</h3>
+                    </div>
+                    <button type="button" data-mockup-dialog-close aria-label="Close"
+                            class="shrink-0 size-8 rounded-full grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+                      <!-- icon: XMark -->
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <div class="px-7 pt-3">
+                    <div class="rounded-[10px] bg-[var(--bg-2)] p-3 flex items-start gap-3">
+                      <span class="mt-0.5 text-[color:var(--ink-4)] shrink-0"><!-- icon: Alert --><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></span>
+                      <p class="font-[family-name:var(--font-mono)] text-[10px] leading-[1.6] tracking-[0.04em] uppercase text-[color:var(--ink-4)] m-0">
+                        Low confidence. Saving marks the row <em class="not-italic text-[color:var(--ink-2)]">corrected</em> and keeps the original detection underneath.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="px-7 pt-5 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Title</span>
+                      </span>
+                      <input type="text" value="Long Was the Year" placeholder="Track title" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Artist</span>
+                      </span>
+                      <input type="text" value="Broadcast" placeholder="Artist" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Album</span>
+                      </span>
+                      <input type="text" value="Haha Sound" placeholder="Album" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Year</span>
+                      </span>
+                      <input type="text" value="2003" placeholder="1974" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Played at</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">on air</span>
+                      </span>
+                      <input type="text" value="10:51" placeholder="" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Length</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">optional</span>
+                      </span>
+                      <input type="text" value="4:12" placeholder="m:ss" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between gap-4 px-7 py-5 border-t border-[var(--line-1)] bg-[var(--bg-2)] rounded-b-[18px]">
+                    <button type="button" class="inline-flex items-center gap-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] hover:text-[var(--on-air)] transition-colors">
+                      <!-- icon: Trash --><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg> Not a song
+                    </button>
+                    <div class="flex items-center gap-3">
+                      <button type="button" data-mockup-dialog-close class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors">Cancel</button>
+                      <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap hover:opacity-90 transition-opacity">
+                        <!-- icon: Check --><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg> Save track
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MODAL · add-song ================================================= -->
+              <div data-mockup-dialog="add-song" aria-hidden="true"
+                   class="fixed inset-0 z-[9998] bg-[rgba(10,10,10,0.72)] flex items-start justify-center overflow-y-auto p-6">
+                <div class="w-full max-w-[560px] rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-2)] shadow-[0_24px_60px_rgba(0,0,0,0.5)] mt-[8vh] mb-10" role="dialog" aria-modal="true" aria-label="Add song">
+                  <div class="flex items-start justify-between gap-4 px-7 pt-6 pb-2">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-3)] mb-2">Gap at 11:31 &middot; 8 minutes</div>
+                      <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">Add a song.</h3>
+                    </div>
+                    <button type="button" data-mockup-dialog-close aria-label="Close"
+                            class="shrink-0 size-8 rounded-full grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+                      <!-- icon: XMark -->
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <div class="px-7 pt-5 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Title</span>
+                      </span>
+                      <input type="text" value="" placeholder="Track title" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Artist</span>
+                      </span>
+                      <input type="text" value="" placeholder="Artist" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Album</span>
+                      </span>
+                      <input type="text" value="" placeholder="Album" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Year</span>
+                      </span>
+                      <input type="text" value="" placeholder="1974" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Played at</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">on air</span>
+                      </span>
+                      <input type="text" value="11:31" placeholder="" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                    <label class="block">
+                      <span class="flex items-baseline justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        <span>Length</span><span class="text-[color:var(--ink-4)] normal-case tracking-[0.04em]">optional</span>
+                      </span>
+                      <input type="text" value="" placeholder="m:ss" class="w-full rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] px-3 py-2.5 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between gap-4 px-7 py-5 border-t border-[var(--line-1)] bg-[var(--bg-2)] rounded-b-[18px]">
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">Saved as &ldquo;by DJ&rdquo; &mdash; never overwritten by the matcher</span>
+                    <div class="flex items-center gap-3">
+                      <button type="button" data-mockup-dialog-close class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors">Cancel</button>
+                      <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap hover:opacity-90 transition-opacity">
+                        <!-- icon: Plus --><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Add to playlist
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mockup runtime (theme toggle, dialogs, on-air photo rotation). Dev scaffolding only. -->
+<script src="../../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../../ds-nav.js"></script>
+
+</body>
+</html>

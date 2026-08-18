@@ -171,7 +171,7 @@ in-flight work.
 
 **Do not** treat this as "reports parity is broken." Route Comparison is a distinct page type
 (Batch Reports), not a section of a report page, and is explicitly out of scope for the report-spec
-work (`planning/transportny/tasks/current/report-spec-and-build-script.md`).
+work (`planning/transportny/tasks/completed/report-spec-and-build-script.md`).
 
 ### Verified in sync (2026-07-28)
 

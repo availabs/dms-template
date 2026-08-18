@@ -29,7 +29,7 @@
   "routes": [
     { "id": "incident", "slot": true, "name": "Incident Day", "route_slot_group": "synthetic:120P05853_120+05854",
       "dateFormula": "startDate=>day+0day->1day", "derivedFromRoute": "__TODAY__",
-      "color": "#e80c0c", "weekdays": { },
+      "color": "#e80c0c",
       "graphs": ["line_all", "map_all", "grid_incident", "grid_diff"] },
     { "id": "days7", "slot": true, "name": "7 Days After", "route_slot_group": "synthetic:120P05853_120+05854",
       "dateFormula": "endDate=>day+7day->1day", "derivedFromRoute": "__TODAY__",

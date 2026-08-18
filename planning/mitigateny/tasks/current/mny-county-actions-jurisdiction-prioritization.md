@@ -251,6 +251,114 @@ value, so the "1 tiered" is a deliberate demo of the tiered state that the 475 f
 reconciled with. Worth settling before this page is used as a data reference — either the demo row
 loses its tier (all figures become 475) or the gap counts become 474.
 
+## Round 9 — dashboard edits (2026-08-04)
+
+- [x] **Edit Actions + Prioritize Actions gated behind login.** Wrapped in a `data-auth="signed-in"`
+      block with a lock affordance so a reviewer can see which chrome disappears when signed out.
+      Comment records that this is **not** a CSS state in the live build: the destination pages
+      already carry `authPermissions` with `groups.public: []`, and these entry points want their own
+      section so it can be hidden for anonymous visitors rather than rendering a button that
+      dead-ends at a permission error.
+- [x] **County name + FIPS dropdown removed.** The H1 already names the county and the FIPS code was
+      reference data, not a control. Button group re-laid-out (`justify-end`, dropped the `ml-auto`
+      that the chip's presence required).
+- [x] **Filters promoted to page scope** — new `page-filters` section between the status strip and the
+      map (verified section order: identity, status-strip, **page-filters**, map, hazard-mix,
+      type-mix, table, index). Search / Jurisdiction / Status moved out of the table header; **CSV
+      stayed with the table** because it exports what the table is showing. Comment records the live
+      wiring gotcha: there is no "filter the whole page" switch — map, both mix charts and the table
+      each need matching `usePageFilters` leaves, and the search box needs its OR-group replicated
+      per section.
+- [x] **Map intro rewritten** to explain proximity clustering: the donut groups nearby actions, the
+      number is the group size, the ring is the status mix, and grouping is by **proximity not
+      jurisdiction** — so a donut can straddle a town line and one town can hold several.
+- [x] **"All county actions" → "All actions"** (subtitle updated too, since it referenced searching,
+      which now happens in the page bar).
+- [x] **Each table row opens its own action.** Real ids from `sullivan_actions.geojson`:
+      1100379 / 1100375 / 1100333 / 1100334 / 1100342 on both the name link and a row-level click
+      (which is what the row's pre-existing `cursor-pointer` had been promising). **The Bethel row has
+      no `?id=`** — it is one of the 3 unmapped actions so it isn't in that aggregate; flagged in a
+      comment to be filled from the source at build time.
+- [x] **Application Readiness + Project Maturity columns added** (6 → 8 columns, every row verified at
+      8 cells). No data exists for either, so both render the italic muted `not recorded` state.
+      Table `min-w` raised 980 → 1250px so the two extra fixed columns don't squeeze Action Name.
+
+Verified: map canvas still initialises with no console errors, the page filter bar is a single 34px
+row at the 1440px cap (the trailing explainer is `hidden lg:inline` because it was the item that
+wrapped at narrow widths), table scrolls inside its own container, no page-level horizontal scroll,
+div tags balanced 111/111, 0 broken links across the section.
+
+## Round 10 — counts out of the map copy (2026-08-04)
+
+- [x] **Dropped "472 of 475 actions" from the map description.** Authored copy on these pages states
+      the RULE; the data states the state. A hard-coded count goes stale the moment an action is
+      added, moved or mapped, and no author remembers to come back and edit it — the same principle
+      the needs-attention tiles were written to before that band moved to the jurisdiction page.
+- [x] **Kept the "some actions aren't shown" caveat, phrased count-free:** "Actions with no location
+      recorded aren't on the map." True at any count, including zero.
+- [x] Verified: **0 digits in the map intro**, and every digit left anywhere in the map section is a
+      live donut cluster label rendered by MapLibre from the data — no authored count remains.
+
+**Observed, not caused by this task:** the map's "Read the borders, not the pins" caveat panel — which
+carried several more hard-coded counts (472 mapped / 26 coordinates / 395 / 73 / 4) — is no longer in
+`dashboard.html`, and is absent from HEAD as well, so it was removed outside this work. Worth
+confirming with whoever removed it that the precision caveat is intentionally gone rather than lost,
+since it was the page's only statement that a donut says *which jurisdiction*, never *where*.
+
+## Round 11 — action-view provenance trimmed (2026-08-04)
+
+- [x] **Dropped `Action number` and `Readiness` from Record & provenance.** These were the two
+      leftovers flagged in Round 8: the action number had been removed from the identity line but
+      kept here (which just relocated it), and readiness was asserted twice (it also had the badge
+      removed from the state-pill row). Grid drops 6 → 4 columns so the row still fills its width —
+      verified one row, four cells, no gap at the end.
+- [x] **Key facts: no change — confirmed correct as built in Round 8.** The user re-asked for
+      "include Secondary Hazard, hide nulls", so I surfaced the conflict rather than re-implementing
+      it: secondary hazard is null on specimen 1100379, so the two clauses cancel and the field is
+      present-but-hidden. Given the choice between rendering it with a real value, rendering it as
+      an explicit "none recorded" exception, or leaving it as a spec-only field, **the user chose
+      spec-only** — it stays in the Key Facts field set, hidden on this action, and will appear
+      automatically on any action that has a secondary hazard.
+
+**Convention worth keeping:** when an instruction's two clauses cancel out on the specimen data, say
+so and offer the options rather than silently shipping the no-op — this one round-tripped twice
+before the ambiguity was named.
+
+## Round 12 — dashboard filters + table trim, eligibility rename (2026-08-04)
+
+- [x] **Action Readiness / Project Maturity moved out of the table and into the filter bar.** They
+      were added as columns in Round 9 and have no data on any action, so a column of "not recorded"
+      cost table width and told you nothing; as filter controls they're useful the moment data lands.
+      Table back to 6 columns, `min-w` 1250 → 980px.
+- [x] **All Actions title + narrative removed.** The filter bar now sits directly above the table and
+      labels the region; a heading wedged between the filters and the table they drive pushed the two
+      apart. CSV kept — it exports what the table is showing.
+- [x] **Filter bar moved** from between the cards and the map to directly above the table, still
+      page-scoped (verified `page-filters` is immediately before `actions-table` in section order).
+      Note reworded to "Filters the whole page, not just the table", since its new position no longer
+      implies that on its own.
+- [x] **`Priority` → `Local Priority`** in the table header (width 112 → 132px).
+- [x] **Screening questions → Eligibility questions.** The request named dashboard.html, but that
+      section lives on **action-view.html and action-edit.html** — renamed on both so the view/edit
+      pair agrees. Dropped the now-redundant "eligibility and" from the subtitle. The `#screening`
+      anchor / `data-name` identifiers were left alone (same call as `action-type-mix` when
+      "Mitigation approach" was renamed) so the 6 cross-page anchor links keep working.
+- [x] Bar tightened to a single row at the page cap: search `max-w` 320 → 240 and a shorter trailing
+      note. Verified at a real 1425px viewport — 8 items, 1140px inside a 1223px bar, one 34px row,
+      0 overflowing elements.
+
+### Two measurement traps hit this round (worth remembering)
+
+1. **`indexOf('          </div>')` also matches inside `'            </div>'`** — 10 spaces is a
+   substring of 12. The first run closed the header row at the inner `</div>` and orphaned the outer
+   one (div balance 110/111). Anchor such searches to a line start (`NL + '          </div>'`). A
+   pre-edit backup made the retry a one-liner; the guard caught it before anything shipped.
+2. **A collapsed Browser pane reports `clientWidth: 0`**, which makes every element look like it
+   overflows and every flex row look like it stacked — it briefly read as a horizontal-scroll
+   regression and a 7-row filter bar. Always assert `clientWidth > 0` (or resize the tab first) before
+   trusting layout numbers; `navigate` can also land in a **new** tab that the earlier resize never
+   touched.
+
 ### Incident — document corrupted mid-edit, then repaired
 
 A scripted edit passed HTML through a `String.replace()` **replacement string**. That HTML

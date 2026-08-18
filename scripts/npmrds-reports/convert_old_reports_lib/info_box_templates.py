@@ -1,7 +1,7 @@
 import json
 
 from .config import GRAPH_TEMPLATE_TYPE
-from .vocab import AADT_EXPR, AADT_TMC_EXPR, INFO_BOX_AADT_TITLES, INFO_BOX_DELAY_TITLES, INFO_BOX_LENGTH_TITLES, INFO_BOX_SPEED_TITLES, INFO_BOX_TITLES, INFO_BOX_TRAVELTIME_TITLES, LENGTH_EXPR, LENGTH_TMC_EXPR, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS
+from .vocab import AADT_EXPR, AADT_TMC_EXPR, INFO_BOX_AADT_TITLES, INFO_BOX_DELAY_TITLES, INFO_BOX_LENGTH_TITLES, INFO_BOX_SPEED_TITLES, INFO_BOX_TITLES, INFO_BOX_TRAVELTIME_TITLES, LENGTH_EXPR, LENGTH_TMC_EXPR, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS, TABLE_FORMAT_BY_MEASURE
 from .expressions import AADT_DIST_JOIN, DELAY_EXPR, META_JOIN, SPEED_EXPR, TRAVEL_TIME_EXPR
 from .template_specs import TEMPLATE_BASE_NAME
 from .db import dms, now_iso
@@ -135,38 +135,64 @@ def ensure_info_box_traveltime_template(grain, templates, dry_run):
     detection), but this column's display treatment can still change
     independently, as it did round 58 (raw decimal minutes -> `minutes_clock`,
     the same M:SS format the old tool's `toMinutesWithSeconds` applies to
-    every "Minutes"-labeled measure, not just this one)."""
+    every "Minutes"-labeled measure, not just this one).
+
+    `join` DOES drift-check too (2026-08-13 fix) — this function was missed by
+    the 2026-08-12 metadata-unification round's join-drift pass (that round
+    only touched `_ensure_static_info_box_template`/`ensure_info_box_delay_
+    template`), so a pre-existing `route_info_box_traveltime`/`tmc_info_box_
+    traveltime` row (both did exist live already) kept carrying the STALE
+    base-template-default join (TMC Identification, 455/3464) forward
+    forever, frozen at whatever the base's default was when this row was
+    first created — never re-synced after the base's own default moved to
+    META_JOIN. TRAVEL_TIME_EXPR itself never reads table1, so this was
+    functionally invisible standalone, but it broke multi-measure Info Box's
+    `build_route_info_box_section_state_multi` union (a plain dict `update()`
+    over each measure's `join.sources` — the LAST measure in the list wins
+    for a shared key, so `measure: ["speed","travelTime"]`'s correct
+    table1=META_JOIN from `speed` was silently overwritten by travelTime's
+    stale table1=TMC_IDENTIFICATION_JOIN, found live building one_week_
+    study's Info Box). Fixed the same way as the other two: check drift
+    against the base's CURRENT default, not a hardcoded expectation, since
+    travelTime has no measure-specific join preference of its own — whatever
+    the base carries is correct for it by construction."""
     name = f"{grain}_info_box_traveltime"
     avgtt_col = {"type": "calculated", "show": True,
                  "name": TRAVEL_TIME_EXPR, "fn": "exempt",
-                 "formatFn": "minutes_clock", "customName": "Travel Time"}
+                 "formatFn": TABLE_FORMAT_BY_MEASURE["travelTime"], "customName": "Travel Time"}
     avgtt_idx = 1 if grain == "route" else 0
-
-    existing = templates.get(name)
-    if existing is not None:
-        existing_state = json.loads(existing["data"]["stateJson"])
-        existing_cols = existing_state.get("columns") or []
-        if len(existing_cols) == 2 and existing_cols[avgtt_idx] == avgtt_col:
-            return templates  # no drift
-        new_cols = list(existing_cols)
-        new_cols[avgtt_idx] = avgtt_col
-        existing_state["columns"] = new_cols
-        new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
-                    "updatedAt": now_iso()}
-        if dry_run:
-            print(f"[dry-run] would update drifted template '{name}' "
-                  f"id={existing['id']} (formatFn/customName drift)")
-        else:
-            dms(["raw", "update", str(existing["id"])], data=new_data)
-            print(f"updated template '{name}' id={existing['id']} "
-                  f"(formatFn/customName drift fix)")
-        templates[name] = {"id": existing["id"], "data": new_data}
-        return templates
 
     base = templates.get(TEMPLATE_BASE_NAME)
     if not base:
         raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
     base_state = json.loads(base["data"]["stateJson"])
+    expected_join = base_state.get("join")
+
+    existing = templates.get(name)
+    if existing is not None:
+        existing_state = json.loads(existing["data"]["stateJson"])
+        existing_cols = existing_state.get("columns") or []
+        col_drift = not (len(existing_cols) == 2 and existing_cols[avgtt_idx] == avgtt_col)
+        join_drift = existing_state.get("join") != expected_join
+        if not (col_drift or join_drift):
+            return templates  # no drift
+        if col_drift:
+            new_cols = list(existing_cols)
+            new_cols[avgtt_idx] = avgtt_col
+            existing_state["columns"] = new_cols
+        if join_drift:
+            existing_state["join"] = json.loads(json.dumps(expected_join))
+        new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
+                    "updatedAt": now_iso()}
+        note = ", ".join(k for k, fired in (("column", col_drift), ("join", join_drift)) if fired)
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']} ({note} drift)")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} ({note} drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
 
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
@@ -189,16 +215,18 @@ def ensure_info_box_traveltime_template(grain, templates, dry_run):
             "showAttribution": True, "fetchMode": "force",
             "_functions": base_state["display"]["_functions"],
         },
-        # Carry the base's own default join (TMC Identification, 455/3464)
-        # forward even though TRAVEL_TIME_EXPR never references table1 — a
-        # joinless query never aliases the base table as `ds` at all
-        # (dms-server clickhouse.js's `hasJoin ? ' as ds ' : ''`), so without
-        # this every `ds.`-qualified expression 500s with "Unknown expression
-        # identifier 'ds.tmc'" (caught live on report 58's first attempt).
-        # Every other template gets this for free via a full deep-copy of
-        # base_state; this function builds state from scratch, so it must be
-        # carried over explicitly.
-        "join": base_state.get("join"),
+        # Carry the base's own current default join (META_JOIN, 455/983 as of
+        # the 2026-08-12 unification) forward even though TRAVEL_TIME_EXPR
+        # never references table1 — a joinless query never aliases the base
+        # table as `ds` at all (dms-server clickhouse.js's `hasJoin ? ' as ds '
+        # : ''`), so without this every `ds.`-qualified expression 500s with
+        # "Unknown expression identifier 'ds.tmc'" (caught live on report 58's
+        # first attempt). Every other template gets this for free via a full
+        # deep-copy of base_state; this function builds state from scratch, so
+        # it must be carried over explicitly. `expected_join` (not a fresh
+        # `base_state.get("join")` read) so the create-new path and the
+        # drift-check path above can never disagree.
+        "join": expected_join,
         "customBuckets": base_state.get("customBuckets"),
         "comparisonSeries": base_state.get("comparisonSeries"),
     }
@@ -246,7 +274,8 @@ def ensure_info_box_speed_template(grain, templates, dry_run):
     bug."""
     name = f"{grain}_info_box_speed"
     speed_col = {"type": "calculated", "show": True,
-                 "name": SPEED_EXPR, "fn": "exempt", "customName": "Speed (mph)"}
+                 "name": SPEED_EXPR, "fn": "exempt", "customName": "Speed (mph)",
+                 "formatFn": TABLE_FORMAT_BY_MEASURE["speed"]}
     speed_idx = 1 if grain == "route" else 0
 
     existing = templates.get(name)

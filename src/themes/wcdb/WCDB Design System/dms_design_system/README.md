@@ -56,7 +56,7 @@ that, and **only one of them is per-page**:
 |---|---|---|---|
 | Design System | `design-system/` | `theme.html` | 5 |
 | Station Site | `pages/` | `home.html` | 9 |
-| Station Admin | `pages/admin/` | `djs.html` | 3 |
+| Station Admin | `pages/admin/` | `playlist.html` | 5 |
 
 A section is a product area, not a folder. If later work adds a distinct
 area — an author/admin flow, or a linked multi-page workflow — give it
@@ -312,8 +312,10 @@ Three decisions worth knowing about:
 
 ## The admin section
 
-`pages/admin/` — three pages: **`djs.html`** (roster + add modal),
-**`dj-profile.html`** (the editor), **`schedule.html`** (week editor + versions).
+`pages/admin/` — five pages. **`playlist.html` is the landing page**, because
+it is the only one with a daily job: **`playlist.html`** (spin log + fix/add),
+**`schedule.html`** (week editor + versions), **`djs.html`** (roster + add
+modal), **`dj-profile.html`** (the editor), **`events.html`** (calendar).
 
 ### Layout `app` — a SideNav, not the notch
 
@@ -338,6 +340,27 @@ not a restyle:
 > `sectionDivider`, `bottomMenuWrapper`, and the `topnav*` keys used only by the
 > mobile collapse. The mockup is built on those names so the translation is a
 > transcription rather than a redesign.
+
+### The admin page header
+
+One component, identical on all three pages:
+
+```
+breadcrumb            Admin › DJs › DJ Halftone      ← at the very top, 24px in
+title row             DJ Halftone  ·  metadata  ·  status        [actions →]
+working content       starts at ~115px
+```
+
+**Breadcrumbs go above the title, not under it**, and carry the whole trail —
+they are how you leave the page, so they belong where the eye starts. The title
+gets one line at `clamp(30px,3.2vw,42px)` with its metadata set inline beside it,
+and the primary action sits on the same row.
+
+A functional page does not get a hero band. The public pages open on a masthead
+because arriving *is* the experience; an admin page is a place you are already
+working, so the top of the viewport is working space. This header costs ~115px
+before real content, against ~183px for the display-scale version it replaced,
+and it is the same 24 / 55 / 115 on every page rather than three variations.
 
 ### Decisions the live data forced
 
@@ -373,6 +396,60 @@ rows actually say (verified 2026-08-13 via the DMS CLI):
   it was a second control for the same choice — on a sticky bar, following you
   down the page.
 
+### The playlist is a review queue, not a form
+
+The stream is monitored by **ACRCloud Custom Stream Monitoring**, which POSTs a
+detection per track to a webhook — the receiver and the normaliser live in
+`research/now-playing/` and settle the row shape:
+
+```
+matched   timestamp_utc · title · artist · album · album_cover · score
+          isrc · upc · spotify/youtube/deezer ids · genres · label · release_date
+no-match  timestamp_utc · played_duration · status_code
+```
+
+Two fields drive the whole page. **`score`** is the match confidence, so
+"incorrectly added" is detectable rather than a matter of opinion — under 80 the
+row is tinted and flagged. **`no-match`** events are the gaps, so "missed" is a
+row that already exists rather than an absence someone has to notice.
+
+So a DJ is **not** here to type a playlist. They are here for the exceptions,
+and the page leads with `Needs review · 2` beside `All · 412`. Both failure
+states are drawn **in place** in the log — a gap reads *"Nothing identified · 8
+min · talk, a live set, or a track the matcher missed"* with an **Add** button; a
+low-confidence match keeps its percentage next to it with an **Edit**. A row
+carries its provenance as a badge: a score (auto), `By DJ` (added by hand, and
+never overwritten by the matcher), or `Corrected` (edited, original detection
+kept underneath).
+
+The cover slot on the public rail can be filled from this feed's `album_cover`
+— but note **ACRCloud does not return cover art**. The `now_playing` data type
+fills it by looking the track up on iTunes (`data-types/now_playing/cover-enrichment.js`),
+so covers are best-effort and a row can legitimately have none.
+
+### The schedule is two datasets, not one
+
+A row in the legacy schedule **is a show**; the time columns are optional
+attributes on it, which is why 663 of 769 rows have no time. The target shape
+splits them:
+
+- **`shows`** — `show_id · name · dj_id · department · description · icon`
+- **`schedule`** — `show_id · day · start · end`, and **this is what a version
+  versions**
+
+That copies **106 rows per version instead of 769**, keeps show records shared
+(fix a show name once, not once per version), collapses 15 duplicate rows that
+only existed because a show airing twice needed two full copies of itself, and
+removes `end_day` — an overnight is just `end <= start`.
+
+The UI follows the split. Clicking an open hour opens a **picker** over the 663
+existing shows rather than a blank form; "New show instead" is the second door.
+The edit modal labels its two halves **This airing** (`schedule`) and **The
+show** (`shows`, *shared by N airings*) and says that editing the lower half
+changes the show everywhere it airs. And the destructive action is two actions:
+**Unschedule** clears the airing and returns the show to the picker, **Delete
+show** removes the record.
+
 ### Versions, and the pointer
 
 A version is a **DMS view** on the source (`wcdb_schedule|v1:view`, `|v2:view` —
@@ -404,7 +481,7 @@ to a real registry entry. An unregistered name renders *nothing* once
 these mockups become live DMS pages, so this is not cosmetic.
 
 **The registry of record is the `#icons` catalogue grid on
-`design-system/theme.html`** — 48 tiles, each tagged and labelled.
+`design-system/theme.html`** — 49 tiles, each tagged and labelled.
 There is no separate `theme/icons.js` here yet; `scripts/icons-audit.mjs`
 parses the catalogue as the registry and enforces:
 
@@ -415,7 +492,7 @@ parses the catalogue as the registry and enforces:
   a registry has one `Play`, not three near-duplicates. (v0.2 folded 33
   drifted variants back onto their canonical glyph.)
 
-Ten of the 48 are the **department glyphs** — Hip-Hop, R&B, World, Rock, Metal,
+Ten of the 49 are the **department glyphs** — Hip-Hop, R&B, World, Rock, Metal,
 Jazz, Electronic, News, Sports, Special — which carry the schedule's icon
 column. They are deliberately concrete objects (a mic, a pick, a bolt, faders)
 rather than abstract marks: at 14–16px a concrete silhouette survives where an
@@ -602,7 +679,7 @@ editor — is on `patterns.html`. `pages.attribution` is mocked there too
 | §7.7 pages/ (theme's choice)  | Every public-facing handoff page translated to DMS shape ✓                  |
 | §1 five-layer hierarchy       | Every mockup uses `<Layout>` → `<LayoutGroup>` → `<Section>` → primitive   |
 | §7.0 navigation               | TopNav per section + one shared `ds-nav.js` (sectioned), verified by `scripts/verify-nav.mjs`. Footer block deliberately omitted — see the Navigation section ✓ |
-| §1 icons                      | Every `<svg>` tagged; 48-icon catalogue on `theme.html` is the registry; enforced by `scripts/icons-audit.mjs` ✓ |
+| §1 icons                      | Every `<svg>` tagged; 49-icon catalogue on `theme.html` is the registry; enforced by `scripts/icons-audit.mjs` ✓ |
 | §10 done criteria             | Every primitive used in `pages/` is documented in `components.html`; every Section sits on the grid `grid.html` documents; TopNav shows 2-level menu with active state; the cutaway pattern is preserved on `home.html`/`listen.html` ✓ |
 
 ---

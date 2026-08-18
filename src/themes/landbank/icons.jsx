@@ -161,6 +161,20 @@ export const CircleAlert = (props) => (
   <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3.5v.5"/></svg>
 );
 
+// The design set's "view" glyph — path verbatim from admin-dashboard.html's
+// inventory-table Actions cell (:447), paired with `Edit` (whose path the same
+// cell already uses) as the two row actions.
+export const Eye = (props) => (
+  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+);
+
+// The design set's warning glyph — path verbatim from admin-dashboard.html's
+// "Needs attention" inset (:399). CircleAlert's triangular sibling: a circle
+// reads as informational, a triangle as "look at this".
+export const TriangleAlert = (props) => (
+  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4.5 2.5 19.5h19L12 4.5ZM12 10v4.5M12 17.2h.01"/></svg>
+);
+
 export const Trash = (props) => (
   <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M9 6V4h6v2m-9 0 1 14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-14M10 10v7m4-7v7"/></svg>
 );
@@ -272,7 +286,7 @@ export const SortDesc = (props) => (
 
 const icons = {
   // registry (theme.html#icons)
-  Lot, House, Building, Landmark, Key, Hammer, Sprout, MapPin, Map, Ruler, Tag, Scale, FileText, Users, Calendar, Download, Search, Filter, Table, ChartBar, ChartDonut, Phone, Mail, Clock, ArrowRight, ArrowUpRight, ChevronDown, ChevronRight, Check, Close, Menu, Plus, Minus, Info, CircleCheck, CircleAlert, Trash, Edit, Dollar,
+  Lot, House, Building, Landmark, Key, Hammer, Sprout, MapPin, Map, Ruler, Tag, Scale, FileText, Users, Calendar, Download, Search, Filter, Table, ChartBar, ChartDonut, Phone, Mail, Clock, ArrowRight, ArrowUpRight, ChevronDown, ChevronRight, Check, Close, Menu, Plus, Minus, Info, CircleCheck, CircleAlert, TriangleAlert, Eye, Trash, Edit, Dollar,
   // platform aliases + additions
   XMark, Pencil, ArrowLeft, ArrowUp, ArrowDown, ChevronUp, ChevronLeft, CaretDown, CaretUp, Settings, Gear, User, TallyMark, LeftToRightListBullet, Sum, Avg, Group, SortAsc, SortDesc,
 };

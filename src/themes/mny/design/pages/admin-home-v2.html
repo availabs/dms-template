@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Admin — Home (redesign)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-ora': '#EA8954', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+  /* ------------------------------------------------------------------
+     Local copies of three brand surface utilities.
+
+     WHY: `../theme/index.css.additions` is linked above (the documented
+     convention) but the browser refuses to PARSE it under file:// — the
+     `.additions` extension isn't served as text/css, so the sheet loads with
+     ZERO rules. Verified: document.styleSheets shows it present with
+     `cssRules.length === 0`, and .mny-page-bg-dark computed to
+     `background-image: none`.
+
+     This is why every other page in this folder sets the topo canvas as an
+     INLINE style on <body> rather than using .mny-page-bg — the class has never
+     worked from disk. Redefining just what this page needs keeps the markup
+     clean; the linked sheet stays so the page is correct when served over HTTP.
+     ------------------------------------------------------------------ */
+  .mny-page-bg-dark {
+    background-color: #2D3E4C;
+    background-image:
+      linear-gradient(0deg, rgba(33,52,64,0.96), rgba(55,87,107,0.96)),
+      url('../assets/mny/topolines.png');
+    background-size: 500px;
+  }
+  .mny-shadow-sm { box-shadow: 0 0 6px 0 rgba(0,0,0,.02), 0 2px 4px 0 rgba(0,0,0,.08); }
+  .mny-shadow-md { box-shadow: 0 0 4px 0 rgba(0,0,0,.04), 0 4px 8px 0 rgba(0,0,0,.06); }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!--
+  ================================================================
+  ADMIN PANEL — HOME, REDESIGN (page 2379993, pattern 566466, app mitigat-ny-prod)
+  ================================================================
+
+  REVISION 6 (2026-08-14) — REDRAWN INSIDE THE ADMIN SHELL
+  --------------------------------------------------------
+  Reviewer: "The live page uses the admin theme, which makes the design file
+  challenging to implement … the section groups split the screen in half and
+  from a design perspective it looks bad."
+
+  Both halves of that are the same defect, and the earlier revisions of this file
+  caused it: this mockup was drawn on a 1440px full-bleed canvas with a floating
+  TopNav, and the admin pattern has NEITHER. Every measurement below was taken
+  off the live draft at a 1600px viewport (logged in, 2026-08-14), and the page
+  is now drawn on the canvas the admin theme actually gives you.
+
+  ── WHAT THE ADMIN SHELL ACTUALLY IS ────────────────────────────────────────
+  | Thing                | Reality                                            |
+  |----------------------|----------------------------------------------------|
+  | TopNav               | DOES NOT EXIST. admin.theme.js sets                |
+  |                      | navOptions.topNav.size = "none". The floating nav   |
+  |                      | in revisions 1-5 was fiction. Removed.             |
+  | SideNav              | 302px, ALWAYS THERE (min-w/max-w-[302px]), sticky   |
+  |                      | white card. Content starts at x=310.               |
+  | Band = white card    | layoutGroup `default` / `content` / `flush` /       |
+  |                      | `full_width` are ALL `shadow-md bg-white            |
+  |                      | rounded-lg`. The band IS the card — the mockup's    |
+  |                      | own <div class="bg-white rounded-[12px]"> wrapper   |
+  |                      | was a card inside a card. Removed.                 |
+  | **Section canvas**   | **sectionArray.layouts.centered =                   |
+  |                      | `max-w-[1020px] mx-auto px-0 lg:px-[56px]`          |
+  |                      | → 908px USABLE, at every viewport width.**          |
+  |                      | Not 1440. This is the single most important number  |
+  |                      | on the page and no earlier revision knew it.       |
+
+  Column widths on that 908px canvas (mny sectionArray `sizes`, 12-col):
+      1/4 → col-span-3  → 227px      2/3 → col-span-8  → 605px
+      1/3 → col-span-4  → 303px      1   → col-span-9  → 681px
+                                     2   → col-span-12 → 908px
+
+  ── WHY IT LOOKED SPLIT IN HALF ─────────────────────────────────────────────
+  Measured on the live draft: BOTH section groups ran 2/3 + 1/3, so the page was
+  605px + 303px, twice, with a hard seam down x=1095 through the whole document.
+  Two consequences, both visible:
+    · the elements panel was squeezed into a 303px × 519px vertical strip;
+    · Go To had to be three separate sections at `rowspan: 2`, hand-interleaved
+      between the six dataset rows, just to stay beside them — a fragile trick
+      that breaks the moment a dataset is added or removed.
+
+  THE FIX: no band splits. Every band now spans the full 908px and varies its
+  RHYTHM inside that width instead of subdividing it —
+      band 1  identity, one column
+      band 2  four elements ACROSS (1/4 ×4)  ·  six datasets 3-ACROSS (1/3 ×6)
+      band 3  three destinations ACROSS (1/3 ×3)
+  Equal-width card rows read as a grid; unequal 8/4 columns read as a seam.
+  No `rowspan` anywhere — the interleaving trick is deleted along with the split.
+
+  ── WHAT THIS KEEPS ─────────────────────────────────────────────────────────
+  "I do like the Your Plan Data and Go To buttons concept and shape." Both keep
+  their concept (one tile per dataset: name + one total; one tinted bordered
+  button per destination: title + one line). What changed is only the ARRANGEMENT
+  — from a 303px right rail to a full-width row — because 303px is what made
+  them look bad, not the tiles themselves.
+
+  ── THE TEMPLATEABILITY RULE (unchanged, still governing) ───────────────────
+  Every band is identical for every county plan. Only values and the county name
+  vary — never the copy, never which cards appear. The four elements are fixed by
+  44 CFR 201.6, so they are the same for all counties forever.
+
+  ── INK: the live page's other defect ───────────────────────────────────────
+  On the live draft the header band is WHITE but its lexicals carry
+  `isCard: 'Dark'`, so the narrative renders #C5D7E0 on #FFF and the bold
+  lead-ins ("Planning process.") render WHITE ON WHITE — invisible. Measured:
+  getComputedStyle(narrative).color === "rgb(197, 215, 224)".
+  That is a mismatch between the band style and the section style, not a design
+  choice. Every section below states the style it needs in its comment; the rule
+  is simply: `Dark` styles ONLY inside the `darkSection` band.
+
+  ── DATA — measured, not invented ───────────────────────────────────────────
+  Live pulls 2026-08-06 / 08-10 / 08-14 (view ids in admin-forms-insights.html):
+  Actions 475 countywide across 23 jurisdictions · HoC 374 assessments ·
+  Capabilities 320 in county · Participation 29 meetings · Roles 79 people ·
+  High Hazard Dams 306 in county. Specimen county: Sullivan (36105).
+  ⚠ The live Actions tile currently shows 61 — that is county-LED only
+  (`geoid_juris = 36105`), not the 475 countywide this design specifies. Open
+  issue, tracked in the task doc; the design states the intended figure.
+  No plan adoption/approval/expiry dates appear — never measured, and inventing
+  a lifecycle status is the decoration this redesign exists to remove.
+
+  TOKENS: only sizes declared in design-system/theme.html — 36/30/24/20/16/14/12.
+
+  ── IMPLEMENTATION MAP — every box below is SECTION CONFIG, not code ────────
+  The bordered/tinted card around each element and each dataset tile is drawn by
+  the section itself (`sectionArray.jsx` → `sectionChrome`), on an inner box
+  inside the gutter padding. Nothing here needs a custom component or a theme
+  edit. mny declares no `border`/`backgrounds`/`heights` maps, so these resolve
+  from the library default (`sectionArray.theme.jsx`):
+
+  | Design element              | Section config                               |
+  |-----------------------------|----------------------------------------------|
+  | card outline + radius       | `border: 'full'`  → border-[#E0EBF0] rounded-lg
+  | tinted fill (elements)      | `bg: 'bg-[#F3F8F9]'` (literal bg-… is accepted;
+  |                             |  the named keys are none / white / tint)     |
+  | white fill (dataset tiles)  | `bg: 'white'`                                |
+  | EQUAL-HEIGHT cards in a row | **`height: 'fill'`** — the grid cell already |
+  |                             | stretches; `fill` makes the chrome box h-full |
+  |                             | so a 4-up or 3-up row composes flush. This is |
+  |                             | what the mockup's `h-full` stands for.        |
+  | gutter between cards        | `padding` per-side steps (0/2/4/6/8)         |
+  | column width                | `size` — 1/4 · 1/3 · 1/2 · 2/3 · 1 · 2       |
+
+  Two deviations to accept rather than fight: the section border radius is
+  `rounded-lg` (8px), not the 12px drawn here; and the four element cards are
+  lexicals, so their internal bottom-alignment of the dataset caps line is
+  approximate — the theme has no per-block flex control inside a lexical.
+
+  NO `rowspan` ANYWHERE. The live build needed `rowspan: 2` on three Go To
+  sections to hold them beside the dataset rows; deleting the 8/4 split deletes
+  that dependency, and with it the breakage that adding a seventh dataset would
+  have caused.
+-->
+
+<!-- ================================================================
+     LAYOUT — admin.theme.js `layout` styles[0]
+       outerWrapper  topo canvas (on <body> here, see the file:// note above)
+       wrapper2      flex-1 flex items-start flex-col items-stretch max-w-full
+       wrapper3      flex flex-1 md:px-2      ← sidenav + content are SIBLINGS here
+       childWrapper  h-full flex-1 pb-[10px] pt-[2px]
+     ================================================================ -->
+<div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+  <div class="flex flex-1 md:px-2">
+
+    <!-- ============================================================
+         SIDENAV — sidenav styles[0] "default". NOT part of this redesign;
+         drawn to scale (302px) because it is what makes the content canvas
+         908px, and every earlier revision of this mockup drew 1440px instead.
+         ============================================================ -->
+    <div class="pr-2 pt-[10px] hidden lg:block min-w-[302px] max-w-[302px] print:hidden">
+      <div class="sticky top-[10px] h-[calc(100vh_-_20px)] bg-white rounded-lg mny-shadow-md w-full overflow-hidden flex flex-col">
+
+        <!-- logo -->
+        <div class="flex p-1 items-center">
+          <div class="ml-3 my-3 flex-shrink-0"><img src="../assets/mny/nys_logo_blue.svg" alt="NYS" class="h-16 w-auto"></div>
+          <div class="pl-2 ml-2 border-l border-mny-700 h-10 flex items-center font-display text-mny-700 font-[600] text-[20px] tracking-wide">MitigateNY</div>
+        </div>
+
+        <!-- search -->
+        <div class="px-4 pb-2">
+          <div class="flex items-center justify-between border border-mny-100 rounded-lg px-3 py-2">
+            <span class="font-proxima text-[12px] font-[600] uppercase tracking-wide text-mny-400">Search</span>
+            <span class="size-6 rounded-full bg-mny-50 flex items-center justify-center">
+              <svg class="size-4 fill-mny-700" viewBox="0 0 16 16"><path d="M7 2a5 5 0 103.1 8.9l3 3 .8-.8-3-3A5 5 0 007 2zm0 1a4 4 0 110 8 4 4 0 010-8z"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- items — navItemContent_level_1: Oswald 16 / 500 / uppercase, CircleFilled icon -->
+        <div class="border-slate-200 py-4 flex-1 pl-2">
+          <a href="#" class="flex items-center cursor-pointer"><span class="mx-3 size-7 flex items-center justify-center"><svg class="size-3 fill-mny-700" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/></svg></span><span class="flex-1 font-display text-[16px] font-[500] text-mny-900 py-3 uppercase">Home</span></a>
+          <a href="admin-forms-insights.html" class="flex items-center cursor-pointer"><span class="mx-3 size-7 flex items-center justify-center"><svg class="size-3 fill-mny-700" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/></svg></span><span class="flex-1 font-display text-[16px] font-[500] text-mny-900 py-3 uppercase">Forms</span></a>
+          <a href="#" class="flex items-center cursor-pointer"><span class="mx-3 size-7 flex items-center justify-center"><svg class="size-3 fill-mny-700" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/></svg></span><span class="flex-1 font-display text-[16px] font-[500] text-mny-900 py-3 uppercase">PDF Export</span></a>
+          <div class="flex items-center border-l-2 border-mny-700 -ml-[2px]"><span class="mx-3 size-7 flex items-center justify-center"><svg class="size-3 fill-mny-700" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/></svg></span><span class="flex-1 font-display text-[16px] font-[500] text-mny-900 py-3 uppercase">Home Redesign</span></div>
+        </div>
+
+        <!-- user menu — pages.userMenu "mny-responsive" -->
+        <div class="flex flex-row w-full items-center rounded-lg bg-mny-50 mx-2 mb-2 p-2" style="width:calc(100% - 1rem)">
+          <div class="size-10 border-2 border-mny-200 rounded-full grid place-items-center bg-mny-100">
+            <svg class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+          </div>
+          <div class="flex flex-col flex-1 px-2">
+            <span class="font-proxima text-[12px] text-mny-700 truncate">availabs@gmail.com</span>
+            <span class="font-proxima text-[14px] font-[500] text-mny-900 uppercase tracking-wide">Avail</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         CONTENT COLUMN — layout.childWrapper.
+         Everything below this line is the page's three section groups.
+         ============================================================ -->
+    <div data-dms="layout" data-name="default" class="h-full flex-1 pb-[10px] pt-[2px] min-w-0">
+
+      <!-- ========================================================
+           BAND 1 · LAYOUTGROUP `darkSection`  (admin.theme.js)
+           wrapper1  full width of the content column, dark topo wash
+           wrapper2  max-w-[1440px] xl:px-[64px] md:px-4 mx-auto
+           wrapper3  flex flex-1 w-full flex-col p-4
+
+           One column. NOTHING sits beside the identity — this is where the
+           old 8/4 seam started, and an unaccompanied header is what removes it.
+           The lede is size `1` (681px) rather than size `2` (908px) purely as a
+           reading measure; the remaining 3 columns are deliberately empty, which
+           reads as margin, not as an empty second column.
+
+           Every section in this band uses a `Dark` style — lexicals
+           `isCard: 'Dark'`, the county Card `cardStyle: 'Dark'`. That dataCard
+           style now exists (mny/theme.js), so the county name is no longer
+           locked to #2D3E4C on a dark ground.
+           ======================================================== -->
+      <div data-dms="layoutGroup" data-name="identity" data-theme="darkSection"
+           class="w-full flex-1 flex flex-row pt-8 pb-10 mny-page-bg-dark rounded-lg overflow-hidden">
+        <div class="max-w-[1440px] w-full xl:px-[64px] md:px-4 mx-auto">
+          <div class="flex flex-1 w-full flex-col relative p-4">
+            <!-- sectionArray, layout `centered` -->
+            <div class="w-full grid grid-cols-6 md:grid-cols-12 max-w-[1020px] mx-auto px-0 lg:px-[56px]">
+
+              <!-- SECTION · eyebrow — lexical, style Dark, size 2 -->
+              <div data-dms="section" data-name="eyebrow" data-size="2" class="col-span-6 md:col-span-12 p-2">
+                <p class="font-proxima text-[14px] font-[600] text-mny-y700 uppercase tracking-wide">MitigateNY · Plan Administration</p>
+              </div>
+
+              <!-- SECTION · county name — CARD, style Dark, size 2
+                   source  DHSES_County_Database (953754 / view 1108098, 62 rows)
+                   filter  geoid = <page search param `geoid`>  → exactly 1 row
+                   cell    `county`, hideHeader, valueFontStyle text4XL
+                   Plain (non-calculated) column — no fn. Verified: geoid "36105"
+                   returns exactly 1 row. -->
+              <div data-dms="section" data-name="county_name" data-size="2" class="col-span-6 md:col-span-12 p-2">
+                <h1 class="font-display text-[36px] font-[500] text-white uppercase leading-[1] tracking-[-0.05em] underline decoration-4 decoration-mny-y700 underline-offset-8">Sullivan County</h1>
+              </div>
+
+              <!-- SECTION · lede — lexical, style Dark, size 1 (681px measure) -->
+              <div data-dms="section" data-name="lede" data-size="1" class="col-span-6 md:col-span-9 p-2 pt-5">
+                <p class="font-proxima text-[20px] text-white leading-[140%]">
+                  This is the administration side of your hazard mitigation plan — the working data
+                  behind the public plan site.
+                </p>
+                <p class="font-proxima text-[16px] text-mny-200 leading-[140%] mt-3">
+                  Your plan is written from six datasets that you and your jurisdictions maintain here.
+                  Editing a record updates the published plan directly, so the plan and the data never
+                  drift apart. Nothing you change is public until the plan is republished. Your changes
+                  are scoped to this county — statewide catalogs are maintained by DHSES.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           BAND 2 · LAYOUTGROUP `content`  (admin.theme.js)
+           wrapper1  w-full flex-1 flex flex-row lg:py-[10px] md:px-0 mx-auto
+           wrapper2  flex flex-1 w-full flex-col shadow-md bg-white rounded-lg
+                     leading-7 p-4 min-h-[calc(100vh_-_102px)]
+           ⚠ the band already IS the white card — do not add another one.
+
+           Two subsections, ONE grid, both spanning the full 908px:
+             · four elements, 1/4 each → 4 × 227px, one row
+             · six datasets, 1/3 each  → 3 × 303px, two rows
+           Each row fills exactly 12 columns, so they flow without gaps and
+           without a single rowspan.
+
+           All sections here use the DEFAULT lexical / dataCard style. `Dark`
+           on this band is what makes the live page's text invisible.
+           ======================================================== -->
+      <div data-dms="layoutGroup" data-name="plan" data-theme="content"
+           class="w-full flex-1 flex flex-row lg:py-[10px] md:px-0 mx-auto">
+        <div class="flex flex-1 w-full flex-col mny-shadow-md bg-white rounded-lg relative p-4">
+          <div class="w-full grid grid-cols-6 md:grid-cols-12 max-w-[1020px] mx-auto px-0 lg:px-[56px]">
+
+            <!-- SECTION · heading — lexical h2, size 2.
+                 mny's heading_h2 is Oswald 24 but NOT uppercase and there is no
+                 uppercase heading tag, so the CASE HAS TO COME FROM THE TEXT.
+                 Author the text as "HOW YOUR PLAN COMES TOGETHER". -->
+            <div data-dms="section" data-name="elements_heading" data-size="2" class="col-span-6 md:col-span-12 p-2 pt-2">
+              <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[24px]">How your plan comes together</h2>
+              <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-2 max-w-[605px]">
+                Every Local Hazard Mitigation Plan is built from the same four elements, fixed by
+                44 CFR 201.6. Each one is written from the datasets named beneath it.
+              </p>
+            </div>
+
+            <!-- SECTIONS · the four 44 CFR elements — lexical, size 1/4 each.
+                 Was a 303px × 519px vertical strip in the right rail; now a
+                 227px × 4 row that also reads left-to-right as a sequence. -->
+            <div data-dms="section" data-name="element_1" data-size="1/4" class="col-span-6 md:col-span-3 p-2">
+              <div class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-mny-50 px-4 py-4">
+                <p class="font-display text-[30px] font-[500] text-mny-y700 leading-[1]">1</p>
+                <p class="font-display text-[16px] font-[500] text-mny-900 uppercase mt-2 leading-[1.2]">Planning process</p>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-2">Who took part, when they met, and how the public was involved.</p>
+                <p class="font-display text-[12px] font-[500] text-mny-400 uppercase tracking-wide mt-auto pt-3 leading-[140%]">Participation · Roles</p>
+              </div>
+            </div>
+            <div data-dms="section" data-name="element_2" data-size="1/4" class="col-span-6 md:col-span-3 p-2">
+              <div class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-mny-50 px-4 py-4">
+                <p class="font-display text-[30px] font-[500] text-mny-y700 leading-[1]">2</p>
+                <p class="font-display text-[16px] font-[500] text-mny-900 uppercase mt-2 leading-[1.2]">Risk assessment</p>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-2">Which hazards threaten each jurisdiction, how likely they are, and what is exposed.</p>
+                <p class="font-display text-[12px] font-[500] text-mny-400 uppercase tracking-wide mt-auto pt-3 leading-[140%]">Hazards of Concern · High Hazard Dams</p>
+              </div>
+            </div>
+            <div data-dms="section" data-name="element_3" data-size="1/4" class="col-span-6 md:col-span-3 p-2">
+              <div class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-mny-50 px-4 py-4">
+                <p class="font-display text-[30px] font-[500] text-mny-y700 leading-[1]">3</p>
+                <p class="font-display text-[16px] font-[500] text-mny-900 uppercase mt-2 leading-[1.2]">Capability assessment</p>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-2">The programs, funding and technical help each jurisdiction can already draw on.</p>
+                <p class="font-display text-[12px] font-[500] text-mny-400 uppercase tracking-wide mt-auto pt-3 leading-[140%]">Capabilities</p>
+              </div>
+            </div>
+            <div data-dms="section" data-name="element_4" data-size="1/4" class="col-span-6 md:col-span-3 p-2">
+              <div class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-mny-50 px-4 py-4">
+                <p class="font-display text-[30px] font-[500] text-mny-y700 leading-[1]">4</p>
+                <p class="font-display text-[16px] font-[500] text-mny-900 uppercase mt-2 leading-[1.2]">Mitigation strategy</p>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-2">The projects your jurisdictions intend to carry out, and how they are ranked.</p>
+                <p class="font-display text-[12px] font-[500] text-mny-400 uppercase tracking-wide mt-auto pt-3 leading-[140%]">Actions</p>
+              </div>
+            </div>
+
+            <!-- SECTION · rule + heading — lexical, size 2 -->
+            <div data-dms="section" data-name="data_heading" data-size="2" class="col-span-6 md:col-span-12 p-2 pt-8">
+              <div class="border-t border-mny-100 pt-6">
+                <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[24px]">Your plan data</h2>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-2 max-w-[605px]">
+                  Six datasets, scoped to this county. Open one to browse or edit its records.
+                </p>
+              </div>
+            </div>
+
+            <!-- SECTIONS · the six datasets — CARD each, size 1/3, DEFAULT card style.
+                 Cells: `name` (hideHeader, textMD) · the count (hideHeader,
+                 text3XL, formatFn comma) · a unit label.
+                 Concept is unchanged from the shape you liked — one tile per
+                 dataset, name + one total, nothing reactive. Only the placement
+                 moved: 303px tiles three across, instead of 605px rows beside a
+                 303px rail. The unit line is what stops the old "30 what?"
+                 problem without adding a status judgement.
+
+                 ⚠ ACTIONS: 475 is countywide across the 23 jurisdictions. The
+                 live tile currently reads 61 (county-LED only, geoid_juris =
+                 36105) because there is no usable countywide filter yet —
+                 needs an IN over the 23 jurisdiction geoids, or a county_geoid
+                 backfill. Fix or relabel before this ships. -->
+            <div data-dms="section" data-name="data_actions" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+              <a href="admin-forms-insights.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 hover:border-mny-400 hover:bg-mny-50 transition-colors">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1.2]">Actions</span>
+                <span class="font-display text-[30px] font-[500] text-mny-700 leading-[1] tracking-[-0.05em] mt-3">475</span>
+                <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wide mt-1">actions countywide</span>
+              </a>
+            </div>
+            <div data-dms="section" data-name="data_hoc" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+              <a href="admin-forms-insights.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 hover:border-mny-400 hover:bg-mny-50 transition-colors">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1.2]">Hazards of Concern</span>
+                <span class="font-display text-[30px] font-[500] text-mny-700 leading-[1] tracking-[-0.05em] mt-3">374</span>
+                <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wide mt-1">assessments</span>
+              </a>
+            </div>
+            <div data-dms="section" data-name="data_capabilities" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+              <a href="admin-forms-insights.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 hover:border-mny-400 hover:bg-mny-50 transition-colors">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1.2]">Capabilities</span>
+                <span class="font-display text-[30px] font-[500] text-mny-700 leading-[1] tracking-[-0.05em] mt-3">320</span>
+                <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wide mt-1">capabilities</span>
+              </a>
+            </div>
+            <div data-dms="section" data-name="data_participation" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+              <a href="admin-forms-insights.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 hover:border-mny-400 hover:bg-mny-50 transition-colors">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1.2]">Participation</span>
+                <span class="font-display text-[30px] font-[500] text-mny-700 leading-[1] tracking-[-0.05em] mt-3">29</span>
+                <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wide mt-1">meetings</span>
+              </a>
+            </div>
+            <div data-dms="section" data-name="data_roles" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+              <a href="admin-forms-insights.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 hover:border-mny-400 hover:bg-mny-50 transition-colors">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1.2]">Roles</span>
+                <span class="font-display text-[30px] font-[500] text-mny-700 leading-[1] tracking-[-0.05em] mt-3">79</span>
+                <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wide mt-1">people</span>
+              </a>
+            </div>
+            <div data-dms="section" data-name="data_dams" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+              <a href="admin-forms-insights.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 hover:border-mny-400 hover:bg-mny-50 transition-colors">
+                <span class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1.2]">High Hazard Dams</span>
+                <span class="font-display text-[30px] font-[500] text-mny-700 leading-[1] tracking-[-0.05em] mt-3">306</span>
+                <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wide mt-1">dams in county</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           BAND 3 · LAYOUTGROUP `clearCentered`  (admin.theme.js)
+           wrapper1  w-full flex-1 flex flex-row -mt-3
+           wrapper2  max-w-[1440px] w-full xl:px-[48px] mx-auto
+           wrapper3  flex flex-1 w-full flex-col   ← NO card chrome
+
+           Go To sits directly on the topo canvas rather than inside a third
+           white card, so it reads as an action strip closing the page instead
+           of a fourth stacked box. The tinted bordered button shape is exactly
+           the one from the previous revision — only the arrangement changed,
+           from a stacked 303px rail to three 303px buttons across.
+           ======================================================== -->
+      <div data-dms="layoutGroup" data-name="destinations" data-theme="clearCentered"
+           class="w-full flex-1 flex flex-row pt-6 pb-4">
+        <div class="max-w-[1440px] w-full xl:px-[48px] mx-auto">
+          <div class="flex flex-1 w-full flex-col relative">
+            <div class="w-full grid grid-cols-6 md:grid-cols-12 max-w-[1020px] mx-auto px-0 lg:px-[56px]">
+
+              <!-- SECTION · heading — lexical h2, DEFAULT style (light canvas), size 2 -->
+              <div data-dms="section" data-name="goto_heading" data-size="2" class="col-span-6 md:col-span-12 p-2">
+                <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[24px]">Go to</h2>
+              </div>
+
+              <!-- SECTIONS · three destinations — lexical, size 1/3 each.
+                   Plan Status is deliberately absent: not a finalised page, and
+                   it is off the SideNav for the same reason. -->
+              <div data-dms="section" data-name="goto_plan_data" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+                <a href="admin-forms-insights.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 mny-shadow-sm hover:border-mny-400 transition-colors">
+                  <span class="flex items-center justify-between">
+                    <span class="font-display text-[16px] font-[500] text-mny-900 uppercase">Plan data</span>
+                    <svg class="size-4 fill-mny-400" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5-.7-.7L9.6 8 5.3 3.7z"/></svg>
+                  </span>
+                  <span class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-1">Browse and edit the six datasets.</span>
+                </a>
+              </div>
+              <div data-dms="section" data-name="goto_actions" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+                <a href="county-actions/dashboard.html" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 mny-shadow-sm hover:border-mny-400 transition-colors">
+                  <span class="flex items-center justify-between">
+                    <span class="font-display text-[16px] font-[500] text-mny-900 uppercase">Actions workspace</span>
+                    <svg class="size-4 fill-mny-400" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5-.7-.7L9.6 8 5.3 3.7z"/></svg>
+                  </span>
+                  <span class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-1">Rank and edit actions by jurisdiction.</span>
+                </a>
+              </div>
+              <div data-dms="section" data-name="goto_export" data-size="1/3" class="col-span-6 md:col-span-4 p-2">
+                <a href="#" class="h-full flex flex-col rounded-[12px] border border-mny-100 bg-white px-5 py-4 mny-shadow-sm hover:border-mny-400 transition-colors">
+                  <span class="flex items-center justify-between">
+                    <span class="font-display text-[16px] font-[500] text-mny-900 uppercase">Export the plan</span>
+                    <svg class="size-4 fill-mny-400" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5-.7-.7L9.6 8 5.3 3.7z"/></svg>
+                  </span>
+                  <span class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-1">Generate the PDF for adoption.</span>
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     No footer link block on this page — removed at the reviewer's request.
+     (The design-system skill §7.0.3 asks for one; cross-page navigation is
+     still covered by the floating ds-nav widget, bottom-right, which every
+     page in this folder carries.)
+     ================================================================ -->
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>
