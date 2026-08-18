@@ -55,7 +55,8 @@ Projects: [TransportNY](#transportny) · [MitigateNY](#mitigateny) · [Landbank]
 
 ### data
 
-- [ ] [MNY actions — recover site coordinates from text (backfill)](./mitigateny/tasks/current/mny-actions-location-recovery.md) — IN PROGRESS (2026-07-16). Extract/geocode site coordinates from each action's text and write them into the production actions source in `dms-mercury-3` (source 1029065 / view 1074456). Implements the `reports/location-from-text.html` findings.
+- [ ] [MNY actions — cleaned + located derived source (`actions_cleaned`)](./mitigateny/tasks/current/mny-actions-cleaned-source.md) — **BUILT + PUBLISHED 2026-08-14: source `12453` / view `13192`** (`gis_datasets.s12453_v13192_actions_cleaned`, 16,948 rows, all checklist items verified). New `data-types/mny/actions_cleaned/` plugin applying every recommended transform (schema hygiene, keep-richer dedup −1,960 rows, boilerplate flag, priority normalization + companions, 671 recovered-coordinate overlays — low-confidence named roads excluded per owner) and joining `wkb_geometry` + `precision` from Actions Location 12463. **Non-destructive** — sources 1029065 and 11725 untouched. Open: owner deploy (server route + Create page), and 530 newer actions have NULL precision until `actions_location` re-runs and this re-publishes against the fresh view.
+- [ ] [MNY actions — recover site coordinates from text (backfill)](./mitigateny/tasks/current/mny-actions-location-recovery.md) — IN PROGRESS (2026-07-16). Extract/geocode site coordinates from each action's text and write them into the production actions source in `dms-mercury-3` (source 1029065 / view 1074456). Implements the `reports/location-from-text.html` findings. **2026-08-14:** the `--apply`-to-production step is parked — the recovered CSV is now consumed non-destructively by the `actions_cleaned` task above.
 
 ## Landbank
 

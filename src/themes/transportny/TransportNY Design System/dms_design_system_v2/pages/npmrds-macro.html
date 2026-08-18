@@ -56,6 +56,48 @@
 
   CONTRACT: freshness line, download affordance, measure chips, footer link block — all per
   npmrds-home.html's header note. No breadcrumb: this is a category root.
+
+  ─────────────────────────────────────────────────────────────────────────────────────
+  BUILT 2026-08-12 — npmrds-macro-view-alignment.md. Every deviation the build proved is
+  backported here, so this file keeps telling the truth (feedback_design_iterate_in_mockup_first):
+
+   1. COMPARE YEARS IS PLANNED, NOT BUILT. The View segment ships DISABLED and there is no
+      second-year select anywhere. § 03's compare card is labelled `planned`. A delta ramp
+      needs a per-year-pair delta COLUMN from the pm3 runner — the map draws only from
+      tiles, and tiles are per-view, so the two years are two tilesets.
+   2. NO BASEMAP / ZOOM / FULL-SCREEN BUTTONS. AvlMap already renders a basemap picker, zoom
+      and compass of its own, and a plugin cannot drive the basemap: `styleIndex` is read
+      once at mount and switching goes through MapActions, which plugins never receive.
+      Panel 3 is now the freshness strip alone.
+   3. LEGEND = 7 CKMEANS BINS, not 5 quantile bins — the plugin asks colorDomain for
+      numbins 7 / method ckmeans, and the panel reads the count and the method off what the
+      map is drawing rather than restating a number.
+   4. THE HISTOGRAM IS THE LEGEND'S OWN BINS (7 bars, not 10). One CASE-expression query
+      returns per-bin counts for the DRAWN bins, so the histogram, the legend counts and
+      the download are the same numbers.
+   5. SEARCH IS "TMC OR COUNTY". Source 1410 (PM3) has 105 columns and NO road_name, NO
+      segment length, NO AADT — so the popup's Road / AADT rows and the "road name or exit"
+      search need a network join the PM3 source does not carry.
+   6. § 01 keeps all EIGHT measures, but the three the runner does not compute yet
+      (freeflow speed · emissions · attributes) carry a "not yet computed" chip and are
+      absent from the measure select. An empty measure that draws nothing is worse than an
+      honest gap (Alex).
+   7. § 01's live table STACKS below md instead of scrolling sideways: the live section is a
+      lexical layout-container, which cannot be an overflow-x container the way this <table>
+      is. Verified at 390px.
+   8. THE DOWNLOAD BUILDER has TWO scopes (current filters · statewide) and `json` is
+      DISABLED — the create-download endpoint takes one geography filter and the pipeline
+      emits CSV/GPKG only.
+   9. § 02's TED/PHED card draws 6 controls; the live count is FOUR — `perMiles` (sum by)
+      and `risAADT` (AADT source) are commented out in filters.js because the source has
+      no per-mile or RIS-AADT columns.
+  10. Control labels here are the ones that shipped ("Peak period", "Threshold", "Unit",
+      "Percentile") — the plugin maps its internal filter names onto this copy.
+  11. The § 01 head's `methodology →` link has NO live counterpart yet (npmrds_sub has no
+      docs page), so it is not built. The footer links only the four routes that exist.
+  12. The hover popup is CORE (the shared map hover component reading the layer's
+      `hover-columns`), not plugin code — the plugin can only choose the field list, and
+      "click to pin" is core behaviour, not a plugin knob.
 -->
 
 <div class="bg-[#ECEEF2] min-h-screen" data-dms-layout="app">
@@ -121,6 +163,10 @@
                 <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-zinc-50/80 shrink-0"><span class="flex-1 text-sm font-medium text-zinc-700 truncate select-none">I-87 NB · 120N04521</span><span class="text-[10px] tabular-nums text-zinc-400">1.42 mi</span></div>
                 <div class="px-3 py-2 space-y-1">
                   <div class="flex justify-between gap-2"><span class="text-[11px] text-zinc-500">LOTTR · AM peak</span><span class="text-[12px] font-semibold tabular-nums text-[#d73027]">1.78</span></div>
+                  <!-- BACKPORT 2026-08-12: Road, the 1.42 mi length and AADT are NOT columns of the PM3
+                       source (1410) — they need a network join the source does not carry, so the live popup
+                       shows TMC · measure · Region · County only. The popup itself is CORE chrome reading the
+                       layer's hover-columns; "click to pin" is core behaviour, not a plugin knob. -->
                   <div class="flex justify-between gap-2"><span class="text-[11px] text-zinc-500">Road</span><span class="text-[12px] text-zinc-700">I-87 · Thruway</span></div>
                   <div class="flex justify-between gap-2"><span class="text-[11px] text-zinc-500">Region · County</span><span class="text-[12px] text-zinc-700">8 · Rockland</span></div>
                   <div class="flex justify-between gap-2"><span class="text-[11px] text-zinc-500">AADT</span><span class="text-[12px] tabular-nums text-zinc-700">128,400</span></div>
@@ -159,9 +205,12 @@
                            below it already says which mode you are in (Alex 2026-07-31). -->
                       <div>
                         <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">View</div>
+                        <!-- BACKPORT 2026-08-12: compare years ships DISABLED — the mode does
+                             not exist yet and a live segment that does nothing is worse than a
+                             visibly-planned one (Alex). No second-year select anywhere. -->
                         <div class="h-8 grid grid-cols-2 rounded-md border border-zinc-950/10 overflow-hidden">
                           <button class="bg-blue-600 text-white text-[12px] font-medium">Single year</button>
-                          <button class="bg-white text-zinc-600 text-[12px] border-l border-zinc-950/10 hover:bg-zinc-50">Compare years</button>
+                          <button class="bg-white text-zinc-300 text-[12px] border-l border-zinc-950/10 cursor-not-allowed" title="Compare years is planned — not built yet" disabled>Compare years</button>
                         </div>
                       </div>
                       <div>
@@ -232,6 +281,9 @@
                       <div class="mt-2 text-[11px] font-mono text-zinc-600 bg-zinc-50 rounded px-2 py-1.5">LOTTR = TT<sub>80th</sub> ÷ TT<sub>50th</sub></div>
                     </div>
                     <div class="p-3 border-b border-zinc-950/5">
+                      <!-- BACKPORT 2026-08-12: the live histogram has SEVEN bars, one per drawn ckmeans bin, from
+                           the same per-bin count query that fills the legend's counts — so the histogram, the
+                           legend and the download are the same numbers. The ten finer bars below are a drawing. -->
                       <div class="flex items-center justify-between mb-1.5"><span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Value distribution</span><span class="text-[9.5px] uppercase tracking-wider text-zinc-400 tabular-nums">3,112 segments</span></div>
                       <svg viewBox="0 0 280 64" class="w-full h-[64px] block">
                         <rect x="2" y="26" width="26" height="38" fill="#1a9850"/><rect x="30" y="10" width="26" height="54" fill="#1a9850"/><rect x="58" y="3" width="26" height="61" fill="#91cf60"/><rect x="86" y="19" width="26" height="45" fill="#91cf60"/><rect x="114" y="34" width="26" height="30" fill="#fee08b"/><rect x="142" y="43" width="26" height="21" fill="#fee08b"/><rect x="170" y="49" width="26" height="15" fill="#fc8d59"/><rect x="198" y="55" width="26" height="9" fill="#fc8d59"/><rect x="226" y="58" width="26" height="6" fill="#d73027"/><rect x="254" y="61" width="24" height="3" fill="#d73027"/>
@@ -245,7 +297,7 @@
                       </div>
                     </div>
                     <div class="p-3 border-b border-zinc-950/5">
-                      <div class="flex items-center justify-between mb-1.5"><span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Legend · 5 quantile bins</span><span class="text-[9.5px] uppercase tracking-wider text-zinc-400">author-set breaks</span></div>
+                      <div class="flex items-center justify-between mb-1.5"><span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Legend · 7 ckmeans bins</span><span class="text-[9.5px] uppercase tracking-wider text-zinc-400">author-set breaks</span></div>
                       <div class="space-y-1">
                         <div class="flex items-center gap-2"><span class="block w-6 h-2 rounded-sm bg-[#1a9850]"></span><span class="text-[11px] tabular-nums text-zinc-600 flex-1">1.00 – 1.11</span><span class="text-[10px] tabular-nums text-zinc-400">781</span></div>
                         <div class="flex items-center gap-2"><span class="block w-6 h-2 rounded-sm bg-[#91cf60]"></span><span class="text-[11px] tabular-nums text-zinc-600 flex-1">1.11 – 1.24</span><span class="text-[10px] tabular-nums text-zinc-400">742</span></div>
@@ -260,28 +312,29 @@
                          left changes what the map draws less than this would. -->
                     <div class="p-3">
                       <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">Get to a segment</div>
-                      <div class="w-full h-8 px-2.5 rounded-md border border-zinc-950/10 bg-zinc-50 text-[13px] text-zinc-700 flex items-center gap-2"><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="text-zinc-400 truncate">TMC, road name or exit…</span></div>
+                      <div class="w-full h-8 px-2.5 rounded-md border border-zinc-950/10 bg-zinc-50 text-[13px] text-zinc-700 flex items-center gap-2"><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><!-- BACKPORT 2026-08-12: "TMC or county…" live — source 1410 has no road_name column --><span class="text-zinc-400 truncate">TMC or county…</span></div>
                       <div class="mt-2 -mx-3 border-t border-zinc-950/5 divide-y divide-zinc-950/5">
-                        <button class="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-zinc-50"><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h13M3 12h9M3 18h5m9-1 3 3 3-3m-3 3V7"/></svg><span class="text-[12px] text-zinc-700 flex-1 text-left">Worst 25 bottlenecks</span><span class="text-[9.5px] uppercase tracking-wider text-zinc-400 shrink-0">in view</span></button>
-                        <button class="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-zinc-50"><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="text-[12px] text-zinc-700 flex-1 text-left">TRANSCOM events on these segments</span><span class="text-[9.5px] uppercase tracking-wider text-zinc-400 tabular-nums shrink-0">1,847</span></button>
+                        <button class="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-zinc-50"><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h13M3 12h9M3 18h5m9-1 3 3 3-3m-3 3V7"/></svg><span class="text-[12px] text-zinc-700 flex-1 text-left">Worst 25 segments</span><span class="text-[9.5px] uppercase tracking-wider text-zinc-400 shrink-0">in current filter</span></button>
+                        <button class="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-zinc-50"><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="text-[12px] text-zinc-700 flex-1 text-left">TRANSCOM events on these segments</span><!-- BACKPORT 2026-08-12: TRANSCOM events are not joined to the PM3 source; the row ships with an honest state rather than vanishing --><span class="text-[9.5px] uppercase tracking-wider text-zinc-400 shrink-0">not connected</span></button>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- ══ PANEL 3 · MAP CHROME (bottom-left) ══ -->
+              <!-- ══ PANEL 3 · FRESHNESS (bottom-left) ══
+                   BACKPORT 2026-08-12: the Light/Dark/Satellite segment and the zoom /
+                   full-screen buttons that used to sit here are GONE. AvlMap already renders a
+                   basemap picker, zoom and compass in its own navigation controls (bottom-right
+                   of the canvas), and a plugin cannot drive the basemap anyway — `styleIndex` is
+                   read once at mount, deliberately kept out of the effect deps so a basemap
+                   change doesn't tear the map down, and live switching goes through
+                   MapActions.setMapStyle, which plugin components never receive. Three dead
+                   controls avoided. The dates below are the VIEW's own metadata.dates. -->
               <div class="absolute bottom-0 left-0 p-4 flex items-center gap-2">
-                <div class="h-9 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center overflow-hidden">
-                  <button class="h-full px-3 text-[12px] font-medium text-white bg-blue-600">Light</button>
-                  <button class="h-full px-3 text-[12px] text-zinc-600 border-l border-zinc-950/10 hover:bg-zinc-50">Dark</button>
-                  <button class="h-full px-3 text-[12px] text-zinc-600 border-l border-zinc-950/10 hover:bg-zinc-50">Satellite</button>
-                </div>
-                <button class="size-9 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center justify-center text-zinc-600 hover:text-zinc-900" title="Zoom to selected geography"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></button>
-                <button class="size-9 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center justify-center text-zinc-600 hover:text-zinc-900" title="Full screen"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg></button>
                 <div class="h-9 px-3 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center gap-2 text-[11px] text-zinc-500">
                   <span class="inline-flex items-center gap-1.5 text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>NPMRDS</span>
-                  <span class="text-zinc-300">·</span><span>2017-01-01 &rarr; 2026-07-19</span>
+                  <span class="text-zinc-300">·</span><span>2025-01-01 &rarr; 2025-12-31</span>
                   <span class="text-zinc-300">·</span><span>PM3 year <span class="tabular-nums text-zinc-700">2025</span></span>
                 </div>
               </div>
@@ -309,6 +362,12 @@
                 <a href="docs-overview.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1"><!-- npmrds/p_m_3_measures -->methodology <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
               </div>
 
+              <!-- BACKPORT 2026-08-12: the LIVE § 01 is one lexical section whose rows are
+                   layout-containers, so it cannot be an overflow-x scroller like this <table> —
+                   below `md` each measure STACKS into a block instead (verified at 390px). The
+                   three amber "not yet computed" chips are the honest state of the measures the
+                   pm3 runner has not produced yet; they are also absent from the measure select.
+                   The `methodology →` link above is NOT built: npmrds_sub has no docs page yet. -->
               <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                   <table class="w-full min-w-[880px]">
@@ -358,21 +417,21 @@
                         <td class="px-4 py-3 align-top flex flex-wrap gap-1"><span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[10px] text-slate-600">percentile</span><span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[10px] text-slate-600">peak period</span></td>
                       </tr>
                       <tr>
-                        <td class="px-4 py-3 align-top"><span class="font-display font-medium text-[15px] text-[#0f1722]">Freeflow speed</span><div class="font-proxima text-[11.5px] text-slate-500">uncongested reference</div></td>
+                        <td class="px-4 py-3 align-top"><span class="font-display font-medium text-[15px] text-[#0f1722]">Freeflow speed</span><div class="font-proxima text-[11.5px] text-slate-500">uncongested reference</div><div class="mt-1 h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 font-mono text-[10px] text-[#8a5f03]">not yet computed</div></td>
                         <td class="px-4 py-3 align-top font-proxima text-[12.5px] leading-[1.55] text-slate-600">How fast the road runs when nothing is in the way.</td>
                         <td class="px-4 py-3 align-top font-mono text-[12px] text-slate-600">85th pctl of off-peak speed</td>
                         <td class="px-4 py-3 align-top font-proxima text-[12px] text-slate-700">mph</td>
                         <td class="px-4 py-3 align-top"><span class="font-proxima text-[12px] text-slate-400">—</span></td>
                       </tr>
                       <tr>
-                        <td class="px-4 py-3 align-top"><span class="font-display font-medium text-[15px] text-[#0f1722]">Emissions</span><div class="font-proxima text-[11.5px] text-slate-500">six pollutants</div></td>
+                        <td class="px-4 py-3 align-top"><span class="font-display font-medium text-[15px] text-[#0f1722]">Emissions</span><div class="font-proxima text-[11.5px] text-slate-500">six pollutants</div><div class="mt-1 h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 font-mono text-[10px] text-[#8a5f03]">not yet computed</div></td>
                         <td class="px-4 py-3 align-top font-proxima text-[12.5px] leading-[1.55] text-slate-600">What the traffic on this segment puts into the air.</td>
                         <td class="px-4 py-3 align-top font-mono text-[12px] text-slate-600">speed-binned rate × VMT</td>
                         <td class="px-4 py-3 align-top font-proxima text-[12px] text-slate-700">tons/yr</td>
                         <td class="px-4 py-3 align-top flex flex-wrap gap-1"><span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 font-mono text-[10px] text-[#8a5f03]">pollutant</span><span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 font-mono text-[10px] text-[#8a5f03]">fuel type</span><span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 font-mono text-[10px] text-[#8a5f03]">aadt source</span><span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 font-mono text-[10px] text-[#8a5f03]">peak period</span></td>
                       </tr>
                       <tr>
-                        <td class="px-4 py-3 align-top"><span class="font-display font-medium text-[15px] text-[#0f1722]">Attributes</span><div class="font-proxima text-[11.5px] text-slate-500">TMC · RIS</div></td>
+                        <td class="px-4 py-3 align-top"><span class="font-display font-medium text-[15px] text-[#0f1722]">Attributes</span><div class="font-proxima text-[11.5px] text-slate-500">TMC · RIS</div><div class="mt-1 h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 font-mono text-[10px] text-[#8a5f03]">not yet computed</div></td>
                         <td class="px-4 py-3 align-top font-proxima text-[12.5px] leading-[1.55] text-slate-600">Network metadata itself — functional class, AADT, ownership.</td>
                         <td class="px-4 py-3 align-top font-mono text-[12px] text-slate-600">joined from the network table</td>
                         <td class="px-4 py-3 align-top font-proxima text-[12px] text-slate-700">varies</td>
@@ -415,7 +474,11 @@
                 </div>
 
                 <div class="col-span-12 md:col-span-4" data-dms-section="ctrl-delay">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">TED / PHED · 5 controls — the only measures with traffic type</div>
+                  <!-- BACKPORT 2026-08-12: SIX controls are drawn here; the live panel shows FOUR — `perMiles`
+                       (sum by) and `risAADT` (AADT source) are commented out in filters.js because the
+                       source carries no per-mile or RIS-AADT columns. Threshold · Unit · Traffic type ·
+                       Peak period are the four that ship. -->
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">TED / PHED · 4 controls live (6 drawn) — the only measures with traffic type</div>
                   <div class="rounded-lg border border-zinc-950/15 bg-zinc-100 shadow-sm overflow-hidden p-2.5">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-600 mb-1">Measure</div>
                     <button class="w-full h-8 px-2.5 inline-flex items-center justify-between rounded-md border border-zinc-950/20 bg-white text-[13px] font-medium text-zinc-800"><span class="truncate">PHED · Peak-hour excessive delay</span><svg class="size-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
@@ -471,8 +534,14 @@
                     </div>
                   </div>
                 </div>
+                <!-- BACKPORT 2026-08-12: PLANNED, NOT BUILT. Compare-years is its own follow-on
+                     task (Alex). The live View segment ships the second option DISABLED and there is
+                     no second-year select at all, so nothing on the page can imply a comparison. What
+                     a future task needs: colorDomain takes ONE column, and tiles are per-view, so a
+                     zero-centred delta ramp needs a per-year-pair delta COLUMN from the pm3 runner —
+                     not a client-side trick. -->
                 <div class="col-span-12 md:col-span-6" data-dms-section="mode-compare">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">chosen · compare years</div>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">compare years <span class="text-[#CA8A04]">· planned</span></div>
                   <div class="rounded-lg border border-zinc-950/10 bg-white shadow-sm overflow-hidden p-2.5 space-y-2.5 ring-2 ring-blue-500/20">
                     <div><div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">View</div><div class="h-8 grid grid-cols-2 rounded-md border border-zinc-950/10 overflow-hidden"><button class="bg-white text-zinc-600 text-[12px] border-r border-zinc-950/10">Single year</button><button class="bg-blue-600 text-white text-[12px] font-medium">Compare years</button></div></div>
                     <div class="grid grid-cols-2 gap-2">
@@ -558,7 +627,9 @@
                       <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mb-1">Scope</div>
                       <div class="space-y-1">
                         <label class="flex items-center gap-2 px-2 py-1.5 rounded-[4px] border border-[#37576B] bg-[#37576B]/8"><span class="size-3.5 rounded-full border-2 border-[#37576B] flex items-center justify-center"><span class="size-1.5 rounded-full bg-[#37576B]"></span></span><span class="font-proxima text-[12.5px] text-[#0f1722] flex-1">Current filters</span><span class="font-mono text-[10px] tabular-nums text-slate-500">3,112 rows</span></label>
-                        <label class="flex items-center gap-2 px-2 py-1.5 rounded-[4px] border border-zinc-950/10 bg-white"><span class="size-3.5 rounded-full border-2 border-slate-300"></span><span class="font-proxima text-[12.5px] text-slate-700 flex-1">Region 8, all measures</span><span class="font-mono text-[10px] tabular-nums text-slate-400">28k rows</span></label>
+                        <!-- BACKPORT 2026-08-12: NOT BUILT. The create-download endpoint takes ONE
+                             geography filter plus an explicit column list, so the two honest scopes are
+                             "current filters" (which already carries the geography) and "statewide". -->
                         <label class="flex items-center gap-2 px-2 py-1.5 rounded-[4px] border border-zinc-950/10 bg-white"><span class="size-3.5 rounded-full border-2 border-slate-300"></span><span class="font-proxima text-[12.5px] text-slate-700 flex-1">Statewide, 2025</span><span class="font-mono text-[10px] tabular-nums text-slate-400">521k rows</span></label>
                       </div>
                     </div>
@@ -568,7 +639,7 @@
                         <div class="h-8 grid grid-cols-3 rounded-[6px] border border-zinc-950/10 overflow-hidden">
                           <button class="bg-[#37576B] text-white font-mono text-[10px] uppercase tracking-wider">csv</button>
                           <button class="bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider border-l border-zinc-950/10">gpkg</button>
-                          <button class="bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider border-l border-zinc-950/10">json</button>
+                          <!-- BACKPORT 2026-08-12: json is DISABLED live — the download pipeline emits CSV/GPKG only --><button class="bg-white text-slate-300 font-mono text-[10px] uppercase tracking-wider border-l border-zinc-950/10 cursor-not-allowed" title="JSON export is not produced by the download pipeline yet" disabled>json</button>
                         </div>
                       </div>
                       <div>

@@ -21,7 +21,7 @@ const {
   NPMRDS_CH_SCHEMA_NAME,
   MINUTES_PER_EPOCH,
   EPOCHS_IN_HOUR,
-} = require('../map21/constants.js');
+} = require('./lib/constants.js');
 
 const PERCENTILES = [5, 20, 25, 50, 75, 80, 85, 95];
 

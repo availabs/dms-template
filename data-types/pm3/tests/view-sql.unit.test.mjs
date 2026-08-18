@@ -3,7 +3,7 @@
  * shape IS the public contract of a pm3 view. These tests pin the parts that
  * silently break consumers if they drift:
  *   - column order and set (the UDA table page and ogr2ogr surface relation order)
- *   - the derived AADT/AVO expressions coming from map21, not a second copy
+ *   - the derived AADT/AVO expressions coming from pm3/lib (forked from map21), not a second copy
  *   - one UNION ALL branch per year, each joined to that year's meta table
  */
 import { describe, it, expect } from 'vitest';
@@ -17,9 +17,10 @@ const {
   buildPm3ViewSql,
   buildMetaSelectParts,
   pm3ViewColumnNames,
+  ERA_COLUMNS,
   metaColumnType,
 } = require('../helpers.js');
-const { dataKeyToQueryMap } = require('../../map21/helpers.js');
+const { dataKeyToQueryMap } = require('../lib/helpers.js');
 const { stripSqlAlias } = require('../helpers.js');
 
 const METRICS = ['lottr_amp_lottr', 'lottr_amp_lottr_80_pct', 'speed_pctl_5', 'phed_all_xdelay_phrs'];
@@ -33,9 +34,35 @@ const build = (metaTableByYear = { 2025: 'npmrds_geometry.s582_v1312_geo' }) =>
   });
 
 describe('buildPm3ViewSql', () => {
-  it('emits ogc_fid, then all 25 meta columns in order, then the metric columns', () => {
-    expect(pm3ViewColumnNames({ metricColumns: METRICS }))
-      .toEqual(['ogc_fid', ...META_COLUMNS, ...METRICS]);
+  it('emits ogc_fid, the 25 meta columns in order, the metric columns, then the era tags', () => {
+    // Order is load-bearing: it is the column order the pre-de-duplication pm3 table had, and
+    // downstream consumers (the UDA table page, ogr2ogr downloads) surface columns in relation
+    // order. R9's era tags are appended so nothing existing shifts position.
+    expect(pm3ViewColumnNames({ metricColumns: METRICS })).toEqual([
+      'ogc_fid', ...META_COLUMNS, ...METRICS, ...ERA_COLUMNS.map((c) => c.name),
+    ]);
+  });
+
+  it('era tags are emitted per year branch, as literals, and flag boundary-crossing years', () => {
+    // Era is a pure function of `year`, so it is a literal in each UNION branch rather than a
+    // stored column: no duplication across 52,127 rows and it cannot drift from the row's year.
+    const sql = buildPm3ViewSql({
+      viewName: 'pm3.v', metricsTable: 'pm3.m',
+      metaTableByYear: { 2024: 'g.m2024', 2025: 'g.m2025' }, metricColumns: METRICS,
+    });
+    const branches = sql.split('UNION ALL');
+    expect(branches).toHaveLength(2);
+    // 2024 spans E6 (step down), E7 (the Aug-2024 high regime) and E8 (settled) — three eras in
+    // one calendar year, so an annual 2024 figure blends three coverage regimes.
+    expect(branches[0]).toContain(`'E6|E7|E8'::TEXT AS "era_all_vehicles"`);
+    expect(branches[0]).toContain('TRUE::BOOLEAN AS "era_all_vehicles_crosses_boundary"');
+    // 2025 sits cleanly inside E8, which is why the CY2025 measure analysis is era-clean.
+    expect(branches[1]).toContain(`'E8'::TEXT AS "era_all_vehicles"`);
+    expect(branches[1]).toContain('FALSE::BOOLEAN AS "era_all_vehicles_crosses_boundary"');
+    // The truck stream has its own calendar: 2024 crosses no truck boundary even though it
+    // crosses two all-vehicle ones.
+    expect(branches[0]).toContain(`'T3'::TEXT AS "era_truck"`);
+    expect(branches[0]).toContain('FALSE::BOOLEAN AS "era_truck_crosses_boundary"');
   });
 
   it('SELECT list length matches the declared output columns', () => {
@@ -54,7 +81,7 @@ describe('buildPm3ViewSql', () => {
     expect(parts).toBe(declared.length);
   });
 
-  it('reuses map21 dataKeyToQueryMap arithmetic for the three derived columns', () => {
+  it('reuses lib/helpers dataKeyToQueryMap arithmetic for the three derived columns', () => {
     const sql = build();
     for (const key of ['directionalAadt', 'directionalAadtTruck', 'avgVehicleOccupancyTruck']) {
       expect(dataKeyToQueryMap[key]).toBeTruthy();
@@ -78,7 +105,7 @@ describe('buildPm3ViewSql', () => {
     expect(sql).not.toMatch(/::TEXT::TEXT/);
   });
 
-  it('aliases the meta table t1 — the map21 expressions require that alias', () => {
+  it('aliases the meta table t1 — those expressions require that alias', () => {
     // dataKeyToQueryMap's aadtTruck references t1.aadt_combi / t1.aadt_singl.
     expect(build()).toMatch(/JOIN npmrds_geometry\.s582_v1312_geo t1\b/);
   });

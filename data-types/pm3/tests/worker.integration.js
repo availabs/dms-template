@@ -150,7 +150,8 @@ async function runTests() {
   const { getDb } = require('@availabs/dms-server/src/db');
   const metadata = require('@availabs/dms-server/src/dama/upload/metadata');
   const workerModule = require('../worker.js');
-  const { makeWorker, METRIC_NAMES } = workerModule;
+  const { makeWorker, METRIC_NAMES, metricColumnDescriptors, buildMetricConfigs } = workerModule;
+  const metricConfigs = buildMetricConfigs({ chMetaTableName: 'x.y' });
   const db = getDb(DAMA_TEST_DB);
   const stamp = Date.now();
 
@@ -378,15 +379,27 @@ async function runTests() {
     // would serialize the whole pool behind a lock convoy. All metric columns
     // are enumerable from the registry, so they are created up front; only the
     // serial warm-up TMC keeps the legacy per-metric ALTER as a safety net.
+    // Everything below derives its expectations from the metric registry. An earlier version
+    // classified an ALTER as "bulk" when it created > 20 columns, which broke the moment R4 pushed a
+    // single metric's descriptor count past 20 (lottr now has 20) — per-metric ALTERs started being
+    // counted as bulk. Column counts grow with every phase of this task, so no magic number here
+    // survives; the bulk ALTER is instead identified as the one creating one column per descriptor.
+    const countCols = (q) => (q.match(/ADD COLUMN IF NOT EXISTS/g) || []).length;
+    const perMetricCols = Object.fromEntries(
+      METRIC_NAMES.map((n) => [n, metricColumnDescriptors(n, metricConfigs[n]).length]),
+    );
+    const expectedMetricCols = Object.values(perMetricCols).reduce((a, b) => a + b, 0);
+    const maxPerMetricCols = Math.max(...Object.values(perMetricCols));
+
     const alters = dataDb.queries.filter((q) => /ADD COLUMN IF NOT EXISTS/i.test(q));
-    const bulk = alters.filter((q) => (q.match(/ADD COLUMN IF NOT EXISTS/g) || []).length > 20);
-    assert(bulk.length === 1, `expected exactly 1 bulk metric-column ALTER (got ${bulk.length})`);
-    // 120 metadata.columns = 25 meta + 95 metric, so the bulk ALTER creates 95
-    const created = (bulk[0].match(/ADD COLUMN IF NOT EXISTS/g) || []).length;
-    assert(created === 95, `bulk ALTER should create 95 metric columns (got ${created})`);
-    // warm-up TMC only: 11 metrics -> at most 11 small ALTERs, NOT 11 x 5 TMCs
+    const bulk = alters.filter((q) => countCols(q) === expectedMetricCols);
+    assert(bulk.length === 1,
+      `expected exactly 1 bulk ALTER creating all ${expectedMetricCols} metric columns (got ${bulk.length}; ` +
+      `alter sizes seen: ${alters.map(countCols).join(',')})`);
+
+    // warm-up TMC only: one small ALTER per metric, NOT one per metric per TMC.
     // The +1 allowance is the one-off (tmc, year) join-key ALTER.
-    const perMetric = alters.filter((q) => (q.match(/ADD COLUMN IF NOT EXISTS/g) || []).length <= 20);
+    const perMetric = alters.filter((q) => countCols(q) <= maxPerMetricCols);
     const maxSmall = METRIC_NAMES.length + 1;
     assert(perMetric.length <= maxSmall,
       `per-metric ALTERs must be warm-up only: expected <= ${maxSmall}, got ${perMetric.length}`);

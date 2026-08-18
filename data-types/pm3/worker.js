@@ -1,13 +1,31 @@
 /**
  * pm3 publish worker — per-year, per-TMC, PER-METRIC orchestrator.
  *
- * pm3 is a re-parametrization of map21 (see data-types/map21/worker.js, a
- * READ-ONLY dependency whose calculators/helpers are REUSED here, never
- * copied). Where it deliberately differs from map21:
+ * pm3 began as a re-parametrization of map21 and was FORKED from it on 2026-08-14: the
+ * calculators, constants and helpers now live in ./lib/ as pm3's own copies. map21 is frozen
+ * for calculation (FHWA submittal, backward compatibility); pm3 is not, and the two are meant
+ * to diverge. pm3/tests/no-map21-import.unit.test.mjs enforces that pm3 never imports map21
+ * again; map21/tests/golden.unit.test.mjs pins map21's output so the freeze is checkable.
+ * See planning/transportny/tasks/current/pm3-fork-and-measure-implementation.md.
  *
- *   - 11 metrics, not 3: speed_pctl (pm3-only, ./speedPercentilesCalculator),
- *     lottr, tttr, and the full phed/ted family (speed-limit + freeflow
- *     thresholds, all-vehicles + truck).
+ * Where it deliberately differs from map21:
+ *
+ *   - 12 metrics, not 3: speed_pctl (pm3-only, ./speedPercentilesCalculator),
+ *     lottr, tttr, tttr_p80 (R1 — the truck ratio read at p80/p50, 297x cheaper in
+ *     sample terms than TTTR's p95/p50), and the full phed/ted family (speed-limit +
+ *     freeflow thresholds, all-vehicles + truck).
+ *   - Persists the PHED threshold diagnostics (R3): threshold_speed,
+ *     threshold_travel_time_sec, and tt_15_pct on the freeflow variants. map21 computes
+ *     these and discards them.
+ *   - Publishes per-bin completeness and precision (R4/R6) and coverage-era tags (R9).
+ *
+ * ## Read pm3/PROVENANCE.md before interpreting any published pm3 value
+ *
+ * It records what a consumer needs and cannot infer from the schema: that the feed arrives
+ * already clamped at both ends by the vendor, that the 15-minute mean is the largest outlier
+ * suppressor in the pipeline and was inherited rather than chosen, that coverage moves in nine
+ * non-stationary eras whose boundaries differ BY STREAM, which delay yardstick a given column
+ * used, and the list of screens deliberately NOT applied with the measurement that killed each.
  *   - PERMISSIVE checkMeta: legacy pm3 commented out every map21 meta gate —
  *     a TMC is skipped only when it has no meta row at all.
  *   - Per-metric DB writes (legacy METRIC_WRITES_DB=true): each metric result
@@ -55,14 +73,15 @@ const {
   FREIGHT_TRUCKS,
   NPMRDS_CH_SCHEMA_NAME,
   PERCENTILES_FOR_MEASURES,
-} = require('../map21/constants.js');
+} = require('./lib/constants.js');
 const {
   createDataTable,
   getListTmcId,
   generateTmcIdMetaQuery,
-} = require('../map21/helpers.js');
-const { calcTtrMeasure } = require('../map21/calcTtrMeasure.js');
-const { calcPhed } = require('../map21/calcPhed.js');
+} = require('./lib/helpers.js');
+const { calcTtrMeasure } = require('./lib/calcTtrMeasure.js');
+const { calcPhed } = require('./lib/calcPhed.js');
+const { hasPrecisionCurve, MIN_N } = require('./lib/precision.js');
 const { speedPercentilesCalculator, PERCENTILES } = require('./speedPercentilesCalculator.js');
 const {
   toMetricDbRow,
@@ -73,6 +92,7 @@ const {
   metaColumnType,
   buildAddMetaColumnsSql,
   buildPm3ViewSql,
+  ERA_COLUMNS,
 } = require('./helpers.js');
 
 // ── Metric registry ──────────────────────────────────────────────────────────
@@ -111,6 +131,17 @@ function buildMetricConfigs({ chMetaTableName }) {
       calculator: calcTtrMeasure,
     },
     tttr: {
+      kind: 'ttr',
+      timeBins: [BIN_NAMES.AMP, BIN_NAMES.MIDD, BIN_NAMES.PMP, BIN_NAMES.WE, BIN_NAMES.OVN],
+      npmrdsDataKeys: FREIGHT_TRUCKS,
+      secondaryDataKey: ALL_VEHICLES,
+      calculator: calcTtrMeasure,
+    },
+    // R1 — same truck data, same bins, same calculator, read at p80/p50 instead of p95/p50.
+    // Needs 195 bins against TTTR's 6,297 for comparable precision (297× cheaper), so it is
+    // estimable on 68.8% of the network where TTTR reaches 7.6%. TTTR above is untouched.
+    // Rationale and measurements: pm3/lib/constants.js PERCENTILES_FOR_MEASURES.tttr_p80.
+    tttr_p80: {
       kind: 'ttr',
       timeBins: [BIN_NAMES.AMP, BIN_NAMES.MIDD, BIN_NAMES.PMP, BIN_NAMES.WE, BIN_NAMES.OVN],
       npmrdsDataKeys: FREIGHT_TRUCKS,
@@ -171,6 +202,46 @@ function buildMetricConfigs({ chMetaTableName }) {
       ...PHED_TRUCK_CONFIG,
       calculator: calcPhed,
       thresholdSpeedVersion: 'freeflow',
+      timeBins: [BIN_NAMES.ALL],
+    },
+
+    // ── R2: anchored free-flow reference ────────────────────────────────────
+    // The four `*_freeflow` metrics above derive their p15 threshold from the PUBLISH year, which
+    // makes the yardstick track the traffic it is measuring (H5: the p15's year-to-year movement
+    // correlates with the median's at r = +0.998). These four are the same measures computed against
+    // a FIXED single-era window instead — worth +6.69% on network delay, 36.3% of segments up >5%
+    // against 9.6% down. See pm3/lib/eras.js FREEFLOW_REFERENCE_WINDOW.
+    //
+    // Both variants are published side by side deliberately. A silent switch would land a one-time
+    // +6.69% step in the middle of a published trend and read as a data error, so consumers get an
+    // overlap period in which they can see both series and migrate. **Retiring the transition is
+    // simply deleting the four `*_freeflow` entries above** — no other code changes.
+    phed_freeflow_anchored: {
+      kind: 'phed',
+      ...PHED_ALL_VEHICLES_CONFIG,
+      calculator: calcPhed,
+      thresholdSpeedVersion: 'freeflow_anchored',
+      timeBins: [BIN_NAMES.AMP, BIN_NAMES.ALT_PMP],
+    },
+    phed_truck_freeflow_anchored: {
+      kind: 'phed',
+      ...PHED_TRUCK_CONFIG,
+      calculator: calcPhed,
+      thresholdSpeedVersion: 'freeflow_anchored',
+      timeBins: [BIN_NAMES.AMP, BIN_NAMES.ALT_PMP],
+    },
+    ted_freeflow_anchored: {
+      kind: 'phed',
+      ...PHED_ALL_VEHICLES_CONFIG,
+      calculator: calcPhed,
+      thresholdSpeedVersion: 'freeflow_anchored',
+      timeBins: [BIN_NAMES.ALL],
+    },
+    ted_truck_freeflow_anchored: {
+      kind: 'phed',
+      ...PHED_TRUCK_CONFIG,
+      calculator: calcPhed,
+      thresholdSpeedVersion: 'freeflow_anchored',
       timeBins: [BIN_NAMES.ALL],
     },
   };
@@ -239,6 +310,34 @@ function metricColumnDescriptors(metricName, config) {
         `${M} ${b.toUpperCase()} ${upperPercentile * 100}th Pctl Travel Time`);
       push(`${metricName}_${b}_${metricName}_${lower}`,
         `${M} ${b.toUpperCase()} ${lowerPercentile * 100}th Pctl Travel Time`);
+      // R4 — completeness, per time bin. Both columns are needed and neither substitutes for the
+      // other: n_bins is how many observations the ratio was taken over, mean_epochs_per_bin is the
+      // probe depth behind each one. H1b showed bin count and probes-per-bin move the sparsity bias
+      // in OPPOSITE directions, so publishing only the count would let a consumer reason about
+      // sparsity with the sign inverted.
+      push(`${metricName}_${b}_n_bins`, `${M} ${b.toUpperCase()} Observations (15-min bins)`);
+      push(`${metricName}_${b}_mean_epochs_per_bin`,
+        `${M} ${b.toUpperCase()} Mean 5-min Epochs per Bin`);
+      // Completeness against what THIS bin could hold (AMP 4,176 bins in 2025; OVN 14,600) —
+      // reinstates the legacy pct_bins_reporting column.
+      push(`${metricName}_${b}_pct_bins_reporting`,
+        `${M} ${b.toUpperCase()} Bins Reporting (%)`);
+      // Probe-depth quality, TRUCK METRICS ONLY: H6 found data_density adds nothing over a plain
+      // count for the all-vehicle stream, while H9 found it carries real signal for trucks. The
+      // value is computed for every stream but published only where it is known to be informative.
+      if (config.npmrdsDataKeys === FREIGHT_TRUCKS) {
+        push(`${metricName}_${b}_pct_epochs_density_a`,
+          `${M} ${b.toUpperCase()} Epochs on 1-4 Probes (%)`);
+      }
+      // R6 — precision, published only where H1b actually measured a curve for that quantile
+      // pair and stream. No curve means no claim: an extrapolated precision figure would be worse
+      // than none. Advisory columns — pm3 flags a thin sample, it never suppresses the value.
+      if (hasPrecisionCurve(metricName)) {
+        push(`${metricName}_${b}_precision_band`,
+          `${M} ${b.toUpperCase()} Expected SD at this Sample Size`);
+        push(`${metricName}_${b}_min_n_bar`,
+          `${M} ${b.toUpperCase()} Minimum Sample for +/-0.05 Precision`);
+      }
     }
     return out;
   }
@@ -253,6 +352,20 @@ function metricColumnDescriptors(metricName, config) {
     }
     for (const [suffix, label] of PHED_UNIT_SUFFIXES) {
       push(`${metricName}_${suffix}`, `${M} ${label} (annual)`);
+    }
+    // R3 — threshold diagnostics. calcPhed computes all of these and, before this change, returned
+    // them only inside a `meta` object that toMetricDbRow discards. Persisting them is what makes a
+    // published PHED auditable: without them you cannot tell whether a segment's delay changed
+    // because its traffic changed or because its threshold moved. Legacy
+    // public.pm3_authoritative_view published tt_15_pct and threshold_speed for 2016-2019, so this
+    // is a restoration rather than an invention.
+    push(`${metricName}_threshold_speed`, `${M} Threshold Speed (mph)`);
+    push(`${metricName}_threshold_travel_time_sec`, `${M} Threshold Travel Time (sec)`);
+    // Only the freeflow variants have a percentile behind the threshold; the speed_limit variants
+    // derive it from posted speed, so a tt_15_pct column there would be permanently null.
+    if (config.thresholdSpeedVersion === 'freeflow'
+        || config.thresholdSpeedVersion === 'freeflow_anchored') {
+      push(`${metricName}_tt_15_pct`, `${M} 15th Pctl Travel Time (sec)`);
     }
     return out;
   }
@@ -277,6 +390,8 @@ function buildPm3SourceColumns(metricConfigs = buildMetricConfigs({ chMetaTableN
   for (const [metricName, config] of Object.entries(metricConfigs)) {
     for (const c of metricColumnDescriptors(metricName, config)) add(c);
   }
+  // R9/R4 — the view's era tags. Declared so the datasets pattern can see them.
+  for (const c of ERA_COLUMNS) add(c);
   return cols;
 }
 const PM3_SOURCE_COLUMNS = buildPm3SourceColumns();

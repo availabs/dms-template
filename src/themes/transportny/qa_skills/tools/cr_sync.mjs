@@ -119,6 +119,30 @@ function ensurePagesSchema() {
 }
 ensurePagesSchema();
 
+// 0a-pre) make sure sitemgmt_patterns DECLARES the include_slugs allowlist column.
+// `readRows` fetches with `data->>'include_slugs'`, so the allowlist works whether or not the
+// attribute is declared — but an undeclared key is invisible in the DMS forms UI, which means
+// nobody but a script can maintain the allowlist. Declaring it is what makes default-deny
+// enrolment an OWNER-EDITABLE control rather than a code change. Additive and idempotent: it
+// only ever appends the one missing attribute, never edits or removes an existing one.
+function ensurePatternsSchema() {
+  const row = jget(PATTERNS_CFG.source_id), data = row.data;
+  const config = typeof data.config === "string" ? JSON.parse(data.config || "{}") : (data.config || {});
+  config.attributes = config.attributes || [];
+  const has = config.attributes.some((a) => a.name === "include_slugs");
+  if (!has) {
+    config.attributes.push({
+      name: "include_slugs",
+      display_name: "Include slugs (allowlist)",
+      type: "text",
+      description: "Comma-separated page slugs to enrol. EMPTY = inventory every live page of this pattern (legacy behaviour). Non-empty = enrol ONLY these slugs.",
+    });
+  }
+  console.log(`SCHEMA sitemgmt_patterns: ${!has ? "updated (added include_slugs)" : "already coherent"}`);
+  if (!has && APPLY) cli("raw", "update", String(PATTERNS_CFG.source_id), "--data", JSON.stringify({ config: JSON.stringify(config) }));
+}
+ensurePatternsSchema();
+
 // 0a) make sure sitemgmt_tickets carries the denormalized target-page columns (script-owned; the
 // tickets table shows the friendly page name, and the ticket detail's target line / Details rail
 // need the route + current stage — per the tickets/ticket mockups).
@@ -203,9 +227,9 @@ let surfaces;
 if (PATTERNS_FLAG.length) {
   surfaces = PATTERNS_FLAG.map((p) => withPatternFields({ pattern: p, surface: p, surface_label: labelOf(p) }));
 } else {
-  const cfg = await readRows(PATTERNS_CFG.env, PATTERNS_CFG.view_id, ["pattern", "surface", "surface_label", "subdomain", "base_url", "sort_order", "enabled"]);
+  const cfg = await readRows(PATTERNS_CFG.env, PATTERNS_CFG.view_id, ["pattern", "surface", "surface_label", "subdomain", "base_url", "sort_order", "enabled", "include_slugs"]);
   surfaces = cfg.filter((r) => r.enabled === "yes").sort((a, b) => (+a.sort_order || 0) - (+b.sort_order || 0))
-    .map((r) => withPatternFields({ pattern: r.pattern, surface: r.surface || r.pattern, surface_label: r.surface_label || labelOf(r.pattern) }, r.subdomain || "", r.base_url === "/" ? "" : (r.base_url || "")));
+    .map((r) => withPatternFields({ pattern: r.pattern, surface: r.surface || r.pattern, surface_label: r.surface_label || labelOf(r.pattern), include_slugs: r.include_slugs || "" }, r.subdomain || "", r.base_url === "/" ? "" : (r.base_url || "")));
 }
 // compose the live-page URL: //<subdomain>.<host-suffix><base_url><slug>, protocol-relative.
 // The patterns are multi-tenant — subdomain is a host label (tsmo2, freightatlas, npmrds2), so it
@@ -224,11 +248,22 @@ console.log(`app=${APP}  patterns=[${surfaces.map((s) => s.pattern).join(", ")}]
 // kept (they load inside the iframe). Filenames are mostly conventional — a small override map covers
 // the irregular slugs. Add a KEY_FILE_OVERRIDE entry when a new page's file doesn't match the rule.
 const PAGES_DIR = "src/themes/transportny/TransportNY Design System/dms_design_system_v2/pages";
-const SURFACE_PREFIX = { tsmo2: "tsmo-", freightatlas2: "freight-atlas-" };
+const SURFACE_PREFIX = { tsmo2: "tsmo-", freightatlas2: "freight-atlas-", npmrds: "npmrds-" };
 const KEY_FILE_OVERRIDE = {
   // the platform front door — its mockup is the unprefixed landing.html
   "landing:landing": "landing.html",
   "tsmo2:corridor_view": "tsmo-corridor.html",
+  // ── npmrds (pattern npmrds_sub) ──────────────────────────────────────────────
+  // The `npmrds-` prefix rule already resolves the two enrolled slugs by convention:
+  //   macro → npmrds-macro.html · home → npmrds-home.html
+  // The entries below are DOCUMENTATION FOR LATER ROUNDS — they resolve nothing while
+  // their slugs are absent from that pattern row's `include_slugs` allowlist, and they
+  // exist so the next person enrolling one of these pages doesn't have to re-derive the
+  // mapping from the mockup folder.
+  "npmrds:route_comparison": "route-comparison.html",
+  "npmrds:map_21": "map-21.html",
+  "npmrds:lottr": "map-21-lottr.html",
+  "npmrds:converted_reports/reports": "npmrds-reports.html",
   // the live page moved /about → /about_the_plan (ticket #107); the mockup kept its old name
   "freightatlas2:about_the_plan": "freight-atlas-about.html",
   "freightatlas2:maps_gallery": "freight-atlas-gallery.html",
@@ -253,15 +288,43 @@ function ingestDesign(surface, slug, page_key) {
 }
 
 // 1) live content pages → desired inventory rows
+//
+// ── include_slugs: EXPLICIT, DEFAULT-DENY ENROLMENT (Alex 2026-08-12) ──────────────────
+// "I don't want to automatically add pages to the QA — only pages we specifically ask for."
+// A pattern row may carry a comma-separated `include_slugs` allowlist. When it is NON-EMPTY,
+// ONLY those slugs produce inventory rows for that surface; when it is EMPTY (or the column
+// is absent, which is how it reads for every pre-existing row) behaviour is byte-identical
+// to before — `allow` is null and short-circuits before the `&&`, so tsmo2 / landing /
+// 2175436 / npmrds2 keep inventorying every live page exactly as they did.
+//
+// This exists because `npmrds_sub` holds 39 live pages, 22 of them `converted_reports*`
+// report conversions that must NOT enter the QA pipeline; only `macro` and `home` are asked
+// for. Excluded slugs are collected so that (a) the run prints what it skipped, and (b)
+// `--prune` cannot delete a page row merely because the allowlist stopped enumerating it —
+// see the `allowExcluded` guard at the prune step.
 const desired = [];
-for (const { pattern, surface, surface_label, subdomain, base_url } of surfaces) {
-  for (const p of listPages(pattern)) {
+const allowExcluded = new Set();
+for (const { pattern, surface, surface_label, subdomain, base_url, include_slugs } of surfaces) {
+  const allowList = String(include_slugs || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const allow = allowList.length ? new Set(allowList) : null;
+  const pages = listPages(pattern);
+  let skipped = 0;
+  for (const p of pages) {
     const slug = p.url_slug || p.data?.url_slug; if (!slug) continue;
+    if (allow && !allow.has(slug)) { allowExcluded.add(`${surface}:${slug}`); skipped++; continue; }
     const page_key = `${surface}:${slug}`;
     desired.push({ page_key, surface, surface_label,
       name: p.title || p.data?.title || slug, route: `/${slug}`, url: pageUrl(subdomain, base_url, slug),
       build: buildOf(p.published ?? p.data?.published),
       ...(DESIGN ? ingestDesign(surface, slug, page_key) : {}) });
+  }
+  if (allow) {
+    const found = new Set(desired.filter((d) => d.surface === surface).map((d) => d.route.slice(1)));
+    const missing = allowList.filter((s) => !found.has(s));
+    console.log(`  ALLOWLIST ${pattern} → surface '${surface}': ${allowList.length} slug(s) asked for [${allowList.join(", ")}], ${found.size} matched, ${skipped} live page(s) skipped`);
+    if (missing.length)
+      console.log(`  ⚠ ALLOWLIST MISS ${surface}: [${missing.join(", ")}] not found among the ${pages.length} pages returned` +
+        (pages.length >= 50 ? " — `dms page list` defaults to --limit 50, so the list may be TRUNCATED" : " (no such live page yet — it enrolls on the sync after it is created)"));
   }
 }
 console.log(`live pages across ${surfaces.length} pattern(s): ${desired.length}`);
@@ -293,8 +356,16 @@ for (const d of desired) {
   }
 }
 console.log("\n" + plan.join("\n"));
-const unmatched = existing.filter((r) => !desired.find((d) => d.page_key === r.page_key));
+// A row excluded by an `include_slugs` allowlist is NOT stale — the page is still live, we
+// just stopped enrolling it. Keeping it out of `unmatched` is what stops `--prune` from
+// deleting (and thereby orphaning its tickets) the moment someone narrows an allowlist.
+const unmatched = existing.filter(
+  (r) => !desired.find((d) => d.page_key === r.page_key) && !allowExcluded.has(r.page_key)
+);
+const heldByAllowlist = existing.filter((r) => allowExcluded.has(r.page_key));
 console.log(`\nUPDATE ${updates} | CREATE ${creates} | existing rows not in live patterns: ${unmatched.map((r) => r.page_key).join(", ") || "none"}`);
+if (heldByAllowlist.length)
+  console.log(`held by allowlist (live but not enrolled — NOT pruned): ${heldByAllowlist.map((r) => r.page_key).join(", ")}`);
 
 // 2b) optionally prune stale rows (mirror inventory exactly to the synced patterns)
 if (PRUNE && unmatched.length) {
