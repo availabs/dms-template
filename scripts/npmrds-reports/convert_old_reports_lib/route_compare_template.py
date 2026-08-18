@@ -1,7 +1,7 @@
 import json
 
 from .config import GRAPH_TEMPLATE_TYPE
-from .vocab import GOOD_DIRECTION_BY_MEASURE, MEASURE_NAMES
+from .vocab import GOOD_DIRECTION_BY_MEASURE, MEASURE_NAMES, TABLE_FORMAT_BY_MEASURE
 from .expressions import META_JOIN
 from .template_specs import MEASURE_EXPR, TEMPLATE_BASE_NAME
 from .db import dms, now_iso
@@ -57,9 +57,19 @@ def ensure_route_compare_template(measure, templates, dry_run):
     # the ~200-char expression out of the table header (TableHeaderCell
     # falls back to the column's full name otherwise — same label-fallback
     # class as round 34's summary legend squeeze).
+    #
+    # formatFn (2026-08-13 fix): found live comparing against Info Box's own
+    # speed/travelTime columns — this value_col NEVER had a formatFn (unlike
+    # the delta_col below, which bakes `round(...)` into its own SQL), so it
+    # rendered full ClickHouse float precision straight to the cell
+    # (e.g. "23.410870054552632" mph, "4.764209947776388" minutes). Reads
+    # from the SAME `TABLE_FORMAT_BY_MEASURE` dict Info Box's `speed_col`/
+    # `avgtt_col` use — one shared source of truth, not a second hardcoded
+    # copy that could drift from Info Box's the way `join` already did.
     value_col = {"type": "calculated", "show": True,
                  "name": f"{raw_expr} as {alias}", "fn": "exempt",
-                 "customName": MEASURE_NAMES.get(measure, measure)}
+                 "customName": MEASURE_NAMES.get(measure, measure),
+                 **({"formatFn": TABLE_FORMAT_BY_MEASURE[measure]} if measure in TABLE_FORMAT_BY_MEASURE else {})}
     agg_expr = raw_expr
     anchor = f"__ANCHOR__({agg_expr})"
     delta_col = {

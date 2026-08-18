@@ -44,7 +44,8 @@
       { f: 'workspace.html', t: 'county workspace' }, { f: 'action-view.html', t: 'action view' },
       { f: 'action-edit.html', t: 'action edit' },
     ]},
-    { key: 'panel', label: 'Admin Panel', dir: 'pages', landing: 'admin-forms.html', pages: [
+    { key: 'panel', label: 'Admin Panel', dir: 'pages', landing: 'admin-home-v2.html', pages: [
+      { f: 'admin-home-v2.html', t: 'home (redesign)' },
       { f: 'admin-forms.html', t: 'plan data · task view' },
       { f: 'admin-forms-insights.html', t: 'plan data · insight view' },
       { f: 'admin-forms-lisa-frank.html', t: 'plan data · lisa frank 🐬' },

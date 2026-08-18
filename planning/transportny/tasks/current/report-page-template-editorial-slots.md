@@ -272,7 +272,7 @@ inventing one. Revisit from scratch if picked up; nothing was built or committed
 ## Cross-references
 
 - `research/npmrds-reports/guidance-layer-findings.md` — the findings doc this implements
-- `planning/transportny/tasks/current/report-spec-and-build-script.md` — confirms template row `2187021`'s
+- `planning/transportny/tasks/completed/report-spec-and-build-script.md` — confirms template row `2187021`'s
   self-contained-deep-copy semantics; also independently touched this same row 2026-07-31 for a
   narrower fix (axis labels/customName/title.title consistency with Measure Picker conventions) —
   see `report-route-ui-parity-gaps.md` gap #15's note. Not in conflict: that fix touched the graph's

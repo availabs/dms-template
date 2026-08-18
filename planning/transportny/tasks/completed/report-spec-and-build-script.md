@@ -2,20 +2,27 @@
 
 **Project:** TransportNY
 
-**Status:** Phase A + Phase B COMPLETE — 2026-07-27. `scripts/npmrds-reports/report_build.mjs` builds a live report
-page from a spec; the parity mechanism is proven (written rows byte-identical to composed states) and
-the first live build (page `2195822`) renders correctly. The format reference is written
-(`research/npmrds-reports/report-spec.md`). The dead `--verify` flag is removed and its live-assertion
-successor is deferred with an explicit trigger (see "The `--verify` decision" below). The skill split
-(Phase A) is done: `src/dms/skills/creating-routes-and-reports.md` no longer exists, replaced by
-`creating-reports.md` (spec-first) + `creating-routes.md`, with the old "Known UI gaps" list moved to
-`planning/transportny/tasks/current/report-route-ui-parity-gaps.md` (Phase C's tracking file).
+**Status, corrected 2026-08-18 (moved to `completed/`):** Phase A + Phase B COMPLETE 2026-07-27.
+`scripts/npmrds-reports/report_build.mjs` builds a live report page from a spec; the parity
+mechanism is proven (written rows byte-identical to composed states). The format reference is
+written (`research/npmrds-reports/report-spec.md`). The skill split (Phase A) is done:
+`creating-reports.md` (spec-first) + `creating-routes.md`, with UI gaps moved to
+`report-route-ui-parity-gaps.md` (Phase C's own tracking file — always lived there, not duplicated
+in this file, so it never blocked this file's completion).
 
-Remaining before this file can move to `completed/`: Phase C (the ranked UI-parity gaps) and the
-`minutes_seconds` value format follow-on (`duration-value-format-mm-ss.md`, not started). The
-difference-graph color polarity follow-on is **FIXED 2026-07-30** — see "Finding: difference-graph
-color scale reads backwards" below for the fix and live verification; it turned out not to need a
-new vocabulary field after all, just correcting how the existing `reverseColors` flag was applied.
+The header above was stale for 8 days — it didn't acknowledge that **"Follow-on: Dynamic Report
+spec support" (below) is itself DONE 2026-08-11** (all 12 catalog templates spec-built) or that the
+**difference-graph color polarity follow-on is FIXED 2026-07-30** (see "Finding: difference-graph
+color scale reads backwards" below). The one item genuinely still open — a `minutes_seconds`
+duration ValueFormat so a travel-time y-axis doesn't need to fall back to "Integer" — is tracked in
+its own already-separate library task, `src/dms/planning/tasks/current/duration-value-format-mm-ss.md`,
+**still NOT STARTED as of 2026-08-18**. Worth a pointer for whoever picks that up: a real, usable
+building block landed as a side effect of unrelated work on 2026-08-17 — `durationMinutesFormat`/
+`duration_mmss` (`graph_new/utils.js`), added to fix a travel-time *tooltip* showing unreadable
+decimals. It produces exactly the `M:SS` output that task wants, but it's wired to the tooltip's own
+value format (`display.tooltip.valueFormat`/`yFormat`), not `display.yAxis.format` — so it does
+**not** resolve the y-axis-still-shows-decimals complaint by itself, just removes most of the
+implementation work for whoever wires it there too.
 
 Read this whole file before continuing; three prerequisite bugs were found and fixed along the way
 and their task files carry detail this one only summarizes.

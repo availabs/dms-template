@@ -96,29 +96,65 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
   const routeIds = pick.routeIds || [];
   const routesById = useMemo(() => new Map(routeCatalog.map((r) => [r.route_comp_id, r])), [routeCatalog]);
 
+  // `pick.weekdays`/`pick.start`/`pick.end` (the bare scalar) is dead — report_build.mjs stopped
+  // writing it and useGraphPublish.js stopped reading it the moment `routeWindows` shipped
+  // (2026-08-14). This pill's "one window for the whole graph" model still applies for now (a real
+  // per-route control is a separate, larger gap — report-route-ui-parity-gaps.md #18); it just
+  // needs to read/write `routeWindows` instead. Shown/edited value is the FIRST assigned route's
+  // own window (routeWindows[id][0]) — representative, not necessarily true of every route if one
+  // was set to something different outside this pill (e.g. by report_build.mjs), same "first
+  // assigned route" convention the difference-graph anchor already uses elsewhere in this file.
+  const currentWindow = pick.routeWindows?.[routeIds[0]]?.[0] || {};
+
   const applyPick = (partial) => applyMeasurePick({ state, dwAPI, currentComponent }, partial);
+
+  // Writes ONE window to every currently-assigned route's routeWindows entry (index 0 only —
+  // this pill has no concept of a route with 2+ variants), merging onto whichever facets
+  // (weekdays vs. time-of-day) this particular call isn't changing so the two stay independent,
+  // matching the old scalar's behavior exactly.
+  const applyWindowToAllRoutes = (partial) => {
+    const nextWindow = { ...currentWindow, ...partial };
+    const nextRouteWindows = { ...(pick.routeWindows || {}) };
+    routeIds.forEach((id) => { nextRouteWindows[id] = [nextWindow]; });
+    applyPick({ routeWindows: nextRouteWindows });
+  };
 
   const toggleRoute = (routeCompId) => {
     if (single) {
-      applyPick({ routeIds: routeIds[0] === routeCompId ? [] : [routeCompId] });
+      const clearing = routeIds[0] === routeCompId;
+      // Swapping which one route feeds this Map keeps the card's current window rather than
+      // resetting to unrestricted — same reasoning as the multi-route branch below.
+      applyPick({
+        routeIds: clearing ? [] : [routeCompId],
+        ...(clearing ? {} : { routeWindows: { [routeCompId]: [currentWindow] } }),
+      });
       return;
     }
-    applyPick({ routeIds: routeIds.includes(routeCompId) ? routeIds.filter((id) => id !== routeCompId) : [...routeIds, routeCompId] });
+    const adding = !routeIds.includes(routeCompId);
+    const nextRouteIds = adding ? [...routeIds, routeCompId] : routeIds.filter((id) => id !== routeCompId);
+    // A newly-added route inherits the graph's current window (the same one every other route on
+    // this card already shows) rather than starting unrestricted — otherwise it would silently
+    // diverge from what the "When" pill displays, the exact inconsistency this pill exists to
+    // prevent.
+    const nextRouteWindows = adding
+      ? { ...(pick.routeWindows || {}), [routeCompId]: [currentWindow] }
+      : pick.routeWindows;
+    applyPick({ routeIds: nextRouteIds, ...(nextRouteWindows ? { routeWindows: nextRouteWindows } : {}) });
   };
   const setWeekday = (key, on) => {
-    const next = { ...(pick.weekdays || {}) };
+    const next = { ...(currentWindow.weekdays || {}) };
     // Only an explicit `false` is meaningful (see utils.js's generateDateRange) — matches the
     // route-side convention this replaces, so storage never carries a same-meaning-but-verbose
     // all-true object.
     if (on) delete next[key]; else next[key] = false;
-    applyPick({ weekdays: next });
+    applyWindowToAllRoutes({ weekdays: next });
   };
   const applyDowPreset = (onKeys) => {
     const next = {};
     DOW_DEFS.forEach(({ key }) => { if (!onKeys.includes(key)) next[key] = false; });
-    applyPick({ weekdays: next });
+    applyWindowToAllRoutes({ weekdays: next });
   };
-  const applyTodPreset = (preset) => applyPick({ start: preset.startTime, end: preset.endTime });
+  const applyTodPreset = (preset) => applyWindowToAllRoutes({ start: preset.startTime, end: preset.endTime });
 
   const measureLabel = qcMeasureLabel(MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label);
   const routeLabel = routeIds.length === 0
@@ -126,8 +162,8 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
     : routeIds.length === 1
       ? (routesById.get(routeIds[0])?.name || '1 route')
       : `${routeIds.length} routes`;
-  const whenToken = `${timeOfDayToken(pick.start, pick.end)} · ${qcDaysToken(pick.weekdays)}`;
-  const whenTitle = `When · ${(pick.start && pick.end) ? `${pick.start}–${pick.end}` : 'all day'} · ${(summarizeWeekdays(pick.weekdays) || 'all days').toLowerCase()}`;
+  const whenToken = `${timeOfDayToken(currentWindow.start, currentWindow.end)} · ${qcDaysToken(currentWindow.weekdays)}`;
+  const whenTitle = `When · ${(currentWindow.start && currentWindow.end) ? `${currentWindow.start}–${currentWindow.end}` : 'all day'} · ${(summarizeWeekdays(currentWindow.weekdays) || 'all days').toLowerCase()}`;
   const aggregateLabel = RES_TOKEN[pick.resolution] || pick.resolution;
   const modeIsDifference = pick.comparisonMode === 'difference';
 
@@ -249,7 +285,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
         <div className={t.popSectionLabel}>time of day · which hours of each day</div>
         <div className={t.popPillRow}>
           {PEAK_PRESETS.map((preset) => {
-            const on = pick.start === preset.startTime && pick.end === preset.endTime;
+            const on = currentWindow.start === preset.startTime && currentWindow.end === preset.endTime;
             return (
               <button key={preset.label} type="button" className={on ? t.pillOn : t.pill} onClick={() => applyTodPreset(preset)}>
                 {preset.label}
@@ -262,7 +298,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
         <div className={t.popSectionLabel}>days of week</div>
         <div className={t.popPillRow}>
           {DOW_DEFS.map(({ key, label }) => {
-            const on = isDayOn(pick.weekdays, key);
+            const on = isDayOn(currentWindow.weekdays, key);
             return (
               <button key={key} type="button" className={on ? t.dayOn : t.dayOff} onClick={() => setWeekday(key, !on)}>
                 {label}

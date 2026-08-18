@@ -194,72 +194,6 @@
       </div>
 
         <!-- ========================================================
-             SECTION — PAGE FILTERS (Filter section, "bar" style, col-12)
-
-             These three controls used to sit in the table's header, where they
-             looked like table controls. Moved here — under the cards, above the
-             map — they read as what they now are: PAGE filters. Everything below
-             reacts to them, map included.
-
-             The live wiring is the standard one (creating-interactive-pages +
-             full-text-search-filter): each control is a viewer-facing leaf with
-             `usePageFilters: true` writing a page variable — `search` (an
-             `operation:'like'` leaf, which is what renders a text box),
-             `geoid_juris`, `implementation_status` — and EVERY data section below
-             carries matching leaves. That last part is the one that bites: there is
-             no "filter the whole page" switch, so the map, both mix charts and the
-             table each need the same leaves, and the search box additionally needs
-             the OR-group of `like` leaves replicated per section. A section without
-             them silently ignores the bar.
-
-             `display.gridSize: 3` renders the three in one row — set it INSIDE the
-             stringified element-data, not as a top-level data.display.
-
-             The status cards above already write `?implementation_status=`, so the
-             Status control and the cards are two views of one page variable and stay
-             in sync for free.
-             ======================================================== -->
-        <div data-dms="section" data-name="page-filters" class="col-span-12 pb-6">
-          <div class="bg-mny-50 rounded-[12px] px-3 py-2.5 border border-mny-100">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 mr-0.5">Filter this page</span>
-
-              <label class="flex items-center gap-2 bg-white rounded-full pl-3 pr-2 py-1.5 border border-mny-200 flex-1 min-w-[230px] max-w-[320px] focus-within:border-mny-400">
-                <!-- icon: Search -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
-                <input type="text" placeholder="Search 475 actions…" class="w-full font-proxima text-[13px] text-mny-900 placeholder:text-mny-400 outline-none bg-transparent">
-              </label>
-
-              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
-                <span class="font-proxima text-[13px] text-mny-700">Jurisdiction</span>
-                <span class="font-proxima text-[13px] text-mny-400">All</span>
-                <!-- icon: ChevronDown -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-              </button>
-
-              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
-                <span class="font-proxima text-[13px] text-mny-700">Status</span>
-                <span class="font-proxima text-[13px] text-mny-400">All</span>
-                <!-- icon: ChevronDown -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-              </button>
-
-              <button class="font-proxima text-[12px] font-[600] text-mny-400 hover:text-mny-900 underline underline-offset-2 px-1">Clear all</button>
-
-              <!-- hidden below lg: it is the least important item in the bar and it is what
-                   wraps to a second row once the controls stop fitting -->
-              <span class="hidden lg:inline ml-auto font-proxima text-[12px] text-mny-400">Map, charts and table all follow these</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- The "Needs your attention" band used to sit here, between the status
-             strip and the map. It moved to jurisdiction-prioritization.html, where
-             the four fields it counts are actually editable — a gap tile that lands
-             somewhere read-only is a dead end. Nothing replaces it: the dashboard
-             reports, and the two hero buttons are the routes into the work. -->
-
-        <!-- ========================================================
              SECTION — MAP (Map, col-6 · ROW-SPAN 2)
              County outline + 21 jurisdiction polygons + donut clusters.
              The borders are the point: every donut sits inside the
@@ -407,19 +341,101 @@
         </div>
 
         <!-- ========================================================
+             SECTION — PAGE FILTERS (Filter section, "bar" style, col-12)
+
+             These three controls used to sit in the table's header, where they
+             looked like table controls. Moved here — under the cards, above the
+             map — they read as what they now are: PAGE filters. Everything below
+             reacts to them, map included.
+
+             The live wiring is the standard one (creating-interactive-pages +
+             full-text-search-filter): each control is a viewer-facing leaf with
+             `usePageFilters: true` writing a page variable — `search` (an
+             `operation:'like'` leaf, which is what renders a text box),
+             `geoid_juris`, `implementation_status` — and EVERY data section below
+             carries matching leaves. That last part is the one that bites: there is
+             no "filter the whole page" switch, so the map, both mix charts and the
+             table each need the same leaves, and the search box additionally needs
+             the OR-group of `like` leaves replicated per section. A section without
+             them silently ignores the bar.
+
+             `display.gridSize: 3` renders the three in one row — set it INSIDE the
+             stringified element-data, not as a top-level data.display.
+
+             The status cards above already write `?implementation_status=`, so the
+             Status control and the cards are two views of one page variable and stay
+             in sync for free.
+             ======================================================== -->
+        <div data-dms="section" data-name="page-filters" class="col-span-12 pb-6">
+          <div class="bg-mny-50 rounded-[12px] px-3 py-2.5 border border-mny-100">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 mr-0.5">Filter this page</span>
+
+              <!-- max-w tightened 320 → 240: with five controls in the bar the old width
+                   pushed the row to wrap even at the 1440px page cap. -->
+              <label class="flex items-center gap-2 bg-white rounded-full pl-3 pr-2 py-1.5 border border-mny-200 flex-1 min-w-[200px] max-w-[240px] focus-within:border-mny-400">
+                <!-- icon: Search -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                <input type="text" placeholder="Search 475 actions…" class="w-full font-proxima text-[13px] text-mny-900 placeholder:text-mny-400 outline-none bg-transparent">
+              </label>
+
+              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                <span class="font-proxima text-[13px] text-mny-700">Jurisdiction</span>
+                <span class="font-proxima text-[13px] text-mny-400">All</span>
+                <!-- icon: ChevronDown -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+              </button>
+
+              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                <span class="font-proxima text-[13px] text-mny-700">Status</span>
+                <span class="font-proxima text-[13px] text-mny-400">All</span>
+                <!-- icon: ChevronDown -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+              </button>
+              <!-- Action Readiness — no data on any action yet, so every option is currently
+                   empty. It is a filter rather than a column for exactly that reason: a column
+                   of "not recorded" costs table width and tells you nothing. -->
+              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                <span class="font-proxima text-[13px] text-mny-700">Action Readiness</span>
+                <span class="font-proxima text-[13px] text-mny-400">All</span>
+                <!-- icon: ChevronDown -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+              </button>
+              <!-- Project Maturity — no data on any action yet, so every option is currently
+                   empty. It is a filter rather than a column for exactly that reason: a column
+                   of "not recorded" costs table width and tells you nothing. -->
+              <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                <span class="font-proxima text-[13px] text-mny-700">Project Maturity</span>
+                <span class="font-proxima text-[13px] text-mny-400">All</span>
+                <!-- icon: ChevronDown -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+              </button>
+
+              <button class="font-proxima text-[12px] font-[600] text-mny-400 hover:text-mny-900 underline underline-offset-2 px-1">Clear all</button>
+
+              <!-- hidden below lg: it is the least important item in the bar and it is what
+                   wraps to a second row once the controls stop fitting -->
+              <span class="hidden lg:inline ml-auto font-proxima text-[12px] text-mny-400">Filters the whole page, not just the table</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- The "Needs your attention" band used to sit here, between the status
+             strip and the map. It moved to jurisdiction-prioritization.html, where
+             the four fields it counts are actually editable — a gap tile that lands
+             somewhere read-only is a dead end. Nothing replaces it: the dashboard
+             reports, and the two hero buttons are the routes into the work. -->
+
+        <!-- ========================================================
              SECTION — COUNTY ACTIONS TABLE (Spreadsheet, col-12)
              All 475, searchable. Row → action-view.html
              ======================================================== -->
         <div data-dms="section" data-name="actions-table" class="col-span-12">
-          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3 mb-4">
-            <div>
-              <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">All actions</h2>
-              <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5">Sort any column, or open an action to read it in full</p>
-            </div>
-            <!-- Search / Jurisdiction / Status moved out to the page filter bar under the
-                 cards — they filter the whole page now, not just this table. CSV stays:
-                 it exports what the table is currently showing, so it belongs to the
-                 table, not to the filters. -->
+          <!-- No title or narrative here. The filter bar sits directly above and already
+               labels this region; a heading wedged between the filters and the table they
+               drive only pushed the two apart. CSV is the one control that stays with the
+               table — it exports what the table is currently showing. -->
+          <div class="flex items-center justify-end mb-3">
             <div class="flex flex-wrap items-center gap-2">
               <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mny-200 bg-white hover:border-mny-400 transition-colors">
                 <!-- icon: Download -->
@@ -429,13 +445,13 @@
             </div>
           </div>
 
-          <!-- The seven trailing columns are fixed-width, so Action Name is the one that
+          <!-- The five trailing columns are fixed-width, so Action Name is the one that
                flexes. Below ~1000px that squeezed it to ~126px and the names wrapped to
                three lines, so the table scrolls inside its own container instead —
                the same treatment the two worklist tables in this section use. -->
           <div class="rounded-[12px] border border-mny-100 overflow-hidden">
             <div class="overflow-x-auto">
-            <table class="w-full border-collapse min-w-[1250px]">
+            <table class="w-full border-collapse min-w-[980px]">
               <thead>
                 <tr class="bg-mny-50">
                   <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[178px]">
@@ -448,9 +464,7 @@
                   <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[150px]">Hazard</th>
                   <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[132px]">Status</th>
                   <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[140px]">Cost Range</th>
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[160px]">Application Readiness</th>
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[150px]">Project Maturity</th>
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[112px]">Priority</th>
+                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[132px]">Local Priority</th>
                 </tr>
               </thead>
               <tbody>
@@ -461,8 +475,6 @@
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>In-Progress</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$50k – $150k</td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
                   <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
                 </tr>
 
@@ -472,8 +484,6 @@
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$150k – $500k</td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
                   <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
                 </tr>
 
@@ -483,8 +493,6 @@
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Most / all</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$150k – $500k</td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
                   <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
                 </tr>
 
@@ -494,8 +502,6 @@
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700 tabular-nums">$50k – $150k</td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
                   <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
                 </tr>
 
@@ -516,8 +522,6 @@
                       Bad value
                     </span>
                   </td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
                   <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
                 </tr>
 
@@ -527,8 +531,6 @@
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
                   <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
                   <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 italic">Not set</td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
-                  <td class="px-3 py-3"><span class="font-proxima text-[13px] text-mny-400 italic">not recorded</span></td>
                   <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[600] text-mny-900">Not set</span></td>
                 </tr>
 

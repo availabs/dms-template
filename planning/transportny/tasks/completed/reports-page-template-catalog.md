@@ -8,11 +8,12 @@ Ryan spot-checked the live catalog and found several more things wrong, on top o
 Triaged and root-caused; work items split out into their own task files (this doc stays about the
 catalog build itself, which is DONE) per Ryan's request to keep each fix/phase in its own document:
 
-- **[`../current/catalog-page-slug-naming-fix.md`](../current/catalog-page-slug-naming-fix.md)** —
+- **[`./catalog-page-slug-naming-fix.md`](./catalog-page-slug-naming-fix.md)** —
   the "Snapshot" card links to `/converted_reports/rochester_inner_loop_0` (and vice versa); page
   slugs are generated from the OLD system's internal template name, not the catalog's curated
-  title. Also carries the header `purpose`/`metaLine` placeholder-text fix (both found in the same
-  triage pass, both small/cheap).
+  title. Slug fix DONE 2026-08-07; moved to `tasks/completed/` 2026-08-18 (the one item it left
+  open, header `purpose`/`metaLine` placeholder text, was folded into
+  `dynamic-reports-and-route-tags.md`'s "Open questions for triage" section).
 - **[Dynamic-Report non-graph section binding](../../../../src/dms/planning/tasks/current/dynamic-report-nongraph-section-binding.md)** —
   the keystone finding: Map/Route Compare Component/TMC Info Box sections don't reliably fill from
   Dynamic-Report route picks the way AVL Graph sections do (live-reproduced by picking routes

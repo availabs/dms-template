@@ -95,13 +95,42 @@ function extractPage(body) {
   return { items: [], total: 0, isLast: true };
 }
 
-function buildAcrUrl({ projectId, streamId, dateFrom, dateTo, page }) {
+/**
+ * ACR's bm-cs results endpoint takes ONE day at a time, as `date=YYYYMMDD`.
+ *
+ * This was established empirically on 2026-08-14 against project 16608, and the
+ * formats matter more than you would expect:
+ *
+ *   date=20260730              -> 200, 337 rows, all of 2026-07-30   ✓
+ *   date=2026-07-30            -> 500 Server Error
+ *   date=2026/07/30            -> 500 Server Error
+ *   date=2026-07-30 00:00:00   -> 500 Server Error
+ *   date_from=…&date_to=…      -> 200 but SILENTLY IGNORED: returns today
+ *   day=…, timestamp_from=…    -> ignored, returns today
+ *   per_page / page            -> ignored; the whole day comes back at once
+ *
+ * The dangerous one is `date_from`/`date_to`: it looks like it works (HTTP 200,
+ * plausible rows) while quietly returning the current day, so a range backfill
+ * appears to succeed and recovers nothing. That is why this builds a per-day URL
+ * and the caller loops over days.
+ */
+function buildAcrUrl({ projectId, streamId, date, page }) {
   const u = new URL(`${ACR_BASE}/api/bm-cs-projects/${projectId}/streams/${streamId}/results`);
-  if (dateFrom) u.searchParams.set('date_from', dateFrom);
-  if (dateTo) u.searchParams.set('date_to', dateTo);
-  u.searchParams.set('page', String(page));
-  u.searchParams.set('per_page', String(PER_PAGE));
+  if (date) u.searchParams.set('date', date.replace(/-/g, ''));
+  if (page && page > 1) u.searchParams.set('page', String(page));
   return u.toString();
+}
+
+/** Inclusive list of YYYY-MM-DD strings from `from` to `to`. */
+function eachDay(from, to) {
+  const out = [];
+  const d = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
+  while (d <= end) {
+    out.push(d.toISOString().slice(0, 10));
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+  return out;
 }
 
 async function fetchAcrPage(url, bearerToken) {
@@ -179,14 +208,21 @@ module.exports = async function backfillWorker(ctx) {
   let totalInserted = 0;
   let pagesFetched = 0;
   let knownTotal = null;
+  let lastFingerprint = null;
 
-  for (let page = 1; page <= MAX_PAGES; page++) {
+  // One request per day. The endpoint has no working range filter, so the range
+  // is walked here rather than handed to ACR.
+  const days = eachDay(date_from, date_to);
+  await dispatchEvent(`${SRC_TYPE}:BACKFILL_RANGE`, `${days.length} day(s) to fetch`, {
+    days: days.length, from: date_from, to: date_to,
+  });
+
+  for (const [dayIdx, day] of days.entries()) {
+    const page = dayIdx + 1;
     const url = buildAcrUrl({
       projectId: acr_project_id,
       streamId: acr_stream_id,
-      dateFrom: date_from,
-      dateTo: date_to,
-      page,
+      date: day,
     });
 
     let body;
@@ -194,13 +230,37 @@ module.exports = async function backfillWorker(ctx) {
       body = await fetchAcrPage(url, acr_bearer_token);
     } catch (fetchErr) {
       await writeBackfillStatus(db, source_id, { last_error: fetchErr.message });
-      await dispatchEvent(`${SRC_TYPE}:BACKFILL_ERROR`, fetchErr.message, { page });
+      await dispatchEvent(`${SRC_TYPE}:BACKFILL_ERROR`, `${day}: ${fetchErr.message}`, { day });
       throw fetchErr;
     }
 
-    const { items, total, isLast } = extractPage(body);
+    const { items, total } = extractPage(body);  // isLast is meaningless here: no pagination
     if (knownTotal == null && total != null) knownTotal = total;
     pagesFetched++;
+
+    // Guard: if a day comes back byte-identical to the previous day, the `date`
+    // filter has stopped being honoured and we are re-reading one day forever.
+    // That is not hypothetical — `date_from`/`date_to` behave exactly this way
+    // on this endpoint (HTTP 200, plausible rows, silently the current day), so
+    // a future ACR change to `date` would land us straight back here.
+    const fingerprint = `${items.length}:${items[0]?.metadata?.timestamp_utc ?? ''}:` +
+      `${items[items.length - 1]?.metadata?.timestamp_utc ?? ''}`;
+    if (items.length && fingerprint === lastFingerprint) {
+      await dispatchEvent(`${SRC_TYPE}:BACKFILL_ERROR`,
+        `${day} returned the same payload as the previous day — ACR is ignoring the date filter, stopping`,
+        { day, page_size: items.length });
+      break;
+    }
+    lastFingerprint = fingerprint;
+
+    // Sanity-check that ACR gave us the day we asked for; a mismatch means the
+    // filter silently changed behaviour again.
+    const gotDay = items[0]?.metadata?.timestamp_utc?.slice(0, 10);
+    if (gotDay && gotDay !== day) {
+      await dispatchEvent(`${SRC_TYPE}:BACKFILL_ERROR`,
+        `asked ACR for ${day} but got ${gotDay} — date filter not honoured, stopping`, { day, gotDay });
+      break;
+    }
 
     // Normalize the whole page first, then enrich covers from iTunes in
     // bounded parallel before INSERT. Best-effort — enrichment failures
@@ -223,19 +283,18 @@ module.exports = async function backfillWorker(ctx) {
     }
     totalInserted += pageInserted;
 
-    await dispatchEvent(`${SRC_TYPE}:BACKFILL_PAGE`, `page ${page}: +${pageInserted}`, {
-      page,
-      page_size: items.length,
-      page_inserted: pageInserted,
-      total_inserted: totalInserted,
-      known_total: knownTotal,
-    });
+    await dispatchEvent(`${SRC_TYPE}:BACKFILL_PAGE`,
+      `${day}: ${items.length} from ACR, +${pageInserted} new`, {
+        day,
+        page,
+        page_size: items.length,
+        page_inserted: pageInserted,
+        total_inserted: totalInserted,
+      });
 
-    if (knownTotal && knownTotal > 0) {
-      await updateProgress(Math.min(0.99, totalInserted / knownTotal));
-    } else {
-      await updateProgress(Math.min(0.99, 0.01 + pagesFetched * 0.05));
-    }
+    // Progress is days-completed; the old row-ratio needed a `total` this API
+    // never returns, so it always fell through to the 0.05-per-page fallback.
+    await updateProgress(Math.min(0.99, (dayIdx + 1) / days.length));
 
     await writeBackfillStatus(db, source_id, {
       rows_inserted: totalInserted,
@@ -243,7 +302,10 @@ module.exports = async function backfillWorker(ctx) {
       known_total: knownTotal,
     });
 
-    if (isLast || items.length === 0) break;
+    // No per-day pagination: this endpoint returns the whole day at once
+    // (337 rows observed for a single day, well above the old PER_PAGE of 200).
+    // An empty day is normal — the station may simply not have aired — so keep
+    // going rather than treating it as the end of the range.
   }
 
   const finishedAt = new Date().toISOString();
@@ -253,10 +315,11 @@ module.exports = async function backfillWorker(ctx) {
     last_error: null,
   });
   await updateProgress(1);
-  await dispatchEvent(`${SRC_TYPE}:BACKFILL_FIN`, `inserted ${totalInserted} rows`, {
-    rows_inserted: totalInserted,
-    pages_fetched: pagesFetched,
-  });
+  await dispatchEvent(`${SRC_TYPE}:BACKFILL_FIN`,
+    `inserted ${totalInserted} rows over ${pagesFetched} day(s)`, {
+      rows_inserted: totalInserted,
+      days_fetched: pagesFetched,
+    });
 
-  return { rows_inserted: totalInserted, pages_fetched: pagesFetched };
+  return { rows_inserted: totalInserted, days_fetched: pagesFetched };
 };
