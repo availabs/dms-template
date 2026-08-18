@@ -61,7 +61,53 @@ mny/design/
 │   ├── admin-panel-information-architecture.html   the July 2026 within-panel consolidation study
 │   ├── admin-workflow-current-state.html            ┐ Admin Panel Review series (2026-08):
 │   ├── admin-direction-consolidate.html             │ current state · Direction A (clean up /admin)
-│   └── admin-direction-dissolve.html                ┘ Direction B (move work into the plan; recommended B1)
+│   ├── admin-direction-dissolve.html                ┘ Direction B (move work into the plan; recommended B1)
+│   ├── admin-panel-status.html         page-by-page status of admin pattern 566466 — IA diagram with
+│   │                                   per-page status, the form-family analogy matrix, every dead
+│   │                                   link, the county_template (1300890) → /admin audit, and a
+│   │                                   fix list grouped by type
+│   ├── admin-panel-status-v2.html      the same audit narrowed to the planner-facing panel: the seven
+│   │                                   form families (Actions, Capabilities, Hazards of Concern, High
+│   │                                   Hazard Dams, Participation, Roles, Jurisdictional Annex Entry)
+│   │                                   plus Home and the Forms hub — everything under other_forms
+│   │                                   dropped. Assumes NO page naming convention: the only question
+│   │                                   asked of a link is whether its target exists. Centrepiece is
+│   │                                   the create story — the modals are authored on 19 pages and
+│   │                                   nothing can open them.
+│   ├── admin-panel-fix-list-v2.csv     the v2 fix list as a tracking sheet — 50 rows, same fix IDs as
+│   │                                   the report, with Status / Assigned to / Date fixed / Notes
+│   │                                   columns left empty
+│   ├── admin-panel-status-v3.html      the v2 audit re-run on 2026-08-14 against a fresh harvest, same
+│   │                                   scope. Verdict on all 50 v2 fixes (19 live dead links → 1), plus
+│   │                                   four new passes: a create-button/modal diagnostic (23 modals, 0
+│   │                                   triggers, 21 CREATE buttons repointed at an empty target), a
+│   │                                   fetch-mode audit (22 of 158 data components on Force), a
+│   │                                   county/jurisdiction geoid ⁄ geoid_juris binding audit, and the
+│   │                                   LHMP_IA text-box permission review on the annex page. Leads with
+│   │                                   what the DEPLOYED bundle actually supports, since that decides
+│   │                                   which findings are live and which are latent until the next deploy.
+│   ├── admin-panel-fix-list-v3.csv     the v3 fix list as a tracking sheet — 254 rows in 9 types, same
+│   │                                   fix IDs as the report, with a v2 ID column for traceability and
+│   │                                   Status / Assigned to / Date fixed / Notes left empty
+│   ├── admin-panel-status-v4.html      2026-08-17 (rev 2). Narrower scope again — six families (High
+│   │                                   Hazard Dams out) plus Home and the Forms hub. Leads with the DELETE
+│   │                                   LIST: 40 dropped-section component IDs (20 published + 20 draft),
+│   │                                   quarantined so every other fix type excludes anything inside them.
+│   │                                   rev 2 applied two client directions: the create modals are ACCEPTED
+│   │                                   as configured (72 items retired), and Force + Smart are both
+│   │                                   acceptable fetch modes, so fetch mode became a four-way INVENTORY
+│   │                                   (force / smart / cache / no setting selected) reporting both the
+│   │                                   stored setting and the resolved behaviour. rev 3 re-harvested after
+│   │                                   the capabilities/view fix: all 145 in-scope components now re-query
+│   │                                   (0 resolve to Cache), so fix type 2 is CLOSED. Result: 0 reachable
+│   │                                   dead links, 48/48 row actions correct, every page acceptable on
+│   │                                   fetch mode, and 68 tracked fixes — 40 of them the delete list.
+│   ├── admin-panel-fix-list-v4.csv     the v4 fix list as a tracking sheet — 68 rows in 4 open types, with a
+│   │                                   Component ID column and Status / Assigned to / Date fixed / Notes
+│   │                                   left empty
+│   └── admin-panel-fetchmode-v4.csv    the full fetch-mode inventory — 145 rows, one per fetch-mode-capable
+│                                       component in scope: page, dataset, stored setting, readyToLoad,
+│                                       resolved behaviour, acceptable y/n, in-create-modal y/n
 ├── assets/mny/                       ← logo, topolines, hazard glyphs, county art
 └── references/                       ← original Figma handoff exports (read-only)
     └── MitigateNY UX_UI [...]/*.jpg

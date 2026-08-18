@@ -81,6 +81,10 @@
       { f: 'admin-workflow-current-state.html', t: 'admin review 1 · current state' },
       { f: 'admin-direction-consolidate.html', t: 'admin review 2 · direction A' },
       { f: 'admin-direction-dissolve.html', t: 'admin review 3 · direction B' },
+      { f: 'admin-panel-status.html', t: 'admin panel status (aug)' },
+      { f: 'admin-panel-status-v2.html', t: 'admin panel status v2 · planner scope' },
+      { f: 'admin-panel-status-v3.html', t: 'admin panel status v3 · re-run + create/fetch/geo/permissions' },
+      { f: 'admin-panel-status-v4.html', t: 'admin panel status v4 · six families, dropped sections quarantined' },
     ]},
   ];
 
