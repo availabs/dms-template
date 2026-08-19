@@ -1,7 +1,8 @@
 import { useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
+import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
+import { publish } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
 import { resolvedRouteLabel } from '../ReportRouteList/relativeDateResolution';
@@ -13,7 +14,8 @@ import { resolvedRouteLabel } from '../ReportRouteList/relativeDateResolution';
 // optional Data link) is this component's own authored state, edited inline in place —
 // same two-gate convention as ReportRouteList (editPageMode AND this section's own pencil).
 export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
-  const { item, editPageMode, pageState } = useContext(PageContext) || {};
+  const { item, editPageMode, pageState, apiUpdate } = useContext(PageContext) || {};
+  const { user } = useContext(CMSContext) || {};
   const { state, setState } = useContext(ComponentContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Icon } = UI || {};
@@ -75,6 +77,19 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
       setTimeout(() => setShareCopied(false), 1800);
     } catch (e) {
       // clipboard access denied (permissions/non-secure context) — nothing to recover into
+    }
+  };
+
+  // Leaving edit mode also publishes — an author closing out a report shouldn't need a
+  // separate manual Publish click first (report-authoring-ux-overhaul.md item 8). Only on the
+  // click that LEAVES edit mode (editPageMode true → false); entering edit mode is a plain
+  // navigate, same as before.
+  const handleEditToggle = async () => {
+    if (editPageMode) {
+      await publish(user, item, apiUpdate);
+      navigate(publicPath);
+    } else {
+      navigate(editPath);
     }
   };
 
@@ -145,7 +160,7 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
               </Button>
             ) : null}
             {Button && editPath && publicPath ? (
-              <Button activeStyle="default" onClick={() => navigate(editPageMode ? publicPath : editPath)}>
+              <Button activeStyle="default" onClick={handleEditToggle}>
                 <Icon icon="PencilEditSquare" /><span className={t.actionLabel}>{editPageMode ? 'Done' : 'Edit'}</span>
               </Button>
             ) : null}

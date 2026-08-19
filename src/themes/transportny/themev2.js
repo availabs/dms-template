@@ -41,6 +41,7 @@ import { npmrdsMeasureMenu } from "./components/MeasurePicker"
 import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
+import CreateReportButton from "./components/CreateReportButton"
 
 import icons from "./icons";
 
@@ -2701,6 +2702,7 @@ const pageComponents = {
   ReportRouteList,
   ReportPageHeader,
   RouteComparison,
+  CreateReportButton,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
