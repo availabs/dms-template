@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) code changes IMPLEMENTED 2026-08-19, live-verification and `probe_corpus.mjs` run still pending; Tiers 2-3 NOT STARTED; gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all code-complete 2026-08-19; live-verification and `probe_corpus.mjs` run still pending for all of them; Tier 3 NOT STARTED; gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
 
 ## Objective
 
@@ -250,7 +250,7 @@ research pass (which wrongly assumed a small `dms`-core change was needed). **It
 
 ## Tier 2 — small, mostly self-contained
 
-### 2A. Item 8 — Report Header "Done" also publishes
+### 2A. Item 8 — Report Header "Done" also publishes — CODE DONE 2026-08-19
 
 **File**: `src/themes/transportny/components/ReportPageHeader.jsx`
 
@@ -266,12 +266,16 @@ navigating — only when `editPageMode` is true (the click that LEAVES edit mode
 
 **Classification**: 100% project-level, trivial, self-contained, no new plumbing.
 
-- [ ] Wire Done → publish in `ReportPageHeader.jsx`
-- [ ] Live-verify: make a draft change, click Done, confirm the published page reflects it immediately (no separate manual Publish click needed)
+**Note**: file actually lives at `src/themes/transportny/components/ReportPageHeader/ReportPageHeader.jsx`
+(nested folder, not a bare file directly under `components/`) — this section's own file path was
+slightly stale.
+
+- [x] Wire Done → publish in `ReportPageHeader.jsx` — 2026-08-19, added `CMSContext`/`user`, imported `publish`, new `handleEditToggle` awaits `publish(user, item, apiUpdate)` before navigating, only when leaving edit mode
+- [ ] Live-verify: make a draft change, click Done, confirm the published page reflects it immediately (no separate manual Publish click needed) — NOT DONE this session
 
 ---
 
-### 2B. Item 6 — "Create Report" button on the `/reports` homepage
+### 2B. Item 6 — "Create Report" button on the `/reports` homepage — code + content DONE 2026-08-19, not yet published
 
 **Depends on 1A landing first** (for the redirect to work).
 
@@ -296,14 +300,49 @@ priority.
 
 **Classification**: project-level, depends on 1A.
 
-- [ ] Confirm 1A has landed
-- [ ] Build the Create Report button/component, registered on the `/reports` page
-- [ ] Named constant for template id + parent slug
-- [ ] Live-verify: click Create Report, confirm redirect into `/edit/<new-slug>` with the Report Page template's sections present
+**Built 2026-08-19**: new page-section component `src/themes/transportny/components/CreateReportButton/`
+(`CreateReportButton.jsx` + `.theme.js` + `index.jsx`, registered in `themev2.js`'s `pageComponents`
+map alongside `ReportPageHeader`/`RouteComparison`). Fetches the Report Page template row the exact
+same way `PageTemplatePicker.jsx`'s own `loadDbTemplates()` does (same `apiLoad` shape), filtered to
+`REPORT_PAGE_TEMPLATE_ID = '2187021'`, then calls `newPage(item, dataItems, user, apiUpdate,
+template)` directly — no picker UI. Parent folder is NOT a separate named constant: `newPage()`
+derives it from `item.parent`, and since this button is registered on the `/reports` page itself
+(whose own parent already is `converted_reports`), that falls out for free — simpler than adding a
+second constant that would just have to agree with wherever the button is actually placed.
+
+**Also added to the live page's content 2026-08-19** (a data change, via `dms section create 2208581
+--pattern npmrds_sub --data ...` — backed up pre-change state to
+`scratchpad/npmrds-sub/page_2208581_reports_homepage.pre-create-report-button.20260819.json` first):
+one new section, id `2213719`, `element-type: "CreateReportButton"`, appended to the end of the
+existing "Templates" group (`b77dbc82-...`). **Currently a DRAFT addition only** — `has_changes:
+true`, `published: ''` unchanged — visible at `/edit/converted_reports/reports` but NOT yet on the
+real published `/converted_reports/reports` page. Left unpublished deliberately (didn't want to
+flip a live, possibly-viewed page to a new visible state without Ryan reviewing placement/copy
+first) — publish via the page's own Done/Publish control (now wired, see 2A) or `dms page publish
+converted_reports/reports --pattern npmrds_sub` once reviewed. Placement (end of the existing card
+group, not a separate prominent slot) was a pragmatic default per this item's own "no wireframe,
+design pragmatically" note — reorder via drag-and-drop in the edit UI if a different spot is wanted.
+
+**Mid-task correction, 2026-08-19**: first `dms section create` call omitted `--pattern npmrds_sub`
+and the CLI's pattern auto-detection (`findPatternByKind(..., 'page')`, no explicit flag) resolved
+to a leftover "Sandbox" pattern in this dev DB instead, creating the section as `sandbox|component`
+(wrong type — would have rendered as broken/missing) and attaching that wrongly-typed ref to the
+page. Caught immediately via `dms raw get`, deleted the bad row + ref (`dms section delete 2213718
+--page 2208581 --pattern npmrds_sub`, needed a freshly-minted auth token), and recreated correctly
+with `--pattern npmrds_sub` explicit. **Generic CLI gotcha worth remembering for next time**: `dms
+section create`/`update`/`delete` without an explicit `--pattern` silently picks WHATEVER page-kind
+pattern `findPatternByKind` finds first for the site/app — always pass `--pattern` explicitly on
+any multi-pattern site (this dev DB has 19+ patterns registered).
+
+- [x] Confirm 1A has landed — confirmed via direct code read, session start
+- [x] Build the Create Report button/component, registered on the `/reports` page
+- [x] Named constant for template id — `REPORT_PAGE_TEMPLATE_ID` in `CreateReportButton.jsx`; no separate parent-slug constant needed (see above)
+- [x] Placement + publish — Ryan moved the section to the top of the page (reordered via the edit UI himself, exactly the "author decides placement" flow this item's own note anticipated) and published `/reports` himself, 2026-08-19
+- [ ] Live-verify: click Create Report, confirm redirect into `/edit/<new-slug>` with the Report Page template's sections present — NOT DONE this session (button is now live and positioned, but the actual click-through hasn't been exercised/confirmed yet)
 
 ---
 
-### 2C. Item 5 — Report Page Template: remove starter graph + fix compact sidebar
+### 2C. Item 5 — Report Page Template: remove starter graph + fix compact sidebar — DONE 2026-08-19
 
 **Starter graph removal**: template `2187021`'s section 3, "Existing AVL Graph" (`graph_new`/
 `compType:'avlGraph'`, title already cleared to `""`). **Confirmed safe to delete** — nothing depends
@@ -343,14 +382,39 @@ the research agent's run.
 **Classification**: starter-graph deletion = trivial content edit, zero code/capability question.
 Compact sidebar = depends on 1A's code fix + a one-time data fix on the template row.
 
-- [ ] Delete template `2187021`'s "Existing AVL Graph" section
-- [ ] Confirm 1A has landed; set the compact override on template `2187021` itself
-- [ ] Live-verify: create a NEW page from the template, confirm (a) no starter graph, (b) sidebar renders compact from the moment the page is created, with no manual per-page fix needed
+**How this actually got done, 2026-08-19**: found live by Ryan, not planned proactively — he created
+a page from the template (`converted_reports/page_25`, row `2213716`) via 1A's newly-fixed
+`newPage()` and the sidebar was still not compact. Investigated via `dms raw get 2187021`
+directly: confirmed **no code was touched here, only the DB row** — the template row had no
+`theme` key at all (verified by reading the raw row before touching anything; backed up to
+`scratchpad/npmrds-sub/page_template_2187021.pre-remove-starter-graph.20260819.json` first). This
+matches exactly what this section already predicted: 1A's code fix is necessary but was not
+sufficient on its own, because the thing it copies (`template.theme`) was never actually set on the
+template row. Two `dms page update 2187021` calls (verified via direct `dms raw get` before/after
+each, title/slug/other fields confirmed untouched):
+1. `--set theme='{"layout":{"options":{"sideNav":{"activeStyle":1}}}}'` — the compact override.
+2. `--data <patch-file>` with `draft_sections` rebuilt to exclude the "Existing AVL Graph" section
+   (`trackingId f1549ff3-6277-416b-a1b2-f5f6a44a7a2d`, the 4th of 5 sections) — template now has 4
+   sections (ReportPageHeader → lexical → Card → ReportRouteList sidebar), matching the predicted
+   post-removal order exactly.
+
+**Also fixed directly**: `converted_reports/page_25` (`2213716`) itself, since it was already
+created before the template fix landed and wouldn't retroactively inherit it — same `theme` override
+applied via `dms page update 2213716 --set theme=...`, verified. **Not touched**: page_25's own copy
+of the old starter "Existing AVL Graph" section (it has its own independent 5 sections, materialized
+at creation time from the pre-fix template) — the reported bug was specifically the sidebar style,
+not the starter graph, so didn't unilaterally edit page_25's content beyond the direct ask. Flag to
+Ryan if he wants that section removed from page_25 too, or wants to just delete/recreate the page now
+that the template is fixed.
+
+- [x] Delete template `2187021`'s "Existing AVL Graph" section — 2026-08-19
+- [x] Confirm 1A has landed; set the compact override on template `2187021` itself — 2026-08-19 (1A confirmed landed via code read earlier this session; template row backed up before either data change)
+- [ ] Live-verify: create a NEW page from the template, confirm (a) no starter graph, (b) sidebar renders compact from the moment the page is created, with no manual per-page fix needed — NOT DONE this session (page_25 was created BEFORE these fixes landed, so it doesn't count as this verification; a fresh page from the now-fixed template still needs a live check)
 - [ ] Optional/separate: live-repro the Card-materialization mystery if picked up (not required for this item's two asks)
 
 ---
 
-### 2D. Item 7 — Dynamic Report URL params resolve in edit mode too
+### 2D. Item 7 — Dynamic Report URL params resolve in edit mode too — CODE DONE 2026-08-19
 
 **File**: `src/themes/transportny/components/ReportRouteList/ReportRouteList.jsx` +
 `useDynamicReportRoutes.js`.
@@ -380,9 +444,18 @@ unconditionally) — no changes needed there.
 
 **Classification**: 100% project-level, confirmed safe/purely-additive, moderate size.
 
-- [ ] Flip all three `!isEdit` exclusions in `ReportRouteList.jsx`
-- [ ] Live-verify: open a Dynamic Report at `/edit/<slug>?routes=<id>|||<id>&asOf=YYYY-MM-DD`, confirm it previews as if those were live, AND confirm reloading the plain `/edit/<slug>` (no params) still shows raw unresolved slots as before
-- [ ] Confirm nothing got written to `draft_sections`/`reports_snap_2` from a preview-only edit-mode visit (cross-check via `dms raw get` before/after)
+**Implementation note, 2026-08-19**: the `effectiveRoutes` ternary was deliberately flipped to
+`(isDynamicReport && routeIds.length > 0)`, NOT bare `isDynamicReport` — checked this carefully
+before implementing, since `resolvedRoutes` collapses to `[]` whenever the hook's own `enabled` flag
+is false (see `useDynamicReportRoutes.js`'s `!enabled ? [] : ...`). Bare `isDynamicReport` would have
+made a plain `/edit/<slug>` with no `?routes=` show ZERO routes instead of falling back to the raw
+placeholder slots — mirroring the exact same condition as the `enabled` gate is what keeps that case
+correct. `asOfOverride` needed no such guard (it's just a raw filter-value read, already `null`
+whenever the URL param is absent regardless of edit mode).
+
+- [x] Flip all three `!isEdit` exclusions in `ReportRouteList.jsx` — 2026-08-19
+- [ ] Live-verify: open a Dynamic Report at `/edit/<slug>?routes=<id>|||<id>&asOf=YYYY-MM-DD`, confirm it previews as if those were live, AND confirm reloading the plain `/edit/<slug>` (no params) still shows raw unresolved slots as before — NOT DONE this session
+- [ ] Confirm nothing got written to `draft_sections`/`reports_snap_2` from a preview-only edit-mode visit (cross-check via `dms raw get` before/after) — NOT DONE this session
 
 ---
 
@@ -558,3 +631,16 @@ update are mandatory on every RRL/report touch, not optional.**
   **Next, not done this session**: live-verify all three Tier 1 items on a scratch report page, then
   actually run `probe_corpus.mjs` for an empirical baseline (expected: clean, per the analysis above,
   modulo the "we broke the module" risk).
+
+- **2026-08-19 (same day, Tier 2)**: Ryan live-tested 1A by creating `converted_reports/page_25` from
+  the Report Page template and found the sidebar still not compact — this surfaced 2C's own
+  already-predicted gap (template row never had `theme` actually set) and got it fixed same-session
+  (see 2C above for the full account, including a mid-fix mistake caught and corrected: an
+  `dms section create` call without `--pattern npmrds_sub` briefly created a wrongly-typed
+  `sandbox|component` row, deleted and redone correctly). With that resolved, moved on to the rest of
+  Tier 2 per Ryan's "once you resolve that, move onto t2": 2A (Done-also-publishes) and 2D (Dynamic
+  Report URL params in edit mode) implemented as coded; 2B (Create Report button) built as a new
+  registered component AND added to the live `/reports` page's content as an unpublished draft
+  section. All of Tier 2 is code-complete but **none of it has been live-verified in a browser yet**,
+  and `probe_corpus.mjs` has still not been run this whole session — both remain outstanding across
+  all of Tier 1 and Tier 2 as the next work.

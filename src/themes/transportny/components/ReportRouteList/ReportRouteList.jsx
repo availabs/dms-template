@@ -105,12 +105,20 @@ export default function ReportRouteList() {
   // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/color
   // assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
   // the real route ids the viewer's URL supplies. Never persisted; a pure in-memory overlay.
+  // Resolves whenever the URL actually supplies route ids — in EDIT mode too, not just view
+  // mode (report-authoring-ux-overhaul.md item 7, 2026-08-19): an author previewing
+  // `/edit/<slug>?routes=...&asOf=...` sees the same resolved preview a real viewer would,
+  // instead of always seeing raw slot placeholders regardless of the URL. A plain
+  // `/edit/<slug>` with no `?routes=` still falls through to the raw-slots branch below
+  // (`routeIds.length` is 0), so authoring the template itself is unaffected. Confirmed safe:
+  // this hook only ever reads via `apiLoad` into local `useState` — no `apiUpdate` anywhere in
+  // useDynamicReportRoutes.js, so a preview-only edit-mode visit can't persist anything.
   const { resolvedRoutes, resolvedGroupRoutes } = useDynamicReportRoutes({
     apiLoad,
     routeSourceInfo,
     slots: routes,
     routeIds,
-    enabled: isDynamicReport && !isEdit && routeIds.length > 0,
+    enabled: isDynamicReport && routeIds.length > 0,
   });
   // Grouped, not raw route count (2026-08-03): several slot rows can share one `route_slot_group`
   // when they're different date/settings VIEWS of the same one real route a viewer picks once (see
@@ -139,7 +147,10 @@ export default function ReportRouteList() {
   // so a bare truthiness check on the array itself would always pass, even when it only contains
   // an empty string (e.g. `['']`, the default before any viewer has picked a date).
   const baseDateRawValues = Array.isArray(baseDateFilter?.values) ? baseDateFilter.values : [baseDateFilter?.values];
-  const asOfOverride = isDynamicReport && !isEdit ? (baseDateRawValues.filter(Boolean)[0] || null) : null;
+  // Resolves in edit mode too (see the `enabled` comment above) — an absent/empty `?asOf=` param
+  // (the plain `/edit/<slug>` case) still falls through to `null` here regardless, since
+  // `baseDateRawValues.filter(Boolean)[0]` is undefined whenever the param was never set.
+  const asOfOverride = isDynamicReport ? (baseDateRawValues.filter(Boolean)[0] || null) : null;
   // defaultAnchorDate() is real wall-clock today MINUS NPMRDS_DATA_LAG_DAYS, not literal today —
   // NPMRDS's own ClickHouse speed table publishes on a ~15-21 day lag (confirmed live 2026-08-10,
   // see relativeDateResolution.js), so a literal-today anchor would silently query a date range
@@ -168,7 +179,12 @@ export default function ReportRouteList() {
   // deriving from TODAY_ANCHOR_COMP_ID resolves through the exact same lookup-by-route_comp_id
   // path as deriving from any real sibling — then it's filtered back out, since it was never a
   // real persisted route to render as its own row.
-  const effectiveRoutes = resolveRouteDates([...((isDynamicReport && !isEdit) ? resolvedRoutes : routes), todayAnchorEntry])
+  // Same condition as `enabled` above, deliberately NOT bare `isDynamicReport` — a plain
+  // `/edit/<slug>` with no `?routes=` must still fall through to the raw, unresolved `routes`
+  // (slot placeholders) for authoring, in both edit AND view mode; `resolvedRoutes` is only
+  // ever non-empty when the hook itself was enabled (routeIds present), so mirroring that exact
+  // condition here (rather than just dropping `!isEdit`) is what keeps that case correct.
+  const effectiveRoutes = resolveRouteDates([...((isDynamicReport && routeIds.length > 0) ? resolvedRoutes : routes), todayAnchorEntry])
     .filter((rt) => rt.route_comp_id !== TODAY_ANCHOR_COMP_ID);
 
   const { mileageByRouteCompId } = useRouteMileage({ apiLoad, routes: effectiveRoutes });
