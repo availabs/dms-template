@@ -97,7 +97,8 @@ specific source; left empty), and all `*_additional` columns. Invent nothing.
 - [x] Extract per-jurisdiction blue-box prose → lexical payloads (`build_payloads.mjs` → payloads.json)
 - [x] Write to dataset rows + read-back verify: **7 rows, 38 columns written, 38 verified**
       (`write_annexes.mjs` → write_results.json). Draft data; nothing published.
-- [x] Create reusable skill → `references/mny-transcribe/loading-annexes-into-jurisdictions-dataset.md`
+- [x] Create reusable skill → [`../../skills/loading-annexes-into-jurisdictions-dataset.md`](../../skills/loading-annexes-into-jurisdictions-dataset.md)
+      (committed 2026-08-19; was `references/mny-transcribe/`, which is git-ignored)
 - [x] **City of Schenectady recovered + loaded (2026-07-30).** Diagnosed: original scrape skipped the
       malformed `Schenectady city ( City)` dropdown token (older toolchain; the `( City)` bug the
       `mny_*` toolchain later fixed). Wrote `mny-1.0-scraper/scrape_city.js` (single-jurisdiction full
