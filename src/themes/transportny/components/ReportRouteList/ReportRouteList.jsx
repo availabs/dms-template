@@ -44,16 +44,12 @@ export default function ReportRouteList() {
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
   const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
   const [editNameValue, setEditNameValue] = useState('');
-  const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
-  const [editStartDateValue, setEditStartDateValue] = useState('');
-  const [editEndDateValue, setEditEndDateValue] = useState('');
-  // Mechanism B authoring buffer (relativeDateResolution.js) — mirrors the editStartDateValue/
-  // editEndDateValue pattern above: parent owns the edit-buffer state, RouteRow is presentational.
-  // 'fixed' | 'derived'; editDeriveFromValue is the picked base's route_comp_id; editDeriveFormulaValue
-  // is the composed (or hand-typed, via the Advanced pattern) formula string.
-  const [editDateMode, setEditDateMode] = useState('fixed');
-  const [editDeriveFromValue, setEditDeriveFromValue] = useState('');
-  const [editDeriveFormulaValue, setEditDeriveFormulaValue] = useState('');
+  // Report settings disclosure (2026-08-19, item 4A) — houses the Dynamic Report switch,
+  // collapsed by default. See ReportRouteList.theme.js's settingsDisclosureWrapper comment for why.
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  // Date editing (2026-08-19, item 4A) no longer has a parent-owned single-flight edit buffer —
+  // each RouteRow now owns its own live, always-editable date state and auto-saves (debounced)
+  // through `onUpdateDates` below, so several rows can be mid-edit at once. See RouteRow.jsx.
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
@@ -241,7 +237,17 @@ export default function ReportRouteList() {
   // `isPlaceholderName: true` marks this generated name as meaningless (see
   // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
   // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
-  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
+  //
+  // Auto-expands the new slot (2026-08-19, item 4A) — `addRoutes` always appends, so the new
+  // row lands at today's `routes.length`; setting that BEFORE the async add resolves is safe
+  // since nothing else in this synchronous handler changes `routes.length` first. The next thing
+  // an author almost always does after adding a route is set its dates, so land there open
+  // instead of making that a 3rd click.
+  const handleAddRouteSlot = () => {
+    const newIndex = routes.length;
+    addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
+    setExpandedRoutes((prev) => ({ ...prev, [newIndex]: true }));
+  };
 
   const toggleRoute = (index) => {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
@@ -303,9 +309,19 @@ export default function ReportRouteList() {
     [routes]
   );
 
+  // Auto-expands every newly added route (2026-08-19, item 4A) — same reasoning as
+  // handleAddRouteSlot above, extended to a multi-select add: `addRoutes` appends the whole
+  // batch in the order `selectedRoutes` was given, so the new rows land at
+  // `[routes.length, routes.length + selectedRoutes.length - 1]`.
   const handleConfirmAddRoutes = async (selectedRoutes) => {
+    const startIndex = routes.length;
     try {
       await addRoutes(selectedRoutes);
+      setExpandedRoutes((prev) => {
+        const next = { ...prev };
+        selectedRoutes.forEach((_, j) => { next[startIndex + j] = true; });
+        return next;
+      });
     } catch (e) {
       // addRoutes already records the error in useReportRow's `error` state.
     }
@@ -430,9 +446,24 @@ export default function ReportRouteList() {
             </div>
           )}
           {canMutate && (
-            <div className={t.dynamicToggleWrapper}>
-              <Switch enabled={isDynamicReport} setEnabled={toggleDynamicReport} label="Dynamic Report" size="small" />
-              <span className={t.dynamicToggleLabel}>Dynamic Report</span>
+            <div className={t.settingsDisclosureWrapper}>
+              <button type="button" className={t.settingsDisclosureToggle} onClick={() => setIsSettingsOpen((o) => !o)}>
+                <Icon icon="Settings" className={t.settingsDisclosureIcon} />
+                <span className={t.settingsDisclosureLabel}>Report settings</span>
+                <Icon icon={isSettingsOpen ? 'ChevronUp' : 'ChevronDown'} className={t.settingsDisclosureChevron} />
+              </button>
+              {isSettingsOpen && (
+                <div className={t.settingsDisclosureBody}>
+                  <div className={t.dynamicToggleWrapper}>
+                    <Switch enabled={isDynamicReport} setEnabled={toggleDynamicReport} label="Dynamic Report" size="small" />
+                    <span className={t.dynamicToggleLabel}>Dynamic Report</span>
+                  </div>
+                  <div className={t.settingsDisclosureHint}>
+                    Routes are picked by whoever opens the report (via a link), instead of being
+                    fixed here — use this for a reusable report template.
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {canMutate && clipboard && (() => {
@@ -543,60 +574,14 @@ export default function ReportRouteList() {
                 derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
                 baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
                 derivableSiblings={derivableSiblings}
-                isEditingDates={editingRouteDatesIndex === i}
-                editStartDateValue={editStartDateValue}
-                editEndDateValue={editEndDateValue}
-                onEditStartDateValueChange={setEditStartDateValue}
-                onEditEndDateValueChange={setEditEndDateValue}
-                editDateMode={editDateMode}
-                onEditDateModeChange={setEditDateMode}
-                editDeriveFromValue={editDeriveFromValue}
-                onEditDeriveFromValueChange={setEditDeriveFromValue}
-                editDeriveFormulaValue={editDeriveFormulaValue}
-                onEditDeriveFormulaValueChange={setEditDeriveFormulaValue}
-                onStartEditDates={() => {
-                  setEditingRouteDatesIndex(i);
-                  // Seeded from `r` (effectiveRoutes' already-resolved entry, see the
-                  // resolveRouteDates wiring above) — a row currently deriving its dates shows the
-                  // real current resolved value here, not a stale/frozen literal, so switching to
-                  // Fixed mode starts from the right dates instead of blank or stale ones.
-                  setEditStartDateValue(r.startDate);
-                  setEditEndDateValue(r.endDate);
-                  setEditDateMode(r.dateFormula ? 'derived' : 'fixed');
-                  setEditDeriveFromValue(r.derivedFromRoute || '');
-                  setEditDeriveFormulaValue(r.dateFormula || '');
-                }}
-                onSaveEditDates={() => {
-                  if (editDateMode === 'derived') {
-                    // Atomic: both fields together in one updateRoute call, matching the
-                    // resolver's own requirement (relativeDateResolution.js only resolves when
-                    // BOTH dateFormula and derivedFromRoute are present) — never persist one
-                    // without the other. startDate/endDate are deliberately left as whatever's
-                    // already stored: resolveRouteDates recomputes the displayed value live on
-                    // every read, and the untouched literal becomes a safe frozen fallback if the
-                    // base or formula is ever removed later — the same convention
-                    // convert_old_reports.py's own resolver uses.
-                    updateRoute({
-                      index: i,
-                      updates: { dateFormula: editDeriveFormulaValue, derivedFromRoute: editDeriveFromValue },
-                    });
-                  } else {
-                    updateRoute({
-                      index: i,
-                      updates: {
-                        startDate: editStartDateValue,
-                        endDate: editEndDateValue,
-                        // Switching back to Fixed removes the relationship — editStartDateValue/
-                        // editEndDateValue above were seeded from the live-resolved value (see
-                        // onStartEditDates), so nothing goes blank.
-                        dateFormula: undefined,
-                        derivedFromRoute: undefined,
-                      },
-                    });
-                  }
-                  setEditingRouteDatesIndex(null);
-                }}
-                onCancelEditDates={() => setEditingRouteDatesIndex(null)}
+                // Date editing (2026-08-19, item 4A: removed the pencil/Save/Cancel gate — dates
+                // are always live-editable whenever the row is expanded, auto-saving through this
+                // one callback). RouteRow owns its own local buffer + debounce now (several rows
+                // can be mid-edit at once, unlike the old single-flight parent-owned buffer) and
+                // always sends a complete, atomic `updates` object here — for Derived mode that
+                // means `dateFormula`+`derivedFromRoute` together, matching the resolver's own
+                // requirement (relativeDateResolution.js only resolves when both are present).
+                onUpdateDates={(updates) => updateRoute({ index: i, updates })}
                 canMoveUp={i > 0}
                 canMoveDown={i < effectiveRoutes.length - 1}
                 onReorderUp={() => reorderRoutes(i, 'up')}

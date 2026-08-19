@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
 
 ## Objective
 
@@ -486,6 +486,143 @@ wire-up.
 
 ---
 
+## Tier 4 — RRL discoverability + discard-changes gap (found 2026-08-19, post-Tier-2 review)
+
+Ryan's follow-up the same day Tier 1/2 shipped, after using the result himself. Three threads,
+investigated directly against the current code (4A: decided via `AskUserQuestion`, then
+implemented and live-verified same session; 4B is a correction to a hypothesis; 4C is explicitly
+lower priority per Ryan).
+
+### 4A. Dynamic Report toggle too prominent; route-date editing too many clicks deep — DONE, live-verified 2026-08-19
+
+Two opposite-direction discoverability complaints about RRL, both a direct side effect of 1B
+removing the `sectionEditorOpen` gate (which used to also gate these, as a side effect, not by
+design):
+
+1. **Dynamic Report toggle now begs to be clicked.** `ReportRouteList.jsx:432-437` renders the
+   `Switch` unconditionally whenever `canMutate` — i.e., now, any time the page is open at
+   `/edit/...` at all — right under Add Route/Add Graph, same visual weight as those. Before 1B,
+   reaching it required opening RRL's own pencil edit mode first, an incidental extra click that
+   happened to gate it too. 1B's own per-control-risk table already rated this toggle "Moderate"
+   risk (rewrites `item.filters`) when scoping the gate removal — this is that exact risk
+   surfacing as a UX complaint: a novice now sees an unexplained "Dynamic Report" switch at the top
+   of every report's route panel, one click away, with nothing explaining what it does.
+2. **Route date editing is comparatively buried.** Contrast with rename: the name-edit pencil sits
+   directly in the always-visible row header (`RouteRow.jsx:228`), zero expand needed. Editing a
+   route's *dates* — arguably the single most common action on this whole panel — requires
+   clicking "+" to expand the row (`onToggleExpand`) THEN clicking the "Edit dates" pencil
+   (`onStartEditDates`, inside the now-expanded block, `RouteRow.jsx:241-296`) before the date form
+   even opens. The resolved range is always visible read-only in the row's meta line
+   (`metaText`, ~line 143-150) — only *editing* is gated behind the extra expand click.
+
+Two independent fixes, not one — both needed a design call before implementing, so this was posed
+to Ryan via `AskUserQuestion` rather than guessed:
+
+- **(a) toggle placement — Ryan picked "move to a settings disclosure."** Implemented in
+  `ReportRouteList.jsx`: the old unconditional `dynamicToggleWrapper` block is now a collapsed-by-
+  default "Report settings" disclosure (new `isSettingsOpen` state, gear icon + chevron), with the
+  `Switch` plus a one-line hint ("Routes are picked by whoever opens the report (via a link),
+  instead of being fixed here — use this for a reusable report template.") inside it. New theme
+  keys in `ReportRouteList.theme.js`: `settingsDisclosureWrapper/Toggle/Icon/Label/Chevron/Body/Hint`.
+- **(b) date editing — Ryan picked "auto-expand new routes; remove the pencil/Save entirely,
+  debounce however's needed."** This was the bigger change, entirely inside `RouteRow.jsx` +
+  `ReportRouteList.jsx`:
+  - `ReportRouteList.jsx`'s `handleAddRouteSlot`/`handleConfirmAddRoutes` now auto-expand the
+    newly-added route(s) (`setExpandedRoutes` keyed on the append-order index `addRoutes` always
+    uses) — the next natural action after adding a route is setting its dates, so it opens already
+    there instead of costing a 3rd click.
+  - `RouteRow.jsx` deleted the pencil/Save/Cancel gate entirely (`isEditingDates` and the whole
+    parent-owned single-flight edit buffer are gone). Date fields (Fixed: From/To; Derived: Derive
+    From/Pattern/etc.) are now always live whenever the row is expanded, each row owning its OWN
+    local buffer (`dateMode`/`localStart`/`localEnd`/`deriveFrom`/`deriveFormula`) since several
+    rows can be mid-edit simultaneously now (previously only one row could be, since the buffer was
+    parent-owned single-flight). Edits auto-save through one `onUpdateDates(updates)` callback
+    (`ReportRouteList.jsx` wraps it around `updateRoute`):
+    - Typed fields (date inputs, the "How many"/day-of-month/Advanced-formula inputs) debounce
+      400ms and MERGE pending fields (not replace) before flushing, so two fields changed in the
+      same window (e.g. "From" then "To", or `shiftYear`'s simultaneous both-fields change) land in
+      ONE `updateRoute` call instead of two racing writes each built off a stale `routes` snapshot
+      — the second would otherwise silently drop the first field's change.
+    - Discrete picks (the Derive-From select, "Use fixed dates instead", "Derive from another route
+      instead" when re-entering with an already-valid prior pick) flush immediately, no debounce.
+    - `lastFlushedRef` distinguishes an external change to this route (a sibling recomputing this
+      derived row, a clipboard paste, another session's edit landing) from an echo of this row's
+      own just-sent write — only the former resyncs the local buffer.
+    - Derived mode's atomicity requirement (`dateFormula`+`derivedFromRoute` must persist together,
+      matching `relativeDateResolution.js`'s own resolve-only-when-both-present rule) is preserved:
+      every flush in Derived mode sends both fields together, never one alone.
+
+**Live-verified 2026-08-19** on a scratch page created via the Create Report button
+(`converted_reports/page_27`, id `2213752` — left as an unpublished draft, not deleted; deleting it
+was blocked by the auto-mode classifier as a destructive action, flagged to Ryan to delete himself
+if wanted): confirmed via Playwright/claude-in-chrome — Report Settings disclosure opens/closes and
+shows the hint copy; adding one route auto-expands it with live Fixed-mode date fields (no pencil);
+adding two routes at once auto-expands both independently while leaving a third, previously-
+expanded row's state untouched; typing dates on two different rows in the same debounce window
+persisted both correctly with zero cross-row bleed; the `shiftYear` (+1/−1 year) buttons' combined
+two-field write persisted atomically; switching to Derived mode (picked "Today (view time)"),
+seeing the live "Resolves to ..." preview, and switching back to "Use fixed dates instead" all
+flushed immediately and survived a full page reload; zero console errors throughout the whole
+session (`read_console_messages`, `onlyErrors:true`, checked at three separate points).
+
+- [x] Toggle placement: `AskUserQuestion` → Ryan picked "settings disclosure" — 2026-08-19
+- [x] Date editing: `AskUserQuestion` → Ryan picked "auto-expand + remove pencil/Save, debounce as needed" — 2026-08-19
+- [x] Implement both in `ReportRouteList.jsx`/`RouteRow.jsx`/`ReportRouteList.theme.js` — 2026-08-19
+- [x] Live-verify via claude-in-chrome on a scratch page (see above) — 2026-08-19
+- [ ] Optional cleanup: delete scratch page `converted_reports/page_27` (id `2213752`) — left for Ryan, CLI delete was blocked by the auto-mode classifier
+
+### 4B. Discard Changes gap — corrected mechanism, folds into Item 9 (deferred, see Parked below)
+
+Ryan's hypothesis was "QuickControls has side effects on `reports_snap_2`, discard would miss
+them." Traced directly — the mechanism is different from what was suspected, and the real gap is
+slightly worse than framed, but not new:
+
+- **QuickControls is not the culprit.** `applyPick` (Item 1C) writes exclusively via
+  `actions.updateAttribute` → `onChange` → `saveIndex` → debounced outer `onChange(values)` →
+  `draft_sections`. `discardChanges()` (`editFunctions.jsx:185-203`) DOES revert `draft_sections`
+  (from `item.sections`) — a QuickControls pill change, then discarded, is correctly undone today.
+  No gap here.
+- **The real, already-known gap is RRL's own route mutations.** Every RRL-native write
+  (`persistRoutes` in `useReportRow.js` — add/remove/reorder/rename/date-edit route) goes straight
+  to the separate `reports_snap_2` row via its own immediate `apiUpdate`, with **no draft/published
+  staging at all.** It's not that discard "misses" reverting it — there's no draft copy to revert
+  to in the first place. This is exactly Item 9 below, unchanged, just re-confirmed.
+- **One surface not yet in Item 9's writeup**: `toggleDynamicReport`
+  (`ReportRouteList.jsx:225-237`) writes `filters` directly onto the **page row itself**
+  (`apiUpdate({data:{id:item.id, filters:nextFilters}}, skipNavigate:true)`), immediately, no
+  draft. `discardChanges()`'s `newItem` never sets `filters`, so it's never restored either.
+  Flipping "Dynamic Report" on, then clicking Discard Changes, does not revert it — same defect
+  class as Item 9, but on the page row's own `filters` field rather than a sibling dataset row.
+  Fold into Item 9's eventual fix scope as a third affected surface (alongside `routes` and any
+  future RRL-native field) whenever that item is picked back up.
+
+**Net**: no new bug, one corrected hypothesis, one newly-identified affected field for Item 9.
+Worth flagging: Item 9 says "revisit after Tiers 1-3 ship" — Tier 1/2 have; Tier 3 hasn't (blocked
+on Ryan's 3A design decision) — and 4A above means RRL's un-staged mutation surface is now reached
+in one fewer click than before. Ryan's call whether that changes the "wait for all of Tier 3"
+timing.
+
+### 4C. Dynamic Report UI authoring gaps — lower priority per Ryan, not re-triaged this pass
+
+Pointing at what's already known rather than re-deriving, since Ryan flagged this thread as lower
+priority:
+- Gap #16 (`report-route-ui-parity-gaps.md`) — Info Box / Route Compare sections have zero creation
+  UI. Already in this doc's Parked section below; confirmed in-scope, not yet triaged at the
+  code-level depth items 1-9 got.
+- Tier 3 / item 3A above — Title/Description auto-compose still blank on every graph; blocked on
+  Ryan's pristine-vs-always-overwrite design decision, unchanged.
+- `dynamic-reports-and-route-tags.md` (~line 356-358, ~517-521): no live authoring UI exists yet
+  for setting a graph's own window/`routeWindows` (the AM/PM-variant-style per-route override) —
+  same "missing authoring surface" category as gap #16. That doc also flags a possibly-stale note
+  about a route-level weekday/peak-hour control in `RouteRow.jsx` "writing to a dead field" — worth
+  a quick re-check next time that file's touched, since Design Push #2 (2026-08-06) already deleted
+  that whole UI block per `RouteRow.jsx`'s own current top-of-file comment; that note may itself
+  now be stale.
+
+No action taken on 4C this pass — logged for whenever this becomes priority.
+
+---
+
 ## Parked — explicitly deferred per 2026-08-19 decisions
 
 ### Item 9 — extend Publish/Discard to RRL's own changes (DEFERRED)
@@ -673,3 +810,23 @@ skipped:
   2 are both fully DONE.** Remaining open work in this file: Tier 3 (item 2's title/description
   auto-compose — needs a design decision from Ryan before implementing) and gap #16/facet 2's
   broader triage (still not started).
+
+- **2026-08-19 (same day, Tier 4)**: Ryan raised three more threads after using Tier 1/2 himself
+  (RRL toggle prominence + date-editing friction — wanted the toggle handled sooner; a suspicion
+  about QuickControls/discard interaction; an open "any Dynamic Report UI gaps?" lower-priority
+  question). Investigated all three directly against code (see Tier 4 above for 4A/4B/4C). For 4A,
+  posed the two independent design questions to Ryan via `AskUserQuestion` rather than guessing:
+  toggle → "move to a settings disclosure"; date editing → "auto-expand new routes, remove pencil/
+  Save entirely, debounce however's needed." Implemented both same session in `ReportRouteList.jsx`/
+  `RouteRow.jsx`/`ReportRouteList.theme.js`, then live-verified end-to-end via claude-in-chrome on a
+  fresh scratch page created through the Create Report button (`converted_reports/page_27`) —
+  single-add auto-expand, multi-add auto-expand (2 at once, independent of a 3rd already-expanded
+  row), simultaneous multi-row date typing with zero cross-row bleed, the `shiftYear` combined-
+  field atomic write, and a full Derived-mode round trip (pick → live preview → switch back to
+  Fixed) all confirmed correct and persisting through a real reload, zero console errors at any
+  checkpoint. Left the scratch page undeleted (CLI delete blocked by the auto-mode classifier as a
+  destructive action) — flagged above for Ryan to remove if he wants it gone. **4A DONE.** 4B
+  corrected Ryan's own hypothesis (QuickControls itself is clean; the real un-staged-write gap is
+  RRL's own route mutations plus, newly found, `toggleDynamicReport`'s `item.filters` write — both
+  already Item 9's territory, still deferred). 4C intentionally not re-triaged (lower priority per
+  Ryan) — pointed at already-known gaps instead (gap #16, item 3A, `routeWindows` authoring).
