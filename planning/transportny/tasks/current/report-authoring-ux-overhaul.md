@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all code-complete 2026-08-19; live-verification and `probe_corpus.mjs` run still pending for all of them; Tier 3 NOT STARTED; gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
 
 ## Objective
 
@@ -64,7 +64,7 @@ This file is the hub doc for the whole initiative — one file, multiple items, 
 
 ## Tier 1 — do first (cheapest, highest-leverage, mostly one file each)
 
-### 1A. `newPage()` core patch — unlocks Item 5's persistence half + Item 6's redirect
+### 1A. `newPage()` core patch — unlocks Item 5's persistence half + Item 6's redirect — DONE, live-verified 2026-08-19
 
 **File:** `src/dms/packages/dms/src/patterns/page/pages/edit/editFunctions.jsx`
 
@@ -96,11 +96,11 @@ project-agnostic" rule.
 
 - [x] Add `theme` to `newPage()`'s template-copy block — 2026-08-19
 - [x] Add `newPath` to `newPage()`'s `apiUpdate` call — 2026-08-19
-- [ ] Live-verify: create a page from ANY template (not just Report Page) in a scratch pattern, confirm redirect + theme inheritance both work, confirm no regression to existing "+Add Page" flow elsewhere in the site — NOT DONE this session
+- [x] Live-verify: create a page from ANY template (not just Report Page) in a scratch pattern, confirm redirect + theme inheritance both work, confirm no regression to existing "+Add Page" flow elsewhere in the site — verified by Ryan 2026-08-19 (via `page_25`, which also surfaced 2C's data-side gap — see 2C)
 
 ---
 
-### 1B. Item 3 — RRL: no view mode, unconditional edit-mode functionality
+### 1B. Item 3 — RRL: no view mode, unconditional edit-mode functionality — DONE, live-verified 2026-08-19
 
 **File:** `src/themes/transportny/components/ReportRouteList/ReportRouteList.jsx`
 
@@ -155,12 +155,12 @@ the dead orphan-cleanup effect in the present tense, one even claiming it "funne
 - [x] Remove `sectionEditorOpen` from RRL's `canMutate` — 2026-08-19, `canMutate = isEdit` now (component no longer destructures the `isEdit` prop at all)
 - [x] Correct `README.md`'s orphan-cleanup narration — 2026-08-19, "Edit-mode gating" section rewritten past-tense
 - [x] Correct `useReportRow.js`'s stale comments — 2026-08-19, all 3 flagged blocks (`reportRow` derivation, `loadReportRow`, `persistRoutes`) updated
-- [ ] Live-verify on a scratch report page: every control in the table above now works immediately on `/edit/<slug>` with zero RRL-pencil click; confirm removing a route still only requires one click (expected, per decision above) — NOT DONE this session
-- [ ] Run `probe_corpus.mjs` full suite after, per `regression-testing-npmrds-reports.md` — deliberately SKIPPED this session per Ryan's explicit ask ("make a list of things you think might break... I don't want to chase things down right now"); see regression-risk analysis appended to Progress log below instead
+- [x] Live-verify on a scratch report page: every control in the table above now works immediately on `/edit/<slug>` with zero RRL-pencil click; confirm removing a route still only requires one click (expected, per decision above) — verified by Ryan 2026-08-19
+- [x] Run `probe_corpus.mjs` full suite after, per `regression-testing-npmrds-reports.md` — **deliberately skipped, Ryan's explicit call both times asked** (first: "I don't want to chase things down right now, make a list of what might break" — see regression-risk analysis in Progress log; second, after live-verifying everything himself: "don't worry about probe corpus"). Not run this pass; pick up next time this file needs a full regression sweep.
 
 ---
 
-### 1C. Item 4 — Section-header pills: live whenever the PAGE is in edit mode
+### 1C. Item 4 — Section-header pills: live whenever the PAGE is in edit mode — DONE, live-verified 2026-08-19
 
 **Files:** `src/themes/transportny/components/QuickControls/index.jsx` ONLY.
 
@@ -241,16 +241,16 @@ research pass (which wrongly assumed a small `dms`-core change was needed). **It
 - [x] Drop `isEdit` from `npmrdsQuickControls`'s gate; add `editPageMode` check inside `QuickControlsRow` — 2026-08-19
 - [x] Thread `actions`/`sectionState.value` through; switch `applyPick` to `actions.updateAttribute` — 2026-08-19
 - [x] Decide instant-feedback approach — 2026-08-19, went with BOTH: `applyPick` now runs the shared `applyMeasurePick` twice — once against a `cloneDeep(state)` + a `dwAPI`-shaped shim (`{setState: fn => fn(nextState)}`) to compute the full next-state for `actions.updateAttribute`, once against the real `dwAPI` (when present, i.e. under `SectionEdit`) for instant visual feedback. Deliberately reuses `applyMeasurePick` itself rather than re-deriving its Map-vs-AVL-Graph/reconcile logic inline, to avoid reintroducing the exact MeasurePicker/QuickControls drift risk the shared function exists to prevent.
-- [ ] Live-verify on a scratch report page: change Measure/Resolution/When/Aggregate/Mode pills on a graph WITHOUT clicking that section's own pencil, confirm the chart updates AND the change survives a reload — NOT DONE this session
-- [ ] Confirm a real end-user viewing the published (non-`/edit/`) page never sees pills, and a logged-in author browsing the real published site (not `/edit/...`) also never sees them — NOT DONE this session
+- [x] Live-verify on a scratch report page: change Measure/Resolution/When/Aggregate/Mode pills on a graph WITHOUT clicking that section's own pencil, confirm the chart updates AND the change survives a reload — verified by Ryan 2026-08-19
+- [x] Confirm a real end-user viewing the published (non-`/edit/`) page never sees pills, and a logged-in author browsing the real published site (not `/edit/...`) also never sees them — verified by Ryan 2026-08-19
 - [x] Update `theme.js`'s registration too — 2026-08-19, added `"Spreadsheet"`/`"Map"` to its `sectionHeaderExtensions` map for parity with `themev2.js` (didn't confirm which theme any live/dev site actually selects — applied defensively since it's a strict no-op if unused)
-- [ ] Run `probe_corpus.mjs` full suite after — deliberately SKIPPED this session, see regression-risk analysis below
+- [x] Run `probe_corpus.mjs` full suite after — **deliberately skipped, Ryan's explicit call** (see 1B's identical note above); not run this pass
 
 ---
 
 ## Tier 2 — small, mostly self-contained
 
-### 2A. Item 8 — Report Header "Done" also publishes — CODE DONE 2026-08-19
+### 2A. Item 8 — Report Header "Done" also publishes — DONE, live-verified 2026-08-19
 
 **File**: `src/themes/transportny/components/ReportPageHeader.jsx`
 
@@ -271,11 +271,11 @@ navigating — only when `editPageMode` is true (the click that LEAVES edit mode
 slightly stale.
 
 - [x] Wire Done → publish in `ReportPageHeader.jsx` — 2026-08-19, added `CMSContext`/`user`, imported `publish`, new `handleEditToggle` awaits `publish(user, item, apiUpdate)` before navigating, only when leaving edit mode
-- [ ] Live-verify: make a draft change, click Done, confirm the published page reflects it immediately (no separate manual Publish click needed) — NOT DONE this session
+- [x] Live-verify: make a draft change, click Done, confirm the published page reflects it immediately (no separate manual Publish click needed) — verified by Ryan 2026-08-19
 
 ---
 
-### 2B. Item 6 — "Create Report" button on the `/reports` homepage — code + content DONE 2026-08-19, not yet published
+### 2B. Item 6 — "Create Report" button on the `/reports` homepage — DONE, live-verified + published by Ryan 2026-08-19
 
 **Depends on 1A landing first** (for the redirect to work).
 
@@ -338,7 +338,7 @@ any multi-pattern site (this dev DB has 19+ patterns registered).
 - [x] Build the Create Report button/component, registered on the `/reports` page
 - [x] Named constant for template id — `REPORT_PAGE_TEMPLATE_ID` in `CreateReportButton.jsx`; no separate parent-slug constant needed (see above)
 - [x] Placement + publish — Ryan moved the section to the top of the page (reordered via the edit UI himself, exactly the "author decides placement" flow this item's own note anticipated) and published `/reports` himself, 2026-08-19
-- [ ] Live-verify: click Create Report, confirm redirect into `/edit/<new-slug>` with the Report Page template's sections present — NOT DONE this session (button is now live and positioned, but the actual click-through hasn't been exercised/confirmed yet)
+- [x] Live-verify: click Create Report, confirm redirect into `/edit/<new-slug>` with the Report Page template's sections present — verified by Ryan 2026-08-19
 
 ---
 
@@ -409,12 +409,12 @@ that the template is fixed.
 
 - [x] Delete template `2187021`'s "Existing AVL Graph" section — 2026-08-19
 - [x] Confirm 1A has landed; set the compact override on template `2187021` itself — 2026-08-19 (1A confirmed landed via code read earlier this session; template row backed up before either data change)
-- [ ] Live-verify: create a NEW page from the template, confirm (a) no starter graph, (b) sidebar renders compact from the moment the page is created, with no manual per-page fix needed — NOT DONE this session (page_25 was created BEFORE these fixes landed, so it doesn't count as this verification; a fresh page from the now-fixed template still needs a live check)
+- [x] Live-verify: create a NEW page from the template, confirm (a) no starter graph, (b) sidebar renders compact from the moment the page is created, with no manual per-page fix needed — verified by Ryan 2026-08-19
 - [ ] Optional/separate: live-repro the Card-materialization mystery if picked up (not required for this item's two asks)
 
 ---
 
-### 2D. Item 7 — Dynamic Report URL params resolve in edit mode too — CODE DONE 2026-08-19
+### 2D. Item 7 — Dynamic Report URL params resolve in edit mode too — DONE, live-verified 2026-08-19
 
 **File**: `src/themes/transportny/components/ReportRouteList/ReportRouteList.jsx` +
 `useDynamicReportRoutes.js`.
@@ -454,8 +454,8 @@ correct. `asOfOverride` needed no such guard (it's just a raw filter-value read,
 whenever the URL param is absent regardless of edit mode).
 
 - [x] Flip all three `!isEdit` exclusions in `ReportRouteList.jsx` — 2026-08-19
-- [ ] Live-verify: open a Dynamic Report at `/edit/<slug>?routes=<id>|||<id>&asOf=YYYY-MM-DD`, confirm it previews as if those were live, AND confirm reloading the plain `/edit/<slug>` (no params) still shows raw unresolved slots as before — NOT DONE this session
-- [ ] Confirm nothing got written to `draft_sections`/`reports_snap_2` from a preview-only edit-mode visit (cross-check via `dms raw get` before/after) — NOT DONE this session
+- [x] Live-verify: open a Dynamic Report at `/edit/<slug>?routes=<id>|||<id>&asOf=YYYY-MM-DD`, confirm it previews as if those were live, AND confirm reloading the plain `/edit/<slug>` (no params) still shows raw unresolved slots as before — verified by Ryan 2026-08-19
+- [x] Confirm nothing got written to `draft_sections`/`reports_snap_2` from a preview-only edit-mode visit (cross-check via `dms raw get` before/after) — verified by Ryan 2026-08-19
 
 ---
 
@@ -560,16 +560,35 @@ explicitly flagged to Ryan as the next thing to dig into.
 
 Per this project's standing convention (see `regression-testing-npmrds-reports.md`,
 `traversing-report-pages.md`): **the golden-corpus batch check and a `traversing-report-pages.md`
-update are mandatory on every RRL/report touch, not optional.**
+update are mandatory on every RRL/report touch, not optional.** — **deviated from deliberately for
+Tier 1/2 this pass, both by Ryan's own explicit direction**, logged here rather than silently
+skipped:
 
-- [ ] Run `node scripts/npmrds-reports/probe_corpus.mjs` before starting (baseline) and after each
-      Tier's changes land
-- [ ] Update `src/dms/skills/traversing-dms-pages.md` / `traversing-report-pages.md` in the same
-      session if live verification surfaces anything they don't already say
-- [ ] Never live-test a multi-step click-path against a page the user might have open — use a
-      dedicated scratch report (`converted_reports/claude_scratch_*`), delete after
-- [ ] For any item touching `draft_sections`/`sections` directly (Items 3, 4), confirm via `dms raw
-      get` after each live-verify step rather than trusting on-screen state alone
+- [x] Run `node scripts/npmrds-reports/probe_corpus.mjs` before starting (baseline) and after each
+      Tier's changes land — **not run at all this pass.** Ryan's call, stated twice: first as "make
+      a list of things you think might break, don't chase it down right now" (a reasoned regression-risk
+      analysis was written into the Progress log instead of an actual run — see 2026-08-19 entries),
+      then again after live-verifying everything himself ("don't worry about probe corpus"). No
+      baseline exists for Tier 1/2's changes as of this write-up — the next session that touches RRL/
+      QuickControls/report pages again should run a full `probe_corpus.mjs --capture` pass to establish
+      one, since it's still missing.
+- [x] Update `src/dms/skills/traversing-dms-pages.md` / `traversing-report-pages.md` in the same
+      session if live verification surfaces anything they don't already say — **not updated this
+      pass**: Ryan did the live verification himself directly (not via this session's own browser
+      automation), so no new page-traversal facts surfaced on this end to record. If anything about
+      the click-paths themselves (menu locations, DOM structure) turned out to differ from what those
+      skills already say, that's still worth a follow-up update whenever next noticed.
+- [x] Never live-test a multi-step click-path against a page the user might have open — use a
+      dedicated scratch report (`converted_reports/claude_scratch_*`), delete after — **N/A this
+      pass**: no browser-automation live-testing was done on this end at all; Ryan verified
+      everything directly in his own editor/browser, including against real content (`page_25`,
+      the actual `/reports` homepage) rather than a scratch page, which is his own call to make on
+      his own session.
+- [x] For any item touching `draft_sections`/`sections` directly (Items 3, 4), confirm via `dms raw
+      get` after each live-verify step rather than trusting on-screen state alone — done for the 2B/2C
+      data changes made directly this session (template row, `page_25`, `/reports` section add) via
+      `dms raw get` before/after each; Ryan's own live-verification of Items 3/4's actual UI behavior
+      was outside this session's own tooling, so not independently re-confirmed via `dms raw get` here.
 
 ## Progress log
 
@@ -628,9 +647,11 @@ update are mandatory on every RRL/report touch, not optional.**
     `/edit/<slug>` entry added — not done this session, flagging for whenever regression coverage of
     the authoring UX itself becomes a priority.
 
-  **Next, not done this session**: live-verify all three Tier 1 items on a scratch report page, then
-  actually run `probe_corpus.mjs` for an empirical baseline (expected: clean, per the analysis above,
-  modulo the "we broke the module" risk).
+  **Update, later same session**: Ryan live-verified all three Tier 1 items himself — see the
+  2026-08-19 entries below. `probe_corpus.mjs` was never run (Ryan's call, twice — see the Testing
+  section above); the "expected clean, modulo the module-breakage risk" prediction above was never
+  empirically checked against the golden corpus specifically, only against Ryan's own direct
+  verification of the real authoring behavior.
 
 - **2026-08-19 (same day, Tier 2)**: Ryan live-tested 1A by creating `converted_reports/page_25` from
   the Report Page template and found the sidebar still not compact — this surfaced 2C's own
@@ -641,6 +662,14 @@ update are mandatory on every RRL/report touch, not optional.**
   Tier 2 per Ryan's "once you resolve that, move onto t2": 2A (Done-also-publishes) and 2D (Dynamic
   Report URL params in edit mode) implemented as coded; 2B (Create Report button) built as a new
   registered component AND added to the live `/reports` page's content as an unpublished draft
-  section. All of Tier 2 is code-complete but **none of it has been live-verified in a browser yet**,
-  and `probe_corpus.mjs` has still not been run this whole session — both remain outstanding across
-  all of Tier 1 and Tier 2 as the next work.
+  section.
+
+- **2026-08-19 (same day, wrap-up)**: Ryan live-verified all of Tier 1 and Tier 2 himself and
+  confirmed "looks great" — every item above marked DONE + live-verified reflects this. He also
+  moved the Create Report button (2B) to the top of `/reports` and published the page himself.
+  Explicitly told this session not to worry about running `probe_corpus.mjs` — no golden-corpus
+  baseline exists for any of Tier 1/2's changes as of this write-up (see the Testing section above
+  for the full reasoning and what's still owed whenever that gets picked back up). **Tier 1 and Tier
+  2 are both fully DONE.** Remaining open work in this file: Tier 3 (item 2's title/description
+  auto-compose — needs a design decision from Ryan before implementing) and gap #16/facet 2's
+  broader triage (still not started).
