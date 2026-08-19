@@ -476,13 +476,12 @@ describe('R2 perf — one p15 derivation per (TMC, reference window)', () => {
     { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 28, tt: 100, n_epochs: 3 },
     { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 29, tt: 400, n_epochs: 3 },
   ];
-  // Counts only the queries that derive a p15 — the ALL-bin, all-days scan.
+  // Counts every ClickHouse query. Deliberately NOT pattern-matching for "the p15 query": a
+  // ted_* metric reads the ALL bin, so its measure query has the same all-hours/all-days shape as
+  // the p15 query and no regex separates them. Totals are unambiguous.
   function countingChDb(counter) {
     return {
-      query: async ({ query }) => {
-        if (/in \(0,1,2,3,4,5,6\)/.test(query) && /in \(0,1,2,3,4,5,6,7,8,9,10,11,12/.test(query)) {
-          counter.p15 += 1;
-        }
+      query: async () => {
         counter.all += 1;
         return { json: async () => ({ rows: ROWS.length, data: ROWS }) };
       },
@@ -490,7 +489,7 @@ describe('R2 perf — one p15 derivation per (TMC, reference window)', () => {
   }
   async function runFamily({ withCache }) {
     const { calcPhed, BIN_NAMES, ALL_VEHICLES, FREIGHT_TRUCKS } = await lib();
-    const counter = { p15: 0, all: 0 };
+    const counter = { all: 0 };
     const chDb = countingChDb(counter);
     const cache = withCache ? new Map() : undefined;
     // The four metrics that share the anchored window — two all-vehicle, two truck.
@@ -513,11 +512,13 @@ describe('R2 perf — one p15 derivation per (TMC, reference window)', () => {
   it('derives the p15 once for a four-metric family instead of four times', async () => {
     const without = await runFamily({ withCache: false });
     const with_ = await runFamily({ withCache: true });
-    expect(without.p15).toBe(4);
-    expect(with_.p15).toBe(1);
-    // The percentile is taken over ALL_VEHICLES whichever stream the measure reads, so the truck
-    // metrics share the value rather than needing their own.
-    expect(with_.all).toBeLessThan(without.all);
+    // Each metric issues one p15 query plus one query per time bin (all four here have a single
+    // bin). Uncached: 4 x (1 p15 + 1 measure) = 8. Cached: 1 p15 + 4 measures = 5.
+    expect(without.all).toBe(8);
+    expect(with_.all).toBe(5);
+    // 3 of the 4 p15 derivations were redundant. The percentile is taken over ALL_VEHICLES
+    // whichever stream the measure reads, so the truck metrics share the value.
+    expect(without.all - with_.all).toBe(3);
   });
 
   it('keeps the own-year and anchored windows separate in the same cache', async () => {

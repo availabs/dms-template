@@ -1,38 +1,86 @@
-# Component QA prompt — binding hygiene & presentational relics
+# Page QA prompt — the visitor pass, then binding hygiene & presentational relics
 
-A reusable prompt for auditing configured DMS data components (`Spreadsheet`,
-`Card`, `Graph`, `FilterComponent` — anything consuming `dataWrapper`) against
-the source they are bound to.
+A reusable prompt for QA-ing a DMS pattern: first **what a first-time reader
+sees on the rendered pages**, then the stored configuration behind it —
+configured data components (`Spreadsheet`, `Card`, `Graph`, `FilterComponent` —
+anything consuming `dataWrapper`) audited against the sources they are bound to.
 
-**Scope:** binding hygiene only — is this component asking the source the right
-question, using current columns, with filters that make sense where it sits?
-Not layout, theming, copy, or accessibility.
+**Scope:** two passes over the same pattern, in this order.
 
-**Design principle:** every check below is a *detector*, not a judgment. Checks
-A and C are mechanical and should be run as sweeps producing tables — the tool
-finds and tabulates, a human decides. Check B is the only one requiring
-interpretation, and it is scoped to producing ranked suspicion, not verdicts.
+- **The visitor pass (Part 0)** — open the pages as a first-time reader and
+  report what they would notice. Everything is quoted or measured off the
+  *rendered* page. This is the pass a stakeholder asked for when they said "QA
+  the site."
+- **The config passes (Parts 1 and 2)** — binding hygiene and presentational
+  relics, derived from stored configuration across the whole pattern. These
+  supply the *cause* and the *blast radius* for what Part 0 found, and they
+  find the latent defects a reader can't see yet.
 
-**Status:** drafted 2026-08-17, validated against MitigateNY (app
-`mitigat-ny-prod`, pattern 985070). Calibration numbers in the appendix.
-Promote to `src/dms/skills/` after a second site.
+**Run Part 0 first, and let it decide what Parts 1 and 2 are for.** A config
+sweep run on its own produces a list nobody asked for, ranked by nothing: it
+cannot tell a defect that is on screen right now from one that is invisible,
+and it reports both at the same volume. Part 0 supplies the ranking. A run that
+skips Part 0 and hands over a config table has answered a different question
+from the one that was asked.
+
+Neither pass is sufficient alone, and the failure is symmetric:
+
+| | config says clean | config says broken |
+|---|---|---|
+| **render is clean** | fine | **false positive** — noise that costs the audit its credibility |
+| **render is broken** | **false negative** — the defect ships | fine |
+
+Both off-diagonal cells were populated in the reference run. See
+[Part 0 §Why both passes](#why-both-passes-the-symmetric-failure).
+
+**Design principle:** every check below is a *detector*, not a judgment. In the
+config passes, Checks A and C are mechanical and should be run as sweeps
+producing tables — the tool finds and tabulates, a human decides; Check B is the
+only one requiring interpretation, and it is scoped to producing ranked
+suspicion, not verdicts.
+
+Part 0 is the deliberate exception. Its output *is* a ranked judgment, because
+"what would a reader conclude from this" has no mechanical form and a list of
+unranked observations is what this document exists to avoid. Keep the judgment
+in the ranking and the framing; keep the evidence quoted and measured, so a
+reader who disagrees with your tier can still check your facts.
+
+**Status:** drafted 2026-08-17 (config passes), validated against MitigateNY
+(app `mitigat-ny-prod`, pattern 985070). Part 0 added 2026-08-19 after the
+county-template run (pattern 1300890) established that a config-only report
+answers the wrong question. Calibration numbers in the appendix. Promote to
+`src/dms/skills/` after a second site.
 
 ---
 
 ## The prompt
 
-> Audit the DMS components in **`<SCOPE>`** — a single component id, a page, or
-> an entire pattern — for data-binding defects. App `<APP>`.
+> QA the DMS pattern **`<SCOPE>`** at **`<URL>`**. App `<APP>`.
+>
+> **Start with the visitor pass (Part 0).** Open the site at `<URL>` and walk it
+> as someone reaching it for the first time. Report what a reader would notice,
+> quoted or measured off the rendered page, ranked by what it makes them
+> conclude — not by how hard it is to fix. Then use Parts 1 and 2 over the
+> stored configuration to explain each finding's cause and count how far it
+> spreads.
+>
+> Ask for the URL if you weren't given one. Do not substitute a config sweep for
+> a site you couldn't load — say you couldn't load it.
 >
 > If the scope is a page or a single component, state its editorial intent in
 > one sentence (e.g. *"an all-hazards overview; no hazard is privileged or
 > excluded"*). Check B needs it; A and C do not.
 >
-> Work from the **stored configuration**, and resolve every column against the
-> **live source row** — never against the copy of the source embedded in the
-> component. The component's embedded snapshot is frozen at bind time and is
-> routinely years stale; trusting it is the single most common way this audit
-> returns a false clean.
+> For the config passes, work from the **stored configuration**, and resolve
+> every column against the **live source row** — never against the copy of the
+> source embedded in the component. The component's embedded snapshot is frozen
+> at bind time and is routinely years stale; trusting it is the single most
+> common way this audit returns a false clean.
+>
+> **Never report a config finding as visitor-visible without opening the page.**
+> Rendering overrides stored config in at least three routine ways — CSS
+> transforms, runtime page variables, and lookup resolution — so a config-derived
+> claim about what a user sees is a hypothesis until the render confirms it.
 >
 > Run checks A, B, C on any data-bound component; D, H, E and F additionally on
 > any `Map` section — **H before F**, since F's findings are usually H's blast
@@ -107,7 +155,308 @@ element-data.columns              ← what this component renders
 
 ---
 
+# Part 0 — The visitor pass
+
+Open the pages. Report what a first-time reader notices, and for each thing,
+what is producing it.
+
+This part has a different unit of analysis from the rest of the document. Parts
+1 and 2 enumerate *components*; Part 0 enumerates *what a person perceives*, and
+one perception routinely spans several components (or none — some of the worst
+findings are timing, not config). Do not organise Part 0 by component id.
+
+---
+
+## The ranking: what does this make the reader conclude?
+
+Rank findings by the conclusion they produce, not by severity-in-the-abstract
+and not by fix cost. Three tiers, and the boundaries are the point:
+
+| Tier | The reader concludes | Why it ranks here |
+|---|---|---|
+| **1** | *"This is showing me the wrong information."* | Attacks the product's reason to exist. One instance forces the reader to re-verify everything else on the site, including the parts that are correct. |
+| **2** | *"Nobody has finished this."* | Doesn't make them doubt what *is* there, but they can't tell an intentional blank from a broken one. |
+| **3** | *"This feels unmaintained."* | Registered without being able to name it. Individually trivial; collectively it is the whole impression of polish. |
+
+The tier boundary between 1 and 3 is where most reports go wrong, in both
+directions. A misaligned card border and a table showing another subject's rows
+are *not* the same kind of problem and must not be interleaved in one list. But
+equally: a Tier 3 finding on the number that the plan is *about* can outrank a
+Tier 1 finding in a footer. Rank by consequence-to-this-reader, then sanity-check
+the ordering by asking which finding you would want fixed if only one could be.
+
+**State the tier counts up front.** "7 / 5 / 5" tells a stakeholder what kind of
+site this is in one line; "17 findings" tells them nothing.
+
+---
+
+## Scoping the walk
+
+1. **Establish the render set before counting anything.** Find which stored
+   array the public view actually renders (in this codebase, published
+   `sections` — not `draft_sections`, and not rows referenced by neither).
+   Report every figure against that set. This routinely changes headline counts
+   by an order of magnitude, and every distribution in Parts 1 and 2 is computed
+   over the same table.
+2. **Walk the templates, not the pages.** Where a pattern is one template
+   copied per subject (per hazard, per county, per year), walk two or three
+   instances and confirm the finding is the template's, then get the spread from
+   config. Walking all 16 buys nothing over walking 3 and counting.
+3. **Walk every structurally distinct page once** — each landing page, each form,
+   each list, each detail view. Distinctness is by layout and binding shape, not
+   by title.
+4. **Say how many you walked and which.** A reader of the report must be able to
+   tell a finding that was seen from a finding that was counted.
+
+---
+
+## The seven detectors
+
+Each is phrased as what the reader perceives, because that is what makes it a
+Part 0 finding rather than a config observation.
+
+### V1 — the page shows the *previous* subject after you navigate
+
+**The highest-value detector in this document, and it is invisible to every
+other check here.** It does not appear in stored config, it does not reproduce
+on a hard refresh, and it does not appear in a screenshot taken a second late.
+
+Where a section caches the rows it last fetched and paints them while a new
+request is in flight, an in-app navigation shows the *previous* subject's data
+under the *new* subject's URL and breadcrumb. The reader sees a confident wrong
+answer, not a loading state.
+
+**Do:** navigate between two sibling pages **the way a user does — click a real
+link** — and sample the DOM every ~200ms across the transition. Record the URL
+and a subject-identifying element together at each tick.
+
+```
+click        url /…/wind      card WIND · HIGH RISK
+t = 1400ms   url /…/drought   card WIND · HIGH RISK   ← address changed, content didn't
+t = 1800ms   url /…/drought   card DROUGHT · MODERATE RISK
+```
+
+Report the **window of wrongness** (here 400ms) and the **total click-to-correct
+time** (1800ms) as separate numbers — they have different owners.
+
+Three traps, all of which produce a false clean:
+
+- **A hard reload will not reproduce it.** There is no stale cache to paint. If
+  you only ever load pages by URL, you will never see this class.
+- **`pushState` + a synthetic `popstate` may not re-render at all**, leaving the
+  previous page's DOM in place — which looks like a catastrophic routing bug and
+  is an artifact of how you navigated. Click a real link, or do a full load.
+- Sampling once after "it settled" tells you nothing. Sample *across* the
+  transition.
+
+### V2 — content that belongs to a different subject
+
+The page is about X and shows something about Y. Two shapes:
+
+- **Unscoped collection.** A table on a per-subject page carries no filter and
+  renders every subject's rows. The tell a reader gets is a recognisably foreign
+  row — a drought measure on the extreme-cold page. **Find those foreign rows
+  and quote them**; "249 rows on a page that should show ~20" is an argument,
+  but "Assess Vulnerability to Drought Risk, on the Extreme Cold page" is
+  evidence. See Check K2 for the config-side detector and its cached-count trap.
+- **Copy naming the wrong subject.** Boilerplate localised in one clause and not
+  another. Detect it by extracting the sentence pattern across every instance
+  and diffing the subject named in the sentence against the page's own subject.
+  This is a *data* fix, not a component fix, and the count is the number of rows
+  to edit.
+
+### V3 — machine values and internal vocabulary on screen
+
+Everything here is a thing the reader was never meant to see:
+
+- **Raw identifiers where a name belongs** — a GEOID, FIPS code, or foreign key
+  rendered instead of the label. Check M is the config detector; V3 is the
+  subset that is *currently on screen*, which is a much smaller and much more
+  urgent set.
+- **Partial fallthrough** — a column where most values resolve to a label and
+  one doesn't, so the odd one out renders raw. **Only the render finds this.**
+  The lookup is correct, the component's copy of it is correct, and config
+  comparison reports the column clean. Detect it by collecting the *distinct
+  rendered values* of a labelled column and testing each against the label
+  vocabulary; anything that is neither a key nor a label is falling through.
+- **Column titles used as user-facing labels** — a facet labelled with the
+  engineering name of the column behind it, or worse, with a note the data
+  steward wrote to other data people (`Category-Deprecated`, `(Delete) …`,
+  `Hazard Text`). Check the label against its own contents too: a filter labelled
+  with an id whose every option is a place name is wrong twice over.
+- **Unformatted numbers** — the tell is usually a zero, because whole numbers
+  hide the underlying type and `0.0` doesn't. Read a row of sibling values
+  across, not one value down.
+
+### V4 — chrome that is inert, or lying
+
+- **Pagers on empty tables.** `Page 1 of 0`, `Rows 1 to 0 of 0`, and an enabled
+  **NEXT**. Always report which of the two causes you found, because they have
+  opposite fixes and identical appearance: *the subject genuinely has no rows*
+  (wants an empty state) versus *the binding is broken* (wants a fix). Where you
+  cannot tell from config, say so rather than guessing.
+- **Empty facets.** A `select…` with no options.
+- **Counts that contradict each other.** Two sections with identical bindings
+  reporting different totals. See Check G — but note the visitor-facing
+  consequence is stronger than the config one: **once totals are known to be
+  stale, no number on the site can be cited**, including the ones that are right.
+- **Columns of one repeated value** — technically correct, informationally empty,
+  usually the page's own filter restated once per row.
+
+Note that **inert pagination that renders nothing is not a Part 0 finding.** If
+`usePagination` is on but the control doesn't draw, the reader never sees it;
+it belongs in Part 2 as config cleanup. Check before reporting.
+
+### V5 — emptiness that reads as broken
+
+Headings with nothing under them; the same generic heading repeated down a page;
+sections that occupy vertical space and say nothing.
+
+**This is the detector most likely to be wrong in an unhelpful direction, so get
+the framing right.** In a template, empty slots are usually *correct* — they are
+waiting for a local author. The finding is not "these are empty." The finding is
+that **nothing on screen distinguishes an intentional vacancy from a failure**,
+and the reader has to guess. Say that explicitly, or the report reads as though
+it doesn't understand what a template is.
+
+Report: count per page, the repeated-title clusters, and whether any authoring
+affordance exists (a prompt, an "awaiting input" state, help text) and whether
+it is *visible in the slot* or hidden behind an icon. A guidance note that is
+itself blank is worth calling out separately.
+
+### V6 — composition, measured
+
+The "these don't line up" family. Measure; do not eyeball, and do not report
+these from config alone.
+
+- **Compound-card seams.** Read the *rendered geometry*: for each member of a
+  fused run, the bounding box of the bordered box (not the section wrapper) and
+  the computed border colour and radius per side. The gap between consecutive
+  boxes is the finding, stated in pixels. A run whose last member has a
+  transparent bottom border and square bottom corners is open. Check I explains
+  the mechanism — outer padding, missing closer, legacy presets.
+- **Side-by-side misalignment.** Adjacent cards whose first content starts at
+  different heights. Report the offset in pixels and the paddings producing it.
+  Hand-tuned values (`1px`, `50px`, `100px`) are the signature of alignment by
+  eye at one viewport width.
+- **Alignment inconsistency within a group.** Check J. Report the pattern-wide
+  distribution alongside, and be explicit that choosing the minority value is a
+  design decision rather than a defect — the finding is the inconsistency.
+
+**Find the exception and lead with it.** Where a defect is on N instances of a
+template and absent on one, that one instance is the specification of the fix.
+It is worth more than the count.
+
+### V7 — the same thing, presented differently in two places
+
+Two copies of one table with different column headings; two sections with the
+same title and different contents; a measure named one way on a summary page and
+another on a detail page.
+
+The consequence is not cosmetic where the label carries meaning: a reader
+comparing a roll-up against a detail page cannot tell whether *Total Damage* and
+*Total Damage (with population)* are the same measure, and for a damage figure
+in a published plan that is a substantive question.
+
+---
+
+## Method
+
+**Prefer the DOM to a screenshot.** Computed styles and bounding boxes are more
+precise than pixels for every V6 finding, and text extraction is more reliable
+than reading a rendering. Screenshots are for communicating a finding you have
+already established, not for finding it. **If screenshots are unavailable, that
+does not block this pass** — say so in the limits and carry on.
+
+Techniques worth knowing, all of which paid for themselves in the reference run:
+
+- **Crawl in a same-origin iframe.** Point an iframe at each path in turn and
+  read `contentDocument`. The parent context survives, so one script can sweep
+  many pages instead of paying two tool round-trips per page. Watch for two
+  gotchas: the parent must be on the same origin (a `data:` URL parent breaks
+  relative srcs), and give the app real time to settle — an under-waited iframe
+  reports an empty page, not an error.
+- **Confirm your viewport actually applied.** Read `innerWidth` back before
+  trusting a responsive result. A resize that silently didn't take produces a
+  confident wrong conclusion about mobile.
+- **Bisect the DOM to find a layout culprit.** For overflow or a min-content
+  constraint, hide each child in turn and re-measure; recurse into whichever one
+  removes the symptom. This finds the single element responsible in a handful of
+  steps, where reading CSS can take an hour and still miss it.
+- **Sample across transitions, not after them** (V1).
+- **Prove a negative before reporting it.** "Every map renders" is worth stating
+  only if you checked — count canvases, probe the tile routes, and say how many.
+
+---
+
+## Why both passes: the symmetric failure
+
+Record what the render **disproved**, not just what it found. This section is
+load-bearing: it is what stops the next reviewer re-raising a finding you
+already killed, and it is the honest counterweight to a long list.
+
+In the reference run the render disproved three config findings and found one
+that config reported clean:
+
+| | Config said | Render said |
+|---|---|---|
+| A title typo (`Modeled RIsk`) on 16 sections | user-visible defect | **invisible** — the heading is `text-transform: uppercase` |
+| A stale filter on a section (`hazards: ["Flooding"]` on the Wind page) | serious mis-binding | **correct output** — the page variable overrides it at runtime |
+| A drifted `meta_lookup` on 68 components | metadata out of date | **false positive** — all 19 entries identical; only the serialisation differed |
+| A hazard label column | clean | **`"Ice storm"` rendering raw** among correctly-cased labels — a value that is neither key nor label |
+
+Three of the four are cases where **config over-reports**, and the fourth is
+where it **under-reports**. That distribution is why Part 0 leads.
+
+The general rules behind those rows, worth checking every time:
+
+- **A CSS transform can hide a content defect** (`text-transform`,
+  `first-letter`, truncation). Check the computed style before calling stored
+  text a user-visible defect.
+- **Runtime state overrides stored state.** Page variables, URL params and
+  user selections all resolve after the stored config. A stale stored predicate
+  is a latent risk, not a live defect.
+- **A strict equality on a serialised value is not a semantic comparison.**
+  Normalise before flagging — and report what share of your flags are
+  semantically null (`null` vs `[]` vs `""` vs whitespace). A detector that is
+  mostly noise trains people to ignore it, which is how the real drifts survive.
+- **A correct lookup does not mean correct output.** The data still has to
+  contain keys the lookup knows.
+
+---
+
+## Part 0 output
+
+One row per finding, tier-ordered:
+
+| # | Tier | What you see | Where | Why | How far |
+|---|---|---|---|---|---|
+
+`What you see` must be **quoted or measured**, not paraphrased — the literal
+on-screen string, or the number in pixels or milliseconds. `Why` is one sentence
+of mechanism. `How far` separates *seen* from *counted* and names the unit
+(pages, components, dataset rows).
+
+Close Part 0 with:
+
+- **the tier counts** (e.g. 7 / 5 / 5);
+- **the checked-and-clean table** — everything you verified was fine, and every
+  config finding the render disproved;
+- **fix units, not findings.** Group the findings by what has to change — one
+  platform behaviour, one template binding, N dataset rows, one control. A list
+  of 17 findings invites 17 tickets; a list of 9 fix units is a plan. Say which
+  units the reader would notice within thirty seconds of arriving.
+- **limits**: pages walked vs pages counted, viewport(s) tested, whether
+  screenshots were possible, tenant/subject audited, and what is explicitly not
+  covered (accessibility, print, authenticated views, performance).
+
+---
+
 # Part 1 — Data binding
+
+> Part 1 and Part 2 are the **cause-and-spread** passes. Lead with the Part 0
+> finding they explain wherever one exists, and report the rest as latent —
+> real, but not yet visible to anyone.
 
 ## Check A — metadata out-of-date flag
 
@@ -1057,10 +1406,34 @@ columns to refresh rather than recommending a blanket sweep.
 
 ## Reporting
 
-Structure the report as: **Check A table → Check B table → Check C table +
+Structure the report as: **Part 0 verdict + tier counts → Part 0 findings,
+tier-ordered → Checked-and-clean → fix units → Part 0 limits** — then, as the
+supporting evidence: **Check A table → Check B table → Check C table +
 by-column rollup → Check D table → Check E table + tier counts → Check F tables
 → Check G notes → Checks I, J, K, L, M tables (per template, not per page)
 → Source-side recommendations → Control/affordance recommendations → Coverage.**
+
+**Lead with what a person sees.** The config tables are the appendix to the
+walkthrough, not the other way round. If the audience for the report is a
+stakeholder rather than the platform team, the Part 1/Part 2 tables may belong
+in a separate document entirely — but the fix units in Part 0 must still name
+the cause, or the report is a list of complaints.
+
+### Deliverable format
+
+Where the project has an established report format, **use it** rather than
+inventing one. In this repo that is `src/themes/<brand>/design/reports/*.html`:
+a standalone brand-skinned HTML analysis output. Match the existing files'
+structure (head/config block, hero, stat strip, content card, footer, nav
+widget) and register the new report wherever the folder's README says to — for
+`mny/design/` that is a line in `ds-nav.js` **and** an entry in `README.md`.
+Read one neighbouring report before writing; the conventions are not guessable.
+
+Two mechanical checks before handing it over, both of which caught real defects
+in the reference run: **tag balance and attribute quoting** (one existing report
+in that folder has an unbalanced `</div>` that closes `<body>` early), and
+**horizontal overflow at 375 / 768 / 1440** — a report about layout defects that
+overflows on a phone will be read exactly as carefully as it deserves.
 
 **First, look for a fixed twin.** Before auditing anything, group the page's
 components by `(element-type, title)` and flag any group larger than one —
@@ -1073,19 +1446,39 @@ every difference is either the fix or noise, and sorting those two is far
 cheaper than deriving the defect from scratch. Then generalize each real
 difference through the checks below to find the other components carrying it.
 
-For any individual finding needing narrative:
+For any individual **Part 0** finding:
+
+```
+[TIER n] short title
+  what you see : <the literal on-screen string, or the measurement — quoted, never paraphrased>
+  where        : <page url / element, and whether it reproduces on load or only on in-app nav>
+  why          : <one sentence of mechanism>
+  how far      : <N pages seen + M counted from config; name the unit>
+```
+
+For any individual **Part 1 / Part 2** finding needing narrative:
 
 ```
 [CLASS] short title                                    confidence: high|medium|low
   where     : component <id> → element-data.<json.path>
   observed  : <value>
   expected  : <value, grounded in — live source / sibling column / page intent>
-  impact    : <what a site visitor sees or doesn't see>
+  impact    : <what a site visitor sees or doesn't see — or "latent: not currently rendered">
   systemic  : <N of M components; the exceptions are …>
   fix (not applied) : <one line>
 ```
 
-Classes: `META_DRIFT`, `SNAPSHOT_STALE`, `RELIC_FILTER`, `DEAD_FILTER`,
+The `impact` line is where a config finding earns or loses its place in the
+report. If you cannot say what a person sees, write **latent** — and do not
+promote it into Part 0.
+
+Part 0 classes: `STALE_PAINT_ON_NAV`, `FOREIGN_SUBJECT_CONTENT`,
+`WRONG_SUBJECT_COPY`, `RAW_CODE_ON_SCREEN`, `PARTIAL_LABEL_FALLTHROUGH`,
+`INTERNAL_LABEL_EXPOSED`, `UNFORMATTED_NUMBER`, `LYING_PAGER`,
+`UNTRUSTWORTHY_COUNT`, `NO_EMPTY_STATE`, `MEASURED_SEAM`,
+`MEASURED_MISALIGNMENT`, `CROSS_PAGE_INCONSISTENCY`.
+
+Part 1 / Part 2 classes: `META_DRIFT`, `SNAPSHOT_STALE`, `RELIC_FILTER`, `DEAD_FILTER`,
 `DEPRECATED_COLUMN`, `ASSET_VARIANT_DIVERGENCE`, `SOURCE_HYGIENE`,
 `STALE_TRANSPORT`, `SOURCE_LAYER_MISMATCH`, `UNGOVERNED_SOURCE`,
 `MISSING_TILE_COLUMN`, `UNWIRED_PAGE_VARIABLE`, `WRONG_DESIGNATED_LAYER`,
@@ -1604,3 +1997,73 @@ would keep "working" until the next author reused the same symbology. The
 detector that finds the root is cheaper than all three: **parse the
 source-object id and look at the `{datasetName}` slot.** One string comparison
 over 712 layers isolates it.
+
+---
+
+### Part 0 — reference run (and why this part exists)
+
+MitigateNY county template, pattern **1300890** (`county_template.devmny.org`,
+tenant Sullivan 36105), 2026-08-19. 55 pages, 15,681 component rows — of which
+**1,861 are the published set that actually renders** and 11,962 are referenced
+by no page at all. **20 pages walked**, 17 findings, tiers **7 / 5 / 5**.
+
+**This part was written because the first attempt at this audit was the wrong
+deliverable.** The request was to QA the pages; the first pass ran Checks A–M
+over stored config and returned a 1,200-row table of metadata drift. It was
+accurate and it answered a question nobody had asked. Every heading in Part 0 is
+a generalisation of something that only appeared once the pages were opened.
+
+**What only the render found:**
+
+- **V1** — clicking Drought from Wind left `WIND · HIGH RISK` on screen for
+  ~400ms after the URL changed (1,800ms click-to-correct). Invisible in config,
+  absent on hard reload, and initially misdiagnosed twice: once as a wrong
+  binding (the stored filter *is* wrong, and is overridden at runtime), once as
+  a catastrophic routing failure (which was an artifact of navigating by
+  `pushState` instead of clicking).
+- **V3 partial fallthrough** — `"Ice storm"` rendering among eight correctly-cased
+  labels. The source's 19-entry map is correct, the component's copy is
+  *identical to it*, and Check A flags the column only because the serialisation
+  differs. Config reported it clean; the value simply isn't a key.
+- **V2 foreign rows** — "Measures Inventory" carries 249 unfiltered rows on 13
+  hazard pages. The config detector (K2) found the unscoped binding, but the
+  *finding* is "Arson Prevention and Assess Vulnerability to Drought Risk, on
+  the Extreme Cold page."
+
+**What the render disproved** — three of four cross-checks went this way, which
+is the whole argument for the ordering:
+
+```
+Modeled RIsk typo, 16 sections   → invisible; heading is text-transform: uppercase
+hazards:["Flooding"] on Wind     → correct output; page variable overrides at runtime
+meta_lookup drift, 68 components → false positive; 19/19 entries identical
+```
+
+Check A's own precision, measured: **650 of 1,217 flags (53%) were
+`options: null → []`** — one column on 325 published sections, semantically
+identical either way. A badge that is more than half noise is a badge authors
+stop reading, which is how the 131 genuinely stale label lookups survived.
+
+**V5 needed its framing corrected mid-run.** 14 empty headings on
+`about_the_process`, 12 on `strategies`, 8 identical "Local Context" headings on
+`built_environment` — all *correct* for a template awaiting local input. Written
+up as "empty sections" it reads as not understanding the product. The defensible
+finding is that nothing distinguishes an intentional vacancy from a failure, and
+that where authoring guidance exists it hides behind an info icon (and on two
+sections is itself blank).
+
+**V6 measured rather than eyeballed.** The four-part risk card: inner box edges
+at y = 942–1060, 1092–1214, 1246–1430, 1462–1849 — **32px at every junction**,
+final box `border-bottom: rgba(0,0,0,0)` with `border-radius: 0`. Section padding
+is the *outer* gutter, so `p-4` on each member pushes the boxes apart; and the
+run goes `openBottom → borderX → borderX → borderX` with no closer. **15 of 16
+hazard pages. `flooding` is the one that closes** — that single page is the fix
+spec, and it was worth more than the count.
+
+**What Part 0 changed.** The same underlying data produced two reports. One was
+a config table headed "1,217 flagged columns." The other opened with *"click
+Drought and the page still says Wind."* Only the second is actionable by anyone
+who doesn't already know the schema, and the fix list collapsed from 17 findings
+to **9 fix units**, of which the top four — one platform behaviour, one template
+binding, twelve dataset rows, two column definitions — cover everything a reader
+notices in their first thirty seconds.
