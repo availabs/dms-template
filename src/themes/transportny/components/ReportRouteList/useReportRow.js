@@ -71,17 +71,18 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // only `item` changes, one render after the URL does. Every write to
   // `rawReportRow` is tagged with the item id it was loaded/persisted for; deriving
   // `reportRow` by comparing that tag against the CURRENT `item.id` (at render
-  // time, not inside an effect) means every consumer — including
-  // useGraphPublish's orphan-cleanup effect — sees `null` the instant `item.id`
-  // changes, regardless of effect-ordering between this hook's own reset effect
-  // and any other hook's effects in the same commit. Without this, the orphan
-  // cleanup effect could see the previous report's routes (with real graphIds)
-  // alongside the new report's own (different) section ids, treat every route as
-  // orphaned, and persist a corrupted copy of the OLD report's routes under the
-  // NEW report's own id — confirmed live 2026-07-22 (a fresh page created via
-  // "+ Add Page" showed another report's routes, and the new page's own storage
-  // row in the DB contained a byte-for-byte copy of that other report's routes
-  // with graphIds zeroed out).
+  // time, not inside an effect) means every consumer sees `null` the instant
+  // `item.id` changes, regardless of effect-ordering between this hook's own reset
+  // effect and any other hook's effects in the same commit. This guard was
+  // originally built to stop a since-deleted orphan-cleanup effect (removed by
+  // Design Push #2, 2026-08-06) from seeing the previous report's routes (with real
+  // graphIds) alongside the new report's own (different) section ids, treating
+  // every route as orphaned, and persisting a corrupted copy of the OLD report's
+  // routes under the NEW report's own id — confirmed live 2026-07-22 (a fresh page
+  // created via "+ Add Page" showed another report's routes, and the new page's own
+  // storage row in the DB contained a byte-for-byte copy of that other report's
+  // routes with graphIds zeroed out). Kept regardless of that effect's removal — any
+  // consumer of `reportRow` benefits from not acting on stale cross-report state.
   const reportRow = rawReportRow?.forItemId === (item?.id ?? null) ? rawReportRow : null;
   const routes = reportRow?.routes || EMPTY_ROUTES;
 
@@ -133,16 +134,17 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // `ReportRouteList` — only `item` changes, one render after the URL does, via
   // EditWrapper's own effect). Without `forItemId`, a page switch mid-fetch left
   // `reportRow`/`reportRowIdRef` holding the PREVIOUS report's row while `item.id`
-  // already pointed at the new one — and `useGraphPublish`'s orphan-cleanup effect
-  // (which strips any route's `graphIds` not found in the CURRENT page's own
-  // sections) would then see the old report's routes against the new report's
-  // section ids, find every graphId "orphaned," and auto-persist the wipe under the
-  // new report's `report_id` using the old row's id — corrupting a second page with
-  // zero user interaction. Confirmed live 2026-07-21 (see
-  // reportroutelist-graphids-wiped-on-refresh.md's follow-up). The `forItemId`
-  // check after the await re-verifies this load is still the current one before
-  // committing anything, so a slow, now-superseded fetch can't clobber state a
-  // newer navigation already moved past.
+  // already pointed at the new one — and a since-deleted orphan-cleanup effect
+  // (removed by Design Push #2, 2026-08-06; it used to strip any route's
+  // `graphIds` not found in the CURRENT page's own sections) would then see the
+  // old report's routes against the new report's section ids, find every graphId
+  // "orphaned," and auto-persist the wipe under the new report's `report_id` using
+  // the old row's id — corrupting a second page with zero user interaction.
+  // Confirmed live 2026-07-21 (see reportroutelist-graphids-wiped-on-refresh.md's
+  // follow-up). The `forItemId` check after the await re-verifies this load is
+  // still the current one before committing anything, so a slow, now-superseded
+  // fetch can't clobber state a newer navigation already moved past — a general
+  // cross-report race guard, not specific to that deleted effect.
   const loadReportRow = async (forItemId) => {
     if (!apiLoad || !forItemId || !externalSource?.columns) return;
     const udaConfig = buildUdaConfig({
@@ -218,14 +220,13 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // mutation after. This is a genuine DMS data row (split-table, schema-free), not a
   // page attribute and not this section's own `element-data`.
   const persistRoutes = async (nextRoutes) => {
-    // `isEdit` here is ReportRouteList.jsx's `canMutate` — page open at /edit/... AND
-    // this section's own edit pencil open (dataWrapper's per-section isEdit) — mirroring
-    // the convention every other dataWrapper component follows via SectionEdit vs
-    // SectionView (mutations only happen once a section is individually put into its
-    // own edit mode, not merely because the page is open on /edit/...). This is a single
-    // choke point — every mutating handler and the orphan-cleanup effect (see
-    // useGraphPublish) both funnel through here, so gating here is sufficient on its own
-    // to guarantee no write ever fires while the panel isn't in its own edit mode.
+    // `isEdit` here is ReportRouteList.jsx's `canMutate` — simply `editPageMode`,
+    // the page open at /edit/... (report-authoring-ux-overhaul.md item 3, 2026-08-19:
+    // RRL deliberately mutates unconditionally in page-edit-mode, no separate
+    // per-section pencil-click required first, unlike Card/Spreadsheet's SectionEdit
+    // vs SectionView gating). This is a single choke point — every mutating handler
+    // funnels through here, so gating here is sufficient on its own to guarantee no
+    // write ever fires outside page-edit-mode.
     if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
     const currentId = reportRowIdRef.current;
     const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };

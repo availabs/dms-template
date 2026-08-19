@@ -15,32 +15,26 @@ import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
-export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
+export default function ReportRouteList() {
   const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
   const { state: { join, externalSource } } = useContext(ComponentContext) || {};
-  // Two independent flags, not one — conflating them is what let every RRL mutation
-  // fire the instant the PAGE opened at /edit/..., without this section ever being
-  // individually put into its own edit mode (see planning/transportny/tasks/current/reportroutelist.md,
-  // "Section edit-mode gating").
   // `editPageMode` (from PageContext) is whichever sections array (`draft_sections` vs
   // `sections`) sibling components are ACTUALLY rendering from right now — that's what
   // useGraphPublish's sectionsKey tracks, and what decides whether an author sees raw
-  // Dynamic Report slot placeholders vs a viewer's resolved routes. It says nothing
-  // about whether THIS section has been opened for editing.
-  // `props.isEdit` (destructured above as `sectionEditorOpen`) IS that per-section signal
-  // — dataWrapper's Edit path (mounted only for the one section a user clicked the
-  // section's own "Edit" pencil on, sectionArray.jsx's `edit.index === i`) always sets it
-  // true; the View path (every other section, even on an /edit/... page) always sets it
-  // false. See dataWrapper/index.jsx lines 197/457.
+  // Dynamic Report slot placeholders vs a viewer's resolved routes.
   const isEdit = Boolean(editPageMode);
-  // Gates every actual mutation (route add/remove/reorder/rename/date-edit,
-  // graph-chip toggling, the Dynamic Report switch, +Add Route/Route Slot/Graph) —
-  // requires BOTH being on the page's /edit/... route AND having this section's own
-  // pencil open, matching how Card/Spreadsheet gate row CRUD via SectionEdit vs
-  // SectionView. `isEdit &&` is redundant given dataWrapper's own invariant (the Edit
-  // path only exists inside the page's edit route to begin with) but kept explicit —
-  // see useReportRow.js's persistRoutes for why a single, obvious choke point matters.
-  const canMutate = isEdit && Boolean(sectionEditorOpen);
+  // Gates every actual mutation (route add/remove/reorder/rename/date-edit, the Dynamic
+  // Report switch, +Add Route/Route Slot/Graph) — deliberately keyed on `editPageMode`
+  // ALONE, unconditionally, the moment a page opens at /edit/..., with no requirement
+  // that this section also be put into its own SectionEdit pencil-click mode first (the
+  // report-authoring-ux-overhaul.md item 3 decision, 2026-08-19: this is a deliberate
+  // author-empowerment break from DMS's normal per-section view/edit gating, not a bug).
+  // Previously also required `Boolean(props.isEdit)` (this section's own pencil open) —
+  // that extra gate was added 2026-08-03 to suppress an orphan-cleanup effect that used
+  // to strip a route's `graphIds` on every render; that effect was deleted by Design Push
+  // #2 (2026-08-06, see useGraphPublish.js) and no code path here fires a mutation from a
+  // useEffect anymore, so the extra click stopped protecting anything.
+  const canMutate = isEdit;
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
