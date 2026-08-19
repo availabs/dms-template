@@ -457,3 +457,94 @@ describe('R6 — precision bands from H1b\'s measured curves', () => {
     expect(Boolean(r.AMP_min_n_bar)).toBe(true);
   });
 });
+
+// ── R2 perf: the p15 memo ───────────────────────────────────────────────────
+describe('R2 perf — one p15 derivation per (TMC, reference window)', () => {
+  async function lib() {
+    const { createRequire } = await import('node:module');
+    const r = createRequire(import.meta.url);
+    return { calcPhed: r('../lib/calcPhed.js').calcPhed,
+             FREEFLOW_REFERENCE_WINDOW: r('../lib/eras.js').FREEFLOW_REFERENCE_WINDOW,
+             ...r('../lib/constants.js') };
+  }
+  const META = {
+    tmc: 'x', miles: 1.0, avg_speedlimit: 55, directionalaadt: 5000, directionalaadttruck: 300,
+    avg_vehicle_occupancy: 1.7, avgvehicleoccupancytruck: 10.7, functionalclass: 'FREEWAY',
+    congestion_level: 'NO2LOW_CONGESTION', directionality: 'AM_PEAK', nhs_pct: 100, nhs: '0',
+  };
+  const ROWS = [
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 28, tt: 100, n_epochs: 3 },
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 29, tt: 400, n_epochs: 3 },
+  ];
+  // Counts only the queries that derive a p15 — the ALL-bin, all-days scan.
+  function countingChDb(counter) {
+    return {
+      query: async ({ query }) => {
+        if (/in \(0,1,2,3,4,5,6\)/.test(query) && /in \(0,1,2,3,4,5,6,7,8,9,10,11,12/.test(query)) {
+          counter.p15 += 1;
+        }
+        counter.all += 1;
+        return { json: async () => ({ rows: ROWS.length, data: ROWS }) };
+      },
+    };
+  }
+  async function runFamily({ withCache }) {
+    const { calcPhed, BIN_NAMES, ALL_VEHICLES, FREIGHT_TRUCKS } = await lib();
+    const counter = { p15: 0, all: 0 };
+    const chDb = countingChDb(counter);
+    const cache = withCache ? new Map() : undefined;
+    // The four metrics that share the anchored window — two all-vehicle, two truck.
+    const family = [
+      { npmrdsDataKeys: ALL_VEHICLES, timeBins: [BIN_NAMES.AMP] },
+      { npmrdsDataKeys: FREIGHT_TRUCKS, timeBins: [BIN_NAMES.AMP] },
+      { npmrdsDataKeys: ALL_VEHICLES, timeBins: [BIN_NAMES.ALL] },
+      { npmrdsDataKeys: FREIGHT_TRUCKS, timeBins: [BIN_NAMES.ALL] },
+    ];
+    for (const m of family) {
+      await calcPhed({
+        db: null, chDb, tmcMeta: META, curTmcId: 'x', year: 2025, dataTableName: 't',
+        avoKey: 'avg_vehicle_occupancy', dirAadtKey: 'directionalaadt',
+        thresholdSpeedVersion: 'freeflow_anchored', freeflowP15Cache: cache, ...m,
+      });
+    }
+    return counter;
+  }
+
+  it('derives the p15 once for a four-metric family instead of four times', async () => {
+    const without = await runFamily({ withCache: false });
+    const with_ = await runFamily({ withCache: true });
+    expect(without.p15).toBe(4);
+    expect(with_.p15).toBe(1);
+    // The percentile is taken over ALL_VEHICLES whichever stream the measure reads, so the truck
+    // metrics share the value rather than needing their own.
+    expect(with_.all).toBeLessThan(without.all);
+  });
+
+  it('keeps the own-year and anchored windows separate in the same cache', async () => {
+    const { calcPhed, BIN_NAMES, ALL_VEHICLES, FREEFLOW_REFERENCE_WINDOW: W } = await lib();
+    const seen = [];
+    const chDb = {
+      query: async ({ query }) => {
+        seen.push(query);
+        return { json: async () => ({ rows: ROWS.length, data: ROWS }) };
+      },
+    };
+    const cache = new Map();
+    for (const v of ['freeflow', 'freeflow_anchored', 'freeflow', 'freeflow_anchored']) {
+      await calcPhed({
+        db: null, chDb, tmcMeta: META, curTmcId: 'x', year: 2025, dataTableName: 't',
+        npmrdsDataKeys: ALL_VEHICLES, avoKey: 'avg_vehicle_occupancy',
+        dirAadtKey: 'directionalaadt', thresholdSpeedVersion: v,
+        freeflowP15Cache: cache, timeBins: [BIN_NAMES.AMP],
+      });
+    }
+    // Two distinct windows -> exactly two cache entries, and both keys are represented.
+    expect(cache.size).toBe(2);
+    expect([...cache.keys()].some((k) => k === 'year:2025')).toBe(true);
+    expect([...cache.keys()].some((k) => k === W.dates.join('..'))).toBe(true);
+    // A cache that conflated them would silently give the anchored variant the own-year threshold,
+    // which is the exact bug R2 exists to remove — so assert the window query really was issued.
+    expect(seen.some((q) => q.includes(W.dates[0]))).toBe(true);
+    expect(seen.some((q) => /EXTRACT\(YEAR from date\) = 2025/.test(q))).toBe(true);
+  });
+});

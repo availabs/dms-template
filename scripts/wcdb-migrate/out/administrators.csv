@@ -1,0 +1,26 @@
+admin_id,department,department_index,position,holder_name,dj_id,email,office_hours,icon,sort,term_start,term_end
+1,Chief Administrators,0,General Manager,Xavier Lake,1208,generalmanager@wcdbfm.com,By appointment,,1,2026-05-01,2027-05-01
+2,Chief Administrators,0,Program Director,Gabrielle Hebert,1228,programdirector@wcdbfm.com,By appointment,,2,2026-05-01,2027-05-01
+3,Chief Administrators,0,Business Director,Megan Shoemaker,1233,treasurer@wcdbfm.com,By appointment,,3,2026-05-01,2027-05-01
+4,Chief Administrators,0,Chief Engineer,Cirava Hammond,1230,chiefengineer@wcdbfm.com,By appointment,,4,2026-05-01,2027-05-01
+5,Music Department,1,Hip-Hop/R&B,Xavier Lake,1208,hiphop@wcdbfm.com,By appointment,Microphone,5,2026-05-01,2027-05-01
+6,Music Department,1,Alt Rock,Gabrielle Hebert,1228,rock@wcdbfm.com,By appointment,Pick,6,2026-05-01,2027-05-01
+7,Music Department,1,Metal,Elijah McKible,1178,metal@wcdbfm.com,By appointment,Bolt,7,2026-05-01,2027-05-01
+8,Music Department,1,Jazz,Bill McCann,387,jazz@wcdbfm.com,By appointment,Note,8,2026-05-01,2027-05-01
+9,Music Department,1,Electronic (RPM),Ella Pessoni,1235,electronic@wcdbfm.com,By appointment,Sliders,9,2026-05-01,2027-05-01
+10,Music Department,1,World,Wallace Sibblies,362,reggae@wcdbfm.com,By appointment,Globe,10,2026-05-01,2027-05-01
+11,Publicity Department,2,External Events,Joseph Haisman,1194,events@wcdbfm.com,By appointment,,11,2026-05-01,2027-05-01
+12,Publicity Department,2,Outreach,Megan Shoemaker,1233,outreach@wcdbfm.com,By appointment,,12,2026-05-01,2027-05-01
+13,Publicity Department,2,Internal Affairs (PSAs),Cirava Hammond,1230,PSAs@wcdbfm.com,By appointment,,13,2026-05-01,2027-05-01
+14,Publicity Department,2,Media,Ethan Rackliffe,1232,media@wcdbfm.com,By appointment,,14,2026-05-01,2027-05-01
+15,Publicity Department,2,Fundraising,Angelina Ochoa,1216,fundraising@wcdbfm.com,By appointment,,15,2026-05-01,2027-05-01
+16,Publicity Department,2,Creative Director,Ethan San Pedro,1187,socialmedia@wcdbfm.com,By appointment,,16,2026-05-01,2027-05-01
+17,Publicity Department,2,Internal Events,Angelina Ochoa,1216,internalevents@wcdbfm.com,By appointment,,17,2026-05-01,2027-05-01
+18,Publicity Department,2,Editor In Chief,Kat Mitchell,1186,,By appointment,,18,2026-05-01,2027-05-01
+19,News & Sports Department,3,News,Not listed,,news@wcdbfm.com,By appointment,,19,2026-05-01,2027-05-01
+20,News & Sports Department,3,Sports,Not listed,,sports@wcdbfm.com,By appointment,,20,2026-05-01,2027-05-01
+21,Engineering Department,4,Webmaster,Darius James Palange,1163,webmaster@wcdbfm.com,Just email me,,21,2026-05-01,2027-05-01
+22,Engineering Department,4,Production,"Eddie Smith, Kenny Kowalski",,production@wcdbfm.com,By appointment,,22,2026-05-01,2027-05-01
+23,Engineering Department,4,Automation,Maxine Restifo,1224,automation@wcdbfm.com,By appointment,,23,2026-05-01,2027-05-01
+24,Engineering Department,4,Co-Engineer,Not listed,,,,,24,2026-05-01,2027-05-01
+25,DJ Training Department,5,Training,"Xavier Lake, Grace Mancuso",,training@wcdbfm.com,By appointment,,25,2026-05-01,2027-05-01

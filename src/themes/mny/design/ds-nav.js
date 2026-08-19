@@ -39,6 +39,7 @@
       { f: 'actions-location-overview.html', t: 'location overview' },
     ]},
     { key: 'county', label: 'County Actions Workflow', dir: 'pages/county-actions', landing: 'dashboard.html', pages: [
+      { f: 'state-dashboard.html', t: 'state dashboard' },
       { f: 'dashboard.html', t: 'county dashboard' }, { f: 'jurisdictions.html', t: 'jurisdictions' },
       { f: 'jurisdiction-prioritization.html', t: 'jurisdiction prioritization' },
       { f: 'workspace.html', t: 'county workspace' }, { f: 'action-view.html', t: 'action view' },

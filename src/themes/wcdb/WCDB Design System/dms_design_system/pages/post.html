@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Airwaves — Six hours in Studio B</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- ============================================================
+     LAYOUT · default — single-column treatment.
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <!-- ============================================================
+       TOPNAV · theme.topnav.styles[0] "wcdb" — A NOTCH, NOT A BAR.
+       layoutContainer1 is `fixed top-0 z-50` with NO width, so the whole
+       nav shrink-wraps to its content. The page background is carried by
+       each MENU container, never by the header — that is what lets the
+       hero card sit beside the bar and cut up underneath it. The right
+       menu closes the notch with `lg:rounded-br-[28px]`.
+  
+       The two 20x20 curve widgets mask the joins. They position against
+       this FIXED container (no menu container is `relative`), which is
+       why left-[7px]/top-[56px] lands just below the bar on the left and
+       -right-[20px]/top-[8px] lands just past its right end.
+       Source: wcdb_theme.js layout.options.topNav + widgets.jsx.
+       ============================================================ -->
+  <header class="fixed top-0 z-50">
+    <div class="w-full">
+      <div class="w-full h-14 flex items-center">
+        <div class="flex items-center w-full h-full">
+
+          <!-- leftMenuContainer · [NavLeftStyleWidget, Logo] -->
+          <div class="flex items-center bg-[var(--page-bg)] h-14">
+            <!-- NavLeftStyleWidget -->
+            <div class="absolute left-[7px] top-[56px]">
+              <!-- decorative -->
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+            </div>
+            <a href="./home.html" class="items-center flex pt-1 pl-4">
+              <!-- theme.logo — live theme serves /themes/wcdb/logo_white.svg -->
+              <img src="../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-12 wcdb-logo-img">
+            </a>
+          </div>
+
+          <!-- centerMenuContainer -->
+          <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2 bg-[var(--page-bg)]">
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./schedule.html">Schedule</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./events.html">Events</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./station-info.html">Station Info</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./djs.html">DJs</a>
+            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./airwaves.html" data-active="true">Airwaves</a>
+          </div>
+
+          <!-- rightMenuContainer · [UserMenu, ThemeModeToggle, NavRightStyleWidget]
+               NOTE: wcdb_theme.js lists the toggle FIRST in its default
+               rightMenu array; live wcdb.fm renders sign-in first. The site
+               overrides the order, and production is what we mirror here. -->
+          <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)] lg:rounded-br-[28px]">
+            <!-- UserMenu — signed-out state -->
+            <a href="./login.html" aria-label="Sign in" title="Sign in"
+               class="inline-flex items-center justify-center size-8 rounded-full text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+              <!-- icon: SignIn -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M11 8l4 4-4 4M15 12H7"/></svg>
+            </a>
+            <!-- ThemeModeToggle — renders Moon while data-mode="dark" (the default) -->
+            <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                    class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+              <!-- icon: Moon -->
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            <!-- NavRightStyleWidget -->
+            <div class="absolute -right-[20px] top-[8px]">
+              <!-- decorative -->
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <div class="flex flex-1 items-start">
+        <div class="flex-1 flex flex-col md:grid md:grid-cols-2">
+
+          <!-- ============================================================
+               LAYOUTGROUP · header — THE LIVE RAIL
+               The same sticky panel every main page carries, so "what is
+               on air / what is playing" follows the reader around the site
+               instead of living only on the home page.
+               GENERATED from home.html, which is the canonical copy — edit
+               it there and re-run scripts/sync-rail.mjs, never here.
+               Below md the grid collapses and this scrolls above the feed.
+               ============================================================ -->
+          <div data-dms-group="header"
+               class="w-full p-2 md:sticky md:top-0 md:h-screen">
+            <div class="overflow-hidden rounded-[18px] bg-[var(--card-bg)] text-[color:var(--ink-1)] md:h-full relative">
+
+              <!-- ============================================================
+                   TWO components live in this panel, and they answer two
+                   different questions. Previously they were one continuous
+                   run of rows over a gradient, which made them hard to tell
+                   apart and spent the whole panel on decoration:
+
+                     1. ON AIR   — "what show is on right now?"  A show
+                        photograph, full bleed, with the show's identity set
+                        over it. This is the block that carries the image.
+                     2. LISTEN LIVE — "what song is playing, and how do I
+                        hear it?"  A distinct tinted band with its own
+                        eyebrow, a large cover-art slot, and the play button.
+
+                   The theme gives this LayoutGroup ONE rounded card
+                   (layoutGroup.styles[1].wrapper2), so the separation is done
+                   with surface tone + a hairline rather than two cards.
+                   ============================================================ -->
+              <!-- ============================================================
+                   SECTION · card:featured-post
+                   THE RAIL'S SUBJECT ON THIS PAGE. Everywhere else the panel
+                   opens with `card:on-air` (what show is on right now); here
+                   the featured post takes that slot instead.
+
+                   Why swap it rather than add it: the rail is the page's one
+                   full-height object, and whatever occupies it is the claim the
+                   page is making. On the blog that claim is "read this", not
+                   "listen to this" — and a reader who arrived for Airwaves has
+                   already been told what is on air by every other page. The
+                   LISTEN LIVE block below is kept: the stream is the station's
+                   permanent offer and belongs on every page.
+
+                   Structurally identical to `card:on-air`, so the theme needs
+                   no new layout: a full-bleed image, a scrim, and the identity
+                   set over its lower third, with a notch chip in the corner.
+                   That means the live build can reuse the same composition —
+                   image cell + gradient cell + text cells riding up on negative
+                   margins — with the post's fields swapped in for the show's.
+                   ============================================================ -->
+              <!-- ============================================================
+                   SECTION · card:post-hero
+                   THE ARTICLE'S PHOTOGRAPH, GIVEN A WHOLE COLUMN.
+
+                   On a reading page the rail stops being a dashboard and becomes
+                   the picture. It is `md:sticky md:h-screen` like every other
+                   rail, which is the point: the image stays with you for the
+                   length of the article instead of being a banner you scroll
+                   past in two seconds.
+
+                   NO TEXT over it. Every other rail panel sets a title on its
+                   image because that panel IS the headline; here the article
+                   carries its own `<h1>` in the column beside it, and repeating
+                   it over the photo would be saying the same thing twice at two
+                   different sizes. So no scrim either — the photograph is
+                   allowed to be a photograph.
+
+                   The only thing added is the CREDIT, in the notch chip. A
+                   station that shoots its own sessions has photographers, and a
+                   picture with no credit is a small discourtesy.
+                   ============================================================ -->
+              <section data-dms-section="card:post-hero" class="h-full flex flex-col">
+                <div class="relative flex-1 min-h-[320px] overflow-hidden">
+                  <img data-mockup-photo src="../assets/photos/in-studio-thelastmiller.jpg"
+                       alt="The Last Miller in Studio B, March 2026"
+                       class="absolute inset-0 w-full h-full object-cover object-center">
+                  <span class="wcdb-chip wcdb-chip--bl" style="--chip: var(--bg-2)">Photo &middot; Ada Okonkwo</span>
+                </div>
+
+
+                <div class="shrink-0 bg-[var(--bg-2)]">
+                  <div class="px-6 pt-4 pb-5">
+
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                      <div class="flex items-baseline gap-2.5 min-w-0">
+                        <!-- The on-air accent, the same signal the show's
+                             on-air pill uses, so the page's two live claims
+                             match. -->
+                        <span class="inline-flex items-center rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)]
+                                     font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase font-semibold shrink-0"
+                              style="padding:3px 8px;">
+                          Now playing
+                        </span>
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] tabular-nums">11:47 pm</span>
+                      </div>
+
+                      <div class="flex items-center gap-4 shrink-0">
+                        <span class="hidden sm:inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">
+                          <span class="wcdb-eq"><span></span><span></span><span></span><span></span></span>
+                          184 listening
+                        </span>
+                        <a href="./spins.html"
+                           class="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)] border-b border-[var(--line-2)] hover:border-[var(--line-3)] pb-0.5 transition-colors">
+                          Full playlist
+                          <!-- icon: ArrowRight -->
+                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-5">
+                      <!-- Cover art — the big slot. Sized for the playlist
+                           dataset's album thumbnails; gradient placeholder
+                           until that source is wired (assets/photos/README.md). -->
+                      <div class="size-[104px] shrink-0 rounded-[10px] wcdb-art wcdb-art--ember overflow-hidden relative">
+                        <span class="absolute inset-x-0 bottom-0 text-center font-[family-name:var(--font-mono)] uppercase tracking-[0.10em] text-[color:var(--ink-3)] bg-[rgba(10,10,10,0.45)]"
+                              style="font-size:8px; padding:2px 0;">cover art</span>
+                      </div>
+
+                      <!-- The track is the content; with the label row lifted
+                           out there is room to set it at something close to a
+                           headline. -->
+                      <div class="flex-1 min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[32px] leading-[1.02] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">
+                          Sowiesoso
+                        </div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[19px] leading-[1.2] tracking-[-0.02em] text-[color:var(--ink-2)] mt-1 truncate">
+                          Cluster
+                        </div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-4)] mt-1.5 truncate">
+                          Sowiesoso · 1976 · Sky Records
+                        </div>
+                      </div>
+
+                      <!-- stream_player column type · round play button -->
+                      <button aria-label="Play live stream"
+                              class="shrink-0 size-[60px] rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                     grid place-items-center transition-transform hover:scale-105 active:scale-100">
+                        <!-- icon: Play -->
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </section>
+
+            </div>
+          </div>
+
+          <!-- ============================================================
+               LAYOUTGROUP · content (single column)
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] px-4 pt-4 min-h-[200px]">
+
+              <!-- ============================================================
+                   SECTION · page header (bare)
+                   ============================================================ -->
+              <!-- ============================================================
+                   SECTION · lexical:page-header
+                   The blog has a NAME — Airwaves — and the masthead states it
+                   the way the home page states the station's. A blog with a
+                   name is a publication; "Blog" is a nav label.
+                   ============================================================ -->
+              <!-- ============================================================
+                   SECTION · lexical:breadcrumb
+                   ============================================================ -->
+              <section data-dms-section="lexical:breadcrumb" class="pt-6 pb-4">
+                <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-4)]">
+                  <a href="./airwaves.html" class="hover:text-[color:var(--ink-2)] transition-colors">Airwaves</a>
+                  &nbsp;&rsaquo;&nbsp; Studio diary
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · lexical:post-head
+                   Kicker, headline, standfirst, byline. The headline is the
+                   page's largest type — larger than the masthead on the feed,
+                   because on this page the article IS the subject.
+
+                   The byline is a row, not a stack: an avatar, the writer's
+                   name linking to their DJ profile, and the two facts a reader
+                   uses to decide whether to start now — when it went out and
+                   how long it takes. Read time is DERIVED from the body.
+                   ============================================================ -->
+              <section data-dms-section="lexical:post-head" class="pb-8">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                  Studio diary
+                </div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[clamp(38px,4.4vw,60px)] leading-[1.0] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0 text-balance">
+                  Six hours in Studio B with The Last Miller
+                </h1>
+                <p class="mt-5 max-w-[60ch] text-[19px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                  The band arrived at ten with two amps and a broken pedalboard. What came
+                  out of it was the best live session we have recorded in that room.
+                </p>
+
+                <div class="mt-7 pt-5 border-t border-[var(--line-1)] flex flex-wrap items-center gap-x-4 gap-y-3">
+                  <span class="inline-flex items-center justify-center size-9 rounded-full bg-[var(--bg-3)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.06em] uppercase text-[color:var(--ink-2)] shrink-0">JR</span>
+                  <span>
+                    <a href="./djs.html" class="block font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--ink-1)] hover:underline">Jada R.</a>
+                    <span class="block font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">DJ Halftone &middot; Late Modernism</span>
+                  </span>
+                  <span class="ml-auto flex items-center gap-4 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                    <span>12 Mar 2026</span>
+                    <span>9 min read</span>
+                  </span>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · lexical:post-body
+                   The article. ONE lexical section — this is the page where the
+                   lexical editor earns its place, and the theme already carries
+                   the heading and body tokens it needs.
+
+                   MEASURE: `max-w-[68ch]`. The content column is wide enough to
+                   run prose the full width and it should not — a line of 110
+                   characters is measurably harder to read, and the brand's body
+                   size makes it worse. The column stays wide; the paragraph does
+                   not fill it.
+                   ============================================================ -->
+              <section data-dms-section="lexical:post-body" class="pb-10">
+                <div class="max-w-[68ch] font-[family-name:var(--font-sans)] text-[17px] leading-[1.7] text-[color:var(--ink-1)]">
+                  <p class="m-0">Studio B has a reputation among people who have recorded in it. The room is too live, the headphone amp hums, and the only clock is a wall unit that has been eleven minutes fast since 2019. None of that is why bands ask for it.</p>
+
+                  <p class="mt-6 m-0">They ask for it because the desk is a 1978 Soundcraft that nobody has been allowed to replace, and because the drum booth — which is really a stairwell with a door on it — does something to a snare that three generations of engineering students have failed to reproduce anywhere else in the building.</p>
+
+                  <h2 class="mt-10 mb-3 font-[family-name:var(--font-display)] italic text-[30px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">The first take</h2>
+
+                  <p class="m-0">We got the first take at 11:40, before anyone had settled in, and spent the next four hours failing to beat it. This happens more often than any engineer will admit.</p>
+
+                  <!-- PULL QUOTE — the display italic at scale, with a rule
+                       rather than quote marks. It is set OUTSIDE the measure so
+                       it interrupts the column deliberately. -->
+                  <blockquote class="my-10 -ml-6 pl-6 border-l-2 border-[var(--on-air)] max-w-[54ch]">
+                    <p class="m-0 font-[family-name:var(--font-display)] italic text-[26px] leading-[1.25] tracking-[-0.02em] text-[color:var(--ink-1)]">
+                      You can hear the room deciding what the song is about. That is not
+                      something you can add afterwards.
+                    </p>
+                    <footer class="mt-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">
+                      Wren Vu, engineering the session
+                    </footer>
+                  </blockquote>
+
+                  <p class="m-0">By two the pedalboard had been diagnosed — a cold solder joint on the expression jack, fixed with a borrowed iron — and the band played the whole set through twice more for the tape.</p>
+
+                  <h2 class="mt-10 mb-3 font-[family-name:var(--font-display)] italic text-[30px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">What we kept</h2>
+
+                  <p class="m-0">Four songs, all from the first two hours. They go out on Late Modernism this Thursday at 11pm, and the whole session will sit in the archive after that.</p>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:post-footer
+                   End matter, in the order a reader wants it: what this was
+                   filed under, then how to hear the thing the article is about.
+
+                   The LISTEN row is the payoff and is specific to a station
+                   blog — most posts here are about something that airs, and the
+                   article should hand the reader to it rather than leaving them
+                   to search the schedule.
+                   ============================================================ -->
+              <section data-dms-section="card:post-footer" class="mb-10">
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mr-1">Filed under</span>
+                    <a href="./airwaves.html" class="rounded-full border border-[var(--line-2)] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">Studio diary</a>
+                    <a href="./airwaves.html" class="rounded-full border border-[var(--line-2)] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">Live sessions</a>
+                    <a href="./airwaves.html" class="rounded-full border border-[var(--line-2)] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors">Studio B</a>
+                  </div>
+
+                  <div class="mt-6 pt-6 border-t border-[var(--line-1)] flex flex-wrap items-center gap-4">
+                    <span class="grid place-items-center size-[34px] rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] shrink-0">
+                      <!-- icon: Broadcast -->
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0M12 12v9"/></svg>
+                    </span>
+                    <span class="min-w-0">
+                      <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">Hear the session</span>
+                      <span class="block font-[family-name:var(--font-display)] italic text-[20px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)]">Late Modernism</span>
+                    </span>
+                    <a href="./show.html" class="ml-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap hover:opacity-90 transition-opacity">
+                      Thu 11 pm &middot; Show page
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:related
+                   Same category, newest first. Two, not six — a reader at the
+                   end of an article is deciding whether to stay, and a wall of
+                   options is a worse offer than a short one.
+                   ============================================================ -->
+              <section data-dms-section="card:related" class="mb-12">
+                <div class="flex items-baseline justify-between mb-5">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">More studio diary</div>
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">Keep reading</h2>
+                  </div>
+                  <a href="./airwaves.html" class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors">All of Airwaves &rarr;</a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <a href="./airwaves.html" class="group rounded-[18px] bg-[var(--card-bg)] overflow-hidden flex flex-col hover:bg-[var(--bg-3)] transition-colors">
+                    <div class="aspect-[3/2] overflow-hidden">
+                      <div class="w-full h-full wcdb-art wcdb-art--cool grid place-items-center">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[rgba(245,245,245,0.72)]">Studio diary</span>
+                      </div>
+                    </div>
+                    <div class="p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Studio diary &middot; Feb 19</div>
+                      <h3 class="mt-2 font-[family-name:var(--font-display)] italic text-[19px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] m-0">Field recordings of the Capital Region.</h3>
+                      <div class="mt-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">By Ada Okonkwo</div>
+                    </div>
+                  </a>
+                  <a href="./airwaves.html" class="group rounded-[18px] bg-[var(--card-bg)] overflow-hidden flex flex-col hover:bg-[var(--bg-3)] transition-colors">
+                    <div class="aspect-[3/2] overflow-hidden">
+                      <div class="w-full h-full wcdb-art wcdb-art--mono grid place-items-center">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[rgba(245,245,245,0.72)]">Studio diary</span>
+                      </div>
+                    </div>
+                    <div class="p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Studio diary &middot; Feb 07</div>
+                      <h3 class="mt-2 font-[family-name:var(--font-display)] italic text-[19px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)] m-0">What the spring pledge drive paid for.</h3>
+                      <div class="mt-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">By Ada Okonkwo</div>
+                    </div>
+                  </a>
+                </div>
+              </section>
+
+
+              <section data-dms-section="card:footer">
+                <div class="wcdb-card-inv p-10">
+                  <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">Stay tuned</div>
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-3">
+                        Drop us your email.
+                      </h2>
+                      <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.5] max-w-[440px] text-[#4a4a4a]">
+                        Once-a-month dispatch from the studio — new shows,
+                        upcoming events, the occasional pledge drive.
+                      </p>
+                      <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-[520px]">
+                        <input type="email" placeholder="you@somewhere.edu"
+                               class="flex-1 px-4 py-3 rounded-full bg-transparent border border-[rgba(10,10,10,0.15)]
+                                      font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--inv-ink)]
+                                      placeholder:text-[#a0a0a0] focus:outline-none focus:border-[color:var(--inv-ink)]">
+                        <button class="px-6 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
+                                       font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                          Subscribe
+                        </button>
+                      </form>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Listen</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>Live stream</li><li>Schedule</li><li>Recent spins</li><li>Shows</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Station</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>About</li><li>Pledge</li><li>Volunteer</li><li>Contact</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="wcdb-hairline my-8" style="background:rgba(10,10,10,0.10)"/>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a]">
+                    <span>WCDB · 90.9 FM · SUNY Albany</span>
+                    <span>© 1977–2026 · A student broadcast</span>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
+
+</body>
+</html>

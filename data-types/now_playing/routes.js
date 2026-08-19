@@ -21,6 +21,8 @@ const { normalize } = require('./normalize');
 const { enrichEvents } = require('./cover-enrichment');
 const {
   buildCreateTableSQL,
+  buildMigrateTableSQL,
+  buildProvenanceTriggerSQL,
   buildIdempotencyIndexSQL,
   buildInsertSQL,
   eventToInsertParams,
@@ -167,6 +169,12 @@ module.exports = function routes(router, helpers) {
 
       await helpers.ensureSchema(db, view.table_schema);
       await db.query(buildCreateTableSQL(view.data_table));
+      // A create is IF NOT EXISTS, so it can't add a column to a table that
+      // already exists. Run the migration + the provenance trigger too, so a
+      // stream provisioned before a column existed picks it up here rather
+      // than erroring on every read of it.
+      for (const sql of buildMigrateTableSQL(view.data_table)) await db.query(sql);
+      for (const sql of buildProvenanceTriggerSQL(view.data_table)) await db.query(sql);
       await db.query(buildIdempotencyIndexSQL(view.data_table));
 
       // Populate the source's metadata.columns so DataWrapper, the built-in
