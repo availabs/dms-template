@@ -23,12 +23,16 @@
       { f: 'landing.html', t: 'landing' }, { f: 'login.html', t: 'login' },
       { f: 'getting-started.html', t: 'getting-started' }, { f: 'docs-overview.html', t: 'docs-overview' },
     ]},
-    // NPMRDS · the six-page category. Absorbed the old standalone `map21` section and pulled
+    // NPMRDS · the category. Absorbed the old standalone `map21` section and pulled
     // route-comparison out of `explorers` — one home per page. map-21-lottr.html existed on
     // disk but was never registered here; it is now.
+    // 2026-08-19: two pages added — `npmrds-route-creation` (the tool that MAKES a route, which
+    // four pages consumed and none documented) and `npmrds-tmc` (the leaf: one segment, in full).
     { key: 'npmrds', label: 'NPMRDS', landing: 'npmrds-home.html', dir: 'pages', pages: [
       { f: 'npmrds-home.html', t: 'home' }, { f: 'npmrds-macro.html', t: 'macro view' },
+      { f: 'npmrds-tmc.html', t: 'segment · tmc' },
       { f: 'npmrds-reports.html', t: 'reports' }, { f: 'npmrds-report.html', t: 'report' },
+      { f: 'npmrds-route-creation.html', t: 'route creation' },
       { f: 'route-comparison.html', t: 'route comparison' },
       { f: 'map-21.html', t: 'map-21 · per-year' }, { f: 'map-21-system-performance.html', t: 'map-21 · system performance' },
       { f: 'map-21-lottr.html', t: 'map-21 · lottr' }, { f: 'map-21-trend.html', t: 'map-21 · trend' },

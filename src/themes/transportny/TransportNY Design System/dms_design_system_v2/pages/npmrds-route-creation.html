@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS · Route Creation · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  npmrds-route-creation.html · NPMRDS category — the tool that MAKES a route
+  ════════════════════════════════════════════════════════════════════════════════
+  A route is a named, ordered collection of TMCs. It is the input every other NPMRDS
+  analysis surface takes: `npmrds-report.html` graphs routes, `route-comparison.html`
+  cross-tabs them, `npmrds-reports.html` lists them. Until this page exists the category
+  documents four ways to CONSUME a route and no way to make one.
+
+  TRANSCRIBED FROM TWO IMPLEMENTATIONS, not invented:
+    · OLD (legacy React, being replaced) — transportNY/src/sites/npmrds/pages/route_creation/:
+      index.jsx (AvlMap + one LayerContainer), components/RouteCreationLayer.jsx (the modes,
+      the marker gradient, the TMC toggle, zoomToBounds), RouteCreationInfoBox.jsx (the panel:
+      mode toggle, TMC search, Remove Last / Clear All, the TMC list with per-row miles and the
+      running total, Save Route), RouteSaveModal.jsx (name · description · FOLDER · start/end
+      date · start/end time).
+    · NEW (the live target) — dms-template/src/themes/transportny/components/routecreation/:
+      routecreation.plugin.jsx, comp.jsx, components/RouteEditor.jsx, components/SaveRouteModal.jsx,
+      hooks/useMapTmcHandler.js, hooks/useMapMarkerHandler.js, hooks/resolveRoute.js, constants.js,
+      paint.js, dataUpdate.jsx. This is a MAP PLUGIN (`theme.mapPlugins`), so the page is one Map
+      section and the tool is the plugin's `comp` drawn over the canvas — it is not a bespoke page.
+    Status of record: planning/transportny/tasks/current/route-creation-tool.md (phase table) and
+    research/route-creation/findings.md (the investigative trail). Where the two implementations
+    disagree, the NEW one wins and the difference is written on the page (§ 04).
+
+  STRUCTURE — the workbench shape, same as npmrds-macro.html / freight-atlas-map.html:
+    · Layout `app`, compact 64px icon SideNav. Reports is the active item: a route is a child
+      of Reports (contract item 1's item set is `Reports → All reports · Your reports · Routes`),
+      and this page is reached from the Reports header's "New route" action.
+    · LayoutGroup `workbench` at h-screen, `group.full_width:'show'`: ONE Map section, everything
+      else floating panels over the canvas.
+    · Below the fold, ordinary content bands carry the mode reference, the save contract, the
+      drawn panel states and the honest gap table. Reference prose does not belong in a panel.
+    · CONTRACT: no page header and no breadcrumb — this is the documented workbench exception
+      (contract items 2 and 3). The freshness strip IS carried (item 4, four segments verbatim,
+      plus the page-scoped conflation suffix the item allows).
+
+  THE CANVAS IS DRAWN AT REST. Editor panel open (it is the tool — a workbench whose tool is
+  closed says nothing), everything else quiet: no save modal, no hover popup, no open selects.
+  The modal and the alternate panel states are drawn below the fold in § 02 / § 03, the same
+  mechanism npmrds-macro.html uses.
+
+  ── FOUR THINGS THIS PAGE SPECIFIES THAT THE LIVE PLUGIN DOES NOT YET DO ──────────
+  Each is drawn, labelled, and repeated in § 04 so a build task can pick it up:
+   1. ROUTE PAINT. Live: `dataUpdate.jsx` paints selected TMCs `#FF0000` on a `#CCCCCC` network.
+      Red-on-grey is the one colour pair the brand reserves for *bad values* (the LOTTR ramp),
+      and a selected segment is not a bad segment. This page specifies the brand's selection
+      blue `#1F3F8F` for the route and amber `#CA8A04` for the row↔map highlight — which also
+      gives the tool the three states the old one had (default · selected · highlighted) instead
+      of two. `paint.js`'s width/offset/hover-opacity ramps are unchanged.
+   2. LIST ↔ MAP HIGHLIGHT. The old tool's `setHighlightedTmcs` + `hoverEnter/hoverLeave` lit a
+      row when you hovered its segment and vice versa; the port dropped it. Drawn here (row 3).
+   3. THE ROUTE'S OWN IDENTITY ON THE CANVAS. The port shows the name only inside the save
+      modal, so an editor of an existing route cannot see which route they are editing. Panel 1.
+   4. THE MODE HINT. The old InfoBox printed "Click map to place markers…" / "Click TMCs…"
+      under the toggle; the port dropped it, and marker mode is unguessable without it. Drawn as
+      the docked pill, bottom-centre, because the instruction is about the CANVAS, not the panel.
+
+  ── AND FOUR HONEST GAPS, DRAWN AS GAPS (never as working chrome) ────────────────
+   5. NO YEAR SELECTOR. `DEFAULT_ROUTING_YEAR = 2022`, pinned, because the routing service's
+      usable year range is unconfirmed — a direct test on 2026-07-23 found only 2020–2022
+      resolved near Albany; 2016, 2018 and 2023–2026 returned no match. The vintage reads as a
+      static chip, not a select. Phase 3 of routecreation-marker-placement-autorouting.md.
+   6. MARKER ROUTES DO NOT ROUND-TRIP. `points` are never persisted: a marker-made route saves
+      as a flat `tmc_array` and reloads as TMC clicks, markers gone. Said on the marker card and
+      in the reload state, not hidden.
+   7. NO FOLDER FIELD, NO DATES, IN SAVE. The old modal had folder + start/end date + start/end
+      time; the new one has name · description · tags. Dates left deliberately (a route is a
+      geometry; the report's route instance owns the window). Folder is deferred, not dropped.
+   8. THE ROUTING CALL IS STILL CLIENT-DIRECT. `hooks/resolveRoute.js` POSTs
+      routing2.availabs.org from the browser; the dms-server proxy (Phase 1) is not started.
+      Drawn in the marker card's status line.
+
+  MAP HONESTY — the same three constraints npmrds-macro.html respects:
+    · The map renders from TILES; a click is `queryRenderedFeatures` against the shapefile layer.
+    · Tile properties are empty unless the layer sets `data-column` — the plugin's `mapRegister`
+      sets `data-column: 'tmc'` purely to get `tmc` into the tile, which is the fix for the
+      original "no TMC could ever be selected" bug (findings.md Part 1). Documented in § 03.
+    · No basemap / zoom / full-screen buttons in the panels: the map's own navigation control
+      already renders them, and a plugin cannot drive the basemap.
+
+  SECTION NESTING: no `data-dms-section` wraps another. Band heads are their own lexical
+  sections; every band wrapper is a `data-dms-group` + a 12-col grid.
+-->
+
+<div class="bg-[#ECEEF2] min-h-screen" data-dms-layout="app">
+  <div class="relative isolate flex min-h-screen w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen lg:ml-16">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ═════════ SIDENAV · COMPACT (icon-only · 64px) ═════════ -->
+        <aside class="fixed inset-y-0 left-0 w-16 max-lg:hidden z-20">
+          <div class="flex flex-col w-16 h-full z-20 bg-[#12181F] items-center overflow-visible">
+            <!-- LogoNav · compact: logoWrapper w-16 bg-[#12181F], logo mark at h-8 -->
+            <a href="npmrds-home.html" title="NPMRDS" class="@container h-16 w-16 flex px-2 py-3 items-center justify-center bg-[#12181F]"><span class="flex-shrink-0"><img class="h-8 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></span></a>
+            <!-- nav · navitemSide/Active + menuIconSide size-6, itemsWrapper py-4 -->
+            <div class="flex-1 py-4 w-full overflow-visible">
+              <a href="npmrds-home.html" title="Home" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg></a>
+              <a href="npmrds-macro.html" title="Macro View" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-6" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg></a>
+              <a href="npmrds-reports.html" title="Reports · Routes" class="group relative flex items-center justify-center w-full py-3 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Report --><svg class="size-6" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg></a>
+              <a href="route-comparison.html" title="Route comparison" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-6" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg></a>
+              <a href="map-21.html" title="MAP-21 PM3" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></a>
+            </div>
+            <!-- bottomMenu · QuickLinks icon-only (labels hide under @[120px]) -->
+            <div class="border-t border-[#2a3545] pt-2 w-full">
+              <a href="datasets-catalog.html" title="Data Sources" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg></a>
+              <a href="docs-overview.html" title="Docs" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12"/></svg></a>
+              <div class="my-2 border-t border-[#2a3545] w-full"></div>
+              <a href="#" title="Report an issue" class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></a>
+            </div>
+            <a href="login.html" title="amuro@albany.edu · NYSDOT" class="border-t border-[#2a3545] pt-2 w-full flex items-center justify-center py-2"><span class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span></a>
+          </div>
+        </aside>
+        <div class="flex-1 flex flex-col min-w-0">
+
+          <!-- ═════════ MAP WORKBENCH · LayoutGroup `workbench` + full_width:'show' ═════════
+               ONE Map section. The tool is the `routecreation` plugin's `comp`, drawn over the
+               canvas — everything floating below is that one component plus the map's own chrome. -->
+          <div class="w-full h-screen" data-dms-group="workbench">
+            <div class="relative w-full h-full tny-map overflow-hidden" data-dms-section="map">
+
+              <!-- MAP CANVAS · the NPMRDS shapefile layer, 2022 conflation vintage.
+                   THREE PAINT STATES, and this page specifies all three (deviation 1 in the
+                   header note): network `#C4CBD4` · route `#1F3F8F` · highlighted `#CA8A04`.
+                   Live today: `#CCCCCC` network, `#FF0000` route, no highlight state at all.
+                   Width/offset/hover-opacity keep `paint.js`'s zoom ramps untouched — this
+                   changes `line-color` only, i.e. one `match` expression in `dataUpdate.jsx`. -->
+              <!-- decorative --><svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full">
+                <g stroke="#C4CBD4" fill="none" stroke-linecap="round">
+                  <path d="M 60 660 L 250 600 L 470 566 L 700 540 L 940 528 L 1160 534" stroke-width="3"/>
+                  <path d="M 120 130 L 300 190 L 470 268 L 640 330 L 820 372 L 1010 392" stroke-width="3"/>
+                  <path d="M 300 190 L 296 340 L 288 500 L 280 664 L 274 780" stroke-width="2.5"/>
+                  <path d="M 640 330 L 636 470 L 630 620 L 626 780" stroke-width="2.5"/>
+                  <path d="M 880 60 L 876 200 L 868 300 L 862 430 L 858 560 L 854 700" stroke-width="2.5"/>
+                  <path d="M 470 268 L 466 400 L 462 560 L 458 700" stroke-width="2"/>
+                  <path d="M 60 420 L 240 404 L 430 398 L 620 400 L 800 412 L 1000 430 L 1160 452" stroke-width="2"/>
+                  <path d="M 250 600 L 262 470 L 274 340 L 288 220 L 300 190" stroke-width="2"/>
+                  <path d="M 880 300 L 990 270 L 1090 226 L 1160 188" stroke-width="2"/>
+                  <path d="M 500 520 L 520 640 L 540 760" stroke-width="2"/>
+                  <path d="M 680 448 L 790 470 L 900 500 L 1010 540" stroke-width="2"/>
+                  <path d="M 760 404 L 770 300 L 780 200 L 790 90" stroke-width="2"/>
+                  <path d="M 410 548 L 380 660 L 350 770" stroke-width="2"/>
+                  <path d="M 1010 392 L 1100 470 L 1160 560" stroke-width="2"/>
+                </g>
+
+                <!-- THE ROUTE · 8 of the 14 selected TMCs are in view. One stroke per TMC —
+                     a route is an ordered LIST of segments, not one polyline, and the tool's
+                     whole interaction is per-segment. -->
+                <g stroke="#1F3F8F" fill="none" stroke-width="6" stroke-linecap="round">
+                  <path d="M 250 600 L 330 575"/>
+                  <path d="M 330 575 L 410 548"/>
+                  <path d="M 500 520 L 590 486"/>
+                  <path d="M 590 486 L 680 448"/>
+                  <path d="M 680 448 L 760 404"/>
+                  <path d="M 760 404 L 830 352"/>
+                  <path d="M 830 352 L 880 300"/>
+                </g>
+                <!-- the HIGHLIGHTED segment · row 3 of the panel list is hovered, so its
+                     segment is amber and 1px wider. Two-way: hovering the segment lights the row. -->
+                <path d="M 410 548 L 500 520" stroke="#CA8A04" stroke-width="7" fill="none" stroke-linecap="round"/>
+              </svg>
+
+              <div class="absolute left-[20%] top-[78%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Albany</div>
+              <div class="absolute left-[41%] top-[60%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Colonie</div>
+              <div class="absolute left-[62%] top-[47%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Latham</div>
+              <div class="absolute left-[75%] top-[33%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Troy</div>
+
+              <!-- ══ PANEL 1 · THE ROUTE (top-left) ══ deviation 3 in the header note: the port
+                   shows the route's name only inside the save modal, so someone who arrived on
+                   `?route_id=…` cannot see what they are editing. Same panel chrome as
+                   npmrds-macro.html — w-80, h-10 header, white/95 field. -->
+              <div class="absolute top-0 left-0 p-4 pointer-events-none">
+                <div class="w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm overflow-hidden pointer-events-auto">
+                  <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-zinc-50/80">
+                    <!-- icon: Road --><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
+                    <span class="flex-1 text-sm font-medium text-zinc-700 truncate select-none">Route</span>
+                    <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-[10px] font-semibold uppercase tracking-wider">editing</span>
+                  </div>
+                  <div class="p-2.5 space-y-2.5">
+                    <div>
+                      <!-- contract item 6 · the route object: size-3 dot · 13px/600 name, truncated
+                           WITH a title tooltip · 10px uppercase-tracked meta. Same row treatment as
+                           npmrds-report.html's rail and route-comparison.html's builder. -->
+                      <div class="flex items-center gap-2">
+                        <span class="size-3 rounded-full bg-[#1F3F8F] shrink-0"></span>
+                        <span class="text-[13px] font-semibold text-zinc-800 truncate" title="I-90 EB · Exit 1 → Exit 7">I-90 EB · Exit 1 → Exit 7</span>
+                      </div>
+                      <div class="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500 tabular-nums">14 tmc · 8.62 mi · route 4172</div>
+                    </div>
+                    <div class="flex flex-wrap gap-1">
+                      <span class="h-5 px-1.5 inline-flex items-center rounded bg-zinc-100 text-zinc-600 text-[10px] font-medium">Capital District</span>
+                      <span class="h-5 px-1.5 inline-flex items-center rounded bg-zinc-100 text-zinc-600 text-[10px] font-medium">corridor study</span>
+                    </div>
+                    <!-- NETWORK VINTAGE · gap 5. A static chip, not a select: the year the routing
+                         service can actually match against is unconfirmed beyond 2020–2022, so a
+                         select would offer eight years of which six silently return nothing. -->
+                    <div class="pt-2.5 border-t border-zinc-950/05">
+                      <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Network vintage</div>
+                      <div class="h-8 px-2.5 flex items-center gap-2 rounded-md border border-zinc-950/10 bg-zinc-50">
+                        <span class="text-[13px] font-medium tabular-nums text-zinc-700">2022</span>
+                        <span class="font-mono text-[10px] text-zinc-400">conflation v0_6_0</span>
+                        <span class="ml-auto font-mono text-[9.5px] uppercase tracking-wider text-zinc-400" title="A year selector is Phase 3 and is blocked on re-verifying which years the routing service can actually match — only 2020–2022 resolved in a direct test.">pinned</span>
+                      </div>
+                    </div>
+                    <a href="npmrds-reports.html#routes" class="flex items-center gap-1.5 text-[12px] text-[#1F3F8F] hover:underline">
+                      <!-- icon: ArrowLeft --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg>All routes
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ══ PANEL 2 · ROUTE EDITOR (top-right) ══ the plugin's `RouteEditor.jsx`, redrawn
+                   in the catalogue's panel vocabulary. Position and width are the component's own
+                   (top ~25px, right 8px, 318px, max-h 520px) — w-80 is 320px, so the drawing and
+                   the component agree. Every control here exists in the component today. -->
+              <div class="absolute top-0 right-0 p-4 pointer-events-none">
+                <div class="w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-140px)] flex flex-col rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm overflow-hidden pointer-events-auto">
+                  <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-zinc-50/80 shrink-0">
+                    <!-- icon: PencilEdit --><svg class="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg>
+                    <span class="flex-1 text-sm font-medium text-zinc-700 truncate select-none">Route editor</span>
+                    <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-blue-600 text-white text-[10px] font-semibold tabular-nums">14</span>
+                  </div>
+
+                  <!-- MODE · two segments, the component's `setCreationMode`. Switching modes
+                       CLEARS the selection in both modes (comp.jsx:100-110) — said on the hint
+                       pill, not hidden behind the click. -->
+                  <div class="p-2.5 border-b border-zinc-950/05 shrink-0">
+                    <div class="h-8 grid grid-cols-2 rounded-md border border-zinc-950/10 overflow-hidden">
+                      <button class="bg-blue-600 text-white text-[12px] font-medium">TMC click</button>
+                      <button class="bg-white text-zinc-600 text-[12px] border-l border-zinc-950/10 hover:bg-zinc-50">Markers</button>
+                    </div>
+                    <!-- the shared count + destructive row. Same row in both modes (only the label
+                         and the handlers differ) so toggling never jumps the panel's layout. -->
+                    <div class="mt-2.5 flex items-center justify-between">
+                      <div class="text-[12px] font-semibold text-zinc-700 tabular-nums">TMCs: 14</div>
+                      <div class="flex items-center gap-1">
+                        <button class="h-6 px-2 rounded text-[11px] text-zinc-600 hover:bg-zinc-100">Remove last</button>
+                        <button class="h-6 px-2 rounded text-[11px] text-rose-600 hover:bg-rose-50">Clear all</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- TMC SEARCH · TMC-click mode only. Add is gated on a 9-character code that
+                       actually resolved to geometry (`searchTmcValid`), so a typo cannot enter the
+                       list the way a map click never could. The button reads "Remove" when the
+                       typed TMC is already in the route. -->
+                  <div class="p-2.5 border-b border-zinc-950/05 shrink-0">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">TMC search</div>
+                    <div class="flex gap-1.5">
+                      <div class="flex-1 h-8 px-2.5 rounded-md border border-zinc-950/10 bg-white flex items-center">
+                        <span class="font-mono text-[12px] text-zinc-300">120P04731</span>
+                      </div>
+                      <button class="h-8 px-3 rounded-md bg-blue-600 text-white text-[12px] font-medium hover:bg-blue-700">Add</button>
+                    </div>
+                  </div>
+
+                  <div class="px-2.5 pt-2.5 pb-1 flex items-center gap-2 shrink-0">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 flex-1">TMC list</span>
+                    <span class="font-mono text-[10.5px] tabular-nums text-zinc-500">8.62 mi total</span>
+                  </div>
+
+                  <!-- THE LIST · one row per TMC, in route order. Row 3 is the HIGHLIGHTED state
+                       (deviation 2): hovering a row lights its segment on the map and hovering a
+                       segment lights its row. `tmc` · `miles` · `intersection` are the three
+                       columns `useRouteData` actually fetches off the shapefile view. -->
+                  <div class="flex-1 min-h-0 overflow-y-auto scrollbar-sm divide-y divide-zinc-950/05 border-t border-zinc-950/05">
+                    <div class="px-2.5 py-1.5 hover:bg-zinc-50">
+                      <div class="flex items-center gap-2"><span class="font-mono text-[12px] font-semibold text-zinc-800 flex-1">120P04731</span><span class="font-mono text-[10.5px] tabular-nums text-zinc-500">0.412 mi</span></div>
+                      <div class="flex items-center gap-2"><span class="text-[11px] text-zinc-500 flex-1 truncate" title="EXIT 1 - I-787/US 9">EXIT 1 - I-787/US 9</span><button class="text-[10px] text-rose-600 opacity-0 hover:underline">Remove</button></div>
+                    </div>
+                    <div class="px-2.5 py-1.5 hover:bg-zinc-50">
+                      <div class="flex items-center gap-2"><span class="font-mono text-[12px] font-semibold text-zinc-800 flex-1">120P04732</span><span class="font-mono text-[10.5px] tabular-nums text-zinc-500">1.238 mi</span></div>
+                      <div class="flex items-center gap-2"><span class="text-[11px] text-zinc-500 flex-1 truncate" title="EXIT 2 - NY 32">EXIT 2 - NY 32</span><button class="text-[10px] text-rose-600 opacity-0 hover:underline">Remove</button></div>
+                    </div>
+                    <!-- row 3 · HIGHLIGHTED (hovered). Amber left bar + tinted field, matching the
+                         amber segment on the canvas. This is the state the port dropped. -->
+                    <div class="px-2.5 py-1.5 bg-amber-50 border-l-2 border-[#CA8A04]">
+                      <div class="flex items-center gap-2"><span class="font-mono text-[12px] font-semibold text-zinc-900 flex-1">120P04733</span><span class="font-mono text-[10.5px] tabular-nums text-zinc-600">0.907 mi</span></div>
+                      <div class="flex items-center gap-2"><span class="text-[11px] text-zinc-600 flex-1 truncate" title="EXIT 3 - NY 85 SLINGERLANDS BYP">EXIT 3 - NY 85 SLINGERLANDS BYP</span><button class="text-[10px] text-rose-600 hover:underline">Remove</button></div>
+                    </div>
+                    <div class="px-2.5 py-1.5 hover:bg-zinc-50">
+                      <div class="flex items-center gap-2"><span class="font-mono text-[12px] font-semibold text-zinc-800 flex-1">120P04734</span><span class="font-mono text-[10.5px] tabular-nums text-zinc-500">0.655 mi</span></div>
+                      <div class="flex items-center gap-2"><span class="text-[11px] text-zinc-500 flex-1 truncate" title="EXIT 4 - I-87/NY 5">EXIT 4 - I-87/NY 5</span><button class="text-[10px] text-rose-600 opacity-0 hover:underline">Remove</button></div>
+                    </div>
+                    <div class="px-2.5 py-1.5 hover:bg-zinc-50">
+                      <div class="flex items-center gap-2"><span class="font-mono text-[12px] font-semibold text-zinc-800 flex-1">120P04735</span><span class="font-mono text-[10.5px] tabular-nums text-zinc-500">1.104 mi</span></div>
+                      <div class="flex items-center gap-2"><span class="text-[11px] text-zinc-500 flex-1 truncate" title="EXIT 5 - NY 155 WOLF RD">EXIT 5 - NY 155 WOLF RD</span><button class="text-[10px] text-rose-600 opacity-0 hover:underline">Remove</button></div>
+                    </div>
+                    <div class="px-2.5 py-1.5 hover:bg-zinc-50">
+                      <div class="flex items-center gap-2"><span class="font-mono text-[12px] font-semibold text-zinc-800 flex-1">120P04736</span><span class="font-mono text-[10.5px] tabular-nums text-zinc-500">0.783 mi</span></div>
+                      <div class="flex items-center gap-2"><span class="text-[11px] text-zinc-500 flex-1 truncate" title="EXIT 6 - NY 7">EXIT 6 - NY 7</span><button class="text-[10px] text-rose-600 opacity-0 hover:underline">Remove</button></div>
+                    </div>
+                  </div>
+
+                  <!-- SAVE · the label follows `isEditingRoute`, which is just "does the page URL
+                       carry ?route_id=". Editing → "Update route" (§ 02 draws the overwrite
+                       warning that comes with it); new → "Save route". -->
+                  <div class="p-2.5 border-t border-zinc-950/10 bg-zinc-50/80 shrink-0">
+                    <button class="w-full h-9 rounded-md bg-[#1F3F8F] text-white text-[12.5px] font-medium hover:bg-[#16306e]">Update route</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ══ PANEL 3 · FRESHNESS (bottom-left) ══ contract item 4 — the four segments
+                   verbatim, plus the page-scoped conflation suffix the item permits. -->
+              <div class="absolute bottom-0 left-0 p-4 flex items-center gap-2">
+                <div class="h-9 px-3 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                  <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                  <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                  <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                  <span class="text-slate-300">·</span><span>since jan 2017</span>
+                  <span class="text-slate-300">·</span><span>network 2022</span>
+                </div>
+              </div>
+
+              <!-- ══ PANEL 4 · MODE HINT (bottom-centre, docked) ══ deviation 4. The instruction
+                   is about the CANVAS, so it docks to the canvas rather than sitting in the panel.
+                   Its text is the mode's, and it also carries the one non-obvious consequence:
+                   switching modes clears what you have. -->
+              <div class="absolute bottom-0 left-1/2 -translate-x-1/2 p-4">
+                <div class="h-9 px-3 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center gap-2 text-[12px] text-zinc-600">
+                  <!-- icon: CursorClick --><svg class="size-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 9 10.5 4-4.5 1.5L13.5 19 9 9Z"/><path d="M4 4v2m0 6v2m-2-6H4m8-2V4M6 6 4.5 4.5M6 12l-1.5 1.5"/></svg>
+                  <span>Click a segment to add or remove it</span>
+                  <span class="text-zinc-300">·</span>
+                  <span class="text-zinc-400">switching mode clears the selection</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · THE TWO CREATION MODES · LayoutGroup `content` ═════════
+               Both modes ship. They are not two tools: they are two ways to fill the same
+               `tmc_array`, and everything downstream of the array is identical. -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content" id="modes">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <div class="col-span-12" data-dms-section="modes-head">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722]">Two ways to build the same list</h2>
+                </div>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 max-w-[860px]">A route is an ordered array of TMC codes and nothing else. Both modes write that one array, so a route is never “a marker route” or “a click route” downstream — the report, the comparison and the map all see the same thing. The modes differ only in how many clicks it costs you to fill it, and in what happens when you come back to edit.</p>
+              </div>
+
+              <!-- ── TMC CLICK ── the default (`DEFAULT_CREATION_MODE`). -->
+              <div class="col-span-12 lg:col-span-6" data-dms-section="mode-tmc-click">
+                <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                    <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] flex-1">TMC click</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-emerald-700">default · shipped</span>
+                  </div>
+                  <div class="p-5">
+                    <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">Click a segment to add it; click it again to remove it. The click is a <span class="tny-mono">queryRenderedFeatures</span> hit-test against the shapefile layer, so what you can select is exactly what the tiles draw at the current zoom.</p>
+                    <div class="mt-4 grid grid-cols-3 gap-3">
+                      <div class="rounded-[6px] border border-zinc-950/08 bg-slate-50/60 p-3">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">network</div>
+                        <svg viewBox="0 0 120 40" class="w-full"><path d="M 8 30 L 44 24 L 80 18 L 112 12" stroke="#C4CBD4" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+                      </div>
+                      <div class="rounded-[6px] border border-zinc-950/08 bg-slate-50/60 p-3">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">in route</div>
+                        <svg viewBox="0 0 120 40" class="w-full"><path d="M 8 30 L 44 24 L 80 18 L 112 12" stroke="#1F3F8F" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+                      </div>
+                      <div class="rounded-[6px] border border-zinc-950/08 bg-slate-50/60 p-3">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">highlighted</div>
+                        <svg viewBox="0 0 120 40" class="w-full"><path d="M 8 30 L 44 24 L 80 18 L 112 12" stroke="#CA8A04" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                      </div>
+                    </div>
+                    <ul class="mt-4 space-y-2 font-proxima text-[13px] leading-[1.55] text-slate-700">
+                      <li class="flex gap-2"><span class="text-[#CA8A04] font-mono text-[10px] mt-1">·</span><span><strong>Order is click order</strong>, not geographic order. The array is appended to; nothing re-sorts it. A route clicked out of sequence graphs out of sequence.</span></li>
+                      <li class="flex gap-2"><span class="text-[#CA8A04] font-mono text-[10px] mt-1">·</span><span><strong>Search-to-add</strong> covers the segments a click cannot reach — a TMC you already know, or one buried under an interchange. Nine characters, and the code must resolve to real geometry before <em>Add</em> lights up.</span></li>
+                      <li class="flex gap-2"><span class="text-[#CA8A04] font-mono text-[10px] mt-1">·</span><span><strong>Remove last</strong> pops the tail; <strong>Clear all</strong> empties the array. Both exist in both modes — the port originally shipped them for markers only.</span></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── MARKERS ── drop waypoints, let the routing service fill in the TMCs. -->
+              <div class="col-span-12 lg:col-span-6" data-dms-section="mode-markers">
+                <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                    <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] flex-1">Markers · auto-routing</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-amber-700">shipped · with caveats</span>
+                  </div>
+                  <div class="p-5">
+                    <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">Drop two or more waypoints and the path between them is map-matched to a TMC sequence. Drag a waypoint and the whole path re-resolves. For a 40-segment corridor this is two clicks instead of forty.</p>
+                    <!-- the gradient IS the sequence: first waypoint green, last red, interpolated
+                         between (MARKER_GRADIENT_COLORS, a d3 linear scale over the index). -->
+                    <div class="mt-4 rounded-[6px] border border-zinc-950/08 bg-slate-50/60 p-4">
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">waypoint gradient · first → last</div>
+                      <!-- decorative --><svg viewBox="0 0 420 90" class="w-full">
+                        <path d="M 40 62 L 140 52 L 250 40 L 370 26" stroke="#1F3F8F" stroke-width="5" fill="none" stroke-linecap="round"/>
+                        <g stroke="#fff" stroke-width="1.5">
+                          <path d="M 40 62 c -9 -12 -9 -22 0 -22 c 9 0 9 10 0 22 z" fill="#1a9641"/>
+                          <path d="M 140 52 c -9 -12 -9 -22 0 -22 c 9 0 9 10 0 22 z" fill="#c4e687"/>
+                          <path d="M 250 40 c -9 -12 -9 -22 0 -22 c 9 0 9 10 0 22 z" fill="#ffffbf"/>
+                          <path d="M 370 26 c -9 -12 -9 -22 0 -22 c 9 0 9 10 0 22 z" fill="#d7191c"/>
+                        </g>
+                        <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle"><text x="40" y="80">1</text><text x="140" y="80">2</text><text x="250" y="80">3</text><text x="370" y="80">4</text></g>
+                      </svg>
+                    </div>
+                    <ul class="mt-4 space-y-2 font-proxima text-[13px] leading-[1.55] text-slate-700">
+                      <li class="flex gap-2"><span class="text-[#CA8A04] font-mono text-[10px] mt-1">·</span><span><strong>The resolved list is editable.</strong> Auto-routing fills the array; the TMC list is the same list, and rows can be removed after the fact.</span></li>
+                      <li class="flex gap-2"><span class="text-rose-500 font-mono text-[10px] mt-1">!</span><span><strong>Markers do not survive a save.</strong> Only <span class="tny-mono">tmc_array</span> is written, so a marker-made route reopens as a TMC-click route with no waypoints. Editing it means editing segments, not dragging pins. <span class="text-slate-500">Persisting <span class="tny-mono">points</span> is a known open item, not an oversight to design around.</span></span></li>
+                      <li class="flex gap-2"><span class="text-rose-500 font-mono text-[10px] mt-1">!</span><span><strong>One network vintage.</strong> The match runs against <span class="tny-mono">2022_v0_6_0</span>, pinned. A live test found only 2020–2022 resolving near Albany, so the year is a chip, not a select, until the usable range is re-verified.</span></li>
+                    </ul>
+                    <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span class="inline-flex items-center gap-1.5 text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>routing2.availabs.org</span>
+                      <span class="text-slate-300">·</span><span>called direct from the browser</span>
+                      <span class="text-slate-300">·</span><span>server proxy not started</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · SAVING A ROUTE · LayoutGroup `content_tint` ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-y border-zinc-950/05 py-12" data-dms-group="content_tint" id="save">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <div class="col-span-12" data-dms-section="save-head">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722]">Saving — three fields, one row</h2>
+                </div>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 max-w-[860px]">The save dialog is deliberately short. The old tool asked for a folder and a start/end date and time; this one asks for a name, a description and tags, because a route is a <em>geometry</em> — the report that uses it owns the time window, and one route feeding two reports with two different windows is the normal case, not the exception.</p>
+              </div>
+
+              <!-- ── the modal, drawn ── -->
+              <div class="col-span-12 lg:col-span-7" data-dms-section="save-modal">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                    <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] flex-1">Save dialog · update state</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">?route_id=4172</span>
+                  </div>
+                  <div class="p-5 bg-slate-100/50">
+                    <!-- the dialog surface itself -->
+                    <div class="rounded-[6px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                      <div class="flex items-start gap-3 pb-3 border-b border-zinc-950/05">
+                        <span class="size-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0"><!-- icon: Road --><svg class="size-5 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg></span>
+                        <div class="min-w-0">
+                          <div class="font-display uppercase text-[16px] tracking-wide text-[#0F1722]">Update route</div>
+                          <!-- the warning is the whole reason the update state is drawn: an update
+                               OVERWRITES; there is no "save as a copy" path in the component. -->
+                          <p class="font-proxima text-[12.5px] leading-[1.5] text-rose-700 mt-0.5">You are updating an existing route. Saving overwrites it — it does not create a new one.</p>
+                        </div>
+                      </div>
+                      <div class="mt-4 space-y-3">
+                        <div>
+                          <div class="font-proxima text-[13px] font-medium text-slate-700 mb-1">Name</div>
+                          <div class="h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white flex items-center font-proxima text-[13.5px] text-[#0f1722]">I-90 EB · Exit 1 → Exit 7</div>
+                        </div>
+                        <div>
+                          <div class="font-proxima text-[13px] font-medium text-slate-700 mb-1">Description</div>
+                          <div class="min-h-[64px] px-3 py-2 rounded-[6px] border border-zinc-950/15 bg-white font-proxima text-[13.5px] leading-[1.55] text-slate-700">Eastbound mainline through the Albany interchange complex. Built for the 2024 vs 2019 peak-spreading memo.</div>
+                        </div>
+                        <div>
+                          <div class="font-proxima text-[13px] font-medium text-slate-700 mb-1">Tags</div>
+                          <!-- free-form chips: there is no tag vocabulary yet, so entry is
+                               type-and-commit (Enter or comma), backspace removes the last. -->
+                          <div class="min-h-9 px-2 py-1.5 rounded-[6px] border border-zinc-950/15 bg-white flex flex-wrap items-center gap-1.5">
+                            <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-800 text-[12px]">Capital District <!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg></span>
+                            <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-800 text-[12px]">corridor study <!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg></span>
+                            <span class="font-proxima text-[13px] text-slate-400">Add a tag…</span>
+                          </div>
+                          <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1">Free text — no fixed vocabulary yet. Tags are how routes are found again on <a href="npmrds-reports.html#routes" class="tny-link">Reports</a>.</p>
+                        </div>
+                      </div>
+                      <div class="mt-5 pt-4 border-t border-zinc-950/05 flex items-center gap-2 justify-end">
+                        <button class="h-9 px-3.5 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B] font-display uppercase text-[12.5px] tracking-wide">Cancel</button>
+                        <button class="tny-press h-9 px-4 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e] font-display uppercase text-[12.5px] tracking-wide">Update</button>
+                      </div>
+                    </div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-500 mt-3"><strong>New-route state</strong> differs in three places only: the title reads <em>Save new route</em>, the red overwrite line is absent, and the confirm button reads <em>Save</em>. Nothing else moves — same fields, same order.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── what a save actually writes ── -->
+              <div class="col-span-12 lg:col-span-5" data-dms-section="save-payload">
+                <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">What the save writes</span>
+                  </div>
+                  <table class="w-full text-[12.5px]">
+                    <tbody class="font-proxima text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[11.5px] text-[#0F1722] align-top">name</td><td class="px-4 py-2">the dialog's Name</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[11.5px] text-[#0F1722] align-top">description</td><td class="px-4 py-2">the dialog's Description</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[11.5px] text-[#0F1722] align-top">tmc_array</td><td class="px-4 py-2">the list, in order, JSON-encoded</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[11.5px] text-[#0F1722] align-top">tags</td><td class="px-4 py-2">the chips, JSON-encoded</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[11.5px] text-[#0F1722] align-top">metadata</td><td class="px-4 py-2">always <span class="tny-mono">{}</span> — the field the old tool used for dates, kept empty on purpose</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[11.5px] text-[#0F1722] align-top">created_at<br/>updated_at</td><td class="px-4 py-2">stamped client-side; <span class="tny-mono">created_at</span> only on a new route</td></tr>
+                      <tr><td class="px-4 py-2 font-mono text-[11.5px] text-slate-400 align-top line-through">points</td><td class="px-4 py-2 text-slate-500">not written — this is why marker routes don't round-trip</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="px-5 py-4 border-t border-zinc-950/05 bg-slate-50/40 space-y-2.5">
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">where it lands</div>
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">One row in the internal <span class="tny-mono">routes_data</span> dataset — source <span class="tny-mono">2107426</span>, view <span class="tny-mono">2107427</span>. Same rows <a href="npmrds-reports.html#routes" class="tny-link">Reports</a> lists and <a href="route-comparison.html" class="tny-link">Route Comparison</a> selects from.</p>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">what happens next</div>
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">The page navigates to <span class="tny-mono">?route_id=&lt;new id&gt;</span>, so a just-saved route is immediately a route you are <em>editing</em> — the Save button becomes Update on the same screen.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · PANEL STATES · LayoutGroup `content` ═════════
+               The three states the canvas above cannot show at once. Same mechanism
+               npmrds-macro.html § 03 uses: draw them as content-band snapshots. -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content" id="states">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <div class="col-span-12" data-dms-section="states-head">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722]">Panel states</h2>
+                </div>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 max-w-[860px]">Three states the live panel has and the canvas above can't show simultaneously. Each is the real component with different data — no state here needs a control the editor doesn't already have.</p>
+              </div>
+
+              <!-- empty -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="state-empty">
+                <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-4 py-2.5 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                    <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722] flex-1">Empty · a new route</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">no route_id</span>
+                  </div>
+                  <div class="p-4 bg-slate-100/50">
+                    <div class="rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm overflow-hidden">
+                      <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-zinc-50/80"><!-- icon: PencilEdit --><svg class="size-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg><span class="flex-1 text-sm font-medium text-zinc-700">Route editor</span><span class="px-1.5 h-5 inline-flex items-center rounded-full bg-zinc-200 text-zinc-600 text-[10px] font-semibold tabular-nums">0</span></div>
+                      <div class="p-2.5 border-b border-zinc-950/05">
+                        <div class="h-8 grid grid-cols-2 rounded-md border border-zinc-950/10 overflow-hidden"><button class="bg-blue-600 text-white text-[12px] font-medium">TMC click</button><button class="bg-white text-zinc-600 text-[12px] border-l border-zinc-950/10">Markers</button></div>
+                        <div class="mt-2.5 flex items-center justify-between"><div class="text-[12px] font-semibold text-zinc-400 tabular-nums">TMCs: 0</div><div class="flex items-center gap-1"><span class="h-6 px-2 rounded text-[11px] text-zinc-300 cursor-not-allowed">Remove last</span><span class="h-6 px-2 rounded text-[11px] text-zinc-300 cursor-not-allowed">Clear all</span></div></div>
+                      </div>
+                      <div class="p-6 text-center">
+                        <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-500">No segments yet.<br/>Click one on the map, or search a TMC code.</p>
+                      </div>
+                      <div class="p-2.5 border-t border-zinc-950/10 bg-zinc-50/80"><button class="w-full h-9 rounded-md bg-zinc-200 text-zinc-400 text-[12.5px] font-medium cursor-not-allowed" disabled>Save route</button></div>
+                    </div>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-500 mt-3">Save is unreachable until the array has something in it — the component only renders the button once <span class="tny-mono">tmc_array.length &gt; 0</span>. Drawn disabled rather than absent so the way out of the empty state is visible from the empty state.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- reload -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="state-reload">
+                <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-4 py-2.5 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                    <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722] flex-1">Reopening a saved route</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">?route_id=4172</span>
+                  </div>
+                  <div class="p-4">
+                    <ol class="space-y-3 font-proxima text-[13px] leading-[1.55] text-slate-700">
+                      <li class="flex gap-2.5"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5 shrink-0">01</span><span>The <span class="tny-mono">route_id</span> page filter is read from the URL — a route is <em>loaded</em> by navigating, so a link to a route is a link anyone can share.</span></li>
+                      <li class="flex gap-2.5"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5 shrink-0">02</span><span>Name, description, tags and <span class="tny-mono">tmc_array</span> come back; the array repaints the map and refills the list.</span></li>
+                      <li class="flex gap-2.5"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5 shrink-0">03</span><span>The map zooms to the route's own bounds, once. Clicking a segment clears the zoom-to-bounds instruction so editing doesn't fight the camera.</span></li>
+                      <li class="flex gap-2.5"><span class="font-mono text-[10px] text-rose-500 mt-0.5 shrink-0">04</span><span><strong>Waypoints do not come back</strong>, even for a route that was built with them — the mode reads TMC click, and the pins are gone.</span></li>
+                    </ol>
+                    <div class="mt-4 rounded-[6px] border border-[#CA8A04]/30 bg-amber-50/50 p-3">
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">// the label carries the risk</div>
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">With a <span class="tny-mono">route_id</span> present, every save is an overwrite. The button says <em>Update route</em> and the dialog says so again in red, because the two paths are one click apart and only one of them is reversible.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- search -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="state-search">
+                <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-4 py-2.5 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                    <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722] flex-1">TMC search · four states</span>
+                  </div>
+                  <div class="p-4 space-y-3">
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">too short</div>
+                      <div class="flex gap-1.5"><div class="flex-1 h-8 px-2.5 rounded-md border border-zinc-950/10 bg-white flex items-center font-mono text-[12px] text-zinc-700">120N04</div><button class="h-8 px-3 rounded-md bg-zinc-200 text-zinc-400 text-[12px] font-medium cursor-not-allowed" disabled>Add</button></div>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">nine characters, no geometry</div>
+                      <div class="flex gap-1.5"><div class="flex-1 h-8 px-2.5 rounded-md border border-rose-300 bg-white flex items-center font-mono text-[12px] text-zinc-700">120P99999</div><button class="h-8 px-3 rounded-md bg-zinc-200 text-zinc-400 text-[12px] font-medium cursor-not-allowed" disabled>Add</button></div>
+                      <div class="text-[11px] text-rose-600 mt-1">TMC not found</div>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">resolves · not in the route</div>
+                      <div class="flex gap-1.5"><div class="flex-1 h-8 px-2.5 rounded-md border border-zinc-950/10 bg-white flex items-center font-mono text-[12px] text-zinc-700">120P04737</div><button class="h-8 px-3 rounded-md bg-blue-600 text-white text-[12px] font-medium">Add</button></div>
+                      <div class="text-[11px] text-slate-500 mt-1">The map zooms to it as you type — the check <em>is</em> the zoom.</div>
+                    </div>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">already in the route</div>
+                      <div class="flex gap-1.5"><div class="flex-1 h-8 px-2.5 rounded-md border border-zinc-950/10 bg-white flex items-center font-mono text-[12px] text-zinc-700">120P04733</div><button class="h-8 px-3 rounded-md bg-white border border-rose-300 text-rose-600 text-[12px] font-medium">Remove</button></div>
+                      <div class="text-[11px] text-slate-500 mt-1">Search toggles, exactly as a click does.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · WHAT IS NOT BUILT · LayoutGroup `content_tint` ═════════
+               Straight from planning/transportny/tasks/current/route-creation-tool.md's phase
+               table, plus the four deviations this page introduces. On the page rather than only
+               in the task file, because a mockup that draws a control the tool doesn't have is
+               how a build task ends up shipping a dead button. -->
+          <div class="w-full bg-[#E4E8EE] border-y border-zinc-950/05 py-12" data-dms-group="content_tint" id="gaps">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <div class="col-span-12" data-dms-section="gaps-head">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722]">Built · specified · deferred</h2>
+                </div>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 max-w-[860px]">Everything the page draws, sorted by whether it exists. <strong>Specified</strong> means this page is the spec and the build task picks it up; <strong>deferred</strong> means a decision was made not to build it, and re-opening it is a new conversation, not an oversight to fix.</p>
+              </div>
+
+              <div class="col-span-12" data-dms-section="gaps-table">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-[12.5px] min-w-[820px]">
+                      <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                        <tr>
+                          <th class="px-4 py-2.5 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Capability</th>
+                          <th class="px-4 py-2.5 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">State</th>
+                          <th class="px-4 py-2.5 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Detail</th>
+                        </tr>
+                      </thead>
+                      <tbody class="font-proxima text-slate-700">
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">TMC click · toggle · search-to-add</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>built</span></td><td class="px-4 py-2.5">Shipped and live-verified. The empty-<span class="tny-mono">properties</span> bug that made selection impossible is fixed by the plugin's own <span class="tny-mono">data-column:'tmc'</span>.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Marker placement · auto-routing</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>built</span></td><td class="px-4 py-2.5">Drop, drag, re-resolve, gradient by sequence. Untested since the port into dms-template.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Save · update · overwrite labelling</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>built</span></td><td class="px-4 py-2.5">Name · description · tags → one <span class="tny-mono">routes_data</span> row. The save path is also untested since the port.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Brand paint · blue route, amber highlight</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>specified</span></td><td class="px-4 py-2.5">Replaces <span class="tny-mono">#FF0000</span> on <span class="tny-mono">#CCCCCC</span>. One <span class="tny-mono">match</span> expression in <span class="tny-mono">dataUpdate.jsx</span>; the width and offset ramps are untouched.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Row ↔ segment highlight</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>specified</span></td><td class="px-4 py-2.5">The old tool had it both ways; the port has neither. Needs a hovered-TMC value the panel and the paint expression both read.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Route identity on the canvas · mode hint</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>specified</span></td><td class="px-4 py-2.5">Panel 1 and the docked pill. Both read state the component already holds.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Network-vintage selector</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>blocked</span></td><td class="px-4 py-2.5">Phase 3. Blocked on re-verifying which years the routing service matches — a direct test found only 2020–2022 working near Albany.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Waypoint (<span class="tny-mono">points</span>) persistence</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>open</span></td><td class="px-4 py-2.5">A marker route reopens as a flat TMC list. Known design limitation, not a bug to file.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Routing behind a server proxy</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>not started</span></td><td class="px-4 py-2.5">Phase 1, and the next real blocker. The client-direct call is deliberate and swappable — one function.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-slate-500">Folder field in save / move</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400"><span class="size-1.5 rounded-full bg-slate-300"></span>deferred</span></td><td class="px-4 py-2.5 text-slate-600">Tags carry the grouping for now. Reopening it means designing the folder tree, not adding a select.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-slate-500">Start/end date and time on the route</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400"><span class="size-1.5 rounded-full bg-slate-300"></span>deferred</span></td><td class="px-4 py-2.5 text-slate-600">Deliberate: a route is a geometry, and the report's route instance owns the window.</td></tr>
+                        <tr><td class="px-4 py-2.5 font-medium text-slate-500">CSV bulk import · permissions model</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400"><span class="size-1.5 rounded-full bg-slate-300"></span>deferred</span></td><td class="px-4 py-2.5 text-slate-600">Both scoped out with reasons on the record.</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="px-5 py-3 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[12px] leading-[1.5] text-slate-500">
+                    Sources: <span class="tny-mono">planning/transportny/tasks/current/route-creation-tool.md</span> (phase table) · <span class="tny-mono">research/route-creation/findings.md</span> (Parts 1–8) · the plugin source under <span class="tny-mono">src/themes/transportny/components/routecreation/</span>.
+                  </div>
+                </div>
+              </div>
+
+              <!-- where a route goes next -->
+              <div class="col-span-12" data-dms-section="downstream">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">a saved route feeds</span>
+                  <a href="npmrds-report.html" class="inline-flex items-center gap-2 font-proxima text-[13.5px] text-[#1F3F8F] hover:underline"><!-- icon: Report --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="M4 16 10 10l4 4 6-6"/></svg>An individual report</a>
+                  <a href="route-comparison.html" class="inline-flex items-center gap-2 font-proxima text-[13.5px] text-[#1F3F8F] hover:underline"><!-- icon: ScatterMatrix --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h18v18H3z"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>A route × period comparison</a>
+                  <a href="npmrds-reports.html#routes" class="inline-flex items-center gap-2 font-proxima text-[13.5px] text-[#1F3F8F] hover:underline"><!-- icon: List --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>The routes list</a>
+                  <a href="npmrds-tmc.html" class="inline-flex items-center gap-2 font-proxima text-[13.5px] text-[#1F3F8F] hover:underline"><!-- icon: Segment --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 18 20 6"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/></svg>Any one segment in it</a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="npmrds-report.html" class="hover:text-slate-900">report</a>
+                <a href="npmrds-tmc.html" class="hover:text-slate-900">tmc</a>
+                <a href="route-comparison.html" class="hover:text-slate-900">route-comparison</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

@@ -1,9 +1,12 @@
 # TransportNY · DMS Design System v2
 
-**v0.2 · 2026-05-26** (last revised **2026-08-05** — the **content sidebar (side content)** region is
-now documented as layout knowledge *and* as a component, with a second named style; the individual
-report page is rebuilt on it and its route controls redrawn at full capability. See
-[Content sidebar](#content-sidebar-2026-08-05) below.) · A second-pass DMS-format implementation of the
+**v0.2 · 2026-05-26** (last revised **2026-08-19** — the NPMRDS category gained two pages,
+`npmrds-route-creation` and `npmrds-tmc`, closing the set's input and output ends; see
+[NPMRDS: the tool that makes a route, and the leaf](#npmrds-the-tool-that-makes-a-route-and-the-leaf-2026-08-19).
+Before that, **2026-08-05**: the **content sidebar (side content)** region is now documented as
+layout knowledge *and* as a component, with a second named style; the individual report page is
+rebuilt on it and its route controls redrawn at full capability — see
+[Content sidebar](#content-sidebar-2026-08-05).) · A second-pass DMS-format implementation of the
 TransportNY brand. Translates the high-fidelity HTML/JSX prototypes in
 `../design_handoff_transportny_design_system/` into the deliverable
 shape mandated by the up-to-date DMS authoring skills.
@@ -244,6 +247,55 @@ Open item, logged rather than invented: the style is chosen in the theme
 picker for the app SideNav's style but none for the content sidebar's; a parallel **“Content
 Sidebar Style”** setting is the natural fix, since `flush` is right for report pages and wrong for
 docs pages on the same site.
+
+---
+
+## NPMRDS: the tool that makes a route, and the leaf (2026-08-19)
+
+Two pages joined the `npmrds` category, closing the two ends the six-page set left open —
+`pages/npmrds-route-creation.html` and `pages/npmrds-tmc.html`. Both are registered in
+`ds-nav.js`; Reports' “New route” action and the macro view's segment popup now link to them,
+so neither arrives as an orphan.
+
+**`npmrds-route-creation.html` — the input side.** Four pages in the category *consume* routes
+(reports, the individual report, route comparison, the routes list) and none documented how one
+is made. The page is the workbench shape (Layout `app`, compact 64-px SideNav, one Map section
+in a `workbench` band, everything else floating panels), transcribed from both implementations:
+the legacy `transportNY/src/sites/npmrds/pages/route_creation/` tool and the live target, the
+`routecreation` **map plugin** in `src/themes/transportny/components/routecreation/`. Because
+the target is a plugin, the page is one Map section plus the plugin's `comp` — not a bespoke
+page, and it says so.
+
+Four things it *specifies* rather than transcribes, each labelled on the page and repeated in
+its § 04 table so a build task can pick them up: **(1)** the route paints in the brand's
+selection blue with an amber highlight, replacing `#FF0000` on `#CCCCCC` — red-on-grey is the
+brand's *bad value* pair and a selected segment is not a bad segment; **(2)** the row↔segment
+highlight the old tool had both ways and the port dropped; **(3)** the route's own name on the
+canvas, so an editor arriving on `?route_id=…` can see what they are editing; **(4)** the mode
+hint, docked to the canvas because the instruction is about the canvas. Four gaps are drawn as
+gaps and never as working chrome: the pinned 2022 network vintage (a year selector is blocked on
+re-verifying which years the routing service actually matches), waypoints not surviving a save,
+no folder field, and the routing call still going client-direct.
+
+**`npmrds-tmc.html` — the output side.** Every other NPMRDS surface aggregates; this is where
+one segment is read in full before any of that is trusted. Transcribed from
+`transportNY/src/sites/npmrds/pages/TmcPage/` — attributes, the month × time-of-day completeness
+grid, the peak-stacked distribution with its median / 85th-percentile rules and outlier filter,
+and the three PM3 measures over ten years.
+
+It is the catalogue's second page on the **`default` content sidebar** (302-px card rail,
+sidebar='right'), and the interesting decision is what did *not* go in the rail. The legacy page
+keeps Year · Metric · Data source · Resolution there; here they are a sticky section at the top
+of the canvas, because the rail is `hidden xl:block` and a page whose charts cannot be re-scoped
+below 1280 px is broken rather than responsive. The rail keeps the jump list, the links out and
+the provenance card — all of it losable.
+
+**One escalation.** `graph` ships `catPalette` (5) and `seqSpeedPalette` (5) and **no neutral
+sequential ramp**, so the completeness grid — a magnitude from none to all — had nothing correct
+to bind to; the legacy page used `getColorRange(7,'BrBG')`, a *diverging* ramp, which puts a
+false midpoint at 50%. The page draws a 7-step single-hue ramp off `graph.primary` and names the
+missing token: `graph.seqNeutralPalette`. It needs adding to `theme/theme.js` before a build task
+can bind the grid.
 
 ---
 
