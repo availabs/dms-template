@@ -789,8 +789,23 @@ function makeWorker(depOverrides = {}) {
           [curTmcId, tmcMeta.year]
         );
 
+        // R2 perf — one p15 derivation per (TMC, reference window) instead of one per metric.
+        //
+        // calcFreeflowBaseThresholdSpeed hardcodes ALL_VEHICLES for the percentile regardless of
+        // which stream the MEASURE reads, so all four metrics sharing a thresholdSpeedVersion
+        // compute the identical value — including the truck ones. That was already 4 duplicate
+        // queries per TMC before R2; adding the anchored variants took it to 8 queries for 2
+        // distinct values. Across 52,127 TMCs that is 417,016 full-year single-TMC scans per
+        // publish where 104,254 suffice.
+        //
+        // Scoped per TMC deliberately rather than module-level: it is bounded by construction (at
+        // most one entry per reference window), needs no eviction, and cannot leak across TMCs,
+        // years or runs.
+        const freeflowP15Cache = new Map();
+
         const commonMetricConfig = {
           db: dataDb, chDb, pgEnv,
+          freeflowP15Cache,
           curTmcId,
           damaSourceId: source_id,
           viewId: damaView.view_id,
