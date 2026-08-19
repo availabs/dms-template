@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   parseTmcArray,
   getDateValue,
@@ -17,14 +17,18 @@ import {
   isValidFormula,
 } from './relativeDatePresets';
 
-// One route's row: expand/collapse, name/date inline editing, remove. Purely
-// presentational — every mutation is a callback prop into the parent's
-// `useReportRow`-backed handlers; this component owns no persistence logic and no
-// "which row is being edited" state (that stays in the parent, since only one row
-// can be in name/date edit mode at a time across the whole list). It DOES own a
-// handful of purely-local disclosure toggles (dependents list) — none of that is
-// meaningful outside this one row's own render, so it never needed to live in
-// the parent.
+// One route's row: expand/collapse, name/date inline editing, remove. Every mutation
+// ultimately calls back into the parent's `useReportRow`-backed handlers (this
+// component owns no persistence logic itself), but the two editable facets differ in
+// where their edit-buffer state lives:
+// - Name: still a parent-owned single-flight buffer (`isEditingName`/`editNameValue`) —
+//   only one row's name can be mid-rename at a time across the whole list.
+// - Dates (2026-08-19, item 4A — removed the pencil/Save/Cancel gate): this row owns
+//   its OWN local buffer + debounced auto-save (`dateMode`/`localStart`/`localEnd`/
+//   `deriveFrom`/`deriveFormula` below), since dates are now always live whenever the
+//   row is expanded — several rows can be mid-edit simultaneously.
+// It also owns a purely-local disclosure toggle (dependents list) — not meaningful
+// outside this one row's own render, so it never needed to live in the parent either.
 //
 // Design push #2 (2026-08-06): weekday mask / time-of-day / graph assignment moved
 // off the route entirely (they're properties of the QUESTION a graph asks, not of
@@ -56,20 +60,7 @@ export default function RouteRow({
   derivedFromRouteName,
   baseForNames,
   derivableSiblings,
-  isEditingDates,
-  editStartDateValue,
-  editEndDateValue,
-  onEditStartDateValueChange,
-  onEditEndDateValueChange,
-  editDateMode,
-  onEditDateModeChange,
-  editDeriveFromValue,
-  onEditDeriveFromValueChange,
-  editDeriveFormulaValue,
-  onEditDeriveFormulaValueChange,
-  onStartEditDates,
-  onSaveEditDates,
-  onCancelEditDates,
+  onUpdateDates,
   onCopyWindow,
   onPasteWindow,
   clipboard,
@@ -80,6 +71,7 @@ export default function RouteRow({
   onRemove,
 }) {
   const [depsOpen, setDepsOpen] = useState(false);
+  const r = route;
 
   // ColorPicker's own effect fires onChange whenever onChange's IDENTITY changes
   // (not just when the picked color changes) — see Colorpicker.jsx's
@@ -93,6 +85,72 @@ export default function RouteRow({
   onChangeColorRef.current = onChangeColor;
   const stableOnChangeColor = useCallback((c) => onChangeColorRef.current?.(c), []);
 
+  // ── Date editing (2026-08-19, item 4A) ──────────────────────────────────────────
+  // No more pencil/Save/Cancel: the date fields are always live whenever the row is
+  // expanded, auto-saving (debounced) through the one `onUpdateDates(updates)` callback
+  // the parent wraps around `updateRoute`. This buffer now lives PER ROW (it used to be
+  // a single-flight buffer owned by the parent, since only one row could be "in edit
+  // mode" at a time) — several rows can be mid-edit simultaneously now.
+  //
+  // `lastFlushedRef` distinguishes an EXTERNAL change to this route (a sibling
+  // recomputing this derived row's dates, a clipboard paste from ReportRouteList, another
+  // session's edit landing) from an ECHO of this row's own just-sent write — only the
+  // former should overwrite whatever's in the local buffer.
+  const lastFlushedRef = useRef({ startDate: r.startDate, endDate: r.endDate, dateFormula: r.dateFormula, derivedFromRoute: r.derivedFromRoute });
+  const [dateMode, setDateMode] = useState(r.dateFormula ? 'derived' : 'fixed');
+  const [localStart, setLocalStart] = useState(r.startDate);
+  const [localEnd, setLocalEnd] = useState(r.endDate);
+  const [deriveFrom, setDeriveFrom] = useState(r.derivedFromRoute || '');
+  const [deriveFormula, setDeriveFormula] = useState(r.dateFormula || '');
+
+  useEffect(() => {
+    const last = lastFlushedRef.current;
+    if (r.startDate === last.startDate && r.endDate === last.endDate
+      && r.dateFormula === last.dateFormula && r.derivedFromRoute === last.derivedFromRoute) return;
+    lastFlushedRef.current = { startDate: r.startDate, endDate: r.endDate, dateFormula: r.dateFormula, derivedFromRoute: r.derivedFromRoute };
+    setLocalStart(r.startDate);
+    setLocalEnd(r.endDate);
+    setDateMode(r.dateFormula ? 'derived' : 'fixed');
+    setDeriveFrom(r.derivedFromRoute || '');
+    if (r.dateFormula) setDeriveFormula(r.dateFormula);
+  }, [r.startDate, r.endDate, r.dateFormula, r.derivedFromRoute]);
+
+  const pendingRef = useRef({});
+  const timerRef = useRef(null);
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
+  const flushDates = (extra) => {
+    const merged = { ...pendingRef.current, ...extra };
+    pendingRef.current = {};
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    lastFlushedRef.current = { ...lastFlushedRef.current, ...merged };
+    onUpdateDates?.(merged);
+  };
+  // Debounced AND merged (not replaced) — two fields changed within the same window (e.g.
+  // "From" then "To" in quick succession) land in ONE `updateRoute` call instead of two
+  // racing writes each built off a stale `routes` snapshot, which would otherwise silently
+  // drop the first field's change.
+  const scheduleFlush = (patch) => {
+    pendingRef.current = { ...pendingRef.current, ...patch };
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => flushDates({}), 400);
+  };
+  const cancelPendingFlush = () => {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    pendingRef.current = {};
+  };
+
+  const handleStartChange = (e) => {
+    const v = e.target.value;
+    setLocalStart(v);
+    scheduleFlush({ startDate: v });
+  };
+  const handleEndChange = (e) => {
+    const v = e.target.value;
+    setLocalEnd(v);
+    scheduleFlush({ endDate: v });
+  };
+
   // Moves both dates by exactly one year, preserving the span's length — plain
   // string year substitution (not a Date object) so it never silently rolls Feb 29
   // into Mar 1 in a non-leap target year.
@@ -102,31 +160,59 @@ export default function RouteRow({
       const [y, m, d] = val.split('-');
       return `${Number(y) + delta}-${m}-${d}`;
     };
-    onEditStartDateValueChange(shiftOne(editStartDateValue));
-    onEditEndDateValueChange(shiftOne(editEndDateValue));
+    const ns = shiftOne(localStart);
+    const ne = shiftOne(localEnd);
+    setLocalStart(ns);
+    setLocalEnd(ne);
+    scheduleFlush({ startDate: ns, endDate: ne });
   };
 
-  const r = route;
   // Mechanism B (relativeDate/isRelativeDateBase, see relativeDateResolution.js) — a row's
-  // startDate/endDate is LIVE-COMPUTED from another route's own date, not an independent literal.
-  // At rest (not editing) the date section renders read-only with a note instead of the usual
-  // pencil, since a literal edit here would just get silently overwritten on the next render;
-  // while editing, the Fixed/Derived mode switch below lets an author actually create, change, or
-  // remove the relationship.
-  const isDerivedDate = !!r.dateFormula;
+  // startDate/endDate is LIVE-COMPUTED from another route's own date, not an independent literal,
+  // whenever `dateMode === 'derived'`; the Fixed/Derived switch below lets an author create,
+  // change, or remove that relationship, live.
   // Single-hop only (relativeDateResolution.js never resolves a chain) — `derivableSiblings`
   // (computed by the parent from the whole report's routes) already excludes any row that's
   // itself derived; this just also excludes the row itself.
   const eligibleBases = (derivableSiblings || []).filter((s) => s.route_comp_id !== r.route_comp_id);
-  const derivePreset = parseFormula(editDeriveFormulaValue);
-  const setDerivePresetField = (patch) => onEditDeriveFormulaValueChange(buildFormula({ ...derivePreset, ...patch }));
-  const startDeriveMode = () => {
-    onEditDateModeChange('derived');
-    if (!editDeriveFormulaValue) onEditDeriveFormulaValueChange(buildFormula(DEFAULT_PRESET));
+  const derivePreset = parseFormula(deriveFormula);
+  // Debounced (not immediate) — covers the free-typed "How many"/day-of-month/Advanced-formula
+  // inputs, which fire per keystroke; a harmless extra ~400ms on the plain dropdowns too.
+  const setDerivePresetField = (patch) => {
+    const nextFormula = buildFormula({ ...derivePreset, ...patch });
+    setDeriveFormula(nextFormula);
+    if (deriveFrom && isValidFormula(nextFormula)) scheduleFlush({ dateFormula: nextFormula, derivedFromRoute: deriveFrom });
   };
-  const derivePreviewBase = eligibleBases.find((s) => s.route_comp_id === editDeriveFromValue);
+  const handleAdvancedFormulaChange = (e) => {
+    const v = e.target.value;
+    setDeriveFormula(v);
+    if (deriveFrom && isValidFormula(v)) scheduleFlush({ dateFormula: v, derivedFromRoute: deriveFrom });
+  };
+  const handleDeriveFromChange = (e) => {
+    const v = e.target.value;
+    setDeriveFrom(v);
+    // A discrete pick, not continuous typing — commit right away rather than debouncing.
+    if (v && isValidFormula(deriveFormula)) flushDates({ dateFormula: deriveFormula, derivedFromRoute: v });
+  };
+  // Both of these are deliberate, discrete mode switches — commit immediately, same
+  // "happens right away" feel the old Save button gave them, rather than debouncing.
+  const useFixedInstead = () => {
+    cancelPendingFlush();
+    setDateMode('fixed');
+    flushDates({ startDate: localStart, endDate: localEnd, dateFormula: undefined, derivedFromRoute: undefined });
+  };
+  const startDeriveMode = () => {
+    cancelPendingFlush();
+    setDateMode('derived');
+    const formula = deriveFormula || buildFormula(DEFAULT_PRESET);
+    if (!deriveFormula) setDeriveFormula(formula);
+    // Already has a complete, valid pick from before (e.g. flipped to Fixed and back) —
+    // recommit right away instead of making the author re-pick to get back where they were.
+    if (deriveFrom && isValidFormula(formula)) flushDates({ dateFormula: formula, derivedFromRoute: deriveFrom });
+  };
+  const derivePreviewBase = eligibleBases.find((s) => s.route_comp_id === deriveFrom);
   const derivePreview = derivePreviewBase
-    ? resolveRelativeDateFormula(editDeriveFormulaValue, derivePreviewBase.startDate, derivePreviewBase.endDate)
+    ? resolveRelativeDateFormula(deriveFormula, derivePreviewBase.startDate, derivePreviewBase.endDate)
     : null;
   const tmcCount = parseTmcArray(r.tmc_array).length;
 
@@ -245,86 +331,46 @@ export default function RouteRow({
           <div>
             <div className={t.windowHead}>
               <div className={t.facetLabel}>dates</div>
-              {canMutateRow && (
+              {/* Copy/paste is a LITERAL span, which would silently conflict with a derived
+                  row's live-computed value — Fixed-only, same as before. No pencil anymore
+                  (2026-08-19, item 4A): the fields below are always live, and "Derive from
+                  another route instead" / "Use fixed dates instead" ARE the mode switches. */}
+              {canMutateRow && dateMode === 'fixed' && (
                 <div className={t.windowActionsRow}>
-                  {isEditingDates ? (
-                    <>
-                      <button
-                        type="button"
-                        className={t.saveBtn}
-                        title="Save dates"
-                        disabled={editDateMode === 'derived' && (!editDeriveFromValue || !isValidFormula(editDeriveFormulaValue))}
-                        onClick={onSaveEditDates}
-                      >
-                        <Icon icon="FloppyDisk" />
-                      </button>
-                      <button type="button" className={t.cancelBtn} title="Cancel" onClick={onCancelEditDates}>
-                        <Icon icon="CancelCircle" />
-                      </button>
-                    </>
-                  ) : isDerivedDate ? (
-                    // A derived row's own copy/paste (a LITERAL span) would silently conflict with
-                    // its live-computed value — only the pencil is offered, which opens straight
-                    // into Derived mode (seeded below) so an author can change the formula/base or
-                    // switch back to Fixed. Copy/paste stays Fixed-only, same as before.
-                    <button type="button" className={t.iconBtn} title="Edit derived-date relationship" onClick={onStartEditDates}>
-                      <Icon icon="PencilSquare" />
-                    </button>
-                  ) : (
-                    <>
-                      <button type="button" className={t.iconBtn} title="Copy this date span" onClick={onCopyWindow}>
-                        <Icon icon="Copy" />
-                      </button>
-                      <button
-                        type="button"
-                        className={t.iconBtn}
-                        title={clipboard && clipboard.from !== r.route_comp_id ? `Paste the date span copied from ${clipboard.fromName}` : 'Copy a date span from another route first'}
-                        disabled={!clipboard || clipboard.from === r.route_comp_id}
-                        onClick={onPasteWindow}
-                      >
-                        <Icon icon="Paste" />
-                      </button>
-                      <button type="button" className={t.iconBtn} title="Edit dates" onClick={onStartEditDates}>
-                        <Icon icon="PencilSquare" />
-                      </button>
-                    </>
-                  )}
+                  <button type="button" className={t.iconBtn} title="Copy this date span" onClick={onCopyWindow}>
+                    <Icon icon="Copy" />
+                  </button>
+                  <button
+                    type="button"
+                    className={t.iconBtn}
+                    title={clipboard && clipboard.from !== r.route_comp_id ? `Paste the date span copied from ${clipboard.fromName}` : 'Copy a date span from another route first'}
+                    disabled={!clipboard || clipboard.from === r.route_comp_id}
+                    onClick={onPasteWindow}
+                  >
+                    <Icon icon="Paste" />
+                  </button>
                 </div>
               )}
-              {isDerivedDate && canMutateRow && <span className={t.facetLabel}>derived</span>}
+              {dateMode === 'derived' && canMutateRow && <span className={t.facetLabel}>derived</span>}
             </div>
 
-            {isDerivedDate && !isEditingDates && (
-              <div className={t.derivedNote}>Derived from {derivedFromRouteName || 'another route'} — click the pencil to change the formula, switch to fixed dates, or edit the base route's own dates instead.</div>
+            {dateMode === 'derived' && (
+              <div className={t.derivedNote}>Derived from {derivedFromRouteName || 'another route'} — recalculates automatically whenever that route's own dates change.</div>
             )}
 
-            {!isEditingDates ? (
-              (() => {
-                // A derived row's read-only value is no longer a dead-end (the pencil above now
-                // opens it), but the CLICK-ANYWHERE-TO-OPEN convenience stays Fixed-only — clicking
-                // the value text on a derived row would be an easy miss-click straight into
-                // Derived mode with no visual cue it was about to happen, unlike the pencil.
-                const opener = canMutateRow && !isDerivedDate;
-                const value = formatDateShort(r.startDate)
-                  ? `${formatDateShort(r.startDate)} → ${formatDateShort(r.endDate)}`
-                  : 'No dates set';
-                return (
-                  <div
-                    className={opener ? t.windowReadWrapperOpener : t.windowReadWrapper}
-                    onClick={opener ? onStartEditDates : undefined}
-                    title={opener ? 'Edit these dates' : undefined}
-                  >
-                    <div className={t.windowReadRow}>
-                      <span className={t.windowReadRowValue}>{value}</span>
-                    </div>
-                  </div>
-                );
-              })()
-            ) : editDateMode === 'derived' ? (
+            {!canMutateRow ? (
+              <div className={t.windowReadWrapper}>
+                <div className={t.windowReadRow}>
+                  <span className={t.windowReadRowValue}>
+                    {formatDateShort(r.startDate) ? `${formatDateShort(r.startDate)} → ${formatDateShort(r.endDate)}` : 'No dates set'}
+                  </span>
+                </div>
+              </div>
+            ) : dateMode === 'derived' ? (
               <div className={t.deriveControlsWrapper}>
                 <div className={t.dateModeWrapper}>
                   <label className={t.dateModeLabel}>Derive From:</label>
-                  <select className={t.dateFieldInput} value={editDeriveFromValue || ''} onChange={(e) => onEditDeriveFromValueChange(e.target.value)}>
+                  <select className={t.dateFieldInput} value={deriveFrom || ''} onChange={handleDeriveFromChange}>
                     <option value="" disabled>Pick a route…</option>
                     {eligibleBases.map((s) => <option key={s.route_comp_id} value={s.route_comp_id}>{s.name}</option>)}
                   </select>
@@ -386,31 +432,31 @@ export default function RouteRow({
                 {derivePreset.pattern === 'advanced' && (
                   <div className={t.dateModeWrapper}>
                     <label className={t.dateModeLabel}>Formula:</label>
-                    <input className={t.dateFieldInput} value={editDeriveFormulaValue || ''} onChange={(e) => onEditDeriveFormulaValueChange(e.target.value)} />
+                    <input className={t.dateFieldInput} value={deriveFormula || ''} onChange={handleAdvancedFormulaChange} />
                   </div>
                 )}
-                {!editDeriveFromValue ? (
+                {!deriveFrom ? (
                   <div className={t.dowSummary}>Pick a route to derive from.</div>
-                ) : !isValidFormula(editDeriveFormulaValue) ? (
+                ) : !isValidFormula(deriveFormula) ? (
                   <div className={t.deriveFormulaError}>Not a recognized date formula.</div>
                 ) : derivePreview ? (
                   <div className={t.dowSummary}>Resolves to {derivePreview.start} → {derivePreview.end} (based on {derivePreviewBase?.name}'s current dates)</div>
                 ) : (
                   <div className={t.deriveFormulaError}>Can't resolve yet — {derivePreviewBase?.name} needs its own dates set first.</div>
                 )}
-                <button type="button" className={t.pill} onClick={() => onEditDateModeChange('fixed')}>Use fixed dates instead</button>
+                <button type="button" className={t.pill} onClick={useFixedInstead}>Use fixed dates instead</button>
               </div>
             ) : (
               <div className={t.facetBlockFirst}>
                 <div className={t.dateFieldRow}>
                   <div className={t.dateFieldWrapper}>
                     <label className={t.dateFieldLabel}>From</label>
-                    <input type="date" className={t.dateFieldInput} value={getDateValue(editStartDateValue)} onChange={(e) => onEditStartDateValueChange(e.target.value)} />
+                    <input type="date" className={t.dateFieldInput} value={getDateValue(localStart)} onChange={handleStartChange} />
                   </div>
                   <span className={t.dateFieldArrow}>→</span>
                   <div className={t.dateFieldWrapper}>
                     <label className={t.dateFieldLabel}>To</label>
-                    <input type="date" className={t.dateFieldInput} value={getDateValue(editEndDateValue)} onChange={(e) => onEditEndDateValueChange(e.target.value)} />
+                    <input type="date" className={t.dateFieldInput} value={getDateValue(localEnd)} onChange={handleEndChange} />
                   </div>
                 </div>
                 <div className={t.shiftRow}>

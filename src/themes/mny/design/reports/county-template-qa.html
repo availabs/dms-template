@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — County Template Front-End QA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    .screen{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:12.5px;line-height:1.75;white-space:pre-wrap;overflow-x:auto;min-width:0}
+    /* long slugs and column names in code spans must not force a min-content wider than the phone */
+    code{overflow-wrap:anywhere}
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================
+     HEADER — mnyHeader "none" variant
+     ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; QA Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      County Template<br>Front-End QA
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    What someone reaching these pages for the first time actually sees &mdash; and, for
+                    each thing they&rsquo;d notice, what is producing it.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">17 findings</span>
+                    <span class="px-3 py-1.5 bg-mny-red border border-mny-red rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">7 undermine the data</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">pattern 1300890 &middot; Sullivan &middot; 19 Aug 2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV — fixed floating -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end min-w-[110px]">
+          <button class="bg-white flex justify-between items-center h-[48px] w-[217px] py-[8px] pr-[8px] pl-[24px] border border-mny-100 rounded-[1000px] shadow-sm">
+            <span class="uppercase text-mny-900 font-medium text-[12px]">Search</span>
+            <div class="bg-mny-700 p-[10px] rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="text-white" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><!-- icon: Search --><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"/></svg></div>
+          </button>
+          <div class="flex p-1 items-center">
+            <div class="flex p-2 justify-center items-center">
+              <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><!-- icon: UserAvatar --><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     VERDICT STRIP
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Pages walked</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">20 / 55</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">1,861 published sections</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Wrong hazard shown</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">400ms</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">on every hazard-to-hazard click</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Wrong profile named</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">12 / 16</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">hazard pages say &ldquo;flooding profile&rdquo;</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Unscoped table</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">249</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">measures on every hazard page</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">&ldquo;Page 1 of 0&rdquo; pagers</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">11</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">across 5 pages walked</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Card seam gap</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">32px</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">15 of 16 runs never close</p>
+            </div>
+          </div>
+
+          <!-- Finding tiers — proportional -->
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-red" style="width:41.2%;" title="Tier 1 — the reader doubts the data (7)"></div>
+            <div class="bg-mny-y700" style="width:29.4%;" title="Tier 2 — the plan looks unfinished (5)"></div>
+            <div class="bg-mny-400" style="width:29.4%;" title="Tier 3 — the product looks unpolished (5)"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-red"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 1 &mdash; the reader doubts the data (7)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 2 &mdash; the plan looks unfinished (5)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-400"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 3 &mdash; the product looks unpolished (5)</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     CONTENT CARD
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- ============ VERDICT ============ -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    The template renders.<br>It just keeps telling you<br>the wrong thing confidently.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      This is a walkthrough, not a config audit. Twenty pages were opened as a first-time reader
+                      would open them, and every observation below was read off the rendered page &mdash; text
+                      content, computed styles, measured element positions, navigation timing &mdash; then traced
+                      back to what produces it.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Nothing here is a crash or a blank page. Every map draws, every tile route is healthy, the
+                      navigation works. The problem is subtler and worse: a hazard mitigation plan&rsquo;s entire
+                      value is that the numbers are right for <em>this</em> county and <em>this</em> hazard, and
+                      <strong class="text-mny-900 font-[600]">seven separate things on these pages tell the reader
+                      they might not be</strong> &mdash; a table of drought measures on the extreme-cold page, twelve
+                      hazard pages pointing at &ldquo;the flooding profile,&rdquo; a raw GEOID where a town name belongs,
+                      and half a second of the previous hazard&rsquo;s risk rating after you&rsquo;ve already clicked away.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The other ten findings are cheaper but compound the same impression. Headings with nothing
+                      under them are legitimate &mdash; this is a template and county authors fill those in &mdash; but
+                      nothing on screen says so, so an unfilled slot and a broken one look identical. And a card
+                      group drawn to read as one box has a
+                      <strong class="text-mny-900 font-[600]">32&thinsp;px gap at every junction</strong> and no bottom edge
+                      on fifteen of sixteen hazard pages.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">The one to fix first</p>
+                      <div class="flex items-baseline gap-3 mb-2">
+                        <span class="font-display text-[72px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">400</span>
+                        <span class="font-display text-[16px] text-mny-y700 font-[500] leading-tight uppercase">milliseconds of<br>the wrong hazard</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-2">
+                        Click Drought and the address bar changes while the risk card still reads
+                        <strong class="text-white font-[600]">WIND &middot; HIGH RISK</strong>. Sections paint their
+                        last cached rows while the real fetch is in flight.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <div class="flex items-baseline gap-4">
+                        <div>
+                          <span class="font-display text-[30px] text-mny-400 font-[500] leading-none tracking-[-0.03em] tabular-nums">1,800ms</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">click &rarr; correct content</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-700 self-center" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                        <div>
+                          <span class="font-display text-[48px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">0</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">on a hard refresh</span>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[13px] leading-[1.55] text-mny-400 mt-4">
+                        A fresh load is correct from first paint &mdash; which is exactly why this survives testing.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- ============ TIER 1 ============ -->
+              <div class="mb-10">
+                <div class="flex items-baseline gap-3 mb-1">
+                  <span class="px-2.5 py-1 bg-mny-red rounded-full font-proxima text-[11px] font-[700] text-white uppercase tracking-wider">Tier 1</span>
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">The reader starts doubting the data</h3>
+                </div>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Seven things that read as &ldquo;this is showing me the wrong information.&rdquo; Each one tells the
+                  reader, in a different way, that the plan&rsquo;s figures may not be theirs.
+                </p>
+
+                <div class="space-y-4">
+
+                  <!-- 1 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums">01</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Clicking from one hazard to another shows you the previous hazard</p>
+                      <span class="px-2 py-0.5 bg-mny-red rounded-full font-proxima text-[10px] font-[700] text-white uppercase">reproduced</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">click        <span class="text-mny-400">url</span> /&hellip;/wind      <span class="text-mny-400">card</span> WIND &middot; HIGH RISK
+t = 1400ms   <span class="text-mny-400">url</span> <span class="text-mny-y700">/&hellip;/drought</span>   <span class="text-mny-400">card</span> <span class="text-mny-red font-bold">WIND &middot; HIGH RISK</span>   &larr; address says drought, page says wind
+t = 1800ms   <span class="text-mny-400">url</span> /&hellip;/drought   <span class="text-mny-400">card</span> <span class="text-mny-grn">DROUGHT &middot; MODERATE RISK</span></div>
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Where</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Every in-app navigation between hazard profiles. <strong class="text-mny-900 font-[600]">Not</strong> reproducible on a hard refresh.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Each section stores the rows it last fetched (<code class="text-[12px] bg-white px-1 rounded">element-data.data</code>) and paints them immediately while the new request is in flight. On a fresh load there is no stale cache to paint; on an in-app hop the previous hazard&rsquo;s rows are still mounted.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">All 16 hazard pages, and any page pair sharing a component template. The most damaging item in this report &mdash; a reader who catches it once has to re-verify everything else.</dd>
+                    </dl>
+                  </div>
+
+                  <!-- 2 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums">02</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Twelve hazard pages tell you to go read &ldquo;the flooding profile&rdquo;</p>
+                      <span class="px-2 py-0.5 bg-mny-red rounded-full font-proxima text-[10px] font-[700] text-white uppercase">12 of 16</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">Detailed descriptions, characteristics, and the extent of <span class="text-mny-grn">extreme cold</span> that impacts
+New York State communities, including this county, are included in the <span class="text-mny-red font-bold">flooding profile</span>
+of the MitigateNY State Hazard Mitigation Plan (SHMP)&hellip;</div>
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Where</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Earthquake, Wind, Snowstorm, Wildfire, Extreme Cold, Extreme Heat, Hail, Lightning, Hurricane, Coastal Hazards, Ice Storm, Landslide. Only <strong class="text-mny-900 font-[600]">Flooding</strong> reads correctly &mdash; it is the page the sentence was written for.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">The narrative is not authored per page &mdash; it is a row in <code class="text-[12px] bg-white px-1 rounded">LHMP_IA</code> selected by a hazard filter. The first half of each sentence was localised; the trailing clause was not. One data-entry error, replicated by the template.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Twelve pages, fixed in twelve dataset rows &mdash; not twelve components.</dd>
+                    </dl>
+                  </div>
+
+                  <!-- 3 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums">03</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">&ldquo;Measures Inventory&rdquo; lists all 249 measures on every hazard page</p>
+                      <span class="px-2 py-0.5 bg-mny-red rounded-full font-proxima text-[10px] font-[700] text-white uppercase">13 pages</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200"><span class="text-white">MEASURES INVENTORY</span>   <span class="text-mny-400">&mdash; on the Extreme Cold page</span>
+Building Codes &middot; Bridge Strengthening &middot; Alternative Routes and Redundancy &middot; Acquisition
+<span class="text-mny-red font-bold">Arson Prevention</span> &middot; Abatement Districts &middot; Building Construction &middot; Backup Power Systems
+<span class="text-mny-red font-bold">Assess Vulnerability to Drought Risk</span> &middot; 9-1-1 and 3-1-1
+PAGE 1 OF 25   Rows 1 to 10 of <span class="text-mny-y700 font-bold">249</span></div>
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Where</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">13 of the 16 hazard pages &mdash; 249 rows on nine, 85 on four, 24 on landslide. Those differing counts are themselves stale caches (finding 12).</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">The section carries <strong class="text-mny-900 font-[600]">no filter of any kind</strong> &mdash; no stored predicate, no column filter &mdash; while its page publishes <code class="text-[12px] bg-white px-1 rounded">geoid</code>, <code class="text-[12px] bg-white px-1 rounded">hazards</code>, <code class="text-[12px] bg-white px-1 rounded">hazards2</code> and <code class="text-[12px] bg-white px-1 rounded">hazards3</code>. The pager is honest; the binding is not. Turning pagination off would hide the bug rather than fix it.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Same shape as <strong class="text-mny-900 font-[600]">&ldquo;Local Actions Table&rdquo; (196 rows)</strong> on the hazard pages, plus three more elsewhere: built_environment (254), natural_environment &ldquo;Potential Impacts Table&rdquo; (19), nfip_floodplain_management &ldquo;Floodplain Administrators&rdquo; (11).</dd>
+                    </dl>
+                  </div>
+
+                  <!-- 4 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums">04</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">The jurisdiction picker shows a raw ten-digit code instead of a place name</p>
+                      <span class="px-2 py-0.5 bg-mny-red rounded-full font-proxima text-[10px] font-[700] text-white uppercase">visible</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">Select the jurisdictional annex:
+
+Jurisdiction
+<span class="text-mny-red font-bold">3610506310</span>
+BETHEL (TOWN)</div>
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Where</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]"><code class="text-[12px] bg-white px-1 rounded">/the_plan/jurisdictional_annexes/select_jurisdiction</code> &mdash; the first interactive element on the page.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">The live <code class="text-[12px] bg-white px-1 rounded">Jurisdictions</code> source defines a label lookup for <code class="text-[12px] bg-white px-1 rounded">geoid</code> (view 1346450, <code class="text-[12px] bg-white px-1 rounded">geoid &rarr; municipality_name</code>). The component&rsquo;s stored copy of that column has <strong class="text-mny-900 font-[600]">no lookup at all</strong>, so it renders the stored value &mdash; the code.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Two components render it visibly; 54 more carry the same column hidden, so it surfaces the moment anyone toggles it on.</dd>
+                    </dl>
+                  </div>
+
+                  <!-- 5 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums">05</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">One hazard in the list is spelled differently from all the others</p>
+                      <span class="px-2 py-0.5 bg-mny-red rounded-full font-proxima text-[10px] font-[700] text-white uppercase">visible</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">Wind &middot; Extreme Cold &middot; Snowstorm &middot; <span class="text-mny-red font-bold">Ice storm</span> &middot; Drought &middot; Flooding &middot; Hail &middot; Landslide &middot; Wildfire</div>
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Where</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">The &ldquo;Hazards of Concern by Jurisdiction&rdquo; table on The Risk &rarr; Natural Hazards, and anywhere else that column renders.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">The source&rsquo;s label map is <strong class="text-mny-900 font-[600]">correct and complete</strong> &mdash; it maps <code class="text-[12px] bg-white px-1 rounded">icestorm &rarr; &ldquo;Ice Storm&rdquo;</code>, and all 19 entries match the component&rsquo;s stored copy exactly. So <code class="text-[12px] bg-white px-1 rounded">&ldquo;Ice storm&rdquo;</code> is not coming from the lookup; it is a stored row value that isn&rsquo;t one of the 19 keys, so it falls through and renders raw.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">One value confirmed &mdash; but the mechanism affects every lookup-backed column, and it is precisely why a configuration-only audit reports this column clean.</dd>
+                    </dl>
+                  </div>
+
+                  <!-- 6 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums">06</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">A count of disasters is rendered as &ldquo;0.0&rdquo;</p>
+                      <span class="px-2 py-0.5 bg-mny-y700 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">home page</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200"># OF DECLARED DISASTERS    13      2      2     <span class="text-mny-red font-bold">0.0</span>
+# OF EVENTS                13     85     57     103</div>
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Where</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">The four hazard cards on the home page, read across &mdash; and on Extreme Cold, directly above &ldquo;# OF NON-DECLARED DISASTERS 11&rdquo;.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">A count column with no number format applied. Where the value is a whole number the underlying type never shows; where it is zero, the raw float does.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Every hazard whose declared-disaster count is zero. On the home page that is one of four cards above the fold.</dd>
+                    </dl>
+                  </div>
+
+                  <!-- 7 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums">07</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Internal system vocabulary is used as user-facing labels</p>
+                      <span class="px-2 py-0.5 bg-mny-red rounded-full font-proxima text-[10px] font-[700] text-white uppercase">16+ pages</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200"><span class="text-white">MEASURES INVENTORY</span>
+  <span class="text-mny-red font-bold">Category-Deprecated</span>  [select&hellip;]        Type  [select&hellip;]
+
+<span class="text-white">HAZARDS OF CONCERN BY JURISDICTION</span>
+  <span class="text-mny-red font-bold">Jurisdiction GeoID</span>  [select&hellip;]   Hazard  [select&hellip;]   Hazard of Concern  [Yes]
+
+<span class="text-white">DEC DAM INVENTORY</span>
+  <span class="text-mny-red font-bold">Hazard Text</span>  [High Hazard Dam]    Municipalities  [select&hellip;]</div>
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Where</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]"><code class="text-[12px] bg-white px-1 rounded">Category-Deprecated</code> on all 16 hazard pages; <code class="text-[12px] bg-white px-1 rounded">Jurisdiction GeoID</code> on The Risk &rarr; Natural Hazards; <code class="text-[12px] bg-white px-1 rounded">Hazard Text</code> on High Hazard Dams.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">The facet label is the source column&rsquo;s title, and the data steward has been using that title as a workspace &mdash; <code class="text-[12px] bg-white px-1 rounded">&ldquo;Category-Deprecated&rdquo;</code> is an instruction to other data people that ended up on a public filter. The component&rsquo;s own stored copy still reads <code class="text-[12px] bg-white px-1 rounded">&ldquo;Category&rdquo;</code>, which is why nobody editing the page would notice: the marker exists only on the live source. Every option inside <code class="text-[12px] bg-white px-1 rounded">Jurisdiction GeoID</code> is a place name, so the label is also simply wrong for its own contents.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">32 components across 16 pages render the deprecated-titled column. A further <strong class="text-mny-900 font-[600]">30 columns on Capabilities_Catalogue are titled &ldquo;(Delete) &hellip;&rdquo;</strong> and sit one <code class="text-[12px] bg-white px-1 rounded">show</code> toggle away from the same outcome.</dd>
+                    </dl>
+                  </div>
+
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- ============ TIER 2 ============ -->
+              <div class="mb-10">
+                <div class="flex items-baseline gap-3 mb-1">
+                  <span class="px-2.5 py-1 bg-mny-y700 rounded-full font-proxima text-[11px] font-[700] text-white uppercase tracking-wider">Tier 2</span>
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">The plan looks unfinished</h3>
+                </div>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Some of this is legitimate &mdash; it <em>is</em> a template, and the empty slots wait on county
+                  authors. The problem is that nothing on screen says so, so a reader can&rsquo;t tell an intentional
+                  blank from a broken one.
+                </p>
+
+                <div class="space-y-4">
+
+                  <!-- 8 -->
+                  <div class="bg-mny-y50 rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums">08</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Empty tables that still render a pager reading &ldquo;Page 1 of 0&rdquo;</p>
+                      <span class="px-2 py-0.5 bg-mny-y700 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">11 instances</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">DISASTER NUMBER (# ONLY)   DISASTER NAME   YEAR   HAZARD CATEGORY   TOTAL DAMAGE
+<span class="text-mny-400">(no rows)</span>
+<span class="text-mny-red font-bold">PAGE 1 OF 0    Rows 1 to 0 of 0    NEXT &gt;</span></div>
+                    <div class="overflow-x-auto min-w-0 max-w-full mb-3">
+                      <table class="w-full text-left border-collapse">
+                        <thead><tr class="border-b border-mny-y500">
+                          <th class="font-proxima text-[11px] text-mny-700 font-[600] uppercase tracking-wider py-2 pr-4">Page</th>
+                          <th class="font-proxima text-[11px] text-mny-700 font-[600] uppercase tracking-wider py-2 pr-4">Sections showing a zero-row pager</th>
+                        </tr></thead>
+                        <tbody class="font-proxima text-[13px] text-mny-700">
+                          <tr class="border-b border-mny-y500/50"><td class="py-2 pr-4 font-mono text-[12px] text-mny-900">&hellip;/natural_hazards/avalanche</td><td class="py-2 pr-4">Historical Risk &middot; Other Hazard Events &middot; Jurisdictional Assessment</td></tr>
+                          <tr class="border-b border-mny-y500/50"><td class="py-2 pr-4 font-mono text-[12px] text-mny-900">&hellip;/jurisdictional_annexes/select_jurisdiction</td><td class="py-2 pr-4">Infrastructure &middot; Hazards Excluded &middot; Completed Actions Table &middot; In-Progress Actions Table</td></tr>
+                          <tr class="border-b border-mny-y500/50"><td class="py-2 pr-4 font-mono text-[12px] text-mny-900">&hellip;/natural_hazards/extreme_cold</td><td class="py-2 pr-4">Presidential Disaster Declarations &middot; Jurisdictional Assessment</td></tr>
+                          <tr class="border-b border-mny-y500/50"><td class="py-2 pr-4 font-mono text-[12px] text-mny-900">&hellip;/people_and_communities</td><td class="py-2 pr-4">Neighboring Communities</td></tr>
+                          <tr><td class="py-2 pr-4 font-mono text-[12px] text-mny-900">&hellip;/the_plan/about_the_process</td><td class="py-2 pr-4">Planning Meetings</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      <strong class="text-mny-900 font-[600]">Two different causes wearing the same chrome.</strong>
+                      Where the county genuinely has no rows &mdash; Sullivan has no declared cold-weather disasters &mdash;
+                      the right answer is an empty state, not a zero-row grid with an enabled <strong>NEXT</strong> button.
+                      Where the zero comes from a broken binding &mdash; the two <code class="text-[12px] bg-white px-1 rounded">Jurisdictions</code>-bound
+                      headers have <strong class="text-mny-900 font-[600]">no view pinned at all</strong> &mdash; it is a real bug hiding
+                      behind the same appearance. The pager renders unconditionally, so a reader cannot tell them apart.
+                    </p>
+                  </div>
+
+                  <!-- 9 -->
+                  <div class="bg-mny-y50 rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums">09</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Headings with nothing underneath &mdash; fourteen in a row on one page</p>
+                      <span class="px-2 py-0.5 bg-mny-y700 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">every page</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200"><span class="text-white">THE PLAN &rarr; ABOUT THE PROCESS</span>
+LOCAL CONTEXT                              <span class="text-mny-400">194px of nothing</span>
+OTHER RELATED PLANNING PROCESSES           <span class="text-mny-400">239px of nothing</span>
+ORGANIZATIONAL STRUCTURE &mdash; PLANNING TEAMS  <span class="text-mny-400">194px of nothing</span>
+JURISDICTIONAL REPRESENTATION              <span class="text-mny-400">172px of nothing</span>
+PUBLIC PARTICIPATION &middot; PUBLIC COMMENT &middot; LOCAL RESOURCES &middot; &hellip;   <span class="text-mny-400">14 in total</span></div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-3">
+                      <div class="bg-white rounded-[8px] p-3 border-l-4 border-mny-y700"><p class="font-proxima text-[11px] text-mny-900 font-[600] leading-tight break-all">about_the_process</p><p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-1">14</p><p class="font-proxima text-[10px] text-mny-400">of 27 sections</p></div>
+                      <div class="bg-white rounded-[8px] p-3 border-l-4 border-mny-y700"><p class="font-proxima text-[11px] text-mny-900 font-[600] leading-tight break-all">strategies</p><p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-1">12</p><p class="font-proxima text-[10px] text-mny-400">of 25 sections</p></div>
+                      <div class="bg-white rounded-[8px] p-3 border-l-4 border-mny-y700"><p class="font-proxima text-[11px] text-mny-900 font-[600] leading-tight break-all">built_environment</p><p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-1">12</p><p class="font-proxima text-[10px] text-mny-400">8 say &ldquo;Local Context&rdquo;</p></div>
+                      <div class="bg-white rounded-[8px] p-3 border-l-4 border-mny-400"><p class="font-proxima text-[11px] text-mny-900 font-[600] leading-tight break-all">each hazard page</p><p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-1">11</p><p class="font-proxima text-[10px] text-mny-400">&times; 16 pages</p></div>
+                      <div class="bg-white rounded-[8px] p-3 border-l-4 border-mny-400"><p class="font-proxima text-[11px] text-mny-900 font-[600] leading-tight break-all">select_jurisdiction</p><p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-1">10</p><p class="font-proxima text-[10px] text-mny-400">&nbsp;</p></div>
+                      <div class="bg-white rounded-[8px] p-3 border-l-4 border-mny-400"><p class="font-proxima text-[11px] text-mny-900 font-[600] leading-tight break-all">natural_environment</p><p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-1">9</p><p class="font-proxima text-[10px] text-mny-400">&nbsp;</p></div>
+                      <div class="bg-white rounded-[8px] p-3 border-l-4 border-mny-400"><p class="font-proxima text-[11px] text-mny-900 font-[600] leading-tight break-all">people_and_communities</p><p class="font-display text-[22px] text-mny-900 leading-none tabular-nums mt-1">7</p><p class="font-proxima text-[10px] text-mny-400">&nbsp;</p></div>
+                    </div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      These are rich-text sections with a title and an empty body &mdash; deliberate placeholders. That is
+                      the right design; the presentation is the problem. There is <strong class="text-mny-900 font-[600]">no
+                      empty state</strong>: no &ldquo;awaiting local input&rdquo; marker, no prompt shown in the slot. Some sections
+                      <em>do</em> carry authoring guidance &mdash; an &ldquo;Intent&rdquo; / &ldquo;Prompt&rdquo; note on Built Environment&rsquo;s
+                      Local Context &mdash; but it hides behind an info icon rather than filling the vacancy, and on two of
+                      them that note is itself blank, so the icon opens onto nothing.
+                    </p>
+                  </div>
+
+                  <!-- 10 -->
+                  <div class="bg-mny-y50 rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums">10</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">The same heading eight times on one page</p>
+                      <span class="px-2 py-0.5 bg-mny-y700 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">26 instances</span>
+                    </div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55] mb-3">
+                      Scrolling <strong class="text-mny-900 font-[600]">Built Environment</strong>, you pass a section titled
+                      <code class="text-[12px] bg-white px-1 rounded">LOCAL CONTEXT</code> &mdash; then another, then another, eight
+                      times, each empty, with no indication of what each one is the local context <em>for</em>.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      <span class="px-2.5 py-1 bg-white border border-mny-y500 rounded-full font-proxima text-[11px] text-mny-900 font-[600]">built_environment &times;8</span>
+                      <span class="px-2.5 py-1 bg-white border border-mny-y500 rounded-full font-proxima text-[11px] text-mny-900 font-[600]">capabilities_assessment &times;4</span>
+                      <span class="px-2.5 py-1 bg-white border border-mny-y500 rounded-full font-proxima text-[11px] text-mny-900 font-[600]">natural_environment &times;4</span>
+                      <span class="px-2.5 py-1 bg-white border border-mny-y500 rounded-full font-proxima text-[11px] text-mny-900 font-[600]">people_and_communities &times;3</span>
+                      <span class="px-2.5 py-1 bg-white border border-mny-y500 rounded-full font-proxima text-[11px] text-mny-900 font-[600]">strategies &times;3</span>
+                      <span class="px-2.5 py-1 bg-white border border-mny-y500 rounded-full font-proxima text-[11px] text-mny-900 font-[600]">about_the_process &times;2</span>
+                      <span class="px-2.5 py-1 bg-white border border-mny-y500 rounded-full font-proxima text-[11px] text-mny-900 font-[600]">disasters &times;2</span>
+                    </div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      The title is generic by design &mdash; one &ldquo;Local Context&rdquo; slot per preceding data block. But the
+                      page renders them as peers in a flat scroll rather than as children of the block they belong to,
+                      so the relationship that makes the title meaningful is invisible. A county author filling them in
+                      hits the same problem in the editor&rsquo;s section list.
+                    </p>
+                  </div>
+
+                  <!-- 11 -->
+                  <div class="bg-mny-y50 rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums">11</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Four different tables on one page, all titled &ldquo;State Mitigation Capabilities&rdquo;</p>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">STATE MITIGATION CAPABILITIES     Rows 1 to 10 of <span class="text-mny-y700 font-bold">41</span>    <span class="text-mny-400">(+ Local Context, empty)</span>
+STATE MITIGATION CAPABILITIES     Rows 1 to 10 of <span class="text-mny-y700 font-bold">243</span>   <span class="text-mny-400">(+ Local Context, empty)</span>
+STATE MITIGATION CAPABILITIES     Rows 1 to 10 of <span class="text-mny-y700 font-bold">11</span>    <span class="text-mny-400">(+ Local Context, empty)</span>
+STATE MITIGATION CAPABILITIES     Rows 1 to 10 of <span class="text-mny-y700 font-bold">148</span>   <span class="text-mny-400">(+ Local Context, empty)</span></div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      Each is scoped to a different capability category, but the distinguishing information lives only in
+                      the filter applied &mdash; not in the title. A reader has no way to tell what separates the 41-row table
+                      from the 243-row one. And per finding 12, all four are bound to the same source and view, so the
+                      four counts cannot all be current. This is the page a FEMA reviewer opens to check capability
+                      documentation.
+                    </p>
+                  </div>
+
+                  <!-- 12 -->
+                  <div class="bg-mny-y50 rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums">12</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Row counts that contradict each other for the same table</p>
+                      <span class="px-2 py-0.5 bg-mny-y700 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">systemic</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">Measures Inventory &mdash; identical unfiltered binding, sixteen pages
+  nine pages &rarr; <span class="text-mny-y700">249</span>      four pages &rarr; <span class="text-mny-y700">85</span>      landslide &rarr; <span class="text-mny-y700">24</span>
+
+capabilities_assessment &mdash; twelve unfiltered sections, one source, one view
+  totals reported: <span class="text-mny-red font-bold">0, 1, 2, 3, 11, 41, 148, 243</span></div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      Each section stores the row count from the last time it was saved and renders that number in the
+                      pager before the live count arrives. Two sections with identical bindings cannot honestly disagree,
+                      so where they do, at least one is stale. Same cached-state mechanism as finding 1, surfacing as a
+                      number rather than as content. <strong class="text-mny-900 font-[600]">The practical consequence: no pager
+                      total on this site can be trusted as reported</strong> &mdash; which also means the empty tables in finding 8
+                      need re-checking against live data before any of them is called a data bug.
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- ============ TIER 3 ============ -->
+              <div class="mb-10">
+                <div class="flex items-baseline gap-3 mb-1">
+                  <span class="px-2.5 py-1 bg-mny-400 rounded-full font-proxima text-[11px] font-[700] text-white uppercase tracking-wider">Tier 3</span>
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">The product looks unpolished</h3>
+                </div>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  The &ldquo;something&rsquo;s off about this page&rdquo; findings. Individually small; collectively they are what
+                  makes a site read as unmaintained.
+                </p>
+
+                <div class="space-y-4">
+
+                  <!-- 13 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-400">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-400 font-[500] leading-none tabular-nums">13</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">The card group meant to read as one box has 32px gaps and no bottom edge</p>
+                      <span class="px-2 py-0.5 bg-mny-900 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">measured</span>
+                    </div>
+
+                    <div class="bg-white rounded-[8px] p-5 mb-3 border border-mny-100">
+                      <svg viewBox="0 0 560 300" width="100%" style="max-width:560px;height:auto" role="img"
+                           aria-label="Diagram: the intended single card versus the rendered result — four boxes separated by 32px gaps with no bottom edge">
+                        <g font-family="'Source Sans 3',system-ui,sans-serif" font-size="11">
+                          <text x="0" y="12" fill="#6D96AE" font-weight="600" letter-spacing="0.08em">INTENDED</text>
+                          <rect x="0" y="22" width="200" height="248" rx="8" fill="none" stroke="#2D3E4C" stroke-width="1.4"/>
+                          <line x1="0" y1="84" x2="200" y2="84" stroke="#C5D7E0" stroke-width="1"/>
+                          <line x1="0" y1="146" x2="200" y2="146" stroke="#C5D7E0" stroke-width="1"/>
+                          <line x1="0" y1="208" x2="200" y2="208" stroke="#C5D7E0" stroke-width="1"/>
+                          <text x="12" y="57" fill="#37576B">Extreme Cold &middot; Low Risk</text>
+                          <text x="12" y="119" fill="#37576B">Hazard of Concern</text>
+                          <text x="12" y="181" fill="#37576B">Modeled Risk</text>
+                          <text x="12" y="243" fill="#37576B">Historical Risk</text>
+
+                          <text x="300" y="12" fill="#6D96AE" font-weight="600" letter-spacing="0.08em">RENDERED</text>
+                          <path d="M300 30 Q300 22 308 22 L492 22 Q500 22 500 30 L500 62" fill="none" stroke="#DD524C" stroke-width="1.4"/>
+                          <line x1="300" y1="30" x2="300" y2="62" stroke="#DD524C" stroke-width="1.4"/>
+                          <text x="312" y="49" fill="#37576B">Extreme Cold &middot; Low Risk</text>
+                          <line x1="300" y1="94" x2="300" y2="126" stroke="#DD524C" stroke-width="1.4"/>
+                          <line x1="500" y1="94" x2="500" y2="126" stroke="#DD524C" stroke-width="1.4"/>
+                          <text x="312" y="116" fill="#37576B">Hazard of Concern</text>
+                          <line x1="300" y1="158" x2="300" y2="190" stroke="#DD524C" stroke-width="1.4"/>
+                          <line x1="500" y1="158" x2="500" y2="190" stroke="#DD524C" stroke-width="1.4"/>
+                          <text x="312" y="180" fill="#37576B">Modeled Risk</text>
+                          <line x1="300" y1="222" x2="300" y2="254" stroke="#DD524C" stroke-width="1.4"/>
+                          <line x1="500" y1="222" x2="500" y2="254" stroke="#DD524C" stroke-width="1.4"/>
+                          <text x="312" y="244" fill="#37576B">Historical Risk</text>
+                          <line x1="300" y1="254" x2="500" y2="254" stroke="#DD524C" stroke-width="1.2" stroke-dasharray="3 4" opacity=".45"/>
+                          <text x="300" y="272" fill="#DD524C" font-weight="600">no bottom edge, square corners</text>
+                          <g>
+                            <line x1="262" y1="62" x2="262" y2="94" stroke="#EAAD43" stroke-width="1.2"/>
+                            <line x1="257" y1="62" x2="267" y2="62" stroke="#EAAD43" stroke-width="1.2"/>
+                            <line x1="257" y1="94" x2="267" y2="94" stroke="#EAAD43" stroke-width="1.2"/>
+                            <text x="212" y="82" fill="#EAAD43" font-weight="700">32px</text>
+                          </g>
+                        </g>
+                      </svg>
+                    </div>
+
+                    <dl class="grid grid-cols-1 md:grid-cols-[110px_1fr] gap-x-5 gap-y-2">
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Measured</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Extreme Cold, sections 2384117 &rarr; 2384118 &rarr; 2384119 &rarr; 2384120. Inner box edges at y = 942&ndash;1060, 1092&ndash;1214, 1246&ndash;1430, 1462&ndash;1849 &mdash; gaps of exactly <strong class="text-mny-900 font-[600]">32px</strong> at every junction. The final box&rsquo;s bottom border is <code class="text-[12px] bg-white px-1 rounded">rgba(0,0,0,0)</code> with <code class="text-[12px] bg-white px-1 rounded">border-radius: 0</code>.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">Why</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]">Two causes stacked. <strong class="text-mny-900 font-[600]">(a)</strong> Section <code class="text-[12px] bg-white px-1 rounded">padding</code> is an <em>outer</em> gutter &mdash; the border draws on a box inside it &mdash; so <code class="text-[12px] bg-white px-1 rounded">p-4</code> on each member inserts 16px above and below, pushing the boxes 32px apart. That is the opposite of the intuitive reading, which is why it survives review. <strong class="text-mny-900 font-[600]">(b)</strong> The run goes <code class="text-[12px] bg-white px-1 rounded">openBottom &rarr; borderX &rarr; borderX &rarr; borderX</code> and never gets its closing <code class="text-[12px] bg-white px-1 rounded">openTop</code>.</dd>
+                      <dt class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider pt-0.5">How far</dt>
+                      <dd class="font-proxima text-[14px] text-mny-700 leading-[1.55]"><strong class="text-mny-900 font-[600]">15 of the 16 hazard pages.</strong> <code class="text-[12px] bg-white px-1 rounded">Flooding</code> is the exception &mdash; its run ends on the closer and does draw a bottom edge, so that one page is the specification for fixing the other fifteen. Separately the 32px gap affects <strong class="text-mny-900 font-[600]">every</strong> fused group site-wide, including the ones that <em>do</em> close, so closing the runs alone will not make the borders touch.</dd>
+                    </dl>
+                  </div>
+
+                  <!-- 14 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-400">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-400 font-[500] leading-none tabular-nums">14</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Side-by-side cards start at different heights</p>
+                      <span class="px-2 py-0.5 bg-mny-900 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">measured</span>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <div class="w-full sm:w-[210px] flex-shrink-0 sm:text-right font-proxima text-[13px] text-mny-900 font-[600]">General Vulnerability / Climate Impacts</div>
+                        <div class="flex-1 h-[22px] bg-white rounded-full relative overflow-hidden border border-mny-100">
+                          <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:18%;min-width:52px;"><span class="pl-2 font-proxima text-[11px] text-mny-900 font-[700]">15px</span></div>
+                        </div>
+                        <div class="w-full sm:w-[170px] flex-shrink-0 font-proxima text-[12px] text-mny-400"><code class="text-[11px]">16px</code> vs <code class="text-[11px]">1px 16px 16px</code></div>
+                      </div>
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <div class="w-full sm:w-[210px] flex-shrink-0 sm:text-right font-proxima text-[13px] text-mny-900 font-[600]">Historic Occurrences pair</div>
+                        <div class="flex-1 h-[22px] bg-white rounded-full relative overflow-hidden border border-mny-100">
+                          <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full flex items-center" style="width:100%;"><span class="pl-2 font-proxima text-[11px] text-white font-[700]">84px</span></div>
+                        </div>
+                        <div class="w-full sm:w-[170px] flex-shrink-0 font-proxima text-[12px] text-mny-400"><code class="text-[11px]">16px</code> vs <code class="text-[11px]">100px 16px 16px</code></div>
+                      </div>
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <div class="w-full sm:w-[210px] flex-shrink-0 sm:text-right font-proxima text-[13px] text-mny-900 font-[600]">Presidential Declarations pair</div>
+                        <div class="flex-1 h-[22px] bg-white rounded-full relative overflow-hidden border border-mny-100">
+                          <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:40%;min-width:52px;"><span class="pl-2 font-proxima text-[11px] text-mny-900 font-[700]">34px</span></div>
+                        </div>
+                        <div class="w-full sm:w-[170px] flex-shrink-0 font-proxima text-[12px] text-mny-400"><code class="text-[11px]">16px</code> vs <code class="text-[11px]">50px 16px 16px</code></div>
+                      </div>
+                    </div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      The paddings are hand-nudged spacers &mdash; someone aligning two columns by eye at one viewport width.
+                      Those offsets don&rsquo;t track content, so they only hold at the width they were tuned at, and the 1px one
+                      is doing nothing except breaking the alignment it was meant to fix. Three pairs per hazard page. This
+                      is what the platform&rsquo;s grid alignment settings exist to handle; the manual padding works against them.
+                    </p>
+                  </div>
+
+                  <!-- 15 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-400">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-400 font-[500] leading-none tabular-nums">15</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Numbers in one row of cards are aligned three different ways</p>
+                      <span class="px-2 py-0.5 bg-mny-400 rounded-full font-proxima text-[10px] font-[700] text-white uppercase">16 pages</span>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200">block 1 <span class="text-mny-y700">(unset)</span>   block 2 <span class="text-mny-y700">left</span>   block 3 <span class="text-mny-y700">(unset)</span>   block 4 <span class="text-mny-y700">center</span></div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      Inside the same four-part risk card. Nothing looks wrong on its own; the row looks wrong. Three
+                      treatments because three edits happened at three different times, and the platform has three distinct
+                      &ldquo;no value&rdquo; states &mdash; unset, empty string, and a single space &mdash; that all look identical in the editor.
+                      Pattern-wide, <code class="text-[12px] bg-white px-1 rounded">left</code> is the dominant explicit choice at 69% of set
+                      values, so <code class="text-[12px] bg-white px-1 rounded">left</code> is the existing convention. Choosing
+                      <code class="text-[12px] bg-white px-1 rounded">center</code> for this group is a legitimate design decision, not a
+                      defect &mdash; <strong class="text-mny-900 font-[600]">the defensible finding is the three-way split, not which value
+                      wins</strong>. 16 of 82 fused groups site-wide disagree internally, and all 16 are this template.
+                    </p>
+                  </div>
+
+                  <!-- 16 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-400">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-400 font-[500] leading-none tabular-nums">16</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">The same table has different column headings on different pages</p>
+                    </div>
+                    <div class="bg-mny-900 rounded-[8px] p-4 mb-3 screen text-mny-200"><span class="text-mny-400">Other Hazard Events &mdash; the same data, two pages</span>
+on a hazard page    FUSION YEAR   PRIMARY HAZARD CATEGORY   TOTAL DAMAGE (WITH POPULATION)
+on Natural Hazards  <span class="text-mny-y700">YEAR</span>          <span class="text-mny-y700">NRI CATEGORY</span>              <span class="text-mny-y700">TOTAL DAMAGE</span></div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      And on Natural Hazards one table carries two adjacent headings differing only by a parenthetical:
+                      <code class="text-[12px] bg-white px-1 rounded">DISASTER NUMBER</code> then
+                      <code class="text-[12px] bg-white px-1 rounded">DISASTER NUMBER (# ONLY)</code>. Column display names are
+                      overridden per component, so two copies of one table drift apart as each is edited. A reader comparing
+                      the county roll-up against a hazard profile cannot tell whether &ldquo;Total Damage&rdquo; and &ldquo;Total Damage (with
+                      population)&rdquo; are the same measure &mdash; which, for a damage figure in a mitigation plan, is a substantive
+                      question, not a cosmetic one.
+                    </p>
+                  </div>
+
+                  <!-- 17 -->
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-400">
+                    <div class="flex items-baseline gap-3 mb-3">
+                      <span class="font-display text-[22px] text-mny-400 font-[500] leading-none tabular-nums">17</span>
+                      <p class="font-display text-[16px] text-mny-900 uppercase leading-tight flex-1">Facet dropdowns with nothing in them</p>
+                      <span class="px-2 py-0.5 bg-mny-200 rounded-full font-proxima text-[10px] font-[700] text-mny-900 uppercase">minor</span>
+                    </div>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.55]">
+                      On <strong class="text-mny-900 font-[600]">Track Progress &rarr; Funding Sources</strong>, five
+                      <code class="text-[12px] bg-white px-1 rounded">select&hellip;</code> controls sit in a filter bar and three offer no
+                      options at all. On <strong class="text-mny-900 font-[600]">High Hazard Dams</strong>, a &ldquo;Hazard Level&rdquo; column
+                      reads <code class="text-[12px] bg-white px-1 rounded">High Hazard Dam</code> on all eleven rows &mdash; a column of one
+                      repeated value, on a page called High Hazard Dams. It is technically correct and informationally
+                      empty: the page&rsquo;s own filter, restated once per row.
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- ============ CHECKED AND CLEAN ============ -->
+              <div class="mb-10">
+                <div class="flex items-baseline gap-3 mb-1">
+                  <span class="px-2.5 py-1 bg-mny-grn rounded-full font-proxima text-[11px] font-[700] text-white uppercase tracking-wider">Clean</span>
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Checked, and not a problem</h3>
+                </div>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Recorded so nobody spends time on them &mdash; and because three of these are cases where the stored
+                  configuration looks wrong and the rendered page is fine.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="bg-white rounded-[10px] p-4 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">Every map renders</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Canvases confirmed on Extreme Cold (2), Natural Hazards, NFIP Floodplain and High Hazard Dams. All <strong class="text-mny-900 font-[600]">196 map layers</strong> use the live tile route, all match the <code class="text-[11px] bg-mny-50 px-1 rounded">view_{id}</code> convention, and <strong class="text-mny-900 font-[600]">60 live <code class="text-[11px]">?cols=</code> probes</strong> found no layer requesting a column its view lacks.</p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-4 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">The &ldquo;Modeled RIsk&rdquo; typo</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">The stored title on 16 sections has a capital I &mdash; but the heading is CSS-uppercased, so it renders <code class="text-[11px] bg-mny-50 px-1 rounded">MODELED RISK</code> and <strong class="text-mny-900 font-[600]">no visitor can see it</strong>. Editor-facing only; reporting it as a front-end defect would have been wrong.</p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-4 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">White buttons on the beige band</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Configuration shows 62 cells whose colour differs from their section. On <code class="text-[11px] bg-mny-50 px-1 rounded">climate_change</code> and <code class="text-[11px] bg-mny-50 px-1 rounded">strategies</code> the beige cards paint as one surface and <strong class="text-mny-900 font-[600]">no visible mismatch reproduced</strong>. Latent risk, not a current defect.</p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-4 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">The hazard label map</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Components&rsquo; stored copy of the 19-entry map is identical in content to the live source&rsquo;s. The &ldquo;metadata out of date&rdquo; flag on this column is a <strong class="text-mny-900 font-[600]">false positive</strong> &mdash; which is exactly why finding 5 needed a live check to surface.</p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-4 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">Overview text on the Wind page</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Its stored filter reads <code class="text-[11px] bg-mny-50 px-1 rounded">hazards = ["Flooding"]</code>, which looks serious. At runtime the page variable overrides it and the correct wind text renders. Stale stored config, <strong class="text-mny-900 font-[600]">no visitor impact</strong>.</p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-4 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">Navigation, breadcrumbs, footer</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Consistent across all 20 pages walked. Breadcrumb, top nav and footer link sets all resolve.</p>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- ============ RECOMMENDATION ============ -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Recommended path</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-4">Seventeen findings, nine jobs &mdash; and the first one buys the most</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Loading state, not stale content</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Stop painting the previous fetch&rsquo;s rows while a request is in flight, and stop rendering the cached row count in the pager. <strong class="text-mny-900 font-[600]">Findings 1 and 12.</strong> One platform change; removes the worst item and makes every pager total honest.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Scope the unfiltered tables</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Bind Measures Inventory and Local Actions Table to the page&rsquo;s hazard variable. <strong class="text-mny-900 font-[600]">Finding 3.</strong> 13 pages &times; 2 components &mdash; one template edit propagated.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Fix the dataset rows</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Twelve <code class="text-[12px] bg-white px-1 rounded">LHMP_IA</code> narrative rows ending in &ldquo;the flooding profile&rdquo;; one <code class="text-[12px] bg-white px-1 rounded">Ice storm</code> value that isn&rsquo;t a valid key. <strong class="text-mny-900 font-[600]">Findings 2 and 5.</strong> Data entry &mdash; no component change fixes either.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">4 &middot; Add the missing lookups</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Two visible columns rendering raw GEOIDs. <strong class="text-mny-900 font-[600]">Finding 4.</strong> Refresh those <em>named</em> columns &mdash; not a blanket refresh, which overwrites author overrides.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">5 &middot; Rename what the reader sees</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]"><code class="text-[12px] bg-white px-1 rounded">Category-Deprecated</code> &rarr; a real label (and retire the column); <code class="text-[12px] bg-white px-1 rounded">Jurisdiction GeoID</code> &rarr; &ldquo;Jurisdiction&rdquo;; <code class="text-[12px] bg-white px-1 rounded">Hazard Text</code> &rarr; &ldquo;Hazard Level&rdquo;. Reconcile the two Other Hazard Events header sets. <strong class="text-mny-900 font-[600]">Findings 7, 16, 17.</strong></p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">6 &middot; Close and fuse the card runs</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Add the closing preset, move the 16px from section padding to the card&rsquo;s inner padding, drop the 1/50/100px spacers, settle on one alignment. <strong class="text-mny-900 font-[600]">Findings 13, 14, 15.</strong> Fix on <code class="text-[12px] bg-white px-1 rounded">flooding</code>&rsquo;s pattern and re-propagate to 15 pages.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">7 &middot; Give empty things an empty state</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">A zero-row table should say so instead of rendering &ldquo;Page 1 of 0&rdquo;; an unfilled placeholder should show its authoring prompt in the slot instead of hiding it behind an icon. <strong class="text-mny-900 font-[600]">Findings 8, 9, 17.</strong></p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">8 &middot; Number formatting</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Apply an integer format to the declared-disaster counts. <strong class="text-mny-900 font-[600]">Finding 6.</strong></p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">9 &middot; Editorial</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Disambiguate the four &ldquo;State Mitigation Capabilities&rdquo; titles and the repeated &ldquo;Local Context&rdquo; headings &mdash; or nest them under the block they describe so the generic title reads correctly. <strong class="text-mny-900 font-[600]">Findings 10, 11.</strong></p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] pt-5 border-t border-mny-y500">
+                  <strong class="text-mny-900 font-[600]">Net effect:</strong> jobs 1&ndash;4 are the ones a reader would
+                  notice within thirty seconds of arriving, and between them they touch one platform behaviour, one template
+                  binding, thirteen dataset rows and two column definitions. Everything in Tier 3 is real but can wait &mdash;
+                  a reader forgives a 32px seam much more readily than a drought measure on the extreme-cold page.
+                </p>
+              </div>
+
+              <!-- ============ METHOD ============ -->
+              <div class="mt-8 pt-6 border-t border-mny-100">
+                <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-3">Method &amp; limits</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                  <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]"><strong class="text-mny-900 font-[600]">20 of 55 pages walked</strong> &mdash; home, four section landings, six hazard profiles (extreme cold, wind, drought, avalanche, flooding + spot checks), built environment, people and communities, natural environment, NFIP floodplain, high hazard dams, climate change, disasters, about the process, strategies, capabilities assessment, select jurisdiction, actions database, funding sources. Counts stated as &ldquo;16 hazard pages&rdquo; or &ldquo;site-wide&rdquo; come from stored configuration and are labelled as such.</p>
+                  <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]"><strong class="text-mny-900 font-[600]">Read at 1440&times;1200, light theme, logged out.</strong> No mobile or narrow-viewport pass &mdash; given finding 14&rsquo;s hand-tuned pixel paddings, a responsive check is likely to surface more and is worth doing separately.</p>
+                  <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]"><strong class="text-mny-900 font-[600]">No screenshots.</strong> The browser pane wouldn&rsquo;t composite frames, so everything visual here is measured rather than seen &mdash; computed styles, element bounding boxes, rendered text. More precise for gaps and alignment; unable to catch colour contrast or a mis-cropped image, which are therefore not covered.</p>
+                  <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]"><strong class="text-mny-900 font-[600]">Not covered:</strong> accessibility (contrast, focus order, screen-reader labelling), print/PDF export, performance beyond the 1.8s navigation timing, authenticated and edit-mode views, and the 35 pages not walked. <strong class="text-mny-900 font-[600]">Sullivan County only</strong> &mdash; findings 2, 5 and 8 depend partly on which rows exist for this county.</p>
+                </div>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: live walkthrough of <code>county_template.devmny.org</code> (pattern <code>1300890</code>,
+                <code>MitigateNY_County_Template_V2</code>, app <code>mitigat-ny-prod</code>) on 19 Aug 2026, plus a
+                read-only sweep of the pattern&rsquo;s 15,681 component rows, 12 live source configs and 60 DaMa tile probes.
+                Scripts and raw output in <code>scratchpad/mitigateny/qa_ct_v2/</code>.
+                <strong class="text-mny-700">No page, component, source or setting was modified.</strong>
+                Companion to the <a href="admin-panel-status-v4.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Admin Panel Status</a> series, which audits the same pattern from the authoring side.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FOOTER — clearCentered layout
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div data-dms="layoutGroup" data-name="clearCentered">
+      <div class="w-full h-full flex-1 flex flex-row -mt-3">
+        <div class="max-w-[1440px] w-full xl:px-[48px] mx-auto">
+          <div class="flex flex-1 w-full flex-col relative h-full min-h-[200px]">
+            <div class="w-full grid grid-cols-6 md:grid-cols-12">
+              <div class="col-span-6 md:col-span-12 p-4">
+                <div class="my-2 flex flex-col gap-[8px] max-w-[1362px] mx-auto text-mny-700 overflow-hidden">
+                  <div class="p-[56px] md:h-[386px] md:max-h-[386px] md:min-h-[386px] bg-white flex flex-col md:flex-row flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md divide-x divide-mny-100 justify-center">
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Know the Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Built Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">People and Communities</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Environment</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Assess Risk</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Hazards</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Climate Change</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Presidentially Declared Disasters</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Plan to Act</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">State Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Local Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Evaluate Capacity &amp; Discover Resources</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Develop Strategies</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Explore Progress</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Action Tracking</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Mitigation Matters</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Resources</a>
+                    </div>
+                  </div>
+                  <div class="p-[16px] md:px-[56px] flex flex-col md:flex-row items-center justify-between md:h-[70px] md:max-h-[70px] md:min-h-[70px] bg-white flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md">
+                    <div class="font-proxima text-[14px]">&copy; 2025 MitigateNY, All Rights Reserved.</div>
+                    <div class="flex gap-[24px]">
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Privacy Policy</a>
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Terms and Conditions</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<script src="../ds-nav.js"></script>
+
+</body>
+</html>
