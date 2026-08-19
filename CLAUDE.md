@@ -147,6 +147,8 @@ There are two separate planning systems, split by what the task touches:
 
 Some skills — `traversing-dms-pages.md` and `traversing-report-pages.md` in particular — are explicitly living documents: update them in the same session whenever a live UI check surfaces a fact they don't yet have, and fix anything that's gone stale.
 
+**Project-scoped skills live outside that index.** `src/dms/skills/` is inside the `@availabs/dms` submodule, so guides that are site content rather than library capability live with their project instead. Currently: [`planning/mitigateny/skills/`](./planning/mitigateny/skills/README.md) — transcribing county Hazard Mitigation Plans into MitigateNY 2.0 (consultant-plan annexes, the Jurisdictions dataset write path, 2.0 pattern fills, the 1.0-site scraper), plus the scripts and worked-example reports from completed county loads. Check it before starting any MitigateNY plan-transcription work.
+
 ## Naming Conventions
 
 **Use underscores, not hyphens, for new identifiers.** Applies to directory names under `data-types/`, dataType plugin registration names, DMS source/view types, type strings (`{parent}:{instance}|{rowKind}`), database table/column names, and any string identifier you control. Examples: `now_playing` (not `now-playing`), `now_playing_stream`, `enhance_nfip_claims`. Existing hyphenated names (`enhance-nfip-claims`, `_example-hello-world`) are not retroactively renamed, but new code follows the underscore convention.
