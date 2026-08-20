@@ -43,12 +43,47 @@ const TMAS_STATION_KEYS = [
 	"con_signed_route",
 	"station_location",
 ]
-const TMAS_STATION_KEY_INDICES = TMAS_STATION_KEYS.reduce((a, c, i) => {
+const TMAS_STATION_KEYS_MAP = TMAS_STATION_KEYS.reduce((a, c, i) => {
 	a[c] = i;
 	return a;
 }, {});
 
-const PreviewColumns = TMAS_STATION_KEYS.slice(1, -1);
+const TMAS_2025_STATION_KEYS = [
+	"record_type",
+	"state_code",
+	"station_id",
+	"travel_dir",
+	"travel_lane",
+	"year_recorded",
+	"f_system",
+	"num_lanes",
+	"num_classes",
+	"calibration",
+	"type_sensor_1",
+	"type_sensor_2",
+	"latitude",
+	"longitude",
+	"prev_station_id",
+	"year_established",
+	"year_discontinued",
+	"county_code",
+	"nhs",
+	"posted_route_signing",
+	"posted_signed_route",
+	"station_location"
+]
+const TMAS_2025_STATION_KEYS_MAP = TMAS_2025_STATION_KEYS.reduce((a, c, i) => {
+	a[c] = i;
+	return a;
+}, {});
+
+const get2025value = (row, key) => {
+	if (key in TMAS_2025_STATION_KEYS_MAP) {
+		const index = TMAS_2025_STATION_KEYS_MAP[key];
+		return row[index];
+	}
+	return null;
+}
 
 const fsRegex = /^\d{1,2}$/;
 const homogenizeFsystem = fs => {
@@ -74,40 +109,66 @@ const TMAS_STATION_TRANSFORMS = {
 	},
 	"f_system": homogenizeFsystem
 }
+
+const TMAS_2025_STATION_TRANSFORMS = {
+	"f_system": homogenizeFsystem
+}
+
 const identity = i => i;
 
-const homogenize = (i, c) => {
+const homogenize = (i, c, use2025transform = false) => {
 	const key = TMAS_STATION_KEYS[i];
-	const func = TMAS_STATION_TRANSFORMS[key] || identity;
+	const func = (use2025transform ? TMAS_2025_STATION_TRANSFORMS[key] : TMAS_STATION_TRANSFORMS[key]) || identity;
 	return func(c);
 }
 
 const getStationRow = string => {
-	return string.split("|")
-								.reduce((a, c, i) => {
-									a.push({
-										name: TMAS_STATION_KEYS[i],
-										value: homogenize(i, c)
-									});
-									return a;
-								}, []);
+	const row = string
+								.replace(/\u0000/g, "")
+								.split("|");
+
+	if (row.length < TMAS_STATION_KEYS.length) {
+		return TMAS_STATION_KEYS.reduce((a, c, i) => {
+			const value = get2025value(row, c);
+			if (value !== null) {
+				a.push({
+					name: c,
+					value: homogenize(i, value, true)
+				});
+			}
+			else {
+				a.push({
+					name: c,
+					value: null
+				});
+			}
+			return a;
+		}, []);
+	}
+	return row.reduce((a, c, i) => {
+						a.push({
+							name: TMAS_STATION_KEYS[i],
+							value: homogenize(i, c)
+						});
+						return a;
+					}, []);
 }
-// TMAS station files use a literal NUL byte (0x00) as the blank-field filler,
-// not a space — the sample NY 2025 file carries 1295 of them across 713 rows.
-// String.prototype.trim() does NOT strip NUL (it isn't WhiteSpace per spec), so
-// the byte survives into the COPY stream and Postgres rejects the whole load
-// with `invalid byte sequence for encoding "UTF8": 0x00`. Strip NUL and any
-// other C0 control byte, then trim.
-const cleanValue = d =>
-	(d === null || d === undefined ? "" : d.toString())
-		// eslint-disable-next-line no-control-regex
-		.replace(/[\u0000-\u001F]/g, "")
-		.trim();
+
+const cleanValue = v => {
+	switch (typeof v) {
+	case "string":
+		return v.trim() ? v.trim() : null;
+		break;
+	case "number":
+		return isNaN(v) ? null : v;
+		break;
+	}
+}
 
 const getTableValues = row => {
-	const latitudeIndex = TMAS_STATION_KEY_INDICES["latitude"];
+	const latitudeIndex = TMAS_STATION_KEYS_MAP["latitude"];
 	const latitude = row[latitudeIndex].value;
-	const longitudeIndex = TMAS_STATION_KEY_INDICES["longitude"];
+	const longitudeIndex = TMAS_STATION_KEYS_MAP["longitude"];
 	const longitude = row[longitudeIndex].value;
 	row.splice(latitudeIndex, 2);
 	const point = {

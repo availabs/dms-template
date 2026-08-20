@@ -103,7 +103,7 @@ const Create = ({ context, source }) => {
 	  		}
 	  	}).catch(e => {
 	  		setError(e.message || e);
-	  	}).finally(() => stopLoading());;
+	  	});
   }, [okToSend, API_HOST, pgEnv, tmasFile, source, user,
   		baseUrl, startLoading, stopLoading]);
 
@@ -180,7 +180,11 @@ const Preview = ({ fileContent, theme, fileName, fileSize }) => {
 
 	const [filters, setFilters] = React.useState([]);
 	const addFilter = React.useCallback((k, v, compare = "Equal To") => {
-		setFilters(prev => [...prev, { key: k, value: v, compare }]);
+		setFilters(prev => {
+			const filtered = prev.filter(f => (f.key !== k) || (f.value !== v) || (f.compare !== compare));
+			return [...filtered, { key: k, value: v, compare }];
+		});
+
 	}, []);
 	const removeFilter = React.useCallback(i => {
 		setFilters(prev => prev.filter((f, ii) => i !== ii));
@@ -395,7 +399,7 @@ const PreviewDataItem = ({ Key, Value, onClick, bgColor }) => {
 			onClick={ doOnClick }
 			onContextMenu={ doOnClick }
 			className={ `
-				overflow-hidden overflow-ellipsis cursor-pointer
+				overflow-hidden overflow-ellipsis cursor-pointer font-medium
 				hover:outline-2 whitespace-nowrap ${ bgColor }
 			` }
 		>

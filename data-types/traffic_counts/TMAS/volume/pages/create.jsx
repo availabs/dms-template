@@ -53,18 +53,23 @@ const Create = ({ context, source }) => {
   	if (!inputRef) return;
   	inputRef.click();
   }, [inputRef]);
-  const [tmasFile, setTmasFile] = React.useState(null);
-  const doSetTmasFile = React.useCallback(e => {
-  	setTmasFile(e.target.files[0]);
+
+  const [tmasFiles, setTmasFiles] = React.useState([]);
+  const doSetTmasFiles = React.useCallback(e => {
+  	setTmasFiles([...e.target.files]);
+  	setError("");
   }, []);
 
-  React.useEffect(() => {
-  	if (!loading && error && tmasFile) {
-  		setError("");
-  	}
-  }, [loading, error, tmasFile]);
-
+  const [fileIndex, setFileIndex] = React.useState(0);
   const [fileContent, setFileContent] = React.useState([]);
+  const doSetFileIndex = React.useCallback(i => {
+  	setFileContent([]);
+  	setFileIndex(i);
+  }, []);
+  const tmasFile = React.useMemo(() => {
+  	return tmasFiles[fileIndex] || null;
+  }, [tmasFiles, fileIndex]);
+
   const [usePre2020Format, setUsePre2020Format] = React.useState(false);
   React.useEffect(() => {
   	if (!tmasFile) return;
@@ -77,8 +82,8 @@ const Create = ({ context, source }) => {
   }, [tmasFile]);
 
   const okToSend = React.useMemo(() => {
-  	return (tmasFile !== null) & (source.name.length >= MIN_SOURCE_NAME_LENGTH);
-  }, [tmasFile, source.name]);
+  	return Boolean(tmasFiles.length) && (source.name.length >= MIN_SOURCE_NAME_LENGTH);
+  }, [tmasFiles, source.name]);
 
   const navigate = useNavigate();
   const sendRequest = React.useCallback(e => {
@@ -96,8 +101,9 @@ const Create = ({ context, source }) => {
     	formData.append("user_id", user.id);
     }
     formData.append("format", usePre2020Format ? "pre-2020-format" : "post-2020-format")
-    formData.append("file", tmasFile);
-
+    for (const file of tmasFiles) {
+    	formData.append("file[]", file);
+    }
 		const url = `${ API_HOST }/dama-admin/${ pgEnv }/TMAS_volume_uploader/publish`;
 		// console.log("Create::sendRequest::url", url);
 
@@ -112,11 +118,16 @@ const Create = ({ context, source }) => {
 	  		}
 	  	}).catch(e => {
 	  		setError(e.message || e);
-	  	}).finally(() => stopLoading());
-  }, [okToSend, API_HOST, pgEnv, tmasFile, source, user,
+	  	});
+  }, [okToSend, API_HOST, pgEnv, tmasFiles, source, user,
   		usePre2020Format, baseUrl, startLoading, stopLoading]);
 
   const { Button } = UI;
+
+	const showWarning = React.useMemo(() => {
+		if (tmasFiles.length === 0) return false;
+		return tmasFiles.length < 12;
+	}, [tmasFiles]);
 
   return (
   	<div className="relative">
@@ -150,16 +161,17 @@ const Create = ({ context, source }) => {
 	  			</div>
 	  		)
   		}
-  		<input ref={ setInputRef } type="file" className="hidden"
-  			onChange={ doSetTmasFile }/>
+  		<input ref={ setInputRef } type="file" multiple
+  			className="hidden"
+  			onChange={ doSetTmasFiles }/>
   		<div className="flex">
   			<div className="flex-1">
 		  		<Button onClick={ clickInputRef }>
-		  			Select File
+		  			Select File(s)
 		  		</Button>
 		  	</div>
 	  		{ source.name.length >= MIN_SOURCE_NAME_LENGTH ? null :
-	  			<div className="bg-red-100 rounded text-red-600 px-3 flex items-center">
+	  			<div className="bg-red-100 rounded text-red-800 px-3 flex items-center">
 	  				{ "You must enter a Dataset name of length 4 or more" }
 	  			</div>
 	  		}
@@ -170,11 +182,22 @@ const Create = ({ context, source }) => {
 	  				<Preview key={ tmasFile?.name }
 	  					fileName={ tmasFile?.name }
 	  					fileSize={ tmasFile?.size }
-	  					fileContent={ fileContent } theme={ t }/>
+	  					fileContent={ fileContent } theme={ t }
+	  					allTmasFiles={ tmasFiles }
+	  					setFileIndex={ setFileIndex }/>
 						<div className={ t.divider }/>
 						<div className="my-1"/>
 	  			</>
   		}
+
+			{ !showWarning ? null :
+				<div className="border-b-4 mb-1">
+					<div className="bg-yellow-100 text-yellow-800 px-3 rounded mb-1">
+						You have only selected { tmasFiles.length } TMAS data files. All selected data files will be added to a single data table, therefore, you should select an entire year's worth of data.
+					</div>
+				</div>
+			}
+
   		{ !okToSend ? null :
   			<div className="flex justify-end items-center">
   				<div className="font-bold pr-2">
@@ -203,7 +226,30 @@ const previewRowSorter = (a, b) => {
 const NumToShow = 11;
 const ScrollAmount = Math.round(NumToShow * 0.75);
 
-const Preview = ({ fileContent, theme, fileName, fileSize }) => {
+const useClickOutside = (ref, cb) => {
+
+	const actualRef = React.useMemo(() => {
+		if (!ref) return null;
+		return "current" in ref ? ref.current : ref;
+	}, [ref, ref?.current]);
+
+	const handleMouseDown = React.useCallback(e => {
+		if (!actualRef) return;
+		if (typeof cb !== "function") return;
+		if (!actualRef.contains(e.target)) {
+			cb();
+		}
+	}, [actualRef, cb]);
+
+	React.useEffect(() => {
+		document.addEventListener("mousedown", handleMouseDown);
+		return () => {
+			document.removeEventListener("mousedown", handleMouseDown);
+		}
+	}, [handleMouseDown]);
+}
+
+const Preview = ({ fileContent, theme, fileName, fileSize, allTmasFiles, setFileIndex }) => {
 
 	const [showData, setShowData] = React.useState([]);
 	const toggleShowData = React.useCallback(index => {
@@ -247,18 +293,57 @@ const Preview = ({ fileContent, theme, fileName, fileSize }) => {
 		})
 	}, [slices]);
 
+	const [ref, setRef] = React.useState(null);
+
+	const [isOpen, setIsOpen] = React.useState(false);
+	const toggle = React.useCallback(e => {
+		setIsOpen(io => !io);
+	}, []);
+	const doOpen = React.useCallback(e => {
+		setIsOpen(true);
+	}, []);
+	const doClose = React.useCallback(e => {
+		setIsOpen(false);
+	}, []);
+
+	useClickOutside(ref, doClose);
+
 	return (
 		<div>
 
 			<div className={ `${ theme.fileInfoTitle } items-end`}>
 				<div className="flex-1 flex items-end">
 					File Preview
-					<div className="ml-2 flex items-center">
+					<div className="ml-2 flex items-center relative cursor-pointer"
+						onClick={ toggle }
+						ref={ setRef }
+					>
 						(
 						<span className="text-xs font-normal mt-[2px]">
 							{ fileName }, <span className="text-xs">{ intFormat(fileSize) } bytes</span>
 						</span>
+						<i className="fas fa-xs fa-caret-down ml-1"/>
 						)
+						<div
+							className={ `
+								absolute left-0 bg-white h-fit w-fit min-w-full
+								text-xs font-normal cursor-auto
+								${ !isOpen ? "hidden" : "block" }
+							` }
+							style={ {
+								top: "100%"
+							} }
+						>
+							{ allTmasFiles
+									.map((f, i) => (
+										<TMASFileOption key={ f.name }
+											name={ f.name }
+											index={ i }
+											select={ setFileIndex }
+											isSelected={ f.name === fileName }/>
+									))
+							}
+						</div>
 					</div>
 				</div>
 				<div className="font-normal text-xs">
@@ -288,7 +373,7 @@ const Preview = ({ fileContent, theme, fileName, fileSize }) => {
 									>
 										<div
 											className={ `
-												grid grid-cols-9 gap-1 font-bold text-center text-xs
+												grid grid-cols-9 gap-1 font-medium text-center text-xs
 												${ showData.includes(i + slices[0]) ? "bg-blue-300" : "" }
 											` }
 										>
@@ -354,6 +439,26 @@ const Preview = ({ fileContent, theme, fileName, fileSize }) => {
 				</div>
 			</div>
 
+		</div>
+	)
+}
+
+const TMASFileOption = ({ name, index, select, isSelected }) => {
+	const doSelect = React.useCallback(e => {
+		select(index);
+	}, [select, index]);
+	return (
+		<div onClick={ doSelect }
+			className={ `
+				px-2 py-1 flex items-center
+				${ isSelected ? "cursor-not-allowed bg-blue-300" :
+												"cursor-pointer hover:bg-blue-200" }
+			` }
+		>
+			<div className="flex-1">
+				{ name }
+			</div>
+			 { isSelected ? <i className="fas fa-check"/> : null }
 		</div>
 	)
 }
