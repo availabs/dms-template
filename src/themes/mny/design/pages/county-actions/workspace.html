@@ -416,20 +416,17 @@
                 <td class="px-2 py-3 align-middle"><span class="font-proxima text-[13px] text-mny-400 italic">Not Reported</span></td>
                 <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-1.5 pr-2 py-1 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Tier 1 — automatic while the action is Completed"><span class="flex items-center gap-2 min-w-0"><span class="size-6 shrink-0 rounded-full bg-mny-y700 text-mny-900 font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">1</span><span class="min-w-0 text-left"><span class="block font-proxima text-[13px] font-[600] text-mny-900 truncate leading-[1.15]">Top Implementation Priority</span><span class="block font-proxima text-[10px] text-mny-400 leading-[1.15]">automatic — completed</span></span></span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
               </tr>
-              <!-- the expansion. Readiness and maturity render as the PROGRESS-STEPS
-                   columnType style (a named select-column style like status_pill:
-                   the column's mapped option list supplies the steps, the value is
-                   the current step, and an EMPTY value renders the zero state — all
-                   hollow steps + "Not Yet Assessed"). The states shown here are
-                   ILLUSTRATIVE, from the client's target image: both fields are
-                   still empty on every Sullivan action, so the live page shows the
-                   zero state until the data lands (the dashboard's open-out demos
-                   that empty state). -->
+              <!-- the expansion. Readiness and maturity read as plain text
+                   (client feedback 2026-08-19 — the progress-steps meters are
+                   gone from this page and the action view; the edit page's
+                   select option lists still define the step vocabulary). Both
+                   fields are empty on every Sullivan action → "Not Yet
+                   Assessed", same as the dashboard's open-out. -->
               <tr class="border-b border-mny-50 bg-mny-50/40">
                 <td class="border-l-2 border-transparent"></td>
                 <td colspan="6" class="px-3 pb-4 pt-0">
                   <div class="bg-white rounded-[10px] border border-mny-100 p-4">
-                    <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr_320px] gap-x-8 gap-y-3">
+                    <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr_280px] gap-x-8 gap-y-3">
                       <div>
                         <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Description of Problem</p>
                         <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Maplewood Avenue experiences flooding due to aging and undersized culverts.</p>
@@ -438,61 +435,14 @@
                         <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Description of Solution</p>
                         <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Reduce long-term risk of flooding for existing assets and future development by resizing and upgrading culverts on Maplewood Avenue, based on engineering studies that include utilization of a box culvert.</p>
                       </div>
-                      <div class="rounded-[10px] border border-mny-100 bg-mny-50 p-3 space-y-3">
+                      <div class="rounded-[10px] border border-mny-100 bg-mny-50 p-3 space-y-2.5">
                         <div>
                           <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Application Readiness</p>
-                          <div class="flex mt-2">
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <div class="absolute top-[10px] left-1/2 w-full h-[2px] bg-mny-grn"></div>
-                              <!-- icon: CheckmarkFilled -->
-                              <svg xmlns="http://www.w3.org/2000/svg" class="relative z-10 size-[22px] text-mny-grn bg-white rounded-full" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-900 text-center leading-[1.2]">Concept</span>
-                            </div>
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <div class="absolute top-[10px] left-1/2 w-full h-[2px] bg-mny-grn"></div>
-                              <!-- icon: CheckmarkFilled -->
-                              <svg xmlns="http://www.w3.org/2000/svg" class="relative z-10 size-[22px] text-mny-grn bg-white rounded-full" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-900 text-center leading-[1.2]">Defined</span>
-                            </div>
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <div class="absolute top-[10px] left-1/2 w-full h-[2px] bg-mny-100"></div>
-                              <span class="relative z-10 size-[22px] rounded-full bg-white border-2 border-mny-400 text-mny-700 font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">3</span>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-900 text-center leading-[1.2]">Planned</span>
-                            </div>
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <span class="relative z-10 size-[22px] rounded-full bg-mny-100 text-mny-400 font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">4</span>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-400 text-center leading-[1.2]">Ready</span>
-                            </div>
-                          </div>
+                          <p class="font-proxima text-[13px] text-mny-400 italic mt-0.5">Not Yet Assessed</p>
                         </div>
                         <div>
                           <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Project Maturity</p>
-                          <div class="flex mt-2">
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <div class="absolute top-[10px] left-1/2 w-full h-[2px] bg-mny-400"></div>
-                              <span class="relative z-10 size-[22px] rounded-full bg-mny-400 text-white font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">1</span>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-900 text-center leading-[1.2]">Problem Identified</span>
-                            </div>
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <div class="absolute top-[10px] left-1/2 w-full h-[2px] bg-mny-400"></div>
-                              <span class="relative z-10 size-[22px] rounded-full bg-mny-400 text-white font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">2</span>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-900 text-center leading-[1.2]">Options Evaluated</span>
-                            </div>
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <div class="absolute top-[10px] left-1/2 w-full h-[2px] bg-mny-100"></div>
-                              <span class="relative z-10 size-[22px] rounded-full bg-mny-700 text-white font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">3</span>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-900 text-center leading-[1.2]">Preferred Solution</span>
-                            </div>
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <div class="absolute top-[10px] left-1/2 w-full h-[2px] bg-mny-100"></div>
-                              <span class="relative z-10 size-[22px] rounded-full bg-mny-100 text-mny-400 font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">4</span>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-400 text-center leading-[1.2]">In Design</span>
-                            </div>
-                            <div class="relative flex-1 flex flex-col items-center min-w-0">
-                              <span class="relative z-10 size-[22px] rounded-full bg-mny-100 text-mny-400 font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">5</span>
-                              <span class="mt-1 font-proxima text-[10px] font-[600] text-mny-400 text-center leading-[1.2]">Shovel Ready</span>
-                            </div>
-                          </div>
+                          <p class="font-proxima text-[13px] text-mny-400 italic mt-0.5">Not Yet Assessed</p>
                         </div>
                       </div>
                     </div>

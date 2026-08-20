@@ -49,8 +49,14 @@ Projects are cheap; add one as soon as a second task shows up for the same clien
 4. Use the lowercase, no-punctuation folder name (`mitigateny`, `transportny`) even where the
    display name is camel-cased (MitigateNY, TransportNY).
 
-Project-specific material that isn't a task (QA process docs, run logs, reference captures) can live
-directly in the project folder outside `tasks/` — e.g. `transportny/qa-process/runs/`.
+Project-specific material that isn't a task (QA process docs, run logs, reference captures, how-to
+skills) can live directly in the project folder outside `tasks/` — e.g. `transportny/qa-process/runs/`
+and `mitigateny/skills/`.
+
+**Project skills.** A recurring how-to guide is not a task — it has no completion state, so it must
+not sit in `tasks/current/`. Put it in `<project>/skills/` with a `README.md` index. Cross-project
+authoring skills belong in `src/dms/skills/` instead; use `<project>/skills/` when the guide is site
+content specific to one client, or when it would otherwise require a submodule commit.
 
 ## Directory Structure
 
@@ -60,6 +66,8 @@ planning/
 ├── todo.md                      # Shared active-task index, grouped by project
 ├── completed.md                 # Shared completed-task index, grouped by project
 ├── mitigateny/
+│   ├── skills/                  # Project how-to guides (HMP transcription) + scripts,
+│   │                            #   worked-example reports; see its README.md index
 │   └── tasks/
 │       ├── current/             # Detailed task documents for work in progress
 │       └── completed/           # Archived task documents for completed work

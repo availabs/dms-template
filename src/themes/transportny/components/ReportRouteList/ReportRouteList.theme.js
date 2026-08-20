@@ -31,7 +31,22 @@ export const reportRouteListTheme = {
   addGraphBtnIcon: 'size-3.5 text-[#37576B] shrink-0',
   addBtnLabel: 'font-display uppercase text-[11.5px] tracking-wide',
 
-  dynamicToggleWrapper: 'px-3 py-2.5 border-b border-zinc-950/08 bg-slate-50/60 flex items-center gap-2',
+  // Report settings disclosure — collapsed by default. Houses the Dynamic Report switch, which
+  // used to be reachable only after opening RRL's own pencil edit mode (an incidental extra click
+  // that happened to also gate it); 1B (report-authoring-ux-overhaul.md item 3, 2026-08-19) made
+  // every RRL control reachable in one fewer click, which put this switch at the same visual
+  // weight as Add Route/Add Graph — too easy for a novice to trip over. Tucked behind its own
+  // disclosure (2026-08-19 follow-up, item 4A) rather than removing the extra click entirely:
+  // still one click away, just visually separated from the report's everyday actions.
+  settingsDisclosureWrapper: 'border-b border-zinc-950/08 bg-slate-50/60 shrink-0',
+  settingsDisclosureToggle: 'w-full px-3 py-2 flex items-center gap-1.5 text-slate-500 hover:text-slate-700',
+  settingsDisclosureIcon: 'size-3.5 shrink-0',
+  settingsDisclosureLabel: 'font-mono text-[10px] uppercase tracking-[0.16em] flex-1 text-left',
+  settingsDisclosureChevron: 'size-3.5 shrink-0',
+  settingsDisclosureBody: 'px-3 pb-2.5 space-y-1.5',
+  settingsDisclosureHint: 'font-proxima text-[11px] leading-[1.4] text-slate-500',
+  autoSaveHint: 'font-mono text-[9px] uppercase tracking-wider text-slate-400 italic',
+  dynamicToggleWrapper: 'flex items-center gap-2',
   dynamicToggleLabel: 'font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 flex-1',
 
   searchOuterWrapper: 'px-3 py-2 border-b border-zinc-950/05 shrink-0',

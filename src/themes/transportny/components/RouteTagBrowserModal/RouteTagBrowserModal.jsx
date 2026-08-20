@@ -259,7 +259,10 @@ export default function RouteTagBrowserModal({
         <div className={t.body}>
           {view === 'root' ? (
             <>
-              {renderRouteList(visibleResults)}
+              {/* report-authoring-ux-overhaul.md Tier 5 (2026-08-20): moved above the default
+                  route list per Ryan's live feedback — a novice author has no reason to think
+                  the tag browser exists below a route list that already looks complete on its
+                  own, so it would never get scrolled to. */}
               <div className={t.sectionLabel}>Browse by tag</div>
               <div className={t.categoryPillRow}>
                 {TAG_CATEGORIES.map((c) => (
@@ -274,6 +277,7 @@ export default function RouteTagBrowserModal({
                 <span className={t.categoryLinkSep}>·</span>
                 <button type="button" className={t.categoryLink} onClick={goOther}>Other tags</button>
               </div>
+              {renderRouteList(visibleResults)}
             </>
           ) : null}
 

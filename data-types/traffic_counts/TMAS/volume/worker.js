@@ -32,10 +32,12 @@ const Worker = async ctx => {
 
 		format,
 
-		tempFilePath
+    tempFiles
+		// tempFilePath
   } = task.descriptor.args;
 
   await dispatchEvent('TMAS_volume_data:INITIAL', `TMAS Volume Data task started: ${ task.task_id }`);
+  await dispatchEvent('TMAS_volume_data:SOURCE', `Generating data table for source: ${ source_id }`);
   await updateProgress(0.1);
 
 	const pgCreds = getPostgresCredentials(pgEnv);
@@ -52,7 +54,7 @@ const Worker = async ctx => {
 
   const { table_name, data_table, view_id } = newDamaView;
 
-  await dispatchEvent(`TMAS_volume_data:DAMA_VIEW', 'created new DAMA view: ${ view_id }`);
+  await dispatchEvent('TMAS_volume_data:DAMA_VIEW', `created new DAMA view: ${ view_id }`);
   await updateProgress(0.2);
 
   const createDamaViewSql = `
@@ -93,44 +95,49 @@ const Worker = async ctx => {
   `;
   await db.query(createDamaViewSql);
 
-  await dispatchEvent(`TMAS_volume_data:DATA_TABLE', 'create new data table: ${ data_table }`);
+  await dispatchEvent('TMAS_volume_data:DATA_TABLE', `create new data table: ${ data_table }`);
   await updateProgress(0.3);
-
-  // skip the first row of POST-2020 formats since it is a header row
-  let foundFirstPost2020row = format === "pre-2020-format";
-
-  async function* parseResults(source) {
-  	for await (const row of source) {
-  		if (foundFirstPost2020row) {
-  			const data = getRowValues(row);
-	  		yield `${ csvFormatRow(data) }\n`;
-	  	}
-	  	else {
-	  		foundFirstPost2020row = true;
-	  	}
-		}
-	}
 
   const copyFromSql = `
   	COPY ${ data_table }
   		FROM STDIN WITH (FORMAT CSV)
   `;
 
-  await dispatchEvent(`TMAS_volume_data:STREAM', 'streaming data into DB table ${ data_table }`);
+  await dispatchEvent('TMAS_volume_data:STREAM', `streaming data into DB table ${ data_table }`);
   await updateProgress(0.4);
 
-  await pipeline(
-  	createReadStream(tempFilePath),
-  	split2(getTMASrowProcessor(format)),
-  	parseResults,
-		pgClient.query(
-			pgCopyStreams.from(copyFromSql)
-		)
-  );
+  for (const { filename, filepath } of tempFiles) {
+    await dispatchEvent('TMAS_volume_data:STREAM', `processing file ${ filename }`);
+
+    // skip the first row of POST-2020 formats since it is a header row
+    let foundFirstPost2020row = format === "pre-2020-format";
+
+    async function* parseResults(source) {
+      for await (const row of source) {
+        if (foundFirstPost2020row) {
+          const data = getRowValues(row);
+          yield `${ csvFormatRow(data) }\n`;
+        }
+        else {
+          foundFirstPost2020row = true;
+        }
+      }
+    }
+
+    await pipeline(
+      createReadStream(filepath),
+      split2(getTMASrowProcessor(format)),
+      parseResults,
+      pgClient.query(
+        pgCopyStreams.from(copyFromSql)
+      )
+    );
+  }
+
 
   pgClient.end();
 
-  await dispatchEvent(`TMAS_volume_data:STREAM', 'streaming completed`);
+  await dispatchEvent('TMAS_volume_data:STREAM', 'streaming completed');
   await updateProgress(0.7);
 
   const addOgcFidSql = `
@@ -148,7 +155,7 @@ const Worker = async ctx => {
 
   result.completedAt = new Date().toLocaleString();
 
-  await dispatchEvent(`TMAS_volume_data:FINAL', 'request completed`);
+  await dispatchEvent('TMAS_volume_data:FINAL', 'request completed');
   await updateProgress(1.0);
 
 	return result;

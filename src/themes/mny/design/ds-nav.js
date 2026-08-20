@@ -39,6 +39,7 @@
       { f: 'actions-location-overview.html', t: 'location overview' },
     ]},
     { key: 'county', label: 'County Actions Workflow', dir: 'pages/county-actions', landing: 'dashboard.html', pages: [
+      { f: 'state-dashboard.html', t: 'state dashboard' },
       { f: 'dashboard.html', t: 'county dashboard' }, { f: 'jurisdictions.html', t: 'jurisdictions' },
       { f: 'jurisdiction-prioritization.html', t: 'jurisdiction prioritization' },
       { f: 'workspace.html', t: 'county workspace' }, { f: 'action-view.html', t: 'action view' },
@@ -86,6 +87,8 @@
       { f: 'admin-panel-status-v2.html', t: 'admin panel status v2 · planner scope' },
       { f: 'admin-panel-status-v3.html', t: 'admin panel status v3 · re-run + create/fetch/geo/permissions' },
       { f: 'admin-panel-status-v4.html', t: 'admin panel status v4 · six families, dropped sections quarantined' },
+      { f: 'county-template-qa.html', t: 'county template front-end QA' },
+      { f: 'mny-transcribe-skills-to-git.html', t: 'transcribe skills → git' },
     ]},
   ];
 

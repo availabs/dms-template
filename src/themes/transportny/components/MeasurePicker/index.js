@@ -24,6 +24,9 @@
 
 import {
     composeMeasureConfig,
+    composeTableMeasuresConfig,
+    composeAutoTitle,
+    isTitleDirty,
     GRAPH_TYPE_OPTIONS,
     MEASURE_OPTIONS,
     RESOLUTION_OPTIONS,
@@ -94,26 +97,49 @@ export function isReportPage(siblingSections = []) {
 // actually produced something (an unknown measureKey composes nothing, and callers should skip
 // downstream bookkeeping — e.g. the reconcile call — in that case).
 export function applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors } = {}) {
-    const composed = composeMeasureConfig({
-        graphType: pick.graphType,
-        measureKey: pick.measure,
-        resolutionKey: pick.resolution,
-        comparisonModeKey: pick.comparisonMode,
-        anchorInvert: pick.anchorInvert,
-        externalSourceColumns,
-        defaultColors,
-        // A caller (report_build.mjs, which knows its spec's true route→graph
-        // assignment up front) may pass `seriesCount` straight through
-        // `partial`; otherwise best-effort from whatever route assignment
-        // already made it into `_measurePick.routeIds` via ReportRouteList
-        // BEFORE this measure pick — the common live-authoring order, but not
-        // guaranteed (picking a measure before any route is assigned leaves
-        // this undefined, so composeMeasureConfig falls back to its BC
-        // categorical default; re-opening the picker after routes exist
-        // recomposes with the real count). Stripped back out of `pick` below
-        // before it's persisted — it's a compose-time hint, not stored state.
-        seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
-    });
+    // Captured before anything below overwrites `state.display._measurePick` — this is the pick
+    // whatever's currently in `state.display.title.title` was actually generated FROM (or
+    // undefined on a brand-new section). Tier 5B's title auto-population (near the bottom of this
+    // function) diffs against this, never against the new `pick` that's about to be applied.
+    const priorPick = state?.display?._measurePick;
+
+    // Table (Tier 5D, 2026-08-20): N measures -> N columns, one shared union join, no
+    // comparison-mode/color/tooltip/legend concept at all — genuinely a different, smaller
+    // compose shape, not a variant of the single-measure chart path below. Gated on
+    // `graphType === 'Table'` ALONE, deliberately not also on `pick.measures.length` — an author
+    // unchecking their last remaining measure in QuickControls' Measure pill must not silently
+    // fall through to the single-measure branch and compose one stale column from whatever
+    // `pick.measure` still holds. `composeTableMeasuresConfig` already returns null for an empty
+    // `measureKeys` list, which correctly no-ops the WHOLE apply (via the `if (!composed) return
+    // false` below) — the table's existing columns are left exactly as they were rather than
+    // replaced with something wrong, and the checkbox that was just unchecked snaps back once
+    // `_measurePick` re-renders unchanged.
+    const composed = (pick.graphType === 'Table')
+        ? composeTableMeasuresConfig({
+            measureKeys: pick.measures,
+            resolutionKey: pick.resolution,
+            externalSourceColumns,
+        })
+        : composeMeasureConfig({
+            graphType: pick.graphType,
+            measureKey: pick.measure,
+            resolutionKey: pick.resolution,
+            comparisonModeKey: pick.comparisonMode,
+            anchorInvert: pick.anchorInvert,
+            externalSourceColumns,
+            defaultColors,
+            // A caller (report_build.mjs, which knows its spec's true route→graph
+            // assignment up front) may pass `seriesCount` straight through
+            // `partial`; otherwise best-effort from whatever route assignment
+            // already made it into `_measurePick.routeIds` via ReportRouteList
+            // BEFORE this measure pick — the common live-authoring order, but not
+            // guaranteed (picking a measure before any route is assigned leaves
+            // this undefined, so composeMeasureConfig falls back to its BC
+            // categorical default; re-opening the picker after routes exist
+            // recomposes with the real count). Stripped back out of `pick` below
+            // before it's persisted — it's a compose-time hint, not stored state.
+            seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
+        });
     if (!composed) return false;
 
     // Default the primary Dataset to the canonical NPMRDS source when
@@ -186,6 +212,15 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
         existingSubscriber.args = { ...existingSubscriber.args, ...REPORT_SUBSCRIBER_ARGS };
     } else {
         subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
+    }
+
+    // Tier 5B: populate/refresh the title, UNLESS the author has already typed their own (see
+    // `isTitleDirty`'s own doc comment for the no-new-field mechanism). Obvious at this call
+    // site on purpose — a future reader shouldn't have to go read composeAutoTitle/isTitleDirty
+    // just to see WHETHER a title write happens here, only to understand HOW "dirty" is decided.
+    const currentTitle = state.display.title?.title;
+    if (!isTitleDirty({ currentTitle, priorPick })) {
+        state.display.title = { ...state.display.title, title: composeAutoTitle(pick) };
     }
 
     // Remembers the full pick so reopening the menu/Quick Controls shows the right checkmarks/

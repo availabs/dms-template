@@ -37,12 +37,17 @@ const risSourceCurrent = {
 	pgEnv: "npmrds2",
 	stationColumns: ["station_number", "continuous_count_station"]
 }
-
-const risSourceLegacy = {
+const risSourceLegacy1 = {
 	source_id: 175,
 	view_id: 308,
 	pgEnv: "npmrds2",
 	stationColumns: ["station_nu", "ccstn"]
+}
+const risSourceLegacy2 = {
+	source_id: 2105,
+	view_id: 3628,
+	pgEnv: "npmrds2",
+	stationColumns: ["station_number", "continuous_count_station"]
 }
 
 // const VOLUME_DATA_FOLDER = "./ny_2024_volume_data";
@@ -52,7 +57,7 @@ const SQLITE_DB_URL = join(SQLITE_DIRECTORY, "sqlite.db");
 const TMAS_DATA_FORMAT = "pre-2020-format"
 
 ;(async () => {
-	const risSource = risSourceLegacy;
+	const risSource = risSourceLegacy2;
 
 console.log("CONNECTING TO RIS DB")
 	const risCreds = getPostgresCredentials(risSource.pgEnv);
@@ -86,8 +91,6 @@ console.log("CONNECTING TO RIS DB")
 
 	await risClient.end();
 })();
-
-
 
 const queryStationIDs = async () => {
 	console.log("QUERYING VOLUME DATA FOR STATION IDs");

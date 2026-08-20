@@ -286,7 +286,14 @@ function getFractionOfDailyAadtForNpmrdsDataTimeBin({
 }
 
 async function calcFreeflowBaseThresholdSpeed(props) {
-  const { db, chDb, tmcMeta, year, dataTableName, curTmcId: tmc, referenceWindow } = props;
+  const { db, chDb, tmcMeta, year, dataTableName, curTmcId: tmc, referenceWindow,
+          freeflowP15Cache } = props;
+
+  // The percentile below is taken over ALL_VEHICLES whatever stream the calling metric measures,
+  // so it is identical for every metric sharing a reference window. Memoized per TMC by the worker
+  // (see freeflowP15Cache there); absent a cache this behaves exactly as before.
+  const cacheKey = referenceWindow ? referenceWindow.join('..') : `year:${year}`;
+  if (freeflowP15Cache && freeflowP15Cache.has(cacheKey)) return freeflowP15Cache.get(cacheKey);
   const allHourBin = REPORTING_BINS.find((b) => b.name === BIN_NAMES.ALL);
   // R2 — when a referenceWindow is supplied the p15 comes from that FIXED window while the travel
   // times being measured still come from the publish year. That separation is the whole point: an
@@ -312,7 +319,9 @@ async function calcFreeflowBaseThresholdSpeed(props) {
   // Note the p15 is taken over 15-minute BIN MEANS across all hours and days, and because speed is
   // monotone-decreasing in travel time this is the 85th percentile of speed — the FHWA/ODOT
   // convention, which is not obvious from the code and is worth stating for auditors.
-  return { baseThresholdSpeed: (tmcMeta.miles / fifteenthTt) * 3600, tt_15_pct: fifteenthTt };
+  const derived = { baseThresholdSpeed: (tmcMeta.miles / fifteenthTt) * 3600, tt_15_pct: fifteenthTt };
+  if (freeflowP15Cache) freeflowP15Cache.set(cacheKey, derived);
+  return derived;
 }
 
 module.exports = { calcPhed };

@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Segment 120N04521 · NPMRDS · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  npmrds-tmc.html · NPMRDS category — one TMC segment, in full
+  ════════════════════════════════════════════════════════════════════════════════
+  The leaf page of the whole category. Every other NPMRDS surface aggregates: the macro
+  view colours 3,000 segments by one number, a report averages a corridor, a comparison
+  pivots routes against periods. This page is where you find out what ONE segment's data
+  actually looks like before you trust any of that — its attributes, whether the year is
+  even observed, how its speeds distribute, and how its PM3 measures have moved.
+
+  TRANSCRIBED FROM transportNY/src/sites/npmrds/pages/TmcPage/ — index.jsx (the 9/3 split,
+  the four-control reducer) and components/: TmcInfo.jsx (the attribute block, with utils.js's
+  code tables for route_sign / route_qual / f_system / faciltype / nhs / strhnt_typ), 
+  DataCompletenessGrid.jsx (a GridGraph of observation counts ÷ possible, month × time-of-day),
+  MetricByPeaks.jsx (a stacked BarGraph over the metric's value, keyed by the five peaks, with
+  median + 85th-percentile rules and a standard-deviation filter), Pm3Measures.jsx (three
+  measures, each a current-year value plus a per-year line), TmcMap.jsx + TmcLayer.js (the
+  geometry, fit to the TMC's own bounding box).
+  Content and structure are the legacy page's; implementation is this brand's tokens
+  (skill §7.7.1 — handoff for content + structure, theme tokens for how it's drawn).
+
+  STRUCTURE — a reading page, not a workbench:
+    · Layout `app`, full 240px NPMRDS SideNav, Macro View active (this is its leaf).
+    · `breadcrumbs` band — contract item 3: a deep page gets the dedicated band, not a <nav>
+      inlined into the header.
+    · `header` band — contract item 2's one shape: eyebrow → h1 → one-line purpose →
+      right-aligned action pair + the four-segment freshness strip (item 4, verbatim).
+    · ONE `content` band hosting a content sidebar, `pages.sectionGroup` styles[0] `default`
+      (302-px card rail, gap-10 gutter, sticky) on the RIGHT — matching the legacy page's
+      right-hand rail. One band, because the rail renders inside a single `railHost` band and
+      an index that only reaches a quarter of the page is not an index.
+    · Everything in the canvas sits on `grid-cols-12`.
+
+  ── WHY THE FOUR CONTROLS ARE IN THE CANVAS AND NOT IN THE RAIL ──────────────────
+  The legacy page puts Year · Metric · Data source · Resolution in the right rail, above the
+  map. Here they are a sticky section at the top of the canvas instead, for one reason from
+  `layouts.html` §09: **the rail is `hidden xl:block`**. Below 1280px it does not render, and a
+  page whose charts cannot be re-scoped below 1280px is broken, not responsive. The rule is
+  "anything load-bearing belongs in the canvas", and these four are the most load-bearing
+  things on the page — three of the four cards change completely when Resolution changes.
+  What is left for the rail is what a rail is for: the jump list, the segment's geometry, and
+  the links out. The rail can vanish and the page still works.
+
+  ── THE CONTROLS ARE PAGE VARIABLES, NOT CHART CONTROLS ─────────────────────────
+  One set of four, at the top, governing every card — because in the legacy page they already
+  do (`index.jsx` holds all four in one reducer and spreads `{...state}` into all three data
+  components). Expressible as page variables read by each section's dataWrapper filter; NOT as
+  four per-card control rows, which would let the completeness grid and the distribution
+  disagree about which year they are describing.
+
+  ── FOUR THINGS THIS PAGE SPECIFIES BEYOND THE LEGACY PAGE ──────────────────────
+   1. AN OBSERVATION-COUNT HEADLINE. The legacy completeness grid draws the heat map and never
+      states the total, so "is this year usable?" — the question the card exists to answer — is
+      left to the reader's eye. The card now leads with observed ÷ possible and the worst month.
+   2. THE COMPLETENESS RAMP IS DECLARED. `getColorRange(7,'BrBG')` is a DIVERGING ramp used for
+      a magnitude: brown-to-teal reads as two categories meeting in the middle when the data is
+      one quantity from none to all. Drawn here as a 7-step monochrome ramp off the brand's
+      `graph.primary`. ESCALATION: the brand's `graph` block has `catPalette` and
+      `seqSpeedPalette` but no neutral sequential ramp — this page needs one named, e.g.
+      `seqNeutralPalette`, before a build task can bind it.
+   3. THE PEAK DEFINITIONS ARE ON THE CARD. `getPeak()` hard-codes them (overnight before 06
+      or from 20; weekend by day-of-week and NOT split into peaks; AM 06–10, off-peak 10–16, PM
+      16–20). A stacked chart whose five series are undefined terms is a rorschach test.
+   4. THE STD-DEV FILTER SAYS WHAT IT DROPS. "2 std. deviations" alone doesn't tell you it just
+      discarded 4.3% of the observations; the count is now shown next to each option.
+
+  ── AND THREE HONEST GAPS ───────────────────────────────────────────────────────
+   5. `avg_speedlimit`, `aadt*`, `thrulanes` and friends come off the TMC's metadata for the
+      SELECTED YEAR. A year with no metadata row shows the code tables' "Unknown" branches, not
+      zeros — the attribute card draws that state (Route qualifier).
+   6. PHED is not published for every segment, and the legacy code silently renders 0.00 for a
+      missing measure. Drawn as "not computed", never as zero.
+   7. NO YEAR-OVER-YEAR DELTA on the distribution card. Two years is two queries against a
+      14-billion-row table; the PM3 lines already carry the trend. Named as out of scope rather
+      than left as an obvious-looking absence.
+
+  SECTION NESTING: no `data-dms-section` wraps another; the band is a `data-dms-group` and the
+  rail is a fixed-width flex SIBLING of the content column, outside the 12-col grid.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ═════════ SIDENAV · Macro View active ═════════
+             A segment page has no nav item of its own — it is a LEAF of Macro View (click a
+             segment on the choropleth and this is where you land), so Macro View carries the
+             active bar and the breadcrumb below states the parentage explicitly. -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="npmrds-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS · LayoutGroup `breadcrumbs` ═════════
+               Contract item 3 — the dedicated band, not a <nav> inlined into the header. The
+               trail is the real one: a segment is reached from the macro view's popup. -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="npmrds-macro.html" class="hover:text-[#0f1722]">Macro View</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">Segment 120N04521</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════
+               Contract item 2's one shape. The identity chips carry what the legacy page put in
+               a 2xl heading row (state · roadname · direction · alternate name) — same content,
+               a shape that survives a long road name. -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-6" data-dms-section="page-header">
+              <div class="flex items-center gap-3 mb-2 flex-wrap">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// segment detail</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">one tmc · every measure we hold</span>
+              </div>
+              <div class="flex items-end justify-between gap-6 flex-wrap">
+                <div class="flex-1 min-w-[360px] max-w-[860px]">
+                  <div class="flex items-baseline gap-3 flex-wrap">
+                    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">120N04521<span class="text-[#CA8A04]">.</span></h1>
+                    <span class="font-display font-medium text-[22px] leading-[1.2] text-[#37576B]">I-87 NB · Thruway</span>
+                  </div>
+                  <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">New York</span>
+                    <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">Rockland</span>
+                    <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">Region 8</span>
+                    <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">NYMTC</span>
+                    <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10.5px] uppercase tracking-[0.16em] tabular-nums text-slate-600">1.42 mi</span>
+                    <span class="h-6 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/12 bg-slate-50 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">Interstate</span>
+                  </div>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3">Everything held for this one segment in the selected year — how much of the year was actually observed, how its speeds distribute across the five peak periods, and where its three PM3 measures sit against a decade of their own history.</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap justify-end shrink-0">
+                  <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Export --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Share</span></button>
+                  <!-- contract item 7 · the download affordance, and it downloads the SEGMENT's
+                       epoch table for the selected year + source — the thing this page is looking
+                       at, not a generic export. -->
+                  <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Download --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Download</span><span class="font-mono text-[10px] tabular-nums text-slate-500">84,824 rows</span></button>
+                  <a href="npmrds-route-creation.html" class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Add to a route</span></a>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                <span class="text-slate-300">·</span><span>since jan 2017</span>
+                <span class="text-slate-300">·</span><span>pm3 year <span class="text-[#0f1722]">2025</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ CONTENT · LayoutGroup `content` · THE RAIL HOST ═════════
+               ONE band holds the whole page body, because the content sidebar renders inside a
+               single `railHost` band. `pages.sectionGroup` styles[0] `default`, sidebar='right'
+               → the rail is `order-2`. contentRow is `items-stretch` (NOT items-start): that is
+               what gives the inner `sticky` room to pin. -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div class="flex flex-row gap-10 items-stretch min-h-screen">
+
+                <!-- ══════ THE CANVAS · contentCol · its own grid-cols-12 ══════ -->
+                <div class="flex-1 min-w-0">
+                  <div class="grid grid-cols-12 gap-6">
+
+                    <!-- ── SECTION · the four controls (12) ──────────────────────────────
+                         Page variables, sticky under the header. Every card below reads them.
+                         Sticky rather than scrolled-away because changing Resolution while
+                         looking at the distribution is the page's most common single act. -->
+                    <div class="col-span-12 sticky top-0 z-20" data-dms-section="controls">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-4 py-3 flex items-end gap-4 flex-wrap">
+                        <div class="min-w-[104px]">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">Year</div>
+                          <button class="w-full h-9 px-2.5 inline-flex items-center justify-between gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B]"><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">2025</span><!-- icon: CaretDown --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </div>
+                        <div class="min-w-[148px]">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">Metric</div>
+                          <div class="h-9 grid grid-cols-2 rounded-[6px] border border-zinc-950/15 overflow-hidden">
+                            <button class="bg-[#1F3F8F] text-white font-proxima text-[12.5px] font-medium">Speed</button>
+                            <button class="bg-white text-slate-600 font-proxima text-[12.5px] border-l border-zinc-950/10 hover:bg-slate-50">Travel time</button>
+                          </div>
+                        </div>
+                        <div class="min-w-[168px]">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">Data source</div>
+                          <button class="w-full h-9 px-2.5 inline-flex items-center justify-between gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B]"><span class="font-proxima text-[13px] font-medium text-[#0f1722]">All vehicles</span><!-- icon: CaretDown --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </div>
+                        <div class="min-w-[196px]">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">Resolution</div>
+                          <div class="h-9 grid grid-cols-3 rounded-[6px] border border-zinc-950/15 overflow-hidden">
+                            <button class="bg-[#1F3F8F] text-white font-proxima text-[12.5px] font-medium">Hour</button>
+                            <button class="bg-white text-slate-600 font-proxima text-[12.5px] border-l border-zinc-950/10 hover:bg-slate-50">15 min</button>
+                            <button class="bg-white text-slate-600 font-proxima text-[12.5px] border-l border-zinc-950/10 hover:bg-slate-50">5 min</button>
+                          </div>
+                        </div>
+                        <!-- the consequence of Resolution, stated: it is not a zoom control, it
+                             changes how many observations each drawn cell/bar averages. -->
+                        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 flex-1 min-w-[220px] pb-1">Resolution bins the raw 5-minute epochs — at <strong>Hour</strong>, one cell is up to 12 observations averaged. It changes what the grid and the distribution below are counting, not how they are drawn.</p>
+                      </div>
+                    </div>
+
+                    <!-- ── § 01 head (12) ── -->
+                    <div class="col-span-12" data-dms-section="attributes-head" id="attributes">
+                      <div class="flex items-center gap-3">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
+                        <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                        <h2 class="font-display font-semibold text-[22px] leading-[1.2] text-[#0F1722]">Attributes</h2>
+                        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">tmc metadata · 2025 vintage</span>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · the attribute block (8) ── the legacy TmcInfo, field for
+                         field, in its own five groups. Coded fields resolve through utils.js's
+                         tables, and the code is kept beside the label where the table has one. -->
+                    <div class="col-span-12 lg:col-span-8" data-dms-section="attributes">
+                      <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                          <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] flex-1">Segment attributes</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">31 fields · tmc.meta</span>
+                        </div>
+                        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0">
+                          <div class="col-span-full font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 pb-1">geography</div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">State</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">New York</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">County</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">Rockland</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">MPO</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">NYMTC</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Urban area</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">New York–Newark</span></div>
+
+                          <div class="col-span-full font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 pt-4 pb-1">geometry</div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Length</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">1.42 mi</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Avg. speed limit</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">65 mph</span></div>
+
+                          <div class="col-span-full font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 pt-4 pb-1">traffic · aadt</div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">All vehicles</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">128,400</span></div>
+                          <!-- passenger AADT is DERIVED — aadt − (single + combi) — not a stored
+                               column. Marked, because a reader comparing it to a source table
+                               will not find it there. -->
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Passenger vehicles <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">derived</span></span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">112,930</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Single-unit trucks</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">6,120</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Combination trucks</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">9,350</span></div>
+
+                          <div class="col-span-full font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 pt-4 pb-1">classification</div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Route signing</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">Interstate</span></div>
+                          <!-- gap 5, drawn: a coded field with no row for this year resolves to
+                               the code table's "Other or Unknown" branch. Shown as unknown, in
+                               slate, never as a blank or a zero. -->
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Route qualifier</span><span class="font-proxima text-[13.5px] text-slate-400 italic">Other or unknown</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Functional class</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">Interstate <span class="font-mono text-[11px] text-slate-400">(1)</span></span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Facility type</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">One-way roadway</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Through lanes</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">3</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">Direction</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">Northbound</span></div>
+
+                          <div class="col-span-full font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 pt-4 pb-1">networks</div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">NHS component</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">Non-connector NHS</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">On NHS</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">100%</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">STRAHNET component</span><span class="font-proxima text-[13.5px] font-medium text-[#0f1722]">Regular STRAHNET</span></div>
+                          <div class="flex items-baseline justify-between gap-3 py-1.5 border-b border-zinc-950/05"><span class="font-proxima text-[13px] text-slate-500">On STRAHNET</span><span class="font-mono text-[13px] tabular-nums font-medium text-[#0f1722]">100%</span></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · the geometry (4) ── a Map section fit to the TMC's own
+                         bounding box. One feature, one line layer — no basemap picker, no zoom
+                         chrome of our own. -->
+                    <div class="col-span-12 lg:col-span-4" data-dms-section="geometry">
+                      <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-2">
+                          <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] flex-1">Geometry</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">fit to bbox</span>
+                        </div>
+                        <div class="relative flex-1 min-h-[280px] tny-map">
+                          <!-- decorative --><svg viewBox="0 0 420 320" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full">
+                            <g stroke="#C4CBD4" fill="none" stroke-linecap="round">
+                              <path d="M -10 250 L 90 236 L 200 226 L 320 220 L 430 222" stroke-width="2.5"/>
+                              <path d="M 60 -10 L 76 90 L 96 190 L 116 300" stroke-width="2"/>
+                              <path d="M 300 -10 L 312 100 L 326 210 L 340 330" stroke-width="2"/>
+                              <path d="M -10 120 L 110 112 L 240 108 L 430 110" stroke-width="2"/>
+                              <path d="M 150 330 L 168 230 L 186 130 L 204 20" stroke-width="1.5"/>
+                            </g>
+                            <path d="M 96 296 L 128 236 L 168 176 L 214 122 L 262 74 L 306 34" stroke="#1F3F8F" stroke-width="7" fill="none" stroke-linecap="round"/>
+                            <!-- direction arrow · NB. The legacy layer draws a plain line; a
+                                 one-way segment whose direction is an attribute should show it. -->
+                            <path d="M 292 46 L 306 34 L 300 52" stroke="#1F3F8F" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="96" cy="296" r="5" fill="#fff" stroke="#1F3F8F" stroke-width="3"/>
+                          </svg>
+                          <div class="absolute bottom-0 left-0 right-0 px-3 py-2 bg-white/90 border-t border-zinc-950/08 flex items-center gap-2">
+                            <span class="size-3 rounded-full bg-[#1F3F8F] shrink-0"></span>
+                            <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 flex-1">northbound · 1.42 mi</span>
+                            <a href="npmrds-macro.html" class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F] hover:underline">macro view</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ── § 02 head (12) ── -->
+                    <div class="col-span-12" data-dms-section="completeness-head" id="completeness">
+                      <div class="flex items-center gap-3">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                        <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                        <h2 class="font-display font-semibold text-[22px] leading-[1.2] text-[#0F1722]">Data completeness</h2>
+                        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">observed ÷ possible · 2025</span>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · the completeness grid (12) ── a GridGraph: one cell per
+                         (month × hour), valued at observations ÷ possible for that cell. -->
+                    <div class="col-span-12" data-dms-section="completeness">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-3 flex-wrap">
+                          <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] flex-1">Coverage by month and time of day</span>
+                          <button class="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]"><!-- icon: Download --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>csv</button>
+                        </div>
+
+                        <!-- SPECIFIED (1): the headline the legacy card never states. "Is this
+                             year usable for this segment" is the question; a heat map alone
+                             makes the reader estimate the answer. -->
+                        <div class="px-5 py-4 border-b border-zinc-950/05 grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">Observed</div>
+                            <div class="font-display font-semibold text-[28px] leading-[1.1] tabular-nums text-[#0F1722]">80.7<span class="text-[18px] text-slate-400">%</span></div>
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 tabular-nums">84,824 of 105,120 epochs</div>
+                          </div>
+                          <div>
+                            <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">Worst month</div>
+                            <div class="font-display font-semibold text-[28px] leading-[1.1] tabular-nums text-amber-700">66<span class="text-[18px] text-amber-600/70">%</span></div>
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">september · 02:00–09:00 gap</div>
+                          </div>
+                          <div>
+                            <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">Best window</div>
+                            <div class="font-display font-semibold text-[28px] leading-[1.1] tabular-nums text-emerald-700">94<span class="text-[18px] text-emerald-600/70">%</span></div>
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">06:00–20:00 · all months</div>
+                          </div>
+                          <div>
+                            <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">Months with a gap</div>
+                            <div class="font-display font-semibold text-[28px] leading-[1.1] tabular-nums text-[#0F1722]">1</div>
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">below 75% for ≥ 4 hours</div>
+                          </div>
+                        </div>
+
+                        <div class="p-5">
+                          <!-- decorative --><svg viewBox="0 0 1320 566" class="w-full">
+                        <g><rect x="58.0" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="162.7" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="267.3" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="372.0" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="476.7" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="581.3" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="686.0" y="510.1" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="790.7" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="895.3" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="1000.0" y="510.1" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="1104.7" y="510.1" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="1209.3" y="510.1" width="103.7" height="20.9" fill="#587EB8"/><rect x="58.0" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="162.7" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="267.3" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="372.0" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="476.7" y="488.2" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="581.3" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="686.0" y="488.2" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="790.7" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="895.3" y="488.2" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="1000.0" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="1104.7" y="488.2" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="1209.3" y="488.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="58.0" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="162.7" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="267.3" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="372.0" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="476.7" y="466.2" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="581.3" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="686.0" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="790.7" y="466.2" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="895.3" y="466.2" width="103.7" height="20.9" fill="#C9D5E9"/><rect x="1000.0" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="1104.7" y="466.2" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="1209.3" y="466.2" width="103.7" height="20.9" fill="#587EB8"/><rect x="58.0" y="444.3" width="103.7" height="20.9" fill="#587EB8"/><rect x="162.7" y="444.3" width="103.7" height="20.9" fill="#587EB8"/><rect x="267.3" y="444.3" width="103.7" height="20.9" fill="#587EB8"/><rect x="372.0" y="444.3" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="476.7" y="444.3" width="103.7" height="20.9" fill="#587EB8"/><rect x="581.3" y="444.3" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="686.0" y="444.3" width="103.7" height="20.9" fill="#587EB8"/><rect x="790.7" y="444.3" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="895.3" y="444.3" width="103.7" height="20.9" fill="#C9D5E9"/><rect x="1000.0" y="444.3" width="103.7" height="20.9" fill="#587EB8"/><rect x="1104.7" y="444.3" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="1209.3" y="444.3" width="103.7" height="20.9" fill="#587EB8"/><rect x="58.0" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="162.7" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="267.3" y="422.4" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="372.0" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="476.7" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="581.3" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="686.0" y="422.4" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="790.7" y="422.4" width="103.7" height="20.9" fill="#7F9DCA"/><rect x="895.3" y="422.4" width="103.7" height="20.9" fill="#C9D5E9"/><rect x="1000.0" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="1104.7" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="1209.3" y="422.4" width="103.7" height="20.9" fill="#587EB8"/><rect x="58.0" y="400.5" width="103.7" height="20.9" fill="#3760A3"/><rect x="162.7" y="400.5" width="103.7" height="20.9" fill="#3760A3"/><rect x="267.3" y="400.5" width="103.7" height="20.9" fill="#3760A3"/><rect x="372.0" y="400.5" width="103.7" height="20.9" fill="#587EB8"/><rect x="476.7" y="400.5" width="103.7" height="20.9" fill="#3760A3"/><rect x="581.3" y="400.5" width="103.7" height="20.9" fill="#3760A3"/><rect x="686.0" y="400.5" width="103.7" height="20.9" fill="#3760A3"/><rect x="790.7" y="400.5" width="103.7" height="20.9" fill="#587EB8"/><rect x="895.3" y="400.5" width="103.7" height="20.9" fill="#A7BCDA"/><rect x="1000.0" y="400.5" width="103.7" height="20.9" fill="#587EB8"/><rect x="1104.7" y="400.5" width="103.7" height="20.9" fill="#3760A3"/><rect x="1209.3" y="400.5" width="103.7" height="20.9" fill="#587EB8"/><rect x="58.0" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="378.6" width="103.7" height="20.9" fill="#A7BCDA"/><rect x="1000.0" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="378.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="356.7" width="103.7" height="20.9" fill="#A7BCDA"/><rect x="1000.0" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="356.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="334.8" width="103.7" height="20.9" fill="#A7BCDA"/><rect x="1000.0" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="334.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="312.8" width="103.7" height="20.9" fill="#A7BCDA"/><rect x="1000.0" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="312.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="290.9" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="269.0" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="247.1" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="225.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="203.2" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="181.3" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="159.4" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="137.5" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="115.6" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="267.3" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="581.3" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="686.0" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="790.7" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="895.3" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1000.0" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1209.3" y="93.7" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="71.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="71.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="267.3" y="71.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="71.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="476.7" y="71.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="581.3" y="71.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="686.0" y="71.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="790.7" y="71.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="895.3" y="71.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="1000.0" y="71.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="71.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="1209.3" y="71.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="49.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="162.7" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="267.3" y="49.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="372.0" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="476.7" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="581.3" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="686.0" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="790.7" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="895.3" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="1000.0" y="49.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="1104.7" y="49.8" width="103.7" height="20.9" fill="#3760A3"/><rect x="1209.3" y="49.8" width="103.7" height="20.9" fill="#1F3F8F"/><rect x="58.0" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="162.7" y="27.9" width="103.7" height="20.9" fill="#3760A3"/><rect x="267.3" y="27.9" width="103.7" height="20.9" fill="#3760A3"/><rect x="372.0" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="476.7" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="581.3" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="686.0" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="790.7" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="895.3" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="1000.0" y="27.9" width="103.7" height="20.9" fill="#587EB8"/><rect x="1104.7" y="27.9" width="103.7" height="20.9" fill="#3760A3"/><rect x="1209.3" y="27.9" width="103.7" height="20.9" fill="#3760A3"/><rect x="58.0" y="6.0" width="103.7" height="20.9" fill="#3760A3"/><rect x="162.7" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="267.3" y="6.0" width="103.7" height="20.9" fill="#3760A3"/><rect x="372.0" y="6.0" width="103.7" height="20.9" fill="#3760A3"/><rect x="476.7" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="581.3" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="686.0" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="790.7" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="895.3" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="1000.0" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="1104.7" y="6.0" width="103.7" height="20.9" fill="#587EB8"/><rect x="1209.3" y="6.0" width="103.7" height="20.9" fill="#3760A3"/></g>
+                        <g font-family="ui-monospace" font-size="10" fill="#94a3b8" text-anchor="end"><text x="50.0" y="524.0">00:00</text><text x="50.0" y="458.3">03:00</text><text x="50.0" y="392.5">06:00</text><text x="50.0" y="326.8">09:00</text><text x="50.0" y="261.0">12:00</text><text x="50.0" y="195.3">15:00</text><text x="50.0" y="129.5">18:00</text><text x="50.0" y="63.8">21:00</text></g>
+                        <g font-family="ui-monospace" font-size="10.5" fill="#94a3b8" text-anchor="middle"><text x="110.3" y="552.0">Jan</text><text x="215.0" y="552.0">Feb</text><text x="319.7" y="552.0">Mar</text><text x="424.3" y="552.0">Apr</text><text x="529.0" y="552.0">May</text><text x="633.7" y="552.0">Jun</text><text x="738.3" y="552.0">Jul</text><text x="843.0" y="552.0">Aug</text><text x="947.7" y="552.0">Sep</text><text x="1052.3" y="552.0">Oct</text><text x="1157.0" y="552.0">Nov</text><text x="1261.7" y="552.0">Dec</text></g>
+                      </svg>
+                          <!-- LEGEND · SPECIFIED (2): seven equal bins on a single-hue ramp off
+                               `graph.primary`. Not the diverging BrBG the legacy card uses —
+                               completeness is a magnitude, and a diverging ramp puts a false
+                               midpoint at 50%. -->
+                          <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-4 flex-wrap font-mono text-[10.5px] uppercase tracking-wider text-slate-500">
+                            <span>coverage</span>
+                            <span class="flex items-center gap-1">
+                              <span class="tabular-nums">0%</span>
+                              <span class="block h-3 w-7 rounded-l-sm bg-[#E7ECF5]"></span><span class="block h-3 w-7 bg-[#C9D5E9]"></span><span class="block h-3 w-7 bg-[#A7BCDA]"></span><span class="block h-3 w-7 bg-[#7F9DCA]"></span><span class="block h-3 w-7 bg-[#587EB8]"></span><span class="block h-3 w-7 bg-[#3760A3]"></span><span class="block h-3 w-7 rounded-r-sm bg-[#1F3F8F]"></span>
+                              <span class="tabular-nums">100%</span>
+                            </span>
+                            <span class="text-slate-400">· 7 equal bins · one cell = one hour of one month</span>
+                          </div>
+                        </div>
+                        <div class="px-5 py-3 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[12.5px] leading-[1.55] text-slate-600">
+                          A cell is the share of that hour's possible 5-minute epochs that were actually reported, averaged over the month's days. Overnight coverage is structurally lower everywhere on the network — few enough probe vehicles pass to fill every epoch — so the useful reading is the <em>daytime</em> band and any month that breaks the pattern.
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ── § 03 head (12) ── -->
+                    <div class="col-span-12" data-dms-section="distribution-head" id="distribution">
+                      <div class="flex items-center gap-3">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                        <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                        <h2 class="font-display font-semibold text-[22px] leading-[1.2] text-[#0F1722]">Speed distribution by peak</h2>
+                        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">stacked · hourly means · 2025</span>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · the distribution (12) ── a stacked BarGraph: x is the
+                         metric's value, y is how many hourly means landed there, stacked by the
+                         five peak periods. Median and 85th-percentile rules are chart addons. -->
+                    <div class="col-span-12" data-dms-section="distribution">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-3 flex-wrap">
+                          <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] flex-1">Speed · all vehicles · hourly</span>
+                          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 tabular-nums">84,824 observations</span>
+                          <button class="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]"><!-- icon: Download --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>csv</button>
+                        </div>
+                        <div class="p-5">
+                          <!-- decorative --><svg viewBox="0 0 1320 420" class="w-full">
+                        <g stroke="#e2e8f0" stroke-width="1"><line x1="54.0" x2="1312.0" y1="386.0" y2="386.0"/><line x1="54.0" x2="1312.0" y1="307.1" y2="307.1"/><line x1="54.0" x2="1312.0" y1="228.3" y2="228.3"/><line x1="54.0" x2="1312.0" y1="149.4" y2="149.4"/><line x1="54.0" x2="1312.0" y1="70.5" y2="70.5"/></g>
+                        <g><rect x="54.6" y="380.3" width="26.8" height="5.7" fill="#E5A646"/><rect x="54.6" y="343.9" width="26.8" height="36.3" fill="#E160A4"/><rect x="82.6" y="379.3" width="26.8" height="6.7" fill="#E5A646"/><rect x="82.6" y="343.2" width="26.8" height="36.1" fill="#E160A4"/><rect x="110.5" y="376.9" width="26.8" height="9.1" fill="#E5A646"/><rect x="110.5" y="333.5" width="26.8" height="43.4" fill="#E160A4"/><rect x="138.5" y="375.8" width="26.8" height="10.2" fill="#E5A646"/><rect x="138.5" y="330.8" width="26.8" height="45.0" fill="#E160A4"/><rect x="166.4" y="373.3" width="26.8" height="12.7" fill="#E5A646"/><rect x="166.4" y="322.5" width="26.8" height="50.8" fill="#E160A4"/><rect x="194.4" y="370.4" width="26.8" height="15.6" fill="#E5A646"/><rect x="194.4" y="315.5" width="26.8" height="54.9" fill="#E160A4"/><rect x="222.3" y="367.9" width="26.8" height="18.1" fill="#E5A646"/><rect x="222.3" y="311.9" width="26.8" height="56.0" fill="#E160A4"/><rect x="250.3" y="364.7" width="26.8" height="21.3" fill="#E5A646"/><rect x="250.3" y="308.3" width="26.8" height="56.4" fill="#E160A4"/><rect x="278.2" y="360.7" width="26.8" height="25.3" fill="#E5A646"/><rect x="278.2" y="300.2" width="26.8" height="60.5" fill="#E160A4"/><rect x="306.2" y="358.5" width="26.8" height="27.5" fill="#E5A646"/><rect x="306.2" y="293.8" width="26.8" height="64.7" fill="#E160A4"/><rect x="334.2" y="352.7" width="26.8" height="33.3" fill="#E5A646"/><rect x="334.2" y="284.7" width="26.8" height="68.1" fill="#E160A4"/><rect x="362.1" y="347.2" width="26.8" height="38.8" fill="#E5A646"/><rect x="362.1" y="284.5" width="26.8" height="62.8" fill="#E160A4"/><rect x="390.1" y="346.4" width="26.8" height="39.6" fill="#E5A646"/><rect x="390.1" y="279.1" width="26.8" height="67.3" fill="#E160A4"/><rect x="418.0" y="342.4" width="26.8" height="43.6" fill="#E5A646"/><rect x="418.0" y="277.9" width="26.8" height="64.5" fill="#E160A4"/><rect x="446.0" y="335.6" width="26.8" height="50.4" fill="#E5A646"/><rect x="446.0" y="271.9" width="26.8" height="63.7" fill="#E160A4"/><rect x="473.9" y="331.4" width="26.8" height="54.6" fill="#E5A646"/><rect x="473.9" y="266.8" width="26.8" height="64.6" fill="#E160A4"/><rect x="501.9" y="329.4" width="26.8" height="56.6" fill="#E5A646"/><rect x="501.9" y="271.1" width="26.8" height="58.2" fill="#E160A4"/><rect x="529.8" y="330.4" width="26.8" height="55.6" fill="#E5A646"/><rect x="529.8" y="274.6" width="26.8" height="55.7" fill="#E160A4"/><rect x="557.8" y="325.2" width="26.8" height="60.8" fill="#E5A646"/><rect x="557.8" y="270.6" width="26.8" height="54.2" fill="#E160A4"/><rect x="585.8" y="321.1" width="26.8" height="64.9" fill="#E5A646"/><rect x="585.8" y="320.5" width="26.8" height="0.7" fill="#94C24E"/><rect x="585.8" y="268.3" width="26.8" height="52.2" fill="#E160A4"/><rect x="613.7" y="320.6" width="26.8" height="65.4" fill="#E5A646"/><rect x="613.7" y="319.5" width="26.8" height="1.1" fill="#94C24E"/><rect x="613.7" y="271.3" width="26.8" height="48.1" fill="#E160A4"/><rect x="641.7" y="325.2" width="26.8" height="60.8" fill="#E5A646"/><rect x="641.7" y="323.1" width="26.8" height="2.1" fill="#94C24E"/><rect x="641.7" y="278.1" width="26.8" height="45.0" fill="#E160A4"/><rect x="669.6" y="322.9" width="26.8" height="63.1" fill="#E5A646"/><rect x="669.6" y="319.4" width="26.8" height="3.5" fill="#94C24E"/><rect x="669.6" y="277.9" width="26.8" height="41.5" fill="#E160A4"/><rect x="697.6" y="319.7" width="26.8" height="66.3" fill="#E5A646"/><rect x="697.6" y="313.9" width="26.8" height="5.8" fill="#94C24E"/><rect x="697.6" y="275.1" width="26.8" height="38.8" fill="#E160A4"/><rect x="725.5" y="322.0" width="26.8" height="64.0" fill="#E5A646"/><rect x="725.5" y="312.9" width="26.8" height="9.2" fill="#94C24E"/><rect x="725.5" y="278.9" width="26.8" height="34.0" fill="#E160A4"/><rect x="725.5" y="278.4" width="26.8" height="0.5" fill="#F2CB3D"/><rect x="753.5" y="327.3" width="26.8" height="58.7" fill="#E5A646"/><rect x="753.5" y="313.7" width="26.8" height="13.6" fill="#94C24E"/><rect x="753.5" y="282.1" width="26.8" height="31.5" fill="#E160A4"/><rect x="753.5" y="281.0" width="26.8" height="1.1" fill="#F2CB3D"/><rect x="781.4" y="330.7" width="26.8" height="55.3" fill="#E5A646"/><rect x="781.4" y="310.5" width="26.8" height="20.2" fill="#94C24E"/><rect x="781.4" y="281.5" width="26.8" height="29.0" fill="#E160A4"/><rect x="781.4" y="279.5" width="26.8" height="2.0" fill="#F2CB3D"/><rect x="809.4" y="332.5" width="26.8" height="53.5" fill="#E5A646"/><rect x="809.4" y="304.8" width="26.8" height="27.6" fill="#94C24E"/><rect x="809.4" y="278.1" width="26.8" height="26.7" fill="#E160A4"/><rect x="809.4" y="274.3" width="26.8" height="3.8" fill="#F2CB3D"/><rect x="837.4" y="337.6" width="26.8" height="48.3" fill="#E5A646"/><rect x="837.4" y="298.6" width="26.8" height="39.0" fill="#94C24E"/><rect x="837.4" y="272.7" width="26.8" height="26.0" fill="#E160A4"/><rect x="837.4" y="266.0" width="26.8" height="6.7" fill="#F2CB3D"/><rect x="865.3" y="334.9" width="26.8" height="51.0" fill="#E5A646"/><rect x="865.3" y="281.8" width="26.8" height="53.1" fill="#94C24E"/><rect x="865.3" y="257.0" width="26.8" height="24.7" fill="#E160A4"/><rect x="865.3" y="245.5" width="26.8" height="11.6" fill="#F2CB3D"/><rect x="893.3" y="340.0" width="26.8" height="45.6" fill="#E5A646"/><rect x="893.3" y="270.4" width="26.8" height="69.6" fill="#94C24E"/><rect x="893.3" y="247.4" width="26.8" height="23.0" fill="#E160A4"/><rect x="893.3" y="230.4" width="26.8" height="17.0" fill="#F2CB3D"/><rect x="921.2" y="384.9" width="26.8" height="1.1" fill="#6F6F6F"/><rect x="921.2" y="340.2" width="26.8" height="44.8" fill="#E5A646"/><rect x="921.2" y="257.4" width="26.8" height="82.7" fill="#94C24E"/><rect x="921.2" y="232.4" width="26.8" height="25.0" fill="#E160A4"/><rect x="921.2" y="205.0" width="26.8" height="27.4" fill="#F2CB3D"/><rect x="949.2" y="383.2" width="26.8" height="2.8" fill="#6F6F6F"/><rect x="949.2" y="337.3" width="26.8" height="45.9" fill="#E5A646"/><rect x="949.2" y="244.6" width="26.8" height="92.8" fill="#94C24E"/><rect x="949.2" y="219.0" width="26.8" height="25.6" fill="#E160A4"/><rect x="949.2" y="179.8" width="26.8" height="39.1" fill="#F2CB3D"/><rect x="977.1" y="379.7" width="26.8" height="6.3" fill="#6F6F6F"/><rect x="977.1" y="333.8" width="26.8" height="45.9" fill="#E5A646"/><rect x="977.1" y="219.1" width="26.8" height="114.7" fill="#94C24E"/><rect x="977.1" y="191.4" width="26.8" height="27.8" fill="#E160A4"/><rect x="977.1" y="138.7" width="26.8" height="52.7" fill="#F2CB3D"/><rect x="1005.1" y="373.1" width="26.8" height="12.9" fill="#6F6F6F"/><rect x="1005.1" y="327.3" width="26.8" height="45.8" fill="#E5A646"/><rect x="1005.1" y="201.6" width="26.8" height="125.7" fill="#94C24E"/><rect x="1005.1" y="175.7" width="26.8" height="25.9" fill="#E160A4"/><rect x="1005.1" y="113.5" width="26.8" height="62.2" fill="#F2CB3D"/><rect x="1033.0" y="362.5" width="26.8" height="23.5" fill="#6F6F6F"/><rect x="1033.0" y="317.9" width="26.8" height="44.6" fill="#E5A646"/><rect x="1033.0" y="185.3" width="26.8" height="132.6" fill="#94C24E"/><rect x="1033.0" y="161.1" width="26.8" height="24.2" fill="#E160A4"/><rect x="1033.0" y="83.4" width="26.8" height="77.6" fill="#F2CB3D"/><rect x="1061.0" y="343.7" width="26.8" height="42.3" fill="#6F6F6F"/><rect x="1061.0" y="296.4" width="26.8" height="47.3" fill="#E5A646"/><rect x="1061.0" y="167.4" width="26.8" height="129.0" fill="#94C24E"/><rect x="1061.0" y="142.4" width="26.8" height="24.9" fill="#E160A4"/><rect x="1061.0" y="63.9" width="26.8" height="78.6" fill="#F2CB3D"/><rect x="1089.0" y="329.3" width="26.8" height="56.7" fill="#6F6F6F"/><rect x="1089.0" y="284.1" width="26.8" height="45.2" fill="#E5A646"/><rect x="1089.0" y="160.6" width="26.8" height="123.5" fill="#94C24E"/><rect x="1089.0" y="138.3" width="26.8" height="22.3" fill="#E160A4"/><rect x="1089.0" y="49.3" width="26.8" height="88.9" fill="#F2CB3D"/><rect x="1116.9" y="310.5" width="26.8" height="75.5" fill="#6F6F6F"/><rect x="1116.9" y="272.7" width="26.8" height="37.8" fill="#E5A646"/><rect x="1116.9" y="148.4" width="26.8" height="124.4" fill="#94C24E"/><rect x="1116.9" y="129.8" width="26.8" height="18.6" fill="#E160A4"/><rect x="1116.9" y="37.9" width="26.8" height="91.9" fill="#F2CB3D"/><rect x="1144.9" y="296.9" width="26.8" height="89.1" fill="#6F6F6F"/><rect x="1144.9" y="261.3" width="26.8" height="35.6" fill="#E5A646"/><rect x="1144.9" y="149.5" width="26.8" height="111.8" fill="#94C24E"/><rect x="1144.9" y="134.7" width="26.8" height="14.8" fill="#E160A4"/><rect x="1144.9" y="51.0" width="26.8" height="83.7" fill="#F2CB3D"/><rect x="1172.8" y="285.6" width="26.8" height="100.4" fill="#6F6F6F"/><rect x="1172.8" y="257.8" width="26.8" height="27.9" fill="#E5A646"/><rect x="1172.8" y="161.5" width="26.8" height="96.3" fill="#94C24E"/><rect x="1172.8" y="150.8" width="26.8" height="10.6" fill="#E160A4"/><rect x="1172.8" y="78.6" width="26.8" height="72.2" fill="#F2CB3D"/><rect x="1200.8" y="295.1" width="26.8" height="90.9" fill="#6F6F6F"/><rect x="1200.8" y="270.1" width="26.8" height="25.0" fill="#E5A646"/><rect x="1200.8" y="190.9" width="26.8" height="79.2" fill="#94C24E"/><rect x="1200.8" y="182.8" width="26.8" height="8.1" fill="#E160A4"/><rect x="1200.8" y="117.3" width="26.8" height="65.5" fill="#F2CB3D"/><rect x="1228.7" y="307.6" width="26.8" height="78.4" fill="#6F6F6F"/><rect x="1228.7" y="289.5" width="26.8" height="18.2" fill="#E5A646"/><rect x="1228.7" y="221.3" width="26.8" height="68.2" fill="#94C24E"/><rect x="1228.7" y="215.8" width="26.8" height="5.5" fill="#E160A4"/><rect x="1228.7" y="167.6" width="26.8" height="48.2" fill="#F2CB3D"/><rect x="1256.7" y="327.1" width="26.8" height="58.9" fill="#6F6F6F"/><rect x="1256.7" y="314.0" width="26.8" height="13.1" fill="#E5A646"/><rect x="1256.7" y="259.9" width="26.8" height="54.0" fill="#94C24E"/><rect x="1256.7" y="256.3" width="26.8" height="3.6" fill="#E160A4"/><rect x="1256.7" y="217.1" width="26.8" height="39.2" fill="#F2CB3D"/><rect x="1284.6" y="345.9" width="26.8" height="40.1" fill="#6F6F6F"/><rect x="1284.6" y="336.4" width="26.8" height="9.4" fill="#E5A646"/><rect x="1284.6" y="296.3" width="26.8" height="40.1" fill="#94C24E"/><rect x="1284.6" y="294.2" width="26.8" height="2.1" fill="#E160A4"/><rect x="1284.6" y="267.0" width="26.8" height="27.2" fill="#F2CB3D"/></g>
+                        <line x1="990.5" x2="990.5" y1="10.0" y2="386.0" stroke="#0F1722" stroke-width="1.25" stroke-dasharray="4 3" opacity="0.7"/><rect x="866.5" y="16.0" width="118" height="18" rx="3" fill="#0F1722"/><text x="874.5" y="28.5" font-family="ui-monospace" font-size="10.5" fill="#fff">median · 59 mph</text><line x1="1214.2" x2="1214.2" y1="10.0" y2="386.0" stroke="#0F1722" stroke-width="1.25" stroke-dasharray="4 3" opacity="0.7"/><rect x="1090.2" y="40.0" width="118" height="18" rx="3" fill="#0F1722"/><text x="1098.2" y="52.5" font-family="ui-monospace" font-size="10.5" fill="#fff">85th pctl · 67 mph</text>
+                        <g font-family="ui-monospace" font-size="10" fill="#94a3b8" text-anchor="end"><text x="46.0" y="389.0">0</text><text x="46.0" y="310.1">1k</text><text x="46.0" y="231.3">2k</text><text x="46.0" y="152.4">3k</text><text x="46.0" y="73.5">4k</text></g>
+                        <g font-family="ui-monospace" font-size="10.5" fill="#94a3b8" text-anchor="middle"><text x="179.8" y="406.0">30</text><text x="319.6" y="406.0">35</text><text x="459.4" y="406.0">40</text><text x="599.1" y="406.0">45</text><text x="738.9" y="406.0">50</text><text x="878.7" y="406.0">55</text><text x="1018.5" y="406.0">60</text><text x="1158.2" y="406.0">65</text><text x="1298.0" y="406.0">70</text></g>
+                      </svg>
+                          <div class="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 text-center">speed · mph</div>
+
+                          <!-- LEGEND · SPECIFIED (3): the five peaks with their definitions on
+                               the chip. `getPeak()` hard-codes these and nothing else states
+                               them, so the series names are undefined terms without this row. -->
+                          <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-x-5 gap-y-2 flex-wrap font-mono text-[10.5px] uppercase tracking-wider text-slate-500">
+                            <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-[#6F6F6F]"></span>overnight <span class="text-slate-400">20:00–06:00</span></span>
+                            <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-[#E5A646]"></span>am peak <span class="text-slate-400">06:00–10:00</span></span>
+                            <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-[#94C24E]"></span>off peak <span class="text-slate-400">10:00–16:00</span></span>
+                            <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-[#E160A4]"></span>pm peak <span class="text-slate-400">16:00–20:00</span></span>
+                            <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-[#F2CB3D]"></span>weekend <span class="text-slate-400">sat–sun, 06:00–20:00</span></span>
+                          </div>
+                          <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-2">Weekday and weekend are the first split: a Saturday afternoon hour is <em>weekend</em>, never <em>off peak</em>. Overnight wins over both — a 22:00 Saturday hour is <em>overnight</em>.</p>
+                        </div>
+
+                        <!-- OUTLIER FILTER · SPECIFIED (4): each option says what it drops. -->
+                        <div class="px-5 py-4 border-t border-zinc-950/05 bg-slate-50/40 flex items-center gap-3 flex-wrap">
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">outliers</span>
+                          <div class="h-9 inline-flex items-center rounded-[6px] bg-white border border-zinc-950/15 p-0.5 gap-0.5">
+                            <button class="h-8 px-3 rounded bg-[#1F3F8F] text-white font-proxima text-[12.5px] font-medium">Keep all <span class="font-mono text-[10px] tabular-nums text-white/70">84,824</span></button>
+                            <button class="h-8 px-3 rounded text-slate-600 hover:bg-slate-100 font-proxima text-[12.5px]">Within 3σ <span class="font-mono text-[10px] tabular-nums text-slate-400">−763</span></button>
+                            <button class="h-8 px-3 rounded text-slate-600 hover:bg-slate-100 font-proxima text-[12.5px]">Within 2σ <span class="font-mono text-[10px] tabular-nums text-slate-400">−3,902</span></button>
+                          </div>
+                          <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 flex-1 min-w-[280px]">Filtering trims both tails of the raw epochs before binning. On a congested segment the slow tail <em>is</em> the finding, so 2σ is the wrong default — it removes 4.6% of observations, most of them the worst hours.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- ── § 04 head (12) ── -->
+                    <div class="col-span-12" data-dms-section="pm3-head" id="pm3">
+                      <div class="flex items-center gap-3">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
+                        <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                        <h2 class="font-display font-semibold text-[22px] leading-[1.2] text-[#0F1722]">PM3 measures</h2>
+                        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">this segment · 2016–2025</span>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · LOTTR (4) ── the shared measure vocabulary, contract item 5:
+                         the name, abbreviation and unit are the set's, byte-identical. -->
+                    <div class="col-span-12 md:col-span-4" data-dms-section="pm3-lottr">
+                      <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60">
+                          <div class="flex items-baseline gap-2">
+                            <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">LOTTR</span>
+                            <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">ratio · unitless</span>
+                          </div>
+                          <div class="font-proxima text-[12px] text-slate-500 mt-0.5">Level of travel time reliability</div>
+                        </div>
+                        <div class="px-5 py-4 flex items-end gap-3 border-b border-zinc-950/05">
+                          <div class="font-display font-semibold text-[40px] leading-none tabular-nums text-[#d73027]">1.78</div>
+                          <div class="pb-1">
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">2025</div>
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-rose-600">unreliable · &gt; 1.50</div>
+                          </div>
+                        </div>
+                        <div class="p-4 flex-1"><!-- decorative --><svg viewBox="0 0 460 132" class="w-full"><g stroke="#eef1f5" stroke-width="1"><line x1="40.0" x2="452.0" y1="108.0" y2="108.0"/><line x1="40.0" x2="452.0" y1="59.0" y2="59.0"/><line x1="40.0" x2="452.0" y1="10.0" y2="10.0"/></g><line x1="40.0" x2="452.0" y1="59.0" y2="59.0" stroke="#CA8A04" stroke-width="1.25" stroke-dasharray="5 4"/><polyline points="40.0,56.2 85.8,52.0 131.6,47.8 177.3,43.6 223.1,95.4 268.9,67.4 314.7,40.8 360.4,29.6 406.2,25.4 452.0,19.8" fill="none" stroke="#1F3F8F" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="40.0" cy="56.2" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="85.8" cy="52.0" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="131.6" cy="47.8" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="177.3" cy="43.6" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="223.1" cy="95.4" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="268.9" cy="67.4" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="314.7" cy="40.8" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="360.4" cy="29.6" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="406.2" cy="25.4" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="452.0" cy="19.8" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="452.0" cy="19.8" r="4" fill="#fff" stroke="#1F3F8F" stroke-width="2.5"/><g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="end"><text x="34.0" y="111.0">1.15</text><text x="34.0" y="13.0">1.85</text></g><g font-family="ui-monospace" font-size="9" fill="#94a3b8"><text x="40.0" y="124.0">2016</text><text x="452.0" y="124.0" text-anchor="end">2025</text></g></svg></div>
+                        <div class="px-5 py-2.5 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[11.5px] leading-[1.5] text-slate-500">80th-percentile travel time ÷ 50th, worst peak period. Amber rule is the 1.50 reliability threshold.</div>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · TTTR (4) ── -->
+                    <div class="col-span-12 md:col-span-4" data-dms-section="pm3-tttr">
+                      <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60">
+                          <div class="flex items-baseline gap-2">
+                            <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">TTTR</span>
+                            <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">ratio · unitless</span>
+                          </div>
+                          <div class="font-proxima text-[12px] text-slate-500 mt-0.5">Truck travel time reliability</div>
+                        </div>
+                        <div class="px-5 py-4 flex items-end gap-3 border-b border-zinc-950/05">
+                          <div class="font-display font-semibold text-[40px] leading-none tabular-nums text-[#d73027]">1.96</div>
+                          <div class="pb-1">
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">2025</div>
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-rose-600">unreliable · &gt; 1.50</div>
+                          </div>
+                        </div>
+                        <div class="p-4 flex-1"><!-- decorative --><svg viewBox="0 0 460 132" class="w-full"><g stroke="#eef1f5" stroke-width="1"><line x1="40.0" x2="452.0" y1="108.0" y2="108.0"/><line x1="40.0" x2="452.0" y1="59.0" y2="59.0"/><line x1="40.0" x2="452.0" y1="10.0" y2="10.0"/></g><line x1="40.0" x2="452.0" y1="81.9" y2="81.9" stroke="#CA8A04" stroke-width="1.25" stroke-dasharray="5 4"/><polyline points="40.0,54.4 85.8,50.5 131.6,45.3 177.3,40.1 223.1,97.5 268.9,71.4 314.7,44.0 360.4,32.2 406.2,27.0 452.0,21.8" fill="none" stroke="#1F3F8F" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="40.0" cy="54.4" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="85.8" cy="50.5" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="131.6" cy="45.3" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="177.3" cy="40.1" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="223.1" cy="97.5" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="268.9" cy="71.4" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="314.7" cy="44.0" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="360.4" cy="32.2" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="406.2" cy="27.0" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="452.0" cy="21.8" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="452.0" cy="21.8" r="4" fill="#fff" stroke="#1F3F8F" stroke-width="2.5"/><g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="end"><text x="34.0" y="111.0">1.30</text><text x="34.0" y="13.0">2.05</text></g><g font-family="ui-monospace" font-size="9" fill="#94a3b8"><text x="40.0" y="124.0">2016</text><text x="452.0" y="124.0" text-anchor="end">2025</text></g></svg></div>
+                        <div class="px-5 py-2.5 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[11.5px] leading-[1.5] text-slate-500">95th-percentile truck travel time ÷ 50th, worst of five periods. Interstate segments only.</div>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · PHED (4) ── gap 7 lives here in the alternate state: PHED is
+                         not computed for every segment, and 0.00 is a value, not a null. -->
+                    <div class="col-span-12 md:col-span-4" data-dms-section="pm3-phed">
+                      <div class="h-full rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-5 py-3 border-b border-zinc-950/10 bg-slate-50/60">
+                          <div class="flex items-baseline gap-2">
+                            <span class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">PHED</span>
+                            <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">hours per capita</span>
+                          </div>
+                          <div class="font-proxima text-[12px] text-slate-500 mt-0.5">Peak hours of excessive delay</div>
+                        </div>
+                        <div class="px-5 py-4 flex items-end gap-3 border-b border-zinc-950/05">
+                          <div class="font-display font-semibold text-[40px] leading-none tabular-nums text-[#0F1722]">8.7</div>
+                          <div class="pb-1">
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">2025</div>
+                            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">urbanized area only</div>
+                          </div>
+                        </div>
+                        <div class="p-4 flex-1"><!-- decorative --><svg viewBox="0 0 460 132" class="w-full"><g stroke="#eef1f5" stroke-width="1"><line x1="40.0" x2="452.0" y1="108.0" y2="108.0"/><line x1="40.0" x2="452.0" y1="59.0" y2="59.0"/><line x1="40.0" x2="452.0" y1="10.0" y2="10.0"/></g><polyline points="40.0,14.9 85.8,19.0 131.6,21.4 177.3,24.7 223.1,74.5 268.9,52.5 314.7,41.0 360.4,35.3 406.2,36.1 452.0,37.0" fill="none" stroke="#1F3F8F" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="40.0" cy="14.9" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="85.8" cy="19.0" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="131.6" cy="21.4" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="177.3" cy="24.7" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="223.1" cy="74.5" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="268.9" cy="52.5" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="314.7" cy="41.0" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="360.4" cy="35.3" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="406.2" cy="36.1" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="452.0" cy="37.0" r="2.5" fill="#fff" stroke="#1F3F8F" stroke-width="1.5"/><circle cx="452.0" cy="37.0" r="4" fill="#fff" stroke="#1F3F8F" stroke-width="2.5"/><g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="end"><text x="34.0" y="111.0">0</text><text x="34.0" y="13.0">12</text></g><g font-family="ui-monospace" font-size="9" fill="#94a3b8"><text x="40.0" y="124.0">2016</text><text x="452.0" y="124.0" text-anchor="end">2025</text></g></svg></div>
+                        <div class="px-5 py-2.5 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[11.5px] leading-[1.5] text-slate-500">Only computed inside an urbanized area. Outside one the card reads <span class="text-slate-400 italic">not computed</span> — never 0.00.</div>
+                      </div>
+                    </div>
+
+                    <!-- ── SECTION · what is deliberately not here (12) ── -->
+                    <div class="col-span-12" data-dms-section="scope-note">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-4">
+                        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2">// not on this page, on purpose</div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-3 font-proxima text-[12.5px] leading-[1.55] text-slate-600">
+                          <div><strong class="text-[#0f1722]">Year-over-year comparison.</strong> Two years is two scans of a 14-billion-row table for one segment. The PM3 lines above already carry ten years of trend; a second distribution would cost more than it says.</div>
+                          <div><strong class="text-[#0f1722]">Neighbouring segments.</strong> A segment reads in context, and that context is a route — build one in <a href="npmrds-route-creation.html" class="tny-link">Route Creation</a> and read it in a <a href="npmrds-report.html" class="tny-link">report</a>, which is what reports are for.</div>
+                          <div><strong class="text-[#0f1722]">Incidents and work zones.</strong> TRANSCOM events are not joined to the speed tables at segment level — the same gap the <a href="npmrds-macro.html" class="tny-link">macro view</a> reports. Named here rather than left as a missing panel.</div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- ══════ THE RAIL · sideNavContainer1 · `order-2` for sidebar='right' ══════
+                     Fixed-width flex SIBLING of the content column — NOT a grid column, so the
+                     canvas keeps its own grid-cols-12 across whatever width is left. Gone below
+                     xl, which is exactly why nothing load-bearing lives in it. -->
+                <div class="w-[302px] shrink-0 hidden xl:block order-2" data-dms-group="sidebar">
+                  <!-- sideNavContainer2 · THE one sticky wrapper. The documented default is
+                       `top-[60px] h-[calc(100vh-68px)]`, which is offset against a 60-px sticky
+                       header; this page has none — what pins above is the 76-px control strip in
+                       the other column. Offsetting to match it lands the rail's first card level
+                       with the canvas's first head instead of 16px above it. Tune `top` and the
+                       height together, exactly as the documented pair does. -->
+                  <div class="sticky top-[76px] h-[calc(100vh-84px)] overflow-y-auto pr-2">
+                    <div class="flex flex-col gap-4">
+
+                      <!-- InPageNav · generated from each section's navLabel; scroll-spy is
+                           automatic. Attributes is the active item. -->
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4" data-dms-section="in-page-nav">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">on this page</div>
+                        <a href="#attributes" class="tny-toc-item active">Attributes</a>
+                        <a href="#completeness" class="tny-toc-item">Data completeness</a>
+                        <a href="#distribution" class="tny-toc-item">Speed distribution</a>
+                        <a href="#pm3" class="tny-toc-item">PM3 measures</a>
+                      </div>
+
+                      <!-- rail card · the links out. Every one of these is a page in this
+                           catalogue, so the leaf is not a dead end. -->
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4" data-dms-section="rail-elsewhere">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">this segment elsewhere</div>
+                        <div class="divide-y divide-zinc-950/05 -mx-1">
+                          <a href="npmrds-macro.html" class="flex items-center gap-2 px-1 py-2 hover:bg-slate-50 rounded"><!-- icon: GeographicFlexibility --><svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg><span class="font-proxima text-[13px] text-slate-700 flex-1">On the macro view</span></a>
+                          <a href="npmrds-route-creation.html" class="flex items-center gap-2 px-1 py-2 hover:bg-slate-50 rounded"><!-- icon: Road --><svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg><span class="font-proxima text-[13px] text-slate-700 flex-1">Add to a route</span></a>
+                          <a href="npmrds-report.html" class="flex items-center gap-2 px-1 py-2 hover:bg-slate-50 rounded"><!-- icon: Report --><svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="M4 16 10 10l4 4 6-6"/></svg><span class="font-proxima text-[13px] text-slate-700 flex-1">Reports using it</span><span class="font-mono text-[10px] tabular-nums text-slate-400">6</span></a>
+                          <a href="map-21.html" class="flex items-center gap-2 px-1 py-2 hover:bg-slate-50 rounded"><!-- icon: Activity --><svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="font-proxima text-[13px] text-slate-700 flex-1">MAP-21 reporting</span></a>
+                        </div>
+                      </div>
+
+                      <!-- rail card · provenance. Reference, not control — safe to lose below xl,
+                           and the header's freshness strip carries the load-bearing half. -->
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4" data-dms-section="rail-sources">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">where this comes from</div>
+                        <dl class="space-y-2">
+                          <div><dt class="font-proxima text-[12px] text-slate-500">Speeds</dt><dd class="font-mono text-[11px] text-slate-700">npmrds · source 583 / view 982</dd></div>
+                          <div><dt class="font-proxima text-[12px] text-slate-500">Attributes</dt><dd class="font-mono text-[11px] text-slate-700">tmc metadata · per year</dd></div>
+                          <div><dt class="font-proxima text-[12px] text-slate-500">PM3</dt><dd class="font-mono text-[11px] text-slate-700">map 21 extended · 2001 / 3394</dd></div>
+                        </dl>
+                        <a href="datasets-catalog.html" class="mt-3 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F] hover:underline">data catalog<!-- icon: ArrowRight --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="npmrds-report.html" class="hover:text-slate-900">report</a>
+                <a href="npmrds-route-creation.html" class="hover:text-slate-900">route-creation</a>
+                <a href="route-comparison.html" class="hover:text-slate-900">route-comparison</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

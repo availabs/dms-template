@@ -23,6 +23,11 @@ export const addGraphModalTheme = {
   shapeCardGlyph: 'w-6 h-6',
   shapeCardLabel: 'text-[10px] font-semibold uppercase tracking-wide',
   measureNativeSelect: 'w-full h-9 px-2 rounded-[6px] border border-zinc-950/15 bg-white text-[13px] text-slate-700 focus:outline-none focus:border-blue-400',
+  // Tier 5D (2026-08-20) — Table's multi-measure checklist. Reuses the existing
+  // routeItem/routeItemSelected/routeCheckbox/routeName row styling above (same
+  // "checkbox row" shape, different list) rather than inventing a parallel set.
+  measureChecklist: 'space-y-1.5 max-h-48 overflow-y-auto',
+  measureGroupLabel: 'text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1.5 mb-0.5',
   pickerGrid: 'grid grid-cols-2 gap-3 content-start',
   pickerField: 'flex flex-col gap-1',
   pickerLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider',
@@ -38,6 +43,12 @@ export const addGraphModalTheme = {
   dayToggle: 'w-6 h-6 rounded border border-slate-200 bg-slate-50 text-slate-500 text-[11px] font-medium hover:bg-slate-100',
   dayToggleSelected: 'w-6 h-6 rounded border border-blue-300 bg-blue-50 text-blue-700 text-[11px] font-medium',
   daySetBtn: 'h-6 px-2 inline-flex items-center rounded border border-slate-200 bg-slate-50 text-slate-600 text-[10.5px] font-semibold uppercase tracking-wide hover:bg-slate-100',
+
+  // Tier 5E (2026-08-20): Difference mode picked with the wrong route count. This modal's
+  // shared `<Select>` primitive has no per-option disabled state (unlike QuickControls'
+  // plain-button popover, which genuinely disables the option) — a warning note is the
+  // equivalent signal here, and fits better anyway while the author is still mid-checklist.
+  warningNote: 'mt-1.5 rounded-md px-2 py-1.5 text-[11px] leading-[1.4] bg-amber-50 border border-amber-200 text-amber-700',
 
   preview: 'mt-3 flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg',
   previewGlyph: 'w-10 h-10 shrink-0 text-blue-500',

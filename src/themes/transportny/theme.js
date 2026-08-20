@@ -27,7 +27,9 @@ const theme = {
   },
   sectionHeaderExtensions: {
     "Graph": [npmrdsQuickControls],
-    "AVL Graph": [npmrdsQuickControls]
+    "AVL Graph": [npmrdsQuickControls],
+    "Spreadsheet": [npmrdsQuickControls],
+    "Map": [npmrdsQuickControls]
   },
   mapPlugins: {
     routecreation: RoutecreationPlugin,

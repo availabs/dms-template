@@ -34,6 +34,7 @@ const Worker = async ctx => {
   } = task.descriptor.args;
 
   await dispatchEvent('TMAS_station_data:INITIAL', `TMAS Station Data task started: ${ task.task_id }`);
+  await dispatchEvent('TMAS_station_data:SOURCE', `Generating data table for source: ${ source_id }`);
   await updateProgress(0.1);
 
   const pgCreds = getPostgresCredentials(pgEnv);
@@ -99,20 +100,15 @@ const Worker = async ctx => {
   `;
   await db.query(createDamaViewSql);
 
-  await dispatchEvent(`TMAS_station_data:DATA_TABLE', 'created new data table: ${ data_table }`);
+  await dispatchEvent('TMAS_station_data:DATA_TABLE', `created new data table: ${ data_table }`);
   await updateProgress(0.3);
 
   let foundFirstRow = false;
-
-  let i = 0;
 
   async function* parseResults(source) {
     for await (const row of source) {
       if (foundFirstRow) {
         const data = getTableValues(row);
-        if (i++ < 5) {
-          console.log("ROW:", row, data, csvFormatRow(data));
-        }
         yield `${ csvFormatRow(data) }\n`;
       }
       else {
@@ -126,7 +122,7 @@ const Worker = async ctx => {
       FROM STDIN WITH (FORMAT CSV)
   `;
 
-  await dispatchEvent(`TMAS_station_data:STREAM', 'streaming data into DB table ${ data_table }`);
+  await dispatchEvent('TMAS_station_data:STREAM', `streaming data into DB table ${ data_table }`);
   await updateProgress(0.4);
 
   await pipeline(
@@ -140,7 +136,7 @@ const Worker = async ctx => {
 
   pgClient.end();
 
-  await dispatchEvent(`TMAS_station_data:STREAM', 'streaming completed`);
+  await dispatchEvent('TMAS_station_data:STREAM', 'streaming completed');
   await updateProgress(0.7);
 
   const addOgcFidSql = `
@@ -148,6 +144,15 @@ const Worker = async ctx => {
       ADD COLUMN ogc_fid BIGSERIAL PRIMARY KEY;
   `;
   await db.query(addOgcFidSql);
+
+  await dispatchEvent('TMAS_station_data:GEOM_INDEX', 'creating geometry index');
+  const addGeometryIndexSql = `
+    CREATE INDEX ${ table_name }_geom_index
+      ON ${ data_table }
+      USING GIST(wkb_geometry);
+  `;
+  await db.query(addGeometryIndexSql);
+  await updateProgress(0.8);
 
   const updateSourceMetadataSql = `
     UPDATE data_manager.sources
@@ -188,7 +193,7 @@ const Worker = async ctx => {
 
   result.completedAt = new Date().toLocaleString();
 
-  await dispatchEvent(`TMAS_station_data:FINAL', 'request completed`);
+  await dispatchEvent('TMAS_station_data:FINAL', 'request completed');
   await updateProgress(1.0);
 
   return result;
