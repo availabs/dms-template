@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE (implemented as `composeAutoTitle`/`isTitleDirty`, no new field, per Ryan's explicit call — not yet live-clicked-through); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure deliberately deferred, not started; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE (implemented as `composeAutoTitle`/`isTitleDirty`, no new field, per Ryan's explicit call — not yet live-clicked-through); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure deliberately deferred, not started; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED; Tier 6 (four more items, 2026-08-20 — Peak/DoW+Map/Table title gaps, Map multi-route, relative-dates span default) ALL DONE + live-verified 2026-08-20 · **Started:** 2026-08-19
 
 ## Objective
 
@@ -1559,6 +1559,205 @@ appeared immediately under the field. Zero console errors.
 
 ---
 
+## Tier 6 — four more items raised 2026-08-20 (post-Tier-5 usage) — ALL DONE, live-verified
+
+Ryan's next round after using Tier 5 himself: two title-auto-compose complaints (Peak/DoW pills
+don't move the title; Map/Table might not auto-title at all), a Map multi-route ask, and picking
+back up the relative-dates span-default idea flagged (not implemented) earlier the same day.
+Three parallel research passes ran against the current code before any implementation (per
+Ryan's "be thorough... ask me for clarification if needed" — this arc has repeatedly corrected an
+over-eager implementation that missed existing capability, so every claim below was traced, not
+assumed). Findings, decisions, and live-verification for all four below.
+
+### 6A. Title auto-compose gaps — Peak/DoW not read; Map's compose path never called it; Table already worked — DONE, live-verified 2026-08-20
+
+**Research findings, confirmed via direct code trace**:
+- `composeAutoTitle(pick)` (`composeMeasureConfig.js`) read exactly two fields —
+  `pick.graphType`/`pick.measure(s)` — nothing about `routeWindows`/weekdays/time-of-day. Peak
+  Selector/DoW writes (QuickControls' "When" pill, `applyWindowToAllRoutes` → `applyPick` →
+  `applyMeasurePick` → `applyMeasurePickToState`) already reached the exact call site that runs
+  `composeAutoTitle` on every click — the function just never read the richer pick it was already
+  handed. **Not structurally invisible, just not wired** — an easy, additive fix.
+- **Table's title was already working**, contrary to Ryan's own belief — `composeAutoTitle`'s
+  Table branch (joins `pick.measures`' labels) is reached both at creation and on every
+  QuickControls Measure-checklist edit, via the same unconditional call site every other graphType
+  hits. One real, minor, still-open edge case found but not fixed (see below): unchecking a
+  Table's last measure short-circuits the WHOLE apply (`composeTableMeasuresConfig` returns
+  `null`) before ever reaching the title block — matches the columns' own "existing state left
+  untouched" behavior exactly, so this isn't actually a defect, just worth naming.
+- **Map had NO title auto-compose at all** — a structurally separate gap, not a data-visibility
+  one. Map's compose path (`composeMapConfig.js`'s `composeMapSectionConfig`/
+  `applyMapMeasureToState`) never calls `applyMeasurePickToState` (confirmed: Map short-circuits
+  out of `applyMeasurePick` at `MeasurePicker/index.js:251-272`, before the non-Map branch that
+  calls it) — zero references to `composeAutoTitle`/`display.title` existed anywhere in that file.
+
+**Implemented**:
+- `composeMeasureConfig.js`: new `windowTitleFragment(pick)` — reads the SAME "first assigned
+  route's own window" convention QuickControls' own When pill already uses
+  (`pick.routeWindows?.[routeIds[0]]?.[0]`), matches it against `PEAK_PRESETS` for a friendly label
+  (e.g. "AM Peak") or falls back to `timeOfDayToken`, and appends `summarizeWeekdays`'s result when
+  present. `composeAutoTitle` now appends this as a `" — <fragment>"` suffix when non-empty;
+  renders identically to before when the window is unrestricted (all day, every day) — zero
+  behavior change for any already-unrestricted graph.
+- `composeMapConfig.js`: new `composeMapAutoTitle(measureKey)`/`isMapTitleDirty(...)` — Map's own
+  equivalent, deliberately NOT a reuse of `composeAutoTitle` itself (that function keys off
+  `vocab.measures`, which has no `'none'` entry, and branches on `pick.graphType`, which a Map's
+  `_measurePick` never carries). Returns `'Map'` for `'none'`, else the measure's own
+  `MAP_MEASURE_OPTIONS` label (bare, no "— Map" suffix — matches every other graph type's
+  bare-measure-label convention, not AddGraphModal's own shape-suffixed PREVIEW text). Wired into
+  both `composeMapSectionConfig` (creation — always sets, no prior title to preserve) and
+  `applyMapMeasureToState` (re-pick — pristine-checked). `MeasurePicker/index.js`'s Map branch now
+  captures `priorMeasureKey` before overwriting `_measurePick.measure` and threads it through, the
+  same role `applyMeasurePickToState`'s own `priorPick` capture already plays for every other
+  graph type.
+
+**A real, one-time transitional caveat found and left as-is (not a bug to fix)**: extending
+`composeAutoTitle`'s own input surface means `isTitleDirty`'s "recompute what the title would have
+been" check, run against a PRE-EXISTING section's `priorPick`, now retroactively reconstructs a
+richer title than what's actually stored (since the OLD code never wrote a window suffix). The
+very first pill click on such a section after this fix ships will see a mismatch and treat the
+title as author-edited (leaving it untouched) — confirmed live (see below). This is the same
+"stale composed state doesn't self-heal without a forced recompose" pattern this whole arc has
+repeatedly hit and documented (5F/5G), not a new problem, and self-heals the moment the window
+returns to fully unrestricted or the author clears the title. Brand-new sections (or any section
+whose `_measurePick` was never touched before this fix) are unaffected and work correctly forever
+after — confirmed live.
+
+**Live-verified 2026-08-20** via claude-in-chrome + `dms raw get`/`dms dataset query` (ground
+truth, not just on-screen state) on `converted_reports/page_26`:
+- Map: picked "Speed (mph)" via QuickControls on an existing Map section (`2214396`) — persisted
+  title became `{"title": "Speed (mph)"}`. Re-picked "None — just show the route" — title updated
+  to `{"title": "Map"}`. Both confirmed via `dms raw get`, not just the on-screen pill.
+- Peak/DoW on a PRE-EXISTING AVL Graph section (`2214399`, title already `"Travel Time (min)"`
+  from before this fix): clicked AM Peak + Weekdays — routeWindows persisted correctly
+  (`{start:'06:00', end:'10:00', weekdays:{sunday:false, saturday:false}}`) but the title stayed
+  `"Travel Time (min)"` — this is the exact transitional caveat above, confirmed live, not a
+  fix-failure (the routeWindows write itself, unrelated to this fix, is correct and persists fine).
+- Peak/DoW on a BRAND-NEW AVL Graph section (created via Add Graph, no prior `_measurePick`):
+  picked "AM Peak" via QuickControls — title correctly became
+  `{"title": "Travel Time (min) — AM Peak"}`, confirming the mechanism works cleanly going forward.
+- Also discovered (separate, pre-existing, NOT fixed this pass — out of scope for what was asked):
+  AddGraphModal's own "When" step (time-of-day/day-of-week pickers shown during Add Graph) writes
+  to the OLD dead scalar fields `pick.start`/`pick.end`/`pick.weekdays`, not `routeWindows` —
+  confirmed live (a fresh section created with "AM Peak" selected in the modal had
+  `routeWindows: None` and an unrestricted title). QuickControls' own "When" pill (post-creation)
+  is unaffected and correctly writes `routeWindows` — this dead-field gap is scoped to the
+  creation-time modal only. Flagged here for whoever next touches `AddGraphModal.jsx`'s When step.
+
+- [x] `composeMeasureConfig.js`: `windowTitleFragment` + `composeAutoTitle` update — 2026-08-20
+- [x] `composeMapConfig.js`: `composeMapAutoTitle`/`isMapTitleDirty`, wired into both compose paths
+      — 2026-08-20
+- [x] `MeasurePicker/index.js`: `priorMeasureKey` capture/threading for Map — 2026-08-20
+- [x] Live-verify Map title (create + re-pick), Peak/DoW title on a fresh section, and the
+      transitional caveat on a pre-existing section — 2026-08-20
+- [ ] Not fixed, flagged only: AddGraphModal's own "When" step writes to the dead
+      `start`/`end`/`weekdays` scalar instead of `routeWindows` — separate, pre-existing gap,
+      out of scope for this pass
+
+### 6B. Map multiple routes — confirmed pure UI gate, DONE, live-verified 2026-08-20
+
+**Research findings, confirmed via direct code trace**: the one-route cap was two isolated
+`graphType === 'Map'`/`pick.graphType === 'Map'` branches (`QuickControls/index.jsx`'s `single`
+flag + `toggleRoute`; `AddGraphModal.jsx`'s own `toggleRoute` + its shape-switch-to-Map collapse)
+that REPLACED instead of adding — never a technical constraint. `materializeSeriesLayer`
+(`useComparisonSeriesLayers.js`) already clones a template layer once per comparison-series
+variant with no route-count-specific logic anywhere in it (already proven live via a real 12-TMC
+*single* route, architecturally identical to N *routes* from the runtime's point of view); the
+choropleth join operates per-TMC, not per-route. Traced to the original design mockup's own
+simplicity comment ("a Map draws one route; everything else takes any number") — a UX choice, not
+a rendering limitation. One real, small, separate bug found in the same investigation: **Legend
+panel's "N layer(s)" header counts qualifying SYMBOLOGIES, not rendered ROWS** (`LegendPanel.jsx`,
+`src/dms/` — a Map card uses exactly one managed symbology regardless of route count, so N
+materialized per-route rows under that one symbology always read "1 layer").
+
+**Implemented**:
+- `QuickControls/index.jsx`: removed the `single` flag entirely; `toggleRoute` now always uses the
+  generic add/remove branch every other graph type already had; Routes popover label/note updated
+  (no more "route · pick one" / "picking another replaces it").
+- `AddGraphModal.jsx`: removed the Map-only `toggleRoute` replace-semantics branch and the
+  shape-switch-to-Map selection-collapse effect; routes note and Map preview summary text
+  generalized for N routes.
+- `LegendPanel.jsx` (`src/dms/` submodule — a small, generic, project-agnostic fix, consistent with
+  this arc's "if `dms` must be touched, keep it generic" rule, same class as 1A/5H's prior core
+  touches): restructured to build `{symb, rows}` pairs first, so `visibleLayerCount` sums actual
+  rendered `LegendRow`s across all qualifying symbologies instead of counting symbologies
+  themselves. A choropleth Map's own "only the first clone shows a legend row" suppression
+  (pre-existing, correct-by-design — all clones of one choropleth template share identical
+  breaks/colors) is unaffected: the new count still correctly reads "1" for that case, since it
+  only counts rows that AREN'T suppressed.
+
+**Live-verified 2026-08-20** via claude-in-chrome + `dms raw get` on the existing Map section
+(`2214396`, `converted_reports/page_26`): Routes popover now reads "ROUTES · PICK ANY" (was
+"route · pick one"); checked a second route — pill correctly showed "2 ROUTES", persisted
+`routeIds: ['comp-1','comp-0']` confirmed via `dms raw get`, survived a full page reload. With
+"Speed" (choropleth) selected, Legend correctly stayed "1 LAYER" (by design — shared color scale).
+Switched measure to "None — just show the route" — Legend correctly updated to "2 LAYERS" with
+two distinct named rows ("I-87 36001 SOUTHBOUND (2024)" / "35E 36081 QUEENS MIDTOWN EX..."),
+confirming both the gate removal AND the row-count fix work together correctly. (The map canvas
+itself only visibly rendered one route's segment at the auto-picked zoom/pan — a pre-existing,
+already-flagged-out-of-scope "default zoom doesn't fit all assigned routes" cosmetic gap per 5C's
+own notes, not a rendering failure — the Legend and persisted `routeIds` are the ground truth here,
+not the current viewport.)
+
+- [x] Remove Map's one-route UI gate in `QuickControls/index.jsx` + `AddGraphModal.jsx` — 2026-08-20
+- [x] Fix `LegendPanel.jsx`'s row-vs-symbology miscount (`src/dms/` submodule) — 2026-08-20
+- [x] Live-verify 2 routes assigned + rendered + correct legend row count in both None and
+      choropleth measure modes, reload-persistence — 2026-08-20
+- [ ] Not touched (pre-existing, separately flagged, out of scope): the map's default zoom/pan
+      doesn't auto-fit to every assigned route's combined bounds
+
+### 6C. Relative-dates span default — scoped with 4 pointed questions, then implemented — DONE, live-verified 2026-08-20
+
+The idea flagged earlier the same day (see the now-superseded "Flagged, not implemented" note this
+section replaces): when deriving a route's dates via "Same period, aligned," default the Span
+picker to whatever span the base route's own date range actually spans. Research surfaced 4 real
+design ambiguities, posed to Ryan via `AskUserQuestion` before writing any code:
+
+| Question | Ryan's answer |
+|---|---|
+| When should the default re-apply? | Every time the derive-from route changes |
+| Override a manual span choice? | Always recompute (no new "was this touched" state needed) |
+| No span option matches exactly (e.g. 37 days)? | Leave the span picker unchanged — no closest-match guessing |
+| Which formula pattern(s)? | Only "Same period, aligned" (`snap`), not "Offset by whole periods" |
+
+**Implemented**:
+- `relativeDateResolution.js`: new exported `inferExactSpan(startDate, endDate)` — reuses the
+  file's existing (previously module-private) `startOfSpan`/`endOfSpan`/`parseDateOnly` rather than
+  new date math. Deliberately a SINGLE-anchor check (`startOfSpan(start, span) === start` AND
+  `endOfSpan(spanStart, span) === end`, both anchored off the same point) rather than the real
+  `isof` resolution branch's own two-anchor shape — a two-anchor check would also call a
+  Jan-1-to-Feb-28 base range an exact "month" match, which isn't what "the base is exactly one
+  calendar month" means. Returns `null` (no fallback guess) when nothing matches exactly.
+- `RouteRow.jsx`'s `handleDeriveFromChange`: when the row's current pattern is `'snap'`, look up
+  the newly-picked base's `[startDate, endDate]` from the already-in-scope `eligibleBases`/
+  `derivableSiblings` prop (zero new plumbing — confirmed already there specifically to drive the
+  existing "Resolves to..." preview) and, if `inferExactSpan` finds a match different from the
+  current span, rebuild the formula with that span via the existing `buildFormula` before
+  committing — no debounce (a discrete pick), same as every other discrete field in this mode.
+
+**Live-verified 2026-08-20** on `converted_reports/page_26`'s "24B" route (the report's real
+non-derived base, `2026-06-01 → 2026-06-30`, coincidentally already an exact calendar month) via
+claude-in-chrome + `dms dataset query reports_snap_2`: switching Pattern to "Same period, aligned"
+then Derive From to "Today (view time)" (the synthetic single-day anchor, `startDate === endDate`)
+correctly auto-selected Span = "Day" (was defaulting to "Year" before this fix), with the live
+"Resolves to 2026-07-30 → 2026-07-30" preview confirming it. (I-87/35E themselves weren't usable
+as THIS test's base — both already derive FROM 24B via the same "Same period, aligned" formula
+from earlier session work, and a base can never itself be derived — so "Today" was the only
+other eligible base available on this particular scratch page for a clean single-variable test;
+the mechanism itself doesn't care which eligible base is picked.) Reverted 24B back to its original
+fixed `06/01/2026–06/30/2026` afterward, confirmed via `dms dataset query` that all 3 routes
+returned to their pre-test dates — though per Ryan's own note mid-session, this kind of scratch-page
+cleanup isn't actually necessary going forward.
+
+- [x] `AskUserQuestion`: 4 design questions posed and answered — 2026-08-20
+- [x] `inferExactSpan` added to `relativeDateResolution.js`, reusing existing private helpers
+      — 2026-08-20
+- [x] Wired into `RouteRow.jsx`'s `handleDeriveFromChange`, scoped to `pattern === 'snap'` only
+      — 2026-08-20
+- [x] Live-verify: picking a new base with an exact 1-day span auto-selects "Day" — 2026-08-20
+
+---
+
 ## Parked — explicitly deferred per 2026-08-19 decisions
 
 ### Item 9 — extend Publish/Discard to RRL's own changes (DEFERRED)
@@ -1838,3 +2037,27 @@ skipped:
   (the same stale regeneration note fixed there too; documented the new alias-uniqueness
   constraint; documented `composeTableMeasuresConfig`/`composeAutoTitle`/`isTitleDirty`/
   `resolutionOptionsFor` as composition-layer additions living in the JS file, not the JSON).
+
+- **2026-08-20 (Tier 6)**: Ryan's next round after using Tier 5 himself — four items bundled in
+  one message, explicitly asking for thorough research/scoping first and permission to ask
+  clarifying questions ("multiple times last session I had to correct you when you [were]
+  over-engineering because you missed capability"). Three parallel research agents dispatched
+  first (title auto-compose coverage; Map multi-route feasibility; the relative-dates span-default
+  idea's exact mechanics), each required to cite file:line evidence rather than guess — see Tier 6
+  above for the full findings. All three came back with clear, low-ambiguity verdicts for 6A/6B
+  (implemented directly) and four genuine open design questions for 6C, posed via
+  `AskUserQuestion` before any code was written. Implemented all four directly (not via
+  sub-agents, per this session's own standing preference for direct work on implementation), then
+  live-verified every piece via claude-in-chrome on the existing `converted_reports/page_26`
+  scratch page, cross-checking persisted state via `dms raw get`/`dms dataset query` rather than
+  trusting on-screen state alone (per this arc's own standing convention) — this caught a real,
+  worth-documenting transitional caveat in 6A (a pre-existing section's title looks "stuck" the
+  first time it's touched after the fix ships, self-healing later) that a browser-only check would
+  have missed. One incidental discovery while verifying 6C: 24B (the report's only non-derived
+  base route on this page) was temporarily re-pointed to derive from the synthetic "Today" anchor
+  to get a clean single-day test case, then reverted back to its original `06/01–06/30/2026`
+  dates, confirmed via `dms dataset query`. Ryan clarified mid-session that this kind of
+  scratch-page restoration effort is unnecessary going forward. Build sanity-checked via
+  `npm run build` before live verification (transformed all 1186 modules cleanly; the one failure
+  was a pre-existing, unrelated missing `colorbrewer` import in `macroview/updateFilters.jsx`, not
+  touched this session).

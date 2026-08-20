@@ -103,6 +103,29 @@ const CHOROPLETH_DEFAULTS = {
     },
 };
 
+// report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Map had NO title auto-compose at all —
+// confirmed by reading this whole file, zero references to `display.title` anywhere in it, unlike
+// composeMeasureConfig.js's `composeAutoTitle`. This is Map's own equivalent, deliberately not a
+// reuse of `composeAutoTitle` itself — that function keys off `vocab.measures`, which has no entry
+// for Map's `'none'` sentinel, and branches on `pick.graphType`, which a Map section's own
+// `_measurePick` never carries (see MAP_MEASURE_PICK_FIELDS in MeasurePicker/index.js). Mirrors the
+// wording AddGraphModal's own Map preview-title already uses for the `'none'` case ("Map", not a
+// redundant "None — just show the route"), but — unlike that preview text — never appends " — Map"
+// for a real measure, matching every OTHER graph type's auto-title (bare measure label only, e.g.
+// "Speed (mph)"), not a shape-suffixed variant.
+export function composeMapAutoTitle(measureKey) {
+    if (!measureKey || measureKey === 'none') return 'Map';
+    return MAP_MEASURE_OPTIONS.find((o) => o.value === measureKey)?.label || 'Map';
+}
+
+// Same no-new-field pristine-check convention as composeMeasureConfig.js's `isTitleDirty` (see its
+// own doc comment) — `priorMeasureKey` is whatever measure this Map's `_measurePick.measure` held
+// BEFORE the apply in progress, not the new one about to be set.
+export function isMapTitleDirty({ currentTitle, priorMeasureKey }) {
+    if (!currentTitle) return false;
+    return currentTitle !== composeMapAutoTitle(priorMeasureKey);
+}
+
 function latestAvailableYear() {
     const years = Object.keys(GEOMETRY_TILE_VIEWS).map(Number);
     const now = new Date().getFullYear();
@@ -279,14 +302,21 @@ export function composeMapSectionConfig({ measureKey = 'none', year, apiHost } =
         },
     };
     ensureSelfBoundSubscriber(state);
+    // Brand-new section, no prior title to preserve — always set (mirrors applyMeasurePickToState's
+    // own "undefined priorPick" creation-time behavior, via isMapTitleDirty's `!currentTitle`
+    // short-circuit).
+    state.display.title = { ...state.display.title, title: composeMapAutoTitle(measureKey) };
     return state;
 }
 
 // Re-picking a Map's measure via QuickControls — mutates an EXISTING state's own managed slot in
 // place (plain mutation syntax; works against an immer draft or a plain clone, same contract
 // applyMeasurePickToState's own doc comment states) rather than replacing the whole state, so any
-// other author-added symbology on this Map is left untouched.
-export function applyMapMeasureToState(state, { measureKey = 'none', year, apiHost } = {}) {
+// other author-added symbology on this Map is left untouched. `priorMeasureKey` (the measure this
+// Map's `_measurePick.measure` held before this apply) is threaded through from the call site
+// (MeasurePicker/index.js) — same pristine-check purpose `applyMeasurePickToState`'s own
+// `priorPick` capture serves, just Map-shaped.
+export function applyMapMeasureToState(state, { measureKey = 'none', year, apiHost, priorMeasureKey } = {}) {
     const resolvedYear = year || latestAvailableYear();
     const layer = (measureKey === 'none' || !CHOROPLETH_DEFAULTS[measureKey])
         ? buildRouteGeometryLayer(resolvedYear)
@@ -299,4 +329,8 @@ export function applyMapMeasureToState(state, { measureKey = 'none', year, apiHo
         symbology: { activeLayer: layer.id, layers: { [layer.id]: layer } },
     };
     ensureSelfBoundSubscriber(state);
+    const currentTitle = state.display.title?.title;
+    if (!isMapTitleDirty({ currentTitle, priorMeasureKey })) {
+        state.display.title = { ...state.display.title, title: composeMapAutoTitle(measureKey) };
+    }
 }

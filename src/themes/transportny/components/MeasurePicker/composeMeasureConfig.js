@@ -21,6 +21,10 @@
 // which no downstream project can resolve — it broke transportNY's build on first sync. Keep it a
 // sibling; do not move it back out of the synced tree.
 import vocab from './vocabulary.json';
+// report-authoring-ux-overhaul.md Tier 6A (2026-08-20): the same time-of-day/day-of-week helpers
+// QuickControls'/AddGraphModal's own "When" pill already use, reused here (not re-derived) so the
+// auto-title's phrasing of a window never drifts from what the pill itself shows for it.
+import { PEAK_PRESETS, timeOfDayToken, summarizeWeekdays } from '../ReportRouteList/utils';
 
 export const GRAPH_VOCAB = vocab;
 
@@ -559,13 +563,37 @@ export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externa
  * Different => the author typed something of their own => never touched again. Ryan's explicit
  * call, 2026-08-20: no new field, keep the mechanism obvious at the call site instead.
  */
+// report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Ryan's own report — Peak Selector/DoW
+// picks on the "When" pill didn't move the title, only Measure did. `composeAutoTitle` already
+// receives the full resolved pick (routeWindows/routeIds included, see applyMeasurePickToState's
+// call site) — it simply never read them. This reads the SAME "first assigned route's own window"
+// convention QuickControls' own When pill already uses to compute ITS displayed token
+// (`pick.routeWindows?.[routeIds[0]]?.[0]`, QuickControls/index.jsx) so the title's phrasing can
+// never drift from what the pill shows for the same state. Renders nothing (same as before this
+// fix) whenever the window is unrestricted (all day, every day) — an unrestricted graph's title
+// looks exactly as it did before this change.
+function windowTitleFragment(pick) {
+    const routeIds = pick.routeIds || [];
+    const window = pick.routeWindows?.[routeIds[0]]?.[0];
+    if (!window) return '';
+    const parts = [];
+    if (window.start && window.end) {
+        const preset = PEAK_PRESETS.find((p) => p.startTime === window.start && p.endTime === window.end);
+        parts.push(preset ? preset.label : timeOfDayToken(window.start, window.end));
+    }
+    const daysSummary = summarizeWeekdays(window.weekdays);
+    if (daysSummary) parts.push(daysSummary);
+    return parts.join(', ');
+}
+
 export function composeAutoTitle(pick) {
     if (!pick) return '';
-    if (pick.graphType === 'Table') {
-        const labels = (pick.measures || []).map((k) => vocab.measures[k]?.label).filter(Boolean);
-        return labels.join(', ');
-    }
-    return vocab.measures[pick.measure]?.label || '';
+    const measureLabel = pick.graphType === 'Table'
+        ? (pick.measures || []).map((k) => vocab.measures[k]?.label).filter(Boolean).join(', ')
+        : (vocab.measures[pick.measure]?.label || '');
+    if (!measureLabel) return '';
+    const when = windowTitleFragment(pick);
+    return when ? `${measureLabel} — ${when}` : measureLabel;
 }
 
 // `priorPick` is whatever `state.display._measurePick` held BEFORE this apply (undefined on a

@@ -109,16 +109,14 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     setSelectedRouteIds(new Set());
   }, [open]);
 
-  // A Map card draws one route at a time (m2SelectMode in the reference file) — clicking the
-  // already-selected route deselects it, clicking a different one REPLACES the selection rather
-  // than adding to it. Verified against the reference's own `m2-pick` handler: no toast/refusal
-  // for this per-row click (a toast only guards a "select all" affordance, which this modal
-  // doesn't have).
+  // report-authoring-ux-overhaul.md Tier 6B (2026-08-20): Map used to draw one route at a time
+  // (mirroring the reference mockup's `m2SelectMode`) — confirmed via direct research that this was
+  // a pure UI-gate choice, not a technical constraint: `materializeSeriesLayer`
+  // (useComparisonSeriesLayers.js) already clones a template layer once per assigned route with no
+  // route-count-specific logic, per-route coloring is already automatic, and the choropleth join
+  // operates per-TMC, not per-route. Map now uses the exact same add/remove selection every other
+  // shape already uses below.
   const toggleRoute = (id) => {
-    if (pick.graphType === 'Map') {
-      setSelectedRouteIds((prev) => (prev.has(id) && prev.size === 1 ? new Set() : new Set([id])));
-      return;
-    }
     setSelectedRouteIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -229,9 +227,7 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
             </div>
             {routes.length > 0 ? (
               <div className={t.routesNote}>
-                {pick.graphType === 'Map'
-                  ? 'A map draws one route at a time — picking another replaces it.'
-                  : 'Each route keeps its identity colour, so the new card reads against the ones already on the report. A route can feed any number of cards.'}
+                Each route keeps its identity colour, so the new card reads against the ones already on the report. A route can feed any number of cards.
               </div>
             ) : null}
           </div>
@@ -271,12 +267,6 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                         }
                         return next;
                       });
-                      // Switching TO Map collapses an existing multi-selection to just its first
-                      // entry (mirrors the reference file's own graph-type-switch behavior) — a
-                      // Map card can only ever draw one route.
-                      if (o.value === 'Map') {
-                        setSelectedRouteIds((prev) => (prev.size > 1 ? new Set([Array.from(prev)[0]]) : prev));
-                      }
                     }}
                   >
                     <ShapeGlyph className={t.shapeCardGlyph} />
@@ -455,7 +445,7 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 <div className={t.previewDescription}>{GRAPH_TYPE_DESCRIPTIONS[pick.graphType]}</div>
                 <div className={t.previewSummary}>
                   {isMap
-                    ? 'Shows the selected route’s geometry on a map — style and layers are editable afterward via the map’s own settings.'
+                    ? 'Shows the selected route(s)’ geometry on a map — style and layers are editable afterward via the map’s own settings.'
                     : <>Shown at {resolutionLabel} resolution, {timeOfDayToken(pick.start, pick.end)} · {(summarizeWeekdays(pick.weekdays) || 'all days').toLowerCase()}{hasModeField ? `, ${comparisonLabel.toLowerCase()} mode` : ''}.</>}
                 </div>
               </div>

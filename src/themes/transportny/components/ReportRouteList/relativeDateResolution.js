@@ -125,6 +125,29 @@ function shiftSpans(d, span, n) {
   return new Date(d.getFullYear() + n, 0, 1); // year
 }
 
+// report-authoring-ux-overhaul.md Tier 6C (2026-08-20): Ryan's own flagged idea — when deriving a
+// route's dates via "Same period, aligned" (the `snap`/`isof` formula shape above), default the
+// Span picker (day/week/month/year) to whatever span the BASE route's own [startDate, endDate]
+// actually spans, so re-picking the base route doesn't leave a stale span selected against it.
+// Deliberately a SINGLE-anchor check (does `startOfSpan(start, span)` land exactly on `start`, AND
+// does one whole `span` period from THAT SAME point land exactly on `end`) rather than the
+// `isof` resolution branch's own two-anchor shape (which independently snaps `start`'s period and
+// `end`'s period) — a two-anchor check would also call a Jan-1-to-Feb-28 base range an exact
+// "month" match (re-resolving `startDate=>monthof` against it really would reproduce that exact
+// range), which isn't what "the base is exactly one calendar month" means. Returns null when no
+// span matches exactly (e.g. a 37-day range) — the caller leaves the span picker exactly as it was
+// in that case, no closest-match guessing (Ryan's explicit call).
+const SPAN_KEYS = ['day', 'week', 'month', 'year'];
+export function inferExactSpan(startDate, endDate) {
+    const start = parseDateOnly(startDate);
+    const end = parseDateOnly(endDate);
+    if (!start || !end) return null;
+    return SPAN_KEYS.find((span) => {
+        const spanStart = startOfSpan(start, span);
+        return spanStart.getTime() === start.getTime() && endOfSpan(spanStart, span).getTime() === end.getTime();
+    }) || null;
+}
+
 // Special form (`yearof`/`monthof`/`weekof`/`dayof`): start/end snap
 // INDEPENDENTLY from the base's own startDate/endDate (moment's
 // calculateTimespanOf — if the base's start/end fall in different

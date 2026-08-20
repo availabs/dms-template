@@ -151,7 +151,6 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   // time-bucket concept for a Map at all, unlike Table/every chart type).
   const hasMeasure = true;
   const hasAggregate = !isMapCard;
-  const single = graphType === 'Map';
 
   const routeCatalog = useMemo(() => {
     const values = pageState?.filters?.find((f) => f.searchKey === ROUTE_CATALOG_PARAM_KEY && f.type === 'action')?.values;
@@ -206,16 +205,6 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   };
 
   const toggleRoute = (routeCompId) => {
-    if (single) {
-      const clearing = routeIds[0] === routeCompId;
-      // Swapping which one route feeds this Map keeps the card's current window rather than
-      // resetting to unrestricted — same reasoning as the multi-route branch below.
-      applyPick({
-        routeIds: clearing ? [] : [routeCompId],
-        ...(clearing ? {} : { routeWindows: { [routeCompId]: [currentWindow] } }),
-      });
-      return;
-    }
     const adding = !routeIds.includes(routeCompId);
     const nextRouteIds = adding ? [...routeIds, routeCompId] : routeIds.filter((id) => id !== routeCompId);
     // A newly-added route inherits the graph's current window (the same one every other route on
@@ -272,7 +261,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   // Ordered lowest-priority-last — this IS the drop order (a prefix of this array is kept).
   const pillDefs = useMemo(() => {
     const defs = [
-      { kind: 'routes', label: routeLabel, title: single ? 'This card draws one route' : 'Routes on this card', strong: routeIds.length === 0 },
+      { kind: 'routes', label: routeLabel, title: 'Routes on this card', strong: routeIds.length === 0 },
     ];
     // Aggregate is an AVL-Graph/Table-only concept — a Map card has no resolution/time-bucket
     // pick at all. Measure applies to every graph type now, Map included (Tier 5I, 2026-08-20) —
@@ -287,7 +276,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     if (hasMode) defs.push({ kind: 'mode', label: modeIsDifference ? 'Diff' : 'Overlay', title: `Comparison mode · ${modeIsDifference ? 'difference' : 'overlay'}`, strong: modeIsDifference });
     return defs;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeLabel, measureLabel, whenToken, whenTitle, aggregateLabel, modeIsDifference, hasMode, hasMeasure, hasAggregate, isMapCard, single, routeIds.length, pick.measure, pick.resolution, isTable]);
+  }, [routeLabel, measureLabel, whenToken, whenTitle, aggregateLabel, modeIsDifference, hasMode, hasMeasure, hasAggregate, isMapCard, routeIds.length, pick.measure, pick.resolution, isTable]);
 
   // Width — a layout pill, not a data pill (see the left-aligned `layoutGroup` in the JSX below,
   // alongside Move Up/Down). Deliberately NOT part of `pillDefs`/the responsive fit-and-overflow
@@ -340,7 +329,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   // combined one (kind === 'all' renders every applicable section). ──
   const renderRoutesSection = () => (
     <div className={t.popSection}>
-      <div className={t.popSectionLabel}>{single ? 'route · pick one' : 'routes · pick any'}</div>
+      <div className={t.popSectionLabel}>routes · pick any</div>
       {routeCatalog.length === 0 ? (
         <div className={t.popEmpty}>No routes on this report yet.</div>
       ) : (
@@ -358,8 +347,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
           })}
         </div>
       )}
-      {single && <div className={t.popNote}>A map draws one route at a time — picking another replaces it.</div>}
-      {!single && modeIsDifference && routeIds.length !== 2 && (
+      {modeIsDifference && routeIds.length !== 2 && (
         <div className={t.popWarning}>Difference mode compares exactly two routes; this card has {routeIds.length}.</div>
       )}
     </div>

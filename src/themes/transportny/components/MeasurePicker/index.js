@@ -262,12 +262,13 @@ export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost }, pa
         // `_measurePick` (default 'none') so QuickControls/the modal show the right selection when
         // reopened — never merged from DEFAULT_PICK's AVL-Graph-shaped 'measure' default
         // ('travelTime'), which is meaningless for Map.
+        const priorMeasureKey = existing.measure || 'none';
         const measureKey = 'measure' in partial ? partial.measure : (existing.measure || 'none');
         nextPick.measure = measureKey;
         dwAPI.setState(draft => {
             if (!draft.display) draft.display = {};
             draft.display._measurePick = nextPick;
-            if ('measure' in partial) applyMapMeasureToState(draft, { measureKey, apiHost });
+            if ('measure' in partial) applyMapMeasureToState(draft, { measureKey, apiHost, priorMeasureKey });
         });
         return;
     }
