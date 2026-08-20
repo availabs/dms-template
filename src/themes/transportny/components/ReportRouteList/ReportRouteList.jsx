@@ -15,32 +15,26 @@ import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
-export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
+export default function ReportRouteList() {
   const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
   const { state: { join, externalSource } } = useContext(ComponentContext) || {};
-  // Two independent flags, not one — conflating them is what let every RRL mutation
-  // fire the instant the PAGE opened at /edit/..., without this section ever being
-  // individually put into its own edit mode (see planning/transportny/tasks/current/reportroutelist.md,
-  // "Section edit-mode gating").
   // `editPageMode` (from PageContext) is whichever sections array (`draft_sections` vs
   // `sections`) sibling components are ACTUALLY rendering from right now — that's what
   // useGraphPublish's sectionsKey tracks, and what decides whether an author sees raw
-  // Dynamic Report slot placeholders vs a viewer's resolved routes. It says nothing
-  // about whether THIS section has been opened for editing.
-  // `props.isEdit` (destructured above as `sectionEditorOpen`) IS that per-section signal
-  // — dataWrapper's Edit path (mounted only for the one section a user clicked the
-  // section's own "Edit" pencil on, sectionArray.jsx's `edit.index === i`) always sets it
-  // true; the View path (every other section, even on an /edit/... page) always sets it
-  // false. See dataWrapper/index.jsx lines 197/457.
+  // Dynamic Report slot placeholders vs a viewer's resolved routes.
   const isEdit = Boolean(editPageMode);
-  // Gates every actual mutation (route add/remove/reorder/rename/date-edit,
-  // graph-chip toggling, the Dynamic Report switch, +Add Route/Route Slot/Graph) —
-  // requires BOTH being on the page's /edit/... route AND having this section's own
-  // pencil open, matching how Card/Spreadsheet gate row CRUD via SectionEdit vs
-  // SectionView. `isEdit &&` is redundant given dataWrapper's own invariant (the Edit
-  // path only exists inside the page's edit route to begin with) but kept explicit —
-  // see useReportRow.js's persistRoutes for why a single, obvious choke point matters.
-  const canMutate = isEdit && Boolean(sectionEditorOpen);
+  // Gates every actual mutation (route add/remove/reorder/rename/date-edit, the Dynamic
+  // Report switch, +Add Route/Route Slot/Graph) — deliberately keyed on `editPageMode`
+  // ALONE, unconditionally, the moment a page opens at /edit/..., with no requirement
+  // that this section also be put into its own SectionEdit pencil-click mode first (the
+  // report-authoring-ux-overhaul.md item 3 decision, 2026-08-19: this is a deliberate
+  // author-empowerment break from DMS's normal per-section view/edit gating, not a bug).
+  // Previously also required `Boolean(props.isEdit)` (this section's own pencil open) —
+  // that extra gate was added 2026-08-03 to suppress an orphan-cleanup effect that used
+  // to strip a route's `graphIds` on every render; that effect was deleted by Design Push
+  // #2 (2026-08-06, see useGraphPublish.js) and no code path here fires a mutation from a
+  // useEffect anymore, so the extra click stopped protecting anything.
+  const canMutate = isEdit;
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
@@ -50,16 +44,12 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
   const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
   const [editNameValue, setEditNameValue] = useState('');
-  const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
-  const [editStartDateValue, setEditStartDateValue] = useState('');
-  const [editEndDateValue, setEditEndDateValue] = useState('');
-  // Mechanism B authoring buffer (relativeDateResolution.js) — mirrors the editStartDateValue/
-  // editEndDateValue pattern above: parent owns the edit-buffer state, RouteRow is presentational.
-  // 'fixed' | 'derived'; editDeriveFromValue is the picked base's route_comp_id; editDeriveFormulaValue
-  // is the composed (or hand-typed, via the Advanced pattern) formula string.
-  const [editDateMode, setEditDateMode] = useState('fixed');
-  const [editDeriveFromValue, setEditDeriveFromValue] = useState('');
-  const [editDeriveFormulaValue, setEditDeriveFormulaValue] = useState('');
+  // Report settings disclosure (2026-08-19, item 4A) — houses the Dynamic Report switch,
+  // collapsed by default. See ReportRouteList.theme.js's settingsDisclosureWrapper comment for why.
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  // Date editing (2026-08-19, item 4A) no longer has a parent-owned single-flight edit buffer —
+  // each RouteRow now owns its own live, always-editable date state and auto-saves (debounced)
+  // through `onUpdateDates` below, so several rows can be mid-edit at once. See RouteRow.jsx.
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,12 +101,20 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/color
   // assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
   // the real route ids the viewer's URL supplies. Never persisted; a pure in-memory overlay.
+  // Resolves whenever the URL actually supplies route ids — in EDIT mode too, not just view
+  // mode (report-authoring-ux-overhaul.md item 7, 2026-08-19): an author previewing
+  // `/edit/<slug>?routes=...&asOf=...` sees the same resolved preview a real viewer would,
+  // instead of always seeing raw slot placeholders regardless of the URL. A plain
+  // `/edit/<slug>` with no `?routes=` still falls through to the raw-slots branch below
+  // (`routeIds.length` is 0), so authoring the template itself is unaffected. Confirmed safe:
+  // this hook only ever reads via `apiLoad` into local `useState` — no `apiUpdate` anywhere in
+  // useDynamicReportRoutes.js, so a preview-only edit-mode visit can't persist anything.
   const { resolvedRoutes, resolvedGroupRoutes } = useDynamicReportRoutes({
     apiLoad,
     routeSourceInfo,
     slots: routes,
     routeIds,
-    enabled: isDynamicReport && !isEdit && routeIds.length > 0,
+    enabled: isDynamicReport && routeIds.length > 0,
   });
   // Grouped, not raw route count (2026-08-03): several slot rows can share one `route_slot_group`
   // when they're different date/settings VIEWS of the same one real route a viewer picks once (see
@@ -145,7 +143,10 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // so a bare truthiness check on the array itself would always pass, even when it only contains
   // an empty string (e.g. `['']`, the default before any viewer has picked a date).
   const baseDateRawValues = Array.isArray(baseDateFilter?.values) ? baseDateFilter.values : [baseDateFilter?.values];
-  const asOfOverride = isDynamicReport && !isEdit ? (baseDateRawValues.filter(Boolean)[0] || null) : null;
+  // Resolves in edit mode too (see the `enabled` comment above) — an absent/empty `?asOf=` param
+  // (the plain `/edit/<slug>` case) still falls through to `null` here regardless, since
+  // `baseDateRawValues.filter(Boolean)[0]` is undefined whenever the param was never set.
+  const asOfOverride = isDynamicReport ? (baseDateRawValues.filter(Boolean)[0] || null) : null;
   // defaultAnchorDate() is real wall-clock today MINUS NPMRDS_DATA_LAG_DAYS, not literal today —
   // NPMRDS's own ClickHouse speed table publishes on a ~15-21 day lag (confirmed live 2026-08-10,
   // see relativeDateResolution.js), so a literal-today anchor would silently query a date range
@@ -174,7 +175,12 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // deriving from TODAY_ANCHOR_COMP_ID resolves through the exact same lookup-by-route_comp_id
   // path as deriving from any real sibling — then it's filtered back out, since it was never a
   // real persisted route to render as its own row.
-  const effectiveRoutes = resolveRouteDates([...((isDynamicReport && !isEdit) ? resolvedRoutes : routes), todayAnchorEntry])
+  // Same condition as `enabled` above, deliberately NOT bare `isDynamicReport` — a plain
+  // `/edit/<slug>` with no `?routes=` must still fall through to the raw, unresolved `routes`
+  // (slot placeholders) for authoring, in both edit AND view mode; `resolvedRoutes` is only
+  // ever non-empty when the hook itself was enabled (routeIds present), so mirroring that exact
+  // condition here (rather than just dropping `!isEdit`) is what keeps that case correct.
+  const effectiveRoutes = resolveRouteDates([...((isDynamicReport && routeIds.length > 0) ? resolvedRoutes : routes), todayAnchorEntry])
     .filter((rt) => rt.route_comp_id !== TODAY_ANCHOR_COMP_ID);
 
   const { mileageByRouteCompId } = useRouteMileage({ apiLoad, routes: effectiveRoutes });
@@ -231,7 +237,17 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // `isPlaceholderName: true` marks this generated name as meaningless (see
   // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
   // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
-  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
+  //
+  // Auto-expands the new slot (2026-08-19, item 4A) — `addRoutes` always appends, so the new
+  // row lands at today's `routes.length`; setting that BEFORE the async add resolves is safe
+  // since nothing else in this synchronous handler changes `routes.length` first. The next thing
+  // an author almost always does after adding a route is set its dates, so land there open
+  // instead of making that a 3rd click.
+  const handleAddRouteSlot = () => {
+    const newIndex = routes.length;
+    addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
+    setExpandedRoutes((prev) => ({ ...prev, [newIndex]: true }));
+  };
 
   const toggleRoute = (index) => {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
@@ -293,9 +309,19 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
     [routes]
   );
 
+  // Auto-expands every newly added route (2026-08-19, item 4A) — same reasoning as
+  // handleAddRouteSlot above, extended to a multi-select add: `addRoutes` appends the whole
+  // batch in the order `selectedRoutes` was given, so the new rows land at
+  // `[routes.length, routes.length + selectedRoutes.length - 1]`.
   const handleConfirmAddRoutes = async (selectedRoutes) => {
+    const startIndex = routes.length;
     try {
       await addRoutes(selectedRoutes);
+      setExpandedRoutes((prev) => {
+        const next = { ...prev };
+        selectedRoutes.forEach((_, j) => { next[startIndex + j] = true; });
+        return next;
+      });
     } catch (e) {
       // addRoutes already records the error in useReportRow's `error` state.
     }
@@ -420,9 +446,24 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
             </div>
           )}
           {canMutate && (
-            <div className={t.dynamicToggleWrapper}>
-              <Switch enabled={isDynamicReport} setEnabled={toggleDynamicReport} label="Dynamic Report" size="small" />
-              <span className={t.dynamicToggleLabel}>Dynamic Report</span>
+            <div className={t.settingsDisclosureWrapper}>
+              <button type="button" className={t.settingsDisclosureToggle} onClick={() => setIsSettingsOpen((o) => !o)}>
+                <Icon icon="Settings" className={t.settingsDisclosureIcon} />
+                <span className={t.settingsDisclosureLabel}>Report settings</span>
+                <Icon icon={isSettingsOpen ? 'ChevronUp' : 'ChevronDown'} className={t.settingsDisclosureChevron} />
+              </button>
+              {isSettingsOpen && (
+                <div className={t.settingsDisclosureBody}>
+                  <div className={t.dynamicToggleWrapper}>
+                    <Switch enabled={isDynamicReport} setEnabled={toggleDynamicReport} label="Dynamic Report" size="small" />
+                    <span className={t.dynamicToggleLabel}>Dynamic Report</span>
+                  </div>
+                  <div className={t.settingsDisclosureHint}>
+                    Routes are picked by whoever opens the report (via a link), instead of being
+                    fixed here — use this for a reusable report template.
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {canMutate && clipboard && (() => {
@@ -533,60 +574,14 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                 derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
                 baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
                 derivableSiblings={derivableSiblings}
-                isEditingDates={editingRouteDatesIndex === i}
-                editStartDateValue={editStartDateValue}
-                editEndDateValue={editEndDateValue}
-                onEditStartDateValueChange={setEditStartDateValue}
-                onEditEndDateValueChange={setEditEndDateValue}
-                editDateMode={editDateMode}
-                onEditDateModeChange={setEditDateMode}
-                editDeriveFromValue={editDeriveFromValue}
-                onEditDeriveFromValueChange={setEditDeriveFromValue}
-                editDeriveFormulaValue={editDeriveFormulaValue}
-                onEditDeriveFormulaValueChange={setEditDeriveFormulaValue}
-                onStartEditDates={() => {
-                  setEditingRouteDatesIndex(i);
-                  // Seeded from `r` (effectiveRoutes' already-resolved entry, see the
-                  // resolveRouteDates wiring above) — a row currently deriving its dates shows the
-                  // real current resolved value here, not a stale/frozen literal, so switching to
-                  // Fixed mode starts from the right dates instead of blank or stale ones.
-                  setEditStartDateValue(r.startDate);
-                  setEditEndDateValue(r.endDate);
-                  setEditDateMode(r.dateFormula ? 'derived' : 'fixed');
-                  setEditDeriveFromValue(r.derivedFromRoute || '');
-                  setEditDeriveFormulaValue(r.dateFormula || '');
-                }}
-                onSaveEditDates={() => {
-                  if (editDateMode === 'derived') {
-                    // Atomic: both fields together in one updateRoute call, matching the
-                    // resolver's own requirement (relativeDateResolution.js only resolves when
-                    // BOTH dateFormula and derivedFromRoute are present) — never persist one
-                    // without the other. startDate/endDate are deliberately left as whatever's
-                    // already stored: resolveRouteDates recomputes the displayed value live on
-                    // every read, and the untouched literal becomes a safe frozen fallback if the
-                    // base or formula is ever removed later — the same convention
-                    // convert_old_reports.py's own resolver uses.
-                    updateRoute({
-                      index: i,
-                      updates: { dateFormula: editDeriveFormulaValue, derivedFromRoute: editDeriveFromValue },
-                    });
-                  } else {
-                    updateRoute({
-                      index: i,
-                      updates: {
-                        startDate: editStartDateValue,
-                        endDate: editEndDateValue,
-                        // Switching back to Fixed removes the relationship — editStartDateValue/
-                        // editEndDateValue above were seeded from the live-resolved value (see
-                        // onStartEditDates), so nothing goes blank.
-                        dateFormula: undefined,
-                        derivedFromRoute: undefined,
-                      },
-                    });
-                  }
-                  setEditingRouteDatesIndex(null);
-                }}
-                onCancelEditDates={() => setEditingRouteDatesIndex(null)}
+                // Date editing (2026-08-19, item 4A: removed the pencil/Save/Cancel gate — dates
+                // are always live-editable whenever the row is expanded, auto-saving through this
+                // one callback). RouteRow owns its own local buffer + debounce now (several rows
+                // can be mid-edit at once, unlike the old single-flight parent-owned buffer) and
+                // always sends a complete, atomic `updates` object here — for Derived mode that
+                // means `dateFormula`+`derivedFromRoute` together, matching the resolver's own
+                // requirement (relativeDateResolution.js only resolves when both are present).
+                onUpdateDates={(updates) => updateRoute({ index: i, updates })}
                 canMoveUp={i > 0}
                 canMoveDown={i < effectiveRoutes.length - 1}
                 onReorderUp={() => reorderRoutes(i, 'up')}

@@ -80,11 +80,11 @@
         <!-- breadcrumb + worklist stepper -->
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
-            <a href="dashboard.html" class="hover:text-mny-700">Sullivan County Actions</a>
+            <a href="dashboard.html" class="hover:text-mny-700" data-spec="crumb-county">Sullivan County Actions</a>
             <span class="text-mny-200">/</span>
             <a href="jurisdictions.html" class="hover:text-mny-700">Jurisdictions</a>
             <span class="text-mny-200">/</span>
-            <a href="jurisdiction-prioritization.html" class="hover:text-mny-700">Delaware (Town)</a>
+            <a href="jurisdiction-prioritization.html" class="hover:text-mny-700" data-spec="crumb-jur">Delaware (Town)</a>
             <span class="text-mny-200">/</span>
             <span class="text-mny-700">Action</span>
           </div>
@@ -106,18 +106,15 @@
 
         <div class="flex flex-wrap items-start justify-between gap-4 mt-2">
           <div class="max-w-[820px]">
-            <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1.02] tracking-[-0.05em]">Delaware — Kohlertown Route 52, Culvert Issues</h1>
-            <!-- location line: jurisdiction, county, source, action number -->
+            <!-- Jurisdiction | Action Title — the client wants the jurisdiction kept
+                 in the headline, not just whatever prefix the data carries
+                 (feedback 2026-08-18). Rendered as two fields joined by a divider,
+                 not one concatenated string. -->
+            <h1 class="font-display text-[36px] font-[500] text-mny-900 uppercase leading-[1.02] tracking-[-0.05em]" data-spec="h1">Delaware (Town) <span class="text-mny-200 font-[400] px-1">|</span> Kohlertown Route 52, Culvert Issues</h1>
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5">
-              <span class="inline-flex items-center gap-1.5 font-proxima text-[14px] font-[600] text-mny-900">
-                <!-- icon: Location -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
-                Delaware (Town)
-              </span>
+              <span class="font-proxima text-[14px] text-mny-700" data-spec="county-line">Sullivan County</span>
               <span class="text-mny-200">·</span>
-              <span class="font-proxima text-[14px] text-mny-700">Sullivan County</span>
-              <span class="text-mny-200">·</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700">Local plan</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[10px] font-[700] uppercase tracking-wider text-mny-700" data-spec="plan-chip">Local plan</span>
             </div>
           </div>
 
@@ -135,29 +132,21 @@
           </div>
         </div>
 
-        <!-- the states, as one row of pills. The "HMP Review Ready" pill was removed:
-             readiness is a recorded field, not a badge — it still reads in the record
-             dl below as Readiness. -->
+        <!-- the states, as one row of pills: Status | Jurisdictional Priority.
+             The "Last updated" chip that used to close this row is gone (client
+             feedback 2026-08-19) — the date already reads in the Action Record
+             card, and stating it twice made the header busier for no new fact.
+             NOTHING about the county tier appears anywhere on this page — the
+             client wants county prioritization kept out of public view for now
+             (the old "not set — assign a tier" CTA and the Goals card's tier row
+             are both gone). -->
         <div class="flex flex-wrap items-center gap-2 mt-4">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-400/15 border border-mny-400/50 font-proxima text-[12px] font-[600] text-mny-900">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-400/15 border border-mny-400/50 font-proxima text-[12px] font-[600] text-mny-900" data-spec="status-pill">
             <span class="w-2 h-2 rounded-full bg-mny-400"></span>In-Progress
           </span>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-50 border border-mny-200 font-proxima text-[12px] text-mny-700">
-            Local priority <strong class="text-mny-900 font-[700]">High</strong>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-50 border border-mny-200 font-proxima text-[12px] text-mny-700" data-spec="jp-pill">
+            Jurisdictional priority <strong class="text-mny-900 font-[700]">High</strong>
           </span>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-50 border border-mny-200 font-proxima text-[12px] text-mny-700">
-            <!-- icon: Events -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .29.166.552.427.677l3 1.5a.75.75 0 0 0 .67-1.342L10.75 9.53V5Z" clip-rule="evenodd"/></svg>
-            Status updated 1 May 2026
-          </span>
-
-          <!-- county priority is the one unset state that gets a CTA, not a
-               collapsed blank: it's the whole point of the workspace -->
-          <a href="action-edit.html#county-priority" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-y50 border border-dashed border-mny-y700 font-proxima text-[12px] font-[600] text-mny-900 hover:bg-[#F9EFDD] transition-colors ml-auto">
-            <!-- icon: Warning -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-y700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
-            County priority not set — assign a tier
-          </a>
         </div>
       </div>
 
@@ -170,17 +159,13 @@
              ======================================================== -->
         <div data-dms="section" data-name="the-case" class="col-span-12 lg:col-span-8 lg:pr-6">
 
-          <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1] pb-3 border-b border-mny-100">The case for this action</h2>
+          <!-- No section title — the page opens straight into The Problem, and the
+               heading icons are gone: the red one doubled as the missing-data mark
+               (client feedback 2026-08-18). -->
 
           <!-- Problem -->
-          <div class="pt-5">
-            <div class="flex items-center gap-2">
-              <span class="size-6 rounded-full bg-mny-redk/10 flex items-center justify-center shrink-0">
-                <!-- icon: Warning -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-redk" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
-              </span>
-              <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">The problem</h3>
-            </div>
+          <div data-spec="problem">
+            <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">The problem</h3>
             <p class="font-proxima text-[20px] text-mny-900 leading-[140%] mt-2.5">
               State Route 52 in Kohlertown experiences severe flooding on a continuous basis due to culvert
               issues and requires coordination of various agencies responsible for transportation services.
@@ -194,14 +179,8 @@
 
           <!-- Solution -->
           <div class="pt-6 mt-6 border-t border-mny-50">
-            <div class="flex items-center gap-2">
-              <span class="size-6 rounded-full bg-mny-grn/15 flex items-center justify-center shrink-0">
-                <!-- icon: Tools -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-grn" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"/></svg>
-              </span>
-              <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">The solution</h3>
-            </div>
-            <p class="font-proxima text-[16px] text-mny-700 leading-[145%] mt-2.5">
+            <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">The solution</h3>
+            <p class="font-proxima text-[16px] text-mny-700 leading-[145%] mt-2.5" data-spec="solution">
               To reduce the long-term risk to flooding for existing assets and future developments, specifically
               along State Route 52 and adjacent roads in Kohlertown near border of Jeffersonville/Callicoon, the
               Town Highway Department will work with County Public Works and NYS DOT to upsize of two culverts and
@@ -213,57 +192,73 @@
 
           <!-- Alternative considered — only 13% of actions carry this, so
                when it's present it's worth surfacing rather than burying -->
-          <div class="pt-6 mt-6 border-t border-mny-50">
+          <div class="pt-6 mt-6 border-t border-mny-50" data-spec="alt-section">
             <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">Alternative considered</h3>
             <div class="flex flex-wrap items-center gap-3 mt-2.5">
-              <span class="font-proxima text-[16px] text-mny-900 font-[600]">Elevate roads</span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-redk/10 border border-mny-redk/25 font-proxima text-[12px] font-[600] text-mny-redk">
+              <span class="font-proxima text-[16px] text-mny-900 font-[600]" data-spec="alt-name">Elevate roads</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-redk/10 border border-mny-redk/25 font-proxima text-[12px] font-[600] text-mny-redk" data-spec="alt-chip">
                 Rejected — cost prohibitive
               </span>
             </div>
           </div>
 
           <!-- ======================================================
-               COST & BENEFIT (Card, nested col-6) and
-               GOALS (Card, nested col-6) sit below the case, still
-               inside the reading column.
+               COST & BENEFIT EVALUATION (Card, full reading-column
+               width) — client feedback 2026-08-18: renamed with
+               "Evaluation" and stretched to the key-facts rail.
+               Client feedback 2026-08-19: "Why it pays off" is ONE
+               field again — the sentence-boundary split into "Why it
+               pays off" / "Additional benefits" is gone, and the notes
+               read full-width like The Solution, because
+               cost_benefit_notes can be a large amount of text.
                ====================================================== -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 mt-6 border-t border-mny-100">
-
-            <div>
-              <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2 border-b border-mny-50">Cost &amp; benefit</h3>
-              <dl class="mt-3 space-y-3">
-                <div>
-                  <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Cost range</dt>
-                  <dd class="font-proxima text-[20px] text-mny-900 font-[600] leading-[1.2] mt-0.5 tabular-nums">$50,000 – $150,000</dd>
-                </div>
-                <div>
-                  <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Costs reasonable vs. benefits</dt>
-                  <dd class="font-proxima text-[14px] mt-0.5">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-mny-grn/15 border border-mny-grn/40 font-[600] text-mny-900">Yes</span>
-                  </dd>
-                </div>
-                <div>
-                  <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Why it pays off</dt>
-                  <dd class="font-proxima text-[14px] text-mny-700 leading-[1.5] mt-1">
-                    Overall flooding will be reduced, which will result in less frequency of road closures and
-                    reduced damage occurring to culverts and roadways during severe events. Businesses are likely
-                    to remain in place if they are able to remain open, or re-open sooner following a flood.
-                  </dd>
-                </div>
-                <div>
-                  <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Cost notes</dt>
-                  <dd class="font-proxima text-[14px] text-mny-700 mt-0.5">High</dd>
-                </div>
-              </dl>
+          <div class="pt-6 mt-6 border-t border-mny-100">
+            <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2 border-b border-mny-50">Cost &amp; benefit evaluation</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 mt-3">
+              <div>
+                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Cost range</dt>
+                <dd class="font-proxima text-[20px] text-mny-900 font-[600] leading-[1.2] mt-0.5 tabular-nums" data-spec="cost-range">$50,000 – $150,000</dd>
+              </div>
+              <div>
+                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Cost notes</dt>
+                <dd class="font-proxima text-[14px] text-mny-700 mt-0.5" data-spec="cost-notes">High</dd>
+              </div>
+              <div>
+                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Costs reasonable vs. benefits</dt>
+                <dd class="font-proxima text-[14px] mt-1" data-spec="cost-reasonable">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-mny-grn/15 border border-mny-grn/40 font-[600] text-mny-900">Yes</span>
+                </dd>
+              </div>
             </div>
+            <div class="mt-4">
+              <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Why it pays off</dt>
+              <dd class="font-proxima text-[16px] text-mny-700 leading-[145%] mt-1" data-spec="why-pays">
+                Overall flooding will be reduced, which will result in less frequency of road closures and
+                reduced damage occurring to culverts and roadways during severe events. Businesses are likely
+                to remain in place if they are able to remain open, or re-open sooner following a flood.
+              </dd>
+            </div>
+          </div>
 
-            <div>
-              <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2 border-b border-mny-50">Goals it advances</h3>
-              <dl class="mt-3 space-y-3">
+          <!-- ======================================================
+               GOALS & COMMUNITY IMPACT (Card, full reading-column
+               width, below Cost & Benefit) — renamed from "Goals it
+               advances" and now also home to the community screening
+               answers, so the Screening Questions section is gone. The
+               facility/eligibility flags live in the key facts rail.
+               Answers are real: this action answers No to both climate
+               questions and hasn't answered the last three — the "?"
+               chips keep those visible and link to where they're
+               answered, instead of hiding the gap.
+               ====================================================== -->
+          <div class="pt-6 mt-6 border-t border-mny-100">
+            <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2 border-b border-mny-50">Goals &amp; community impact</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-3">
+
+              <dl class="space-y-3">
                 <div>
-                  <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">NYS Hazard Mitigation Plan goals</dt>
-                  <dd class="flex flex-col gap-1.5 mt-1.5">
+                  <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">State Hazard Mitigation Plan (SHMP) goals advanced</dt>
+                  <dd class="flex flex-col gap-1.5 mt-1.5" data-spec="shmp">
                     <span class="inline-flex items-start gap-2 font-proxima text-[13px] text-mny-900">
                       <span class="size-5 shrink-0 rounded-full bg-mny-900 text-white font-display text-[11px] font-[600] flex items-center justify-center tabular-nums">1</span>
                       Protect &amp; improve the health and safety of all people &amp; communities
@@ -280,67 +275,107 @@
                 </div>
                 <div>
                   <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Local plan goals / objectives</dt>
-                  <dd class="font-proxima text-[14px] text-mny-700 mt-0.5 tabular-nums">2, 5</dd>
-                </div>
-                <div>
-                  <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">County priority tier</dt>
-                  <dd class="mt-1">
-                    <a href="action-edit.html#county-priority" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 hover:bg-[#F9EFDD] transition-colors">
-                      <span class="size-5 shrink-0 rounded-full border border-dashed border-mny-y700 flex items-center justify-center text-mny-y700 font-proxima text-[12px]">—</span>
-                      <span class="font-proxima text-[13px] font-[600] text-mny-900">Not set — assign a tier</span>
-                    </a>
-                  </dd>
+                  <dd class="font-proxima text-[14px] text-mny-700 mt-0.5 tabular-nums" data-spec="lhmp-goals">2, 5</dd>
                 </div>
               </dl>
-            </div>
 
+              <div>
+                <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Community opportunities &amp; impact</p>
+                <ul class="mt-1.5 space-y-1.5" data-spec="community">
+                  <li class="flex items-center justify-between gap-3">
+                    <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]">Adapts to climate change</span>
+                    <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[11px] font-[700] text-mny-700">No</span>
+                  </li>
+                  <li class="flex items-center justify-between gap-3">
+                    <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]">Mitigates climate change / reduces GHGs</span>
+                    <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[11px] font-[700] text-mny-700">No</span>
+                  </li>
+                  <li class="flex items-center justify-between gap-3">
+                    <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Protects or assesses risk to vulnerable populations</span>
+                    <a href="action-edit.html#screening" class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[700] text-mny-900 hover:bg-[#F9EFDD]" title="Not answered yet — answer it on the edit page">?</a>
+                  </li>
+                  <li class="flex items-center justify-between gap-3">
+                    <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Supports potential Community Rating System (CRS) points</span>
+                    <a href="action-edit.html#screening" class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[700] text-mny-900 hover:bg-[#F9EFDD]" title="Not answered yet — answer it on the edit page">?</a>
+                  </li>
+                  <li class="flex items-center justify-between gap-3">
+                    <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Aligns with a Climate Smart Communities action</span>
+                    <a href="action-edit.html#screening" class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[700] text-mny-900 hover:bg-[#F9EFDD]" title="Not answered yet — answer it on the edit page">?</a>
+                  </li>
+                  <!-- moved here from the key-facts rail (client feedback 2026-08-19) —
+                       it's a screening answer like its neighbors, not a delivery fact -->
+                  <li class="flex items-center justify-between gap-3">
+                    <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Environmental / historic preservation concerns</span>
+                    <a href="action-edit.html#screening" class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-dashed border-mny-y700 bg-mny-y50 font-proxima text-[11px] font-[700] text-mny-900 hover:bg-[#F9EFDD]" title="Not answered yet — answer it on the edit page">?</a>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
           </div>
         </div>
 
         <!-- ========================================================
              SECTION — KEY FACTS RAIL (Card, col-4, sticky)
-             The scannable answers a planner needs while reading the
-             case: what hazard, what kind of work, how much, how long,
-             who leads, who pays.
-
-             NULL FIELDS ARE HIDDEN, not printed blank. In the live build
-             that is one section setting — `display.hideIfNull: true`
-             ("Hide if No Data" in the Card toolbar, dataWrapper
-             index.jsx:650), which drops every empty cell in the section.
-             No per-column flag and no library change needed. Note the one
-             exception baked into that line: a cell with `allowEditInView`
-             still renders when empty (so a gap stays fixable) — this rail
-             is read-only, so nothing here is exempt.
-
-             Whatever is hidden here is still accounted for: it appears in
-             the "empty fields" disclosure at the bottom of the page.
-
-             FIELD SET (in order): primary hazard · SECONDARY hazard ·
-             type of work · cost range · time to implement · lead agency ·
-             potential funding · the three eligibility flags · location.
+             Restructured per client feedback 2026-08-18:
+               · LEFT LABELS with the answer beside them, lined up — less
+                 vertical space than the stacked label-over-value rows
+               · deliberate untitled groups, divider-separated:
+                 lead agency / cost / time / funding / planning mechanism,
+                 then hazard / type of work / associated risk environment,
+                 then jurisdictional priority / readiness / maturity,
+                 then the five characteristic checks (green ✓ / red ✗,
+                 side by side)
+               · a few redundancies (cost range, jurisdictional priority)
+                 are deliberate — helpful at a glance even though they
+                 also read elsewhere on the page
+             Client feedback 2026-08-19 reshuffles: env-historic moved to
+             Goals & community impact, last-HMP moved to Action Record,
+             associated risk environment moved IN below Type of work, and
+             readiness / maturity are plain text rows again — the
+             progress-steps meters are gone from this page.
+             Secondary hazard / secondary type would render as extra rows
+             when populated; both are empty on this specimen, so hideIfNull
+             drops them and they read in the empty-fields disclosure.
+             Maturity and readiness are empty → "Not Yet Assessed" (the
+             feedback doc's default for exactly these two fields).
+             "View Action on a Map" is deferred until location data is
+             worth it — the location row keeps stating the real precision.
              ======================================================== -->
         <div data-dms="section" data-name="key-facts" class="col-span-12 lg:col-span-4 pt-6 lg:pt-0">
-          <div class="lg:sticky lg:top-[120px] rounded-[12px] border border-mny-100 bg-mny-50 p-4">
+          <div class="lg:sticky lg:top-[120px] space-y-4">
+          <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-4">
             <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2.5 border-b border-mny-200">Key facts</h2>
 
-            <dl class="mt-3 space-y-3.5">
+            <dl class="mt-3 space-y-2.5">
 
-              <!-- Hazards addressed — one chip per populated hazard column, each with
-                   its rank label. This specimen (action 1100379) has a primary hazard
-                   only: `secondary_hazard_type` and `tertiary_hazard_type` are both
-                   empty on it, so hideIfNull suppresses their chips and they read in
-                   the empty-fields disclosure instead. When secondary IS populated it
-                   renders as a sibling chip, identical but labelled "secondary":
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Lead agency</dt>
+                <dd class="text-right" data-spec="rail-lead">
+                  <span class="block font-proxima text-[13px] text-mny-900 font-[600] leading-[1.3]">Highway Department</span>
+                  <span class="block font-proxima text-[11px] text-mny-400">Town of Delaware</span>
+                </dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Cost range</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right tabular-nums" data-spec="rail-cost">$50,000 – $150,000</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Time to implement</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right" data-spec="rail-time">2 – 4 years</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Potential funding</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right leading-[1.4] max-w-[180px]" data-spec="rail-funding">FEMA HMA, CHIPS, NYS DOT, County Budget, Town Budget</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Planning mechanism</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right" data-spec="rail-mechanism">Not disclosed</dd>
+              </div>
 
-                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-mny-200 font-proxima text-[13px] font-[600] text-mny-900">
-                       <img src="../../assets/mny/hazards/mny-<hazard>.webp" alt="" class="size-4 object-contain" onerror="this.style.display='none'">
-                       <Hazard>
-                     </span>
-                     <span class="font-proxima text-[11px] text-mny-400">secondary</span>
-              -->
-              <div>
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Hazards addressed</dt>
-                <dd class="flex flex-wrap items-center gap-1.5 mt-1">
+              <div class="pt-2.5 border-t border-mny-200 flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-1">Hazard</dt>
+                <dd class="flex flex-wrap items-center justify-end gap-1.5" data-spec="rail-hazard">
                   <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-mny-200 font-proxima text-[13px] font-[600] text-mny-900">
                     <img src="../../assets/mny/hazards/mny-flood.webp" alt="" class="size-4 object-contain" onerror="this.style.display='none'">
                     Flooding
@@ -348,64 +383,92 @@
                   <span class="font-proxima text-[11px] text-mny-400">primary</span>
                 </dd>
               </div>
-
-              <div>
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Type of work</dt>
-                <dd class="font-proxima text-[14px] text-mny-900 font-[600] leading-[1.35] mt-1">Community Infrastructure</dd>
-                <dd class="font-proxima text-[12px] text-mny-700 leading-[1.4]">Drainage, underground utilities</dd>
-              </div>
-
-              <!-- Labelled "Cost range", not "Estimated cost": this is `cost_range` (the
-                   band, populated). The numeric `estimated_cost` is empty on this action
-                   and appears in the empty-fields list as "Estimated cost ($)" — with
-                   hideIfNull now the stated rule, two fields both reading "estimated
-                   cost" (one shown, one listed empty) looks like the rule misfiring. -->
-              <div class="pt-3 border-t border-mny-200">
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Cost range</dt>
-                <dd class="font-proxima text-[16px] text-mny-900 font-[600] mt-0.5 tabular-nums">$50,000 – $150,000</dd>
-              </div>
-
-              <div>
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Time to implement</dt>
-                <dd class="font-proxima text-[16px] text-mny-900 font-[600] mt-0.5">2 – 4 years</dd>
-              </div>
-
-              <div class="pt-3 border-t border-mny-200">
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Lead agency</dt>
-                <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5">Highway Department</dd>
-                <dd class="font-proxima text-[12px] text-mny-400 mt-0.5">Town of Delaware</dd>
-              </div>
-
-              <div>
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Potential funding</dt>
-                <dd class="flex flex-wrap gap-1 mt-1.5">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-white border border-mny-200 font-proxima text-[11px] font-[600] text-mny-700">FEMA HMA</span>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-white border border-mny-200 font-proxima text-[11px] font-[600] text-mny-700">CHIPS</span>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-white border border-mny-200 font-proxima text-[11px] font-[600] text-mny-700">NYS DOT</span>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-white border border-mny-200 font-proxima text-[11px] font-[600] text-mny-700">County Budget</span>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-white border border-mny-200 font-proxima text-[11px] font-[600] text-mny-700">Town Budget</span>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Type of work</dt>
+                <dd class="text-right" data-spec="rail-type">
+                  <span class="block font-proxima text-[13px] text-mny-900 font-[600] leading-[1.3]">Community Infrastructure</span>
+                  <span class="block font-proxima text-[11px] text-mny-700">Drainage, underground utilities</span>
                 </dd>
               </div>
+              <!-- moved in from the empty-fields disclosure (client feedback
+                   2026-08-19): a multi-value field (transportation / energy /
+                   water infrastructure / communications / buildings / community
+                   engagement) — empty on this specimen, so Not Reported -->
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Associated risk environment</dt>
+                <dd class="font-proxima text-[13px] text-mny-400 italic text-right" data-spec="rail-assoc">Not Reported</dd>
+              </div>
 
-              <!-- the two flags that drive grant eligibility -->
-              <div class="pt-3 border-t border-mny-200 space-y-2">
+              <div class="pt-2.5 border-t border-mny-200 flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Jurisdictional priority</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right" data-spec="rail-jp">High</dd>
+              </div>
+
+              <!-- Readiness + maturity as plain text rows (client feedback
+                   2026-08-19 — the progress-steps meters are gone from the view
+                   page; the select option lists still define the vocabulary on
+                   the edit page). Both fields are empty on every Sullivan
+                   action → "Not Yet Assessed", the feedback doc's default for
+                   exactly these two fields. -->
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Application readiness</dt>
+                <dd class="font-proxima text-[13px] text-mny-400 italic text-right" data-spec="rail-readiness">Not Yet Assessed</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0 pt-px">Project maturity</dt>
+                <dd class="font-proxima text-[13px] text-mny-400 italic text-right" data-spec="rail-maturity">Not Yet Assessed</dd>
+              </div>
+
+              <!-- the five characteristic checks, side by side — green ✓ / red ✗,
+                   real answers (RL/SRL is a recorded No on this action).
+                   `Misuse` is Carbon's filled circle-✗; register it in
+                   src/themes/mny/icons.jsx before the live build. -->
+              <div class="pt-2.5 border-t border-mny-200 grid grid-cols-2 gap-x-4 gap-y-2" data-spec="rail-checks">
                 <div class="flex items-center justify-between gap-2">
                   <span class="font-proxima text-[13px] text-mny-700">Critical facility</span>
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-mny-grn/15 border border-mny-grn/40 font-proxima text-[11px] font-[700] text-mny-900">Yes</span>
+                  <span class="inline-flex items-center gap-1 font-proxima text-[12px] font-[700] text-mny-900">
+                    <!-- icon: CheckmarkFilled -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-grn" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
+                    Yes
+                  </span>
                 </div>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="font-proxima text-[13px] text-mny-700">Culvert work</span>
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-mny-grn/15 border border-mny-grn/40 font-proxima text-[11px] font-[700] text-mny-900">Yes</span>
+                  <span class="font-proxima text-[13px] text-mny-700">Potential buyout</span>
+                  <span class="inline-flex items-center gap-1 font-proxima text-[12px] font-[700] text-mny-700">
+                    <!-- icon: Misuse -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-red" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+                    No
+                  </span>
                 </div>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="font-proxima text-[13px] text-mny-700">In the last HMP</span>
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-mny-200 font-proxima text-[11px] font-[700] text-mny-700">Yes</span>
+                  <span class="font-proxima text-[13px] text-mny-700">Culvert</span>
+                  <span class="inline-flex items-center gap-1 font-proxima text-[12px] font-[700] text-mny-900">
+                    <!-- icon: CheckmarkFilled -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-grn" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
+                    Yes
+                  </span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-proxima text-[13px] text-mny-700">Generator</span>
+                  <span class="inline-flex items-center gap-1 font-proxima text-[12px] font-[700] text-mny-700">
+                    <!-- icon: Misuse -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-red" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+                    No
+                  </span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-proxima text-[13px] text-mny-700">RL/SRL</span>
+                  <span class="inline-flex items-center gap-1 font-proxima text-[12px] font-[700] text-mny-700">
+                    <!-- icon: Misuse -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-red" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+                    No
+                  </span>
                 </div>
               </div>
 
               <!-- location, at the precision the data actually has -->
-              <div class="pt-3 border-t border-mny-200">
-                <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Location</dt>
+              <div class="pt-2.5 border-t border-mny-200" data-spec="rail-location">
+                <dt class="font-proxima text-[13px] text-mny-700">Location</dt>
                 <dd class="font-proxima text-[13px] text-mny-700 leading-[1.45] mt-1">
                   No site coordinate recorded — mapped to the
                   <strong class="text-mny-900 font-[600]">Delaware (Town) centroid</strong>.
@@ -421,121 +484,34 @@
 
             </dl>
           </div>
-        </div>
 
-        <!-- ========================================================
-             SECTION — TECHNICAL CHECKLIST (Card, col-12)
-             The 11 screening questions as a chip grid. The live page
-             renders these as 11 stacked label/value rows, which makes
-             the answered and unanswered ones read identically. Here the
-             answer IS the visual: green Yes, plain No, dashed unanswered.
-             ======================================================== -->
-        <div data-dms="section" data-name="technical-checklist" class="col-span-12 pt-8">
-          <div class="flex flex-wrap items-end justify-between gap-3 pb-3 border-b border-mny-100">
-            <div>
-              <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Screening questions</h2>
-              <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5">
-                The eleven eligibility and scoping questions FEMA and DHSES review
-              </p>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="font-proxima text-[12px] text-mny-700"><strong class="font-[700] tabular-nums">6</strong> answered</span>
-              <span class="font-proxima text-[12px] text-mny-y700 font-[600]"><strong class="font-[700] tabular-nums">5</strong> still open</span>
-              <a href="action-edit.html#screening" class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900">Answer them →</a>
-            </div>
+          <!-- ACTION RECORD — renamed from "Record & provenance" and moved up
+               into the rail (client feedback 2026-08-18): where the row came
+               from and when it last moved. Planning mechanism now reads in Key
+               Facts. "In the last HMP" joined this card from Key Facts (client
+               feedback 2026-08-19) — it's provenance, not a delivery fact. -->
+          <div class="rounded-[12px] border border-mny-100 bg-white p-4">
+            <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2.5 border-b border-mny-100">Action record</h2>
+            <dl class="mt-3 space-y-2.5">
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0">Created</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right" data-spec="rec-created">1 Mar 2021</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0">Status updated</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right" data-spec="rec-updated">1 May 2026</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0">Plan source</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right" data-spec="rec-source">Local (LHMP)</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <dt class="font-proxima text-[13px] text-mny-700 shrink-0">In the last HMP</dt>
+                <dd class="font-proxima text-[13px] text-mny-900 font-[600] text-right" data-spec="rec-lasthmp">Yes</dd>
+              </div>
+            </dl>
           </div>
-
-          <!-- Four across at xl (was three), with lg:3 as the step down. Eleven chips
-               fill 3 rows of 4 with one gap instead of 4 rows of 3 with two. Verified
-               with a forced 4-column grid at a 913px viewport — tighter than xl ever
-               gets — and the longest question ("Protects repetitive / severe
-               repetitive loss properties") still wrapped without clipping. -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 mt-4">
-
-            <!-- YES -->
-            <div class="flex items-start justify-between gap-3 rounded-[10px] border border-mny-grn/40 bg-mny-grn/[0.08] px-3 py-2.5">
-              <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Related to a critical facility</span>
-              <span class="inline-flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-full bg-mny-grn font-proxima text-[11px] font-[700] text-white">Yes</span>
-            </div>
-            <div class="flex items-start justify-between gap-3 rounded-[10px] border border-mny-grn/40 bg-mny-grn/[0.08] px-3 py-2.5">
-              <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Includes work on or assessment of a culvert</span>
-              <span class="inline-flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-full bg-mny-grn font-proxima text-[11px] font-[700] text-white">Yes</span>
-            </div>
-
-            <!-- NO -->
-            <div class="flex items-start justify-between gap-3 rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
-              <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]">Includes potential for acquisition / buyout</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[11px] font-[700] text-mny-700">No</span>
-            </div>
-            <div class="flex items-start justify-between gap-3 rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
-              <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]">Includes a generator</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[11px] font-[700] text-mny-700">No</span>
-            </div>
-            <div class="flex items-start justify-between gap-3 rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
-              <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]">Addresses climate change adaptation</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[11px] font-[700] text-mny-700">No</span>
-            </div>
-            <div class="flex items-start justify-between gap-3 rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
-              <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]">Mitigates climate change (GHG reduction)</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full bg-mny-100 font-proxima text-[11px] font-[700] text-mny-700">No</span>
-            </div>
-
-            <!-- UNANSWERED — dashed, and each one is a link to go answer it -->
-            <a href="action-edit.html#screening" class="flex items-start justify-between gap-3 rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5 hover:bg-[#F9EFDD] transition-colors">
-              <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Protects repetitive / severe repetitive loss properties</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-mny-y700 font-proxima text-[11px] font-[700] text-mny-900">?</span>
-            </a>
-            <a href="action-edit.html#screening" class="flex items-start justify-between gap-3 rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5 hover:bg-[#F9EFDD] transition-colors">
-              <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Known environmental / historic preservation concerns</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-mny-y700 font-proxima text-[11px] font-[700] text-mny-900">?</span>
-            </a>
-            <a href="action-edit.html#screening" class="flex items-start justify-between gap-3 rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5 hover:bg-[#F9EFDD] transition-colors">
-              <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Protects or assesses risk to vulnerable populations</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-mny-y700 font-proxima text-[11px] font-[700] text-mny-900">?</span>
-            </a>
-            <a href="action-edit.html#screening" class="flex items-start justify-between gap-3 rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5 hover:bg-[#F9EFDD] transition-colors">
-              <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Supports Community Rating System (CRS) points</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-mny-y700 font-proxima text-[11px] font-[700] text-mny-900">?</span>
-            </a>
-            <a href="action-edit.html#screening" class="flex items-start justify-between gap-3 rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5 hover:bg-[#F9EFDD] transition-colors">
-              <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]">Aligns with a Climate Smart Communities action</span>
-              <span class="inline-flex items-center shrink-0 px-2 py-0.5 rounded-full border border-mny-y700 font-proxima text-[11px] font-[700] text-mny-900">?</span>
-            </a>
-
           </div>
-        </div>
-
-        <!-- ========================================================
-             SECTION — PROVENANCE (Card, col-12)
-             Where the record came from and when it last moved. Low in
-             the reading order because it answers questions about the
-             row, not about the project.
-             ======================================================== -->
-        <div data-dms="section" data-name="provenance" class="col-span-12 pt-8">
-          <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2.5 border-b border-mny-100">Record &amp; provenance</h2>
-          <!-- Four fields, not six. `Action number` and `Readiness` were dropped: the
-               action number was already removed from the page identity line, and keeping
-               it here just relocated it; readiness was a status this page asserted twice
-               (it also had a badge in the state-pill row, removed for the same reason).
-               Grid drops to 4 columns so the row still fills its width. -->
-          <dl class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 mt-4">
-            <div>
-              <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Created</dt>
-              <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5">1 Mar 2021</dd>
-            </div>
-            <div>
-              <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Status updated</dt>
-              <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5">1 May 2026</dd>
-            </div>
-            <div>
-              <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Plan source</dt>
-              <dd class="font-proxima text-[14px] text-mny-900 font-[600] mt-0.5">Local (LHMP)</dd>
-            </div>
-            <div>
-              <dt class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Planning mechanism</dt>
-              <dd class="font-proxima text-[14px] text-mny-700 mt-0.5">Not disclosed</dd>
-            </div>
-          </dl>
         </div>
 
         <!-- ========================================================
@@ -549,24 +525,22 @@
             <summary class="flex items-center gap-2.5 px-4 py-3 cursor-pointer list-none">
               <!-- icon: ChevronRight -->
               <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-              <span class="font-proxima text-[13px] font-[600] text-mny-900">Show 18 empty fields</span>
+              <span class="font-proxima text-[13px] font-[600] text-mny-900" data-spec="empty-count">Show 16 empty fields</span>
               <span class="font-proxima text-[12px] text-mny-400">— nothing recorded for these yet</span>
               <a href="action-edit.html" class="ml-auto font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 hover:text-mny-900">Fill them in →</a>
             </summary>
             <div class="px-4 pb-4 pt-1 border-t border-mny-100">
-              <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-2 mt-3">
+              <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-2 mt-3" data-spec="empty-list">
                 <span class="font-proxima text-[12px] text-mny-400">Site coordinates</span>
                 <span class="font-proxima text-[12px] text-mny-400">Address</span>
                 <span class="font-proxima text-[12px] text-mny-400">Estimated cost ($)</span>
                 <span class="font-proxima text-[12px] text-mny-400">Secondary hazard type</span>
                 <span class="font-proxima text-[12px] text-mny-400">Tertiary hazard type</span>
-                <span class="font-proxima text-[12px] text-mny-400">Associated risk environment</span>
                 <span class="font-proxima text-[12px] text-mny-400">Secondary action type</span>
                 <span class="font-proxima text-[12px] text-mny-400">Tertiary action type</span>
                 <span class="font-proxima text-[12px] text-mny-400">Action status details</span>
                 <span class="font-proxima text-[12px] text-mny-400">If completed: calculated cost</span>
                 <span class="font-proxima text-[12px] text-mny-400">If completed: funding source(s)</span>
-                <span class="font-proxima text-[12px] text-mny-400">Project maturity</span>
                 <span class="font-proxima text-[12px] text-mny-400">Lead NYS agency</span>
                 <span class="font-proxima text-[12px] text-mny-400">NYS agency abbreviation</span>
                 <span class="font-proxima text-[12px] text-mny-400">Partners</span>
@@ -574,7 +548,7 @@
                 <span class="font-proxima text-[12px] text-mny-400">POC title</span>
                 <span class="font-proxima text-[12px] text-mny-400">POC email</span>
               </div>
-              <p class="font-proxima text-[12px] text-mny-700 leading-[1.5] mt-4 pt-3 border-t border-mny-100">
+              <p class="font-proxima text-[12px] text-mny-700 leading-[1.5] mt-4 pt-3 border-t border-mny-100" data-spec="empty-note">
                 Point-of-contact fields are empty on
                 <strong class="text-mny-900 font-[600]">439 of Sullivan's 475 actions</strong>, and
                 <strong class="text-mny-900 font-[600]">no</strong> Sullivan action carries an
@@ -597,10 +571,10 @@
             <a href="dashboard.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">1 · Dashboard</a>
             <a href="jurisdictions.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">2 · Jurisdictions</a>
             <a href="jurisdiction-prioritization.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Jurisdiction Prioritization</a>
-            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · County Workspace</a>
+            <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · County Prioritization</a>
             <span class="font-proxima text-[13px] font-[700] text-mny-y700">5 · Action View</span>
             <a href="action-edit.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">6 · Action Edit</a>
-            <span class="ml-auto font-proxima text-[12px] text-mny-400">Action id 1100379 · source 1029065 / view 1074456</span>
+            <span class="ml-auto font-proxima text-[12px] text-mny-400" data-spec="page-id">Action id 1100379 · source 1029065 / view 1074456</span>
           </div>
         </div>
 
@@ -615,6 +589,11 @@
      FLOATING DESIGN-SYSTEM NAV WIDGET
      ================================================================ -->
 <script src="../../ds-nav.js"></script>
+
+<!-- SPECIMEN SWITCHER — DS review widget (10 real actions, diverse fill).
+     Reviewer scaffolding like ds-nav: NEVER part of the product design. -->
+<script src="specimen-data.js"></script>
+<script src="specimen-widget.js"></script>
 
 </body>
 </html>

@@ -36,6 +36,19 @@ function normalizeOne(c) {
   const m = md?.music?.[0];
 
   const base = {
+    // Every row this normalizer produces came from the matcher, by definition —
+    // it only ever sees an ACRCloud payload. `dj` and `corrected` are written by
+    // the admin's add/fix modals, never here. Setting it explicitly (rather than
+    // leaning on the column DEFAULT) matters because eventToInsertParams writes
+    // an explicit NULL for any column the event omits, which would override the
+    // default and leave the badge with nothing to read.
+    provenance: 'auto',
+    edited_by: null,
+    edited_at: null,
+    original_title: null,
+    original_artist_name: null,
+    original_score: null,
+
     timestamp_utc: md?.timestamp_utc || inner?.timestamp_utc || null,
     played_duration: md?.played_duration ?? null,
     result_type: inner?.result_type ?? null,

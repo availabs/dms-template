@@ -41,6 +41,15 @@
   --on-air: #ff3b2f;
   --on-air-soft: rgba(255, 59, 47, 0.12);
 
+  /* ── Dialogs ──
+   * The veil behind a modal and the card's lift off it. Tokens rather than
+   * literals because the admin is used in BOTH modes: the near-black scrim the
+   * dark mockups were drawn with reads as a blackout in light mode, where the
+   * page it is covering is already pale.
+   */
+  --scrim: rgba(10, 10, 10, 0.72);
+  --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.5);
+
   /* ── Type ── */
   --font-display: "Instrument Serif", "GT Sectra", "Times New Roman", serif;
   --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -99,6 +108,9 @@
   --accent: #0a0a0a;
   --accent-ink: #fafaf9;
   --accent-soft: rgba(10, 10, 10, 0.06);
+
+  --scrim: rgba(10, 10, 10, 0.35);
+  --shadow-modal: 0 24px 60px rgba(10, 10, 10, 0.18);
 }
 
 /* The logo SVG is a single white file (logo_white.svg). In light mode we
@@ -139,4 +151,84 @@
 @keyframes wcdb-equalizer {
   0%, 100% { transform: scaleY(0.3); }
   50%      { transform: scaleY(1); }
+}
+
+/* ── The notch chip ───────────────────────────────────────────────────────
+ * Ported from the design system's `_shared.css`. The brand's cut-corner join:
+ * a label that reads as the surface BELOW pushing up into the image above it,
+ * rather than a badge sitting on top of it. The two masked pseudo-elements are
+ * what sell it — they carve the concave curves either side of the corner.
+ *
+ * `--chip` is the colour of whatever the chip belongs to (the block beneath
+ * the photo, usually `--bg-2`).
+ *
+ * This is the INLINE variant. The design-system original is `position:
+ * absolute` inside a `relative` parent; a Card cell is a grid item and cannot
+ * be absolutely positioned from the section config, so this variant flows in
+ * place and is put in the bottom-left corner by being the last cell in an
+ * overlaid stack. Same silhouette, no positioning contract.
+ * ───────────────────────────────────────────────────────────────────────── */
+.wcdb-chip-inline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Left padding is 16px, not the design's 14: it is what aligns the chip's
+   * WORD with the album art in the block below (the section there insets its
+   * content by `pl-4` = 16px). The two are stacked and read as one column, so
+   * their text edges have to agree — the design leaves them 10px apart. */
+  padding: 11px 16px 9px 16px;
+  background: var(--chip, var(--bg-2));
+  /* Square on three sides — the chip meets the card's bottom and left edges,
+   * so only the corner that faces INTO the image is rounded. `!important`
+   * because the Card's justify utilities put a `rounded-md` on this very
+   * element, which rounded the other three and let the photo show through the
+   * gaps — which in turn made the chip read as a separate, lighter box rather
+   * than a piece of the block below it. */
+  border-radius: 0 18px 0 0 !important;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+/* The two masked fillers that sell the cut-corner join: each is a 20px square
+ * of the chip's own colour with a quarter-disc bitten out, so the surfaces meet
+ * on a concave curve instead of a hard step. Ported from the design system's
+ * `.wcdb-chip--bl` (`_shared.css`), which pins them to the RIGHT of the chip
+ * and ABOVE it. */
+.wcdb-chip-inline::before,
+.wcdb-chip-inline::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: inherit;
+  /* NB the stop is FEATHERED (19.5 → 20.5) rather than hard at 20px. A
+   * radial-gradient mask with a hard stop is rasterised without antialiasing,
+   * so the concave edge came out visibly jagged next to the topnav's notches —
+   * which are plain `border-radius` and get the browser's path antialiasing for
+   * free. A 1px transition band is enough for the compositor to smooth it and
+   * is imperceptible as blur against a solid fill. (The design system's
+   * `_shared.css` still has the hard stop; it has the same artefact.) */
+  -webkit-mask: radial-gradient(circle 20px at 100% 100%, transparent 0 19.5px, #000 20.5px);
+          mask: radial-gradient(circle 20px at 100% 100%, transparent 0 19.5px, #000 20.5px);
+}
+/* …to the right of the chip */
+.wcdb-chip-inline::before { bottom: 0; left: 100%; transform: scaleY(-1); }
+/* …and above its left edge */
+.wcdb-chip-inline::after  { bottom: 100%; left: 0; transform: scaleY(-1); }
+
+/* ── Inverted surfaces ────────────────────────────────────────────────────
+ * A block that flips the mode (the footer) carries `.wcdb-inv`. Anything
+ * inside it that would otherwise use a page-level colour has to be re-pointed
+ * at the `--inv-*` set, or it renders invisible against its own background.
+ * Mirrors `.wcdb-card-inv` in the design system's `_shared.css`.
+ * ───────────────────────────────────────────────────────────────────────── */
+.wcdb-inv hr {
+  width: 100%;
+  border: 0;
+  height: 1px;
+  background: var(--inv-line);
 }

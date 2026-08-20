@@ -44,6 +44,8 @@ const Worker = async ctx => {
 	const pgClient = new pgStuff.Client(pgCreds);
 	await pgClient.connect();
 
+  // Task provenance goes in metadata, not the etl_context_id column — see
+  // dms-server/src/dama/upload/workers/csv-publish.js.
   const newDamaView = await createDamaView({
     source_id,
     user_id,

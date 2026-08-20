@@ -138,8 +138,7 @@ module.exports = async function osmUploadWorker(ctx) {
     const view = await createDamaView({
       source_id,
       user_id,
-      etl_context_id: task.task_id,
-      metadata: {},
+      metadata: { task_id: task.task_id },
       view_dependencies: [],
     }, pgEnv);
 

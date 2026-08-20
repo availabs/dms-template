@@ -33,7 +33,9 @@ describe('PM3_SOURCE_COLUMNS', () => {
     for (const c of PM3_SOURCE_COLUMNS) {
       expect(c.name, JSON.stringify(c)).toBeTruthy();
       expect(c.display_name, JSON.stringify(c)).toBeTruthy();
-      expect(['NUMERIC', 'TEXT', 'GEOMETRY']).toContain(c.type);
+      // BOOLEAN joined the set with R9's era-boundary flags — the only non-numeric,
+      // non-text published column type in pm3.
+      expect(['NUMERIC', 'TEXT', 'GEOMETRY', 'BOOLEAN']).toContain(c.type);
     }
   });
 
@@ -107,5 +109,46 @@ describe('PM3_SOURCE_COLUMNS', () => {
   it('refuses an unknown metric kind rather than silently emitting nothing', () => {
     expect(() => metricColumnDescriptors('mystery', { kind: 'nope', timeBins: [] }))
       .toThrow(/unknown metric kind/);
+  });
+});
+
+// ── R3: persisted PHED threshold diagnostics ────────────────────────────────
+// calcPhed always computed threshold_speed / threshold_travel_time_sec / the p15 and returned
+// the first two only inside a `meta` object that toMetricDbRow discards, so they never reached
+// the table. Four analyses (H3, H5, H7, H12) each had to re-derive them from raw ClickHouse to
+// answer a question a stored column answers with a join, and R2 (the anchored reference) cannot
+// be audited after the fact without them.
+describe('R3 — PHED threshold diagnostics are published', () => {
+  const cfgs = buildMetricConfigs({ chMetaTableName: 'x.y' });
+  const PHED_METRICS = Object.keys(cfgs).filter((m) => cfgs[m].kind === 'phed');
+
+  it('every phed/ted variant publishes threshold_speed and threshold_travel_time_sec', () => {
+    // 8 original + R2's 4 anchored variants published alongside them.
+    expect(PHED_METRICS.length).toBe(12);
+    for (const m of PHED_METRICS) {
+      const names = metricColumnDescriptors(m, cfgs[m]).map((c) => c.name);
+      expect(names).toContain(`${m}_threshold_speed`);
+      expect(names).toContain(`${m}_threshold_travel_time_sec`);
+    }
+  });
+
+  it('tt_15_pct is published ONLY for variants with a percentile behind the threshold', () => {
+    for (const m of PHED_METRICS) {
+      const names = metricColumnDescriptors(m, cfgs[m]).map((c) => c.name);
+      const hasP15 = names.includes(`${m}_tt_15_pct`);
+      // Both freeflow flavours have one: 'freeflow' takes the p15 over the publish year,
+      // 'freeflow_anchored' (R2) over a fixed single-era window. The speed_limit variants derive
+      // their threshold from posted speed, so a tt_15_pct column there would be permanently null.
+      const derivesFromPercentile = ['freeflow', 'freeflow_anchored']
+        .includes(cfgs[m].thresholdSpeedVersion);
+      expect(hasP15, `${m} (${cfgs[m].thresholdSpeedVersion})`).toBe(derivesFromPercentile);
+    }
+  });
+
+  it('the diagnostics are NUMERIC, like every other metric column', () => {
+    const ff = metricColumnDescriptors('phed_freeflow', cfgs.phed_freeflow);
+    for (const n of ['phed_freeflow_threshold_speed', 'phed_freeflow_tt_15_pct']) {
+      expect(ff.find((c) => c.name === n).type).toBe('NUMERIC');
+    }
   });
 });

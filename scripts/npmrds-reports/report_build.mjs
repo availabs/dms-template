@@ -122,23 +122,11 @@ const ROUTE_COMPARE_MEASURES = ['speed', 'travelTime'];
 // before ever shelling out to Python.
 const INFO_BOX_RELIABILITY_YEARS = { min: 2018, max: 2025 };
 
-// A route instance's optional peak-hour/time-of-day sub-window. The runtime
-// mechanism this rides on (useGraphPublish.js's transformReportRoutes) detects
-// a time component by checking `.includes('T')` on startDate/endDate — so
-// combining is just string concatenation, matching exactly what RouteRow.jsx's
-// date+time inputs already produce by hand. startTime/endTime are kept as
-// separate spec-facing fields rather than folded into startDate/endDate:
-// Route Map/Info Box read startDate/endDate directly for a separate Python
-// path and must never see a time suffix, so only combine at the one call site
-// that writes the reports_snap_2 row's route entries.
 const HHMM_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
-function combineDateTime(date, time) {
-  return time ? `${date}T${time}` : date;
-}
-// Inverse of combineDateTime, for --from-page reconstruction: a persisted row
-// only ever carries the combined string (that's the format the runtime/UI
-// both read and write), so recovering a clean startTime/endTime pair back out
-// of the spec means splitting on 'T' rather than assuming the field is bare.
+// A LIVE route entry's `startDate` may still carry an old embedded-time suffix
+// ("2026-04-20T07:00") from before weekdays/startTime/endTime moved to graphs[] — routes[] here
+// only ever wants the bare date, so --from-page reconstruction strips it rather than assuming
+// the field is already bare.
 function splitDateTime(combined) {
   if (!combined || !combined.includes('T')) return { date: combined };
   const [date, time] = combined.split('T');
@@ -167,6 +155,8 @@ const DYNAMIC_REPORT_FILTERS = [
 // ── args ───────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
 const VALUE_FLAGS = new Set(['--update', '--from-page', '--out', '--note']);
+// `--replace` is a boolean flag (no value) — falls through to the generic
+// `a.startsWith('--')` branch below, same as `--publish`/`--dry-run`/`--summary`.
 const flags = new Set();
 const values = {};
 const positional = [];
@@ -186,6 +176,7 @@ function usage() {
   console.error(`usage:
   node scripts/npmrds-reports/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
   node scripts/npmrds-reports/report_build.mjs <spec.json> --update <page> [--note "..."]
+  node scripts/npmrds-reports/report_build.mjs <spec.json> --replace [--publish]
   node scripts/npmrds-reports/report_build.mjs --from-page <page> [--out <spec.json>]
 
   --summary        print a plain-language description of what the spec will build; no writes, no Vite boot
@@ -196,6 +187,13 @@ function usage() {
                     revision edits sections in place instead of minting a duplicate page. The page's title
                     updates if changed; its slug (URL) never does, even then.
   --note "..."     annotate this --update in the report's revision log (why the spec changed)
+  --replace        delete any existing page at this spec's target slug, then build fresh — same page id
+                    and reports_snap_2 row this template would otherwise reconcile via --update, but
+                    starting clean instead of reconciling. Use when a structural change (a retired
+                    framework section, a renamed key) means --update's sweep wouldn't clean up what's
+                    there, and re-authoring every field by hand isn't worth it — mutually exclusive with
+                    --update. The new page's id changes; anything that linked to the old id (not the
+                    slug) breaks.
   --from-page <page>  reverse a live page (+ its reports_snap_2 row) back into a spec, printed to stdout
                     (or written to --out <path>). Use to bootstrap a spec for a page --update hasn't
                     touched yet, or to check a page hasn't drifted from its last stored spec.
@@ -209,6 +207,7 @@ function usage() {
 const SUMMARY_ONLY = flags.has('--summary');
 const DRY_RUN = flags.has('--dry-run');
 const DO_PUBLISH = flags.has('--publish');
+const REPLACE = flags.has('--replace');
 
 function fail(msg) {
   console.error(`\nSPEC ERROR: ${msg}\n`);
@@ -237,6 +236,16 @@ function findSnapRow(pageId) {
   return res?.items?.[0] || null;
 }
 
+// The page slug this spec builds to, absent an explicit `--update` target —
+// shared by the fresh-create branch and the `--replace` preflight above it,
+// so the two can never compute a different slug for the same spec (which
+// would make --replace delete the wrong page, or fail to delete the right
+// one).
+function computeTargetSlug() {
+  const parentSlug = spec.parent || DEFAULT_PARENT_SLUG;
+  return spec.slug || `${parentSlug}/${String(spec.title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+}
+
 // Strips the `_`-prefixed working fields this script adds onto the spec
 // in-place (r._name, g._assigned, g._invert, r._row, ...) before persisting
 // it — the stored spec should be exactly what a human/reviewer authored.
@@ -249,7 +258,7 @@ function stripInternal(obj) {
 // just enough granularity to be useful rule-distilling material later.
 function diffSpecs(oldSpec, newSpec) {
   const changes = [];
-  for (const key of ['title', 'description', 'intro', 'slug', 'parent']) {
+  for (const key of ['title', 'description', 'slug', 'parent']) {
     if (JSON.stringify(oldSpec?.[key]) !== JSON.stringify(newSpec?.[key])) changes.push(`${key} changed`);
   }
   const oldGraphs = new Map((oldSpec?.graphs || []).map(g => [g.key, g]));
@@ -416,18 +425,6 @@ function runFromPage(pageArg, outPath) {
         if ((storedGraph.caption || '') !== (state.display?.description || '')) { drifted = true; break; }
       }
     }
-    // Title-block content drift: heading or intro paragraph hand-edited
-    // without adding/removing the section itself.
-    if (!drifted && specKeyMap?.title_block) {
-      const titleBlockSection = sections.find(s => s.data.trackingId === specKeyMap.title_block);
-      if (!titleBlockSection) drifted = true;
-      else {
-        if ((stored.title || '') !== (titleBlockSection.data.title || '')) drifted = true;
-        let elData = {};
-        try { elData = JSON.parse(titleBlockSection.data.element['element-data']); } catch { /* leave {} */ }
-        if (!drifted && (stored.intro || '') !== lexicalTreeToText(elData.text)) drifted = true;
-      }
-    }
     if (!drifted) {
       console.error(`(page ${pageId} matches its stored spec exactly — echoing it back, no live reconstruction needed)`);
       writeSpecOut(stored, outPath);
@@ -528,6 +525,14 @@ function runFromPage(pageArg, outPath) {
     const notes = [];
     if (invert) notes.push('comparisonMode is "difference" with combine.invert set — the original `anchor` route id is not recoverable; re-specify anchor by hand');
     if (missing.length) notes.push(`${missing.join('/')} not recoverable from this section (converted before applyMeasurePick ever composed it; display.graphType survives as a fallback but the rest was wiped by Design-Push-2's _measurePick retrofit) — re-pick manually`);
+    // `_measurePick.routeWindows` (weekdays/startTime/endTime, per assigned route) IS present on
+    // this live section, but translating it back into `weekdays`/`startTime`/`endTime`/
+    // `routeWindows` on the reconstructed GRAPH — including collapsing back to a bare graph-level
+    // default when every route's single variant happens to agree — isn't built yet. Flagged, not
+    // silently dropped: re-specify the window by hand until this is written.
+    if (pick.routeWindows && Object.keys(pick.routeWindows).length) {
+      notes.push('weekdays/startTime/endTime not recoverable from this section yet (routeWindows recovery isn\'t built) — re-specify by hand');
+    }
     return {
       key, title: s.data.title || undefined,
       graphType, measure: pick.measure, resolution: pick.resolution,
@@ -536,20 +541,6 @@ function runFromPage(pageArg, outPath) {
       ...(notes.length ? { _needsReview: notes.join('; ') } : {}),
     };
   });
-
-  // Title block: only recoverable via the stored key map (a page predating
-  // this feature, or one never built by report_build.mjs at all, has no
-  // `title_block` key — left unreconstructed rather than guessed).
-  let intro;
-  if (specKeyMap?.title_block) {
-    const titleBlockSection = sections.find(s => s.data.trackingId === specKeyMap.title_block);
-    if (titleBlockSection) {
-      let elData = {};
-      try { elData = JSON.parse(titleBlockSection.data.element['element-data']); } catch { /* leave {} */ }
-      const text = lexicalTreeToText(elData.text);
-      if (text) intro = text;
-    }
-  }
 
   // `route_comp_id` -> spec-local id, built from ALL entries (slot or concrete)
   // before the main pass — a route's `derivedFromRoute` may point at either
@@ -588,6 +579,14 @@ function runFromPage(pageArg, outPath) {
         : (specIdByCompId.get(e.derivedFromRoute)
           ?? (() => { throw new Error(`route ${i + 1} ("${e.name}") has derivedFromRoute "${e.derivedFromRoute}", which matches no sibling's route_comp_id — data looks corrupt.`); })()),
     } : {};
+    // `e.weekdays`/the combined-datetime's time component may still be sitting on a live route's
+    // own persisted fields (RouteRow.jsx's old storage, gaps #10/#11) — but weekdays/startTime/
+    // endTime moved to graphs[] in the spec format, so they are deliberately NOT recovered onto
+    // the reconstructed route here (routes[] would fail this script's own validation if they
+    // were). RouteRow.jsx's own weekday-toggle/peak-preset UI is slated for removal (it writes a
+    // field nothing reads anymore) — tracked separately, not done as part of this reconstruction
+    // fix. See the graph reconstruction below for the real recovery path
+    // (`_measurePick.routeWindows`, flagged `_needsReview` — not built yet).
     const start = derived.dateFormula ? {} : splitDateTime(e.startDate);
     const end = derived.dateFormula ? {} : splitDateTime(e.endDate);
     if (isSlot) {
@@ -599,7 +598,6 @@ function runFromPage(pageArg, outPath) {
         ...(e.isPlaceholderName ? { isPlaceholderName: true } : {}),
         ...derived,
         ...(e.color ? { color: e.color } : {}),
-        ...(e.weekdays ? { weekdays: e.weekdays } : {}),
         graphs: feedsGraphKeysFor(e.route_comp_id),
       };
     }
@@ -610,10 +608,7 @@ function runFromPage(pageArg, outPath) {
       ...derived,
       ...(start.date ? { startDate: start.date } : {}),
       ...(end.date ? { endDate: end.date } : {}),
-      ...(start.time ? { startTime: start.time } : {}),
-      ...(end.time ? { endTime: end.time } : {}),
       ...(e.color ? { color: e.color } : {}),
-      ...(e.weekdays ? { weekdays: e.weekdays } : {}),
       graphs: feedsGraphKeysFor(e.route_comp_id),
     };
   });
@@ -628,7 +623,6 @@ function runFromPage(pageArg, outPath) {
     slug: page.url_slug,
     ...(isDynamicReport ? { dynamicReport: true } : {}),
     ...(snap.data.description ? { description: snap.data.description } : {}),
-    ...(intro ? { intro } : {}),
     ...(snap.data.tags ? { tags: snap.data.tags } : {}),
     ...(snap.data.difficulty !== undefined ? { difficulty: snap.data.difficulty } : {}),
     graphs, routes,
@@ -694,18 +688,12 @@ for (const r of spec.routes) {
       fail(`route "${r.id}" has \`confidence\` but \`confidence.level\` is "${level}" — must be "low", "medium", or "high".`);
     }
   }
-  // A time-of-day sub-window (peak-hour filtering) rides on the same startDate/
-  // endDate strings useGraphPublish.js already parses (it detects a time
-  // component via `.includes('T')`) — so a time needs a date to attach to, and
-  // both boundaries must agree on whether a time is present.
-  if (r.startTime || r.endTime) {
-    if (!HHMM_RE.test(r.startTime || '') || !HHMM_RE.test(r.endTime || '')) {
-      fail(`route "${r.id}" has \`startTime\`/\`endTime\` but one is missing or not "HH:mm" — both are required together, 24-hour, e.g. "07:00"/"10:00".`);
-    }
-    if (!r.startDate || !r.endDate) {
-      fail(`route "${r.id}" has \`startTime\`/\`endTime\` but no \`startDate\`/\`endDate\` — a time-of-day window needs a date window to apply within.`);
-    }
-  }
+  // weekdays/startTime/endTime moved OFF routes[] and onto graphs[] — they only ever took
+  // effect through the GRAPH's own `_measurePick` (useGraphPublish.js reads exactly
+  // `route.startDate`/`route.endDate` here, nothing else off the route) — so a route still
+  // carrying one is a stale spec, not a value that would just be silently ignored.
+  if (r.weekdays !== undefined) fail(`route "${r.id}" has \`weekdays\` — that field now lives on graphs[] (see report-spec.md), not routes[]. Move it onto whichever graph(s) this route feeds.`);
+  if (r.startTime !== undefined || r.endTime !== undefined) fail(`route "${r.id}" has \`startTime\`/\`endTime\` — those fields now live on graphs[] (see report-spec.md), not routes[]. Move them onto whichever graph(s) this route feeds, or into that graph's \`routeWindows\` if different routes on the same graph need different windows.`);
 }
 
 // ── relative-date formula validation (Mechanism B) ─────────────────────────
@@ -760,6 +748,43 @@ for (const g of spec.graphs) {
   }
 }
 
+// ── weekdays/startTime/endTime/routeWindows (graph-level — see the routes[] loop above for
+// why these no longer live on routes[]) ────────────────────────────────────
+// No graph-type restriction: unlike `resolution`/`comparisonMode`/`caption`, weekdays/time-of-
+// day apply identically to AVL Graph, Map, InfoBox, and RouteCompare (all four ride the same
+// `comparison_series`/`findSelfBoundGraphs` mechanism in useGraphPublish.js — confirmed by
+// reading it directly, not assumed; see the live AM/PM test in traversing-report-pages.md).
+for (const g of spec.graphs) {
+  if (g.startTime !== undefined || g.endTime !== undefined) {
+    if (!HHMM_RE.test(g.startTime || '') || !HHMM_RE.test(g.endTime || '')) {
+      fail(`graph "${g.key}" has \`startTime\`/\`endTime\` but one is missing or not "HH:mm" — both are required together, 24-hour, e.g. "07:00"/"10:00".`);
+    }
+  }
+  if (g.routeWindows === undefined) continue;
+  if (typeof g.routeWindows !== 'object' || g.routeWindows === null || Array.isArray(g.routeWindows)) {
+    fail(`graph "${g.key}"'s \`routeWindows\` must be an object keyed by routes[].id.`);
+  }
+  for (const [routeId, variants] of Object.entries(g.routeWindows)) {
+    // Deliberately checked against `g._assigned`, not `spec.routes` as a whole — routeWindows
+    // REFINES how an already-assigned route is filtered, it is never a second way to assign a
+    // route to a graph. `routes[].graphs` stays the one place "which routes feed this graph" is
+    // decided.
+    if (!g._assigned.some(r => r.id === routeId)) {
+      fail(`graph "${g.key}"'s \`routeWindows\` names "${routeId}", which isn't assigned to this graph (no route with that id lists "${g.key}" in its own \`graphs\`).`);
+    }
+    if (!Array.isArray(variants) || !variants.length) {
+      fail(`graph "${g.key}"'s \`routeWindows["${routeId}"]\` must be a non-empty array — one entry per time this route should appear on the graph (almost always just one; 2+ means the SAME route shown more than once, e.g. once per peak window, instead of assigning it twice under different ids).`);
+    }
+    for (const v of variants) {
+      if (v.startTime !== undefined || v.endTime !== undefined) {
+        if (!HHMM_RE.test(v.startTime || '') || !HHMM_RE.test(v.endTime || '')) {
+          fail(`graph "${g.key}"'s \`routeWindows["${routeId}"]\` has a variant with \`startTime\`/\`endTime\` but one is missing or not "HH:mm".`);
+        }
+      }
+    }
+  }
+}
+
 // ── anchor resolution for difference graphs ────────────────────────────────
 // The server treats seriesVariants[0] — i.e. the FIRST assigned route in
 // routes-array order — as the anchor ("Main"), and returns anchor − compare.
@@ -794,19 +819,13 @@ if (SUMMARY_ONLY) {
   console.log(`\n${spec.title}`);
   if (spec.slug) console.log(`  slug: ${spec.slug}`);
   if (spec.request) console.log(`\nClient request:\n  "${spec.request}"`);
-  if (spec.intro) console.log(`\nIntro (title-block section):\n  "${spec.intro}"`);
   console.log(`\nRoutes (${spec.routes.length} instance${spec.routes.length === 1 ? '' : 's'}):`);
   for (const r of spec.routes) {
     const window = r.startDate && r.endDate
-      ? `${combineDateTime(r.startDate, r.startTime)} → ${combineDateTime(r.endDate, r.endTime)}`
+      ? `${r.startDate} → ${r.endDate}`
       : 'no date window (all available dates)';
-    // Semantics per useGraphPublish.js:34 — ONLY an explicit `false` excludes a
-    // day, so an absent key means included. Enumerate all seven and subtract.
-    const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    const included = r.weekdays ? DAYS.filter(d => r.weekdays[d] !== false) : DAYS;
-    const days = r.weekdays ? ` [${included.length === 7 ? 'all days' : included.map(d => d.slice(0, 3)).join(',')}]` : '';
     console.log(`  • ${r._name}`);
-    console.log(`      route ${r.route_id} · ${window}${days} · feeds: ${(r.graphs || []).join(', ') || 'NOTHING'}`);
+    console.log(`      route ${r.route_id} · ${window} · feeds: ${(r.graphs || []).join(', ') || 'NOTHING'}`);
     if (r.confidence) console.log(`      confidence: ${r.confidence.level}${r.confidence.note ? ` — ${r.confidence.note}` : ''}`);
   }
   const lowConf = lowConfidenceRoutes(spec);
@@ -815,6 +834,15 @@ if (SUMMARY_ONLY) {
     for (const r of lowConf) console.log(`  • ${r._name}${r.confidence.note ? `: ${r.confidence.note}` : ''}`);
   }
   console.log(`\nGraphs (${spec.graphs.length}):`);
+  // Semantics per useGraphPublish.js:34 — ONLY an explicit `false` excludes a day, so an absent
+  // key means included. Enumerate all seven and subtract.
+  const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const windowLabel = (weekdays, startTime, endTime) => {
+    const included = weekdays ? DAYS.filter(d => weekdays[d] !== false) : DAYS;
+    const days = weekdays && included.length < 7 ? included.map(d => d.slice(0, 3)).join(',') : 'all days';
+    const time = startTime && endTime ? `${startTime}-${endTime}` : 'all day';
+    return `${time}, ${days}`;
+  };
   for (const g of spec.graphs) {
     const mode = g.comparisonMode === 'difference'
       ? `difference (${g.anchor || g._assigned[0].id} − others${g._invert ? ', inverted' : ''})`
@@ -828,6 +856,16 @@ if (SUMMARY_ONLY) {
       : `${g.graphType}, ${g.measure}, ${RES_LABEL[g.resolution] || g.resolution} buckets`;
     console.log(`  • ${g.title || g.key} — ${detail}`);
     console.log(`      ${mode}; ${g._assigned.length} route(s): ${g._assigned.map(r => r.id).join(', ')}`);
+    if (g.routeWindows && Object.keys(g.routeWindows).length) {
+      for (const [routeId, variants] of Object.entries(g.routeWindows)) {
+        variants.forEach((v, vi) => console.log(`      ${routeId}${variants.length > 1 ? ` (${vi + 1}/${variants.length})` : ''}: ${windowLabel(v.weekdays, v.startTime, v.endTime)}`));
+      }
+      const overridden = new Set(Object.keys(g.routeWindows));
+      const defaulted = g._assigned.filter(r => !overridden.has(r.id));
+      if (defaulted.length) console.log(`      ${defaulted.map(r => r.id).join(', ')}: ${windowLabel(g.weekdays, g.startTime, g.endTime)} (graph default)`);
+    } else {
+      console.log(`      window: ${windowLabel(g.weekdays, g.startTime, g.endTime)}`);
+    }
     if (g.why) console.log(`      why: ${g.why}`);
     if (g.caption) console.log(`      caption: "${g.caption}"`);
   }
@@ -866,6 +904,52 @@ if (UPDATE_PAGE) {
     existingFilters: rawPage?.data?.filters || [],
   };
   console.log(`reconciling into existing page ${pageId} (${updateCtx.slug})`);
+}
+
+// ── --replace preflight: delete any existing page at this spec's target slug,
+// so the build below always takes the fresh-create path — never --update's
+// reconcile path, whose section-deletion sweep only covers AVL Graph/Map/
+// Spreadsheet types (see the comment above it) and so won't clean up e.g. a
+// retired framework section (the title-block section retired 2026-08-17) left
+// over from a page an older version of this script built. ──────────────────
+if (REPLACE) {
+  if (UPDATE_PAGE) fail('--replace and --update are mutually exclusive — --replace deletes and rebuilds fresh, --update reconciles in place.');
+  const targetSlug = computeTargetSlug();
+  // `dms page show` exits non-zero (throws, via execFileSync) for a slug that
+  // doesn't exist yet — a normal, expected case here (the spec's first-ever
+  // build), not a real error, so this is deliberately swallowed rather than
+  // passed to `fail()` the way a genuine --update lookup failure is above.
+  let existing = null;
+  try { existing = dms(['page', 'show', targetSlug, '--pattern', PATTERN]); } catch { /* not found */ }
+  if (existing?.id) {
+    // `page delete` only deletes the page row itself — it does NOT cascade to the
+    // page's own `reports_snap_2` row (a completely separate dataset/type, found the
+    // same way `--update`'s preflight above does). Missing this the first time
+    // --replace shipped left every rebuilt report with an orphaned snap row still
+    // carrying the OLD report_id — invisible on the page itself, but very visible on
+    // `/reports`, whose catalog cards are populated by querying `reports_snap_2`
+    // directly (by tag, not by page reference) and so render BOTH the orphan and the
+    // fresh row as separate cards for the same report. Found live 2026-08-17 the first
+    // time all 12 templates were --replace'd in one session — 16 orphaned rows
+    // accumulated (some templates had 3-4, going back to before --replace even
+    // existed) before this was caught and cleaned up by hand. Delete it BEFORE the
+    // page itself, while `existing.id` still resolves it.
+    const staleSnap = findSnapRow(existing.id);
+    // `--dry-run`'s own contract ("no writes") wins over --replace's delete —
+    // report the deletion that WOULD happen without actually doing it, same
+    // as every other write below being skipped under DRY_RUN.
+    if (DRY_RUN) {
+      console.log(`--replace --dry-run: would delete existing page ${existing.id} (${targetSlug})`
+        + (staleSnap ? ` and its reports_snap_2 row ${staleSnap.id}` : ''));
+    } else {
+      if (staleSnap) dms(['raw', 'delete', APP, REPORTS_SNAP_TYPE, String(staleSnap.id)]);
+      dms(['page', 'delete', String(existing.id), '--pattern', PATTERN]);
+      console.log(`--replace: deleted existing page ${existing.id} (${targetSlug})`
+        + (staleSnap ? ` and its reports_snap_2 row ${staleSnap.id}` : ' (no reports_snap_2 row found)'));
+    }
+  } else {
+    console.log(`--replace: no existing page at ${targetSlug} yet — building fresh`);
+  }
 }
 
 const lowConf = lowConfidenceRoutes(spec);
@@ -1002,11 +1086,14 @@ try {
     if (g._invert) {
       state.comparisonSeries.combine = { ...(state.comparisonSeries.combine || {}), invert: true };
     }
-    if (g.title) state.display.title = { ...(state.display.title || {}), title: g.title };
-    // Renders as a subtitle line under the chart title (GraphComponent.jsx's
-    // GraphTitle) — already wired on the render side (and already written, to
-    // a dead end, by convert_old_reports.py's old-caption handling); this is
-    // the missing write path from a fresh spec-built graph.
+    // No in-card chart title: the Section's own `title` (graphSectionData,
+    // rendered by the generic section-header band — the same band Quick
+    // Controls attaches to) is the one place a graph's title shows now.
+    // Writing it into state.display.title too used to double it (once above
+    // the card, once inside it) — see report-route-ui-parity-gaps.md.
+    // `state.display.description` (below) is a different field — the
+    // difference-mode subtitle — and keeps rendering inside the card via
+    // GraphComponent.jsx's GraphTitle.
     if (g.caption) {
       state.display.description = g.caption;
     }
@@ -1315,30 +1402,30 @@ for (const [i, g] of spec.graphs.entries()) {
 // indexing below exactly — both index into `spec.routes` in declaration order.
 {
   const routeCompId = new Map(spec.routes.map((r, i) => [r, `comp-${i}`]));
-  const uniform = (arr) => arr.length > 0 && arr.every(v => v === arr[0]);
   for (const [i, g] of spec.graphs.entries()) {
-    if (!composedStates[i]) continue; // RouteCompare has no `_measurePick` concept (report-spec.md); anchor is order-based, not field-based.
+    if (!composedStates[i]) continue; // Route Map with no resolvable tmcs/dates (see its own note above) leaves this undefined — same pre-existing guard, unrelated to this block.
     const state = composedStates[i];
     if (!state.display) state.display = {};
     const routeIds = g._assigned.map(r => routeCompId.get(r));
-    // `weekdays`/`startTime`/`endTime` are still spec'd per-route (report-spec.md
-    // hasn't been migrated to graph-level fields for this) — best-effort: promote
-    // them to the graph's pick only when every assigned route agrees, otherwise
-    // warn and leave unset rather than silently picking one route's window for
-    // routes that asked for something different.
-    const weekdaysList = g._assigned.map(r => JSON.stringify(r.weekdays || {}));
-    const windowList = g._assigned.map(r => `${r.startTime || ''}|${r.endTime || ''}`);
-    if (!uniform(weekdaysList)) {
-      console.warn(`  note: graph "${g.key}"'s assigned routes have DIFFERENT weekday masks — report-spec.md's per-route \`weekdays\` field doesn't map onto Design Push #2's graph-level field; leaving weekdays unset for this graph rather than guessing.`);
-    }
-    if (!uniform(windowList)) {
-      console.warn(`  note: graph "${g.key}"'s assigned routes have DIFFERENT startTime/endTime windows — same gap as above; leaving the time-of-day window unset for this graph.`);
+    // Every assigned route gets its own `_measurePick.routeWindows` entry now — no uniform-check,
+    // no silently leaving the window unset when routes disagree (that was never correct: it made
+    // a Bar Graph Summary/Route Compare with genuinely different per-row windows silently render
+    // every row unfiltered instead of erroring or actually applying each row's own window). A
+    // route with an explicit override (`g.routeWindows[route.id]`, validated above — possibly 2+
+    // variants, the same route shown more than once under different filters) uses exactly that;
+    // otherwise it gets the graph's own weekdays/startTime/endTime as its one variant.
+    const defaultWindow = { weekdays: g.weekdays, start: g.startTime, end: g.endTime };
+    const routeWindows = {};
+    for (const r of g._assigned) {
+      const override = g.routeWindows?.[r.id];
+      routeWindows[routeCompId.get(r)] = override
+        ? override.map(v => ({ weekdays: v.weekdays, start: v.startTime, end: v.endTime, ...(v.color ? { color: v.color } : {}) }))
+        : [defaultWindow];
     }
     state.display._measurePick = {
       ...(state.display._measurePick || {}),
       routeIds,
-      ...(uniform(weekdaysList) && g._assigned[0].weekdays ? { weekdays: g._assigned[0].weekdays } : {}),
-      ...(uniform(windowList) && g._assigned[0].startTime ? { start: g._assigned[0].startTime, end: g._assigned[0].endTime } : {}),
+      routeWindows,
     };
   }
 }
@@ -1358,7 +1445,7 @@ function templateFrameworkSections() {
   return sections;
 }
 
-let pageId, slug, parentRef, graphTrackingIds, sectionDatas, titleBlockTrackingId;
+let pageId, slug, parentRef, graphTrackingIds, sectionDatas;
 
 // CORRECTION 2026-08-07 (same day, after Ryan pushed back on maintaining
 // page-scaffolding facts twice across this script and convert_old_reports.py):
@@ -1426,58 +1513,6 @@ function graphSectionData(g, i, trackingId) {
   };
 }
 
-// ── title-block section (Gap 3) ─────────────────────────────────────────────
-// A generic "lexical" (Rich Text) section, reusing the section's own `title`
-// (rendered by every section's header, not something new) plus a body
-// paragraph for `spec.intro`. Always built — even with no `intro` — so every
-// report gets a visible heading; today `item.title` on the page itself is
-// never rendered anywhere in view.jsx.
-//
-// The read-only RichtextView component requires `text` to already be a
-// Lexical tree object ({root:{children:[...]}}) — it checks `text?.root`
-// directly and renders nothing for a bare string (only the *edit* component
-// auto-upgrades plain strings via its own textToLexicalJSON). So build the
-// tree ourselves, matching the exact node shape the editor itself emits
-// (ui/components/lexical/index.jsx's textToLexicalJSON), split on blank
-// lines into paragraphs (that helper only ever makes one).
-function textToLexicalTree(text) {
-  const paragraphs = String(text || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-  const children = (paragraphs.length ? paragraphs : ['']).map(p => ({
-    children: [{ detail: 0, format: 0, mode: 'normal', style: '', text: p, type: 'text', version: 1 }],
-    direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1,
-  }));
-  return { root: { children, direction: 'ltr', format: '', indent: 0, type: 'root', version: 1 } };
-}
-
-// Inverse of textToLexicalTree, for --from-page: flattens paragraph text
-// nodes back to a plain string. Only faithful for trees this script itself
-// wrote (or the plain single-paragraph shape the editor's own
-// textToLexicalJSON produces) — a hand-formatted paragraph (bold, links,
-// multiple runs) still flattens to readable text, just without the
-// formatting, which is fine for drift detection and a reconstructed spec.
-function lexicalTreeToText(tree) {
-  const paragraphs = (tree?.root?.children || [])
-    .map(p => (p.children || []).map(c => c.text || '').join(''));
-  return paragraphs.join('\n\n');
-}
-
-function titleBlockSectionData(trackingId) {
-  return {
-    type: COMPONENT_TYPE,
-    group: 'default',
-    title: spec.title,
-    parent: parentRef,
-    trackingId,
-    element: {
-      'element-type': 'lexical',
-      'element-data': JSON.stringify({
-        bgColor: 'rgba(0,0,0,0)', isCard: '', showToolbar: false,
-        text: textToLexicalTree(spec.intro || ''),
-      }),
-    },
-  };
-}
-
 if (updateCtx) {
   // ── reconcile into the existing page ──────────────────────────────────
   ({ pageId, slug } = updateCtx);
@@ -1487,8 +1522,7 @@ if (updateCtx) {
   // in place); new keys mint one. Keys dropped from the spec are handled
   // below by diffing against the section list itself, not this map.
   graphTrackingIds = spec.graphs.map(g => updateCtx.oldKeyMap[g.key] || randomUUID());
-  titleBlockTrackingId = updateCtx.oldKeyMap['title_block'] || randomUUID();
-  const keptTrackingIds = new Set([...graphTrackingIds, titleBlockTrackingId]);
+  const keptTrackingIds = new Set(graphTrackingIds);
 
   // An Info Box graph is ALSO element-type "Spreadsheet" (unlike AVL Graph/Map,
   // which are unambiguous): exclude any Spreadsheet section this revision's OLD
@@ -1526,9 +1560,8 @@ if (updateCtx) {
   // that change still carries its own frozen copy — untouched by this reconcile
   // (it's excluded from the deletion sweep below the same way it always was),
   // per that task's explicit "don't retroactively touch existing pages" decision.
-  const titleBlockData = titleBlockSectionData(titleBlockTrackingId);
   const graphSectionDatasList = spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i]));
-  sectionDatas = [...frameworkEntries.map(e => e.data), titleBlockData, ...graphSectionDatasList];
+  sectionDatas = [...frameworkEntries.map(e => e.data), ...graphSectionDatasList];
 
   let created = 0, updated = 0, deleted = 0;
   for (const entry of frameworkEntries) {
@@ -1541,15 +1574,6 @@ if (updateCtx) {
       if (!res?.id) fail(`failed to create the "${entry.elementType}" framework section.`);
       created++;
     }
-  }
-  const titleBlockExisting = updateCtx.sections.find(s => s.data?.trackingId === titleBlockTrackingId);
-  if (titleBlockExisting) {
-    dms(['section', 'update', String(titleBlockExisting.id)], titleBlockData);
-    updated++;
-  } else {
-    const res = dms(['section', 'create', String(pageId), '--pattern', PATTERN], titleBlockData);
-    if (!res?.id) fail('failed to create the title-block section.');
-    created++;
   }
   for (const [i, g] of spec.graphs.entries()) {
     const tid = graphTrackingIds[i];
@@ -1565,11 +1589,12 @@ if (updateCtx) {
     }
   }
   // Graph sections whose trackingId this revision no longer references were
-  // dropped — delete them rather than leaving orphans. The title-block
-  // section is never dropped (always built), so it needs no equivalent check
-  // here — and deliberately isn't swept by a generic "any lexical section not
-  // in the key map" rule, which would risk deleting a Rich Text block an
-  // author added by hand elsewhere on the page. AVL Graph/Map are unambiguous
+  // dropped — delete them rather than leaving orphans. Deliberately isn't
+  // swept by a generic "any lexical section not in the key map" rule, which
+  // would risk deleting a Rich Text block an author added by hand elsewhere
+  // on the page (this also means a pre-existing page's old title-block
+  // section, from before that concept was retired, is left alone here rather
+  // than auto-deleted — see report-route-ui-parity-gaps.md). AVL Graph/Map are unambiguous
   // element-types (an author-added one is fair game for the same sweep, same
   // as before); Spreadsheet is NOT — it's also the Add-a-Route section's own
   // element-type, so only count a Spreadsheet section as a graph section here
@@ -1615,7 +1640,7 @@ if (updateCtx) {
   const parentId = parent?.id;
   if (!parentId) fail(`parent page "${parentSlug}" not found — create it first, or set \`parent\` in the spec.`);
 
-  slug = spec.slug || `${parentSlug}/${String(spec.title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+  slug = computeTargetSlug();
   // sidebar/sidebarHideInView/draft_section_groups all copied straight off the
   // template row — see the correction note above `clonedSection` for why this
   // must stay a copy, never a re-hardcoded literal.
@@ -1637,10 +1662,8 @@ if (updateCtx) {
 
   parentRef = JSON.stringify({ id: String(pageId), ref: `${APP}+${PAGE_TYPE}` });
   graphTrackingIds = spec.graphs.map(() => randomUUID());
-  titleBlockTrackingId = randomUUID();
   sectionDatas = [
     ...templateFrameworkSections().map(tmpl => clonedSection(tmpl, randomUUID())),
-    titleBlockSectionData(titleBlockTrackingId),
     ...spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i])),
   ];
   const draftIds = sectionDatas.map(sd => dms(['section', 'create', String(pageId), '--pattern', PATTERN], sd)?.id);
@@ -1696,7 +1719,6 @@ const routeEntries = spec.routes.map((r, i) => {
       graphIds,
       ...derived,
       ...(r.color ? { color: r.color } : {}),
-      ...(r.weekdays ? { weekdays: r.weekdays } : {}),
       isValid: true,
     };
   }
@@ -1709,19 +1731,15 @@ const routeEntries = spec.routes.map((r, i) => {
     route_comp_id: `comp-${i}`,
     graphIds,
     ...derived,
-    ...(r.startDate ? { startDate: combineDateTime(r.startDate, r.startTime) } : {}),
-    ...(r.endDate ? { endDate: combineDateTime(r.endDate, r.endTime) } : {}),
+    ...(r.startDate ? { startDate: r.startDate } : {}),
+    ...(r.endDate ? { endDate: r.endDate } : {}),
     ...(r.color ? { color: r.color } : {}),
-    ...(r.weekdays ? { weekdays: r.weekdays } : {}),
     isValid: true,
   };
 });
 
 const cleanSpec = stripInternal(spec);
-const specKeyMap = Object.fromEntries([
-  ['title_block', titleBlockTrackingId],
-  ...spec.graphs.map((g, i) => [g.key, graphTrackingIds[i]]),
-]);
+const specKeyMap = Object.fromEntries(spec.graphs.map((g, i) => [g.key, graphTrackingIds[i]]));
 
 // Catalog metadata (`/reports`'s category tiles, e.g. `converted_reports/reports` id
 // 2208581) — read directly from each Card section's `filterGroups`: every one of the 5

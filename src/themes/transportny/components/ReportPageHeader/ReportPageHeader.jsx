@@ -1,8 +1,11 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
+import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
+import { publish } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
+import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
+import { resolvedRouteLabel } from '../ReportRouteList/relativeDateResolution';
 
 // The report canvas's page-header card (npmrds-report.html): kicker+meta → h1+purpose
 // → action stack → freshness footline. h1 and the published/draft pill read the page's
@@ -11,13 +14,44 @@ import { reportPageHeaderTheme } from './ReportPageHeader.theme';
 // optional Data link) is this component's own authored state, edited inline in place —
 // same two-gate convention as ReportRouteList (editPageMode AND this section's own pencil).
 export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
-  const { item, editPageMode } = useContext(PageContext) || {};
+  const { item, editPageMode, pageState, apiUpdate } = useContext(PageContext) || {};
+  const { user } = useContext(CMSContext) || {};
   const { state, setState } = useContext(ComponentContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Icon } = UI || {};
   const t = { ...reportPageHeaderTheme, ...getComponentTheme(themeFromContext, 'reportPageHeader') };
   const navigate = useNavigate();
   const [shareCopied, setShareCopied] = useState(false);
+  const [routesOpen, setRoutesOpen] = useState(true);
+
+  // Same catalog (id/name/colour/TMCs/date-span), same pageState key, RRL already broadcasts for
+  // every graph's own QuickControls Routes pill (ROUTE_CATALOG_PARAM_KEY, useGraphPublish.js) —
+  // published unconditionally, not gated on edit mode, so it's available here in view mode too.
+  // This is the one place a viewer sees the report's routes without opening edit mode at all
+  // (RRL itself is edit-mode-only) — see report-route-ui-parity-gaps.md.
+  const routeCatalog = useMemo(() => {
+    const values = pageState?.filters?.find((f) => f.searchKey === ROUTE_CATALOG_PARAM_KEY && f.type === 'action')?.values;
+    return Array.isArray(values) ? values : [];
+  }, [pageState?.filters]);
+
+  // Grouped by `groupKey` (useDynamicReportRoutes.js's routeSlotGroupKey) — several catalog
+  // entries are really just date/settings VIEWS of ONE physical route a viewer picked once
+  // (weekly_average's "Current Year"/"1 Year Ago"/"2 Years Ago" all share one group). Each
+  // group gets ONE header naming the real route (`baseRouteName`, the resolved catalog row's
+  // own name — falls back to the group's first member's own name when that's all there is,
+  // e.g. a route this report never resolved through the Dynamic Report catalog at all), with
+  // that group's variants as pills underneath — otherwise a multi-route report (bi_directional's
+  // separate NB/SB groups) would show every variant's date label with no way to tell which
+  // physical road each cluster of pills even belongs to.
+  const routeGroups = useMemo(() => {
+    const byKey = new Map();
+    routeCatalog.forEach((r) => {
+      const key = r.groupKey ?? r.route_comp_id;
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key).push(r);
+    });
+    return Array.from(byKey.values());
+  }, [routeCatalog]);
 
   const canEdit = Boolean(editPageMode) && Boolean(sectionEditorOpen);
   const d = state?.display || {};
@@ -43,6 +77,19 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
       setTimeout(() => setShareCopied(false), 1800);
     } catch (e) {
       // clipboard access denied (permissions/non-secure context) — nothing to recover into
+    }
+  };
+
+  // Leaving edit mode also publishes — an author closing out a report shouldn't need a
+  // separate manual Publish click first (report-authoring-ux-overhaul.md item 8). Only on the
+  // click that LEAVES edit mode (editPageMode true → false); entering edit mode is a plain
+  // navigate, same as before.
+  const handleEditToggle = async () => {
+    if (editPageMode) {
+      await publish(user, item, apiUpdate);
+      navigate(publicPath);
+    } else {
+      navigate(editPath);
     }
   };
 
@@ -113,7 +160,7 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
               </Button>
             ) : null}
             {Button && editPath && publicPath ? (
-              <Button activeStyle="default" onClick={() => navigate(editPageMode ? publicPath : editPath)}>
+              <Button activeStyle="default" onClick={handleEditToggle}>
                 <Icon icon="PencilEditSquare" /><span className={t.actionLabel}>{editPageMode ? 'Done' : 'Edit'}</span>
               </Button>
             ) : null}
@@ -149,6 +196,40 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
           {d.freshnessComplete ? <>{d.freshnessLabel ? <span className={t.freshnessSep}>·</span> : null}<span>complete through <span className={t.freshnessValue}>{d.freshnessComplete}</span></span></> : null}
           {d.freshnessPartial ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessPartial}</span></> : null}
           {d.freshnessSince ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessSince}</span></> : null}
+        </div>
+      ) : null}
+
+      {routeGroups.length > 0 ? (
+        <div className={t.routesWrapper}>
+          <button type="button" className={t.routesToggle} onClick={() => setRoutesOpen((open) => !open)}>
+            <Icon icon={routesOpen ? 'ChevronDown' : 'ChevronRight'} className={t.routesToggleIcon} />
+            <span>{routeGroups.length} route{routeGroups.length === 1 ? '' : 's'} in this report</span>
+          </button>
+          {routesOpen ? (
+            <div className={t.routesGroupList}>
+              {routeGroups.map((group) => {
+                // A header only earns its keep when it says something the pill(s) below it
+                // don't already say — a lone, non-relative route (the ordinary single-route
+                // report, no Dynamic Report catalog resolution) would otherwise show its own
+                // name twice.
+                const baseName = group.find((r) => r.baseRouteName)?.baseRouteName || null;
+                const showGroupName = baseName || group.length > 1;
+                return (
+                  <div key={group[0].groupKey ?? group[0].route_comp_id} className={t.routeGroup}>
+                    {showGroupName ? <div className={t.routeGroupName}>{baseName || group[0].name}</div> : null}
+                    <div className={t.routesList}>
+                      {group.map((r) => (
+                        <span key={r.route_comp_id} className={t.routePill}>
+                          <span className={t.routeDot} style={{ backgroundColor: r.color || '#94a3b8' }} />
+                          {resolvedRouteLabel(r)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

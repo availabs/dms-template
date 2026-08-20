@@ -84,7 +84,14 @@ function runProbe(entry) {
   mkdirSync(PROBE_OUT, { recursive: true });
   const args = [PROBE, entry.url, '--no-shot', '--out', PROBE_OUT];
   if (entry.authRequired) args.push('--auth');
-  console.log(`  node ${path.relative(REPO, PROBE)} ${entry.url} ${entry.authRequired ? '--auth ' : ''}--no-shot`);
+  // Optional per-entry override of report_probe.mjs's own default 6000ms settle wait — a page
+  // with an above-average section count AND a Route Map (whose vector-tile requests routinely
+  // take >6s under this dev stack, confirmed live 2026-08-17 investigating dynamic_report_
+  // one_week_study's flaky "was blank → has content" diffs: `--wait 15000` reliably settles
+  // every section to 0 pending requests, `--wait 6000` sometimes catches 4 of them mid-fetch)
+  // needs longer than that default to reliably reach a stable render before the SVG census runs.
+  if (entry.wait) args.push('--wait', String(entry.wait));
+  console.log(`  node ${path.relative(REPO, PROBE)} ${entry.url} ${entry.authRequired ? '--auth ' : ''}${entry.wait ? `--wait ${entry.wait} ` : ''}--no-shot`);
   try {
     execFileSync('node', args, { cwd: REPO, stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (e) {

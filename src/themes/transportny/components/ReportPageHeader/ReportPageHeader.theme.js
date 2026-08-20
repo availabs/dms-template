@@ -36,6 +36,17 @@ export const reportPageHeaderTheme = {
   freshnessValue: "text-[#0f1722]",
   freshnessEditRow: "mt-4 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2",
 
+  // ── routes-in-this-report disclosure (view mode's only route list — RRL itself is edit-only) ──
+  routesWrapper: "mt-3",
+  routesToggle: "inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 hover:text-[#1F3F8F] cursor-pointer",
+  routesToggleIcon: "size-3",
+  routesGroupList: "flex flex-col gap-2.5 mt-2",
+  routeGroup: "flex flex-col gap-1",
+  routeGroupName: "font-display text-[13px] font-semibold text-[#0F1722]",
+  routesList: "flex flex-wrap items-center gap-1.5",
+  routePill: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-50 font-mono text-[10.5px] text-slate-700",
+  routeDot: "size-1.5 rounded-full shrink-0",
+
   // ── shared inline-edit input look (kicker meta / purpose / freshness fields) ──
   inlineInput: "bg-transparent border-b border-dashed border-slate-300 focus:border-[#1F3F8F] focus:outline-none",
   inlineTextarea: "bg-transparent border border-dashed border-slate-300 focus:border-[#1F3F8F] focus:outline-none rounded-[4px] px-2 py-1 w-full resize-y",

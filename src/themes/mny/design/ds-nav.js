@@ -39,12 +39,14 @@
       { f: 'actions-location-overview.html', t: 'location overview' },
     ]},
     { key: 'county', label: 'County Actions Workflow', dir: 'pages/county-actions', landing: 'dashboard.html', pages: [
+      { f: 'state-dashboard.html', t: 'state dashboard' },
       { f: 'dashboard.html', t: 'county dashboard' }, { f: 'jurisdictions.html', t: 'jurisdictions' },
       { f: 'jurisdiction-prioritization.html', t: 'jurisdiction prioritization' },
       { f: 'workspace.html', t: 'county workspace' }, { f: 'action-view.html', t: 'action view' },
       { f: 'action-edit.html', t: 'action edit' },
     ]},
-    { key: 'panel', label: 'Admin Panel', dir: 'pages', landing: 'admin-forms.html', pages: [
+    { key: 'panel', label: 'Admin Panel', dir: 'pages', landing: 'admin-home-v2.html', pages: [
+      { f: 'admin-home-v2.html', t: 'home (redesign)' },
       { f: 'admin-forms.html', t: 'plan data · task view' },
       { f: 'admin-forms-insights.html', t: 'plan data · insight view' },
       { f: 'admin-forms-lisa-frank.html', t: 'plan data · lisa frank 🐬' },
@@ -81,6 +83,12 @@
       { f: 'admin-workflow-current-state.html', t: 'admin review 1 · current state' },
       { f: 'admin-direction-consolidate.html', t: 'admin review 2 · direction A' },
       { f: 'admin-direction-dissolve.html', t: 'admin review 3 · direction B' },
+      { f: 'admin-panel-status.html', t: 'admin panel status (aug)' },
+      { f: 'admin-panel-status-v2.html', t: 'admin panel status v2 · planner scope' },
+      { f: 'admin-panel-status-v3.html', t: 'admin panel status v3 · re-run + create/fetch/geo/permissions' },
+      { f: 'admin-panel-status-v4.html', t: 'admin panel status v4 · six families, dropped sections quarantined' },
+      { f: 'county-template-qa.html', t: 'county template front-end QA' },
+      { f: 'mny-transcribe-skills-to-git.html', t: 'transcribe skills → git' },
     ]},
   ];
 

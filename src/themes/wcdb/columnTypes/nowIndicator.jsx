@@ -27,9 +27,18 @@ function formatClock(date) {
     return formatted.replace(/\s?(AM|PM)$/i, (_, p) => ` ${p.toLowerCase()}`)
 }
 
-export const NowIndicatorView = () => {
+export const NowIndicatorView = ({ pillLabel, metaPrefix }) => {
     const { theme: themeFromContext = {} } = React.useContext(ThemeContext) || {}
-    const t = { ...nowIndicatorTheme, ...getComponentTheme(themeFromContext, "nowIndicator") }
+    // Per-COLUMN overrides beat the theme. The rail carries two of these and
+    // they say different things: the show block claims "On Air", the track
+    // block below it says "Now playing" — the design is careful to keep those
+    // two live claims distinct. A theme-only label would force both to agree.
+    const t = {
+        ...nowIndicatorTheme,
+        ...getComponentTheme(themeFromContext, "nowIndicator"),
+        ...(pillLabel ? { pillLabel } : {}),
+        ...(metaPrefix !== undefined ? { metaPrefix } : {}),
+    }
 
     const [now, setNow] = useState(() => new Date())
     useEffect(() => {

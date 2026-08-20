@@ -44,14 +44,20 @@
       { f: 'show.html', t: 'show' },
       { f: 'djs.html', t: 'djs' },
       { f: 'spins.html', t: 'spins' },
-      { f: 'blog.html', t: 'blog' },
+      { f: 'airwaves.html', t: 'airwaves' },
+      { f: 'post.html', t: 'a post' },
+      { f: 'blog.html', t: 'blog (superseded)' },
       { f: 'events.html', t: 'events' },
       { f: 'login.html', t: 'login' },
     ]},
-    { key: 'admin', label: 'Station Admin', dir: 'pages/admin', landing: 'djs.html', pages: [
+    { key: 'admin', label: 'Station Admin', dir: 'pages/admin', landing: 'playlist.html', pages: [
+      { f: 'playlist.html', t: 'playlist' },
+      { f: 'schedule.html', t: 'schedule editor' },
       { f: 'djs.html', t: 'dj roster' },
       { f: 'dj-profile.html', t: 'dj profile' },
-      { f: 'schedule.html', t: 'schedule editor' },
+      { f: 'events.html', t: 'events' },
+      { f: 'airwaves.html', t: 'airwaves' },
+      { f: 'post-editor.html', t: 'post editor' },
     ]},
   ];
 

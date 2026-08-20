@@ -1,5 +1,7 @@
 import React, { useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { cloneDeep } from 'lodash-es';
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme';
+import { PageContext } from '../../../../dms/packages/dms/src/patterns/page/context';
 import { quickControlsTheme } from './QuickControls.theme';
 import { applyMeasurePick, isReportPage } from '../MeasurePicker';
 import {
@@ -31,8 +33,14 @@ import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_
  *      the row measures itself and folds the lowest-priority pills into one "⋯" pill that opens
  *      the same popover contents, in this drop order: mode → aggregate → when → measure. Routes
  *      never drops — it's the reason this row exists.
+ *
+ * 2026-08-19 (report-authoring-ux-overhaul.md item 4): this row now mounts and stays interactive
+ * for the whole time a PAGE is open at /edit/... — no longer gated on this section's own
+ * SectionEdit pencil being clicked first (see QuickControlsRow's `editPageMode` check). Picks
+ * persist via `actions.updateAttribute`, the same channel drag-reorder already uses under
+ * SectionView, not `dwAPI.setState` alone (dead for persistence there).
  */
-export function npmrdsQuickControls({ state, dwAPI, currentComponent, isEdit, canEditSection, siblingSections = [], pageState }) {
+export function npmrdsQuickControls({ state, dwAPI, currentComponent, canEditSection, siblingSections = [], pageState, actions, sectionState }) {
   // Gate on the actual self-binding mechanism (an enabled `$self` comparison_series subscriber —
   // the same test `useGraphPublish.js`'s `findSelfBoundGraphs` uses to decide whether a section
   // receives a published route list at all) rather than `state?.comparisonSeries?.enabled`, a
@@ -48,8 +56,17 @@ export function npmrdsQuickControls({ state, dwAPI, currentComponent, isEdit, ca
   const isSelfBound = (state?.display?._functions?.subscribers || []).some(
     (s) => s?.functionId === 'comparison_series' && s?.enabled && s?.paramKey === SELF_PARAM_KEY_SENTINEL
   );
-  if (!(isEdit && canEditSection && currentComponent?.useDataSource && isSelfBound && isReportPage(siblingSections))) return null;
-  return <QuickControlsRow state={state} dwAPI={dwAPI} currentComponent={currentComponent} pageState={pageState} />;
+  if (!(canEditSection && currentComponent?.useDataSource && isSelfBound && isReportPage(siblingSections))) return null;
+  return (
+    <QuickControlsRow
+      state={state}
+      dwAPI={dwAPI}
+      currentComponent={currentComponent}
+      pageState={pageState}
+      actions={actions}
+      sectionValue={sectionState?.value}
+    />
+  );
 }
 
 // "AM Peak"/"PM Peak"/... token map — mirrors the mockup's RES_TOKEN, short enough to survive a
@@ -71,7 +88,16 @@ function qcDaysToken(weekdays) {
   return `${on}d`;
 }
 
-function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
+function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, sectionValue }) {
+  // `canEditSection` (checked by the caller) is true for any logged-in author, even one just
+  // browsing the real published site — `editPageMode` is the only signal that actually means
+  // "this page is open at /edit/...". Checked here (inside a real mounted component) rather than
+  // in the outer `npmrdsQuickControls`, which is a plain function and can't call hooks. First line,
+  // before any other hook below, so this component's hook count never varies across renders (this
+  // page's edit/view route never toggles without a full remount — see
+  // report-authoring-ux-overhaul.md item 4).
+  const { editPageMode } = useContext(PageContext) || {};
+  if (!editPageMode) return null;
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Popup, Icon } = UI || {};
   const t = { ...quickControlsTheme, ...getComponentTheme(themeFromContext, 'quickControls') };
@@ -96,29 +122,87 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
   const routeIds = pick.routeIds || [];
   const routesById = useMemo(() => new Map(routeCatalog.map((r) => [r.route_comp_id, r])), [routeCatalog]);
 
-  const applyPick = (partial) => applyMeasurePick({ state, dwAPI, currentComponent }, partial);
+  // `pick.weekdays`/`pick.start`/`pick.end` (the bare scalar) is dead — report_build.mjs stopped
+  // writing it and useGraphPublish.js stopped reading it the moment `routeWindows` shipped
+  // (2026-08-14). This pill's "one window for the whole graph" model still applies for now (a real
+  // per-route control is a separate, larger gap — report-route-ui-parity-gaps.md #18); it just
+  // needs to read/write `routeWindows` instead. Shown/edited value is the FIRST assigned route's
+  // own window (routeWindows[id][0]) — representative, not necessarily true of every route if one
+  // was set to something different outside this pill (e.g. by report_build.mjs), same "first
+  // assigned route" convention the difference-graph anchor already uses elsewhere in this file.
+  const currentWindow = pick.routeWindows?.[routeIds[0]]?.[0] || {};
+
+  // Persists through `actions.updateAttribute` — the channel `section.jsx`'s `SectionView` threads
+  // all the way to `sectionArray.jsx`'s debounced `onChange`, which demonstrably already persists
+  // today with zero pencil-click (drag-reorder uses the same channel). `dwAPI.setState` alone (the
+  // only channel this used to write through) is dead for persistence under `SectionView` — its
+  // Save-effect is hardcoded `if (!isEdit) return` there, regardless of what `onChange` prop was
+  // passed in from above (see report-authoring-ux-overhaul.md item 4).
+  //
+  // Runs the exact shared `applyMeasurePick` (the same function the older Settings-drawer picker
+  // uses) TWICE rather than re-deriving its compose/reconcile logic here — once against a `dwAPI`
+  // shim that mutates a plain clone of `state` so the full next-state can be persisted, once
+  // (when a real `dwAPI` is mounted, i.e. under `SectionEdit`) against the live state for instant
+  // visual feedback. This is deliberate: `applyMeasurePick` is the one place that must never drift
+  // between this row and MeasurePicker/index.js — duplicating its Map-vs-AVL-Graph branching and
+  // reconcile step here instead would reintroduce exactly that drift risk.
+  const applyPick = (partial) => {
+    const nextState = cloneDeep(state);
+    applyMeasurePick({ state: nextState, dwAPI: { setState: (updater) => updater(nextState) }, currentComponent }, partial);
+    actions?.updateAttribute?.('element', { ...sectionValue?.element, 'element-data': JSON.stringify(nextState) });
+    // Harmless no-op-for-persistence nicety under SectionView (see above); real instant feedback
+    // under SectionEdit. Either way, the round-trip once draft_sections/sections comes back down
+    // as a fresh `state` prop is what actually reflects the change.
+    if (dwAPI?.setState) applyMeasurePick({ state, dwAPI, currentComponent }, partial);
+  };
+
+  // Writes ONE window to every currently-assigned route's routeWindows entry (index 0 only —
+  // this pill has no concept of a route with 2+ variants), merging onto whichever facets
+  // (weekdays vs. time-of-day) this particular call isn't changing so the two stay independent,
+  // matching the old scalar's behavior exactly.
+  const applyWindowToAllRoutes = (partial) => {
+    const nextWindow = { ...currentWindow, ...partial };
+    const nextRouteWindows = { ...(pick.routeWindows || {}) };
+    routeIds.forEach((id) => { nextRouteWindows[id] = [nextWindow]; });
+    applyPick({ routeWindows: nextRouteWindows });
+  };
 
   const toggleRoute = (routeCompId) => {
     if (single) {
-      applyPick({ routeIds: routeIds[0] === routeCompId ? [] : [routeCompId] });
+      const clearing = routeIds[0] === routeCompId;
+      // Swapping which one route feeds this Map keeps the card's current window rather than
+      // resetting to unrestricted — same reasoning as the multi-route branch below.
+      applyPick({
+        routeIds: clearing ? [] : [routeCompId],
+        ...(clearing ? {} : { routeWindows: { [routeCompId]: [currentWindow] } }),
+      });
       return;
     }
-    applyPick({ routeIds: routeIds.includes(routeCompId) ? routeIds.filter((id) => id !== routeCompId) : [...routeIds, routeCompId] });
+    const adding = !routeIds.includes(routeCompId);
+    const nextRouteIds = adding ? [...routeIds, routeCompId] : routeIds.filter((id) => id !== routeCompId);
+    // A newly-added route inherits the graph's current window (the same one every other route on
+    // this card already shows) rather than starting unrestricted — otherwise it would silently
+    // diverge from what the "When" pill displays, the exact inconsistency this pill exists to
+    // prevent.
+    const nextRouteWindows = adding
+      ? { ...(pick.routeWindows || {}), [routeCompId]: [currentWindow] }
+      : pick.routeWindows;
+    applyPick({ routeIds: nextRouteIds, ...(nextRouteWindows ? { routeWindows: nextRouteWindows } : {}) });
   };
   const setWeekday = (key, on) => {
-    const next = { ...(pick.weekdays || {}) };
+    const next = { ...(currentWindow.weekdays || {}) };
     // Only an explicit `false` is meaningful (see utils.js's generateDateRange) — matches the
     // route-side convention this replaces, so storage never carries a same-meaning-but-verbose
     // all-true object.
     if (on) delete next[key]; else next[key] = false;
-    applyPick({ weekdays: next });
+    applyWindowToAllRoutes({ weekdays: next });
   };
   const applyDowPreset = (onKeys) => {
     const next = {};
     DOW_DEFS.forEach(({ key }) => { if (!onKeys.includes(key)) next[key] = false; });
-    applyPick({ weekdays: next });
+    applyWindowToAllRoutes({ weekdays: next });
   };
-  const applyTodPreset = (preset) => applyPick({ start: preset.startTime, end: preset.endTime });
+  const applyTodPreset = (preset) => applyWindowToAllRoutes({ start: preset.startTime, end: preset.endTime });
 
   const measureLabel = qcMeasureLabel(MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label);
   const routeLabel = routeIds.length === 0
@@ -126,8 +210,8 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
     : routeIds.length === 1
       ? (routesById.get(routeIds[0])?.name || '1 route')
       : `${routeIds.length} routes`;
-  const whenToken = `${timeOfDayToken(pick.start, pick.end)} · ${qcDaysToken(pick.weekdays)}`;
-  const whenTitle = `When · ${(pick.start && pick.end) ? `${pick.start}–${pick.end}` : 'all day'} · ${(summarizeWeekdays(pick.weekdays) || 'all days').toLowerCase()}`;
+  const whenToken = `${timeOfDayToken(currentWindow.start, currentWindow.end)} · ${qcDaysToken(currentWindow.weekdays)}`;
+  const whenTitle = `When · ${(currentWindow.start && currentWindow.end) ? `${currentWindow.start}–${currentWindow.end}` : 'all day'} · ${(summarizeWeekdays(currentWindow.weekdays) || 'all days').toLowerCase()}`;
   const aggregateLabel = RES_TOKEN[pick.resolution] || pick.resolution;
   const modeIsDifference = pick.comparisonMode === 'difference';
 
@@ -249,7 +333,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
         <div className={t.popSectionLabel}>time of day · which hours of each day</div>
         <div className={t.popPillRow}>
           {PEAK_PRESETS.map((preset) => {
-            const on = pick.start === preset.startTime && pick.end === preset.endTime;
+            const on = currentWindow.start === preset.startTime && currentWindow.end === preset.endTime;
             return (
               <button key={preset.label} type="button" className={on ? t.pillOn : t.pill} onClick={() => applyTodPreset(preset)}>
                 {preset.label}
@@ -262,7 +346,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState }) {
         <div className={t.popSectionLabel}>days of week</div>
         <div className={t.popPillRow}>
           {DOW_DEFS.map(({ key, label }) => {
-            const on = isDayOn(pick.weekdays, key);
+            const on = isDayOn(currentWindow.weekdays, key);
             return (
               <button key={key} type="button" className={on ? t.dayOn : t.dayOff} onClick={() => setWeekday(key, !on)}>
                 {label}

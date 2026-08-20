@@ -41,6 +41,7 @@ import { npmrdsMeasureMenu } from "./components/MeasurePicker"
 import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
+import CreateReportButton from "./components/CreateReportButton"
 
 import icons from "./icons";
 
@@ -68,8 +69,8 @@ const textSettings = {
       "displayItalicLG", "displayItalicMD",
       "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
-      "kicker", "cardTitle", "cardTitleSM", "labelSM", "btnPrimary", "btnOutline", "toggleOn", "toggleOff",
-      "statNum", "statXL", "statLG", "statMD",
+      "kicker", "cardTitle", "cardTitleSM", "labelSM", "labelMD", "btnPrimary", "btnOutline", "toggleOn", "toggleOff",
+      "statNum", "statXL", "statLG", "statMD", "buttonRow", "kickerXS",
     ],
   },
   styles: [{
@@ -127,8 +128,24 @@ const textSettings = {
     // Card valueFontStyle or a Lexical /Style token.
     chip: `font-mono! text-[9.5px]! uppercase tracking-[0.14em] text-slate-400! border border-zinc-950/10 rounded px-1.5 py-0.5 inline-block w-fit`,
 
+    // Button row — a paragraph whose ONLY content is a button node (a card's CTA rail).
+    // Lexical emits a trailing <br> in such a paragraph, and the paragraph's own strut
+    // then spends a full 22.5px line box on it — measured as ~26px of dead white below
+    // every doorway CTA, where the mockup's rail is flush with the card's bottom edge.
+    // StyledParagraphNode REPLACES the paragraph class, so this token is the whole
+    // declaration: zero leading collapses the phantom line, and dropping the default
+    // `mb-4` removes the margin the mockup does not have. ADDITIVE — no existing token
+    // changes, and a paragraph that does not opt in renders exactly as before.
+    buttonRow: `leading-[0]`,
+
     // Editorial kicker — the "// 01" amber labels that head sections
     kicker: `font-mono! text-[11px]! uppercase tracking-[0.2em] text-[#CA8A04]!`,
+    // Compact kicker — the same amber label inside a CARD header, where the mockups
+    // draw it a notch smaller and tighter (`text-[10px] tracking-[0.18em]`, e.g.
+    // npmrds-home.html § 02 "// change over time"). At `kicker`'s 11px/0.2em that
+    // label wraps to a second line in a card column and costs 22px of band height.
+    // ADDITIVE — `kicker` itself is unchanged, so every band head renders as before.
+    kickerXS: `font-mono! text-[10px]! uppercase tracking-[0.18em] text-[#CA8A04]!`,
     nav:    `${F_DISP} font-medium text-[13.5px] uppercase tracking-wide`,
 
     // Card title — Oswald uppercase 18px (product / feature cards)
@@ -138,6 +155,21 @@ const textSettings = {
     // Proper-case display label — small stat-box / lifecycle-step labels ("In progress",
     // "Resolved / closed") where the meta ladder's uppercase would shout. Oswald 12.5px medium.
     labelSM: `${F_DISP} font-medium text-[12.5px] leading-[1.3] text-slate-700`,
+    // One step up from labelSM — the compact metric-panel measure name
+    // (npmrds-home § 04: `font-display font-medium text-[15px] text-[#0f1722]`).
+    // `cardTitleSM` is the same 15px face but UPPERCASE + tracking-tight, which
+    // shouts INTERSTATE RELIABILITY in a dense 2x2 grid; `labelSM` is the right
+    // case and colourless-enough face but 12.5px/slate-700. ADDITIVE — neither
+    // existing token changes, so § 01's labelSM rows and every cardTitleSM on the
+    // site render exactly as before.
+    labelMD: `${F_DISP} font-medium text-[15px] leading-[1.3] ${INK}`,
+    // Unit suffix beside a `stat_value` KPI figure ("79.8 %", "374.7 M hr/yr").
+    // ⚠ `stat_value` resolves BOTH `valueFontStyle` and `unitFontStyle` against
+    // textSettings (statValue.jsx reads getComponentTheme(theme,'textSettings')),
+    // NOT the dataCard mirror — so a unit token has to live HERE to be reachable.
+    // The column type's built-in default is a relative `text-[0.4em]` (8.8px beside
+    // a 22px figure), where the designs draw `text-[12px] font-medium text-slate-500`.
+    statUnitSM: `${F_DISP} text-[12px] font-medium text-slate-500`,
     // Segmented-view toggle chips — a direction-free pair (filled current view + ghost link)
     // that reads as a QA ⇄ Design toggle on the control-room detail pages. Two cells with a
     // small grid gap, NOT a contained segmented control (a shared p-0.5 container isn't
@@ -655,10 +687,47 @@ const button = {
       button: "inline-flex items-center font-mono text-[11px] uppercase tracking-[0.14em] text-[#475569] hover:text-[#1F3F8F] cursor-pointer",
     },
     {
+      // linkMonoXS — the IN-CARD deep-link row (npmrds-home's doorway cards draw it as
+      // `font-mono text-[10px] uppercase tracking-wider text-slate-500`). ADDITIVE beside
+      // linkMono rather than a tweak to it: linkMono is the BAND-HEAD link ("open macro
+      // view →") on every transportnyv2 page and must not move.
+      // Why the smaller size is load-bearing and not just cosmetic: two of these links sit
+      // in one lexical layout-container inside a `col-span-4` card, and a grid item's
+      // automatic minimum size is its min-content — at linkMono's 11px/0.14em the pair
+      // measures 237px and forces the card's lexical column to 269px inside a 209px content
+      // box, so the card overflowed its own border and the CTA rail hung into the band
+      // gutter. At the design's 10px/tracking-wider the pair is 185px and fits on one line,
+      // which is what the mockup draws (horizontal-parity pass 2026-08-14).
+      // `leading-[15px]` is not decoration: these links sit in `buttonRow` paragraphs
+      // (`leading-[0]`), and an inline-flex box with inherited zero leading collapses to
+      // a 1px row — measured. An explicit line box makes the button stand up on its own,
+      // and 15px is exactly the mockup's line for this row. (`railBlue` and friends get
+      // away without one because they carry `h-11`.)
+      name: "linkMonoXS",
+      button: "inline-flex items-center leading-[15px] font-mono text-[10px] uppercase tracking-wider text-slate-500 hover:text-[#1F3F8F] cursor-pointer",
+    },
+    {
       // rail — full-width product-panel CTA (landing "exit panels"): navy bar,
       // white sign type left, gold arrow right; brightens on hover.
       name: "rail",
       button: "w-full h-11 px-5 -mx-1 flex items-center justify-between rounded-[6px] bg-[#0F2D4D] hover:bg-[#1F3F8F] transition-colors text-white font-display uppercase text-[13px] tracking-wide cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]",
+    },
+    // railBlue / railSlate / railGold — the same `rail` CTA bar in the other three
+    // product fields, so a doorway card's badge, icon shield and CTA share one colour
+    // (npmrds-home.html § 01/02/03: #1F3F8F Macro View · #37576B Reports · #8A5F03
+    // Route comparison; `rail` itself stays the #0F2D4D navy MAP-21 uses). Additive —
+    // no existing style is changed, so every page that names `rail` is unaffected.
+    {
+      name: "railBlue",
+      button: "w-full h-11 px-5 -mx-1 flex items-center justify-between rounded-[6px] bg-[#1F3F8F] hover:bg-[#16307A] transition-colors text-white font-display uppercase text-[13px] tracking-wide cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]",
+    },
+    {
+      name: "railSlate",
+      button: "w-full h-11 px-5 -mx-1 flex items-center justify-between rounded-[6px] bg-[#37576B] hover:bg-[#1f3450] transition-colors text-white font-display uppercase text-[13px] tracking-wide cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]",
+    },
+    {
+      name: "railGold",
+      button: "w-full h-11 px-5 -mx-1 flex items-center justify-between rounded-[6px] bg-[#8A5F03] hover:bg-[#6d4b02] transition-colors text-white font-display uppercase text-[13px] tracking-wide cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]",
     },
     {
       name: "default",
@@ -1115,6 +1184,56 @@ const dataCard = {
       prose: `${F_SANS} text-[14.5px]! leading-[1.65] text-slate-700!`,
       proseSM: `${F_SANS} text-[12.5px]! leading-[1.55] text-slate-500!`,
       proseXS: `${F_SANS} text-[11.5px]! leading-[1.5] text-slate-500!`,
+      // ── Clamped cell prose — the design's `truncate` / fixed-line-budget row text.
+      // ADDITIVE ON PURPOSE: `truncate` is NOT added to proseSM/proseXS above, because
+      // those are shared by every card on the site and would start clipping all of them
+      // (feedback_card_edits_bc). Opt in per column with valueFontStyle.
+      //
+      // Two things these tokens have to do that a plain font token does not:
+      //  1. `line-clamp-N`, NOT `truncate` — `truncate`'s `white-space:nowrap` makes the cell's
+      //     min-content the whole string, and the cell wrapper is a GRID ITEM with
+      //     `min-width:auto`, so a `minmax(0,1fr)` track can no longer hold it and the row
+      //     blows out sideways. `line-clamp` ellipsises at the same place while leaving
+      //     min-content at the longest word. It also fixes the line box for free: on a LINK
+      //     cell Card.jsx puts valueFontStyle on the INLINE <a>, so a font token's `leading`
+      //     never reaches the line box (the value div's inherited 16px/24px strut sizes every
+      //     line — a 2-line link cell costs 48px, not 2x17.25); `line-clamp`'s
+      //     `display:-webkit-box` makes the <a> block-level and it lays out its own lines.
+      //     ⚠ Do NOT also write `block` here: `display:block` beats `display:-webkit-box` in
+      //     the compiled sheet, the clamp silently stops clamping, and you are left with a
+      //     wrapping cell that merely hides its overflow (measured, 2026-08-13).
+      //  2. an explicit line budget that matches the mockup's (1 line for a one-line row
+      //     description, 2 for a stacked title+description row).
+      proseSMClamp1: `${F_SANS} text-[12.5px]! leading-[1.55]! text-slate-500! line-clamp-1`,
+      proseXSClamp2: `${F_SANS} text-[11.5px]! leading-[1.5]! text-slate-500! line-clamp-2`,
+      // proseSMTrunc1 — `proseSMClamp1` plus `break-all`, i.e. the mockup's `truncate`
+      // rendered faithfully. ADDITIVE, not a change to proseSMClamp1: the two differ in
+      // where the ellipsis lands, and both are legitimate.
+      //   · line-clamp alone breaks at WORD boundaries, so "Uncongested reference" in a
+      //     118px box renders "Uncongested…" and leaves 44px of the track empty.
+      //   · `word-break: break-all` lets the break fall mid-word, so the same cell reads
+      //     "Uncongested refer…" — the design's own clipping (measured 2026-08-14; the
+      //     mockup shows "Emissions · 6 pollut…", which this reproduces exactly).
+      // It does NOT re-introduce `truncate`'s blowout: break-all leaves min-content at one
+      // character, where `white-space:nowrap` makes it the whole string. Rows that fit are
+      // unaffected — with one line there is no break point until the clip point.
+      // Use it for a single-line row description; keep proseSMClamp1 where word-granular
+      // clipping is wanted (e.g. multi-line prose that must stay readable).
+      proseSMTrunc1: `${F_SANS} text-[12.5px]! leading-[1.55]! text-slate-500! line-clamp-1 break-all`,
+      // proseSMInk — proseSM at the DOORWAY body colour. ADDITIVE, not a change to
+      // proseSM: the two maps have always disagreed about this token's colour
+      // (textSettings `proseSM` is slate-600, this mirror is slate-500), which was
+      // invisible while the doorway prose was a LEXICAL paragraph resolving against
+      // textSettings. Converting the doorway to a Card moves that paragraph into a
+      // plain cell, where `valueFontStyle` resolves HERE — so without this token the
+      // conversion would silently lighten the design's `text-slate-600` body copy.
+      // Everything else matches proseSM exactly (npmrds-home.html doorway:
+      // `font-proxima text-[12.5px] leading-[1.55] text-slate-600`).
+      proseSMInk: `${F_SANS} text-[12.5px]! leading-[1.55] text-slate-600!`,
+      // Row title inside a list-style card (mockup: `font-proxima text-[13px] font-medium
+      // text-[#0f1722]`). `block` so the <a> lays out its own 19.5px line instead of paying
+      // the value div's 24px strut — see (1) above for why a link cell needs this at all.
+      proseRowSM: `${F_SANS} text-[13px]! font-medium leading-[1.5]! text-[#0f1722]! block`,
       metaMD: `${F_MONO} text-[12px]! leading-[1.45] tabular-nums text-slate-600!`,
       metaSM: `${F_MONO} text-[10.5px]! uppercase tracking-[0.18em] pb-1! text-slate-500!`,
       // ── Parity with textSettings (keep these in sync!): every token an author
@@ -1129,10 +1248,61 @@ const dataCard = {
       // Proper-case field label (modal/create-form headerFontStyle). Parity with textSettings —
       // was missing here, so headerFontStyle:"labelSM" silently fell back to textXS in Cards.
       labelSM: `${F_DISP} font-medium text-[12.5px]! leading-[1.3] text-slate-700!`,
+      // Parity with textSettings (see there for why labelMD exists at all).
+      labelMD: `${F_DISP} font-medium text-[15px]! leading-[1.3] ${INK}!`,
+      // labelMD + the mockup's `truncate`, by the proseSMTrunc1 recipe: `line-clamp-1`
+      // (never `truncate` — nowrap makes the cell's min-content the whole string and a
+      // `minmax(0,1fr)` track blows out sideways) plus `break-all` so the ellipsis lands
+      // mid-word exactly where the design's does. npmrds-home § 04 draws its measure
+      // names `flex-1 min-w-0 truncate`, and "Non-Interstate NHS reliability" does not
+      // fit the live 2-across panel at any track width.
+      labelMDTrunc1: `${F_DISP} font-medium text-[15px]! leading-[1.3]! ${INK}! line-clamp-1 break-all`,
+      // Parity with textSettings. stat_value reads unitFontStyle off textSettings, but
+      // Card.jsx ALSO applies `theme[valueFontStyle]` to the value wrapper from this
+      // map, so the token must exist in both or the wrapper falls back to textXS.
+      statUnitSM: `${F_DISP} text-[12px]! font-medium text-slate-500!`,
       // Segmented-view toggle chips (QA ⇄ Design) — see textSettings. px/py `!` beat the
       // injected value-cell paddings, same trick as btnPrimary/btnOutline.
       toggleOn:  `${F_MONO} text-[10.5px]! uppercase tracking-wide inline-flex items-center w-fit h-7 px-3! py-0! rounded-md bg-[#1F3F8F] text-white! no-underline!`,
       toggleOff: `${F_MONO} text-[10.5px]! uppercase tracking-wide inline-flex items-center w-fit h-7 px-3! py-0! rounded-md border border-zinc-950/10 bg-slate-50 text-slate-500! hover:text-slate-800 no-underline! cursor-pointer`,
+      // ── ctaRail* — the doorway card's FULL-BLEED bottom CTA, as a LINK CELL token.
+      // The cell peer of the `button` styles `rail` / `railBlue` / `railSlate` /
+      // `railGold` (same four product fields, same type, same gold arrow), for the
+      // npmrds-home doorways now that they are Cards rather than lexical sections.
+      // Deliberately NOT in textSettings: a lexical author already has the `button`
+      // styles above; these exist only because Card.jsx resolves a link cell's
+      // `valueFontStyle` against THIS map and puts it on the <a> itself.
+      //
+      // Four things here are load-bearing, all measured on /edit/home 2026-08-14:
+      //  1. `flex` + `justify-between`: the sign type left, the ::after arrow right,
+      //     exactly like the mockup's `h-11 px-5 flex items-center justify-between`
+      //     rail. `flex` also satisfies resolveLinkAnchorStyle's "token declares its
+      //     own display" guard, so the link-cell blockify fix leaves it alone.
+      //  2. `w-[calc(100%+2px)] -mx-px -mb-px` — the full bleed, and BOTH halves are
+      //     needed. (a) A v1-layout Card cell ships an always-on
+      //     `border border-transparent` (Card.layout.js), which insets any child by
+      //     1px on every side; the negative margins bleed back over it, the same
+      //     trick `rail`'s own `-mx-1` uses against its section padding. (b) The
+      //     explicit width is NOT redundant with `width:auto`: the cell's value div
+      //     carries `justify-items-start` (theme `justifyTextLeft`), and current
+      //     Chromium implements Box Alignment in BLOCK layout — so `justify-self`
+      //     lands on every block-level child and shrink-wraps it. Measured on
+      //     /edit/home: a bare `<div>` injected into a value div comes out **8px**
+      //     wide inside a 239.3px box, and the CTA anchor rendered 152.2px until
+      //     this width was added. That is also why `chip` above carries `w-full!`
+      //     — same cause, discovered the same way.
+      //  3. `rounded-b-[7px]`: the section paints the card at `rounded-[8px] border`,
+      //     with `overflow: visible` — nothing clips a child. 8px outer − 1px border
+      //     = the 7px INNER curve, so the rail's own bottom corners follow the card's.
+      //  4. no `h-full`: the rail must stay 44px (`h-11`) while the row ABOVE it
+      //     absorbs the card's leftover height (display.cellsRowsTemplate '… 1fr
+      //     max-content'), which is what pins it flush to the bottom edge.
+      // The hover tint is the one addition to the mockup (it draws none) and matches
+      // the `rail*` button styles, so a doorway CTA behaves the same in both forms.
+      ctaRail: `${F_DISP} flex items-center justify-between h-11 px-5 w-[calc(100%+2px)] -mx-px -mb-px rounded-b-[7px] bg-[#0F2D4D] hover:bg-[#1F3F8F] transition-colors text-white! uppercase text-[13px]! tracking-wide no-underline! cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]`,
+      ctaRailBlue: `${F_DISP} flex items-center justify-between h-11 px-5 w-[calc(100%+2px)] -mx-px -mb-px rounded-b-[7px] bg-[#1F3F8F] hover:bg-[#16307A] transition-colors text-white! uppercase text-[13px]! tracking-wide no-underline! cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]`,
+      ctaRailSlate: `${F_DISP} flex items-center justify-between h-11 px-5 w-[calc(100%+2px)] -mx-px -mb-px rounded-b-[7px] bg-[#37576B] hover:bg-[#1f3450] transition-colors text-white! uppercase text-[13px]! tracking-wide no-underline! cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]`,
+      ctaRailGold: `${F_DISP} flex items-center justify-between h-11 px-5 w-[calc(100%+2px)] -mx-px -mb-px rounded-b-[7px] bg-[#8A5F03] hover:bg-[#6d4b02] transition-colors text-white! uppercase text-[13px]! tracking-wide no-underline! cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]`,
       metaAccent: `${F_MONO} text-[12px]! leading-[1.45] tabular-nums font-medium text-[#B45309]!`,
       // As-of / methodology badge. Full-width (fills its cell so stacked chips'
       // borders align) with symmetric vertical padding. The inner value wrapper
@@ -1143,6 +1313,15 @@ const dataCard = {
       // would hit every value cell). `!` beats theme.value's merged `px-3 pb-3`.
       chip: `${F_MONO} text-[9.5px]! uppercase tracking-[0.14em] leading-none text-slate-400! border border-zinc-950/10 rounded w-full! px-2! py-1! text-center! [&_div]:text-center [&_div]:min-h-0`,
       metaXS: `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-slate-400!`,
+      // ── Unit suffix in a list row (npmrds-home § 01: `ratio` / `veh-hr` / `tons/yr`).
+      // ADDITIVE, not a change to metaXS: the design draws this run at `text-[9px]`
+      // where metaXS is 9.5px, and metaXS is shared by as-of badges and card meta all
+      // over the site (feedback_card_edits_bc). Half a pixel sounds like nothing, but
+      // this run sits in a `max-content` grid TRACK shared by four rows, so the widest
+      // unit's width is a tax on every description beside it: at 9.5px `TONS/YR` sizes
+      // that track to 69px, at the design's 9px to 66.3px, and the 2.7px comes straight
+      // back to the description column (horizontal-parity pass 2026-08-14).
+      unitXS: `${F_MONO} text-[9px]! uppercase tracking-[0.18em] text-slate-400!`,
       kicker: `${F_MONO} text-[10.5px]! uppercase tracking-[0.2em] text-[#CA8A04]!`,
       textXS:           "text-[11px] font-medium",
       textXSReg:        "text-[11px] font-normal",
@@ -2523,6 +2702,7 @@ const pageComponents = {
   ReportRouteList,
   ReportPageHeader,
   RouteComparison,
+  CreateReportButton,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2607,6 +2787,21 @@ const iconStyles = {
   productShieldBlue: {
     box:  "inline-flex size-14 rounded-[10px] bg-[#1F3F8F] items-center justify-center text-white align-middle mr-3",
     icon: "w-8 h-8",
+  },
+  // Gold shield — the fourth product field in the NPMRDS category set
+  // (npmrds-home.html § 03 "Route comparison" doorway, #8a5f03). Additive: the
+  // three shields above are untouched, so every existing card is byte-identical.
+  productShieldGold: {
+    box:  "inline-flex size-14 rounded-[10px] bg-[#8A5F03] items-center justify-center text-white align-middle mr-3",
+    icon: "w-8 h-8",
+  },
+  // Row affordance chevron — the 12px slate glyph at the right edge of a list row
+  // (npmrds-home.html § 02 ready-made report rows: `size-3 text-slate-300 shrink-0`).
+  // Unstyled icon nodes render at the IconNode default (~28px here), which both looks
+  // wrong and eats ~16px of the row's text column. Additive: no existing style changes.
+  rowChevron: {
+    box:  "inline-flex items-center justify-center text-slate-300 align-middle",
+    icon: "w-3 h-3",
   },
 };
 

@@ -79,6 +79,27 @@ const QUERY_COLUMNS = [
   'mood',                      // when present
   'lyrics',                    // when present
 
+  // ─── provenance ───────────────────────────────────────────────
+  // WHERE a row came from, which is what makes the log editable without
+  // the matcher and a DJ fighting over it.
+  //
+  //   'auto'       written by the matcher (the webhook / backfill paths)
+  //   'dj'         typed by a person — the matcher must never touch it
+  //   'corrected'  a matched row a person fixed; the detection it replaced
+  //                is preserved in original_* so the edit is reversible
+  //
+  // Every ingest path sets this ('auto'), so a NULL here means a row that
+  // predates the column, which reads as 'auto' everywhere it matters.
+  'provenance',
+  'edited_by',                 // the editing user's email (CMSContext user)
+  'edited_at',
+  // The detection a correction replaced. Kept at column level rather than
+  // only in `raw` because the admin shows it under the corrected value and
+  // "revert" has to be a query, not a JSONB dig.
+  'original_title',
+  'original_artist_name',
+  'original_score',
+
   // envelope (Custom Stream Monitoring)
   'stream_id',
   'stream_url',
@@ -94,7 +115,7 @@ const JSONB_COLUMNS = new Set([
 ]);
 
 const INTEGER_COLUMNS = new Set([
-  'result_type', 'status_code', 'score', 'result_from',
+  'result_type', 'status_code', 'score', 'result_from', 'original_score',
   'duration_ms', 'play_offset_ms', 'played_duration',
   'sample_begin_time_offset_ms', 'sample_end_time_offset_ms',
   'db_begin_time_offset_ms', 'db_end_time_offset_ms',
@@ -112,6 +133,10 @@ function pgTypeFor(name) {
   if (name === 'received_at') return 'TIMESTAMPTZ NOT NULL DEFAULT NOW()';
   if (name === 'kind') return 'TEXT NOT NULL';
   if (name === 'timestamp_utc') return 'TIMESTAMPTZ';
+  if (name === 'edited_at') return 'TIMESTAMPTZ';
+  // Defaulted so a row inserted by any path that predates provenance — or by
+  // hand in SQL — still classifies as an automatic detection rather than NULL.
+  if (name === 'provenance') return "TEXT NOT NULL DEFAULT 'auto'";
   if (JSONB_COLUMNS.has(name)) return 'JSONB';
   if (INTEGER_COLUMNS.has(name)) return 'INTEGER';
   return 'TEXT';
@@ -187,6 +212,16 @@ const DEFAULT_VISIBLE_COLUMNS = [
   'spotify_track_id',
   'youtube_vid',
   'album_cover',
+  // ─── provenance ────────────────────────────────────────────────
+  // Visible by default because the admin playlist reads them on every row
+  // (the badge, and the original detection under a correction), and a column
+  // missing from metadata.columns can't be selected by a page section.
+  'provenance',
+  'edited_by',
+  'edited_at',
+  'original_title',
+  'original_artist_name',
+  'original_score',
   // ─── envelope ──────────────────────────────────────────────────
   'stream_id',
   // ─── raw payload — always last, gives full fidelity ────────────
@@ -225,6 +260,84 @@ function buildIdempotencyIndexSQL(fullyQualifiedName) {
 function buildCreateTableSQL(fullyQualifiedName) {
   const cols = QUERY_COLUMNS.map(colDef).join(',\n    ');
   return `CREATE TABLE IF NOT EXISTS ${fullyQualifiedName} (\n    ${cols}\n  )`;
+}
+
+/**
+ * Bring an EXISTING per-stream table up to the current QUERY_COLUMNS.
+ *
+ * `buildCreateTableSQL` is `IF NOT EXISTS`, so it is a no-op against a table
+ * that already exists — a column added to QUERY_COLUMNS later would never
+ * reach a live stream, and every read of it would error. (That is exactly the
+ * failure that cost the dataset migration a day: `auth_permissions` was added
+ * to a create script and to no migration, so envs created earlier never got
+ * it. Adding a column to the list is not the same as adding it to a table.)
+ *
+ * `ADD COLUMN IF NOT EXISTS` makes this idempotent, so it is safe to run on
+ * every provision and every backfill. Returns one statement per column.
+ */
+function buildMigrateTableSQL(fullyQualifiedName) {
+  return QUERY_COLUMNS
+    .filter((c) => {
+      if (c === 'id') return false;                     // the PK is create-time only
+      // NOT NULL without a DEFAULT cannot be added to a table that already has
+      // rows. Those are create-time columns by definition (`kind`), and
+      // IF NOT EXISTS would skip them anyway — but emitting the statement at
+      // all would make this fail loudly on a table that somehow lacked one.
+      const type = pgTypeFor(c);
+      return !(type.includes('NOT NULL') && !type.includes('DEFAULT'));
+    })
+    .map((c) => `ALTER TABLE ${fullyQualifiedName} ADD COLUMN IF NOT EXISTS ${colDef(c)}`);
+}
+
+/**
+ * Provenance bookkeeping, enforced by the DATABASE rather than by whichever
+ * client happens to be writing.
+ *
+ * The admin playlist promises two things about an edited row: it reads as
+ * `Corrected`, and the detection it replaced is still there underneath. Both
+ * are properties of the row, not of the form that saved it — and the save goes
+ * through the generic UDA edit route, which writes exactly the columns the Card
+ * hands it and knows nothing about provenance. A trigger is the only place the
+ * guarantee holds for every writer (the admin form, a future bulk fix, psql).
+ *
+ * On UPDATE, when one of the identifying fields actually changes:
+ *   - an 'auto' row becomes 'corrected', and its previous title/artist/score
+ *     are captured into original_* (once — a second edit does not overwrite the
+ *     first capture, so original_* stays the MATCHER's value, not an
+ *     intermediate human one)
+ *   - a 'dj' row stays 'dj' — it had no detection to preserve
+ *   - edited_at is stamped
+ *
+ * Idempotent: CREATE OR REPLACE + DROP TRIGGER IF EXISTS, so it can run on
+ * every provision and every migration.
+ */
+function buildProvenanceTriggerSQL(fullyQualifiedName) {
+  const unqualified = fullyQualifiedName.split('.').pop();
+  const fnName = `${unqualified}_mark_corrected`;
+  const trgName = `${unqualified}_mark_corrected_trg`;
+  return [
+    `CREATE OR REPLACE FUNCTION ${fnName}() RETURNS trigger AS $$
+     BEGIN
+       IF (NEW.title IS DISTINCT FROM OLD.title
+           OR NEW.artist_name IS DISTINCT FROM OLD.artist_name
+           OR NEW.album IS DISTINCT FROM OLD.album) THEN
+         IF COALESCE(OLD.provenance, 'auto') = 'auto' THEN
+           NEW.provenance := 'corrected';
+           IF OLD.original_title IS NULL AND OLD.original_artist_name IS NULL THEN
+             NEW.original_title := OLD.title;
+             NEW.original_artist_name := OLD.artist_name;
+             NEW.original_score := OLD.score;
+           END IF;
+         END IF;
+         NEW.edited_at := NOW();
+       END IF;
+       RETURN NEW;
+     END;
+     $$ LANGUAGE plpgsql`,
+    `DROP TRIGGER IF EXISTS ${trgName} ON ${fullyQualifiedName}`,
+    `CREATE TRIGGER ${trgName} BEFORE UPDATE ON ${fullyQualifiedName}
+       FOR EACH ROW EXECUTE FUNCTION ${fnName}()`,
+  ];
 }
 
 const INSERT_COLUMNS = QUERY_COLUMNS.filter((c) => c !== 'id' && c !== 'received_at');
@@ -274,6 +387,8 @@ module.exports = {
   ALL_COLUMN_METADATA,
   DEFAULT_VISIBLE_COLUMNS,
   buildCreateTableSQL,
+  buildMigrateTableSQL,
+  buildProvenanceTriggerSQL,
   buildIdempotencyIndexSQL,
   buildInsertSQL,
   buildBackfillInsertSQL,

@@ -165,7 +165,13 @@ async function createDataTable({ db, table_schema, table_name, columns = false }
 
 async function getListTmcId({ chDb, dataTableName, year }) {
   const yearClause = year ? `WHERE EXTRACT(YEAR from date) = ${year}` : '';
-  const sql = `SELECT distinct(tmc) FROM ${dataTableName} ${yearClause}`;
+  // ORDER BY tmc so the returned list is deterministic. worker.js takes the FIRST
+  // `percentTmc`% of this list, so without an explicit order a partial run (percentTmc < 100)
+  // samples a different, non-reproducible subset of the network on every invocation — two runs
+  // of the same "10% test publish" could not be compared. Output-neutral: it reorders a DISTINCT
+  // set rather than changing its membership, and at the production setting percentTmc = 100 the
+  // whole list is used either way, so no published value moves.
+  const sql = `SELECT distinct(tmc) FROM ${dataTableName} ${yearClause} ORDER BY tmc`;
   const result = await chDb.query({ query: sql, format: 'JSON' });
   return result.json();
 }
@@ -303,10 +309,4 @@ module.exports = {
   getTrafficDistributionProfileName,
   getNumBinsInDayForTimeBinSize,
   omitPrefixColumns,
-  // Exported (additively — no behavior change here) so pm3 can build its
-  // metrics⋈geometry view from the SAME expressions this query builder uses
-  // instead of keeping a second copy of the AADT/AVO formulas. The expressions
-  // reference the meta table as `t1` (or unqualified) and carry their own
-  // `as <name>` aliases, so a consumer must alias the meta table `t1`.
-  dataKeyToQueryMap,
 };

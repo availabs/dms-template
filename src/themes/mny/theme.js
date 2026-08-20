@@ -692,6 +692,7 @@ const theme = {
   dataCard: {
     styles: [
       {
+        name: "default",
         columnControlWrapper:
             "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
         columnControlHeaderWrapper: `px-1 font-semibold border bg-gray-50 text-gray-500`,
@@ -786,6 +787,23 @@ const theme = {
         description: "text-[#2D3E4C] font-light normal-case font-[Oswald] text-[12px]",
 
         componentWrapper: 'w-full',
+      },
+      {
+        // Dark-band variant. Geometry, typography and every other key are
+        // inherited from styles[0] by getComponentTheme — only the ink is
+        // restated, because that is the only thing a dark surface changes.
+        //
+        // Chosen per-section from the Card toolbar's "Card style" picker
+        // (`display.cardStyle`), so any Card an author drops onto a
+        // `darkSection` layoutGroup can be made legible without code. Before
+        // this existed, `value: "w-full text-[#2D3E4C]"` was declared on the
+        // element itself and no ancestor colour could override it — a Card on a
+        // dark band rendered dark-on-dark with no authoring escape hatch.
+        name: "Dark",
+        subWrapper: "w-full text-white",
+        header: "w-full flex-1 uppercase text-[#C5D7E0]",
+        value: "w-full text-white",
+        description: "text-[#C5D7E0] font-light normal-case font-[Oswald] text-[12px]",
       }
     ]
   },

@@ -1,3 +1,38 @@
+import React from "react"
+import { Link } from "react-router"
+import { ThemeContext, getComponentTheme } from "../../dms/packages/dms/src/ui/useTheme"
+
+// ── Admin-rail chrome ──────────────────────────────────────────────────────
+// The rail's navigable items come from the pattern's PAGES (add a page, get a
+// rail item — the author-empowering default). These two widgets are the parts
+// of the mockup's rail that are chrome rather than navigation, and they mount
+// through `layout.options.sideNav.topMenu` / `bottomMenu`, which is where the
+// Layout expects rail widgets (`Logo`, `UserMenu`, `ThemeModeToggle` are the
+// library's own). Both read the active `sidenav` style, so a restyle of the
+// rail carries them along.
+
+export const SideNavHeading = ({ label = "" }) => {
+  const { theme } = React.useContext(ThemeContext) || {}
+  const t = getComponentTheme(theme, "sidenav")
+  return <div className={t?.sectionHeading}>{label}</div>
+}
+
+export const SideNavSiteLink = ({ label = "View site", heading = "Public site", to = "/", icon = "ViewPage" }) => {
+  const { theme, UI } = React.useContext(ThemeContext) || {}
+  const { Icon } = UI || {}
+  const t = getComponentTheme(theme, "sidenav")
+  return (
+    <div className={t?.siteLinkWrapper}>
+      <div className={t?.sectionDivider} />
+      {heading ? <div className={t?.sectionHeading}>{heading}</div> : null}
+      <Link to={to} className={t?.navitemSide}>
+        {Icon ? <Icon icon={icon} className={t?.menuIconSide} /> : null}
+        {label}
+      </Link>
+    </div>
+  )
+}
+
 export const NavRightStyleWidget = () => (
   <div>
     <div className="absolute -right-[20px] top-[8px]">

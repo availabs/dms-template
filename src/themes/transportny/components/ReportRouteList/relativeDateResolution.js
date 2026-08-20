@@ -158,6 +158,36 @@ export function resolveRelativeDateFormula(formula, baseStartDate, baseEndDate) 
   return { start: formatDateOnly(start), end: formatDateOnly(end) };
 }
 
+// A route named "Current Year"/"1 Year Ago"/"Trailing 3 Years" is only meaningful during
+// authoring — once `resolveRouteDates` has resolved its formula against a real (possibly
+// viewer-`?asOf=`-picked) anchor date, the actual calendar year(s) it landed on is strictly more
+// informative for a chart legend than the relative phrase, and report-spec.md's "route names are
+// the only series discriminator" means that legend has nowhere else to get it from. Only fires
+// for a `year`-span formula (`yearof` or `year±Nyear->Myear`) — day/week/month/calendar-span
+// derived routes ("Yesterday", "This Month", "Winter (Avg Day)") already carry a literal,
+// non-relative name and are left alone. A trailing non-relative annotation on the authored name
+// (bi_directional's "(NB)"/"(SB)") is preserved by reattaching it after the computed label, since
+// nothing about the year-ness of a formula says anything about a direction suffix.
+export function yearRangeForDateFormula(dateFormula, startDate, endDate) {
+  const m = RELATIVE_DATE_REGEX.exec(dateFormula || '');
+  if (!m || m.groups.span !== 'year') return null;
+  const start = parseDateOnly(startDate);
+  const end = parseDateOnly(endDate);
+  if (!start || !end) return null;
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+  return startYear === endYear ? String(startYear) : `${startYear}–${endYear}`;
+}
+
+// Convenience over `yearRangeForDateFormula` for the common call site (a resolved route object) —
+// falls back to the route's own authored `name` when the formula isn't year-span, or has none.
+export function resolvedRouteLabel(route) {
+  const yearRange = route?.dateFormula ? yearRangeForDateFormula(route.dateFormula, route.startDate, route.endDate) : null;
+  if (!yearRange) return route?.name;
+  const suffix = /(\s*\([^)]*\))\s*$/.exec(route.name || '');
+  return suffix ? `${yearRange}${suffix[1]}` : yearRange;
+}
+
 // Resolves every formula-bearing route entry against its base (found by
 // `derivedFromRoute` === some sibling's `route_comp_id`, in the SAME array)
 // and returns a new array with fresh startDate/endDate. Entries without a

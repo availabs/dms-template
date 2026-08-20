@@ -55,8 +55,8 @@ that, and **only one of them is per-page**:
 | Section | Folder | Landing | Pages |
 |---|---|---|---|
 | Design System | `design-system/` | `theme.html` | 5 |
-| Station Site | `pages/` | `home.html` | 9 |
-| Station Admin | `pages/admin/` | `djs.html` | 3 |
+| Station Site | `pages/` | `home.html` | 11 |
+| Station Admin | `pages/admin/` | `playlist.html` | 7 |
 
 A section is a product area, not a folder. If later work adds a distinct
 area — an author/admin flow, or a linked multi-page workflow — give it
@@ -148,8 +148,8 @@ draws the nav short in its layout diagram for the same reason.
   set as type**. The live theme serves `/themes/wcdb/logo_white.svg`; these
   mockups carry a copy at `assets/logo_white.svg` so the folder stays
   self-contained. `.wcdb-logo-img` inverts it in light mode.
-- The nav items are `Schedule · Events · Station Info · DJs`, all four now
-  resolving to real mockups (`station-info.html` was the last one added).
+- The nav items are `Schedule · Events · Station Info · DJs · Airwaves`, all five
+  resolving to real mockups (`airwaves.html` was the last one added, 2026-08-17).
 - The right cluster is the signed-out `UserMenu` glyph **then** the mode
   toggle. `wcdb_theme.js` lists the toggle first in its default `rightMenu`
   array; the live site overrides that order, and production is what these
@@ -310,15 +310,255 @@ Three decisions worth knowing about:
 
 ---
 
+## Airwaves — the blog, and its two admin pages (added 2026-08-17)
+
+The blog has a **name**. It is called **Airwaves**, and it is called that
+everywhere — public masthead, top nav, admin sidenav, admin page title. A blog
+with a name is a publication; "Blog" is a nav label. `pages/blog.html` is the
+older unnamed version and is kept only as the before-picture.
+
+Three pages:
+
+| Page | What it is |
+|---|---|
+| `pages/airwaves.html` | the public feed |
+| `pages/post.html` | one article |
+| `pages/admin/airwaves.html` | blog management — every post, its state, its image |
+| `pages/admin/post-editor.html` | one post |
+
+### Every post has a featured image, and that is the point
+
+This is the change the design is built around. The old blog page was a list of
+titles with generated gradient artwork; a station blog that publishes studio
+photography deserves better, and the image is what makes the page worth
+visiting rather than skimming.
+
+It follows through everywhere: the public grid crops it 3:2 (16:9 for the
+double-width lead), the admin list shows it as the **first column** — so a post
+missing one is the thing an editor spots first, and the empty slot says
+`NO IMAGE` — and the editor puts it above the title with a chip stating the crop
+the grid will apply.
+
+### A post with no image is allowed, and has to look deliberate
+
+Two of the six cards in the mockup have no image, on purpose — that is the state
+being designed, not an oversight. An imageless post falls back to the **generated
+gradient the blog used before featured images existed** (`.wcdb-art--ember` /
+`--cool` / `--mono` / `--violet` in `_shared.css`), with the post's **category
+set over it** — a bare gradient reads as a loading state, a labelled one reads as
+a choice.
+
+The variant must be derived from the post's own values (hash the slug, or map the
+category) so a given post always gets the same one. A gradient that changes on
+reload is a bug.
+
+In the live build that is either the image column's `defaultImage`, or the
+`art_block` item on the primitive-gap ledger if the gradient is wanted per-row.
+
+### The rail carries the main article, the filters, and the stream
+
+The rail holds three blocks on this page, top to bottom:
+
+1. **`card:featured-post`** — the main article, in the slot every other page
+   gives to `card:on-air`.
+2. **`card:category-filter`** — filter by category.
+3. **`LISTEN LIVE`** — unchanged, on every page.
+
+**Why the filters are here and not above the feed.** The rail is the page's
+standing furniture — it is what does not change as you read — and a filter is
+exactly that: navigation, not content. Moving it out of the content column also
+lets the feed start at the very top of the page instead of being pushed down by
+a control strip.
+
+**TWO axes, one card** — the same argument `card:schedule-filters` makes on the
+schedule page: keeping them together is what makes them read as filters on one
+list rather than two unrelated nav strips. Here the axes are **what** (category)
+and **when** (period).
+
+| Axis | Values |
+|---|---|
+| Category | Everything · **Album reviews** · Dispatches · Interviews · Liner notes · Studio diary |
+| When | Anytime · This month · This year · 2025 · Earlier |
+
+**The time axis is deliberately coarse.** A blog that posts a few times a month
+does not need a date picker, and an empty result is a worse outcome than a
+slightly wide one. `This month` / `This year` are relative and need no
+maintenance; the explicit years are generated from what exists, so the list
+never offers an empty one.
+
+**The result count is part of the control.** With two axes it is the only way a
+reader can tell what their combination did — `11 of 49` is the difference
+between a filter that worked and a feed that looks broken. It carries the reset.
+
+**Every category has a glyph**, in the same disc the schedule rows use (26px
+here, 34px there). Not decoration: it gives the eye a fixed left edge to scan
+down instead of six ragged mono labels, and it is the mark the category can be
+recognised by elsewhere. **All six are existing registry icons** — this adds
+nothing to the icon set:
+
+| Category | Icon | Why |
+|---|---|---|
+| Everything | `Grip` | the whole grid |
+| Album reviews | `Star` | a review has a rating |
+| Dispatches | `Broadcast` | a dispatch is a transmission |
+| Interviews | `Microphone` | — |
+| Liner notes | `Note` | — |
+| Studio diary | `Calendar` | a diary is dated |
+
+Both axes are `filter_pill` cells over one page variable each, exactly as the
+schedule's day filter and the admin state bars are, so two axes cost the theme
+nothing new.
+
+**There is only ONE featured treatment on the page.** The feed below is a
+uniform 2-up grid with no double-width lead: two "this is the important one"
+treatments on a single page cancel each other out. The rail is the lead; the
+grid is the feed. That also removes the per-card column span from what this page
+needs, so the ledger's `cardSpan` item no longer blocks the blog.
+
+### The featured post takes the rail
+
+On every other public page the rail opens with `card:on-air` — *what show is on
+right now*. On Airwaves, **`card:featured-post` takes that slot instead**.
+
+The reasoning is that the rail is the page's one full-height object, and
+whatever occupies it is the claim the page makes. On the blog that claim is
+"read this", not "listen to this" — and a reader who arrived for Airwaves has
+been told what is on air by every other page they passed through.
+
+**`LISTEN LIVE` is kept below it.** The stream is the station's permanent offer
+and belongs on every page.
+
+The featured block is *structurally identical* to `card:on-air`: full-bleed
+image, gradient scrim, identity set over the lower third, notch chip in the
+corner. That is deliberate — the live build can reuse the same composition
+(image cell + gradient cell + text cells riding up on negative margins) with
+the post's fields swapped for the show's, so this costs the theme nothing new.
+
+### `post.html` — one article
+
+Four pages now, not three. The single-post page puts **the photograph in the
+left rail and the article in the right column**, which is the same cutaway every
+other page uses — so it needs no new layout, only a different tenant for the
+rail.
+
+**The rail is the picture, and nothing else.** It is `md:sticky md:h-screen`
+like every rail, and that is the point: the image stays with you for the length
+of the article instead of being a banner you scroll past in two seconds.
+
+**No text over it, and therefore no scrim.** Every other rail panel sets a title
+on its image because that panel *is* the headline; here the article carries its
+own `<h1>` in the column beside it, and repeating it over the photo would be
+saying the same thing twice at two different sizes. The only addition is the
+**photo credit** in the notch chip — a station that shoots its own sessions has
+photographers.
+
+The column beside it, in order:
+
+| Section | Note |
+|---|---|
+| `lexical:breadcrumb` | back to Airwaves, and the category |
+| `lexical:post-head` | kicker, headline, standfirst, byline row |
+| `lexical:post-body` | the article — **one** lexical section |
+| `card:post-footer` | what it is filed under, and how to hear it |
+| `card:related` | two more in the same category |
+
+Three decisions worth keeping:
+
+- **The measure is `max-w-[68ch]`, not the column width.** The content column is
+  wide enough to run prose edge to edge and it should not — a 110-character line
+  is measurably harder to read. The column stays wide; the paragraph does not
+  fill it. The pull quote is set *outside* the measure so it interrupts
+  deliberately.
+- **The byline is a row, not a stack** — avatar, name linking to the writer's DJ
+  profile, then the two facts a reader uses to decide whether to start now: when
+  it went out and how long it takes. Read time is derived.
+- **`card:post-footer` ends with the thing the article is about.** Most posts
+  here concern something that airs, so the page hands the reader to the show
+  rather than leaving them to search the schedule. That row is what makes this a
+  *station* blog rather than a blog.
+
+### The editor splits the post from what is about the post
+
+Left column: the post as a reader meets it — image, title, slug, excerpt, body.
+Right column: everything *about* it — status, publish date, Featured, category,
+author. Mixing the two is what makes most CMS editors feel like a form rather
+than a piece of writing.
+
+Two details worth keeping:
+
+- **Save draft and Update post are separate buttons.** Saving and going public
+  are different decisions, and collapsing them is how a half-written post ends
+  up on the site.
+- **`Featured` says what it does.** It is the highest-consequence switch on the
+  page — it decides what fills the rail on the public blog — so the copy under
+  it states that rather than leaving an editor to find out by publishing. The
+  design deliberately does **not** enforce a single featured post: the rail
+  takes the newest one, so featuring a second is how an editor queues the next.
+
+Read time (`9 min read`) is **derived from the body**, never typed.
+
+### Not designed here
+
+- **A subscribe destination.** The footer's form is in the mockups, but nothing
+  in this folder decides where an address goes.
+- **Per-post social/OG images.** The featured image is assumed to serve.
+- **Comments.** Out of scope; the station has never had them.
+
 ## The admin section
 
-`pages/admin/` — three pages behind the same TopNav notch as the public site,
-with the admin menu and an `Admin` marker: **`djs.html`** (roster + add modal),
-**`dj-profile.html`** (the editor), **`schedule.html`** (week editor + versions).
+`pages/admin/` — five pages. **`playlist.html` is the landing page**, because
+it is the only one with a daily job: **`playlist.html`** (spin log + fix/add),
+**`schedule.html`** (week editor + versions), **`djs.html`** (roster + add
+modal), **`dj-profile.html`** (the editor), **`events.html`** (calendar).
 
-**Admin pages do not carry the live rail.** The rail is public-site chrome; an
-editing surface is a working context, not a listening one. `sync-rail.mjs` skips
-the folder deliberately — if an admin page has no rail, that is why.
+### Layout `app` — a SideNav, not the notch
+
+Admin is the brand's **second Layout style** (skill §3.3: `app` = "authoring /
+admin / dashboard surfaces, SideNav visible, narrower content gutters, denser").
+The public cutaway is `default`; this is `app`, and the difference is real chrome,
+not a restyle:
+
+- a persistent **48-wide (192px)** rail (`layoutContainer1: lg:pl-48`,
+  `layoutContainer2: fixed inset-y-0 left-0 w-48`), collapsing to a bar below `lg`.
+  **Narrowed from 64 (256px) on 2026-08-14**: a rail item is a short label and a
+  17px glyph, so a quarter of that width was never doing work, and on an admin
+  page the content column is what needs it. The foot block scaled with it
+  (size-8 avatar, `px-3 py-3`, `gap-2`) and the logo dropped to `h-9`.
+- the content hugs the rail — **`mr-auto`, never `mx-auto`** (skill §7.3.1);
+  `mx-auto` centres between the rail and the right edge and drifts away from it
+- **no live rail.** That is public-site chrome; an editing surface is a working
+  context, not a listening one. `sync-rail.mjs` skips the folder deliberately.
+
+> **Use the keys `SideNav.jsx` actually reads.** `translating-design-system-to-dms-theme.md`
+> §3.1 documents exactly this trap: plausible-looking invented keys (`wrapper`,
+> `inner`, `menu`) silently no-op. The real set is in
+> `ui/components/SideNav.theme.jsx` — `layoutContainer1/2`, `sidenavWrapper`,
+> `logoWrapper`, `itemsWrapper`, `menuItemWrapper`, `navitemSide` /
+> `navitemSideActive`, `menuIconSide` / `menuIconSideActive`, `sectionHeading`,
+> `sectionDivider`, `bottomMenuWrapper`, and the `topnav*` keys used only by the
+> mobile collapse. The mockup is built on those names so the translation is a
+> transcription rather than a redesign.
+
+### The admin page header
+
+One component, identical on all three pages:
+
+```
+breadcrumb            Admin › DJs › DJ Halftone      ← at the very top, 24px in
+title row             DJ Halftone  ·  metadata  ·  status        [actions →]
+working content       starts at ~115px
+```
+
+**Breadcrumbs go above the title, not under it**, and carry the whole trail —
+they are how you leave the page, so they belong where the eye starts. The title
+gets one line at `clamp(30px,3.2vw,42px)` with its metadata set inline beside it,
+and the primary action sits on the same row.
+
+A functional page does not get a hero band. The public pages open on a masthead
+because arriving *is* the experience; an admin page is a place you are already
+working, so the top of the viewport is working space. This header costs ~115px
+before real content, against ~183px for the display-scale version it replaced,
+and it is the same 24 / 55 / 115 on every page rather than three variations.
 
 ### Decisions the live data forced
 
@@ -337,13 +577,76 @@ rows actually say (verified 2026-08-13 via the DMS CLI):
   **20 columns with fewer than five non-empty values** — MySpace, MSN, Yahoo,
   favourite magazines, favourite places to hang out. Asking for everything up
   front is how that happens. Everything else is filled in after saving.
-- **The schedule editor leads with what is *not* placed.** Only **106 of 769**
-  shows have a start time. The job is not correcting times, it is entering them,
-  so unplaced shows are a queue at the top of the page rather than a filter you
-  have to go looking for.
-- **Bad rows are tinted in place, never hidden.** A clash, a missing time and a
-  missing DJ each stay visible where they are. An editor that filters its
-  problems out of sight is how 663 shows ended up with no time.
+- **The schedule shows the whole broadcast day, so an open hour is a thing you
+  can see.** Seven days × 24 hours, every cell drawn. Only **106 of 769** shows
+  have a start time, and you cannot fill a gap you cannot see — an "unplaced"
+  queue described the gap, a grid *shows* it. One hour is the minimum slot, which
+  is why the grid's unit is an hour.
+- **Point and click, never drag.** A placed block opens the edit modal; an empty
+  hour opens the add modal already knowing its day and hour. Drag-and-drop is a
+  large amount of interaction surface to build, test and make accessible, and it
+  buys nothing a click doesn't.
+- **Bad rows are tinted in place, never hidden.** A show with no DJ stays visible
+  where it sits. An editor that filters its problems out of sight is how 663
+  shows ended up with no time.
+- **One control per decision.** The version *dropdown* is the only way to change
+  which version you are editing. An always-visible list of every version beside
+  it was a second control for the same choice — on a sticky bar, following you
+  down the page.
+
+### The playlist is a review queue, not a form
+
+The stream is monitored by **ACRCloud Custom Stream Monitoring**, which POSTs a
+detection per track to a webhook — the receiver and the normaliser live in
+`research/now-playing/` and settle the row shape:
+
+```
+matched   timestamp_utc · title · artist · album · album_cover · score
+          isrc · upc · spotify/youtube/deezer ids · genres · label · release_date
+no-match  timestamp_utc · played_duration · status_code
+```
+
+Two fields drive the whole page. **`score`** is the match confidence, so
+"incorrectly added" is detectable rather than a matter of opinion — under 80 the
+row is tinted and flagged. **`no-match`** events are the gaps, so "missed" is a
+row that already exists rather than an absence someone has to notice.
+
+So a DJ is **not** here to type a playlist. They are here for the exceptions,
+and the page leads with `Needs review · 2` beside `All · 412`. Both failure
+states are drawn **in place** in the log — a gap reads *"Nothing identified · 8
+min · talk, a live set, or a track the matcher missed"* with an **Add** button; a
+low-confidence match keeps its percentage next to it with an **Edit**. A row
+carries its provenance as a badge: a score (auto), `By DJ` (added by hand, and
+never overwritten by the matcher), or `Corrected` (edited, original detection
+kept underneath).
+
+The cover slot on the public rail can be filled from this feed's `album_cover`
+— but note **ACRCloud does not return cover art**. The `now_playing` data type
+fills it by looking the track up on iTunes (`data-types/now_playing/cover-enrichment.js`),
+so covers are best-effort and a row can legitimately have none.
+
+### The schedule is two datasets, not one
+
+A row in the legacy schedule **is a show**; the time columns are optional
+attributes on it, which is why 663 of 769 rows have no time. The target shape
+splits them:
+
+- **`shows`** — `show_id · name · dj_id · department · description · icon`
+- **`schedule`** — `show_id · day · start · end`, and **this is what a version
+  versions**
+
+That copies **106 rows per version instead of 769**, keeps show records shared
+(fix a show name once, not once per version), collapses 15 duplicate rows that
+only existed because a show airing twice needed two full copies of itself, and
+removes `end_day` — an overnight is just `end <= start`.
+
+The UI follows the split. Clicking an open hour opens a **picker** over the 663
+existing shows rather than a blank form; "New show instead" is the second door.
+The edit modal labels its two halves **This airing** (`schedule`) and **The
+show** (`shows`, *shared by N airings*) and says that editing the lower half
+changes the show everywhere it airs. And the destructive action is two actions:
+**Unschedule** clears the airing and returns the show to the picker, **Delete
+show** removes the record.
 
 ### Versions, and the pointer
 
@@ -376,7 +679,7 @@ to a real registry entry. An unregistered name renders *nothing* once
 these mockups become live DMS pages, so this is not cosmetic.
 
 **The registry of record is the `#icons` catalogue grid on
-`design-system/theme.html`** — 48 tiles, each tagged and labelled.
+`design-system/theme.html`** — 49 tiles, each tagged and labelled.
 There is no separate `theme/icons.js` here yet; `scripts/icons-audit.mjs`
 parses the catalogue as the registry and enforces:
 
@@ -387,7 +690,7 @@ parses the catalogue as the registry and enforces:
   a registry has one `Play`, not three near-duplicates. (v0.2 folded 33
   drifted variants back onto their canonical glyph.)
 
-Ten of the 48 are the **department glyphs** — Hip-Hop, R&B, World, Rock, Metal,
+Ten of the 49 are the **department glyphs** — Hip-Hop, R&B, World, Rock, Metal,
 Jazz, Electronic, News, Sports, Special — which carry the schedule's icon
 column. They are deliberately concrete objects (a mic, a pick, a bolt, faders)
 rather than abstract marks: at 14–16px a concrete silhouette survives where an
@@ -574,7 +877,7 @@ editor — is on `patterns.html`. `pages.attribution` is mocked there too
 | §7.7 pages/ (theme's choice)  | Every public-facing handoff page translated to DMS shape ✓                  |
 | §1 five-layer hierarchy       | Every mockup uses `<Layout>` → `<LayoutGroup>` → `<Section>` → primitive   |
 | §7.0 navigation               | TopNav per section + one shared `ds-nav.js` (sectioned), verified by `scripts/verify-nav.mjs`. Footer block deliberately omitted — see the Navigation section ✓ |
-| §1 icons                      | Every `<svg>` tagged; 48-icon catalogue on `theme.html` is the registry; enforced by `scripts/icons-audit.mjs` ✓ |
+| §1 icons                      | Every `<svg>` tagged; 49-icon catalogue on `theme.html` is the registry; enforced by `scripts/icons-audit.mjs` ✓ |
 | §10 done criteria             | Every primitive used in `pages/` is documented in `components.html`; every Section sits on the grid `grid.html` documents; TopNav shows 2-level menu with active state; the cutaway pattern is preserved on `home.html`/`listen.html` ✓ |
 
 ---
@@ -590,16 +893,18 @@ editor — is on `patterns.html`. `pages.attribution` is mocked there too
   holds two components" above — the playlist dataset with album thumbnails is
   not in the `wcdb`/`prod` DMS env, so the 92px slot ships a gradient
   placeholder.
-- **`dataCard` is still on the v1 (legacy) Card layout model.**
-  `card-layout.md` (rewritten 2026-07-29) added an opt-in `v2` model:
-  content-sized card rows packed to top so the inter-card gap is exactly
-  `cardsGridGap`, no `border border-transparent` on every cell, and one
-  explicit `cellGutter` number instead of a padding class baked into
-  `headerValueWrapper`. WCDB's `dataCard.styles[0]` has no `layoutModel`
-  and *does* bake `p-2` into `headerValueWrapper` — so the exact spacing
-  the mockups here draw will not reproduce faithfully at runtime.
-  Evaluating v2 for WCDB is theme-side work (landbank's theme.js is the
-  worked example).
+- ~~**`dataCard` is still on the v1 (legacy) Card layout model.**~~
+  **Closed 2026-08-15.** WCDB's `dataCard.styles[0]` is now
+  `layoutModel: 'v2'` with `cellGutter: 8` and an `itemEditOutline`, so the
+  spacing these mockups draw *does* reproduce at runtime: card rows are
+  content-sized and packed to the top (the inter-card gap is exactly
+  `cardsGridGap`, with no distributed slack), cells carry no always-on
+  transparent border, and the ambient cell gutter is one number emitted
+  inline — which means a section's `cellsPadding`/`cellPadding`, including an
+  explicit `0`, always beats the theme. The admin list styles (`adminRow`,
+  `adminHeaderRow`) set `cellGutter: 0` of their own, because a row's gutter
+  belongs to the row. See
+  `project-planning/wcdb/tasks/current/modernize-wcdb-datacard-to-v2.md`.
 - **The live icon registry does not exist yet.** The catalogue here is
   the source; `icons.jsx` still has to be generated from it (and the
   shared `icons-sync.mjs` ported into `dms-template/scripts/`, which
