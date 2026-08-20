@@ -90,6 +90,41 @@ export const COMPARISON_MODE_OPTIONS = [
     { value: 'difference', label: 'Difference' },
 ];
 
+// The exact shape ReportRouteList's own $self-binding recipe uses — confirmed
+// live against a Report Page template's pre-wired starter graph (section
+// 2195009): `display._functions.subscribers` carries a `comparison_series`
+// entry with paramKey "$self" (the reserved sentinel usePageFilterSync
+// resolves to this graph's own stable identity — see ReportRouteList's
+// README, "Publishing routes to graphs"), and `comparisonSeries.enabled`
+// must be on (the master switch) for ReportRouteList's assigned routes to
+// render as series at all.
+const REPORT_SUBSCRIBER_ARGS = { labelKey: 'label', valueKey: 'filters' };
+
+// Report-authoring-ux-overhaul.md Tier 5C (2026-08-20): the ONLY piece of the report-wiring block
+// this picker owns that's genuinely element-type-agnostic — `findSelfBoundGraphs`
+// (useGraphPublish.js) reads this same subscriber shape off ANY section type, Map included, to
+// decide whether to publish routes to it. Lives here (not MeasurePicker/index.js, where it was
+// first extracted) specifically so composeMapConfig.js can import it too without a circular
+// dependency (index.js -> composeMapConfig.js -> index.js) — this file is a leaf every other
+// MeasurePicker module already depends on, never the reverse.
+// `state.comparisonSeries.*` is NOT part of this — that's the chart/table "categorize column"
+// master switch, meaningless for Map (its runtime never reads `state.comparisonSeries` at all; see
+// useComparisonSeriesLayers.js), so it stays in MeasurePicker/index.js, chart/table-only.
+export function ensureSelfBoundSubscriber(state) {
+    if (!state.display) state.display = {};
+    if (!state.display._functions) state.display._functions = { providers: [], subscribers: [] };
+    if (!state.display._functions.subscribers) state.display._functions.subscribers = [];
+    const subscribers = state.display._functions.subscribers;
+    const existingSubscriber = subscribers.find(s => s.functionId === 'comparison_series');
+    if (existingSubscriber) {
+        existingSubscriber.enabled = true;
+        existingSubscriber.paramKey = '$self';
+        existingSubscriber.args = { ...existingSubscriber.args, ...REPORT_SUBSCRIBER_ARGS };
+    } else {
+        subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
+    }
+}
+
 // Author-empowerment: no cartesian-product gating here. Unlike TEMPLATE_SPECS
 // (which only has the combos old reports actually needed), this picker
 // composes every combo mechanically from the same ingredients, so any

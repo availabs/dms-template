@@ -50,7 +50,9 @@ difference template) but reuses `SPEED_EXPR_TRUCK` verbatim.
 
 - `expr` — the full calculated-column SQL string, **including its own `as <alias>` suffix** —
   copy verbatim into a section's `columns` entry's `name` field (matching `TEMPLATE_SPECS`'
-  `yAxis.name` convention).
+  `yAxis.name` convention). **The trailing alias must be unique across every measure in this
+  file** — see "A measure's trailing `AS <alias>` must be globally unique" under Regenerating/
+  verifying below for why.
 - `fn` — the aggregation wrapper the platform's calculated-column pipeline applies
   (`"exempt"` for self-aggregating expressions that already contain their own `sum()`/`avg()`/
   map-combinator fold, `"sum"`/`"avg"` otherwise).
@@ -206,19 +208,65 @@ negation of the raw flag. See "Finding: difference-graph color scale reads backw
 
 ## Regenerating / verifying
 
-Do not hand-edit the `expr`/`join` values — retype risk on these SQL strings is high (deeply
-nested parens, `multiIf` piecewise regressions). Regenerate from the live Python constants:
+**Corrected 2026-08-20 — the paragraph this replaced described data flowing the wrong direction.**
+`vocabulary.json` **is** the source of truth today, not a generated artifact. The one-time
+2026-07-20 extraction went Python → JSON; every constant `convert_old_reports_lib/expressions.py`
+uses now reads straight back out of THIS SAME FILE (`SPEED_EXPR_TRUCK =
+GRAPH_VOCAB["measures"]["speedTruck"]["expr"]`, etc. — `GRAPH_VOCAB` is just this JSON, loaded).
+There is no independent Python literal left to "regenerate from" or diff against for the
+expression text itself — hand-editing `vocabulary.json` directly, carefully, per-measure, IS the
+correct and only way to fix an expression today. (Confirmed live 2026-08-20 fixing two real bugs
+this way: a `travelTime` join-qualification issue and a `speed`/`speedTruck`/CO2-variant trailing
+SQL-alias collision — see `report-authoring-ux-overhaul.md` Tier 5F/5G for both write-ups.)
+
+Still worth doing after any edit — it catches drift in anything DERIVED from these constants
+(`TEMPLATE_SPECS`, `GRAPH_TEMPLATE_MAP`), which is a real risk even though the base strings
+themselves have nowhere else to drift from:
 
 ```python
 import sys, json
 sys.path.insert(0, "scripts/npmrds-reports")
 import convert_old_reports as c
-# read c.SPEED_EXPR, c.DELAY_EXPR, c.META_JOIN, etc. directly and diff against vocabulary.json
+# snapshot every JSON-serializable module-level constant (dir(c), skip callables/modules,
+# json.dumps each) before and after your edit, diff the two snapshots
 ```
 
-After any edit to either `vocabulary.json` or the corresponding `convert_old_reports.py`
-constants, take a full module-level constant snapshot before and after
-(`dir(c)`, skip callables/modules, `json.dumps` each serializable value) and diff — this catches
-drift anywhere in the derived `TEMPLATE_SPECS`/`MEASURE_EXPR`/etc. tree, not just the ingredients
-touched directly. See `src/dms/planning/tasks/current/report-graph-vocabulary-picker.md` for the
-full procedure this task's Workstream 1 verification used.
+See `src/dms/planning/tasks/current/report-graph-vocabulary-picker.md` for the full procedure
+this task's Workstream 1 verification used.
+
+### A measure's trailing `AS <alias>` must be globally unique across the whole file
+
+Not previously documented, and not enforced anywhere — found live 2026-08-20 when `speed`/
+`speedTruck` (and separately, all four `co2Emissions_passenger`/`avgCo2Emissions_passenger`/
+`co2Emissions_truck`/`avgCo2Emissions_truck`) turned out to share the same trailing alias
+(`as speed`, `as avg_co2_emissions`). Combining two such measures' `expr` strings in one query
+(only possible once a Table section could hold N measures, 2026-08-20) makes ClickHouse reject
+the query outright — `MULTIPLE_EXPRESSIONS_FOR_ALIAS`. Traced end-to-end (a research pass through
+`buildUdaConfig.js`/`getData.js`/`clickhouse.js`/`uda.route.js`) and confirmed this alias is
+entirely self-contained: request-building, response-column-name extraction, and the Falcor
+storage path all re-derive it fresh from this SAME `expr` string every time, and nothing anywhere
+else (JS or Python) hardcodes a specific alias's literal text — so renaming one is always safe,
+with no context-dependent caveat (contrast the `ds.`-qualification note above the `measures`
+section, which genuinely does depend on whether some OTHER selected measure forces a join into the
+same query — alias uniqueness has no such duality). If you add a new measure, pick a trailing
+alias no existing measure already uses.
+
+### Composition-layer additions living in `composeMeasureConfig.js`, not this JSON (2026-08-20)
+
+- **`composeTableMeasuresConfig({measureKeys, resolutionKey, externalSourceColumns})`** — the
+  Table shape's own compose function: N measures -> N yAxis-target columns (reusing
+  `buildMeasureYAxisColumn`, the same per-column builder the single-measure chart path uses) + one
+  shared xAxis column + one `join` unioned across whatever the selected measures each need. A
+  small, explicit `QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN` lookup inside this function (not in this
+  JSON) substitutes a `ds.`-qualified form of `travelTime`'s expr ONLY when this table's own union
+  join is non-empty — `travelTime` is the sole measure with `requiresJoin: []`, so it's the only
+  one whose bare-column form (correct alone) becomes ambiguous once combined with a
+  join-requiring measure in the same query.
+- **`composeAutoTitle(pick)` / `isTitleDirty({currentTitle, priorPick})`** — auto-populates a
+  graph's title from its current pick (join of measure labels for Table, single label otherwise)
+  without a new "is this still auto-generated" tracking field: `isTitleDirty` recomputes what the
+  PRIOR pick would have produced and compares against what's actually stored, so re-picking only
+  overwrites the title when it still matches its own last auto-generated value.
+- **`resolutionOptionsFor(graphType)`** — `RESOLUTION_OPTIONS` passthrough except it relabels the
+  `"summary"` option to "Summary (one row per route)" for Table (the shared label's "one bar per
+  route" wording doesn't fit a data grid).

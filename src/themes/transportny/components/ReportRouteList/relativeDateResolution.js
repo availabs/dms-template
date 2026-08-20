@@ -62,6 +62,25 @@ export function defaultAnchorDate() {
   return formatDateOnly(d);
 }
 
+// A freshly-added route's default date range (2026-08-20, Ryan's call: "across the whole report
+// we should require a date filter... when a user adds a route, use a default date range" —
+// every route added without one today silently produces an UNBOUNDED (all-history) query on any
+// Graph/Table/Map self-bound to it; see useReportRow.js's addRoutes, the one place this gets
+// applied). "The most recent full month of data" — anchored off `defaultAnchorDate`'s own
+// publish-lag-adjusted "today", not literal wall-clock today, for the exact reason that constant
+// exists: NPMRDS's ClickHouse table has a hard ~15-21 day publish cliff, and a calendar month
+// computed from literal "today" could easily be a month with zero real rows. Always steps back
+// one full calendar month from the (lag-adjusted) anchor's own month — the anchor's own current
+// month is never guaranteed complete (missing at least however many days remain in it), so the
+// prior month is the latest one that's always safely whole.
+export function defaultRouteDateRange() {
+  const anchor = new Date();
+  anchor.setDate(anchor.getDate() - NPMRDS_DATA_LAG_DAYS);
+  const priorMonthStart = shiftSpans(startOfSpan(anchor, 'month'), 'month', -1);
+  const priorMonthEnd = endOfSpan(priorMonthStart, 'month');
+  return { startDate: formatDateOnly(priorMonthStart), endDate: formatDateOnly(priorMonthEnd) };
+}
+
 function parseDateOnly(dateStr) {
   const [y, m, d] = (dateStr || '').split('T')[0].split('-').map(Number);
   if (!y || !m || !d) return null;
