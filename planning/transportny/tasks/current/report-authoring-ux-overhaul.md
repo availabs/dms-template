@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE (implemented as `composeAutoTitle`/`isTitleDirty`, no new field, per Ryan's explicit call — not yet live-clicked-through); 5C (Map creation UI) confirmed real, deliberately deferred to its own design pass per Ryan; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20; gap #16/facet 2 NOT YET TRIAGED · **Started:** 2026-08-19
 
 ## Objective
 
@@ -623,6 +623,403 @@ No action taken on 4C this pass — logged for whenever this becomes priority.
 
 ---
 
+## Tier 5 — five more gaps raised 2026-08-20 (post-Tier-4 usage)
+
+Ryan's next round of feedback after using the shipped Tier 1/2/4 work himself. Five threads;
+triaged directly against the current code this session.
+
+### 5A. QuickControls: Width + Reorder pills — DONE, live-verified 2026-08-20
+
+**File**: `src/themes/transportny/components/QuickControls/index.jsx` +
+`QuickControls.theme.js`.
+
+Ryan's own framing flagged a real worry worth resolving explicitly: reordering "MIGHT be a
+little tricky... I think we rely on section index somewhere? maybe to map routes to graphs?"
+**Confirmed false** — `grep -n "index" useGraphPublish.js` returns zero route/graph-mapping hits;
+routes are matched to graphs exclusively via `_measurePick.routeIds` (a `route_comp_id` array
+stored on the graph's own `display._measurePick`, see Item 1C/composeMeasureConfig.js), never by
+a section's position in `draft_sections`. Section order and route↔graph binding are fully
+orthogonal — reordering sections cannot desync route assignment.
+
+Better still: both controls needed **zero new plumbing**. Item 4 (1C) already threads
+`actions: {moveItem, updateAttribute, ...}` and `sectionState: {i, value, ...}` into
+`npmrdsQuickControls`/`QuickControlsRow` — the exact same primitives `sectionMenu.jsx`'s own
+Settings-drawer "Move Up"/"Move Down" pills (`moveItem(i, ±1)`, gated
+`!isEdit && canEditPageLayout && canEditSection`) and "Width" item (`updateAttribute('size',
+name)`, gated `canEditSection` only) already use today. This is the same class of change as every
+other QuickControls pill: expose an already-working, already-persisting capability one click
+closer, not a new mechanism.
+
+- **Width**: a popover pill (`widthPillDef`) listing all 12 col-span options (mirrors
+  `sectionMenu.jsx`'s own sorted-by-`iconSize` list), writes via
+  `actions.updateAttribute('size', name)` — the literal same call `sectionMenu.jsx` makes.
+  Deliberately NOT part of the responsive `pillDefs`/"⋯" overflow system the data pills use
+  (Routes/Measure/When/Aggregate/Mode) — grouped instead with Reorder, below.
+- **Reorder**: two small Move Up/Down icon buttons (`actions.moveItem(sectionState.i, ±1)`),
+  gated on a NEW `auth.canEditPageContent` check (threaded through
+  `npmrdsQuickControls({..., auth})` → `canReorder` prop) — matching `sectionMenu.jsx`'s own extra
+  `canEditPageLayout` gate on its identical buttons (reordering is a page-layout permission, width
+  is not, per that file's own precedent).
+- **Layout**: mid-implementation, Ryan flagged the two layout controls should be left-aligned
+  while the data pills stay right-aligned — then, a second correction, that Width itself belongs
+  in that same left-aligned group next to the Move arrows, not in the right-aligned data cluster.
+  Final structure: two flex siblings under a new `rowWrapper` (`w-full flex items-center
+  gap-1.5`) — `reorderGroup` (pinned left, `shrink-0`, holds Move Up/Down + the Width popover) and
+  the existing `wrapper` (now `flex-1 min-w-0` instead of `w-full`, still internally
+  `justify-end`, holds only Routes/Measure/When/Aggregate/Mode + "⋯"). The row-fit
+  `ResizeObserver` measurement still only sees the data cluster's own available width, unaffected
+  by the layout group's width.
+
+**Live-verified 2026-08-20** via claude-in-chrome on the existing scratch page
+`converted_reports/page_27` (id `2213752`, left over from Tier 4A, still not deleted — see that
+item's own note): confirmed the layout group (Move Up/Down + Width) renders pinned left as three
+small controls, data pills right-aligned as before; clicked Width → 6, graph visibly narrowed to
+half-width, pill relabeled "6/12" in its left-group position, **survived a full page reload**;
+added a 2nd graph via Add Graph, clicked "Move down" on the first (now-half-width Speed) graph,
+the two graphs visibly swapped order, **survived a full page reload**; re-opened the Width
+popover after the layout correction to confirm it still opens/writes correctly from its new
+position; zero console errors at any checkpoint (`read_console_messages`, `onlyErrors:true`).
+
+- [x] Add Width pill (popover, 1-12 col-span picker) — 2026-08-20
+- [x] Add Move Up/Down buttons, gated on `auth.canEditPageContent` — 2026-08-20
+- [x] Left-align the layout controls against the right-aligned data-pill cluster (mid-session
+      correction) — 2026-08-20
+- [x] Move Width into that same left-aligned group, next to the Move arrows (2nd mid-session
+      correction) — 2026-08-20
+- [x] Live-verify all of the above, including reload-persistence and a real 2-section reorder —
+      2026-08-20
+- [ ] Not done: `probe_corpus.mjs` (consistent with this whole arc's earlier deliberate skips);
+      no golden-corpus entry exercises `/edit/...` at all (see Tier 1's own note on this same gap)
+
+### 5B. Graph/section title never auto-populates — re-raised, same gap as Tier 3 item 3A
+
+Ryan re-hit this independently ("Graph/section title does not get populated at all, either via
+`Add Graph`, or changing the pill measures"). Re-confirmed by re-reading
+`composeMeasureConfig.js` end to end this session: it composes `xAxis`/`yAxis`/`tooltip`/
+`legend`/`colors`/`join`/`comparisonSeriesCombine` but never touches `display.title.title` or
+`display.description` — nothing has changed since 3A was written. **Same gap, not a new one.**
+Still blocked on the same unresolved design call 3A already flagged: (a) only default while the
+title field is empty, vs (b) track a pristine/auto-generated flag so the title keeps resyncing on
+every re-pick the way every OTHER composed field does, until the author manually edits it. No
+`_isAutoGenerated`-style field exists anywhere in this codebase to copy for (b). **Still needs
+Ryan's decision before implementing** — see the AskUserQuestion posed this session.
+
+### 5C. No UI for creating a Map component — confirmed real, bigger gap than 5A/5D
+
+`useAddGraphSection.js`'s own comment already flagged this ("Map is NOT here: it has no
+columns/join shape at all... needs a genuinely separate compose path — not yet built") and
+`AddGraphModal.jsx` disables the Map shape card (`DISABLED_SHAPES = { Map: "Map graphs aren't
+built yet." }`). Confirmed via direct read of Map's `ComponentRegistry/map/config.jsx`: **its
+registry entry has no `defaultState` key at all** — unlike AVL Graph/Spreadsheet, there is no
+JSON shape to `cloneDeep` and splice into `draft_sections` the way `useAddGraphSection.js` does
+for those two. Map manages its own state via `useImmer` inside `MapSection` and is built
+interactively (adding layers/symbologies one at a time) through its own edit UI — the exact same
+"new capability, not a wiring fix" classification `report-route-ui-parity-gaps.md` gap #16
+already carries for Info Box/Route Compare. Two possible shapes for a fix, neither started:
+(a) find/construct a genuinely minimal blank Map state and give `useAddGraphSection.js` a real
+compose path for it (mirrors AVL Graph/Spreadsheet, but Map's edit UI was built assuming
+interactive layer-by-layer construction, so this may not have a clean "blank" state to begin
+from); (b) let "Add Graph" with Map selected create a bare Map section pre-assigned this card's
+routes (so QuickControls' Routes pill picks it up immediately) and hand off to Map's own existing
+interactive edit UI for everything else, rather than trying to compose symbology JSON at all.
+**Not scoped further this session — bigger lift than 5A/5D, matches gap #16's own "next dedicated
+deep-dive" framing.** Sequencing question posed to Ryan below.
+
+### 5D. Add-a-Table doesn't let the author pick multiple measures — DONE, live-verified 2026-08-20
+
+Ryan's call via `AskUserQuestion`: **scope + build Table multi-measure now**, defer Map (5C) to
+its own dedicated design pass.
+
+**Design**: a table has no one-measure ceiling the way every chart type still does — one column
+per measure, sharing a single xAxis (resolution bucket) column and a single, unioned `join`
+(joins are a whole-query concern, not per-column). Table is genuinely a smaller compose shape
+than a chart (no comparison-mode/anchor/color/legend/tooltip concept at all — confirmed by
+reading `ComponentRegistry/spreadsheet/index.jsx`'s own column selection, which filters purely on
+`show`/`selectOnly`, never `target`), so it got its OWN compose function rather than a branch
+bolted onto `composeMeasureConfig`.
+
+**Files touched**:
+- `MeasurePicker/composeMeasureConfig.js`: added `measures: []` to `DEFAULT_PICK` (Table-only —
+  every other graph type keeps the single `measure` field); factored `buildJoin(measure)` into a
+  thin wrapper over a new `buildJoinFromKeys(joinKeys)` (union+dedupe across N measures'
+  `requiresJoin` lists, positional `table1`/`table2`/...); factored the single yAxis column build
+  into `buildMeasureYAxisColumn(measure, target)`; added the new export
+  `composeTableMeasuresConfig({measureKeys, resolutionKey, externalSourceColumns})` — N yAxis
+  columns + 1 xAxis column + 1 unioned join, `displayPatch: {graphType:'Table', fetchMode:'force'}`,
+  `comparisonSeriesCombine: null`. Returns `null` for an empty/all-unrecognized `measureKeys`.
+- `MeasurePicker/index.js`: `applyMeasurePickToState` dispatches to `composeTableMeasuresConfig`
+  whenever `pick.graphType === 'Table'` — gated on graphType ALONE, deliberately not also on
+  `pick.measures.length`, so unchecking the last remaining measure correctly no-ops the whole
+  apply (existing columns untouched) instead of falling through to the single-measure branch and
+  composing one stale column from whatever `pick.measure` still holds.
+- `AddGraphModal.jsx`/`.theme.js`: Table's "What to show" step now renders a full-width multi-select
+  checklist (grouped by `MEASURE_CATEGORIES`, same checkbox-row look as the Routes checklist)
+  instead of the native single `<select>`; every other shape keeps the single select. Switching TO
+  Table seeds `measures` from the current single `measure` the first time (so it never opens
+  blank); `canConfirm` now also requires `measures.length >= 1` for Table; preview text/description
+  adapted for N measures (shows a count, drops the single-measure blurb once 2+ are picked, matching
+  the same reasoning as Tier 5E's "don't show a nonsensical state" — no ONE measure's description
+  represents a multi-measure table).
+- `QuickControls/index.jsx`: the Measure pill, when `graphType === 'Table'`, renders the identical
+  multi-select checklist post-creation (toggling `pick.measures` via `applyPick`) instead of the
+  single-pick list every other graph type still gets — necessary so editing an already-multi-measure
+  table's measures doesn't silently collapse it back to one column. Pill label shows "N measures".
+- `ReportRouteList/useAddGraphSection.js`: corrected a comment that had gone stale the moment this
+  landed (previously claimed Table "rides the exact same composeMeasureConfig... machinery,
+  needs no special-casing" — no longer true, now explains the real dispatch).
+
+**Real bug found and fixed while live-verifying** (not a pre-existing issue — the first scenario
+that ever combines two measures' SQL in one query): `vocabulary.json`'s `travelTime.expr` used
+bare, unqualified `tmc`/`travel_time_all_vehicles` column references (no `ds.` table-alias
+prefix), unlike every other measure in the file. Standing alone (travelTime's own
+`requiresJoin: []`, so its query has no JOIN clause) this was harmless — but combined with ANY
+measure that DOES require a join (e.g. `speed`, `hoursOfDelay`), the shared query's `FROM ...
+LEFT JOIN ...` made those bare identifiers ambiguous, and ClickHouse rejected the query outright
+(`ClickHouseError: ... ambiguous identifier 'tmc'`, code 207 `AMBIGUOUS_IDENTIFIER` — confirmed
+via `scratchpad/npmrds-sub/dms-server.log`). Root-caused by diffing against
+`convert_old_reports_lib/template_specs.py`'s `TRAVEL_TIME_EXPR` — the Python side's copy of this
+same expression is ALREADY correctly qualified (`ds.tmc`, `ds.travel_time_all_vehicles`), so this
+was a pre-existing transcription drift in `vocabulary.json` that nothing had ever exercised until
+a multi-measure query existed to expose it. Fixed `vocabulary.json` to match its own authoritative
+Python source exactly. Audited every OTHER measure's `expr` for the same pattern — all already
+fully qualified; travelTime was the only offender.
+
+**Flagged, not fixed — unconfirmed, needs a live test before touching**: `co2Emissions_passenger`/
+`avgCo2Emissions_passenger` (and the `_truck` pair) share the exact same `expr` string, differing
+only in the outer aggregation `fn` (sum vs avg) — confirmed deliberate per
+`convert_old_reports_lib/expressions.py`'s own comment ("only the aggregation 'fn' differs").
+Whether combining BOTH variants of the same pair into one table produces a duplicate-alias SQL
+collision (unclear without seeing how the query builder promotes each column's outer alias — the
+observed `hours_of_delay_sum` pattern suggests the `fn` gets folded into the outer alias, which
+would make this a non-issue, but that's inference, not a confirmed trace) is unverified. Didn't
+patch renaming anything blind — would need an actual failing-query repro first, same standard the
+travelTime fix above was held to. Worth a 2-minute check next time this file is touched: build a
+table with both CO2 sum/avg variants of one vehicle class checked together.
+
+**Live-verified 2026-08-20** via claude-in-chrome on `converted_reports/page_27`: built a 3-measure
+table (Speed, Travel Time, Hours of Delay — deliberately mixing a no-join measure with two
+different join requirements) via Add Graph; confirmed the multi-select checklist, seeded from the
+single measure, updates the live preview text ("3 measures — Table"); hit the ambiguous-identifier
+error on first render (caught via `dms-server.log`, not just the browser's generic "Error fetching
+data"); fixed `vocabulary.json`; forced a recompose via QuickControls' Measure pill (toggle
+Speed off/on, since the already-persisted section's columns had the OLD buggy expr baked in as a
+literal string — editing the vocabulary alone doesn't retroactively fix already-composed state);
+table then rendered 5 real rows with correct, DISTINCT values per column (Travel Time ~7.6-8.3 min,
+Hours of Delay ~3.5-37.8, Speed ~55-60 mph — ruling out a silent alias collision across these
+three); reloaded the full page, confirmed the 3-column table persisted and re-rendered identically;
+zero console errors at every checkpoint after the fix.
+
+- [x] `composeTableMeasuresConfig` (N measures -> N columns + 1 unioned join) — 2026-08-20
+- [x] `applyMeasurePickToState` dispatch, empty-measures no-op guard — 2026-08-20
+- [x] AddGraphModal multi-select checklist + seeding + canConfirm + preview text — 2026-08-20
+- [x] QuickControls Measure pill multi-select for Table — 2026-08-20
+- [x] Fix `vocabulary.json`'s `travelTime.expr` qualification bug (found live) — 2026-08-20
+- [x] Live-verify a real 3-measure table (mixed join requirements), including reload-persistence
+      — 2026-08-20
+- [ ] Flagged, not done: confirm whether combining co2Emissions_passenger + avgCo2Emissions_passenger
+      (or the truck pair) in one table collides on their shared inner SQL alias
+
+### 5F. Second round of live feedback on 5A-5E — all DONE, live-verified 2026-08-20
+
+Ryan used the shipped 5A-5E work himself and sent back seven more findings in one message. All
+seven addressed directly against the code this same session.
+
+**5B implemented** (composeMeasureConfig.js/MeasurePicker/index.js) — per Ryan's explicit
+instruction: no new `_auto`/pristine field, keep the mechanism obvious at the call site. Two small
+exported functions: `composeAutoTitle(pick)` (deterministic — same pick always yields the same
+title; `Table` joins its measures' labels with `, `, every other graph type uses its single
+measure's label) and `isTitleDirty({currentTitle, priorPick})` (`false` if `currentTitle` is empty,
+else compares against `composeAutoTitle(priorPick)` — the pick the CURRENT title was actually
+generated from, captured at the top of `applyMeasurePickToState` before anything overwrites
+`state.display._measurePick`). The call site itself is three plain, commented lines right before
+the existing bookkeeping block — no dispatch table, no flag, just "recompute what it would have
+been, compare, decide." Not yet live-verified with a real title-preservation click-through (the
+mechanism is straightforward enough that this session prioritized the other six live-reproducible
+bugs) — worth a quick pass next time this file's touched: create a graph (title populates), hand-edit
+the title, re-pick the measure, confirm the hand-edited title survives.
+
+**"Add Route" modal tag browser moved above the route list** (`RouteTagBrowserModal.jsx`) — was
+below `renderRouteList(visibleResults)` in the `view === 'root'` block; a novice has no reason to
+scroll past a route list that already looks complete to find it. Simple reorder, no logic change.
+Live-verified: opening Add Routes now shows "Browse by tag" (County/Region/Agency pills +
+Auto-generated/Other tags links) immediately, route list below.
+
+**Table column precision** — `TableCell.jsx` renders a column's raw value with NO formatting
+unless `formatFn` is set; a fresh table showed full float precision (e.g. "3.5323034922285706").
+Added a Table-only `TABLE_MEASURE_FORMAT_FN` map in `composeMeasureConfig.js`, applied as a
+post-process step inside `composeTableMeasuresConfig` only (NOT added to the shared
+`buildMeasureYAxisColumn` helper both the chart and table paths call — charts never read a
+column's own `formatFn`, they use `display.tooltip`'s `valueFormat`/`yFormat` instead, already set
+correctly; touching the shared helper risked bleeding into chart behavior for no reason).
+`travelTime` gets `minutes_clock` (M:SS — matches its existing `duration_mmss` chart-tooltip
+convention); every other measure gets `decimal_2` (same fixed-2-decimal formatter already used for
+Route Info Box's plain-decimal measures) rather than `comma` (which floors below its K/M threshold
+and would round every one of these sub-1000 rate-like values to a whole number).
+
+**"Summary (one bar per route)" wording** — nonsensical for a Table (rows, not bars). Rather than
+fork the whole `RESOLUTION_OPTIONS` list per shape (every other label is fine regardless), added
+`resolutionOptionsFor(graphType)` — passthrough except it swaps the Summary option's label to "one
+row per route" when `graphType === 'Table'`. Wired into both `AddGraphModal.jsx` (Resolution
+`<Select>` + preview text) and `QuickControls/index.jsx` (Aggregate pill + its popover), replacing
+the raw `RESOLUTION_OPTIONS` read in both files (now-unused import removed from both).
+
+**Measures checklist too close to Resolution** — not literally overlapping, per Ryan's own
+correction, just no breathing room. Added `mb-3` to the Table measures-checklist wrapper in
+`AddGraphModal.jsx`.
+
+**The big one — Table + Summary resolution + 2 routes → "unknown expression or table identifier",
+blank table.** Reproduced directly (2 routes, Table, Travel Time alone, Summary resolution) and
+root-caused via `dms-server.log`, not guessed: **`Unknown expression or function identifier
+'ds.tmc'`, code 47.** This is the EXACT INVERSE of the bug 5D's own write-up already fixed once —
+the query builder only aliases the base table `AS ds` when the composed query has a JOIN; with NO
+join, the base table has NO alias at all, and bare `tmc`/`date` (matching the WHERE clause's own
+unqualified form) are what's actually valid. My first fix (qualifying `travelTime`'s vocabulary
+string with `ds.`) was correct for the join case and had silently broken the single-measure/no-join
+case the whole time — exactly the "replacing one bug with another" risk Ryan named up front.
+**Real fix**: reverted `vocabulary.json`'s `travelTime.expr` back to its original bare form (correct
+for the no-join case — the ONLY case any chart, or a 1-measure table, ever produces, since
+`travelTime` is the sole measure with `requiresJoin: []`). Added a small, explicit, non-regex
+lookup — `QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN` in `composeMeasureConfig.js` — consulted ONLY inside
+`composeTableMeasuresConfig`, ONLY when that table's own unioned `requiresJoin` set is non-empty
+(i.e., some OTHER selected measure forces a join, so `AS ds` WILL exist in this specific query).
+Scoped entirely to the one call site that can ever combine a zero-join measure's expression with a
+join-requiring one — never touches the shared vocabulary string every single-measure chart path
+(and the Python converter) also reads verbatim, so fixing the join case can no longer silently
+re-break the no-join case the way qualifying the vocabulary string directly did.
+
+**Live-verified 2026-08-20**, both directions, via claude-in-chrome on `converted_reports/page_27`:
+the pre-existing broken table (persisted mid-session with the temporarily-qualified expr, from
+diagnosing this exact bug) was forced through a real recompose by adding a second measure (Speed)
+via QuickControls' Measure pill — table correctly showed BOTH columns with distinct, correctly
+zero-join. Removed a route from its own inputs, confirming NONE (Speed: `54.46`/`57.79`,
+`minutes_clock`/`decimal_2` formatting both correct) — then removed Speed again, dropping back to
+travelTime alone, which recomposed correctly using the bare/no-join form and kept showing valid
+data (`8:28`/`9:40`). Confirmed persistence across two full page reloads. Zero console errors
+throughout, confirmed via a clean console-tracking-from-navigation check (not just
+`onlyErrors` on a possibly-stale buffer).
+
+- [x] Implement `composeAutoTitle`/`isTitleDirty`, no new field, obvious call site — 2026-08-20
+- [x] Move tag browser above route list in Add Routes modal — 2026-08-20, live-verified
+- [x] Table column formatFn (`minutes_clock`/`decimal_2`), Table-only, chart path untouched — 2026-08-20
+- [x] "Summary (one row per route)" wording for Table, both surfaces — 2026-08-20
+- [x] Breathing room between measures checklist and Resolution — 2026-08-20
+- [x] Root-cause and fix the Table+Summary+2-routes "unknown identifier" bug — 2026-08-20,
+      live-verified both the join and no-join branches, plus reload-persistence
+- [ ] Not done: live click-through of the title-dirty mechanism itself (create → auto-title →
+      hand-edit → re-pick → confirm survives)
+
+### 5G. Third bug in the same family — inner SQL alias collisions across DISTINCT measures — DONE, live-verified 2026-08-20
+
+Ryan reported the fix in 5F didn't hold on a fresh initial load of one of his tables — new server
+error: `Multiple expressions ... for alias speed. MULTIPLE_EXPRESSIONS_FOR_ALIAS` (code 179). Root
+cause is a different bug in the same general family (multiple measures' raw SQL sharing one
+query), not a regression of 5F's join/no-join fix. Audited every measure's trailing `AS <alias>`
+in `vocabulary.json` (a measure's inner alias becomes the literal ClickHouse output-column name for
+that SELECT item) and found two genuine collisions, confirmed by grouping all 9 measures by their
+alias:
+
+- `speed` and `speedTruck` — both `as speed`. Not a sum/avg pair (unlike the CO2 case below) —
+  genuinely different measures whose authors independently picked the same generic alias, never a
+  problem while only one measure was ever composed per graph.
+- `co2Emissions_passenger` / `avgCo2Emissions_passenger` / `co2Emissions_truck` /
+  `avgCo2Emissions_truck` — all four `as avg_co2_emissions` (this IS the CO2 pair flagged as
+  "unconfirmed, not fixed" at the end of 5D — now confirmed real, same root cause).
+
+**Verified safe to fix directly, and where the fix belongs**, before touching anything: dispatched
+a research agent to trace the full ClickHouse-response-to-DMS-column path
+(`buildUdaConfig.js`/`getData.js`/`clickhouse.js`/`uda.route.js`/`utils.js`). Confirmed the alias is
+entirely self-contained per column — request, response-column-name extraction, and the Falcor
+storage path all re-derive it fresh from the SAME `column.name` string every time; nothing
+hardcodes a specific alias text anywhere else in the codebase (also grep-confirmed against the
+Python converter — zero literal references to `"as speed"`/`"as avg_co2_emissions"`). Unlike the
+travelTime join/no-join case, alias uniqueness has no context-dependent duality — a unique alias
+is unconditionally correct whether the measure is used alone or combined with anything — so this
+belongs as a direct, permanent fix in `vocabulary.json` itself, not a Table-only override.
+
+Also corrected `vocabulary.json`'s own `_provenance` field, which read "Do not hand-edit expression
+strings -- regenerate from the Python source of truth" — traced via research agent and confirmed
+**stale/backwards**: there is no Python source to regenerate from anymore. The one-time 2026-07-20
+extraction went Python → JSON; every constant the Python converter uses today
+(`SPEED_EXPR_TRUCK`, `CO2_EXPR_PASSENGER`, etc.) reads straight back out of this SAME JSON file.
+`vocabulary.json` **is** the source of truth; hand-editing it (carefully, per-measure, verified) is
+the correct and only way to fix an expression. Left the byte-diff snapshot-check pointer intact
+(still useful — it catches drift in anything DERIVED from these constants, e.g. `TEMPLATE_SPECS`),
+but rewrote the note so it no longer tells the next person hand-editing is wrong when it demonstrably
+isn't anymore.
+
+**Fix mechanics**: edited only the 5 colliding measures' trailing alias
+(`speedTruck` → `speed_truck`; the four CO2 variants → `co2_emissions_passenger` /
+`avg_co2_emissions_passenger` / `co2_emissions_truck` / `avg_co2_emissions_truck`) via a
+Python script operating on each measure's own bounded JSON block (not a whole-file parse+rewrite,
+which would have reformatted unrelated lines) — `git diff --stat` confirmed exactly 5 lines
+changed, nothing else. Re-ran the alias-collision audit after: zero collisions across all 9
+measures.
+
+**Live-verified 2026-08-20**: built a fresh Table (1 route, Speed + Truck Speed, the exact
+combination from Ryan's report) via Add Graph — rendered 5 real rows with correctly DISTINCT
+values per column (Speed 60.02/58.70/55.52/58.01/60.17 vs Truck Speed
+57.83/55.45/49.55/54.15/58.78 — different numbers, ruling out a silent collision where one
+column's value overwrites the other's). Confirmed via `dms-server.log` tail that no
+`ClickHouseError` fired for this section's queries. Reloaded the full page twice; both columns'
+data persisted identically. Did not separately re-verify the 4-way CO2 combination live (the
+mechanism is identical and the fix is already confirmed structurally — same alias-audit function
+now reports zero collisions for that group too) — worth a quick check next time a CO2-heavy table
+comes up.
+
+**Left as pre-existing debris, not touched**: an earlier, now-orphaned 3-measure blank table
+(Travel Time + Speed + Truck Speed) from mid-session diagnosis, still showing the OLD persisted
+broken columns — same "won't self-heal without a forced recompose" property every fix in this tier
+has hit. Not something Ryan reported this round; flagged here rather than silently left unexplained,
+since this scratch page (`converted_reports/page_27`) now has a few of these fossils from this
+session's own debugging. Ryan's call whether to clean them up or leave them.
+
+- [x] Audit every measure's trailing alias for collisions — 2026-08-20, found 2 groups (5 measures)
+- [x] Verify the alias is safe to rename (research agent traced the full round-trip) — 2026-08-20
+- [x] Fix `vocabulary.json` directly (the correct location, confirmed via research agent) — 2026-08-20
+- [x] Correct the file's own stale `_provenance` note — 2026-08-20
+- [x] Live-verify Speed + Truck Speed table, reload-persistence — 2026-08-20
+- [ ] Not separately live-verified: the 4-way CO2 sum/avg combination (structurally fixed, same
+      mechanism, not re-clicked-through)
+
+### 5E. Difference mode + <2 routes — DONE, live-verified 2026-08-20
+
+Ryan's question: "should we even display [difference mode], if the section only has 1 route
+assigned?" Ryan's decision via `AskUserQuestion`: **show but disable** — keep "Difference"
+discoverable, but block picking it outside exactly 2 routes.
+
+Two different surfaces needed two different implementations, since they use different UI
+primitives:
+
+- **QuickControls** (`renderModeSection`, `QuickControls/index.jsx`): genuine per-option
+  `disabled` on the plain `<button>` (these aren't a shared-component abstraction, just raw
+  buttons) — `blocked = o.value === 'difference' && routeIds.length !== 2 && pick.comparisonMode
+  !== 'difference'`. Deliberately excludes the case where Difference is ALREADY the active
+  selection (e.g. a route was removed after the fact, dropping the count below 2) — disabling the
+  currently-selected option would trap the author in an invalid state with no way back to Plain.
+  That drifted-state case still gets the existing `popWarning` note (now also duplicated onto the
+  Mode popover itself, not just the Routes popover, so the warning is visible from wherever the
+  author actually is). New theme key `pillDisabled` (greyed, `cursor-not-allowed`).
+- **AddGraphModal** (`AddGraphModal.jsx`): the shared `<Select>` UI primitive
+  (`ui/components/Select.jsx`) has no per-option `disabled` support, and adding it would be a
+  `dms`-core change for one call site — out of proportion here, and arguably wrong anyway since
+  the option would need to flicker disabled/enabled in real time as the author checks/unchecks
+  routes mid-selection. Used a warning note instead (new `warningNote` theme key, amber,
+  matching QuickControls' `popWarning` copy/intent): shows whenever Difference is picked with
+  `selectedRouteIds.size !== 2`.
+
+**Live-verified 2026-08-20** via claude-in-chrome on `converted_reports/page_27`: opened the
+Speed graph's Mode popover (1 route assigned) — "Difference" renders visibly greyed/disabled,
+"Plain" stays interactive; opened Add Graph, checked exactly 1 route, set Comparison Mode to
+Difference — amber warning "Difference mode compares exactly two routes; 1 selected right now."
+appeared immediately under the field. Zero console errors.
+
+- [x] QuickControls: disable the Difference option below 2 routes (except when already active)
+      — 2026-08-20
+- [x] AddGraphModal: warning note when Difference + wrong count — 2026-08-20
+- [x] Live-verify both surfaces — 2026-08-20
+
+---
+
 ## Parked — explicitly deferred per 2026-08-19 decisions
 
 ### Item 9 — extend Publish/Discard to RRL's own changes (DEFERRED)
@@ -830,3 +1227,36 @@ skipped:
   RRL's own route mutations plus, newly found, `toggleDynamicReport`'s `item.filters` write — both
   already Item 9's territory, still deferred). 4C intentionally not re-triaged (lower priority per
   Ryan) — pointed at already-known gaps instead (gap #16, item 3A, `routeWindows` authoring).
+
+- **2026-08-20 (Tier 5)**: Ryan raised five more items after using the shipped work himself — two
+  new QuickControls controls (width, reorder), the still-unaddressed title-auto-populate gap
+  (re-raised, same as Tier 3's 3A), no Map creation UI, Add-a-Table not supporting multiple
+  measures, and difference-mode staying pickable on a card with the wrong route count. Triaged all
+  five directly against the code before implementing anything (see Tier 5 above for each item's
+  findings). 5A (width + reorder) built directly — both controls turned out to need zero new
+  plumbing, since Item 4 (1C) already threads `actions.moveItem`/`actions.updateAttribute`/
+  `sectionState.i` into QuickControls; also resolved Ryan's own stated worry that reordering
+  might be coupled to route→graph mapping via section index — confirmed via grep that
+  `useGraphPublish.js` has zero index-based route/graph coupling, routes are matched via
+  `_measurePick.routeIds` only. Mid-implementation, Ryan corrected the layout twice (layout
+  controls should be left-aligned against the right-aligned data pills; then, Width itself
+  belongs in that same left group next to the arrows, not the right-aligned cluster) — both
+  applied and re-verified live. Posed 5B/5E/5C-vs-5D-sequencing to Ryan via `AskUserQuestion`:
+  5B got a clarifying question back (where would a pristine-title marker live — answered in
+  conversation: `display.title.title`/`display.description` are the fields, per
+  `graph_new/config.jsx`'s Settings-drawer control; no final decision made yet, still open); 5E
+  picked "show but disable"; sequencing picked "Table now, Map later." Implemented 5E (QuickControls
+  disables the Difference option below 2 routes via a real `disabled` button since these are plain
+  buttons, not the shared `<Select>`; AddGraphModal gets a warning note instead, since `<Select>`
+  has no per-option disable and didn't seem worth a `dms`-core change for one call site) and 5D
+  (Table multi-measure — a new `composeTableMeasuresConfig` compose function, a multi-select
+  checklist in both AddGraphModal and QuickControls' Measure pill, and a real `vocabulary.json`
+  bug this surfaced and got fixed: `travelTime`'s SQL expression was missing `ds.` table-alias
+  qualification that every other measure already has, which only broke once a multi-measure query
+  existed to make the bare identifiers ambiguous — root-caused against the Python converter's own
+  already-correct copy of the same expression). Both live-verified via claude-in-chrome on the
+  existing scratch page (`converted_reports/page_27`), including a real 3-measure table with mixed
+  join requirements rendering correct distinct values per column and surviving a reload. One
+  unconfirmed-but-flagged item left for later: whether combining a CO2 sum/avg pair (which share
+  one SQL alias by design) in one table collides — not verified either way, deliberately not
+  patched blind. 5C (Map) deliberately not started this session per Ryan's own sequencing choice.

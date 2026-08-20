@@ -76,6 +76,15 @@ export const RESOLUTION_OPTIONS = Object.keys(vocab.resolutions).map(value => ({
     value, label: RESOLUTION_LABELS[value] || value,
 }));
 
+// Table has no "bar" — it's a row-per-route grid, not a chart. Rather than fork the whole
+// RESOLUTION_OPTIONS list per graph type (every OTHER label reads fine regardless of shape),
+// both AddGraphModal's Resolution field and QuickControls' Aggregate pill call this instead of
+// reading RESOLUTION_OPTIONS directly whenever they know the current graphType.
+export function resolutionOptionsFor(graphType) {
+    if (graphType !== 'Table') return RESOLUTION_OPTIONS;
+    return RESOLUTION_OPTIONS.map((o) => (o.value === 'summary' ? { ...o, label: 'Summary (one row per route)' } : o));
+}
+
 export const COMPARISON_MODE_OPTIONS = [
     { value: 'plain', label: 'Plain' },
     { value: 'difference', label: 'Difference' },
@@ -108,6 +117,13 @@ export const DEFAULT_PICK = {
     start: '',
     end: '',
     routeIds: [],
+    // report-authoring-ux-overhaul.md Tier 5D (2026-08-20): Table only. Every OTHER graph type
+    // still uses the single `measure` field above — a chart draws exactly one measure's worth of
+    // yAxis per pick, always has. A table has no such ceiling, so it gets its own array field
+    // rather than overloading `measure` into a sometimes-string-sometimes-array shape. Empty by
+    // default; AddGraphModal seeds it from the current single `measure` the moment the author
+    // switches the shape card to Table (see that file), so the multi-select never opens blank.
+    measures: [],
 };
 
 // Tags every column this picker generates as metadata (documents provenance
@@ -202,16 +218,36 @@ function isUnsupportedSummaryMeasure(resolutionKey, measureKey) {
     return resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
 }
 
-function buildJoin(measure) {
-    const joinKeys = measure.requiresJoin || [];
-    if (!joinKeys.length) return null;
+// Positional: first join key -> table1, second -> table2 (see vocabulary README's "joins"
+// section). Factored out from `buildJoin` (below) so the Table multi-measure path
+// (`composeTableMeasuresConfig`) can build ONE union join across several measures' own
+// `requiresJoin` lists — a table's `state.join` is a single shared structure, not per-column, so
+// mixing e.g. `speed` (META_JOIN only) with `hoursOfDelay` (META_JOIN + AADT_DIST_JOIN) needs the
+// union, deduped, not just whichever measure composed last.
+function buildJoinFromKeys(joinKeys) {
+    if (!joinKeys?.length) return null;
     const sources = {};
-    // Positional: first requiresJoin entry -> table1, second -> table2 (see
-    // vocabulary README's "joins" section).
     joinKeys.forEach((joinKey, idx) => {
         sources[`table${idx + 1}`] = vocab.joins[joinKey];
     });
     return { sources };
+}
+
+function buildJoin(measure) {
+    return buildJoinFromKeys(measure.requiresJoin);
+}
+
+// The single yAxis-target measure column, factored out of `composeMeasureConfig` so
+// `composeTableMeasuresConfig` (multiple measures -> multiple columns, one table) can build each
+// one identically to the single-measure chart path, rather than re-deriving this shape.
+// `target` defaults to 'yAxis' — GridGraph's 'color' override doesn't apply to Table (no cell
+// coloring), so callers needing that pass it explicitly.
+function buildMeasureYAxisColumn(measure, target = 'yAxis') {
+    return {
+        type: 'calculated', show: true, name: measure.expr,
+        target, fn: measure.fn, customName: measure.label,
+        origin: MEASURE_PICKER_COLUMN_ORIGIN,
+    };
 }
 
 function buildDiffColors(measure, graphType) {
@@ -257,11 +293,7 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     // GridGraph's value column targets "color" (per-cell heat), every other
     // graph type targets "yAxis" — same rule TEMPLATE_SPECS' own entries use.
     const yAxisTarget = graphType === 'GridGraph' ? 'color' : 'yAxis';
-    const yAxisColumn = {
-        type: 'calculated', show: true, name: measure.expr,
-        target: yAxisTarget, fn: measure.fn, customName: measure.label,
-        origin: MEASURE_PICKER_COLUMN_ORIGIN,
-    };
+    const yAxisColumn = buildMeasureYAxisColumn(measure, yAxisTarget);
     const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
     const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
     const join = buildJoin(measure);
@@ -391,4 +423,121 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         comparisonSeriesCombine: isDifference ? { mode: 'difference', ...(anchorInvert ? { invert: true } : {}) } : null,
         displayPatch,
     };
+}
+
+// Live-caught 2026-08-20 building a Summary-resolution, 2-measure (Speed + Travel Time) table:
+// the query builder only aliases the base table `AS ds` when the composed query has a JOIN —
+// with no join, it's referenced bare (no alias at all), and the WHERE clause's own `tmc`/`date`
+// are bare too. `travelTime` is the ONLY measure with `requiresJoin: []` (every other measure
+// always triggers a join), so its `vocabulary.json` expression is correctly written with bare,
+// unqualified `tmc`/`travel_time_all_vehicles` — exactly matching the no-join case, which is the
+// ONLY case a single-measure pick (any chart, or a 1-measure table) ever produces.
+//
+// A multi-measure TABLE is the one place that can put travelTime's expression into a query that
+// DOES end up with a join (because some OTHER selected measure needs one) — and once `AS ds`
+// exists, `travelTime`'s bare `tmc` collides with the joined meta table's own `tmc` column
+// ("ambiguous identifier"). Qualifying travelTime's `vocabulary.json` string instead (tried
+// first, reverted) breaks it back in the OTHER direction the moment it's ever used alone or
+// with no join — the exact "replacing one bug with another" risk to avoid. The join/no-join
+// duality is real and belongs right here, at the one call site that can put a zero-join
+// measure's expression into a joined query — not in the shared vocabulary string every
+// single-measure path (and the Python converter) also reads verbatim.
+//
+// A literal lookup, not a regex rewrite: exactly one measure needs this today. Add another entry
+// here, by measure key, if a future zero-`requiresJoin` measure ever needs the same treatment.
+const QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN = {
+    travelTime: 'arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles',
+};
+
+// Table-only: `TableCell.jsx` renders a column's raw value verbatim with NO formatting unless
+// `formatFn` is set — confirmed live 2026-08-20, a fresh table showed full float precision (e.g.
+// "3.5323034922285706"). A chart never hits this: its yAxis value is read through
+// `display.tooltip`'s own `valueFormat`/`yFormat` (already set above, per measure, in
+// `composeMeasureConfig`), never a column's `formatFn` — so this map is scoped to
+// `composeTableMeasuresConfig` only, not added to the shared `buildMeasureYAxisColumn` helper
+// both paths call, to avoid touching chart behavior at all. `travelTime` reuses the same
+// `minutes_clock` convention its OWN chart tooltip already gets (`duration_mmss` there — same
+// idea, Spreadsheet's own name for it, both from dataWrapper/utils/utils.jsx's `formatFunctions`)
+// rather than the plain-decimal default, since a raw decimal-minutes value reads badly as a
+// duration. Every other measure gets `decimal_2` (same fixed-precision formatter already used
+// for Route Info Box's plain-decimal measures, per that formatter's own comment) — not `comma`,
+// which floors to an integer below its K/M abbreviation threshold and would round every one of
+// these sub-1000 rate-like values (mph, minutes, delay-hours) down to a whole number.
+const TABLE_MEASURE_FORMAT_FN = {
+    travelTime: 'minutes_clock',
+};
+const DEFAULT_TABLE_MEASURE_FORMAT_FN = 'decimal_2';
+
+/**
+ * Compose the full section-state patch for a Table with N measures — one yAxis-target column
+ * per measure, sharing a single xAxis (resolution) column and a single, unioned `join`. Table has
+ * no comparison-mode/anchor/color/legend/tooltip concept (Spreadsheet ignores all of those —
+ * confirmed by reading `ComponentRegistry/spreadsheet/index.jsx`'s own column selection, which
+ * filters purely on `show`/`selectOnly`, never `target` or anything display-shaped), so this is
+ * deliberately much smaller than `composeMeasureConfig` above rather than a Table-flavored branch
+ * bolted onto it.
+ *
+ * The one piece that genuinely needs merge logic across measures: `join`. A table's `state.join`
+ * is ONE shared structure, not per-column, so combining e.g. `speed` (needs only META_JOIN) with
+ * `hoursOfDelay` (needs META_JOIN + AADT_DIST_JOIN) must union+dedupe both measures' own
+ * `requiresJoin` lists — using only the last-composed measure's join would silently drop a table
+ * whose OTHER columns' SQL expressions reference a join that was never applied. Whether that
+ * union ends up non-empty ALSO decides which of a zero-join measure's two expression forms is
+ * safe (see `QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN` above) — so the join is resolved once, up front,
+ * and both the column-building and the returned `join` itself read from that one value.
+ *
+ * Returns null if no measureKey in `measureKeys` is recognized (mirrors composeMeasureConfig's
+ * own "unknown measure -> nothing to apply" contract).
+ */
+export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externalSourceColumns }) {
+    const measures = (measureKeys || [])
+        .map((k) => ({ key: k, measure: vocab.measures[k] }))
+        .filter((entry) => entry.measure);
+    if (!measures.length) return null;
+
+    const unionJoinKeys = [...new Set(measures.flatMap(({ measure }) => measure.requiresJoin || []))];
+    const tableHasJoin = unionJoinKeys.length > 0;
+
+    const yAxisColumns = measures.map(({ key, measure }) => {
+        const overrideExpr = tableHasJoin ? QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN[key] : undefined;
+        const column = buildMeasureYAxisColumn(overrideExpr ? { ...measure, expr: overrideExpr } : measure);
+        column.formatFn = TABLE_MEASURE_FORMAT_FN[key] || DEFAULT_TABLE_MEASURE_FORMAT_FN;
+        return column;
+    });
+    const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
+
+    return {
+        columns: [...yAxisColumns, xAxisColumn].filter(Boolean),
+        join: buildJoinFromKeys(unionJoinKeys),
+        comparisonSeriesCombine: null,
+        displayPatch: { graphType: 'Table', fetchMode: 'force' },
+    };
+}
+
+/**
+ * Tier 5B (report-authoring-ux-overhaul.md, 2026-08-20) — title auto-population, WITHOUT a new
+ * "is this still auto-generated" tracking field. `composeAutoTitle` is a pure function of a pick
+ * (deterministic — same pick always yields the same title), so instead of storing a pristine
+ * flag, `isTitleDirty` recomputes what THIS SAME function would have produced for the pick that
+ * was active last time, and compares it to what's actually stored. Equal (or empty) => the title
+ * is still exactly what auto-compose put there => safe to overwrite with the new pick's title.
+ * Different => the author typed something of their own => never touched again. Ryan's explicit
+ * call, 2026-08-20: no new field, keep the mechanism obvious at the call site instead.
+ */
+export function composeAutoTitle(pick) {
+    if (!pick) return '';
+    if (pick.graphType === 'Table') {
+        const labels = (pick.measures || []).map((k) => vocab.measures[k]?.label).filter(Boolean);
+        return labels.join(', ');
+    }
+    return vocab.measures[pick.measure]?.label || '';
+}
+
+// `priorPick` is whatever `state.display._measurePick` held BEFORE this apply (undefined on a
+// brand-new section) — the pick `currentTitle` was actually generated from, not the new one
+// about to be applied. Compare against that, never against the new pick, or every re-pick would
+// call itself dirty (the new title never equals the OLD stored one until after this check runs).
+export function isTitleDirty({ currentTitle, priorPick }) {
+    if (!currentTitle) return false;
+    return currentTitle !== composeAutoTitle(priorPick);
 }

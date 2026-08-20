@@ -7,7 +7,7 @@ import { applyMeasurePick, isReportPage } from '../MeasurePicker';
 import {
   MEASURE_OPTIONS,
   MEASURE_CATEGORIES,
-  RESOLUTION_OPTIONS,
+  resolutionOptionsFor,
   COMPARISON_MODE_OPTIONS,
   DEFAULT_PICK,
 } from '../MeasurePicker/composeMeasureConfig';
@@ -26,13 +26,23 @@ import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_
  * through the shared `applyMeasurePick` so this row and the older Settings-drawer item-group
  * (MeasurePicker/index.js) can never silently drift.
  *
+ * report-authoring-ux-overhaul.md Tier 5 (2026-08-20): added a left-aligned "layout" group —
+ * Move Up/Down buttons (via `actions.moveItem`, the same array-splice `sectionArray.jsx` already
+ * exposes in its own Settings-drawer toolbar) plus a Width pill (reads/writes the section's own
+ * `size` attribute — same field/mechanism as sectionMenu.jsx's Settings-drawer Width control) —
+ * pinned to this row's own left edge, deliberately separate from the right-aligned DATA pill
+ * cluster below (routes/measure/when/aggregate/mode). Both simply expose an already-working,
+ * already-persisting capability one click closer, matching every other pill in this row.
+ *
  * Two design decisions kept from the mockup (npmrds-report.js:929-1073):
  *   1. WHEN IS ONE PILL, not two — time-of-day and day-of-week are one thought ("weekday PM
  *      peak"), splitting them would double the pill count for no gain.
- *   2. THE ROW COMPRESSES. Not every card is wide enough for 5 pills — below a certain width
- *      the row measures itself and folds the lowest-priority pills into one "⋯" pill that opens
- *      the same popover contents, in this drop order: mode → aggregate → when → measure. Routes
- *      never drops — it's the reason this row exists.
+ *   2. THE ROW COMPRESSES. Not every card is wide enough for every DATA pill — below a certain
+ *      width the row measures itself and folds the lowest-priority pills into one "⋯" pill that
+ *      opens the same popover contents, in this drop order: mode → aggregate → when → measure.
+ *      Routes never drops — it's the reason this row exists. The left-aligned layout group
+ *      (Move Up/Down, Width) is outside this whole mechanism entirely — see the row's own JSX
+ *      comment.
  *
  * 2026-08-19 (report-authoring-ux-overhaul.md item 4): this row now mounts and stays interactive
  * for the whole time a PAGE is open at /edit/... — no longer gated on this section's own
@@ -40,7 +50,7 @@ import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_
  * persist via `actions.updateAttribute`, the same channel drag-reorder already uses under
  * SectionView, not `dwAPI.setState` alone (dead for persistence there).
  */
-export function npmrdsQuickControls({ state, dwAPI, currentComponent, canEditSection, siblingSections = [], pageState, actions, sectionState }) {
+export function npmrdsQuickControls({ state, dwAPI, currentComponent, canEditSection, siblingSections = [], pageState, actions, sectionState, auth }) {
   // Gate on the actual self-binding mechanism (an enabled `$self` comparison_series subscriber —
   // the same test `useGraphPublish.js`'s `findSelfBoundGraphs` uses to decide whether a section
   // receives a published route list at all) rather than `state?.comparisonSeries?.enabled`, a
@@ -65,6 +75,15 @@ export function npmrdsQuickControls({ state, dwAPI, currentComponent, canEditSec
       pageState={pageState}
       actions={actions}
       sectionValue={sectionState?.value}
+      sectionIndex={sectionState?.i}
+      // Reordering is a page-LAYOUT operation, same as sectionMenu.jsx's own Move
+      // Up/Down toolbar buttons (`!isEdit && canEditPageLayout && canEditSection`) —
+      // gated on the 'edit-page'/'edit-page-layout' permission (here named
+      // `canEditPageContent`, section.jsx's own name for the identical
+      // isUserAuthed(['edit-page','edit-page-layout'], ...) check), not just
+      // `canEditSection` alone. Width has no such extra gate below, matching
+      // sectionMenu.jsx's own Width control, which only checks `canEditSection`.
+      canReorder={!!auth?.canEditPageContent}
     />
   );
 }
@@ -88,7 +107,7 @@ function qcDaysToken(weekdays) {
   return `${on}d`;
 }
 
-function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, sectionValue }) {
+function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, sectionValue, sectionIndex, canReorder }) {
   // `canEditSection` (checked by the caller) is true for any logged-in author, even one just
   // browsing the real published site — `editPageMode` is the only signal that actually means
   // "this page is open at /edit/...". Checked here (inside a real mounted component) rather than
@@ -102,6 +121,19 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   const { Popup, Icon } = UI || {};
   const t = { ...quickControlsTheme, ...getComponentTheme(themeFromContext, 'quickControls') };
   const pick = { ...DEFAULT_PICK, ...(state?.display?._measurePick || {}) };
+
+  // Width — reads/writes the exact same top-level section attribute (`value.size`,
+  // a col-span-out-of-12 key) sectionMenu.jsx's own "Width" Settings-drawer item
+  // already does via `updateAttribute('size', name)` (see sectionMenu.jsx's Width
+  // menu entry) — this pill is a discoverability shortcut for a capability that
+  // already exists and already persists, not a new mechanism.
+  const sectionArrayTheme = getComponentTheme(themeFromContext, 'pages.sectionArray');
+  const sizeMap = sectionArrayTheme?.sizes || {};
+  const sizeKeys = Object.keys(sizeMap).sort(
+    (a, b) => (+sizeMap[a]?.iconSize || 100) - (+sizeMap[b]?.iconSize || 100)
+  );
+  const currentSize = sectionValue?.size || sectionArrayTheme?.defaultSize || '1';
+  const applyWidth = (name) => actions?.updateAttribute?.('size', name);
   // currentComponent?.type (the ComponentRegistry's own identity), not state.display.graphType /
   // pick.graphType — a Map section's stored state never carries either field (confirmed live
   // 2026-08-07: _measurePick only ever has weekdays/start/end/routeIds), so both would silently
@@ -203,8 +235,22 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     applyWindowToAllRoutes({ weekdays: next });
   };
   const applyTodPreset = (preset) => applyWindowToAllRoutes({ start: preset.startTime, end: preset.endTime });
+  // Tier 5D (2026-08-20): a Table's Measure pill toggles membership in `pick.measures` (one
+  // column per entry) instead of replacing `pick.measure` outright — the same distinction
+  // AddGraphModal's own creation-time checklist makes, for the same reason (a table has no
+  // one-measure ceiling the way every chart type still does).
+  const toggleTableMeasure = (m) => {
+    const has = (pick.measures || []).includes(m);
+    const nextMeasures = has ? pick.measures.filter((x) => x !== m) : [...(pick.measures || []), m];
+    applyPick({ measures: nextMeasures });
+  };
 
-  const measureLabel = qcMeasureLabel(MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label);
+  const isTable = graphType === 'Table';
+  const measureLabel = isTable
+    ? ((pick.measures || []).length
+        ? `${pick.measures.length} measure${pick.measures.length === 1 ? '' : 's'}`
+        : 'no measures')
+    : qcMeasureLabel(MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label);
   const routeLabel = routeIds.length === 0
     ? 'no routes'
     : routeIds.length === 1
@@ -223,9 +269,9 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     // Measure/Aggregate are AVL-Graph-only concepts — a Map card has no measure/resolution pick of
     // its own (its choropleth measure is fixed at conversion/build time, not author-editable via
     // this row), and composeMeasureConfig has no Map-shaped output for either to compose anyway.
-    if (hasMeasureAggregate) defs.push({ kind: 'measure', label: measureLabel, title: `Measure · ${MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || ''}` });
+    if (hasMeasureAggregate) defs.push({ kind: 'measure', label: measureLabel, title: isTable ? 'Measures on this table' : `Measure · ${MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || ''}` });
     defs.push({ kind: 'when', label: whenToken, title: whenTitle });
-    if (hasMeasureAggregate) defs.push({ kind: 'aggregate', label: aggregateLabel, title: `Aggregate · ${RESOLUTION_OPTIONS.find((o) => o.value === pick.resolution)?.label || ''}` });
+    if (hasMeasureAggregate) defs.push({ kind: 'aggregate', label: aggregateLabel, title: `Aggregate · ${resolutionOptionsFor(graphType).find((o) => o.value === pick.resolution)?.label || ''}` });
     // Short text, not the mockup's own glyph — building/maintaining a plain-vs-difference SVG
     // pair for one pill wasn't worth it next to the existing short-token convention every other
     // pill already uses (found live 2026-08-06: an earlier icon-only-sized version of this pill
@@ -233,7 +279,14 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     if (hasMode) defs.push({ kind: 'mode', label: modeIsDifference ? 'Diff' : 'Overlay', title: `Comparison mode · ${modeIsDifference ? 'difference' : 'overlay'}`, strong: modeIsDifference });
     return defs;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeLabel, measureLabel, whenToken, whenTitle, aggregateLabel, modeIsDifference, hasMode, hasMeasureAggregate, single, routeIds.length, pick.measure, pick.resolution]);
+  }, [routeLabel, measureLabel, whenToken, whenTitle, aggregateLabel, modeIsDifference, hasMode, hasMeasureAggregate, single, routeIds.length, pick.measure, pick.resolution, isTable]);
+
+  // Width — a layout pill, not a data pill (see the left-aligned `layoutGroup` in the JSX below,
+  // alongside Move Up/Down). Deliberately NOT part of `pillDefs`/the responsive fit-and-overflow
+  // system above: that system exists to protect the DATA pills' visibility on a narrow card, and
+  // this section's Settings-drawer already offers Width unconditionally, so there's no "must
+  // always be reachable from this row" pressure the way there is for e.g. Routes.
+  const widthPillDef = { kind: 'width', label: currentSize === '12' ? 'Full' : `${currentSize}/12`, title: `Width · ${currentSize} of 12 columns` };
 
   // ── Row-fit: measure the real rendered width of every pill (in an off-screen shadow copy,
   // so widths stay accurate for pills currently trimmed from the visible row) against the
@@ -306,7 +359,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
 
   const renderMeasureSection = () => (
     <div className={t.popSection}>
-      <div className={t.popSectionLabel}>measure</div>
+      <div className={t.popSectionLabel}>{isTable ? 'measures · pick any' : 'measure'}</div>
       <div className={t.popMeasureList}>
         {MEASURE_CATEGORIES.map((cat) => (
           <div key={cat.label}>
@@ -314,9 +367,17 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
             {cat.measures.map((m) => {
               const opt = MEASURE_OPTIONS.find((o) => o.value === m);
               if (!opt) return null;
-              const on = m === pick.measure;
+              // Table: multi-select (toggles membership in `pick.measures`, one column each).
+              // Every other graph type: single-select (replaces `pick.measure` outright) — the
+              // same distinction AddGraphModal's own creation-time fields make.
+              const on = isTable ? (pick.measures || []).includes(m) : m === pick.measure;
               return (
-                <button key={m} type="button" className={on ? t.popMeasureItemOn : t.popMeasureItem} onClick={() => applyPick({ measure: m })}>
+                <button
+                  key={m}
+                  type="button"
+                  className={on ? t.popMeasureItemOn : t.popMeasureItem}
+                  onClick={() => (isTable ? toggleTableMeasure(m) : applyPick({ measure: m }))}
+                >
                   {opt.label}
                 </button>
               );
@@ -324,6 +385,9 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
           </div>
         ))}
       </div>
+      {isTable && !(pick.measures || []).length && (
+        <div className={t.popWarning}>No measures selected — this table has no columns to show.</div>
+      )}
     </div>
   );
 
@@ -367,7 +431,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     <div className={t.popSection}>
       <div className={t.popSectionLabel}>aggregate</div>
       <div className={t.popPillRow}>
-        {RESOLUTION_OPTIONS.map((o) => (
+        {resolutionOptionsFor(graphType).map((o) => (
           <button key={o.value} type="button" className={o.value === pick.resolution ? t.pillOn : t.pill} onClick={() => applyPick({ resolution: o.value })}>
             {o.label}
           </button>
@@ -380,16 +444,51 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     <div className={t.popSection}>
       <div className={t.popSectionLabel}>comparison mode</div>
       <div className={t.popPillRow}>
-        {COMPARISON_MODE_OPTIONS.map((o) => (
-          <button key={o.value} type="button" className={o.value === pick.comparisonMode ? t.pillOn : t.pill} onClick={() => applyPick({ comparisonMode: o.value })}>
-            {o.label}
-          </button>
-        ))}
+        {COMPARISON_MODE_OPTIONS.map((o) => {
+          // report-authoring-ux-overhaul.md Tier 5E (2026-08-20, Ryan's call via
+          // AskUserQuestion: "show but disable"): Difference only makes sense with
+          // exactly 2 routes — stays visible/discoverable, but isn't pickable outside
+          // that count. Deliberately does NOT also disable it while it's already the
+          // active selection and the count later drifted away from 2 (e.g. a route
+          // removed after the fact) — an author must be able to switch back to Plain
+          // in that state, which disabling the CURRENT selection would block.
+          const blocked = o.value === 'difference' && routeIds.length !== 2 && pick.comparisonMode !== 'difference';
+          return (
+            <button
+              key={o.value}
+              type="button"
+              disabled={blocked}
+              title={blocked ? `Difference mode needs exactly 2 routes; this card has ${routeIds.length}.` : undefined}
+              className={blocked ? t.pillDisabled : (o.value === pick.comparisonMode ? t.pillOn : t.pill)}
+              onClick={() => applyPick({ comparisonMode: o.value })}
+            >
+              {o.label}
+            </button>
+          );
+        })}
       </div>
       {modeIsDifference && <div className={t.popNote}>Drawn as main − other; the anchor is the first route in the list.</div>}
+      {modeIsDifference && routeIds.length !== 2 && (
+        <div className={t.popWarning}>Difference mode compares exactly two routes; this card has {routeIds.length}. Fix the Routes pill, or switch back to Overlay.</div>
+      )}
     </div>
   );
 
+  const renderWidthSection = () => (
+    <div className={t.popSection}>
+      <div className={t.popSectionLabel}>width · columns out of 12</div>
+      <div className={t.popPillRow}>
+        {sizeKeys.map((key) => (
+          <button key={key} type="button" className={key === currentSize ? t.pillOn : t.pill} onClick={() => applyWidth(key)}>
+            {key}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  // `width` is deliberately not here — it's rendered directly in the left-aligned layout group
+  // below, not through the pillDefs/overflow ("⋯") system this map serves.
   const sectionRenderers = { routes: renderRoutesSection, measure: renderMeasureSection, when: renderWhenSection, aggregate: renderAggregateSection, mode: renderModeSection };
 
   const pillButton = (def, ref) => (
@@ -404,33 +503,57 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   );
 
   return (
-    <div className={t.wrapper} ref={wrapperRef}>
-      {visiblePills.map((def) => (
-        <Popup key={def.kind} button={pillButton(def)} preferredPosition="bottom">
-          {() => <div className={t.popBody}>{sectionRenderers[def.kind]()}</div>}
-        </Popup>
-      ))}
-      {overflowKinds.length > 0 && (
-        <Popup
-          button={
-            <button type="button" className={t.morePill} title="The rest of this card's controls">
-              <Icon icon="More" />
+    <div className={t.rowWrapper}>
+      {/* Layout group — Move Up/Down + Width — pinned to the row's own left edge, entirely
+          separate from the right-aligned data-pill cluster below (both in placement and in the
+          responsive fit/overflow logic, which only ever measures that cluster). */}
+      <div className={t.reorderGroup}>
+        {canReorder && Number.isInteger(sectionIndex) ? (
+          <>
+            <button type="button" className={t.reorderBtn} title="Move section up" onClick={() => actions?.moveItem?.(sectionIndex, -1)}>
+              <Icon icon="ChevronUpSquare" />
             </button>
-          }
-          preferredPosition="bottom"
-        >
-          {() => <div className={t.popBody}>{overflowKinds.map((kind) => <React.Fragment key={kind}>{sectionRenderers[kind]()}</React.Fragment>)}</div>}
+            <button type="button" className={t.reorderBtn} title="Move section down" onClick={() => actions?.moveItem?.(sectionIndex, 1)}>
+              <Icon icon="ChevronDownSquare" />
+            </button>
+          </>
+        ) : null}
+        <Popup button={pillButton(widthPillDef)} preferredPosition="bottom">
+          {() => <div className={t.popBody}>{renderWidthSection()}</div>}
         </Popup>
-      )}
-
-      {/* Off-screen shadow copy of every pill, always fully rendered regardless of the visible
-          trim state above — this is what keeps widths accurate for a pill currently folded into
-          "⋯" once the row grows wide enough to show it again. */}
-      <div aria-hidden="true" style={{ position: 'absolute', visibility: 'hidden', top: -9999, left: -9999, display: 'flex', gap: GAP, pointerEvents: 'none' }}>
-        {pillDefs.map((def, i) => (
-          <React.Fragment key={def.kind}>{pillButton(def, (el) => { shadowRefs.current[i] = el; })}</React.Fragment>
+      </div>
+      {/* Own flex-1 sibling (not part of rowWrapper's own flow) so the layout group
+          above stays pinned left while this cluster stays right-justified — and so
+          the row-fit measurement below sees only ITS OWN available width, not the
+          layout group's. */}
+      <div className={t.wrapper} ref={wrapperRef}>
+        {visiblePills.map((def) => (
+          <Popup key={def.kind} button={pillButton(def)} preferredPosition="bottom">
+            {() => <div className={t.popBody}>{sectionRenderers[def.kind]()}</div>}
+          </Popup>
         ))}
-        <button ref={shadowMoreRef} type="button" className={t.morePill}><Icon icon="More" /></button>
+        {overflowKinds.length > 0 && (
+          <Popup
+            button={
+              <button type="button" className={t.morePill} title="The rest of this card's controls">
+                <Icon icon="More" />
+              </button>
+            }
+            preferredPosition="bottom"
+          >
+            {() => <div className={t.popBody}>{overflowKinds.map((kind) => <React.Fragment key={kind}>{sectionRenderers[kind]()}</React.Fragment>)}</div>}
+          </Popup>
+        )}
+
+        {/* Off-screen shadow copy of every pill, always fully rendered regardless of the visible
+            trim state above — this is what keeps widths accurate for a pill currently folded into
+            "⋯" once the row grows wide enough to show it again. */}
+        <div aria-hidden="true" style={{ position: 'absolute', visibility: 'hidden', top: -9999, left: -9999, display: 'flex', gap: GAP, pointerEvents: 'none' }}>
+          {pillDefs.map((def, i) => (
+            <React.Fragment key={def.kind}>{pillButton(def, (el) => { shadowRefs.current[i] = el; })}</React.Fragment>
+          ))}
+          <button ref={shadowMoreRef} type="button" className={t.morePill}><Icon icon="More" /></button>
+        </div>
       </div>
     </div>
   );

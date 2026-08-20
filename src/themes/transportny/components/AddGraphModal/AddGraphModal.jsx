@@ -5,7 +5,7 @@ import {
   GRAPH_TYPE_OPTIONS,
   MEASURE_OPTIONS,
   MEASURE_CATEGORIES,
-  RESOLUTION_OPTIONS,
+  resolutionOptionsFor,
   COMPARISON_MODE_OPTIONS,
   DEFAULT_PICK,
 } from '../MeasurePicker/composeMeasureConfig';
@@ -140,6 +140,13 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     });
   };
   const applyTodPreset = (preset) => setPick((p) => ({ ...p, start: preset.startTime, end: preset.endTime }));
+  const toggleMeasure = (m) => {
+    setPick((p) => {
+      const has = (p.measures || []).includes(m);
+      const nextMeasures = has ? p.measures.filter((x) => x !== m) : [...(p.measures || []), m];
+      return { ...p, measures: nextMeasures };
+    });
+  };
 
   // Difference graphs color `anchor - other` (see report-spec.md's "Difference graphs: anchor
   // and sign") — only meaningful once exactly 2 routes are checked. Order mirrors how
@@ -164,11 +171,17 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     : [];
 
   const Glyph = GRAPH_TYPE_GLYPHS[pick.graphType] || BarGraphGlyph;
-  const measureLabel = MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || pick.measure;
-  const resolutionLabel = RESOLUTION_OPTIONS.find((o) => o.value === pick.resolution)?.label || pick.resolution;
+  const isTable = pick.graphType === 'Table';
+  const measureLabel = isTable
+    ? ((pick.measures || []).length
+        ? `${pick.measures.length} measure${pick.measures.length === 1 ? '' : 's'}`
+        : 'no measures selected')
+    : (MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || pick.measure);
+  const resolutionLabel = resolutionOptionsFor(pick.graphType).find((o) => o.value === pick.resolution)?.label || pick.resolution;
   const comparisonLabel = COMPARISON_MODE_OPTIONS.find((o) => o.value === pick.comparisonMode)?.label || pick.comparisonMode;
 
-  const canConfirm = selectedRouteIds.size >= 1 && !DISABLED_SHAPES[pick.graphType];
+  const canConfirm = selectedRouteIds.size >= 1 && !DISABLED_SHAPES[pick.graphType]
+    && (!isTable || (pick.measures || []).length >= 1);
 
   const handleConfirm = () => {
     onConfirm?.({ pick, selectedRouteIds: Array.from(selectedRouteIds) });
@@ -227,7 +240,17 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                     disabled={!!disabledReason}
                     title={disabledReason}
                     onClick={() => {
-                      setPick((p) => ({ ...p, graphType: o.value }));
+                      setPick((p) => {
+                        const next = { ...p, graphType: o.value };
+                        // Seed the Table multi-select from whatever single measure was already
+                        // picked, so it never opens looking empty — but only the FIRST time (if
+                        // the author already built up a `measures` set, re-clicking Table after
+                        // browsing another shape shouldn't reset it back to one).
+                        if (o.value === 'Table' && !(p.measures || []).length) {
+                          next.measures = [p.measure];
+                        }
+                        return next;
+                      });
                       // Switching TO Map collapses an existing multi-selection to just its first
                       // entry (mirrors the reference file's own graph-type-switch behavior) — a
                       // Map card can only ever draw one route.
@@ -242,30 +265,69 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 );
               })}
             </div>
-            <div className={t.pickerGrid}>
-              <div className={t.pickerField}>
-                <label className={t.pickerLabel}>Measure</label>
-                {/* Native <select>/<optgroup> — the shared Select/MultiSelect primitive has no
-                    grouped-option support, and adding one there is a bigger, separate change
-                    than this one field needs. */}
-                <select
-                  className={t.measureNativeSelect}
-                  value={pick.measure}
-                  onChange={(e) => setPick((p) => ({ ...p, measure: e.target.value }))}
-                >
+            {/* report-authoring-ux-overhaul.md Tier 5D (2026-08-20): Table is the one shape that
+                can hold more than one measure (one column each) — every chart type still draws
+                exactly one measure's worth of yAxis, so they keep the plain single select below.
+                Rendered full-width, above the 2-col pickerGrid, rather than squeezed into one of
+                its cells — a checklist needs more room than a `<select>` ever did. */}
+            {pick.graphType === 'Table' ? (
+              <div className={`${t.pickerField} mb-3`}>
+                <label className={t.pickerLabel}>Measures (pick any)</label>
+                <div className={t.measureChecklist}>
                   {MEASURE_CATEGORIES.map((cat) => (
-                    <optgroup key={cat.label} label={cat.label}>
+                    <div key={cat.label}>
+                      <div className={t.measureGroupLabel}>{cat.label}</div>
                       {cat.measures.map((m) => {
                         const opt = MEASURE_OPTIONS.find((o) => o.value === m);
-                        return opt ? <option key={m} value={m}>{opt.label}</option> : null;
+                        if (!opt) return null;
+                        const checked = (pick.measures || []).includes(m);
+                        return (
+                          <button
+                            key={m}
+                            type="button"
+                            className={checked ? t.routeItemSelected : t.routeItem}
+                            onClick={() => toggleMeasure(m)}
+                          >
+                            <input type="checkbox" className={t.routeCheckbox} checked={checked} readOnly />
+                            <span className={t.routeName}>{opt.label}</span>
+                          </button>
+                        );
                       })}
-                    </optgroup>
+                    </div>
                   ))}
-                </select>
+                </div>
+                {!(pick.measures || []).length ? (
+                  <div className={t.warningNote}>Pick at least one measure — a table with none has no columns to show.</div>
+                ) : null}
               </div>
+            ) : null}
+
+            <div className={t.pickerGrid}>
+              {pick.graphType !== 'Table' ? (
+                <div className={t.pickerField}>
+                  <label className={t.pickerLabel}>Measure</label>
+                  {/* Native <select>/<optgroup> — the shared Select/MultiSelect primitive has no
+                      grouped-option support, and adding one there is a bigger, separate change
+                      than this one field needs. */}
+                  <select
+                    className={t.measureNativeSelect}
+                    value={pick.measure}
+                    onChange={(e) => setPick((p) => ({ ...p, measure: e.target.value }))}
+                  >
+                    {MEASURE_CATEGORIES.map((cat) => (
+                      <optgroup key={cat.label} label={cat.label}>
+                        {cat.measures.map((m) => {
+                          const opt = MEASURE_OPTIONS.find((o) => o.value === m);
+                          return opt ? <option key={m} value={m}>{opt.label}</option> : null;
+                        })}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
               <div className={t.pickerField}>
                 <label className={t.pickerLabel}>Resolution</label>
-                <Select options={RESOLUTION_OPTIONS} value={pick.resolution} onChange={(v) => setPick((p) => ({ ...p, resolution: v }))} />
+                <Select options={resolutionOptionsFor(pick.graphType)} value={pick.resolution} onChange={(v) => setPick((p) => ({ ...p, resolution: v }))} />
               </div>
               {hasModeField ? (
                 <div className={t.pickerField}>
@@ -284,6 +346,15 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 </div>
               ) : null}
             </div>
+
+            {/* report-authoring-ux-overhaul.md Tier 5E (2026-08-20): Difference picked with the
+                wrong route count — this modal can't disable the Select option itself (see the
+                theme file's own note on `warningNote`), so a warning is the equivalent signal. */}
+            {hasModeField && pick.comparisonMode === 'difference' && selectedRouteIds.size !== 2 ? (
+              <div className={t.warningNote}>
+                Difference mode compares exactly two routes; {selectedRouteIds.size} selected right now.
+              </div>
+            ) : null}
 
             {/* When — time-of-day + day-of-week, the exact facets that moved off the route onto
                 the graph (design push #2, 2026-08-06). Not offered for Map (routeSelect is the
@@ -328,7 +399,15 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
               <Glyph className={t.previewGlyph} />
               <div className={t.previewTextWrap}>
                 <div className={t.previewTitle}>{measureLabel} — {SHAPE_OPTIONS.find((o) => o.value === pick.graphType)?.label}</div>
-                <div className={t.previewDescription}>{MEASURE_DESCRIPTIONS[pick.measure]}</div>
+                {/* A single measure's description reads fine standing alone; once a table has
+                    2+, no ONE measure's blurb represents the whole card, so it's dropped rather
+                    than arbitrarily showing whichever measure `pick.measure` happens to still
+                    hold from before the shape switched to Table. */}
+                {!isTable || (pick.measures || []).length === 1 ? (
+                  <div className={t.previewDescription}>
+                    {MEASURE_DESCRIPTIONS[isTable ? pick.measures[0] : pick.measure]}
+                  </div>
+                ) : null}
                 <div className={t.previewDescription}>{GRAPH_TYPE_DESCRIPTIONS[pick.graphType]}</div>
                 <div className={t.previewSummary}>
                   Shown at {resolutionLabel} resolution{pick.graphType !== 'Map' ? `, ${timeOfDayToken(pick.start, pick.end)} · ${(summarizeWeekdays(pick.weekdays) || 'all days').toLowerCase()}` : ''}{hasModeField ? `, ${comparisonLabel.toLowerCase()} mode` : ''}.

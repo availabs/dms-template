@@ -7,14 +7,17 @@ import { BASE_SOURCE } from '../MeasurePicker/composeMeasureConfig';
 const AVL_GRAPH_ELEMENT_TYPE = 'AVL Graph';
 const SPREADSHEET_ELEMENT_TYPE = 'Spreadsheet';
 
-// Which registered component a pick's shape actually creates. Table rides the exact same
-// composeMeasureConfig/applyMeasurePickToState machinery as every chart shape — Spreadsheet's
-// defaultState has the identical filters/display/columns/data/externalSource shape AVL Graph's
-// does, and composeMeasureConfig already treats any non-GridGraph graphType as a plain 'yAxis'
-// column, so 'Table' needs no special-casing there. Map is NOT here: it has no columns/join
-// shape at all (no `defaultState` on its own registry entry — its layers are built interactively
-// through its own edit UI), so it needs a genuinely separate compose path — see the "Map" note
-// in the phased plan; not yet built.
+// Which registered component a pick's shape actually creates. Table rides the same
+// applyMeasurePickToState entry point as every chart shape — Spreadsheet's defaultState has the
+// identical filters/display/columns/data/externalSource shape AVL Graph's does — but, since Tier
+// 5D (report-authoring-ux-overhaul.md, 2026-08-20), composes through its OWN
+// `composeTableMeasuresConfig` (N measures -> N yAxis-target columns + one unioned join), not
+// plain `composeMeasureConfig` — a table has no one-measure ceiling the way every chart type
+// still does, so it needed real special-casing there after all, just inside
+// `applyMeasurePickToState`'s own dispatch rather than here. Map is NOT here: it has no
+// columns/join shape at all (no `defaultState` on its own registry entry — its layers are built
+// interactively through its own edit UI), so it needs a genuinely separate compose path — see
+// Tier 5C in the task file; not yet built.
 const ELEMENT_TYPE_BY_GRAPH_TYPE = {
   Table: SPREADSHEET_ELEMENT_TYPE,
 };
