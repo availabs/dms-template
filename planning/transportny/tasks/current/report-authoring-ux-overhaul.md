@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE (implemented as `composeAutoTitle`/`isTitleDirty`, no new field, per Ryan's explicit call — not yet live-clicked-through); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure deliberately deferred, not started; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED; Tier 6 (four more items, 2026-08-20 — Peak/DoW+Map/Table title gaps, Map multi-route, relative-dates span default) ALL DONE + live-verified 2026-08-20 · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE (implemented as `composeAutoTitle`/`isTitleDirty`, no new field, per Ryan's explicit call — not yet live-clicked-through); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure deliberately deferred, not started; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED; Tier 6 (four more items, 2026-08-20 — Peak/DoW+Map/Table title gaps, Map multi-route, relative-dates span default) ALL DONE + live-verified 2026-08-20; Tier 7 (three more items, 2026-08-20 — multi-route Map color-scale question answered, AddGraphModal "When" step's own dead-scalar gap fixed, and a real `dms`-core rendering gap found: Table/Map had NO title renderer at all, so 6A's own "Table's title was already working" claim was wrong — reasoned from compose code, never DOM-verified) ALL DONE + live-verified 2026-08-20 · **Started:** 2026-08-19
 
 ## Objective
 
@@ -1755,6 +1755,128 @@ cleanup isn't actually necessary going forward.
 - [x] Wired into `RouteRow.jsx`'s `handleDeriveFromChange`, scoped to `pattern === 'snap'` only
       — 2026-08-20
 - [x] Live-verify: picking a new base with an exact 1-day span auto-selects "Day" — 2026-08-20
+
+---
+
+## Tier 7 — three more items raised 2026-08-20 (post-Tier-6 usage) — ALL DONE, live-verified
+
+Ryan's next round: a question about multi-route Map color scales, the AddGraphModal "When" gap
+Tier 6A had flagged-but-not-fixed, and a real bug — Table/Map sections showed NO title at all when
+created via Add Graph, contradicting 6A's own "Table's title was already working" claim (which had
+been reasoned from code, never actually DOM-verified — Ryan's own point: "I bet you are writing
+into some title field that isn't actually used/rendered, and you are just trusting the response...
+without actually verifying").
+
+### 7A. Multi-route Map color scale — answered, no code change
+
+Confirmed via direct code read (`composeMapConfig.js`'s `CHOROPLETH_DEFAULTS`/
+`MANAGED_SYMBOLOGY_ID`): breaks/colors are FIXED, author-chosen constants per measure — never
+computed live, never per-route. Every route assigned to one Map card shares the SAME one managed
+symbology (`mp_map_layer`), so they all render against the identical scale regardless of route
+count. What varies per route is only the underlying per-TMC `value` from the live join query
+(confirmed server-side, per-feature join — see 5K's own write-up), never the scale itself. Same
+design rationale as the MacroView plugin's `breaks.js` (fixed breaks are legible/comparable;
+live-computed quantile breaks are unstable and relabel every time the data shifts).
+
+### 7B. AddGraphModal "When" step didn't write `routeWindows` — DONE, live-verified 2026-08-20
+
+Tier 6A had already found this and explicitly left it unfixed ("flagged here for whoever next
+touches AddGraphModal.jsx's When step"). Root cause, confirmed via code trace: the modal's own
+`setWeekday`/`applyTodPreset` only ever wrote the dead scalar `pick.weekdays`/`start`/`end` —
+`useGraphPublish.js` stopped reading those the moment `routeWindows` shipped (2026-08-14) — and
+nothing between the modal's `onConfirm` and the new section's persisted `_measurePick` ever
+converted one into the other. A graph created with e.g. "AM Peak" selected in the modal silently
+published as unrestricted/all-day.
+
+**Fix**: `ReportRouteList.jsx`'s `handleConfirmAddGraph` now builds `routeWindows` — one
+`[{ weekdays, start, end }]` entry per assigned route — the exact same shape QuickControls' own
+`applyWindowToAllRoutes` (QuickControls/index.jsx) already writes post-creation. **Deliberately
+excluded for Map**: AddGraphModal hides its whole "When" step whenever `pick.graphType === 'Map'`,
+so `pick.weekdays`/`start`/`end` at confirm time are just leftover state from a prior, unrelated
+shape/measure pick in the same modal session — never a choice made for this Map. Since
+`routeWindows` now generically restricts ANY self-bound section's query (Map's choropleth join
+included, per 5L/5M), silently carrying that stale window onto a new Map would invisibly narrow its
+data with no "When" UI on Map's own creation step to reveal or fix it. QuickControls' own "When"
+pill (post-creation) IS offered for Map and is unaffected.
+
+**Live-verified 2026-08-20** on `converted_reports/page_26`: created a new Line Graph via Add Graph
+with "24B..." selected and AM Peak picked. New section's title read "Travel Time (min) — AM Peak"
+immediately at creation (no QuickControls edit needed — this also confirms 6A's title-fragment
+mechanism now reaches creation-time correctly, since `composeAutoTitle` reads the SAME
+`routeWindows` this fix populates), the QuickControls "When" pill read "6A-10A · ALL", and the
+chart's own x-axis was genuinely restricted to 6:00-10:00 (not unrestricted all-day) — confirming
+the fix affects the real query, not just cosmetic labels. All three (title, pill, restricted axis)
+survived a full page reload. Zero console errors.
+
+- [x] `ReportRouteList.jsx`'s `handleConfirmAddGraph`: build `routeWindows` from the modal's
+      scalar When picks, one entry per assigned route, skipped for Map — 2026-08-20
+- [x] Live-verify: AM Peak picked at Add-Graph time restricts the actual query (x-axis 6-10am),
+      shows in the title immediately, and survives a full reload — 2026-08-20
+
+### 7C. Table/Map showed NO title at all — real `dms`-core rendering gap, DONE, live-verified 2026-08-20
+
+Ryan's screenshots of a fresh Table and Map (both created via Add Graph on `page_26`) showed column
+headers / map canvas with no title text anywhere above them, despite `composeTableMeasuresConfig`'s
+shared `applyMeasurePickToState` call and `composeMapConfig.js`'s `composeMapAutoTitle` both setting
+`state.display.title.title` — contradicting 6A's own claim that "Table's title was already
+working." Root-caused via direct trace of the actual render path (not re-reading the compose code):
+
+- `display.title.title` is a **Graph-component-private convention**, consumed ONLY by
+  `GraphTitle` (`src/dms/.../ui/components/graph_new/GraphComponent.jsx`). It is not a generic
+  "section title" field anything else reads.
+- **Spreadsheet had zero title-rendering code** — `ComponentRegistry/spreadsheet/index.jsx`
+  (`RenderTable`) went straight from computing `visibleAttributes` to returning `<Table .../>`,
+  no title anywhere.
+- **Map had zero title-rendering code** either — `ComponentRegistry/map/index.jsx`'s `MapSection`
+  render had no title/header/caption text anywhere in its ~1400 lines.
+- No `show`/`showTitle` gate exists anywhere — this was never a boolean-default problem, purely a
+  missing renderer. The string was genuinely being written to the DB correctly (composeAutoTitle's
+  own logic is fine); it just had nowhere to display on these two component types. 6A's "Table's
+  title was already working" claim was reasoned from the compose code alone and never actually
+  checked against the live DOM — exactly the gap Ryan flagged.
+
+**Fix, `src/dms/` (small, generic, project-agnostic — same class of core touch as 1A/5H/6B)**:
+mirrored `GraphTitle`'s own render contract (nothing shown when both title/description are empty)
+into both component types, reading the exact same `display.title.title`/`display.description`
+fields the NPMRDS compose functions already populate:
+- `ComponentRegistry/spreadsheet/index.jsx`: `RenderTable` now renders a title block (new
+  `sectionTitleWrapper`/`sectionTitle`/`sectionDescription` keys added to `table.theme.jsx`, with
+  sensible Tailwind fallbacks when a theme doesn't override them) above the `<Table>` — and above
+  the "No columns selected" message too, so a titled-but-columnless table isn't silently blank.
+- `ComponentRegistry/spreadsheet/config.jsx`: added `title: { title: '' }` to `defaultState.display`
+  (matches graph_new's own baseline) and a `{ key: 'title.title' }` input control in `more` (mirrors
+  graph_new's own control) so an author can also hand-edit a Table's title directly, not just via
+  NPMRDS's auto-compose.
+- `ComponentRegistry/map/index.jsx`: `MapSection` now renders the same title block above the map
+  canvas div, reading `state.display?.title?.title`/`description`. New `titleWrapper`/`title`/
+  `description` keys added to `map.theme.js` (`damaMapTheme`), following that file's own "every
+  Tailwind class the component renders belongs here" convention. No `defaultState`/manual Settings
+  control added for Map — matches Map's existing design (it has no `defaultState` at all, and no
+  code path ever manually retitles a Map today either; only NPMRDS's auto-compose sets it).
+
+**Live-verified 2026-08-20** via claude-in-chrome on `converted_reports/page_26` (pre-existing
+Table/Map sections from earlier sessions, so this exercised state that was ALREADY sitting in the
+DB, unrendered, before this fix — not a freshly-composed value): reloaded the page — the Table now
+shows "Travel Time (min), Truck Speed (mph) — PM Peak" directly above its column headers, and the
+Map shows "Speed (mph)" directly above the map canvas + legend. Both exactly match what
+`dms raw get`/the compose code had been writing all along. Zero console errors.
+
+- [x] Root-caused via direct render-path trace (not re-reading compose code) — 2026-08-20
+- [x] `spreadsheet/index.jsx` + `table.theme.jsx`: title block, themed with fallbacks — 2026-08-20
+- [x] `spreadsheet/config.jsx`: `defaultState.display.title` baseline + author-facing Title control
+      — 2026-08-20
+- [x] `map/index.jsx` + `map.theme.js`: title block, themed — 2026-08-20
+- [x] Live-verify: pre-existing Table AND Map sections (state already in the DB, untouched by this
+      session) now show their titles with zero recompose needed — 2026-08-20
+- [ ] **Flagged, not chased further (Ryan's call — "idc that much about the titles")**: older
+      Python-converter-built Route Compare/Info Box sections (also `element-type: Spreadsheet`)
+      already carry BOTH a top-level section `title` (e.g. "Route Compare Component, Speed" —
+      confirmed live via `dbq.py new` against `dms_npmrdsv5.data_items`, id `2213006`) AND a
+      DIFFERENT `display.title.title` string (e.g. "Route Compare, Speed") inside their
+      `element-data`. If the generic section-level header (`section.jsx`'s `ViewSectionHeader`,
+      keyed off the top-level `title` field) ever renders for these pages, this fix could show a
+      double title on real production Route Compare/Info Box content. Not confirmed either way —
+      worth a quick live check before touching Route Compare/Info Box pages again.
 
 ---
 
