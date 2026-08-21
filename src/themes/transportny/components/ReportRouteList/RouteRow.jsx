@@ -5,7 +5,7 @@ import {
   formatDateShort,
 } from './utils';
 import { ROUTE_COLOR_PALETTE } from './useReportRow';
-import { resolveRelativeDateFormula } from './relativeDateResolution';
+import { resolveRelativeDateFormula, inferExactSpan } from './relativeDateResolution';
 import {
   SPAN_OPTIONS,
   MONTH_OPTIONS,
@@ -191,8 +191,23 @@ export default function RouteRow({
   const handleDeriveFromChange = (e) => {
     const v = e.target.value;
     setDeriveFrom(v);
+    // report-authoring-ux-overhaul.md Tier 6C (2026-08-20), Ryan's own flagged idea: for "Same
+    // period, aligned" (`snap`) specifically, default the Span picker to match the newly-picked
+    // base route's own date range exactly, every time the base changes — recomputed unconditionally
+    // (even over a span the author already set by hand; Ryan's call: simpler, no new "was this
+    // touched" state needed) and left untouched when the base's range doesn't exactly match any
+    // span option (e.g. 37 days) — no closest-match guessing.
+    let nextFormula = deriveFormula;
+    if (derivePreset.pattern === 'snap' && v) {
+      const base = eligibleBases.find((s) => s.route_comp_id === v);
+      const inferred = base && inferExactSpan(base.startDate, base.endDate);
+      if (inferred && inferred !== derivePreset.span) {
+        nextFormula = buildFormula({ ...derivePreset, span: inferred });
+        setDeriveFormula(nextFormula);
+      }
+    }
     // A discrete pick, not continuous typing — commit right away rather than debouncing.
-    if (v && isValidFormula(deriveFormula)) flushDates({ dateFormula: deriveFormula, derivedFromRoute: v });
+    if (v && isValidFormula(nextFormula)) flushDates({ dateFormula: nextFormula, derivedFromRoute: v });
   };
   // Both of these are deliberate, discrete mode switches — commit immediately, same
   // "happens right away" feel the old Save button gave them, rather than debouncing.

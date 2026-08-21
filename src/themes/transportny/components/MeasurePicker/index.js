@@ -24,6 +24,10 @@
 
 import {
     composeMeasureConfig,
+    composeTableMeasuresConfig,
+    composeAutoTitle,
+    isTitleDirty,
+    ensureSelfBoundSubscriber,
     GRAPH_TYPE_OPTIONS,
     MEASURE_OPTIONS,
     RESOLUTION_OPTIONS,
@@ -31,6 +35,7 @@ import {
     DEFAULT_PICK,
     BASE_SOURCE,
 } from './composeMeasureConfig';
+import { applyMapMeasureToState } from './composeMapConfig';
 import { selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 
@@ -46,16 +51,6 @@ import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages
 // excluded — never owned by this picker, see the comment above
 // MEASURE_PICKER_COLUMN_ORIGIN.
 const MANAGED_TARGETS = ['xAxis', 'yAxis', 'color'];
-
-// The exact shape ReportRouteList's own $self-binding recipe uses — confirmed
-// live against a Report Page template's pre-wired starter graph (section
-// 2195009): `display._functions.subscribers` carries a `comparison_series`
-// entry with paramKey "$self" (the reserved sentinel usePageFilterSync
-// resolves to this graph's own stable identity — see ReportRouteList's
-// README, "Publishing routes to graphs"), and `comparisonSeries.enabled`
-// must be on (the master switch) for ReportRouteList's assigned routes to
-// render as series at all.
-const REPORT_SUBSCRIBER_ARGS = { labelKey: 'label', valueKey: 'filters' };
 
 function selectItem({ id, name, options, value, onPick }) {
     const current = options.find(o => o.value === value);
@@ -94,26 +89,49 @@ export function isReportPage(siblingSections = []) {
 // actually produced something (an unknown measureKey composes nothing, and callers should skip
 // downstream bookkeeping — e.g. the reconcile call — in that case).
 export function applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors } = {}) {
-    const composed = composeMeasureConfig({
-        graphType: pick.graphType,
-        measureKey: pick.measure,
-        resolutionKey: pick.resolution,
-        comparisonModeKey: pick.comparisonMode,
-        anchorInvert: pick.anchorInvert,
-        externalSourceColumns,
-        defaultColors,
-        // A caller (report_build.mjs, which knows its spec's true route→graph
-        // assignment up front) may pass `seriesCount` straight through
-        // `partial`; otherwise best-effort from whatever route assignment
-        // already made it into `_measurePick.routeIds` via ReportRouteList
-        // BEFORE this measure pick — the common live-authoring order, but not
-        // guaranteed (picking a measure before any route is assigned leaves
-        // this undefined, so composeMeasureConfig falls back to its BC
-        // categorical default; re-opening the picker after routes exist
-        // recomposes with the real count). Stripped back out of `pick` below
-        // before it's persisted — it's a compose-time hint, not stored state.
-        seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
-    });
+    // Captured before anything below overwrites `state.display._measurePick` — this is the pick
+    // whatever's currently in `state.display.title.title` was actually generated FROM (or
+    // undefined on a brand-new section). Tier 5B's title auto-population (near the bottom of this
+    // function) diffs against this, never against the new `pick` that's about to be applied.
+    const priorPick = state?.display?._measurePick;
+
+    // Table (Tier 5D, 2026-08-20): N measures -> N columns, one shared union join, no
+    // comparison-mode/color/tooltip/legend concept at all — genuinely a different, smaller
+    // compose shape, not a variant of the single-measure chart path below. Gated on
+    // `graphType === 'Table'` ALONE, deliberately not also on `pick.measures.length` — an author
+    // unchecking their last remaining measure in QuickControls' Measure pill must not silently
+    // fall through to the single-measure branch and compose one stale column from whatever
+    // `pick.measure` still holds. `composeTableMeasuresConfig` already returns null for an empty
+    // `measureKeys` list, which correctly no-ops the WHOLE apply (via the `if (!composed) return
+    // false` below) — the table's existing columns are left exactly as they were rather than
+    // replaced with something wrong, and the checkbox that was just unchecked snaps back once
+    // `_measurePick` re-renders unchanged.
+    const composed = (pick.graphType === 'Table')
+        ? composeTableMeasuresConfig({
+            measureKeys: pick.measures,
+            resolutionKey: pick.resolution,
+            externalSourceColumns,
+        })
+        : composeMeasureConfig({
+            graphType: pick.graphType,
+            measureKey: pick.measure,
+            resolutionKey: pick.resolution,
+            comparisonModeKey: pick.comparisonMode,
+            anchorInvert: pick.anchorInvert,
+            externalSourceColumns,
+            defaultColors,
+            // A caller (report_build.mjs, which knows its spec's true route→graph
+            // assignment up front) may pass `seriesCount` straight through
+            // `partial`; otherwise best-effort from whatever route assignment
+            // already made it into `_measurePick.routeIds` via ReportRouteList
+            // BEFORE this measure pick — the common live-authoring order, but not
+            // guaranteed (picking a measure before any route is assigned leaves
+            // this undefined, so composeMeasureConfig falls back to its BC
+            // categorical default; re-opening the picker after routes exist
+            // recomposes with the real count). Stripped back out of `pick` below
+            // before it's persisted — it's a compose-time hint, not stored state.
+            seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
+        });
     if (!composed) return false;
 
     // Default the primary Dataset to the canonical NPMRDS source when
@@ -176,16 +194,15 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
     state.comparisonSeries.seriesKey = state.comparisonSeries.seriesKey || '__series';
     state.comparisonSeries.seriesLabel = state.comparisonSeries.seriesLabel || 'Routes';
 
-    if (!state.display._functions) state.display._functions = { providers: [], subscribers: [] };
-    if (!state.display._functions.subscribers) state.display._functions.subscribers = [];
-    const subscribers = state.display._functions.subscribers;
-    const existingSubscriber = subscribers.find(s => s.functionId === 'comparison_series');
-    if (existingSubscriber) {
-        existingSubscriber.enabled = true;
-        existingSubscriber.paramKey = '$self';
-        existingSubscriber.args = { ...existingSubscriber.args, ...REPORT_SUBSCRIBER_ARGS };
-    } else {
-        subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
+    ensureSelfBoundSubscriber(state);
+
+    // Tier 5B: populate/refresh the title, UNLESS the author has already typed their own (see
+    // `isTitleDirty`'s own doc comment for the no-new-field mechanism). Obvious at this call
+    // site on purpose — a future reader shouldn't have to go read composeAutoTitle/isTitleDirty
+    // just to see WHETHER a title write happens here, only to understand HOW "dirty" is decided.
+    const currentTitle = state.display.title?.title;
+    if (!isTitleDirty({ currentTitle, priorPick })) {
+        state.display.title = { ...state.display.title, title: composeAutoTitle(pick) };
     }
 
     // Remembers the full pick so reopening the menu/Quick Controls shows the right checkmarks/
@@ -222,16 +239,14 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 // QuickControls' "When" pill writes on a Map card the exact way it did before this list was fixed.
 const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds', 'routeWindows'];
 
-export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
-    // Map has no compose path at all: composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment
-    // documents graph-shaped output (columns/join/display.graphType/comparisonSeries.combine) as
-    // "nonsensical" for Map, which renders from `symbologies`, not from any of that. Short-circuit
-    // to a plain field-level merge onto `_measurePick` instead of running the AVL-Graph compose
-    // pipeline. Gated on `currentComponent?.type` (the ComponentRegistry's own reliable identity)
-    // rather than `state.display.graphType` / `_measurePick.graphType` — neither field exists on a
-    // Map section's stored state (confirmed live 2026-08-07: a Map's `_measurePick` only ever
-    // carries weekdays/start/end/routeIds, per section_builders.py's write), so a graphType-based
-    // check would silently misfire and fall through to the AVL-Graph path below. See
+export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost }, partial) {
+    // Map has no AVL-Graph-shaped compose path (columns/join/display.graphType/
+    // comparisonSeries.combine, per composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment) —
+    // short-circuits to its own, much smaller, symbologies-shaped update instead of the AVL-Graph
+    // compose pipeline below. Gated on `currentComponent?.type` (the ComponentRegistry's own
+    // reliable identity) rather than `state.display.graphType` / `_measurePick.graphType` —
+    // neither field exists on a Map section's stored state, so a graphType-based check would
+    // silently misfire and fall through to the AVL-Graph path below. See
     // dynamic-report-nongraph-section-binding.md item 9.
     if (currentComponent?.type === 'Map') {
         const existing = state?.display?._measurePick || {};
@@ -240,9 +255,20 @@ export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
             if (key in partial) nextPick[key] = partial[key];
             else if (!(key in nextPick)) nextPick[key] = DEFAULT_PICK[key];
         }
+        // Measure (Tier 5I, 2026-08-20): the one Map pick that DOES recompose something — picking
+        // a measure rebuilds the picker's own managed symbology layer (plain geometry, or a
+        // choropleth colored by that measure), same "smart default generator, full replace on
+        // every apply" contract every other field in this file already has. Remembered on
+        // `_measurePick` (default 'none') so QuickControls/the modal show the right selection when
+        // reopened — never merged from DEFAULT_PICK's AVL-Graph-shaped 'measure' default
+        // ('travelTime'), which is meaningless for Map.
+        const priorMeasureKey = existing.measure || 'none';
+        const measureKey = 'measure' in partial ? partial.measure : (existing.measure || 'none');
+        nextPick.measure = measureKey;
         dwAPI.setState(draft => {
             if (!draft.display) draft.display = {};
             draft.display._measurePick = nextPick;
+            if ('measure' in partial) applyMapMeasureToState(draft, { measureKey, apiHost, priorMeasureKey });
         });
         return;
     }

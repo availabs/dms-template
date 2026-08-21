@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Sharing the mny-transcribe Skills</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    .screen{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:12.5px;line-height:1.75;white-space:pre-wrap;overflow-x:auto;min-width:0}
+    code{overflow-wrap:anywhere;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:0.9em}
+    .tbl{width:100%;border-collapse:collapse}
+    .tbl th{text-align:left;font-family:'Source Sans 3',system-ui,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6D96AE;padding:0 12px 8px;border-bottom:1px solid #E0EBF0;vertical-align:bottom}
+    .tbl td{font-family:'Source Sans 3',system-ui,sans-serif;font-size:13.5px;color:#37576B;padding:11px 12px;border-bottom:1px solid #F3F8F9;vertical-align:top;line-height:1.5}
+    .wrap{overflow-x:auto}
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================
+     HEADER — mnyHeader "none" variant
+     ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Plan to Act &middot; Process Recommendation
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Getting the<br>Transcribe Skills<br>Into Git
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    Which files to move out of the git-ignored <code>references/mny-transcribe/</code>,
+                    what breaks when they land somewhere else, and who should press which button.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">5 files to move</span>
+                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-mny-900">26 path edits</span>
+                    <span class="px-3 py-1.5 bg-mny-red border border-mny-red rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">4 owner decisions</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">recommendation only &middot; nothing moved yet &middot; 19 Aug 2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV — fixed floating -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Explore Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end min-w-[110px]">
+          <button class="bg-white flex justify-between items-center h-[48px] w-[217px] py-[8px] pr-[8px] pl-[24px] border border-mny-100 rounded-[1000px] shadow-sm">
+            <span class="uppercase text-mny-900 font-medium text-[12px]">Search</span>
+            <div class="bg-mny-700 p-[10px] rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="text-white" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><!-- icon: Search --><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"/></svg></div>
+          </button>
+          <div class="flex p-1 items-center">
+            <div class="flex p-2 justify-center items-center">
+              <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><!-- icon: UserAvatar --><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     STAT STRIP
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Move</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">5</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">84&thinsp;KB of how-to prose</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Leave behind</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">2</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">folder context &middot; scraper docs</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Path edits</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">26</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">across the 5 moved files</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Links to dead ends</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">8</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">worked examples stay ignored</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Scripts left orphaned</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">95</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">506&thinsp;KB, all git-ignored</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Owner decisions</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">4</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">everything else is mechanical</p>
+            </div>
+          </div>
+
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-red" style="width:33.3%;" title="Tier 1 — the skill stops working for a teammate (3)"></div>
+            <div class="bg-mny-y700" style="width:33.3%;" title="Tier 2 — the skill works but nobody finds it (3)"></div>
+            <div class="bg-mny-400" style="width:33.3%;" title="Tier 3 — housekeeping (3)"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-red"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 1 &mdash; the skill stops working for a teammate (3)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 2 &mdash; the skill works but nobody finds it (3)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-400"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 3 &mdash; housekeeping (3)</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     VERDICT
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    The move is easy.<br>What the skills point <em class="not-italic text-mny-700">at</em><br>is the hard part.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Five files carry reusable method and belong in git. Copying them is a ten-minute job, and only
+                      <strong class="text-mny-900 font-[600]">26 path references</strong> need rewriting &mdash; most of
+                      them one-line. One of those edits fixes a bug that is already wrong today:
+                      <code>context/scripts/docx_outline2.py</code> has never existed at that path; the script lives
+                      under <code>suffolk/context/scripts/</code>.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The real issue is that these skills are only about 60&thinsp;% procedure. The other 40&thinsp;%
+                      is &ldquo;run <code>build_payloads.mjs</code>,&rdquo; &ldquo;see
+                      <code>suffolk/ANNEX_LOAD_REPORT.md</code> for a worked example,&rdquo; &ldquo;the crosswalk CSV is
+                      authoritative.&rdquo; Those 95 scripts and 8 reports stay in the git-ignored folder. A teammate who
+                      pulls the repo gets a guide whose every second instruction points at a file they do not have.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      So the decision is not <em>which files</em> &mdash; that list is settled below. It is
+                      <strong class="text-mny-900 font-[600]">how far the blast radius goes</strong>: skills only
+                      (fast, half-usable), skills + worked-example reports (+88&thinsp;KB of prose, genuinely
+                      teachable), or skills + reports + the scripts (+506&thinsp;KB, actually runnable by someone else).
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">Change one thing about the plan</p>
+                      <p class="font-display text-[28px] text-white font-[500] leading-[1.1] uppercase tracking-[-0.01em] mb-3">
+                        Not <span class="text-mny-red">tasks/current/</span><br>&mdash; <span class="text-mny-grn">skills/</span>
+                      </p>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200">
+                        <code class="text-white">planning/planning-rules.md</code> is explicit: everything in
+                        <code class="text-white">tasks/current/</code> is a task &mdash; it carries a
+                        <code class="text-white">**Project:**</code> header, gets a row in the shared
+                        <code class="text-white">todo.md</code>, and is archived to
+                        <code class="text-white">tasks/completed/</code> when finished. A skill never finishes.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200">
+                        The same file already licenses the alternative:
+                        <em class="text-white">&ldquo;Project-specific material that isn&rsquo;t a task (QA process docs,
+                        run logs, reference captures) can live directly in the project folder outside
+                        <code>tasks/</code>&rdquo;</em> &mdash; the precedent being
+                        <code class="text-white">transportny/qa-process/</code>.
+                      </p>
+                      <div class="mt-5 bg-mny-700/40 rounded-[8px] p-4">
+                        <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-1">Recommended home</p>
+                        <p class="screen text-mny-200 !text-[12px]">planning/mitigateny/skills/</p>
+                        <p class="font-proxima text-[13px] text-mny-400 mt-2 leading-[1.5]">Same git visibility you asked for,
+                        keeps the <code>profiles/</code> nesting intact, and doesn&rsquo;t pollute the cross-project index.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FILE INVENTORY
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Inventory</p>
+              <h2 class="font-display font-[500] text-[30px] text-mny-900 uppercase leading-[1.1] tracking-[-0.02em] mb-2">What I&rsquo;d move, and what I wouldn&rsquo;t</h2>
+              <p class="font-proxima text-[15px] leading-[1.6] text-mny-700 max-w-[760px] mb-6">
+                Seven files in <code>references/mny-transcribe/</code> are skill-shaped &mdash; a reusable method rather
+                than a record of one county&rsquo;s work. Five should go; two should stay, for reasons that are about
+                more than size.
+              </p>
+
+              <div class="wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th style="min-width:280px">File (relative to <code>references/mny-transcribe/</code>)</th>
+                      <th style="min-width:70px">Size</th>
+                      <th style="min-width:90px">Verdict</th>
+                      <th style="min-width:340px">Why</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code class="text-mny-900 font-[600]">skills/README.md</code></td>
+                      <td class="tabular-nums">2.0&thinsp;KB</td>
+                      <td><span class="px-2 py-0.5 rounded-full bg-mny-grn text-white font-proxima text-[11px] font-[700] uppercase whitespace-nowrap">Move</span></td>
+                      <td>The local index and the two-layer explanation. Becomes the entry point in its new home.
+                        <strong class="text-mny-900">Its opening note is now false</strong> &mdash; it says the skills live outside
+                        <code>src/dms/skills/</code> by owner decision and that the folder is git-ignored. Rewrite, don&rsquo;t copy.</td>
+                    </tr>
+                    <tr>
+                      <td><code class="text-mny-900 font-[600]">skills/transcribing-a-consultant-plan.md</code></td>
+                      <td class="tabular-nums">43.7&thinsp;KB</td>
+                      <td><span class="px-2 py-0.5 rounded-full bg-mny-grn text-white font-proxima text-[11px] font-[700] uppercase whitespace-nowrap">Move</span></td>
+                      <td>Layer 1 &mdash; the MNY target side and the method, invariant across consultants. The most valuable
+                        file here and the one a second person most needs. 8 path edits.</td>
+                    </tr>
+                    <tr>
+                      <td><code class="text-mny-900 font-[600]">skills/profiles/tetratech.md</code></td>
+                      <td class="tabular-nums">19.9&thinsp;KB</td>
+                      <td><span class="px-2 py-0.5 rounded-full bg-mny-grn text-white font-proxima text-[11px] font-[700] uppercase whitespace-nowrap">Move</span></td>
+                      <td>Layer 2 &mdash; how Tetra Tech structures a plan (Suffolk, Nassau).
+                        <strong class="text-mny-900">Keep it in a <code>profiles/</code> subfolder.</strong> Its only relative link is
+                        <code>../transcribing-a-consultant-plan.md</code>, which survives untouched if the nesting survives
+                        and breaks silently if you flatten.</td>
+                    </tr>
+                    <tr>
+                      <td><code class="text-mny-900 font-[600]">loading-annexes-into-jurisdictions-dataset.md</code></td>
+                      <td class="tabular-nums">12.2&thinsp;KB</td>
+                      <td><span class="px-2 py-0.5 rounded-full bg-mny-grn text-white font-proxima text-[11px] font-[700] uppercase whitespace-nowrap">Move</span></td>
+                      <td>The dataset-column fill path in depth (Schenectady, Delaware). Already called
+                        &ldquo;reusable skill&rdquo; in <code>schenectady-jurisdictional-annexes.md</code> line 100.
+                        Carries a <strong class="text-mny-900">known-superseded read-path section</strong> &mdash; keep that banner
+                        visible after the move or someone follows stale guidance.</td>
+                    </tr>
+                    <tr>
+                      <td><code class="text-mny-900 font-[600]">LOADING_PLANS.md</code></td>
+                      <td class="tabular-nums">6.0&thinsp;KB</td>
+                      <td><span class="px-2 py-0.5 rounded-full bg-mny-y700 text-mny-900 font-proxima text-[11px] font-[700] uppercase whitespace-nowrap">Move &middot; ask</span></td>
+                      <td>The 1.0&rarr;2.0 pattern-fill pipeline (enumerate &rarr; inventory &rarr; crosswalk &rarr; fill &rarr; verify).
+                        Genuinely reusable, but it overlaps the platform-model recap in <code>CLAUDE.md</code>, and both of its
+                        markdown links point at files staying behind. Worth renaming to
+                        <code>loading-a-plan-into-a-2.0-pattern.md</code> to match sibling naming.</td>
+                    </tr>
+                    <tr class="bg-mny-50/60">
+                      <td><code class="text-mny-900 font-[600]">CLAUDE.md</code></td>
+                      <td class="tabular-nums">9.0&thinsp;KB</td>
+                      <td><span class="px-2 py-0.5 rounded-full bg-mny-900 text-white font-proxima text-[11px] font-[700] uppercase whitespace-nowrap">Leave</span></td>
+                      <td>Not a skill &mdash; it is folder-scoped state: per-county status, source-docx filenames, host/app config.
+                        It also describes files that are staying.
+                        <strong class="text-mny-900">And the filename matters:</strong> a <code>CLAUDE.md</code> dropped under
+                        <code>planning/</code> becomes auto-loaded project instructions for anyone working in that tree. If you want
+                        its platform-model section shared, lift <em>that section</em> into the Layer 1 skill instead.</td>
+                    </tr>
+                    <tr class="bg-mny-50/60">
+                      <td><code class="text-mny-900 font-[600]">mny-1.0-scraper/README.md</code></td>
+                      <td class="tabular-nums">33.0&thinsp;KB</td>
+                      <td><span class="px-2 py-0.5 rounded-full bg-mny-red text-white font-proxima text-[11px] font-[700] uppercase whitespace-nowrap">Not alone</span></td>
+                      <td>It is skill-shaped &mdash; but it is the manual for <strong class="text-mny-900">29 sibling scripts</strong>
+                        (<code>scrape_all.js</code>, <code>build_fulton.js</code>, <code>ham_*.js</code>, four <code>run_*.sh</code>) plus a
+                        <code>package.json</code> that exists specifically to override the repo&rsquo;s <code>"type":"module"</code>.
+                        It references ~50 filenames by bare name. Moving the README alone produces a 33&thinsp;KB doc about nothing.
+                        Either move the whole tool directory (minus <code>node_modules/</code>) or leave it whole.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-6 bg-mny-y50 border-l-4 border-mny-y700 rounded-r-[8px] p-5">
+                <p class="font-display text-[15px] text-mny-900 uppercase mb-1">Also on the table: the 8 worked-example reports</p>
+                <p class="font-proxima text-[14px] text-mny-700 leading-[1.6]">
+                  <code>suffolk/ANNEX_CROSSWALK_REPORT.md</code> (22&thinsp;KB) &middot; <code>suffolk/ANNEX_LOAD_REPORT.md</code> (16&thinsp;KB) &middot;
+                  <code>suffolk/EXTRACTION_REPORT.md</code> &middot; <code>suffolk/PREFLIGHT_REPORT.md</code> &middot;
+                  <code>delaware/ANNEX_LOAD_REPORT.md</code> &middot; <code>delaware/LOAD_REPORT.md</code> &middot;
+                  <code>schenectady/CROSSWALK_REPORT.md</code> (18&thinsp;KB) &middot; <code>schenectady/PATTERN_PAGES_REPORT.md</code>
+                  &mdash; <strong class="text-mny-900">88&thinsp;KB total, pure prose, no source documents.</strong>
+                  These are not skills, but the skills lean on them as the worked examples (&ldquo;read this before loading a new
+                  county&rdquo;). Bringing them along as <code>skills/worked-examples/</code> converts 8 dead links into live ones
+                  for the price of 88&thinsp;KB. This is the highest-value optional item in the whole move.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     LINK EDITS
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The 26 edits</p>
+              <h2 class="font-display font-[500] text-[30px] text-mny-900 uppercase leading-[1.1] tracking-[-0.02em] mb-2">Every path that changes meaning</h2>
+              <p class="font-proxima text-[15px] leading-[1.6] text-mny-700 max-w-[760px] mb-6">
+                Assumes the recommended destination <code>planning/mitigateny/skills/</code>, with <code>profiles/</code> and
+                <code>worked-examples/</code> preserved. Where a target stays git-ignored, the rewrite is a
+                <strong class="text-mny-900">repo-root-relative path plus an explicit &ldquo;git-ignored, local only&rdquo;
+                marker</strong> &mdash; a reader must never chase a path that cannot exist on their machine.
+              </p>
+
+              <div class="wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th style="min-width:170px">Where</th>
+                      <th style="min-width:230px">Currently reads</th>
+                      <th style="min-width:300px">Becomes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td colspan="3" class="!py-2 !bg-mny-50"><span class="font-display text-[13px] text-mny-900 uppercase">skills/README.md &mdash; 5 edits</span></td></tr>
+                    <tr><td><code>:4&ndash;5</code> header note</td><td>&ldquo;live here rather than in <code>src/dms/skills/</code> &hellip; this folder is <strong>git-ignored</strong>&rdquo;</td><td>Rewritten: the committed location, why it isn&rsquo;t in the submodule index, and where the working folder still is. <span class="text-mny-red font-[600]">Factually wrong after the move.</span></td></tr>
+                    <tr><td><code>:26</code></td><td><code>../loading-annexes-into-jurisdictions-dataset.md</code></td><td><code>./loading-annexes-into-jurisdictions-dataset.md</code> &mdash; now a sibling. Promote to a table row; it is no longer &ldquo;elsewhere&rdquo;.</td></tr>
+                    <tr><td><code>:29</code></td><td><code>../CLAUDE.md</code></td><td><code>references/mny-transcribe/CLAUDE.md</code> <span class="text-mny-400">(git-ignored &mdash; local working folder)</span></td></tr>
+                    <tr><td><code>:30</code></td><td><code>../suffolk/ANNEX_CROSSWALK_REPORT.md</code></td><td><code>./worked-examples/suffolk-annex-crosswalk-report.md</code> &mdash; or root-relative + ignored marker</td></tr>
+                    <tr><td><code>:32</code></td><td><code>../suffolk/ANNEX_LOAD_REPORT.md</code></td><td><code>./worked-examples/suffolk-annex-load-report.md</code> &mdash; same call</td></tr>
+
+                    <tr><td colspan="3" class="!py-2 !bg-mny-50"><span class="font-display text-[13px] text-mny-900 uppercase">skills/transcribing-a-consultant-plan.md &mdash; 8 edits</span></td></tr>
+                    <tr><td><code>:9</code>, <code>:344</code>, <code>:717</code></td><td><code>loading-annexes-into-jurisdictions-dataset.md</code> (bare, implied parent folder)</td><td><code>./loading-annexes-into-jurisdictions-dataset.md</code> &mdash; make all three real links</td></tr>
+                    <tr><td><code>:79</code>, <code>:80</code></td><td><code>python context/scripts/docx_outline2.py &hellip;</code></td><td><code>references/mny-transcribe/suffolk/context/scripts/docx_outline2.py</code> <span class="text-mny-red font-[600]">&mdash; already wrong today; no <code>context/scripts/docx_outline2.py</code> exists</span></td></tr>
+                    <tr><td><code>:249</code></td><td><code>suffolk/context/scripts/build_alias_table.py</code></td><td>Prefix <code>references/mny-transcribe/</code> + ignored marker</td></tr>
+                    <tr><td><code>:334</code></td><td><code>src/dms/skills/authenticating-the-dms-cli.md</code></td><td>Unchanged &mdash; and it finally <em>resolves</em>. Optionally make it a link. <span class="text-mny-grn font-[600]">The one path the move improves for free.</span></td></tr>
+                    <tr><td><code>:718</code></td><td>&ldquo;<code>CLAUDE.md</code> in this folder&rdquo;</td><td>&ldquo;in the git-ignored working folder <code>references/mny-transcribe/</code>&rdquo;</td></tr>
+
+                    <tr><td colspan="3" class="!py-2 !bg-mny-50"><span class="font-display text-[13px] text-mny-900 uppercase">skills/profiles/tetratech.md &mdash; 4 edits</span></td></tr>
+                    <tr><td><code>:3</code></td><td><code>](../transcribing-a-consultant-plan.md)</code></td><td><strong class="text-mny-900">No change if <code>profiles/</code> is preserved.</strong> Breaks silently if the files are flattened into one directory.</td></tr>
+                    <tr><td><code>:7</code></td><td><code>suffolk/Volume-II-Jurisdictional-Annexes/Chapter 15 - Islip (T).docx</code></td><td>Prefix + ignored marker. <span class="text-mny-red font-[600]">The source .docx must not be committed.</span></td></tr>
+                    <tr><td><code>:8</code>, <code>:9</code></td><td><code>suffolk/suffolk-annex-crosswalk.csv</code>, <code>suffolk/ANNEX_CROSSWALK_REPORT.md</code></td><td>CSV &rarr; prefix + ignored marker; report &rarr; <code>../worked-examples/&hellip;</code> if it comes along</td></tr>
+
+                    <tr><td colspan="3" class="!py-2 !bg-mny-50"><span class="font-display text-[13px] text-mny-900 uppercase">loading-annexes-into-jurisdictions-dataset.md &mdash; 6 edits</span></td></tr>
+                    <tr><td>header</td><td><code>schenectady-hmp-migration.md</code></td><td><code>../tasks/current/schenectady-hmp-migration.md</code> &mdash; <span class="text-mny-grn font-[600]">a real committed sibling once moved</span></td></tr>
+                    <tr><td>&sect;1&ndash;&sect;6 body</td><td>~12 bare script names: <code>annex_lib.mjs</code>, <code>build_payloads.mjs</code>, <code>gen_crosswalk_csv.mjs</code>, <code>write_annexes.mjs</code>, <code>lexical.mjs</code>, <code>discover.mjs</code>, <code>analyze_annex.mjs</code>, <code>scan_annex_components.mjs</code>&hellip;</td><td>One &ldquo;where the scripts live&rdquo; preamble (<code>references/mny-transcribe/{schenectady,delaware}/context/</code>, git-ignored) rather than 12 individual rewrites</td></tr>
+                    <tr><td>report refs</td><td><code>delaware/ANNEX_LOAD_REPORT.md</code>, <code>delaware/LOAD_REPORT.md</code></td><td><code>./worked-examples/&hellip;</code> or prefix + ignored marker</td></tr>
+                    <tr><td>source refs</td><td><code>schenectady-alex/annexes/&hellip;.md</code>, <code>mny-1.0-scraper/scrape_city.js</code></td><td>Prefix + ignored marker</td></tr>
+
+                    <tr><td colspan="3" class="!py-2 !bg-mny-50"><span class="font-display text-[13px] text-mny-900 uppercase">LOADING_PLANS.md &mdash; 3 edits</span></td></tr>
+                    <tr><td>&sect;intro</td><td><code>](./CLAUDE.md)</code>, <code>](./mny-1.0-scraper/README.md)</code></td><td>Both prefix + ignored marker &mdash; both targets stay behind</td></tr>
+                    <tr><td>&sect;Access</td><td><code>*/context/fq.js</code></td><td>Prefix + ignored marker</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-mny-50 rounded-[8px] p-5">
+                  <p class="font-display text-[14px] text-mny-900 uppercase mb-1">Not a link, but it looks like one</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    The skills carry wiki-style refs &mdash; <code>[[mny-hmp-transcription]]</code>,
+                    <code>[[reference_dms_view_vs_draft_publish]]</code>. Those resolve against <em>my</em> memory directory,
+                    not the repo. To a teammate reading in git they are dead ends that look deliberate. Either drop them or
+                    footnote them as &ldquo;agent memory, not a file.&rdquo;
+                  </p>
+                </div>
+                <div class="bg-mny-50 rounded-[8px] p-5">
+                  <p class="font-display text-[14px] text-mny-900 uppercase mb-1">Filename convention</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    Root <code>CLAUDE.md</code> mandates underscores for <em>identifiers</em>; every existing skill filename is
+                    hyphenated (<code>authenticating-the-dms-cli.md</code>). Keep hyphens for these docs &mdash; flagged only so
+                    nobody &ldquo;corrects&rdquo; it later. <code>LOADING_PLANS.md</code> is the odd one out and is worth renaming
+                    as part of the move.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     RED FLAGS
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Red flags</p>
+              <h2 class="font-display font-[500] text-[30px] text-mny-900 uppercase leading-[1.1] tracking-[-0.02em] mb-6">Nine things to know before I touch anything</h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-red">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-red text-white font-proxima text-[10px] font-[700] uppercase">Tier 1</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">1 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">95 scripts stay behind</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    <code>suffolk/context/scripts/</code> (20) &middot; <code>schenectady/context/</code> (30) &middot;
+                    <code>delaware/context/</code> (16) &middot; <code>mny-1.0-scraper/</code> (29) &mdash; 506&thinsp;KB of
+                    <code>.mjs</code>/<code>.py</code>/<code>.sh</code>. The skills instruct the reader to run them by name.
+                    They are all plain text with no data in them, so committing them is cheap; the argument against is that
+                    they are county-specific one-offs, not maintained tooling. <strong class="text-mny-900">Decide explicitly
+                    &mdash; do not let this default silently.</strong>
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-red">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-red text-white font-proxima text-[10px] font-[700] uppercase">Tier 1</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">2 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">Client plan content enters a shared repo</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    <code>references/</code> is git-ignored <em>by design</em> to keep large and licensed source material out.
+                    The skills and reports quote consultant plan prose, name real jurisdictions and officials&rsquo; roles, and
+                    carry live DMS source/view/pattern IDs. That is normal for an internal repo &mdash; but this is the moment
+                    it stops being local-only, so it deserves one deliberate look. The hard line:
+                    <strong class="text-mny-900">no <code>.docx</code>, <code>.pdf</code>, <code>.xlsx</code> or
+                    <code>.geojson</code> comes along, ever.</strong>
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-red">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-red text-white font-proxima text-[10px] font-[700] uppercase">Tier 1</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">3 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">Copy leaves two sources of truth</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    <code>git mv</code> is unavailable &mdash; the source files are untracked, so this is a copy. If the originals
+                    survive under <code>references/</code>, the next transcription session edits whichever copy is closer to hand
+                    and the two drift within a week.
+                    <strong class="text-mny-900">Delete the originals and leave a one-line pointer stub</strong> at
+                    <code>references/mny-transcribe/skills/README.md</code> &mdash; that folder&rsquo;s <code>CLAUDE.md</code> routes
+                    to it and would otherwise dead-end.
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-y700">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-y700 text-mny-900 font-proxima text-[10px] font-[700] uppercase">Tier 2</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">4 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">The skills index is in a submodule</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    Root <code>CLAUDE.md</code> tells every agent and teammate to start at
+                    <code>src/dms/skills/README.md</code>. That is the <code>@availabs/dms</code> submodule &mdash; adding a row
+                    means a separate commit in another repo, out of scope here and not something I should do unprompted.
+                    <strong class="text-mny-900">Without a second entry point, these skills are committed and still
+                    invisible.</strong>
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-y700">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-y700 text-mny-900 font-proxima text-[10px] font-[700] uppercase">Tier 2</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">5 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">tasks/current/ is the wrong shelf</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    All 16 files there are tasks with a <code>**Project:**</code> header, a row in the shared
+                    <code>planning/todo.md</code>, and an eventual move to <code>tasks/completed/</code>. A skill has no completion
+                    state, so it either sits in <code>current/</code> forever misreading as unfinished work, or gets archived and
+                    disappears. A <code>profiles/</code> subfolder inside a task directory is also structurally odd.
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-y700">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-y700 text-mny-900 font-proxima text-[10px] font-[700] uppercase">Tier 2</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">6 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">A stale section ships with the skill</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    <code>loading-annexes-into-jurisdictions-dataset.md</code> has a read-path section its own index already marks
+                    <strong class="text-mny-900">superseded</strong> (<code>dms dataset query</code> now reads split rows
+                    anonymously). Committing it is fine &mdash; committing it with the warning stripped is not. The warning
+                    currently lives in <code>skills/README.md</code>, one file away; move it <em>into</em> the affected section
+                    where it cannot be missed.
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-400">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-400 text-white font-proxima text-[10px] font-[700] uppercase">Tier 3</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">7 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">CLAUDE.md is a magic filename</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    If any part of <code>references/mny-transcribe/CLAUDE.md</code> ends up under <code>planning/</code>, it must not
+                    keep that name &mdash; a <code>CLAUDE.md</code> anywhere in the tree is auto-loaded as project instructions for
+                    whoever works nearby. Its per-county status table would become standing guidance for unrelated MitigateNY work.
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-400">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-400 text-white font-proxima text-[10px] font-[700] uppercase">Tier 3</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">8 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">Two task docs need a follow-up line</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    <code>schenectady-jurisdictional-annexes.md:100</code> records the skill&rsquo;s creation at its
+                    <code>references/</code> path, and <code>schenectady-hmp-migration.md:17</code> points at the git-ignored working
+                    folder. Both are already-committed task docs; update the first, leave the second (it correctly describes a
+                    local folder).
+                  </p>
+                </div>
+
+                <div class="bg-white border border-mny-100 rounded-[10px] p-5 border-t-4 border-t-mny-400">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-mny-400 text-white font-proxima text-[10px] font-[700] uppercase">Tier 3</span>
+                    <span class="font-proxima text-[11px] text-mny-400 uppercase tracking-wider">9 of 9</span>
+                  </div>
+                  <p class="font-display text-[16px] text-mny-900 uppercase leading-[1.15] mb-2">Nothing here is a Skill-tool skill</p>
+                  <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.6]">
+                    These are markdown how-to guides in this repo&rsquo;s <code>skills/</code> convention &mdash; no
+                    <code>SKILL.md</code>, no frontmatter, no <code>.claude/skills/</code> registration. So the move changes
+                    <em>discoverability</em>, not tool availability, and nothing needs re-registering. Worth stating plainly, since
+                    &ldquo;claude skills&rdquo; means both things in different contexts.
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     WHO DOES WHAT
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">Division of labour</p>
+              <h2 class="font-display font-[500] text-[30px] text-mny-900 uppercase leading-[1.1] tracking-[-0.02em] mb-2">Four decisions for you, the rest for me</h2>
+              <p class="font-proxima text-[15px] leading-[1.6] text-mny-700 max-w-[760px] mb-6">
+                Every human step below is a judgement call, not labour. None takes more than a minute to answer; all of them
+                change what I do. Once they are answered I can execute the whole transfer end to end without further input.
+              </p>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <div class="bg-mny-900 rounded-[12px] p-6 relative overflow-hidden">
+                  <div class="absolute inset-0 opacity-[0.05] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                  <div class="relative">
+                    <div class="flex items-center gap-2 mb-4">
+                      <span class="px-2.5 py-1 rounded-full bg-mny-y700 text-mny-900 font-proxima text-[11px] font-[700] uppercase">Human</span>
+                      <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wider">4 decisions + 1 action</span>
+                    </div>
+
+                    <div class="space-y-4">
+                      <div class="flex gap-3">
+                        <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums shrink-0 w-6">1</span>
+                        <div>
+                          <p class="font-display text-[14px] text-white uppercase leading-tight mb-1">Destination</p>
+                          <p class="font-proxima text-[13.5px] text-mny-200 leading-[1.55]">
+                            <code class="text-white">planning/mitigateny/skills/</code> as recommended, or
+                            <code class="text-white">tasks/current/</code> as you originally asked? If the latter, I will flatten
+                            <code class="text-white">profiles/</code> into prefixed filenames and add
+                            <code class="text-white">todo.md</code> rows.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex gap-3">
+                        <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums shrink-0 w-6">2</span>
+                        <div>
+                          <p class="font-display text-[14px] text-white uppercase leading-tight mb-1">Blast radius</p>
+                          <p class="font-proxima text-[13.5px] text-mny-200 leading-[1.55]">
+                            Skills only &middot; <strong class="text-white">+ the 8 worked-example reports (88&thinsp;KB,
+                            recommended)</strong> &middot; + the 95 scripts (506&thinsp;KB). This is the one choice that decides
+                            whether a teammate can actually follow the guides.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex gap-3">
+                        <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums shrink-0 w-6">3</span>
+                        <div>
+                          <p class="font-display text-[14px] text-white uppercase leading-tight mb-1">Client-content sign-off</p>
+                          <p class="font-proxima text-[13.5px] text-mny-200 leading-[1.55]">
+                            One look at whether quoted Suffolk / Westchester plan prose and live DMS IDs are fine to commit to a
+                            repo shared beyond this machine. I can produce an extract of exactly what would land, if that helps
+                            you check rather than trust.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex gap-3">
+                        <span class="font-display text-[22px] text-mny-y700 font-[500] leading-none tabular-nums shrink-0 w-6">4</span>
+                        <div>
+                          <p class="font-display text-[14px] text-white uppercase leading-tight mb-1">The scraper, and the submodule</p>
+                          <p class="font-proxima text-[13.5px] text-mny-200 leading-[1.55]">
+                            Move <code class="text-white">mny-1.0-scraper/</code> whole (README + 29 scripts +
+                            <code class="text-white">package.json</code>, excluding <code class="text-white">node_modules/</code>),
+                            or leave it? And do you want an index row in
+                            <code class="text-white">src/dms/skills/README.md</code> later &mdash; a submodule commit I will not
+                            make on my own.
+                          </p>
+                        </div>
+                      </div>
+
+                      <hr class="border-mny-700 my-2">
+
+                      <div class="flex gap-3">
+                        <span class="font-display text-[22px] text-mny-red font-[500] leading-none tabular-nums shrink-0 w-6">5</span>
+                        <div>
+                          <p class="font-display text-[14px] text-white uppercase leading-tight mb-1">Commit &amp; push</p>
+                          <p class="font-proxima text-[13.5px] text-mny-200 leading-[1.55]">
+                            I will stage a reviewable working tree and write the commit message. Pressing
+                            <code class="text-white">git commit</code> / <code class="text-white">push</code> on a branch shared
+                            with teammates stays yours &mdash; say the word and I will run it.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-mny-50 rounded-[12px] p-6 border border-mny-100">
+                  <div class="flex items-center gap-2 mb-4">
+                    <span class="px-2.5 py-1 rounded-full bg-mny-700 text-white font-proxima text-[11px] font-[700] uppercase">Claude</span>
+                    <span class="font-proxima text-[12px] text-mny-400 uppercase tracking-wider">everything mechanical</span>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">1</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Create the destination</strong> and copy the 5 files, preserving <code>profiles/</code>.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">2</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Rewrite all 26 paths</strong> per the table above, marking every git-ignored target as local-only.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">3</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Rewrite the <code>skills/README.md</code> header</strong> &mdash; the git-ignored claim is now false &mdash; and promote the two &ldquo;elsewhere&rdquo; entries into real index rows.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">4</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Fix the <code>docx_outline2.py</code> path bug</strong> and relocate the superseded-read-path warning into the section it applies to.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">5</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Add a &ldquo;where the scripts live&rdquo; preamble</strong> to each skill that invokes scripts by bare name.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">6</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Add discovery</strong> &mdash; one line in root <code>CLAUDE.md</code> and a note in <code>planning/planning-rules.md</code>, since the main index sits in the submodule.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">7</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Verify every relative link resolves</strong> with a link-checker pass over the moved files, and report any that cannot.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">8</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Delete the originals, leave the pointer stub</strong>, and update <code>schenectady-jurisdictional-annexes.md:100</code>.</p>
+                    </div>
+                    <div class="flex gap-3">
+                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-none tabular-nums shrink-0 w-5">9</span>
+                      <p class="font-proxima text-[13.5px] text-mny-700 leading-[1.55]"><strong class="text-mny-900">Stage and diff-check</strong> &mdash; confirm no <code>.docx</code>/<code>.pdf</code>/<code>.xlsx</code>/<code>node_modules</code> crept in, then hand you the commit.</p>
+                    </div>
+                  </div>
+
+                  <div class="mt-5 bg-white rounded-[8px] p-4 border border-mny-100">
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.6]">
+                      <strong class="text-mny-900">On &ldquo;can Claude do all of it?&rdquo;</strong> &mdash; yes, steps 1&ndash;9
+                      including staging. The four items on the left are not work I can take off you; they are choices where
+                      guessing wrong means either committing client material you did not intend to, or shipping guides nobody else
+                      can run. Answer them in one message and I will do the rest in one pass.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="mt-8">
+                <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-3">Resulting tree &mdash; recommended option</p>
+                <div class="bg-mny-900 rounded-[10px] p-6 overflow-x-auto">
+<pre class="screen text-mny-200 !text-[12.5px]">planning/mitigateny/
+├── tasks/
+│   ├── current/                                  <span class="text-mny-400">← unchanged, 16 task docs</span>
+│   └── completed/
+└── skills/                                       <span class="text-mny-y700">← new</span>
+    ├── README.md                                 <span class="text-mny-400">index; header rewritten</span>
+    ├── transcribing-a-consultant-plan.md         <span class="text-mny-400">Layer 1 — the method</span>
+    ├── loading-annexes-into-jurisdictions-dataset.md
+    ├── loading-a-plan-into-a-2.0-pattern.md      <span class="text-mny-400">was LOADING_PLANS.md</span>
+    ├── profiles/
+    │   └── tetratech.md                          <span class="text-mny-400">Layer 2 — one per firm</span>
+    └── worked-examples/                          <span class="text-mny-y700">← optional, decision 2</span>
+        ├── suffolk-annex-crosswalk-report.md
+        ├── suffolk-annex-load-report.md
+        ├── suffolk-extraction-report.md
+        ├── suffolk-preflight-report.md
+        ├── delaware-annex-load-report.md
+        ├── delaware-load-report.md
+        ├── schenectady-crosswalk-report.md
+        └── schenectady-pattern-pages-report.md
+
+references/mny-transcribe/                        <span class="text-mny-400">stays git-ignored</span>
+├── CLAUDE.md                                     <span class="text-mny-400">per-county status, env, source paths</span>
+├── skills/README.md                              <span class="text-mny-y700">→ one-line pointer stub</span>
+├── mny-1.0-scraper/                              <span class="text-mny-400">README + 29 scripts (decision 4)</span>
+└── {suffolk,westchester,schenectady,delaware,…}/ <span class="text-mny-400">source docs + 95 scripts</span></pre>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FOOTER — clearCentered layout
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div data-dms="layoutGroup" data-name="clearCentered">
+      <div class="w-full h-full flex-1 flex flex-row -mt-3">
+        <div class="max-w-[1440px] w-full xl:px-[48px] mx-auto">
+          <div class="flex flex-1 w-full flex-col relative h-full min-h-[200px]">
+            <div class="w-full grid grid-cols-6 md:grid-cols-12">
+              <div class="col-span-6 md:col-span-12 p-4">
+                <div class="my-2 flex flex-col gap-[8px] max-w-[1362px] mx-auto text-mny-700 overflow-hidden">
+                  <div class="p-[56px] md:h-[386px] md:max-h-[386px] md:min-h-[386px] bg-white flex flex-col md:flex-row flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md divide-x divide-mny-100 justify-center">
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Know the Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Built Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">People and Communities</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Environment</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Assess Risk</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Hazards</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Climate Change</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Presidentially Declared Disasters</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Plan to Act</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">State Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Local Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Evaluate Capacity &amp; Discover Resources</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Develop Strategies</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Explore Progress</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Action Tracking</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Mitigation Matters</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Resources</a>
+                    </div>
+                  </div>
+                  <div class="p-[16px] md:px-[56px] flex flex-col md:flex-row items-center justify-between md:h-[70px] md:max-h-[70px] md:min-h-[70px] bg-white flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md">
+                    <div class="font-proxima text-[14px]">&copy; 2025 MitigateNY, All Rights Reserved.</div>
+                    <div class="flex gap-[24px]">
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Privacy Policy</a>
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Terms and Conditions</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<script src="../ds-nav.js"></script>
+
+</body>
+</html>

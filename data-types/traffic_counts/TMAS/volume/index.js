@@ -25,7 +25,7 @@ module.exports = {
         const bb = busboy({ headers: req.headers });
 
         const args = {
-          tempFilePath: join(tmpdir(), `TMAS_temp_file_${ randomUUID() }`)
+          tempFiles: []//join(tmpdir(), `TMAS_temp_file_${ randomUUID() }`)
         };
 
         bb.on('field', (name, value) => {
@@ -33,10 +33,15 @@ module.exports = {
         });
 
         bb.on('file', async (fieldName, stream, info) => {
+          const tempFilePath = join(tmpdir(), `TMAS_temp_file_${ randomUUID() }`);
+          args.tempFiles.push({
+            filename: info.filename,
+            filepath: tempFilePath
+          });
           await pipeline(
             stream,
-            createWriteStream(args.tempFilePath)
-          )
+            createWriteStream(tempFilePath)
+          );
         });
 
         bb.on('finish', async () => {

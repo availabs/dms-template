@@ -6,7 +6,7 @@ const TMAS_STATION_KEYS = [
 	"station_id",
 	"travel_dir",
 	"travel_lane",
-	"year_record",
+	"year_recorded",
 	"f_system",
 	"num_lanes",
 	"sample_type_volume",
@@ -43,6 +43,47 @@ const TMAS_STATION_KEYS = [
 	"con_signed_route",
 	"station_location",
 ]
+const TMAS_STATION_KEYS_MAP = TMAS_STATION_KEYS.reduce((a, c, i) => {
+	a[c] = i;
+	return a;
+}, {});
+
+const TMAS_2025_STATION_KEYS = [
+	"record_type",
+	"state_code",
+	"station_id",
+	"travel_dir",
+	"travel_lane",
+	"year_recorded",
+	"f_system",
+	"num_lanes",
+	"num_classes",
+	"calibration",
+	"type_sensor_1",
+	"type_sensor_2",
+	"latitude",
+	"longitude",
+	"prev_station_id",
+	"year_established",
+	"year_discontinued",
+	"county_code",
+	"nhs",
+	"posted_route_signing",
+	"posted_signed_route",
+	"station_location"
+]
+const TMAS_2025_STATION_KEYS_MAP = TMAS_2025_STATION_KEYS.reduce((a, c, i) => {
+	a[c] = i;
+	return a;
+}, {});
+
+const get2025value = (row, key) => {
+	if (key in TMAS_2025_STATION_KEYS_MAP) {
+		const index = TMAS_2025_STATION_KEYS_MAP[key];
+		return row[index];
+	}
+	return null;
+}
 
 export const PreviewColumns = TMAS_STATION_KEYS.slice(1, -1);
 
@@ -71,11 +112,15 @@ const TMAS_STATION_TRANSFORMS = {
 	"f_system": homogenizeFsystem
 }
 
+const TMAS_2025_STATION_TRANSFORMS = {
+	"f_system": homogenizeFsystem
+}
+
 const identity = i => i;
 
-const homogenize = (i, c) => {
+const homogenize = (i, c, use2025transform = false) => {
 	const key = TMAS_STATION_KEYS[i];
-	const func = TMAS_STATION_TRANSFORMS[key] || identity;
+	const func = (use2025transform ? TMAS_2025_STATION_TRANSFORMS[key] : TMAS_STATION_TRANSFORMS[key]) || identity;
 	return func(c);
 }
 
@@ -90,19 +135,40 @@ const cleanValue = v => {
 	}
 }
 
-const getRow = row => {
-	return row.split("|")
-					.reduce((a, c, i) => {
-						a.push({
-							name: TMAS_STATION_KEYS[i],
-							value: cleanValue(homogenize(i, c))
-						});
-						return a;
-					}, []);
+const getRow = textRow => {
+	const row = textRow.trim().split("|");
+
+	if (row.length < TMAS_STATION_KEYS.length) {
+		return TMAS_STATION_KEYS.reduce((a, c, i) => {
+			const value = get2025value(row, c);
+			if (value !== null) {
+				a.push({
+					name: c,
+					value: cleanValue(homogenize(i, value, true))
+				});
+			}
+			else {
+				a.push({
+					name: c,
+					value: null
+				});
+			}
+			return a;
+		}, []);
+	}
+
+	return row.reduce((a, c, i) => {
+		a.push({
+			name: TMAS_STATION_KEYS[i],
+			value: cleanValue(homogenize(i, c))
+		});
+		return a;
+	}, []);
 }
 
 export const getFileContent = text => {
-	return text.split("\n")
+	return text.replace(/\u0000/g, "")
+							.split("\n")
 							.slice(1)
 							.filter(r => r.length)
 							.map(getRow)

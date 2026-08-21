@@ -1,0 +1,5731 @@
+{
+   "tmas_station_id": "2600",
+   "ris_station_number": "260078",
+   "route_id": "100421021",
+   "meters": 2.6430690529839054,
+   "matched": true
+}{
+   "tmas_station_id": "6100",
+   "ris_station_number": "610027",
+   "route_id": "100493031",
+   "meters": 19.834709928401594,
+   "matched": true
+}{
+   "tmas_station_id": "2600",
+   "ris_station_number": "260078",
+   "route_id": "100421022",
+   "meters": 22.785874346329933,
+   "matched": true
+}{
+   "tmas_station_id": "2600",
+   "ris_station_number": "260078",
+   "route_id": "100421021",
+   "meters": 28.564075664736926,
+   "matched": true
+}{
+   "tmas_station_id": "6100",
+   "ris_station_number": "610027",
+   "route_id": "100493032",
+   "meters": 38.800467640006346,
+   "matched": true
+}{
+   "tmas_station_id": "1281",
+   "ris_station_number": "120901",
+   "route_id": "270261011",
+   "meters": 0.0023253305394966696,
+   "matched": false
+}{
+   "tmas_station_id": "399",
+   "ris_station_number": "30291",
+   "route_id": "100067011",
+   "meters": 0.013854742428287629,
+   "matched": false
+}{
+   "tmas_station_id": "8333",
+   "ris_station_number": "830684",
+   "route_id": "100432031",
+   "meters": 0.0141711616394714,
+   "matched": false
+}{
+   "tmas_station_id": "1407",
+   "ris_station_number": "140168",
+   "route_id": "100468091",
+   "meters": 0.02636916153091982,
+   "matched": false
+}{
+   "tmas_station_id": "4363",
+   "ris_station_number": "430218",
+   "route_id": "100358031",
+   "meters": 0.02891452741470893,
+   "matched": false
+}{
+   "tmas_station_id": "3411",
+   "ris_station_number": "340316",
+   "route_id": "100485041",
+   "meters": 0.03670625736921119,
+   "matched": false
+}{
+   "tmas_station_id": "7380",
+   "ris_station_number": "730172",
+   "route_id": "100032051",
+   "meters": 0.03835442085542837,
+   "matched": false
+}{
+   "tmas_station_id": "9181",
+   "ris_station_number": "910060",
+   "route_id": "100397021",
+   "meters": 0.051315474977713216,
+   "matched": false
+}{
+   "tmas_station_id": "1130",
+   "ris_station_number": "110600",
+   "route_id": "100495071",
+   "meters": 0.05502727959963337,
+   "matched": false
+}{
+   "tmas_station_id": "1175",
+   "ris_station_number": "110903",
+   "route_id": "100565011",
+   "meters": 0.05989812317967878,
+   "matched": false
+}{
+   "tmas_station_id": "710",
+   "ris_station_number": "78100",
+   "route_id": "236276011",
+   "meters": 0.06819078395423007,
+   "matched": false
+}{
+   "tmas_station_id": "1141",
+   "ris_station_number": "110554",
+   "route_id": "100514081",
+   "meters": 0.07353368015952069,
+   "matched": false
+}{
+   "tmas_station_id": "8380",
+   "ris_station_number": "830164",
+   "route_id": "100113101",
+   "meters": 0.09160592286784466,
+   "matched": false
+}{
+   "tmas_station_id": "8382",
+   "ris_station_number": "830038",
+   "route_id": "100490011",
+   "meters": 0.09325708733296396,
+   "matched": false
+}{
+   "tmas_station_id": "8180",
+   "ris_station_number": "810174",
+   "route_id": "100147221",
+   "meters": 0.10585889423744996,
+   "matched": false
+}{
+   "tmas_station_id": "380",
+   "ris_station_number": "30947",
+   "route_id": "100550011",
+   "meters": 0.10834327043688811,
+   "matched": false
+}{
+   "tmas_station_id": "9632",
+   "ris_station_number": "960029",
+   "route_id": "100113091",
+   "meters": 0.12813927596122984,
+   "matched": false
+}{
+   "tmas_station_id": "6310",
+   "ris_station_number": "638015",
+   "route_id": "170274011",
+   "meters": 0.13135303434674714,
+   "matched": false
+}{
+   "tmas_station_id": "8381",
+   "ris_station_number": "830362",
+   "route_id": "100668011",
+   "meters": 0.13363343661638327,
+   "matched": false
+}{
+   "tmas_station_id": "8331",
+   "ris_station_number": "830002",
+   "route_id": "100446011",
+   "meters": 0.13536297850582374,
+   "matched": false
+}{
+   "tmas_station_id": "7581",
+   "ris_station_number": "750018",
+   "route_id": "100339021",
+   "meters": 0.14432229753818868,
+   "matched": false
+}{
+   "tmas_station_id": "9400",
+   "ris_station_number": "930045",
+   "route_id": "100497051",
+   "meters": 0.1891305042283937,
+   "matched": false
+}{
+   "tmas_station_id": "3681",
+   "ris_station_number": "360029",
+   "route_id": "100061031",
+   "meters": 0.214101867612307,
+   "matched": false
+}{
+   "tmas_station_id": "725",
+   "ris_station_number": "70024",
+   "route_id": "100206041",
+   "meters": 0.23630616678905617,
+   "matched": false
+}{
+   "tmas_station_id": "7280",
+   "ris_station_number": "720035",
+   "route_id": "100032071",
+   "meters": 0.23949356712828876,
+   "matched": false
+}{
+   "tmas_station_id": "8742",
+   "ris_station_number": "870029",
+   "route_id": "100514031",
+   "meters": 0.2496902903854747,
+   "matched": false
+}{
+   "tmas_station_id": "4180",
+   "ris_station_number": "410158",
+   "route_id": "100476021",
+   "meters": 0.2752924781068744,
+   "matched": false
+}{
+   "tmas_station_id": "6281",
+   "ris_station_number": "620193",
+   "route_id": "100175011",
+   "meters": 0.35052327248873516,
+   "matched": false
+}{
+   "tmas_station_id": "5380",
+   "ris_station_number": "530085",
+   "route_id": "100301011",
+   "meters": 0.3685974696935552,
+   "matched": false
+}{
+   "tmas_station_id": "682",
+   "ris_station_number": "60008",
+   "route_id": "100236011",
+   "meters": 0.3785615362547804,
+   "matched": false
+}{
+   "tmas_station_id": "640",
+   "ris_station_number": "60013",
+   "route_id": "100402011",
+   "meters": 0.39362317607545355,
+   "matched": false
+}{
+   "tmas_station_id": "3680",
+   "ris_station_number": "360032",
+   "route_id": "100759021",
+   "meters": 0.4109553765397264,
+   "matched": false
+}{
+   "tmas_station_id": "6500",
+   "ris_station_number": "970059",
+   "route_id": "100113061",
+   "meters": 0.4296649651016727,
+   "matched": false
+}{
+   "tmas_station_id": "6180",
+   "ris_station_number": "610004",
+   "route_id": "100382021",
+   "meters": 0.4588629745003821,
+   "matched": false
+}{
+   "tmas_station_id": "740",
+   "ris_station_number": "78169",
+   "route_id": "236303011",
+   "meters": 0.47666698581340883,
+   "matched": false
+}{
+   "tmas_station_id": "795",
+   "ris_station_number": "70067",
+   "route_id": "100423041",
+   "meters": 0.5540219373711216,
+   "matched": false
+}{
+   "tmas_station_id": "9122",
+   "ris_station_number": "910144",
+   "route_id": "100149011",
+   "meters": 0.6355565188499185,
+   "matched": false
+}{
+   "tmas_station_id": "582",
+   "ris_station_number": "50072",
+   "route_id": "100458011",
+   "meters": 0.7305466771641143,
+   "matched": false
+}{
+   "tmas_station_id": "4326",
+   "ris_station_number": "430027",
+   "route_id": "100422022",
+   "meters": 0.8384941633302172,
+   "matched": false
+}{
+   "tmas_station_id": "1414",
+   "ris_station_number": "140101",
+   "route_id": "100514071",
+   "meters": 0.898725220928671,
+   "matched": false
+}{
+   "tmas_station_id": "7351",
+   "ris_station_number": "730236",
+   "route_id": "100048061",
+   "meters": 0.908349009088305,
+   "matched": false
+}{
+   "tmas_station_id": "1711",
+   "ris_station_number": "170005",
+   "route_id": "100495091",
+   "meters": 0.9767131297195399,
+   "matched": false
+}{
+   "tmas_station_id": "9631",
+   "ris_station_number": "960015",
+   "route_id": "100113092",
+   "meters": 0.991567187528451,
+   "matched": false
+}{
+   "tmas_station_id": "743",
+   "ris_station_number": "70165",
+   "route_id": "100033011",
+   "meters": 1.0145505493067506,
+   "matched": false
+}{
+   "tmas_station_id": "5342",
+   "ris_station_number": "530332",
+   "route_id": "100428022",
+   "meters": 1.0438843391433625,
+   "matched": false
+}{
+   "tmas_station_id": "342",
+   "ris_station_number": "30006",
+   "route_id": "100228031",
+   "meters": 1.0903751211183916,
+   "matched": false
+}{
+   "tmas_station_id": "1280",
+   "ris_station_number": "120503",
+   "route_id": "100494021",
+   "meters": 1.1473341731086013,
+   "matched": false
+}{
+   "tmas_station_id": "8280",
+   "ris_station_number": "820821",
+   "route_id": "100490021",
+   "meters": 1.1697318334021907,
+   "matched": false
+}{
+   "tmas_station_id": "580",
+   "ris_station_number": "50062",
+   "route_id": "100423022",
+   "meters": 1.366972414118305,
+   "matched": false
+}{
+   "tmas_station_id": "7581",
+   "ris_station_number": "720291",
+   "route_id": "100339031",
+   "meters": 1.4438689044056945,
+   "matched": false
+}{
+   "tmas_station_id": "7181",
+   "ris_station_number": "710416",
+   "route_id": "100144011",
+   "meters": 1.5565969659110073,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "140103",
+   "route_id": "100515151",
+   "meters": 1.6210417159355461,
+   "matched": false
+}{
+   "tmas_station_id": "5480",
+   "ris_station_number": "540079",
+   "route_id": "100229021",
+   "meters": 1.6298448560238938,
+   "matched": false
+}{
+   "tmas_station_id": "8469",
+   "ris_station_number": "840144",
+   "route_id": "100171031",
+   "meters": 1.6857323081480091,
+   "matched": false
+}{
+   "tmas_station_id": "1512",
+   "ris_station_number": "150578",
+   "route_id": "100495081",
+   "meters": 1.7099577155136103,
+   "matched": false
+}{
+   "tmas_station_id": "6480",
+   "ris_station_number": "640065",
+   "route_id": "100435011",
+   "meters": 1.743347865156416,
+   "matched": false
+}{
+   "tmas_station_id": "7111",
+   "ris_station_number": "710464",
+   "route_id": "100495111",
+   "meters": 1.840345155956381,
+   "matched": false
+}{
+   "tmas_station_id": "598",
+   "ris_station_number": "50041",
+   "route_id": "100258011",
+   "meters": 1.8552959660920385,
+   "matched": false
+}{
+   "tmas_station_id": "9121",
+   "ris_station_number": "910108",
+   "route_id": "100485012",
+   "meters": 1.871913079095807,
+   "matched": false
+}{
+   "tmas_station_id": "283",
+   "ris_station_number": "28021",
+   "route_id": "256322011",
+   "meters": 2.0350717570547223,
+   "matched": false
+}{
+   "tmas_station_id": "597",
+   "ris_station_number": "50800",
+   "route_id": "100496011",
+   "meters": 2.0482417552778522,
+   "matched": false
+}{
+   "tmas_station_id": "7480",
+   "ris_station_number": "740022",
+   "route_id": "100265041",
+   "meters": 2.3093609875580507,
+   "matched": false
+}{
+   "tmas_station_id": "4280",
+   "ris_station_number": "420121",
+   "route_id": "100327021",
+   "meters": 2.7065631134579085,
+   "matched": false
+}{
+   "tmas_station_id": "6680",
+   "ris_station_number": "660247",
+   "route_id": "100331011",
+   "meters": 2.7753195821236525,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "640037",
+   "route_id": "100321012",
+   "meters": 2.8274983100715687,
+   "matched": false
+}{
+   "tmas_station_id": "6400",
+   "ris_station_number": "640131",
+   "route_id": "100358012",
+   "meters": 2.883199707617505,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "640037",
+   "route_id": "100321012",
+   "meters": 2.8970826266925047,
+   "matched": false
+}{
+   "tmas_station_id": "3482",
+   "ris_station_number": "340294",
+   "route_id": "100023061",
+   "meters": 3.0703841608856037,
+   "matched": false
+}{
+   "tmas_station_id": "1407",
+   "ris_station_number": "140168",
+   "route_id": "100468091",
+   "meters": 3.1387310886392568,
+   "matched": false
+}{
+   "tmas_station_id": "1780",
+   "ris_station_number": "170453",
+   "route_id": "100495091",
+   "meters": 3.204161473454493,
+   "matched": false
+}{
+   "tmas_station_id": "798",
+   "ris_station_number": "70067",
+   "route_id": "100423041",
+   "meters": 3.318661246161749,
+   "matched": false
+}{
+   "tmas_station_id": "598",
+   "ris_station_number": "50041",
+   "route_id": "100258011",
+   "meters": 3.525223628928903,
+   "matched": false
+}{
+   "tmas_station_id": "2631",
+   "ris_station_number": "260079",
+   "route_id": "100048042",
+   "meters": 3.562179843767134,
+   "matched": false
+}{
+   "tmas_station_id": "8411",
+   "ris_station_number": "840008",
+   "route_id": "100490031",
+   "meters": 3.6297242838469064,
+   "matched": false
+}{
+   "tmas_station_id": "3381",
+   "ris_station_number": "330378",
+   "route_id": "100375041",
+   "meters": 3.8284552460792454,
+   "matched": false
+}{
+   "tmas_station_id": "798",
+   "ris_station_number": "73003",
+   "route_id": "271900011",
+   "meters": 3.9976088907288405,
+   "matched": false
+}{
+   "tmas_station_id": "2431",
+   "ris_station_number": "240019",
+   "route_id": "100280101",
+   "meters": 4.085543636526861,
+   "matched": false
+}{
+   "tmas_station_id": "7231",
+   "ris_station_number": "720024",
+   "route_id": "100265061",
+   "meters": 4.136882744301437,
+   "matched": false
+}{
+   "tmas_station_id": "6484",
+   "ris_station_number": "640182",
+   "route_id": "100493042",
+   "meters": 4.197613085183433,
+   "matched": false
+}{
+   "tmas_station_id": "5282",
+   "ris_station_number": "520010",
+   "route_id": "100147011",
+   "meters": 4.2374799793717655,
+   "matched": false
+}{
+   "tmas_station_id": "6482",
+   "ris_station_number": "640082",
+   "route_id": "100086011",
+   "meters": 4.457855430141299,
+   "matched": false
+}{
+   "tmas_station_id": "8383",
+   "ris_station_number": "830567",
+   "route_id": "100513021",
+   "meters": 4.55190385838191,
+   "matched": false
+}{
+   "tmas_station_id": "8383",
+   "ris_station_number": "830567",
+   "route_id": "100513021",
+   "meters": 4.56084009232819,
+   "matched": false
+}{
+   "tmas_station_id": "580",
+   "ris_station_number": "50062",
+   "route_id": "100423022",
+   "meters": 4.80321670710872,
+   "matched": false
+}{
+   "tmas_station_id": "640",
+   "ris_station_number": "63063",
+   "route_id": "274973011",
+   "meters": 4.827275457776563,
+   "matched": false
+}{
+   "tmas_station_id": "585",
+   "ris_station_number": "50004",
+   "route_id": "100192012",
+   "meters": 5.045213573670706,
+   "matched": false
+}{
+   "tmas_station_id": "398",
+   "ris_station_number": "30283",
+   "route_id": "100026011",
+   "meters": 5.147450773906641,
+   "matched": false
+}{
+   "tmas_station_id": "7182",
+   "ris_station_number": "710221",
+   "route_id": "100514141",
+   "meters": 5.284670260326525,
+   "matched": false
+}{
+   "tmas_station_id": "3383",
+   "ris_station_number": "330137",
+   "route_id": "100428082",
+   "meters": 5.376525854236243,
+   "matched": false
+}{
+   "tmas_station_id": "3383",
+   "ris_station_number": "330151",
+   "route_id": "100428081",
+   "meters": 5.376525854236243,
+   "matched": false
+}{
+   "tmas_station_id": "191",
+   "ris_station_number": "13038",
+   "route_id": "273987011",
+   "meters": 5.578294116168682,
+   "matched": false
+}{
+   "tmas_station_id": "5381",
+   "ris_station_number": "530097",
+   "route_id": "100224011",
+   "meters": 5.68905170664929,
+   "matched": false
+}{
+   "tmas_station_id": "2181",
+   "ris_station_number": "210145",
+   "route_id": "100266031",
+   "meters": 5.76732741584957,
+   "matched": false
+}{
+   "tmas_station_id": "9280",
+   "ris_station_number": "920024",
+   "route_id": "100048021",
+   "meters": 5.783003785044455,
+   "matched": false
+}{
+   "tmas_station_id": "4482",
+   "ris_station_number": "440469",
+   "route_id": "100331021",
+   "meters": 5.824354660550726,
+   "matched": false
+}{
+   "tmas_station_id": "1511",
+   "ris_station_number": "150035",
+   "route_id": "100495081",
+   "meters": 5.853012082287533,
+   "matched": false
+}{
+   "tmas_station_id": "5181",
+   "ris_station_number": "510044",
+   "route_id": "100097011",
+   "meters": 5.859897281638475,
+   "matched": false
+}{
+   "tmas_station_id": "3343",
+   "ris_station_number": "330236",
+   "route_id": "100280091",
+   "meters": 5.929170651169002,
+   "matched": false
+}{
+   "tmas_station_id": "3343",
+   "ris_station_number": "330232",
+   "route_id": "100280092",
+   "meters": 5.929170651169002,
+   "matched": false
+}{
+   "tmas_station_id": "5342",
+   "ris_station_number": "530489",
+   "route_id": "100428021",
+   "meters": 6.04650081643793,
+   "matched": false
+}{
+   "tmas_station_id": "7580",
+   "ris_station_number": "750046",
+   "route_id": "100339021",
+   "meters": 6.167430395603319,
+   "matched": false
+}{
+   "tmas_station_id": "299",
+   "ris_station_number": "20011",
+   "route_id": "100236021",
+   "meters": 6.168598207036709,
+   "matched": false
+}{
+   "tmas_station_id": "3411",
+   "ris_station_number": "340316",
+   "route_id": "100485041",
+   "meters": 6.3931946979211345,
+   "matched": false
+}{
+   "tmas_station_id": "9480",
+   "ris_station_number": "940062",
+   "route_id": "100183031",
+   "meters": 6.599852400799996,
+   "matched": false
+}{
+   "tmas_station_id": "585",
+   "ris_station_number": "30038",
+   "route_id": "100192022",
+   "meters": 6.677779215717768,
+   "matched": false
+}{
+   "tmas_station_id": "7481",
+   "ris_station_number": "740166",
+   "route_id": "100122021",
+   "meters": 6.754794462807528,
+   "matched": false
+}{
+   "tmas_station_id": "1335",
+   "ris_station_number": "130024",
+   "route_id": "100183072",
+   "meters": 6.899769192890262,
+   "matched": false
+}{
+   "tmas_station_id": "9381",
+   "ris_station_number": "930048",
+   "route_id": "100154031",
+   "meters": 6.912211454333856,
+   "matched": false
+}{
+   "tmas_station_id": "8780",
+   "ris_station_number": "870113",
+   "route_id": "100460011",
+   "meters": 7.039740154084591,
+   "matched": false
+}{
+   "tmas_station_id": "9122",
+   "ris_station_number": "913167",
+   "route_id": "277252011",
+   "meters": 7.093328481299574,
+   "matched": false
+}{
+   "tmas_station_id": "4631",
+   "ris_station_number": "460002",
+   "route_id": "100135021",
+   "meters": 7.1127451510134465,
+   "matched": false
+}{
+   "tmas_station_id": "8481",
+   "ris_station_number": "840144",
+   "route_id": "100171032",
+   "meters": 7.147422336319384,
+   "matched": false
+}{
+   "tmas_station_id": "3311",
+   "ris_station_number": "330016",
+   "route_id": "100485032",
+   "meters": 7.2689889439677104,
+   "matched": false
+}{
+   "tmas_station_id": "6482",
+   "ris_station_number": "640082",
+   "route_id": "100086011",
+   "meters": 7.290349515168954,
+   "matched": false
+}{
+   "tmas_station_id": "7331",
+   "ris_station_number": "730096",
+   "route_id": "100032051",
+   "meters": 7.390066853202052,
+   "matched": false
+}{
+   "tmas_station_id": "4181",
+   "ris_station_number": "410131",
+   "route_id": "100451041",
+   "meters": 7.424787596061684,
+   "matched": false
+}{
+   "tmas_station_id": "2181",
+   "ris_station_number": "210145",
+   "route_id": "100266031",
+   "meters": 7.520752361117913,
+   "matched": false
+}{
+   "tmas_station_id": "3580",
+   "ris_station_number": "350429",
+   "route_id": "100379041",
+   "meters": 7.5813352253939055,
+   "matched": false
+}{
+   "tmas_station_id": "4780",
+   "ris_station_number": "470538",
+   "route_id": "100021011",
+   "meters": 7.627750554837092,
+   "matched": false
+}{
+   "tmas_station_id": "5180",
+   "ris_station_number": "510358",
+   "route_id": "100168012",
+   "meters": 7.822538082232536,
+   "matched": false
+}{
+   "tmas_station_id": "5180",
+   "ris_station_number": "510358",
+   "route_id": "100168011",
+   "meters": 7.822538083795745,
+   "matched": false
+}{
+   "tmas_station_id": "4483",
+   "ris_station_number": "440054",
+   "route_id": "100147052",
+   "meters": 7.89361786824228,
+   "matched": false
+}{
+   "tmas_station_id": "7381",
+   "ris_station_number": "730041",
+   "route_id": "100485052",
+   "meters": 7.985648793259171,
+   "matched": false
+}{
+   "tmas_station_id": "5485",
+   "ris_station_number": "540569",
+   "route_id": "100136021",
+   "meters": 8.081415640374413,
+   "matched": false
+}{
+   "tmas_station_id": "4481",
+   "ris_station_number": "440241",
+   "route_id": "100454011",
+   "meters": 8.162699320648045,
+   "matched": false
+}{
+   "tmas_station_id": "5283",
+   "ris_station_number": "520517",
+   "route_id": "100362011",
+   "meters": 8.244124069664345,
+   "matched": false
+}{
+   "tmas_station_id": "4480",
+   "ris_station_number": "440460",
+   "route_id": "100303011",
+   "meters": 8.337359557004318,
+   "matched": false
+}{
+   "tmas_station_id": "720",
+   "ris_station_number": "71021",
+   "route_id": "236307011",
+   "meters": 8.363630496145522,
+   "matched": false
+}{
+   "tmas_station_id": "6680",
+   "ris_station_number": "660246",
+   "route_id": "100331011",
+   "meters": 8.425500690046873,
+   "matched": false
+}{
+   "tmas_station_id": "9181",
+   "ris_station_number": "910060",
+   "route_id": "100397021",
+   "meters": 8.44343582964399,
+   "matched": false
+}{
+   "tmas_station_id": "799",
+   "ris_station_number": "70004",
+   "route_id": "100228041",
+   "meters": 8.473274135256833,
+   "matched": false
+}{
+   "tmas_station_id": "597",
+   "ris_station_number": "53066",
+   "route_id": "276470011",
+   "meters": 8.635069510013418,
+   "matched": false
+}{
+   "tmas_station_id": "3342",
+   "ris_station_number": "330139",
+   "route_id": "100428082",
+   "meters": 8.749785221477907,
+   "matched": false
+}{
+   "tmas_station_id": "9650",
+   "ris_station_number": "961001",
+   "route_id": "218437011",
+   "meters": 8.753476172645417,
+   "matched": false
+}{
+   "tmas_station_id": "4380",
+   "ris_station_number": "430910",
+   "route_id": "100704022",
+   "meters": 8.758413563770677,
+   "matched": false
+}{
+   "tmas_station_id": "7500",
+   "ris_station_number": "750225",
+   "route_id": "100265051",
+   "meters": 8.886604086264,
+   "matched": false
+}{
+   "tmas_station_id": "4342",
+   "ris_station_number": "430269",
+   "route_id": "100444011",
+   "meters": 8.98928197825121,
+   "matched": false
+}{
+   "tmas_station_id": "180",
+   "ris_station_number": "10027",
+   "route_id": "100495012",
+   "meters": 9.647491088750415,
+   "matched": false
+}{
+   "tmas_station_id": "3380",
+   "ris_station_number": "330222",
+   "route_id": "100340031",
+   "meters": 9.653868023750677,
+   "matched": false
+}{
+   "tmas_station_id": "3380",
+   "ris_station_number": "330222",
+   "route_id": "100340031",
+   "meters": 9.657877760907587,
+   "matched": false
+}{
+   "tmas_station_id": "4341",
+   "ris_station_number": "430110",
+   "route_id": "100280031",
+   "meters": 9.664542089009228,
+   "matched": false
+}{
+   "tmas_station_id": "2641",
+   "ris_station_number": "260120",
+   "route_id": "100428102",
+   "meters": 9.751169899028941,
+   "matched": false
+}{
+   "tmas_station_id": "2641",
+   "ris_station_number": "260096",
+   "route_id": "100483072",
+   "meters": 9.751169899028941,
+   "matched": false
+}{
+   "tmas_station_id": "3381",
+   "ris_station_number": "330378",
+   "route_id": "100375041",
+   "meters": 9.927338128766026,
+   "matched": false
+}{
+   "tmas_station_id": "1130",
+   "ris_station_number": "110600",
+   "route_id": "100495071",
+   "meters": 10.07558322041551,
+   "matched": false
+}{
+   "tmas_station_id": "799",
+   "ris_station_number": "70004",
+   "route_id": "100228041",
+   "meters": 10.241836794090304,
+   "matched": false
+}{
+   "tmas_station_id": "7182",
+   "ris_station_number": "710221",
+   "route_id": "100514141",
+   "meters": 10.300420901868332,
+   "matched": false
+}{
+   "tmas_station_id": "7381",
+   "ris_station_number": "730041",
+   "route_id": "100485052",
+   "meters": 10.309784865827922,
+   "matched": false
+}{
+   "tmas_station_id": "599",
+   "ris_station_number": "50071",
+   "route_id": "100458011",
+   "meters": 10.41785613809967,
+   "matched": false
+}{
+   "tmas_station_id": "191",
+   "ris_station_number": "10003",
+   "route_id": "100706021",
+   "meters": 10.588425157582273,
+   "matched": false
+}{
+   "tmas_station_id": "7183",
+   "ris_station_number": "710199",
+   "route_id": "100032081",
+   "meters": 10.76415560690533,
+   "matched": false
+}{
+   "tmas_station_id": "1231",
+   "ris_station_number": "120449",
+   "route_id": "100510031",
+   "meters": 10.779293716874808,
+   "matched": false
+}{
+   "tmas_station_id": "582",
+   "ris_station_number": "56173",
+   "route_id": "273954011",
+   "meters": 10.973660176641692,
+   "matched": false
+}{
+   "tmas_station_id": "5384",
+   "ris_station_number": "530330",
+   "route_id": "100168021",
+   "meters": 11.010156889572139,
+   "matched": false
+}{
+   "tmas_station_id": "7381",
+   "ris_station_number": "733006",
+   "route_id": "276175011",
+   "meters": 11.01519853375328,
+   "matched": false
+}{
+   "tmas_station_id": "6280",
+   "ris_station_number": "620204",
+   "route_id": "100073011",
+   "meters": 11.025339231491603,
+   "matched": false
+}{
+   "tmas_station_id": "8481",
+   "ris_station_number": "840144",
+   "route_id": "100171031",
+   "meters": 11.19004361398034,
+   "matched": false
+}{
+   "tmas_station_id": "1146",
+   "ris_station_number": "110100",
+   "route_id": "100428141",
+   "meters": 11.219255221839157,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "640037",
+   "route_id": "100321011",
+   "meters": 11.3294201736224,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "640037",
+   "route_id": "100321011",
+   "meters": 11.431267206084774,
+   "matched": false
+}{
+   "tmas_station_id": "399",
+   "ris_station_number": "30291",
+   "route_id": "100067011",
+   "meters": 11.552383545984304,
+   "matched": false
+}{
+   "tmas_station_id": "6482",
+   "ris_station_number": "640082",
+   "route_id": "100086011",
+   "meters": 11.73742098813402,
+   "matched": false
+}{
+   "tmas_station_id": "283",
+   "ris_station_number": "28021",
+   "route_id": "256322012",
+   "meters": 11.816796572932287,
+   "matched": false
+}{
+   "tmas_station_id": "1132",
+   "ris_station_number": "110020",
+   "route_id": "100290041",
+   "meters": 11.925777528380484,
+   "matched": false
+}{
+   "tmas_station_id": "8580",
+   "ris_station_number": "852580",
+   "route_id": "193302011",
+   "meters": 11.94500117913515,
+   "matched": false
+}{
+   "tmas_station_id": "3480",
+   "ris_station_number": "340257",
+   "route_id": "100032041",
+   "meters": 11.961516387484584,
+   "matched": false
+}{
+   "tmas_station_id": "1399",
+   "ris_station_number": "130475",
+   "route_id": "100181011",
+   "meters": 12.016843059163094,
+   "matched": false
+}{
+   "tmas_station_id": "1642",
+   "ris_station_number": "160279",
+   "route_id": "100428131",
+   "meters": 12.03324122168063,
+   "matched": false
+}{
+   "tmas_station_id": "6340",
+   "ris_station_number": "630001",
+   "route_id": "100073021",
+   "meters": 12.201472158521279,
+   "matched": false
+}{
+   "tmas_station_id": "578",
+   "ris_station_number": "50069",
+   "route_id": "100458012",
+   "meters": 12.458912795836486,
+   "matched": false
+}{
+   "tmas_station_id": "9181",
+   "ris_station_number": "910060",
+   "route_id": "100397022",
+   "meters": 12.496297921027573,
+   "matched": false
+}{
+   "tmas_station_id": "5383",
+   "ris_station_number": "530430",
+   "route_id": "100294022",
+   "meters": 12.681075824470277,
+   "matched": false
+}{
+   "tmas_station_id": "5383",
+   "ris_station_number": "530434",
+   "route_id": "100294021",
+   "meters": 12.681075824470277,
+   "matched": false
+}{
+   "tmas_station_id": "5281",
+   "ris_station_number": "520014",
+   "route_id": "100450011",
+   "meters": 12.73140352631386,
+   "matched": false
+}{
+   "tmas_station_id": "710",
+   "ris_station_number": "78100",
+   "route_id": "236276012",
+   "meters": 12.775047797676008,
+   "matched": false
+}{
+   "tmas_station_id": "9582",
+   "ris_station_number": "950145",
+   "route_id": "100079031",
+   "meters": 12.813579412867544,
+   "matched": false
+}{
+   "tmas_station_id": "3481",
+   "ris_station_number": "340270",
+   "route_id": "100022011",
+   "meters": 12.838005203394374,
+   "matched": false
+}{
+   "tmas_station_id": "6441",
+   "ris_station_number": "640029",
+   "route_id": "100493041",
+   "meters": 13.168692375209796,
+   "matched": false
+}{
+   "tmas_station_id": "7100",
+   "ris_station_number": "710467",
+   "route_id": "100495112",
+   "meters": 13.33660081989073,
+   "matched": false
+}{
+   "tmas_station_id": "9280",
+   "ris_station_number": "920024",
+   "route_id": "100048021",
+   "meters": 13.396189455083297,
+   "matched": false
+}{
+   "tmas_station_id": "5484",
+   "ris_station_number": "540353",
+   "route_id": "100023011",
+   "meters": 13.416902451662548,
+   "matched": false
+}{
+   "tmas_station_id": "578",
+   "ris_station_number": "56060",
+   "route_id": "100458011",
+   "meters": 13.41940898904707,
+   "matched": false
+}{
+   "tmas_station_id": "3311",
+   "ris_station_number": "330016",
+   "route_id": "100485032",
+   "meters": 13.454161107038956,
+   "matched": false
+}{
+   "tmas_station_id": "1399",
+   "ris_station_number": "130475",
+   "route_id": "100181011",
+   "meters": 13.489017448250344,
+   "matched": false
+}{
+   "tmas_station_id": "9580",
+   "ris_station_number": "950051",
+   "route_id": "100497072",
+   "meters": 13.510475032106278,
+   "matched": false
+}{
+   "tmas_station_id": "799",
+   "ris_station_number": "70004",
+   "route_id": "100228041",
+   "meters": 13.625298976931793,
+   "matched": false
+}{
+   "tmas_station_id": "7380",
+   "ris_station_number": "730172",
+   "route_id": "100032052",
+   "meters": 13.665232826545514,
+   "matched": false
+}{
+   "tmas_station_id": "4342",
+   "ris_station_number": "430269",
+   "route_id": "100444011",
+   "meters": 14.152355068768918,
+   "matched": false
+}{
+   "tmas_station_id": "8383",
+   "ris_station_number": "830566",
+   "route_id": "100167012",
+   "meters": 14.188821521941264,
+   "matched": false
+}{
+   "tmas_station_id": "8383",
+   "ris_station_number": "830567",
+   "route_id": "100513022",
+   "meters": 14.188821521941264,
+   "matched": false
+}{
+   "tmas_station_id": "9122",
+   "ris_station_number": "913167",
+   "route_id": "277252011",
+   "meters": 14.280589156541929,
+   "matched": false
+}{
+   "tmas_station_id": "2631",
+   "ris_station_number": "260079",
+   "route_id": "100048041",
+   "meters": 14.313835724768124,
+   "matched": false
+}{
+   "tmas_station_id": "380",
+   "ris_station_number": "33314",
+   "route_id": "271548011",
+   "meters": 14.395548070662267,
+   "matched": false
+}{
+   "tmas_station_id": "182",
+   "ris_station_number": "10009",
+   "route_id": "100011022",
+   "meters": 14.522931798865748,
+   "matched": false
+}{
+   "tmas_station_id": "9122",
+   "ris_station_number": "910144",
+   "route_id": "100149012",
+   "meters": 14.530006657272942,
+   "matched": false
+}{
+   "tmas_station_id": "8700",
+   "ris_station_number": "871012",
+   "route_id": "200026011",
+   "meters": 14.633221290943775,
+   "matched": false
+}{
+   "tmas_station_id": "2531",
+   "ris_station_number": "250036",
+   "route_id": "100428121",
+   "meters": 14.676527064148175,
+   "matched": false
+}{
+   "tmas_station_id": "2180",
+   "ris_station_number": "210004",
+   "route_id": "100013041",
+   "meters": 14.826136449137703,
+   "matched": false
+}{
+   "tmas_station_id": "5381",
+   "ris_station_number": "530097",
+   "route_id": "100224011",
+   "meters": 14.930930844508474,
+   "matched": false
+}{
+   "tmas_station_id": "7183",
+   "ris_station_number": "710199",
+   "route_id": "100032081",
+   "meters": 14.939567790416564,
+   "matched": false
+}{
+   "tmas_station_id": "1552",
+   "ris_station_number": "150337",
+   "route_id": "100082021",
+   "meters": 14.95361700294544,
+   "matched": false
+}{
+   "tmas_station_id": "380",
+   "ris_station_number": "30947",
+   "route_id": "100550012",
+   "meters": 15.002253241469134,
+   "matched": false
+}{
+   "tmas_station_id": "581",
+   "ris_station_number": "53279",
+   "route_id": "276372011",
+   "meters": 15.017224007336736,
+   "matched": false
+}{
+   "tmas_station_id": "1146",
+   "ris_station_number": "110017",
+   "route_id": "100428141",
+   "meters": 15.10676628038436,
+   "matched": false
+}{
+   "tmas_station_id": "4342",
+   "ris_station_number": "430269",
+   "route_id": "100444011",
+   "meters": 15.125259454133504,
+   "matched": false
+}{
+   "tmas_station_id": "582",
+   "ris_station_number": "50070",
+   "route_id": "100458012",
+   "meters": 15.22062373790206,
+   "matched": false
+}{
+   "tmas_station_id": "342",
+   "ris_station_number": "30006",
+   "route_id": "100228031",
+   "meters": 15.403030796922694,
+   "matched": false
+}{
+   "tmas_station_id": "5180",
+   "ris_station_number": "510358",
+   "route_id": "100168011",
+   "meters": 15.487573084901332,
+   "matched": false
+}{
+   "tmas_station_id": "741",
+   "ris_station_number": "70013",
+   "route_id": "100206041",
+   "meters": 15.570286601017754,
+   "matched": false
+}{
+   "tmas_station_id": "6180",
+   "ris_station_number": "610004",
+   "route_id": "100382021",
+   "meters": 15.648052379114315,
+   "matched": false
+}{
+   "tmas_station_id": "7501",
+   "ris_station_number": "750029",
+   "route_id": "100032061",
+   "meters": 15.849811514435366,
+   "matched": false
+}{
+   "tmas_station_id": "585",
+   "ris_station_number": "50004",
+   "route_id": "100192011",
+   "meters": 15.954296417641512,
+   "matched": false
+}{
+   "tmas_station_id": "2680",
+   "ris_station_number": "260098",
+   "route_id": "100483072",
+   "meters": 16.469668295673323,
+   "matched": false
+}{
+   "tmas_station_id": "2680",
+   "ris_station_number": "260052",
+   "route_id": "100048042",
+   "meters": 16.469668295673323,
+   "matched": false
+}{
+   "tmas_station_id": "6484",
+   "ris_station_number": "640182",
+   "route_id": "100493041",
+   "meters": 16.486297938374193,
+   "matched": false
+}{
+   "tmas_station_id": "9580",
+   "ris_station_number": "950051",
+   "route_id": "100497071",
+   "meters": 16.744279233601418,
+   "matched": false
+}{
+   "tmas_station_id": "2182",
+   "ris_station_number": "210036",
+   "route_id": "100251021",
+   "meters": 16.87060994261404,
+   "matched": false
+}{
+   "tmas_station_id": "5382",
+   "ris_station_number": "530171",
+   "route_id": "100478022",
+   "meters": 17.089100947239157,
+   "matched": false
+}{
+   "tmas_station_id": "1130",
+   "ris_station_number": "110600",
+   "route_id": "100495071",
+   "meters": 17.097761083736348,
+   "matched": false
+}{
+   "tmas_station_id": "2600",
+   "ris_station_number": "262121",
+   "route_id": "126732011",
+   "meters": 17.170918236703454,
+   "matched": false
+}{
+   "tmas_station_id": "1351",
+   "ris_station_number": "130056",
+   "route_id": "100513041",
+   "meters": 17.22882209711524,
+   "matched": false
+}{
+   "tmas_station_id": "4181",
+   "ris_station_number": "410131",
+   "route_id": "100451041",
+   "meters": 17.260043840034665,
+   "matched": false
+}{
+   "tmas_station_id": "9181",
+   "ris_station_number": "910060",
+   "route_id": "100397022",
+   "meters": 17.36557738788884,
+   "matched": false
+}{
+   "tmas_station_id": "9199",
+   "ris_station_number": "910058",
+   "route_id": "100113072",
+   "meters": 17.679527934805467,
+   "matched": false
+}{
+   "tmas_station_id": "578",
+   "ris_station_number": "50069",
+   "route_id": "100458012",
+   "meters": 17.71688164397248,
+   "matched": false
+}{
+   "tmas_station_id": "3280",
+   "ris_station_number": "320021",
+   "route_id": "100032021",
+   "meters": 17.737102975052103,
+   "matched": false
+}{
+   "tmas_station_id": "3480",
+   "ris_station_number": "340257",
+   "route_id": "100032041",
+   "meters": 17.745882384865883,
+   "matched": false
+}{
+   "tmas_station_id": "580",
+   "ris_station_number": "50062",
+   "route_id": "100423021",
+   "meters": 17.91954860736921,
+   "matched": false
+}{
+   "tmas_station_id": "586",
+   "ris_station_number": "50910",
+   "route_id": "100535022",
+   "meters": 17.95254557055378,
+   "matched": false
+}{
+   "tmas_station_id": "5382",
+   "ris_station_number": "530171",
+   "route_id": "100478022",
+   "meters": 18.07258429392412,
+   "matched": false
+}{
+   "tmas_station_id": "5383",
+   "ris_station_number": "530434",
+   "route_id": "100294021",
+   "meters": 18.11171360733943,
+   "matched": false
+}{
+   "tmas_station_id": "4480",
+   "ris_station_number": "440460",
+   "route_id": "100303011",
+   "meters": 18.539254997148216,
+   "matched": false
+}{
+   "tmas_station_id": "7581",
+   "ris_station_number": "750018",
+   "route_id": "100339021",
+   "meters": 18.54254179893379,
+   "matched": false
+}{
+   "tmas_station_id": "9180",
+   "ris_station_number": "910065",
+   "route_id": "100217012",
+   "meters": 18.645927119241566,
+   "matched": false
+}{
+   "tmas_station_id": "9180",
+   "ris_station_number": "910026",
+   "route_id": "100217011",
+   "meters": 18.645927119241566,
+   "matched": false
+}{
+   "tmas_station_id": "743",
+   "ris_station_number": "70165",
+   "route_id": "100033011",
+   "meters": 18.658988739848574,
+   "matched": false
+}{
+   "tmas_station_id": "399",
+   "ris_station_number": "30291",
+   "route_id": "100067012",
+   "meters": 18.6879032339956,
+   "matched": false
+}{
+   "tmas_station_id": "2380",
+   "ris_station_number": "230028",
+   "route_id": "100241081",
+   "meters": 18.801052832318824,
+   "matched": false
+}{
+   "tmas_station_id": "8382",
+   "ris_station_number": "830038",
+   "route_id": "100490012",
+   "meters": 18.84582781855356,
+   "matched": false
+}{
+   "tmas_station_id": "199",
+   "ris_station_number": "10031",
+   "route_id": "100706022",
+   "meters": 19.1921157383285,
+   "matched": false
+}{
+   "tmas_station_id": "2680",
+   "ris_station_number": "260940",
+   "route_id": "100643012",
+   "meters": 19.383494769616767,
+   "matched": false
+}{
+   "tmas_station_id": "9632",
+   "ris_station_number": "960029",
+   "route_id": "100113092",
+   "meters": 19.421937077634695,
+   "matched": false
+}{
+   "tmas_station_id": "4483",
+   "ris_station_number": "440054",
+   "route_id": "100147051",
+   "meters": 19.6875038327697,
+   "matched": false
+}{
+   "tmas_station_id": "3380",
+   "ris_station_number": "330222",
+   "route_id": "100340032",
+   "meters": 19.786141085481177,
+   "matched": false
+}{
+   "tmas_station_id": "585",
+   "ris_station_number": "30038",
+   "route_id": "100192021",
+   "meters": 19.81211643258389,
+   "matched": false
+}{
+   "tmas_station_id": "585",
+   "ris_station_number": "50004",
+   "route_id": "100192011",
+   "meters": 19.928508228370873,
+   "matched": false
+}{
+   "tmas_station_id": "582",
+   "ris_station_number": "50070",
+   "route_id": "100458012",
+   "meters": 20.199249515680226,
+   "matched": false
+}{
+   "tmas_station_id": "8480",
+   "ris_station_number": "840902",
+   "route_id": "100861022",
+   "meters": 20.290511345501475,
+   "matched": false
+}{
+   "tmas_station_id": "797",
+   "ris_station_number": "70112",
+   "route_id": "100206041",
+   "meters": 20.626032230168327,
+   "matched": false
+}{
+   "tmas_station_id": "5485",
+   "ris_station_number": "540569",
+   "route_id": "100136022",
+   "meters": 20.836079637848325,
+   "matched": false
+}{
+   "tmas_station_id": "9650",
+   "ris_station_number": "961001",
+   "route_id": "218437011",
+   "meters": 20.96156212882941,
+   "matched": false
+}{
+   "tmas_station_id": "798",
+   "ris_station_number": "70067",
+   "route_id": "100423041",
+   "meters": 21.11696781681453,
+   "matched": false
+}{
+   "tmas_station_id": "1531",
+   "ris_station_number": "150308",
+   "route_id": "100514091",
+   "meters": 21.21963385360059,
+   "matched": false
+}{
+   "tmas_station_id": "1231",
+   "ris_station_number": "120449",
+   "route_id": "100510031",
+   "meters": 21.239019629530947,
+   "matched": false
+}{
+   "tmas_station_id": "8331",
+   "ris_station_number": "830002",
+   "route_id": "100446012",
+   "meters": 21.35465794154424,
+   "matched": false
+}{
+   "tmas_station_id": "580",
+   "ris_station_number": "54385",
+   "route_id": "311759011",
+   "meters": 21.569017242364467,
+   "matched": false
+}{
+   "tmas_station_id": "580",
+   "ris_station_number": "50062",
+   "route_id": "100423022",
+   "meters": 21.679332739676408,
+   "matched": false
+}{
+   "tmas_station_id": "4380",
+   "ris_station_number": "430910",
+   "route_id": "100704021",
+   "meters": 21.692803575882824,
+   "matched": false
+}{
+   "tmas_station_id": "2641",
+   "ris_station_number": "260120",
+   "route_id": "100428101",
+   "meters": 21.767308407889697,
+   "matched": false
+}{
+   "tmas_station_id": "381",
+   "ris_station_number": "33267",
+   "route_id": "271744011",
+   "meters": 21.83236536898976,
+   "matched": false
+}{
+   "tmas_station_id": "4326",
+   "ris_station_number": "430542",
+   "route_id": "100422021",
+   "meters": 21.93062515539167,
+   "matched": false
+}{
+   "tmas_station_id": "7581",
+   "ris_station_number": "720291",
+   "route_id": "100339031",
+   "meters": 22.088520131628734,
+   "matched": false
+}{
+   "tmas_station_id": "4280",
+   "ris_station_number": "420121",
+   "route_id": "100327021",
+   "meters": 22.125352909347196,
+   "matched": false
+}{
+   "tmas_station_id": "581",
+   "ris_station_number": "50045",
+   "route_id": "100258011",
+   "meters": 22.14653846779643,
+   "matched": false
+}{
+   "tmas_station_id": "1130",
+   "ris_station_number": "110600",
+   "route_id": "100495071",
+   "meters": 22.227377012930102,
+   "matched": false
+}{
+   "tmas_station_id": "9581",
+   "ris_station_number": "950001",
+   "route_id": "100267021",
+   "meters": 22.380688791326197,
+   "matched": false
+}{
+   "tmas_station_id": "1141",
+   "ris_station_number": "110554",
+   "route_id": "100514081",
+   "meters": 22.44252269302683,
+   "matched": false
+}{
+   "tmas_station_id": "8383",
+   "ris_station_number": "830567",
+   "route_id": "100513022",
+   "meters": 22.56882783382085,
+   "matched": false
+}{
+   "tmas_station_id": "598",
+   "ris_station_number": "50041",
+   "route_id": "100258012",
+   "meters": 22.58493626847015,
+   "matched": false
+}{
+   "tmas_station_id": "1141",
+   "ris_station_number": "110554",
+   "route_id": "100514081",
+   "meters": 22.61441806423628,
+   "matched": false
+}{
+   "tmas_station_id": "3382",
+   "ris_station_number": "330199",
+   "route_id": "100464012",
+   "meters": 22.883127347178416,
+   "matched": false
+}{
+   "tmas_station_id": "3382",
+   "ris_station_number": "330191",
+   "route_id": "100280092",
+   "meters": 22.883127347178416,
+   "matched": false
+}{
+   "tmas_station_id": "5486",
+   "ris_station_number": "540093",
+   "route_id": "100126011",
+   "meters": 22.927039800539944,
+   "matched": false
+}{
+   "tmas_station_id": "1130",
+   "ris_station_number": "110243",
+   "route_id": "100495072",
+   "meters": 22.960319417156683,
+   "matched": false
+}{
+   "tmas_station_id": "743",
+   "ris_station_number": "70165",
+   "route_id": "100033012",
+   "meters": 22.99820397397684,
+   "matched": false
+}{
+   "tmas_station_id": "1132",
+   "ris_station_number": "110020",
+   "route_id": "100290041",
+   "meters": 23.057470340382153,
+   "matched": false
+}{
+   "tmas_station_id": "6485",
+   "ris_station_number": "640180",
+   "route_id": "100086011",
+   "meters": 23.152654067280398,
+   "matched": false
+}{
+   "tmas_station_id": "7100",
+   "ris_station_number": "710467",
+   "route_id": "100495111",
+   "meters": 23.21780551671053,
+   "matched": false
+}{
+   "tmas_station_id": "342",
+   "ris_station_number": "30006",
+   "route_id": "100228032",
+   "meters": 23.4276959178036,
+   "matched": false
+}{
+   "tmas_station_id": "4341",
+   "ris_station_number": "430110",
+   "route_id": "100280031",
+   "meters": 23.497263093073553,
+   "matched": false
+}{
+   "tmas_station_id": "7300",
+   "ris_station_number": "730222",
+   "route_id": "100485052",
+   "meters": 23.510892148222393,
+   "matched": false
+}{
+   "tmas_station_id": "743",
+   "ris_station_number": "70165",
+   "route_id": "100033012",
+   "meters": 23.561729151696778,
+   "matched": false
+}{
+   "tmas_station_id": "598",
+   "ris_station_number": "50041",
+   "route_id": "100258012",
+   "meters": 23.67832138407592,
+   "matched": false
+}{
+   "tmas_station_id": "280",
+   "ris_station_number": "21284",
+   "route_id": "256355011",
+   "meters": 23.815319294463443,
+   "matched": false
+}{
+   "tmas_station_id": "640",
+   "ris_station_number": "60013",
+   "route_id": "100402011",
+   "meters": 23.92554924463482,
+   "matched": false
+}{
+   "tmas_station_id": "180",
+   "ris_station_number": "10027",
+   "route_id": "100495011",
+   "meters": 24.06128435414612,
+   "matched": false
+}{
+   "tmas_station_id": "5283",
+   "ris_station_number": "520517",
+   "route_id": "100362011",
+   "meters": 24.212480473384655,
+   "matched": false
+}{
+   "tmas_station_id": "342",
+   "ris_station_number": "30006",
+   "route_id": "100228032",
+   "meters": 24.231016974182157,
+   "matched": false
+}{
+   "tmas_station_id": "182",
+   "ris_station_number": "10009",
+   "route_id": "100011021",
+   "meters": 24.374384484961425,
+   "matched": false
+}{
+   "tmas_station_id": "6282",
+   "ris_station_number": "620156",
+   "route_id": "100298011",
+   "meters": 24.45198251821987,
+   "matched": false
+}{
+   "tmas_station_id": "2631",
+   "ris_station_number": "260079",
+   "route_id": "100048042",
+   "meters": 24.613315463735677,
+   "matched": false
+}{
+   "tmas_station_id": "191",
+   "ris_station_number": "10003",
+   "route_id": "100706021",
+   "meters": 24.781021596912126,
+   "matched": false
+}{
+   "tmas_station_id": "7381",
+   "ris_station_number": "730041",
+   "route_id": "100485052",
+   "meters": 24.781585870911858,
+   "matched": false
+}{
+   "tmas_station_id": "698",
+   "ris_station_number": "60011",
+   "route_id": "100402012",
+   "meters": 24.87322971723872,
+   "matched": false
+}{
+   "tmas_station_id": "5183",
+   "ris_station_number": "510049",
+   "route_id": "100493021",
+   "meters": 24.89984335907788,
+   "matched": false
+}{
+   "tmas_station_id": "8411",
+   "ris_station_number": "840008",
+   "route_id": "100490031",
+   "meters": 24.981916107098453,
+   "matched": false
+}{
+   "tmas_station_id": "797",
+   "ris_station_number": "70112",
+   "route_id": "100206041",
+   "meters": 25.07590160596634,
+   "matched": false
+}{
+   "tmas_station_id": "1335",
+   "ris_station_number": "130024",
+   "route_id": "100183071",
+   "meters": 25.16180045685538,
+   "matched": false
+}{
+   "tmas_station_id": "2182",
+   "ris_station_number": "210036",
+   "route_id": "100251021",
+   "meters": 25.210996259124578,
+   "matched": false
+}{
+   "tmas_station_id": "682",
+   "ris_station_number": "60005",
+   "route_id": "100236012",
+   "meters": 25.24055083169603,
+   "matched": false
+}{
+   "tmas_station_id": "2280",
+   "ris_station_number": "220048",
+   "route_id": "100483091",
+   "meters": 25.493368842324706,
+   "matched": false
+}{
+   "tmas_station_id": "4326",
+   "ris_station_number": "430027",
+   "route_id": "100422022",
+   "meters": 25.524495300102586,
+   "matched": false
+}{
+   "tmas_station_id": "6400",
+   "ris_station_number": "640131",
+   "route_id": "100358011",
+   "meters": 25.66582646490126,
+   "matched": false
+}{
+   "tmas_station_id": "399",
+   "ris_station_number": "30291",
+   "route_id": "100067012",
+   "meters": 25.753926049402843,
+   "matched": false
+}{
+   "tmas_station_id": "9650",
+   "ris_station_number": "961001",
+   "route_id": "218437011",
+   "meters": 26.189331803660444,
+   "matched": false
+}{
+   "tmas_station_id": "4381",
+   "ris_station_number": "430315",
+   "route_id": "100023031",
+   "meters": 26.289766209696104,
+   "matched": false
+}{
+   "tmas_station_id": "698",
+   "ris_station_number": "63047",
+   "route_id": "274959011",
+   "meters": 26.36311387863633,
+   "matched": false
+}{
+   "tmas_station_id": "731",
+   "ris_station_number": "70055",
+   "route_id": "100035011",
+   "meters": 26.62296009852258,
+   "matched": false
+}{
+   "tmas_station_id": "8631",
+   "ris_station_number": "860025",
+   "route_id": "100290021",
+   "meters": 26.626221657464185,
+   "matched": false
+}{
+   "tmas_station_id": "9122",
+   "ris_station_number": "910144",
+   "route_id": "100149011",
+   "meters": 26.815117045200346,
+   "matched": false
+}{
+   "tmas_station_id": "191",
+   "ris_station_number": "10003",
+   "route_id": "100706022",
+   "meters": 26.82921580151796,
+   "matched": false
+}{
+   "tmas_station_id": "4381",
+   "ris_station_number": "430315",
+   "route_id": "100023032",
+   "meters": 26.87278206269985,
+   "matched": false
+}{
+   "tmas_station_id": "2641",
+   "ris_station_number": "260120",
+   "route_id": "100428102",
+   "meters": 27.08085923457653,
+   "matched": false
+}{
+   "tmas_station_id": "8331",
+   "ris_station_number": "833085",
+   "route_id": "274559011",
+   "meters": 27.164869229405213,
+   "matched": false
+}{
+   "tmas_station_id": "3383",
+   "ris_station_number": "330151",
+   "route_id": "100428081",
+   "meters": 27.280181136029288,
+   "matched": false
+}{
+   "tmas_station_id": "1141",
+   "ris_station_number": "110554",
+   "route_id": "100514081",
+   "meters": 27.42749310670062,
+   "matched": false
+}{
+   "tmas_station_id": "1800",
+   "ris_station_number": "180395",
+   "route_id": "100366031",
+   "meters": 27.7392946016945,
+   "matched": false
+}{
+   "tmas_station_id": "581",
+   "ris_station_number": "50045",
+   "route_id": "100258011",
+   "meters": 27.776333998995685,
+   "matched": false
+}{
+   "tmas_station_id": "8380",
+   "ris_station_number": "830165",
+   "route_id": "100113102",
+   "meters": 27.967975681305862,
+   "matched": false
+}{
+   "tmas_station_id": "7300",
+   "ris_station_number": "730222",
+   "route_id": "100485051",
+   "meters": 28.385431607677518,
+   "matched": false
+}{
+   "tmas_station_id": "380",
+   "ris_station_number": "30947",
+   "route_id": "100550011",
+   "meters": 28.469254178049923,
+   "matched": false
+}{
+   "tmas_station_id": "6280",
+   "ris_station_number": "620204",
+   "route_id": "100073011",
+   "meters": 28.59716273396661,
+   "matched": false
+}{
+   "tmas_station_id": "598",
+   "ris_station_number": "53254",
+   "route_id": "275083011",
+   "meters": 28.65237429885924,
+   "matched": false
+}{
+   "tmas_station_id": "6485",
+   "ris_station_number": "640180",
+   "route_id": "100086011",
+   "meters": 28.70209451203784,
+   "matched": false
+}{
+   "tmas_station_id": "7111",
+   "ris_station_number": "710464",
+   "route_id": "100495111",
+   "meters": 28.704570245256306,
+   "matched": false
+}{
+   "tmas_station_id": "795",
+   "ris_station_number": "70067",
+   "route_id": "100423042",
+   "meters": 28.743280464829095,
+   "matched": false
+}{
+   "tmas_station_id": "1141",
+   "ris_station_number": "111212",
+   "route_id": "102492011",
+   "meters": 28.900808195852772,
+   "matched": false
+}{
+   "tmas_station_id": "8480",
+   "ris_station_number": "840902",
+   "route_id": "100861021",
+   "meters": 29.181745670901087,
+   "matched": false
+}{
+   "tmas_station_id": "640",
+   "ris_station_number": "60012",
+   "route_id": "100402012",
+   "meters": 29.365583452168046,
+   "matched": false
+}{
+   "tmas_station_id": "640",
+   "ris_station_number": "60012",
+   "route_id": "100402012",
+   "meters": 29.39097094686393,
+   "matched": false
+}{
+   "tmas_station_id": "6100",
+   "ris_station_number": "613019",
+   "route_id": "273599011",
+   "meters": 29.402588626022457,
+   "matched": false
+}{
+   "tmas_station_id": "299",
+   "ris_station_number": "20011",
+   "route_id": "100236022",
+   "meters": 29.4619744248112,
+   "matched": false
+}{
+   "tmas_station_id": "381",
+   "ris_station_number": "30935",
+   "route_id": "100557011",
+   "meters": 29.584271057644333,
+   "matched": false
+}{
+   "tmas_station_id": "4342",
+   "ris_station_number": "430072",
+   "route_id": "100444011",
+   "meters": 29.596000157229714,
+   "matched": false
+}{
+   "tmas_station_id": "3343",
+   "ris_station_number": "330236",
+   "route_id": "100280091",
+   "meters": 29.60847615182942,
+   "matched": false
+}{
+   "tmas_station_id": "599",
+   "ris_station_number": "50070",
+   "route_id": "100458012",
+   "meters": 29.768081675969892,
+   "matched": false
+}{
+   "tmas_station_id": "6180",
+   "ris_station_number": "610004",
+   "route_id": "100382021",
+   "meters": 29.7863789195846,
+   "matched": false
+}{
+   "tmas_station_id": "578",
+   "ris_station_number": "50069",
+   "route_id": "100458012",
+   "meters": 30.391759612287395,
+   "matched": false
+}{
+   "tmas_station_id": "6441",
+   "ris_station_number": "640029",
+   "route_id": "100493041",
+   "meters": 30.40534000343116,
+   "matched": false
+}{
+   "tmas_station_id": "682",
+   "ris_station_number": "60008",
+   "route_id": "100236011",
+   "meters": 31.0593005731604,
+   "matched": false
+}{
+   "tmas_station_id": "698",
+   "ris_station_number": "60011",
+   "route_id": "100402012",
+   "meters": 31.139818912323992,
+   "matched": false
+}{
+   "tmas_station_id": "7580",
+   "ris_station_number": "750046",
+   "route_id": "100339021",
+   "meters": 31.273659626449682,
+   "matched": false
+}{
+   "tmas_station_id": "8469",
+   "ris_station_number": "840144",
+   "route_id": "100171031",
+   "meters": 31.291460775136457,
+   "matched": false
+}{
+   "tmas_station_id": "9199",
+   "ris_station_number": "910104",
+   "route_id": "100113071",
+   "meters": 31.367585888549794,
+   "matched": false
+}{
+   "tmas_station_id": "6400",
+   "ris_station_number": "643109",
+   "route_id": "273692011",
+   "meters": 31.582336867928824,
+   "matched": false
+}{
+   "tmas_station_id": "9380",
+   "ris_station_number": "930070",
+   "route_id": "100483011",
+   "meters": 31.89564086694839,
+   "matched": false
+}{
+   "tmas_station_id": "582",
+   "ris_station_number": "56114",
+   "route_id": "273955011",
+   "meters": 31.950510384823428,
+   "matched": false
+}{
+   "tmas_station_id": "2680",
+   "ris_station_number": "260097",
+   "route_id": "100483071",
+   "meters": 32.12332266220132,
+   "matched": false
+}{
+   "tmas_station_id": "9632",
+   "ris_station_number": "968087",
+   "route_id": "218515011",
+   "meters": 32.263453054393025,
+   "matched": false
+}{
+   "tmas_station_id": "5486",
+   "ris_station_number": "540093",
+   "route_id": "100126011",
+   "meters": 32.42762861783722,
+   "matched": false
+}{
+   "tmas_station_id": "5383",
+   "ris_station_number": "530430",
+   "route_id": "100294021",
+   "meters": 32.471362102860475,
+   "matched": false
+}{
+   "tmas_station_id": "682",
+   "ris_station_number": "63020",
+   "route_id": "273849011",
+   "meters": 32.563764069548895,
+   "matched": false
+}{
+   "tmas_station_id": "741",
+   "ris_station_number": "70013",
+   "route_id": "100206041",
+   "meters": 32.606576793949415,
+   "matched": false
+}{
+   "tmas_station_id": "480",
+   "ris_station_number": "40076",
+   "route_id": "100503012",
+   "meters": 32.74834536315786,
+   "matched": false
+}{
+   "tmas_station_id": "9121",
+   "ris_station_number": "910108",
+   "route_id": "100485011",
+   "meters": 32.77220105945697,
+   "matched": false
+}{
+   "tmas_station_id": "2280",
+   "ris_station_number": "220048",
+   "route_id": "100483091",
+   "meters": 32.785578594539565,
+   "matched": false
+}{
+   "tmas_station_id": "682",
+   "ris_station_number": "62013",
+   "route_id": "257648011",
+   "meters": 32.87330164274586,
+   "matched": false
+}{
+   "tmas_station_id": "191",
+   "ris_station_number": "13038",
+   "route_id": "273987011",
+   "meters": 32.951680280363504,
+   "matched": false
+}{
+   "tmas_station_id": "798",
+   "ris_station_number": "70067",
+   "route_id": "100423042",
+   "meters": 32.998034959933726,
+   "matched": false
+}{
+   "tmas_station_id": "586",
+   "ris_station_number": "50910",
+   "route_id": "100535021",
+   "meters": 33.026839366236345,
+   "matched": false
+}{
+   "tmas_station_id": "6180",
+   "ris_station_number": "610004",
+   "route_id": "100382021",
+   "meters": 33.06432826334632,
+   "matched": false
+}{
+   "tmas_station_id": "199",
+   "ris_station_number": "10031",
+   "route_id": "100706021",
+   "meters": 33.17800497765692,
+   "matched": false
+}{
+   "tmas_station_id": "4342",
+   "ris_station_number": "430072",
+   "route_id": "100444012",
+   "meters": 33.25659190566499,
+   "matched": false
+}{
+   "tmas_station_id": "4631",
+   "ris_station_number": "460002",
+   "route_id": "100135021",
+   "meters": 33.32820641919951,
+   "matched": false
+}{
+   "tmas_station_id": "3342",
+   "ris_station_number": "330139",
+   "route_id": "100428081",
+   "meters": 33.38167857380291,
+   "matched": false
+}{
+   "tmas_station_id": "586",
+   "ris_station_number": "50910",
+   "route_id": "100535021",
+   "meters": 33.499687638015324,
+   "matched": false
+}{
+   "tmas_station_id": "8481",
+   "ris_station_number": "840144",
+   "route_id": "100171031",
+   "meters": 33.67446095486333,
+   "matched": false
+}{
+   "tmas_station_id": "798",
+   "ris_station_number": "70806",
+   "route_id": "100529021",
+   "meters": 34.113957638357796,
+   "matched": false
+}{
+   "tmas_station_id": "5181",
+   "ris_station_number": "510044",
+   "route_id": "100097011",
+   "meters": 34.15457787129644,
+   "matched": false
+}{
+   "tmas_station_id": "8180",
+   "ris_station_number": "810174",
+   "route_id": "100147221",
+   "meters": 34.61463156889085,
+   "matched": false
+}{
+   "tmas_station_id": "8742",
+   "ris_station_number": "870029",
+   "route_id": "100514031",
+   "meters": 34.62089780833188,
+   "matched": false
+}{
+   "tmas_station_id": "2680",
+   "ris_station_number": "260098",
+   "route_id": "100483072",
+   "meters": 34.64012891768966,
+   "matched": false
+}{
+   "tmas_station_id": "1711",
+   "ris_station_number": "170005",
+   "route_id": "100495092",
+   "meters": 34.671611635328524,
+   "matched": false
+}{
+   "tmas_station_id": "6500",
+   "ris_station_number": "970059",
+   "route_id": "100113062",
+   "meters": 34.862063909890914,
+   "matched": false
+}{
+   "tmas_station_id": "3342",
+   "ris_station_number": "330139",
+   "route_id": "100428081",
+   "meters": 34.94215633814535,
+   "matched": false
+}{
+   "tmas_station_id": "3680",
+   "ris_station_number": "360032",
+   "route_id": "100759021",
+   "meters": 34.96080563491092,
+   "matched": false
+}{
+   "tmas_station_id": "4326",
+   "ris_station_number": "436147",
+   "route_id": "146324011",
+   "meters": 35.36574616251566,
+   "matched": false
+}{
+   "tmas_station_id": "9180",
+   "ris_station_number": "910026",
+   "route_id": "100217011",
+   "meters": 35.92610980178159,
+   "matched": false
+}{
+   "tmas_station_id": "4326",
+   "ris_station_number": "430542",
+   "route_id": "100422021",
+   "meters": 36.04174264684602,
+   "matched": false
+}{
+   "tmas_station_id": "3482",
+   "ris_station_number": "340294",
+   "route_id": "100023061",
+   "meters": 36.31641111673274,
+   "matched": false
+}{
+   "tmas_station_id": "1711",
+   "ris_station_number": "170005",
+   "route_id": "100495091",
+   "meters": 36.57129941510507,
+   "matched": false
+}{
+   "tmas_station_id": "8411",
+   "ris_station_number": "840008",
+   "route_id": "100490032",
+   "meters": 36.634773335368905,
+   "matched": false
+}{
+   "tmas_station_id": "182",
+   "ris_station_number": "14186",
+   "route_id": "255924011",
+   "meters": 36.69298684946845,
+   "matched": false
+}{
+   "tmas_station_id": "3383",
+   "ris_station_number": "330151",
+   "route_id": "100428081",
+   "meters": 36.85916488851626,
+   "matched": false
+}{
+   "tmas_station_id": "5280",
+   "ris_station_number": "520076",
+   "route_id": "100493011",
+   "meters": 36.865218101159954,
+   "matched": false
+}{
+   "tmas_station_id": "4481",
+   "ris_station_number": "440241",
+   "route_id": "100454011",
+   "meters": 37.29466181781367,
+   "matched": false
+}{
+   "tmas_station_id": "9280",
+   "ris_station_number": "920024",
+   "route_id": "100048021",
+   "meters": 37.51737207077426,
+   "matched": false
+}{
+   "tmas_station_id": "6281",
+   "ris_station_number": "620193",
+   "route_id": "100175011",
+   "meters": 37.57993808438276,
+   "matched": false
+}{
+   "tmas_station_id": "3580",
+   "ris_station_number": "350429",
+   "route_id": "100379041",
+   "meters": 37.73980477176013,
+   "matched": false
+}{
+   "tmas_station_id": "5382",
+   "ris_station_number": "530171",
+   "route_id": "100478021",
+   "meters": 37.824351576444926,
+   "matched": false
+}{
+   "tmas_station_id": "7381",
+   "ris_station_number": "730041",
+   "route_id": "100485051",
+   "meters": 37.8906409613685,
+   "matched": false
+}{
+   "tmas_station_id": "9380",
+   "ris_station_number": "930070",
+   "route_id": "100483011",
+   "meters": 37.91826668053176,
+   "matched": false
+}{
+   "tmas_station_id": "6482",
+   "ris_station_number": "640082",
+   "route_id": "100086011",
+   "meters": 37.97186756330384,
+   "matched": false
+}{
+   "tmas_station_id": "4180",
+   "ris_station_number": "410158",
+   "route_id": "100476021",
+   "meters": 38.092967590172016,
+   "matched": false
+}{
+   "tmas_station_id": "9632",
+   "ris_station_number": "968087",
+   "route_id": "218515011",
+   "meters": 38.518422860818845,
+   "matched": false
+}{
+   "tmas_station_id": "1280",
+   "ris_station_number": "120503",
+   "route_id": "100494021",
+   "meters": 38.660926939606995,
+   "matched": false
+}{
+   "tmas_station_id": "6484",
+   "ris_station_number": "640182",
+   "route_id": "100493042",
+   "meters": 38.93604051296439,
+   "matched": false
+}{
+   "tmas_station_id": "3411",
+   "ris_station_number": "340316",
+   "route_id": "100485042",
+   "meters": 39.00484187611951,
+   "matched": false
+}{
+   "tmas_station_id": "3383",
+   "ris_station_number": "330151",
+   "route_id": "100428082",
+   "meters": 39.28699944900391,
+   "matched": false
+}{
+   "tmas_station_id": "3411",
+   "ris_station_number": "346001",
+   "route_id": "135659011",
+   "meters": 39.324682364238214,
+   "matched": false
+}{
+   "tmas_station_id": "3482",
+   "ris_station_number": "340294",
+   "route_id": "100023061",
+   "meters": 39.32770636625342,
+   "matched": false
+}{
+   "tmas_station_id": "5380",
+   "ris_station_number": "533196",
+   "route_id": "275466011",
+   "meters": 39.63117516693687,
+   "matched": false
+}{
+   "tmas_station_id": "3411",
+   "ris_station_number": "340316",
+   "route_id": "100485042",
+   "meters": 39.71391207339547,
+   "matched": false
+}{
+   "tmas_station_id": "4380",
+   "ris_station_number": "430910",
+   "route_id": "100704022",
+   "meters": 40.106610864582,
+   "matched": false
+}{
+   "tmas_station_id": "799",
+   "ris_station_number": "76075",
+   "route_id": "308540011",
+   "meters": 40.52516872808685,
+   "matched": false
+}{
+   "tmas_station_id": "2600",
+   "ris_station_number": "260115",
+   "route_id": "100333011",
+   "meters": 40.58462887443088,
+   "matched": false
+}{
+   "tmas_station_id": "597",
+   "ris_station_number": "50800",
+   "route_id": "100496011",
+   "meters": 40.77404604087537,
+   "matched": false
+}{
+   "tmas_station_id": "8411",
+   "ris_station_number": "840008",
+   "route_id": "100490031",
+   "meters": 40.81098606738376,
+   "matched": false
+}{
+   "tmas_station_id": "7380",
+   "ris_station_number": "730172",
+   "route_id": "100032051",
+   "meters": 41.7345589265269,
+   "matched": false
+}{
+   "tmas_station_id": "578",
+   "ris_station_number": "56060",
+   "route_id": "276408011",
+   "meters": 41.87034799110187,
+   "matched": false
+}{
+   "tmas_station_id": "9400",
+   "ris_station_number": "930045",
+   "route_id": "100497052",
+   "meters": 41.95485424464734,
+   "matched": false
+}{
+   "tmas_station_id": "341",
+   "ris_station_number": "30227",
+   "route_id": "100204022",
+   "meters": 42.34617771574417,
+   "matched": false
+}{
+   "tmas_station_id": "9400",
+   "ris_station_number": "930045",
+   "route_id": "100497052",
+   "meters": 42.36906400271039,
+   "matched": false
+}{
+   "tmas_station_id": "8381",
+   "ris_station_number": "830362",
+   "route_id": "100668011",
+   "meters": 42.40148986822547,
+   "matched": false
+}{
+   "tmas_station_id": "4380",
+   "ris_station_number": "430910",
+   "route_id": "100704021",
+   "meters": 42.7407386762714,
+   "matched": false
+}{
+   "tmas_station_id": "6480",
+   "ris_station_number": "640065",
+   "route_id": "100435011",
+   "meters": 42.96507149175222,
+   "matched": false
+}{
+   "tmas_station_id": "1780",
+   "ris_station_number": "170453",
+   "route_id": "100495091",
+   "meters": 42.98865593830069,
+   "matched": false
+}{
+   "tmas_station_id": "1800",
+   "ris_station_number": "180395",
+   "route_id": "100366031",
+   "meters": 43.432276444347806,
+   "matched": false
+}{
+   "tmas_station_id": "599",
+   "ris_station_number": "53235",
+   "route_id": "273951011",
+   "meters": 43.71568078808231,
+   "matched": false
+}{
+   "tmas_station_id": "6281",
+   "ris_station_number": "620193",
+   "route_id": "100175011",
+   "meters": 44.58983074608878,
+   "matched": false
+}{
+   "tmas_station_id": "581",
+   "ris_station_number": "50045",
+   "route_id": "100258012",
+   "meters": 45.16966937380693,
+   "matched": false
+}{
+   "tmas_station_id": "8631",
+   "ris_station_number": "860025",
+   "route_id": "100290021",
+   "meters": 45.346727306716694,
+   "matched": false
+}{
+   "tmas_station_id": "8780",
+   "ris_station_number": "870113",
+   "route_id": "100460011",
+   "meters": 45.41295516508211,
+   "matched": false
+}{
+   "tmas_station_id": "1780",
+   "ris_station_number": "170453",
+   "route_id": "100495092",
+   "meters": 45.520560194400744,
+   "matched": false
+}{
+   "tmas_station_id": "1511",
+   "ris_station_number": "150035",
+   "route_id": "100495082",
+   "meters": 45.67879928675562,
+   "matched": false
+}{
+   "tmas_station_id": "6441",
+   "ris_station_number": "640029",
+   "route_id": "100493042",
+   "meters": 46.036468673246034,
+   "matched": false
+}{
+   "tmas_station_id": "5342",
+   "ris_station_number": "530489",
+   "route_id": "100428021",
+   "meters": 46.13600504864823,
+   "matched": false
+}{
+   "tmas_station_id": "6680",
+   "ris_station_number": "660246",
+   "route_id": "100331011",
+   "meters": 46.31306719590089,
+   "matched": false
+}{
+   "tmas_station_id": "9400",
+   "ris_station_number": "930045",
+   "route_id": "100497051",
+   "meters": 46.51606782405603,
+   "matched": false
+}{
+   "tmas_station_id": "799",
+   "ris_station_number": "76075",
+   "route_id": "308540011",
+   "meters": 46.77232309717017,
+   "matched": false
+}{
+   "tmas_station_id": "399",
+   "ris_station_number": "36792",
+   "route_id": "230762011",
+   "meters": 46.99100288987262,
+   "matched": false
+}{
+   "tmas_station_id": "8331",
+   "ris_station_number": "833085",
+   "route_id": "274559011",
+   "meters": 47.27146532632162,
+   "matched": false
+}{
+   "tmas_station_id": "8411",
+   "ris_station_number": "840008",
+   "route_id": "100490032",
+   "meters": 48.36318822246903,
+   "matched": false
+}{
+   "tmas_station_id": "3382",
+   "ris_station_number": "330199",
+   "route_id": "100464012",
+   "meters": 48.65704575283945,
+   "matched": false
+}{
+   "tmas_station_id": "7280",
+   "ris_station_number": "721221",
+   "route_id": "177216011",
+   "meters": 48.93314460497308,
+   "matched": false
+}{
+   "tmas_station_id": "5384",
+   "ris_station_number": "530330",
+   "route_id": "100168022",
+   "meters": 49.01419535552664,
+   "matched": false
+}{
+   "tmas_station_id": "1552",
+   "ris_station_number": "150337",
+   "route_id": "100082021",
+   "meters": 49.0578249094881,
+   "matched": false
+}{
+   "tmas_station_id": "180",
+   "ris_station_number": "13033",
+   "route_id": "273918011",
+   "meters": 49.7977538943124,
+   "matched": false
+}{
+   "tmas_station_id": "7300",
+   "ris_station_number": "730222",
+   "route_id": "100485052",
+   "meters": 50.1182074152924,
+   "matched": false
+}{
+   "tmas_station_id": "4363",
+   "ris_station_number": "430218",
+   "route_id": "100358032",
+   "meters": 50.322109303584725,
+   "matched": false
+}{
+   "tmas_station_id": "5384",
+   "ris_station_number": "530330",
+   "route_id": "100168021",
+   "meters": 50.427985899688174,
+   "matched": false
+}{
+   "tmas_station_id": "586",
+   "ris_station_number": "50910",
+   "route_id": "100535022",
+   "meters": 50.467969212672564,
+   "matched": false
+}{
+   "tmas_station_id": "3280",
+   "ris_station_number": "320021",
+   "route_id": "100032021",
+   "meters": 50.67336155998007,
+   "matched": false
+}{
+   "tmas_station_id": "7331",
+   "ris_station_number": "730096",
+   "route_id": "100032051",
+   "meters": 50.688309025037746,
+   "matched": false
+}{
+   "tmas_station_id": "4780",
+   "ris_station_number": "470538",
+   "route_id": "100021011",
+   "meters": 50.90860998313897,
+   "matched": false
+}{
+   "tmas_station_id": "3382",
+   "ris_station_number": "330216",
+   "route_id": "100280091",
+   "meters": 51.02590043328086,
+   "matched": false
+}{
+   "tmas_station_id": "3311",
+   "ris_station_number": "330016",
+   "route_id": "100485031",
+   "meters": 51.1205774150119,
+   "matched": false
+}{
+   "tmas_station_id": "8280",
+   "ris_station_number": "820821",
+   "route_id": "100490021",
+   "meters": 51.15499071092883,
+   "matched": false
+}{
+   "tmas_station_id": "5480",
+   "ris_station_number": "540079",
+   "route_id": "100229021",
+   "meters": 51.23254197776665,
+   "matched": false
+}{
+   "tmas_station_id": "581",
+   "ris_station_number": "50045",
+   "route_id": "100258012",
+   "meters": 51.3183439687126,
+   "matched": false
+}{
+   "tmas_station_id": "9631",
+   "ris_station_number": "960015",
+   "route_id": "100113092",
+   "meters": 51.44993201271636,
+   "matched": false
+}{
+   "tmas_station_id": "8481",
+   "ris_station_number": "846036",
+   "route_id": "193143011",
+   "meters": 51.70978804063552,
+   "matched": false
+}{
+   "tmas_station_id": "9631",
+   "ris_station_number": "960015",
+   "route_id": "100113091",
+   "meters": 51.85096066928286,
+   "matched": false
+}{
+   "tmas_station_id": "341",
+   "ris_station_number": "30227",
+   "route_id": "100204021",
+   "meters": 52.74570121166285,
+   "matched": false
+}{
+   "tmas_station_id": "1780",
+   "ris_station_number": "170453",
+   "route_id": "100495092",
+   "meters": 53.558425187895295,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "140103",
+   "route_id": "100515151",
+   "meters": 53.77011485244442,
+   "matched": false
+}{
+   "tmas_station_id": "7480",
+   "ris_station_number": "740022",
+   "route_id": "100265041",
+   "meters": 54.056964512157656,
+   "matched": false
+}{
+   "tmas_station_id": "3311",
+   "ris_station_number": "330016",
+   "route_id": "100485031",
+   "meters": 54.15624093766451,
+   "matched": false
+}{
+   "tmas_station_id": "795",
+   "ris_station_number": "70067",
+   "route_id": "100423041",
+   "meters": 54.96541861772916,
+   "matched": false
+}{
+   "tmas_station_id": "8631",
+   "ris_station_number": "860025",
+   "route_id": "100290021",
+   "meters": 55.045279146310634,
+   "matched": false
+}{
+   "tmas_station_id": "1351",
+   "ris_station_number": "130056",
+   "route_id": "100513041",
+   "meters": 55.22499263456213,
+   "matched": false
+}{
+   "tmas_station_id": "5183",
+   "ris_station_number": "510049",
+   "route_id": "100493022",
+   "meters": 56.14151195261627,
+   "matched": false
+}{
+   "tmas_station_id": "3732",
+   "ris_station_number": "470526",
+   "route_id": "100023041",
+   "meters": 56.17077261727157,
+   "matched": false
+}{
+   "tmas_station_id": "8382",
+   "ris_station_number": "830038",
+   "route_id": "100490012",
+   "meters": 56.45138561848008,
+   "matched": false
+}{
+   "tmas_station_id": "698",
+   "ris_station_number": "60011",
+   "route_id": "100402011",
+   "meters": 56.94214938480867,
+   "matched": false
+}{
+   "tmas_station_id": "8331",
+   "ris_station_number": "838100",
+   "route_id": "187221011",
+   "meters": 57.018520324986305,
+   "matched": false
+}{
+   "tmas_station_id": "1351",
+   "ris_station_number": "130056",
+   "route_id": "100513041",
+   "meters": 57.30762702293878,
+   "matched": false
+}{
+   "tmas_station_id": "6400",
+   "ris_station_number": "646432",
+   "route_id": "172360011",
+   "meters": 57.97343326195516,
+   "matched": false
+}{
+   "tmas_station_id": "795",
+   "ris_station_number": "70067",
+   "route_id": "100423042",
+   "meters": 58.57772438028504,
+   "matched": false
+}{
+   "tmas_station_id": "3681",
+   "ris_station_number": "360029",
+   "route_id": "100061031",
+   "meters": 58.66869162709744,
+   "matched": false
+}{
+   "tmas_station_id": "299",
+   "ris_station_number": "26115",
+   "route_id": "256119011",
+   "meters": 59.011701085217666,
+   "matched": false
+}{
+   "tmas_station_id": "381",
+   "ris_station_number": "30935",
+   "route_id": "100557012",
+   "meters": 59.290152870192934,
+   "matched": false
+}{
+   "tmas_station_id": "3481",
+   "ris_station_number": "340270",
+   "route_id": "100022011",
+   "meters": 59.51215551659529,
+   "matched": false
+}{
+   "tmas_station_id": "8333",
+   "ris_station_number": "830684",
+   "route_id": "100432031",
+   "meters": 59.649426689073806,
+   "matched": false
+}{
+   "tmas_station_id": "381",
+   "ris_station_number": "33218",
+   "route_id": "272232011",
+   "meters": 59.895618787738755,
+   "matched": false
+}{
+   "tmas_station_id": "5380",
+   "ris_station_number": "530085",
+   "route_id": "100301012",
+   "meters": 60.09247473652025,
+   "matched": false
+}{
+   "tmas_station_id": "199",
+   "ris_station_number": "13043",
+   "route_id": "273992011",
+   "meters": 60.1581347292771,
+   "matched": false
+}{
+   "tmas_station_id": "3681",
+   "ris_station_number": "360023",
+   "route_id": "100061031",
+   "meters": 60.413521279169636,
+   "matched": false
+}{
+   "tmas_station_id": "3382",
+   "ris_station_number": "330216",
+   "route_id": "100280091",
+   "meters": 60.66521091191311,
+   "matched": false
+}{
+   "tmas_station_id": "7231",
+   "ris_station_number": "720024",
+   "route_id": "100265061",
+   "meters": 60.847414807843634,
+   "matched": false
+}{
+   "tmas_station_id": "4280",
+   "ris_station_number": "420121",
+   "route_id": "100327021",
+   "meters": 61.23068782699049,
+   "matched": false
+}{
+   "tmas_station_id": "5484",
+   "ris_station_number": "540353",
+   "route_id": "100023011",
+   "meters": 61.26850763234452,
+   "matched": false
+}{
+   "tmas_station_id": "9121",
+   "ris_station_number": "910108",
+   "route_id": "100485012",
+   "meters": 61.31399978580689,
+   "matched": false
+}{
+   "tmas_station_id": "2181",
+   "ris_station_number": "216063",
+   "route_id": "118921011",
+   "meters": 61.523730280666655,
+   "matched": false
+}{
+   "tmas_station_id": "6282",
+   "ris_station_number": "620156",
+   "route_id": "100298011",
+   "meters": 61.59619038928233,
+   "matched": false
+}{
+   "tmas_station_id": "3311",
+   "ris_station_number": "335391",
+   "route_id": "130070011",
+   "meters": 61.70831067498769,
+   "matched": false
+}{
+   "tmas_station_id": "6400",
+   "ris_station_number": "640131",
+   "route_id": "100358011",
+   "meters": 62.28620388796576,
+   "matched": false
+}{
+   "tmas_station_id": "599",
+   "ris_station_number": "50071",
+   "route_id": "100458011",
+   "meters": 62.33717977602888,
+   "matched": false
+}{
+   "tmas_station_id": "380",
+   "ris_station_number": "33313",
+   "route_id": "271553011",
+   "meters": 62.43152022114586,
+   "matched": false
+}{
+   "tmas_station_id": "1512",
+   "ris_station_number": "150578",
+   "route_id": "100495081",
+   "meters": 62.866284192370564,
+   "matched": false
+}{
+   "tmas_station_id": "8280",
+   "ris_station_number": "820821",
+   "route_id": "100490022",
+   "meters": 62.92441618536397,
+   "matched": false
+}{
+   "tmas_station_id": "1512",
+   "ris_station_number": "156722",
+   "route_id": "112441011",
+   "meters": 64.3900794740556,
+   "matched": false
+}{
+   "tmas_station_id": "1512",
+   "ris_station_number": "156722",
+   "route_id": "112441011",
+   "meters": 64.39228224595804,
+   "matched": false
+}{
+   "tmas_station_id": "1512",
+   "ris_station_number": "156722",
+   "route_id": "112441011",
+   "meters": 64.39274611871359,
+   "matched": false
+}{
+   "tmas_station_id": "599",
+   "ris_station_number": "50070",
+   "route_id": "100458012",
+   "meters": 64.58287934473434,
+   "matched": false
+}{
+   "tmas_station_id": "5342",
+   "ris_station_number": "530332",
+   "route_id": "100428022",
+   "meters": 64.91244707278662,
+   "matched": false
+}{
+   "tmas_station_id": "381",
+   "ris_station_number": "30935",
+   "route_id": "100557011",
+   "meters": 65.11171789306307,
+   "matched": false
+}{
+   "tmas_station_id": "9199",
+   "ris_station_number": "910058",
+   "route_id": "100113072",
+   "meters": 65.8113961026224,
+   "matched": false
+}{
+   "tmas_station_id": "3681",
+   "ris_station_number": "360023",
+   "route_id": "100061031",
+   "meters": 66.21941019343345,
+   "matched": false
+}{
+   "tmas_station_id": "9650",
+   "ris_station_number": "961001",
+   "route_id": "218437011",
+   "meters": 66.94379435312435,
+   "matched": false
+}{
+   "tmas_station_id": "9199",
+   "ris_station_number": "911027",
+   "route_id": "209948011",
+   "meters": 67.50392605561096,
+   "matched": false
+}{
+   "tmas_station_id": "3343",
+   "ris_station_number": "330236",
+   "route_id": "100280091",
+   "meters": 67.93926467948195,
+   "matched": false
+}{
+   "tmas_station_id": "9581",
+   "ris_station_number": "950001",
+   "route_id": "100267021",
+   "meters": 67.97938751912419,
+   "matched": false
+}{
+   "tmas_station_id": "7481",
+   "ris_station_number": "740166",
+   "route_id": "100122021",
+   "meters": 67.98883579146126,
+   "matched": false
+}{
+   "tmas_station_id": "8480",
+   "ris_station_number": "840902",
+   "route_id": "100861022",
+   "meters": 68.34440615773346,
+   "matched": false
+}{
+   "tmas_station_id": "5384",
+   "ris_station_number": "530330",
+   "route_id": "100168022",
+   "meters": 68.65213106998846,
+   "matched": false
+}{
+   "tmas_station_id": "9199",
+   "ris_station_number": "911027",
+   "route_id": "209948011",
+   "meters": 68.65675168567414,
+   "matched": false
+}{
+   "tmas_station_id": "1281",
+   "ris_station_number": "120901",
+   "route_id": "270261011",
+   "meters": 68.69899801050275,
+   "matched": false
+}{
+   "tmas_station_id": "5281",
+   "ris_station_number": "520014",
+   "route_id": "100450011",
+   "meters": 68.92039962851273,
+   "matched": false
+}{
+   "tmas_station_id": "480",
+   "ris_station_number": "44196",
+   "route_id": "256777011",
+   "meters": 68.97618829993417,
+   "matched": false
+}{
+   "tmas_station_id": "7280",
+   "ris_station_number": "720137",
+   "route_id": "100032071",
+   "meters": 69.0604309957331,
+   "matched": false
+}{
+   "tmas_station_id": "7100",
+   "ris_station_number": "710467",
+   "route_id": "100495111",
+   "meters": 69.0846225602998,
+   "matched": false
+}{
+   "tmas_station_id": "341",
+   "ris_station_number": "30227",
+   "route_id": "100204021",
+   "meters": 69.18829714629061,
+   "matched": false
+}{
+   "tmas_station_id": "6100",
+   "ris_station_number": "613019",
+   "route_id": "273599011",
+   "meters": 69.23910025919564,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "140103",
+   "route_id": "100515151",
+   "meters": 69.35230395334293,
+   "matched": false
+}{
+   "tmas_station_id": "9631",
+   "ris_station_number": "960015",
+   "route_id": "100113091",
+   "meters": 69.64839100543104,
+   "matched": false
+}{
+   "tmas_station_id": "9632",
+   "ris_station_number": "960029",
+   "route_id": "100113092",
+   "meters": 69.87409022194902,
+   "matched": false
+}{
+   "tmas_station_id": "1335",
+   "ris_station_number": "130024",
+   "route_id": "100183072",
+   "meters": 69.9522843616157,
+   "matched": false
+}{
+   "tmas_station_id": "299",
+   "ris_station_number": "20011",
+   "route_id": "100236021",
+   "meters": 70.11686567054323,
+   "matched": false
+}{
+   "tmas_station_id": "6484",
+   "ris_station_number": "640182",
+   "route_id": "100493042",
+   "meters": 70.16095100211406,
+   "matched": false
+}{
+   "tmas_station_id": "480",
+   "ris_station_number": "40076",
+   "route_id": "100503011",
+   "meters": 70.2281445339488,
+   "matched": false
+}{
+   "tmas_station_id": "7100",
+   "ris_station_number": "710467",
+   "route_id": "100495112",
+   "meters": 70.35651416150675,
+   "matched": false
+}{
+   "tmas_station_id": "6340",
+   "ris_station_number": "630001",
+   "route_id": "100073021",
+   "meters": 70.40869829445006,
+   "matched": false
+}{
+   "tmas_station_id": "7331",
+   "ris_station_number": "730096",
+   "route_id": "100032051",
+   "meters": 70.4627635742193,
+   "matched": false
+}{
+   "tmas_station_id": "2380",
+   "ris_station_number": "230028",
+   "route_id": "100241081",
+   "meters": 70.65339723779233,
+   "matched": false
+}{
+   "tmas_station_id": "4482",
+   "ris_station_number": "440469",
+   "route_id": "100331021",
+   "meters": 70.79945472681271,
+   "matched": false
+}{
+   "tmas_station_id": "8382",
+   "ris_station_number": "830038",
+   "route_id": "100490011",
+   "meters": 71.22295096790525,
+   "matched": false
+}{
+   "tmas_station_id": "199",
+   "ris_station_number": "10031",
+   "route_id": "100706022",
+   "meters": 71.26265210721358,
+   "matched": false
+}{
+   "tmas_station_id": "7351",
+   "ris_station_number": "730236",
+   "route_id": "100048061",
+   "meters": 71.43428389673328,
+   "matched": false
+}{
+   "tmas_station_id": "2641",
+   "ris_station_number": "260120",
+   "route_id": "100428101",
+   "meters": 72.46598849423977,
+   "matched": false
+}{
+   "tmas_station_id": "6441",
+   "ris_station_number": "640029",
+   "route_id": "100493042",
+   "meters": 73.29075774256094,
+   "matched": false
+}{
+   "tmas_station_id": "9631",
+   "ris_station_number": "960015",
+   "route_id": "100113091",
+   "meters": 73.4114858808955,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "143029",
+   "route_id": "272758011",
+   "meters": 73.8812620857602,
+   "matched": false
+}{
+   "tmas_station_id": "1175",
+   "ris_station_number": "110903",
+   "route_id": "100565011",
+   "meters": 74.01928029708205,
+   "matched": false
+}{
+   "tmas_station_id": "7280",
+   "ris_station_number": "720137",
+   "route_id": "100032071",
+   "meters": 74.46884645325197,
+   "matched": false
+}{
+   "tmas_station_id": "1711",
+   "ris_station_number": "170005",
+   "route_id": "100495092",
+   "meters": 74.46992020101538,
+   "matched": false
+}{
+   "tmas_station_id": "8480",
+   "ris_station_number": "840902",
+   "route_id": "100861021",
+   "meters": 74.81021809197449,
+   "matched": false
+}{
+   "tmas_station_id": "181",
+   "ris_station_number": "870048",
+   "route_id": "100514031",
+   "meters": 75.01694841978534,
+   "matched": false
+}{
+   "tmas_station_id": "3342",
+   "ris_station_number": "330139",
+   "route_id": "100428082",
+   "meters": 75.57493250746867,
+   "matched": false
+}{
+   "tmas_station_id": "5180",
+   "ris_station_number": "510358",
+   "route_id": "100168011",
+   "meters": 75.66670489201279,
+   "matched": false
+}{
+   "tmas_station_id": "1146",
+   "ris_station_number": "110071",
+   "route_id": "100513051",
+   "meters": 76.21782554183874,
+   "matched": false
+}{
+   "tmas_station_id": "8380",
+   "ris_station_number": "830164",
+   "route_id": "100113101",
+   "meters": 76.3426692642463,
+   "matched": false
+}{
+   "tmas_station_id": "1414",
+   "ris_station_number": "140101",
+   "route_id": "100514071",
+   "meters": 76.41807085718168,
+   "matched": false
+}{
+   "tmas_station_id": "3380",
+   "ris_station_number": "330222",
+   "route_id": "100340032",
+   "meters": 76.459159726058,
+   "matched": false
+}{
+   "tmas_station_id": "1511",
+   "ris_station_number": "150035",
+   "route_id": "100495081",
+   "meters": 76.83967454453962,
+   "matched": false
+}{
+   "tmas_station_id": "1146",
+   "ris_station_number": "110100",
+   "route_id": "100428142",
+   "meters": 76.99800483109158,
+   "matched": false
+}{
+   "tmas_station_id": "1146",
+   "ris_station_number": "110100",
+   "route_id": "100428141",
+   "meters": 77.06181440336182,
+   "matched": false
+}{
+   "tmas_station_id": "2631",
+   "ris_station_number": "260079",
+   "route_id": "100048041",
+   "meters": 77.46661747918326,
+   "matched": false
+}{
+   "tmas_station_id": "7280",
+   "ris_station_number": "720137",
+   "route_id": "100032071",
+   "meters": 77.49756233008888,
+   "matched": false
+}{
+   "tmas_station_id": "7300",
+   "ris_station_number": "730222",
+   "route_id": "100485051",
+   "meters": 77.55795352853491,
+   "matched": false
+}{
+   "tmas_station_id": "1511",
+   "ris_station_number": "150035",
+   "route_id": "100495082",
+   "meters": 77.97425983336588,
+   "matched": false
+}{
+   "tmas_station_id": "731",
+   "ris_station_number": "70055",
+   "route_id": "100035011",
+   "meters": 78.02846245174187,
+   "matched": false
+}{
+   "tmas_station_id": "731",
+   "ris_station_number": "70055",
+   "route_id": "100035011",
+   "meters": 78.74269295090048,
+   "matched": false
+}{
+   "tmas_station_id": "9582",
+   "ris_station_number": "950145",
+   "route_id": "100079031",
+   "meters": 78.82045344967212,
+   "matched": false
+}{
+   "tmas_station_id": "4341",
+   "ris_station_number": "430110",
+   "route_id": "100280031",
+   "meters": 79.0779776587285,
+   "matched": false
+}{
+   "tmas_station_id": "795",
+   "ris_station_number": "73005",
+   "route_id": "276253011",
+   "meters": 79.91845914837864,
+   "matched": false
+}{
+   "tmas_station_id": "480",
+   "ris_station_number": "40076",
+   "route_id": "100503011",
+   "meters": 80.08481102949452,
+   "matched": false
+}{
+   "tmas_station_id": "5485",
+   "ris_station_number": "540569",
+   "route_id": "100136021",
+   "meters": 80.20426379101924,
+   "matched": false
+}{
+   "tmas_station_id": "2180",
+   "ris_station_number": "210004",
+   "route_id": "100013041",
+   "meters": 80.28114090016487,
+   "matched": false
+}{
+   "tmas_station_id": "7500",
+   "ris_station_number": "750225",
+   "route_id": "100265051",
+   "meters": 80.63173739957882,
+   "matched": false
+}{
+   "tmas_station_id": "9580",
+   "ris_station_number": "950051",
+   "route_id": "100497072",
+   "meters": 80.64885711576568,
+   "matched": false
+}{
+   "tmas_station_id": "180",
+   "ris_station_number": "10027",
+   "route_id": "100495011",
+   "meters": 81.2484908562584,
+   "matched": false
+}{
+   "tmas_station_id": "1711",
+   "ris_station_number": "170005",
+   "route_id": "100495091",
+   "meters": 81.26581905241969,
+   "matched": false
+}{
+   "tmas_station_id": "199",
+   "ris_station_number": "15059",
+   "route_id": "279621011",
+   "meters": 81.63491697601269,
+   "matched": false
+}{
+   "tmas_station_id": "9581",
+   "ris_station_number": "950001",
+   "route_id": "100267021",
+   "meters": 81.99022311105064,
+   "matched": false
+}{
+   "tmas_station_id": "180",
+   "ris_station_number": "10027",
+   "route_id": "100495012",
+   "meters": 82.28971631003178,
+   "matched": false
+}{
+   "tmas_station_id": "182",
+   "ris_station_number": "10009",
+   "route_id": "100011021",
+   "meters": 82.51125586476333,
+   "matched": false
+}{
+   "tmas_station_id": "5485",
+   "ris_station_number": "540569",
+   "route_id": "100136022",
+   "meters": 82.61966168224845,
+   "matched": false
+}{
+   "tmas_station_id": "398",
+   "ris_station_number": "30283",
+   "route_id": "100026011",
+   "meters": 84.07123986887916,
+   "matched": false
+}{
+   "tmas_station_id": "4381",
+   "ris_station_number": "430315",
+   "route_id": "100023031",
+   "meters": 84.1473426583501,
+   "matched": false
+}{
+   "tmas_station_id": "6480",
+   "ris_station_number": "640065",
+   "route_id": "100435011",
+   "meters": 84.47693518378523,
+   "matched": false
+}{
+   "tmas_station_id": "299",
+   "ris_station_number": "20011",
+   "route_id": "100236022",
+   "meters": 84.60054910199057,
+   "matched": false
+}{
+   "tmas_station_id": "8700",
+   "ris_station_number": "871012",
+   "route_id": "200026011",
+   "meters": 84.65682121099101,
+   "matched": false
+}{
+   "tmas_station_id": "1780",
+   "ris_station_number": "172020",
+   "route_id": "116137011",
+   "meters": 85.20922860837699,
+   "matched": false
+}{
+   "tmas_station_id": "3732",
+   "ris_station_number": "470526",
+   "route_id": "100023041",
+   "meters": 85.54711668036137,
+   "matched": false
+}{
+   "tmas_station_id": "4280",
+   "ris_station_number": "420121",
+   "route_id": "100327021",
+   "meters": 85.96898522976386,
+   "matched": false
+}{
+   "tmas_station_id": "5485",
+   "ris_station_number": "540569",
+   "route_id": "100136021",
+   "meters": 86.2818902323916,
+   "matched": false
+}{
+   "tmas_station_id": "4483",
+   "ris_station_number": "446056",
+   "route_id": "149376011",
+   "meters": 86.57589929890321,
+   "matched": false
+}{
+   "tmas_station_id": "698",
+   "ris_station_number": "60011",
+   "route_id": "100402011",
+   "meters": 86.86843036319989,
+   "matched": false
+}{
+   "tmas_station_id": "1531",
+   "ris_station_number": "150308",
+   "route_id": "100514091",
+   "meters": 87.06367021751896,
+   "matched": false
+}{
+   "tmas_station_id": "4363",
+   "ris_station_number": "430218",
+   "route_id": "100358032",
+   "meters": 87.12561145972846,
+   "matched": false
+}{
+   "tmas_station_id": "9480",
+   "ris_station_number": "940062",
+   "route_id": "100183031",
+   "meters": 87.5331234061321,
+   "matched": false
+}{
+   "tmas_station_id": "8631",
+   "ris_station_number": "860025",
+   "route_id": "100290021",
+   "meters": 87.61474949772992,
+   "matched": false
+}{
+   "tmas_station_id": "1642",
+   "ris_station_number": "160279",
+   "route_id": "100428131",
+   "meters": 88.15674076844796,
+   "matched": false
+}{
+   "tmas_station_id": "4363",
+   "ris_station_number": "430218",
+   "route_id": "100358031",
+   "meters": 88.76347491014229,
+   "matched": false
+}{
+   "tmas_station_id": "2531",
+   "ris_station_number": "250036",
+   "route_id": "100428121",
+   "meters": 89.23405748631967,
+   "matched": false
+}{
+   "tmas_station_id": "6480",
+   "ris_station_number": "640065",
+   "route_id": "100435011",
+   "meters": 89.26134769365187,
+   "matched": false
+}{
+   "tmas_station_id": "9121",
+   "ris_station_number": "910108",
+   "route_id": "100485011",
+   "meters": 89.72761217946145,
+   "matched": false
+}{
+   "tmas_station_id": "9480",
+   "ris_station_number": "940062",
+   "route_id": "100183031",
+   "meters": 89.91900663164084,
+   "matched": false
+}{
+   "tmas_station_id": "9480",
+   "ris_station_number": "940062",
+   "route_id": "100183031",
+   "meters": 89.92507475634311,
+   "matched": false
+}{
+   "tmas_station_id": "5382",
+   "ris_station_number": "530171",
+   "route_id": "100478021",
+   "meters": 90.08219139930486,
+   "matched": false
+}{
+   "tmas_station_id": "1531",
+   "ris_station_number": "150308",
+   "route_id": "100514091",
+   "meters": 90.21555767762877,
+   "matched": false
+}{
+   "tmas_station_id": "9480",
+   "ris_station_number": "940001",
+   "route_id": "100153011",
+   "meters": 90.33936100807747,
+   "matched": false
+}{
+   "tmas_station_id": "7501",
+   "ris_station_number": "750029",
+   "route_id": "100032061",
+   "meters": 90.98333917567058,
+   "matched": false
+}{
+   "tmas_station_id": "341",
+   "ris_station_number": "30227",
+   "route_id": "100204021",
+   "meters": 91.58733292091404,
+   "matched": false
+}{
+   "tmas_station_id": "1335",
+   "ris_station_number": "130024",
+   "route_id": "100183071",
+   "meters": 91.63781842049339,
+   "matched": false
+}{
+   "tmas_station_id": "2431",
+   "ris_station_number": "240019",
+   "route_id": "100280101",
+   "meters": 91.83788253715642,
+   "matched": false
+}{
+   "tmas_station_id": "1511",
+   "ris_station_number": "150035",
+   "route_id": "100495081",
+   "meters": 91.91949212717667,
+   "matched": false
+}{
+   "tmas_station_id": "181",
+   "ris_station_number": "870048",
+   "route_id": "100514031",
+   "meters": 92.03963864581206,
+   "matched": false
+}{
+   "tmas_station_id": "4363",
+   "ris_station_number": "430218",
+   "route_id": "100358031",
+   "meters": 92.08570223951965,
+   "matched": false
+}{
+   "tmas_station_id": "283",
+   "ris_station_number": "24368",
+   "route_id": "256516011",
+   "meters": 92.80796088571869,
+   "matched": false
+}{
+   "tmas_station_id": "480",
+   "ris_station_number": "40076",
+   "route_id": "100503011",
+   "meters": 93.2387496198104,
+   "matched": false
+}{
+   "tmas_station_id": "4780",
+   "ris_station_number": "470538",
+   "route_id": "100021011",
+   "meters": 93.44986949537208,
+   "matched": false
+}{
+   "tmas_station_id": "4482",
+   "ris_station_number": "440469",
+   "route_id": "100331021",
+   "meters": 93.53227146609488,
+   "matched": false
+}{
+   "tmas_station_id": "597",
+   "ris_station_number": "50800",
+   "route_id": "100496011",
+   "meters": 93.55953581515958,
+   "matched": false
+}{
+   "tmas_station_id": "6500",
+   "ris_station_number": "970059",
+   "route_id": "100113062",
+   "meters": 93.66564338582232,
+   "matched": false
+}{
+   "tmas_station_id": "8333",
+   "ris_station_number": "830684",
+   "route_id": "100432031",
+   "meters": 94.28713256346728,
+   "matched": false
+}{
+   "tmas_station_id": "9381",
+   "ris_station_number": "930048",
+   "route_id": "100154031",
+   "meters": 94.33790858077862,
+   "matched": false
+}{
+   "tmas_station_id": "725",
+   "ris_station_number": "70024",
+   "route_id": "100206041",
+   "meters": 94.83259797598954,
+   "matched": false
+}{
+   "tmas_station_id": "182",
+   "ris_station_number": "14230",
+   "route_id": "255984011",
+   "meters": 95.0486402839109,
+   "matched": false
+}{
+   "tmas_station_id": "4381",
+   "ris_station_number": "430315",
+   "route_id": "100023032",
+   "meters": 95.51085923831434,
+   "matched": false
+}{
+   "tmas_station_id": "398",
+   "ris_station_number": "30283",
+   "route_id": "100026011",
+   "meters": 95.78892528397867,
+   "matched": false
+}{
+   "tmas_station_id": "9580",
+   "ris_station_number": "950051",
+   "route_id": "100497071",
+   "meters": 95.78951666251841,
+   "matched": false
+}{
+   "tmas_station_id": "1335",
+   "ris_station_number": "130024",
+   "route_id": "100183071",
+   "meters": 96.42310927172254,
+   "matched": false
+}{
+   "tmas_station_id": "2182",
+   "ris_station_number": "216035",
+   "route_id": "119476011",
+   "meters": 97.12640803247098,
+   "matched": false
+}{
+   "tmas_station_id": "342",
+   "ris_station_number": "31101",
+   "route_id": "221836011",
+   "meters": 98.54869767567742,
+   "matched": false
+}{
+   "tmas_station_id": "731",
+   "ris_station_number": "70055",
+   "route_id": "100035011",
+   "meters": 98.77705795610856,
+   "matched": false
+}{
+   "tmas_station_id": "1414",
+   "ris_station_number": "140101",
+   "route_id": "100514071",
+   "meters": 99.1058204819878,
+   "matched": false
+}{
+   "tmas_station_id": "6100",
+   "ris_station_number": "613019",
+   "route_id": "273599011",
+   "meters": 99.18275828987908,
+   "matched": false
+}{
+   "tmas_station_id": "6500",
+   "ris_station_number": "970059",
+   "route_id": "100113061",
+   "meters": 99.29391296555596,
+   "matched": false
+}{
+   "tmas_station_id": "7111",
+   "ris_station_number": "710464",
+   "route_id": "100495112",
+   "meters": 99.37856929644526,
+   "matched": false
+}{
+   "tmas_station_id": "7100",
+   "ris_station_number": "710467",
+   "route_id": "100495112",
+   "meters": 99.64161110190585,
+   "matched": false
+}{
+   "tmas_station_id": "5380",
+   "ris_station_number": "530085",
+   "route_id": "100301011",
+   "meters": 99.86728081187317,
+   "matched": false
+}{
+   "tmas_station_id": "2180",
+   "ris_station_number": "210004",
+   "route_id": "100013041",
+   "meters": 99.91340595032399,
+   "matched": false
+}{
+   "tmas_station_id": "8742",
+   "ris_station_number": "870029",
+   "route_id": "100514031",
+   "meters": 100.05441578799065,
+   "matched": false
+}{
+   "tmas_station_id": "9121",
+   "ris_station_number": "910108",
+   "route_id": "100485011",
+   "meters": 100.42284637886756,
+   "matched": false
+}{
+   "tmas_station_id": "5180",
+   "ris_station_number": "510358",
+   "route_id": "100168011",
+   "meters": 101.50175875739222,
+   "matched": false
+}{
+   "tmas_station_id": "6500",
+   "ris_station_number": "970059",
+   "route_id": "100113061",
+   "meters": 101.66385181616847,
+   "matched": false
+}{
+   "tmas_station_id": "5382",
+   "ris_station_number": "530171",
+   "route_id": "100478021",
+   "meters": 101.66836394674647,
+   "matched": false
+}{
+   "tmas_station_id": "731",
+   "ris_station_number": "70055",
+   "route_id": "100035011",
+   "meters": 101.88179457183271,
+   "matched": false
+}{
+   "tmas_station_id": "6480",
+   "ris_station_number": "640065",
+   "route_id": "100435011",
+   "meters": 101.90633727077804,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "140103",
+   "route_id": "100515151",
+   "meters": 102.9044571869018,
+   "matched": false
+}{
+   "tmas_station_id": "8380",
+   "ris_station_number": "830164",
+   "route_id": "100113101",
+   "meters": 103.26576403097752,
+   "matched": false
+}{
+   "tmas_station_id": "8742",
+   "ris_station_number": "870029",
+   "route_id": "100514031",
+   "meters": 103.36828449573414,
+   "matched": false
+}{
+   "tmas_station_id": "8700",
+   "ris_station_number": "871012",
+   "route_id": "200026011",
+   "meters": 103.45854008565752,
+   "matched": false
+}{
+   "tmas_station_id": "8742",
+   "ris_station_number": "870029",
+   "route_id": "100514031",
+   "meters": 103.78380964498814,
+   "matched": false
+}{
+   "tmas_station_id": "8700",
+   "ris_station_number": "871012",
+   "route_id": "200026011",
+   "meters": 104.07977072980798,
+   "matched": false
+}{
+   "tmas_station_id": "2631",
+   "ris_station_number": "260079",
+   "route_id": "100048041",
+   "meters": 104.21167496450931,
+   "matched": false
+}{
+   "tmas_station_id": "9581",
+   "ris_station_number": "950900",
+   "route_id": "100871011",
+   "meters": 104.71579868233971,
+   "matched": false
+}{
+   "tmas_station_id": "9581",
+   "ris_station_number": "950900",
+   "route_id": "100871011",
+   "meters": 104.83810135636314,
+   "matched": false
+}{
+   "tmas_station_id": "9380",
+   "ris_station_number": "930070",
+   "route_id": "100483011",
+   "meters": 105.32024731472411,
+   "matched": false
+}{
+   "tmas_station_id": "6340",
+   "ris_station_number": "630001",
+   "route_id": "100073021",
+   "meters": 105.55633083177646,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "140103",
+   "route_id": "100515151",
+   "meters": 105.89514362671571,
+   "matched": false
+}{
+   "tmas_station_id": "725",
+   "ris_station_number": "70024",
+   "route_id": "100206041",
+   "meters": 106.22064806849481,
+   "matched": false
+}{
+   "tmas_station_id": "1642",
+   "ris_station_number": "160279",
+   "route_id": "100428131",
+   "meters": 106.4064444338105,
+   "matched": false
+}{
+   "tmas_station_id": "8333",
+   "ris_station_number": "830684",
+   "route_id": "100432031",
+   "meters": 107.13762156580324,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "143029",
+   "route_id": "272758011",
+   "meters": 107.37010285695044,
+   "matched": false
+}{
+   "tmas_station_id": "7300",
+   "ris_station_number": "730222",
+   "route_id": "100485051",
+   "meters": 108.11640389763244,
+   "matched": false
+}{
+   "tmas_station_id": "8480",
+   "ris_station_number": "840902",
+   "route_id": "100861021",
+   "meters": 108.62369051266899,
+   "matched": false
+}{
+   "tmas_station_id": "743",
+   "ris_station_number": "71457",
+   "route_id": "246624011",
+   "meters": 108.91210936846161,
+   "matched": false
+}{
+   "tmas_station_id": "8700",
+   "ris_station_number": "870107",
+   "route_id": "100460011",
+   "meters": 109.38317974877674,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "140103",
+   "route_id": "100515151",
+   "meters": 109.66736347727516,
+   "matched": false
+}{
+   "tmas_station_id": "8280",
+   "ris_station_number": "820821",
+   "route_id": "100490022",
+   "meters": 110.72092586677002,
+   "matched": false
+}{
+   "tmas_station_id": "5380",
+   "ris_station_number": "530166",
+   "route_id": "100301011",
+   "meters": 111.54836495738896,
+   "matched": false
+}{
+   "tmas_station_id": "280",
+   "ris_station_number": "22131",
+   "route_id": "256371011",
+   "meters": 111.60327212106598,
+   "matched": false
+}{
+   "tmas_station_id": "9582",
+   "ris_station_number": "950145",
+   "route_id": "100079031",
+   "meters": 111.65294009418157,
+   "matched": false
+}{
+   "tmas_station_id": "9400",
+   "ris_station_number": "936010",
+   "route_id": "215452011",
+   "meters": 111.74654141769483,
+   "matched": false
+}{
+   "tmas_station_id": "7501",
+   "ris_station_number": "750029",
+   "route_id": "100032061",
+   "meters": 111.92358294299918,
+   "matched": false
+}{
+   "tmas_station_id": "5281",
+   "ris_station_number": "520014",
+   "route_id": "100450011",
+   "meters": 112.37456397017336,
+   "matched": false
+}{
+   "tmas_station_id": "3280",
+   "ris_station_number": "320021",
+   "route_id": "100032021",
+   "meters": 113.28217743480009,
+   "matched": false
+}{
+   "tmas_station_id": "3732",
+   "ris_station_number": "470526",
+   "route_id": "100023041",
+   "meters": 114.27713072535397,
+   "matched": false
+}{
+   "tmas_station_id": "1351",
+   "ris_station_number": "130056",
+   "route_id": "100513041",
+   "meters": 114.87388716129928,
+   "matched": false
+}{
+   "tmas_station_id": "1407",
+   "ris_station_number": "140168",
+   "route_id": "100468091",
+   "meters": 115.2619155955391,
+   "matched": false
+}{
+   "tmas_station_id": "1407",
+   "ris_station_number": "140166",
+   "route_id": "100468091",
+   "meters": 115.2825804544648,
+   "matched": false
+}{
+   "tmas_station_id": "7181",
+   "ris_station_number": "710416",
+   "route_id": "100144011",
+   "meters": 115.35054031663303,
+   "matched": false
+}{
+   "tmas_station_id": "7111",
+   "ris_station_number": "710464",
+   "route_id": "100495112",
+   "meters": 115.41783013858345,
+   "matched": false
+}{
+   "tmas_station_id": "5480",
+   "ris_station_number": "540079",
+   "route_id": "100229021",
+   "meters": 115.84316287807921,
+   "matched": false
+}{
+   "tmas_station_id": "9580",
+   "ris_station_number": "950051",
+   "route_id": "100497071",
+   "meters": 116.48432678821435,
+   "matched": false
+}{
+   "tmas_station_id": "181",
+   "ris_station_number": "876110",
+   "route_id": "306320011",
+   "meters": 116.77198117529578,
+   "matched": false
+}{
+   "tmas_station_id": "2531",
+   "ris_station_number": "250036",
+   "route_id": "100428121",
+   "meters": 116.99635780785074,
+   "matched": false
+}{
+   "tmas_station_id": "6484",
+   "ris_station_number": "640182",
+   "route_id": "100493042",
+   "meters": 117.26168614977618,
+   "matched": false
+}{
+   "tmas_station_id": "3681",
+   "ris_station_number": "360029",
+   "route_id": "100061031",
+   "meters": 117.33430632710214,
+   "matched": false
+}{
+   "tmas_station_id": "7500",
+   "ris_station_number": "750225",
+   "route_id": "100265051",
+   "meters": 118.13132229612047,
+   "matched": false
+}{
+   "tmas_station_id": "9181",
+   "ris_station_number": "910060",
+   "route_id": "100397021",
+   "meters": 119.40230428048586,
+   "matched": false
+}{
+   "tmas_station_id": "8382",
+   "ris_station_number": "830038",
+   "route_id": "100490012",
+   "meters": 119.65880105623889,
+   "matched": false
+}{
+   "tmas_station_id": "3481",
+   "ris_station_number": "340270",
+   "route_id": "100022011",
+   "meters": 119.98332806303041,
+   "matched": false
+}{
+   "tmas_station_id": "1552",
+   "ris_station_number": "150337",
+   "route_id": "100082021",
+   "meters": 120.10607754664218,
+   "matched": false
+}{
+   "tmas_station_id": "1175",
+   "ris_station_number": "110903",
+   "route_id": "100565011",
+   "meters": 120.38858972648315,
+   "matched": false
+}{
+   "tmas_station_id": "4341",
+   "ris_station_number": "430110",
+   "route_id": "100280031",
+   "meters": 121.83198571050222,
+   "matched": false
+}{
+   "tmas_station_id": "7351",
+   "ris_station_number": "730236",
+   "route_id": "100048061",
+   "meters": 121.90493464460556,
+   "matched": false
+}{
+   "tmas_station_id": "4341",
+   "ris_station_number": "430110",
+   "route_id": "100280031",
+   "meters": 123.28950921061306,
+   "matched": false
+}{
+   "tmas_station_id": "1351",
+   "ris_station_number": "130056",
+   "route_id": "100513041",
+   "meters": 124.32401186383686,
+   "matched": false
+}{
+   "tmas_station_id": "7181",
+   "ris_station_number": "710416",
+   "route_id": "100144011",
+   "meters": 124.77868188655117,
+   "matched": false
+}{
+   "tmas_station_id": "8780",
+   "ris_station_number": "870113",
+   "route_id": "100460011",
+   "meters": 124.90299717811408,
+   "matched": false
+}{
+   "tmas_station_id": "1132",
+   "ris_station_number": "110020",
+   "route_id": "100290041",
+   "meters": 125.0329406596913,
+   "matched": false
+}{
+   "tmas_station_id": "2431",
+   "ris_station_number": "240019",
+   "route_id": "100280101",
+   "meters": 125.28020338673034,
+   "matched": false
+}{
+   "tmas_station_id": "1281",
+   "ris_station_number": "120901",
+   "route_id": "270261011",
+   "meters": 125.32555626498855,
+   "matched": false
+}{
+   "tmas_station_id": "5384",
+   "ris_station_number": "530330",
+   "route_id": "100168021",
+   "meters": 125.62561190916587,
+   "matched": false
+}{
+   "tmas_station_id": "4381",
+   "ris_station_number": "430315",
+   "route_id": "100023032",
+   "meters": 125.8061316168341,
+   "matched": false
+}{
+   "tmas_station_id": "4280",
+   "ris_station_number": "420121",
+   "route_id": "100327021",
+   "meters": 127.37676983933822,
+   "matched": false
+}{
+   "tmas_station_id": "3280",
+   "ris_station_number": "320021",
+   "route_id": "100032021",
+   "meters": 127.83656830415268,
+   "matched": false
+}{
+   "tmas_station_id": "3481",
+   "ris_station_number": "340270",
+   "route_id": "100022011",
+   "meters": 128.34831616579743,
+   "matched": false
+}{
+   "tmas_station_id": "5342",
+   "ris_station_number": "530332",
+   "route_id": "100428022",
+   "meters": 128.656492735017,
+   "matched": false
+}{
+   "tmas_station_id": "720",
+   "ris_station_number": "71021",
+   "route_id": "236307011",
+   "meters": 128.8340428317532,
+   "matched": false
+}{
+   "tmas_station_id": "8280",
+   "ris_station_number": "820821",
+   "route_id": "100490022",
+   "meters": 129.1541492705485,
+   "matched": false
+}{
+   "tmas_station_id": "3732",
+   "ris_station_number": "470526",
+   "route_id": "100023041",
+   "meters": 129.45459256599085,
+   "matched": false
+}{
+   "tmas_station_id": "3580",
+   "ris_station_number": "350429",
+   "route_id": "100379041",
+   "meters": 130.44482289926765,
+   "matched": false
+}{
+   "tmas_station_id": "2380",
+   "ris_station_number": "230028",
+   "route_id": "100241081",
+   "meters": 131.30147485020865,
+   "matched": false
+}{
+   "tmas_station_id": "5282",
+   "ris_station_number": "520010",
+   "route_id": "100147011",
+   "meters": 131.40398064812854,
+   "matched": false
+}{
+   "tmas_station_id": "8333",
+   "ris_station_number": "830684",
+   "route_id": "100432031",
+   "meters": 132.14694724508237,
+   "matched": false
+}{
+   "tmas_station_id": "4180",
+   "ris_station_number": "410158",
+   "route_id": "100476021",
+   "meters": 132.51404253549435,
+   "matched": false
+}{
+   "tmas_station_id": "7331",
+   "ris_station_number": "730096",
+   "route_id": "100032051",
+   "meters": 132.514615072526,
+   "matched": false
+}{
+   "tmas_station_id": "3342",
+   "ris_station_number": "330139",
+   "route_id": "100428082",
+   "meters": 132.54442464168602,
+   "matched": false
+}{
+   "tmas_station_id": "6282",
+   "ris_station_number": "620156",
+   "route_id": "100298011",
+   "meters": 132.7131117684161,
+   "matched": false
+}{
+   "tmas_station_id": "3580",
+   "ris_station_number": "350429",
+   "route_id": "100379041",
+   "meters": 133.62514720098008,
+   "matched": false
+}{
+   "tmas_station_id": "8180",
+   "ris_station_number": "810174",
+   "route_id": "100147221",
+   "meters": 135.63434143677617,
+   "matched": false
+}{
+   "tmas_station_id": "1132",
+   "ris_station_number": "110020",
+   "route_id": "100290041",
+   "meters": 136.67502019082818,
+   "matched": false
+}{
+   "tmas_station_id": "1800",
+   "ris_station_number": "180395",
+   "route_id": "100366031",
+   "meters": 137.50975380781753,
+   "matched": false
+}{
+   "tmas_station_id": "3343",
+   "ris_station_number": "330236",
+   "route_id": "100280091",
+   "meters": 138.14570613442353,
+   "matched": false
+}{
+   "tmas_station_id": "341",
+   "ris_station_number": "30227",
+   "route_id": "100204021",
+   "meters": 138.7169843510753,
+   "matched": false
+}{
+   "tmas_station_id": "5480",
+   "ris_station_number": "546038",
+   "route_id": "165041011",
+   "meters": 139.25102286771462,
+   "matched": false
+}{
+   "tmas_station_id": "7111",
+   "ris_station_number": "710464",
+   "route_id": "100495111",
+   "meters": 139.34391205141506,
+   "matched": false
+}{
+   "tmas_station_id": "6482",
+   "ris_station_number": "640082",
+   "route_id": "100086011",
+   "meters": 139.89620913318325,
+   "matched": false
+}{
+   "tmas_station_id": "7380",
+   "ris_station_number": "730172",
+   "route_id": "100032051",
+   "meters": 140.2887427398045,
+   "matched": false
+}{
+   "tmas_station_id": "4631",
+   "ris_station_number": "460002",
+   "route_id": "100135021",
+   "meters": 140.5527399064848,
+   "matched": false
+}{
+   "tmas_station_id": "5181",
+   "ris_station_number": "510044",
+   "route_id": "100097011",
+   "meters": 140.68149305523445,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "645045",
+   "route_id": "100321011",
+   "meters": 141.08842082755504,
+   "matched": false
+}{
+   "tmas_station_id": "5282",
+   "ris_station_number": "520010",
+   "route_id": "100147011",
+   "meters": 141.42451152449289,
+   "matched": false
+}{
+   "tmas_station_id": "8631",
+   "ris_station_number": "860025",
+   "route_id": "100290021",
+   "meters": 141.77926072445732,
+   "matched": false
+}{
+   "tmas_station_id": "1407",
+   "ris_station_number": "148144",
+   "route_id": "107433011",
+   "meters": 142.02865322562846,
+   "matched": false
+}{
+   "tmas_station_id": "2182",
+   "ris_station_number": "210036",
+   "route_id": "100251021",
+   "meters": 142.57299510682526,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "645045",
+   "route_id": "100321011",
+   "meters": 142.7019965083747,
+   "matched": false
+}{
+   "tmas_station_id": "4481",
+   "ris_station_number": "440241",
+   "route_id": "100454011",
+   "meters": 143.4028084214538,
+   "matched": false
+}{
+   "tmas_station_id": "7231",
+   "ris_station_number": "720024",
+   "route_id": "100265061",
+   "meters": 144.37966471509088,
+   "matched": false
+}{
+   "tmas_station_id": "7480",
+   "ris_station_number": "740022",
+   "route_id": "100265041",
+   "meters": 144.7351134635671,
+   "matched": false
+}{
+   "tmas_station_id": "8481",
+   "ris_station_number": "840144",
+   "route_id": "100171031",
+   "meters": 144.80846804610314,
+   "matched": false
+}{
+   "tmas_station_id": "8469",
+   "ris_station_number": "840144",
+   "route_id": "100171031",
+   "meters": 144.88621636486812,
+   "matched": false
+}{
+   "tmas_station_id": "5484",
+   "ris_station_number": "540353",
+   "route_id": "100023011",
+   "meters": 145.91014916896415,
+   "matched": false
+}{
+   "tmas_station_id": "1800",
+   "ris_station_number": "180395",
+   "route_id": "100366031",
+   "meters": 146.07645163310292,
+   "matched": false
+}{
+   "tmas_station_id": "6441",
+   "ris_station_number": "640029",
+   "route_id": "100493042",
+   "meters": 146.09892987315186,
+   "matched": false
+}{
+   "tmas_station_id": "3380",
+   "ris_station_number": "330222",
+   "route_id": "100340032",
+   "meters": 146.32599627211397,
+   "matched": false
+}{
+   "tmas_station_id": "6280",
+   "ris_station_number": "620204",
+   "route_id": "100073011",
+   "meters": 147.0592578421734,
+   "matched": false
+}{
+   "tmas_station_id": "5480",
+   "ris_station_number": "546039",
+   "route_id": "165041011",
+   "meters": 147.70101242393005,
+   "matched": false
+}{
+   "tmas_station_id": "3680",
+   "ris_station_number": "360032",
+   "route_id": "100759021",
+   "meters": 148.0905777131027,
+   "matched": false
+}{
+   "tmas_station_id": "3481",
+   "ris_station_number": "340270",
+   "route_id": "100022011",
+   "meters": 148.28338408670064,
+   "matched": false
+}{
+   "tmas_station_id": "8381",
+   "ris_station_number": "830362",
+   "route_id": "100668011",
+   "meters": 148.74850080672428,
+   "matched": false
+}{
+   "tmas_station_id": "9650",
+   "ris_station_number": "960243",
+   "route_id": "100385021",
+   "meters": 149.63284539390682,
+   "matched": false
+}{
+   "tmas_station_id": "7481",
+   "ris_station_number": "740166",
+   "route_id": "100122021",
+   "meters": 151.00429948160118,
+   "matched": false
+}{
+   "tmas_station_id": "6680",
+   "ris_station_number": "660247",
+   "route_id": "100331011",
+   "meters": 151.3102694941321,
+   "matched": false
+}{
+   "tmas_station_id": "3480",
+   "ris_station_number": "340257",
+   "route_id": "100032041",
+   "meters": 151.5643891938776,
+   "matched": false
+}{
+   "tmas_station_id": "8469",
+   "ris_station_number": "846036",
+   "route_id": "193143011",
+   "meters": 151.5757423757746,
+   "matched": false
+}{
+   "tmas_station_id": "3580",
+   "ris_station_number": "350429",
+   "route_id": "100379041",
+   "meters": 154.7190261200028,
+   "matched": false
+}{
+   "tmas_station_id": "4780",
+   "ris_station_number": "470538",
+   "route_id": "100021011",
+   "meters": 155.29460235072355,
+   "matched": false
+}{
+   "tmas_station_id": "9380",
+   "ris_station_number": "930070",
+   "route_id": "100483011",
+   "meters": 155.6110379129058,
+   "matched": false
+}{
+   "tmas_station_id": "9582",
+   "ris_station_number": "958134",
+   "route_id": "217567011",
+   "meters": 156.84209495124762,
+   "matched": false
+}{
+   "tmas_station_id": "3280",
+   "ris_station_number": "320026",
+   "route_id": "100375031",
+   "meters": 157.7326093636575,
+   "matched": false
+}{
+   "tmas_station_id": "586",
+   "ris_station_number": "52087",
+   "route_id": "309605011",
+   "meters": 159.15795440356916,
+   "matched": false
+}{
+   "tmas_station_id": "7182",
+   "ris_station_number": "710221",
+   "route_id": "100514141",
+   "meters": 160.2121857034508,
+   "matched": false
+}{
+   "tmas_station_id": "741",
+   "ris_station_number": "70022",
+   "route_id": "100206041",
+   "meters": 160.75303790601166,
+   "matched": false
+}{
+   "tmas_station_id": "8180",
+   "ris_station_number": "810174",
+   "route_id": "100147221",
+   "meters": 161.31988686643197,
+   "matched": false
+}{
+   "tmas_station_id": "6485",
+   "ris_station_number": "640180",
+   "route_id": "100086011",
+   "meters": 161.73065255188882,
+   "matched": false
+}{
+   "tmas_station_id": "1280",
+   "ris_station_number": "120503",
+   "route_id": "100494021",
+   "meters": 162.46631768601458,
+   "matched": false
+}{
+   "tmas_station_id": "6281",
+   "ris_station_number": "620193",
+   "route_id": "100175011",
+   "meters": 164.27723307892037,
+   "matched": false
+}{
+   "tmas_station_id": "4480",
+   "ris_station_number": "440460",
+   "route_id": "100303011",
+   "meters": 164.54501419258526,
+   "matched": false
+}{
+   "tmas_station_id": "3482",
+   "ris_station_number": "340294",
+   "route_id": "100023061",
+   "meters": 164.85620195284918,
+   "matched": false
+}{
+   "tmas_station_id": "1231",
+   "ris_station_number": "120449",
+   "route_id": "100510031",
+   "meters": 165.81045295150062,
+   "matched": false
+}{
+   "tmas_station_id": "5381",
+   "ris_station_number": "530097",
+   "route_id": "100224011",
+   "meters": 166.80365978082864,
+   "matched": false
+}{
+   "tmas_station_id": "6180",
+   "ris_station_number": "610004",
+   "route_id": "100382021",
+   "meters": 167.19641606532602,
+   "matched": false
+}{
+   "tmas_station_id": "597",
+   "ris_station_number": "50800",
+   "route_id": "100496011",
+   "meters": 167.7487562982619,
+   "matched": false
+}{
+   "tmas_station_id": "4380",
+   "ris_station_number": "430910",
+   "route_id": "100704022",
+   "meters": 167.89948933710804,
+   "matched": false
+}{
+   "tmas_station_id": "5283",
+   "ris_station_number": "520517",
+   "route_id": "100362011",
+   "meters": 168.00226762647574,
+   "matched": false
+}{
+   "tmas_station_id": "7580",
+   "ris_station_number": "750046",
+   "route_id": "100339021",
+   "meters": 168.30985578667378,
+   "matched": false
+}{
+   "tmas_station_id": "9280",
+   "ris_station_number": "920024",
+   "route_id": "100048021",
+   "meters": 170.72487276526013,
+   "matched": false
+}{
+   "tmas_station_id": "741",
+   "ris_station_number": "70013",
+   "route_id": "100206041",
+   "meters": 173.31945722953927,
+   "matched": false
+}{
+   "tmas_station_id": "3381",
+   "ris_station_number": "330378",
+   "route_id": "100375041",
+   "meters": 173.37955489275546,
+   "matched": false
+}{
+   "tmas_station_id": "4181",
+   "ris_station_number": "410131",
+   "route_id": "100451041",
+   "meters": 175.56969800840767,
+   "matched": false
+}{
+   "tmas_station_id": "1132",
+   "ris_station_number": "110020",
+   "route_id": "100290041",
+   "meters": 176.2149116415322,
+   "matched": false
+}{
+   "tmas_station_id": "1175",
+   "ris_station_number": "113811",
+   "route_id": "272959011",
+   "meters": 176.7870470693444,
+   "matched": false
+}{
+   "tmas_station_id": "3480",
+   "ris_station_number": "340257",
+   "route_id": "100032041",
+   "meters": 177.70298467308132,
+   "matched": false
+}{
+   "tmas_station_id": "7182",
+   "ris_station_number": "710221",
+   "route_id": "100514141",
+   "meters": 177.71285962655776,
+   "matched": false
+}{
+   "tmas_station_id": "1175",
+   "ris_station_number": "110903",
+   "route_id": "100565011",
+   "meters": 179.14321173592836,
+   "matched": false
+}{
+   "tmas_station_id": "2280",
+   "ris_station_number": "220049",
+   "route_id": "100483091",
+   "meters": 180.52718331337445,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "645045",
+   "route_id": "100321011",
+   "meters": 183.82769687632674,
+   "matched": false
+}{
+   "tmas_station_id": "2181",
+   "ris_station_number": "210145",
+   "route_id": "100266031",
+   "meters": 183.8324873676171,
+   "matched": false
+}{
+   "tmas_station_id": "2182",
+   "ris_station_number": "210036",
+   "route_id": "100251021",
+   "meters": 185.23236733633308,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "645045",
+   "route_id": "100321011",
+   "meters": 185.4413225309493,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "643041",
+   "route_id": "273670011",
+   "meters": 187.00827579382275,
+   "matched": false
+}{
+   "tmas_station_id": "5486",
+   "ris_station_number": "540093",
+   "route_id": "100126011",
+   "meters": 187.44438482922232,
+   "matched": false
+}{
+   "tmas_station_id": "797",
+   "ris_station_number": "70112",
+   "route_id": "100206041",
+   "meters": 187.74019728567094,
+   "matched": false
+}{
+   "tmas_station_id": "1800",
+   "ris_station_number": "180395",
+   "route_id": "100366031",
+   "meters": 190.6790017545926,
+   "matched": false
+}{
+   "tmas_station_id": "3381",
+   "ris_station_number": "330378",
+   "route_id": "100375041",
+   "meters": 191.68387240340238,
+   "matched": false
+}{
+   "tmas_station_id": "9280",
+   "ris_station_number": "920024",
+   "route_id": "100048021",
+   "meters": 192.86141762812636,
+   "matched": false
+}{
+   "tmas_station_id": "7351",
+   "ris_station_number": "730236",
+   "route_id": "100048061",
+   "meters": 193.20740639413822,
+   "matched": false
+}{
+   "tmas_station_id": "7351",
+   "ris_station_number": "730236",
+   "route_id": "100048062",
+   "meters": 193.37840330775055,
+   "matched": false
+}{
+   "tmas_station_id": "2181",
+   "ris_station_number": "210145",
+   "route_id": "100266031",
+   "meters": 193.48715173944308,
+   "matched": false
+}{
+   "tmas_station_id": "4780",
+   "ris_station_number": "470538",
+   "route_id": "100021011",
+   "meters": 193.78767853374123,
+   "matched": false
+}{
+   "tmas_station_id": "5381",
+   "ris_station_number": "530097",
+   "route_id": "100224011",
+   "meters": 194.03717119077504,
+   "matched": false
+}{
+   "tmas_station_id": "7581",
+   "ris_station_number": "757101",
+   "route_id": "180731011",
+   "meters": 194.72814023016167,
+   "matched": false
+}{
+   "tmas_station_id": "6485",
+   "ris_station_number": "640180",
+   "route_id": "100086011",
+   "meters": 195.02258684629146,
+   "matched": false
+}{
+   "tmas_station_id": "1399",
+   "ris_station_number": "130475",
+   "route_id": "100181011",
+   "meters": 195.21898518076154,
+   "matched": false
+}{
+   "tmas_station_id": "283",
+   "ris_station_number": "25032",
+   "route_id": "282069011",
+   "meters": 197.41339197946405,
+   "matched": false
+}{
+   "tmas_station_id": "4480",
+   "ris_station_number": "440460",
+   "route_id": "100303011",
+   "meters": 197.91932453758156,
+   "matched": false
+}{
+   "tmas_station_id": "741",
+   "ris_station_number": "70205",
+   "route_id": "100033012",
+   "meters": 199.43472447532744,
+   "matched": false
+}{
+   "tmas_station_id": "6280",
+   "ris_station_number": "620204",
+   "route_id": "100073011",
+   "meters": 199.44695841632446,
+   "matched": false
+}{
+   "tmas_station_id": "9582",
+   "ris_station_number": "953010",
+   "route_id": "275856011",
+   "meters": 200.89254598648742,
+   "matched": false
+}{
+   "tmas_station_id": "7183",
+   "ris_station_number": "710199",
+   "route_id": "100032081",
+   "meters": 202.72758026244202,
+   "matched": false
+}{
+   "tmas_station_id": "9180",
+   "ris_station_number": "910026",
+   "route_id": "100217011",
+   "meters": 203.55878877341394,
+   "matched": false
+}{
+   "tmas_station_id": "1231",
+   "ris_station_number": "120449",
+   "route_id": "100510031",
+   "meters": 205.11013089946965,
+   "matched": false
+}{
+   "tmas_station_id": "4631",
+   "ris_station_number": "460002",
+   "route_id": "100135021",
+   "meters": 205.24209735756702,
+   "matched": false
+}{
+   "tmas_station_id": "2431",
+   "ris_station_number": "240019",
+   "route_id": "100280101",
+   "meters": 205.3415732801468,
+   "matched": false
+}{
+   "tmas_station_id": "4181",
+   "ris_station_number": "410131",
+   "route_id": "100451041",
+   "meters": 206.746799620674,
+   "matched": false
+}{
+   "tmas_station_id": "8469",
+   "ris_station_number": "840144",
+   "route_id": "100171031",
+   "meters": 207.3669162419868,
+   "matched": false
+}{
+   "tmas_station_id": "1399",
+   "ris_station_number": "130475",
+   "route_id": "100181011",
+   "meters": 207.3976063296513,
+   "matched": false
+}{
+   "tmas_station_id": "1414",
+   "ris_station_number": "140101",
+   "route_id": "100514071",
+   "meters": 207.65190923093087,
+   "matched": false
+}{
+   "tmas_station_id": "5181",
+   "ris_station_number": "510044",
+   "route_id": "100097011",
+   "meters": 207.77022701334735,
+   "matched": false
+}{
+   "tmas_station_id": "4180",
+   "ris_station_number": "410158",
+   "route_id": "100476021",
+   "meters": 208.54382165922905,
+   "matched": false
+}{
+   "tmas_station_id": "1642",
+   "ris_station_number": "167002",
+   "route_id": "113677011",
+   "meters": 209.50472912223515,
+   "matched": false
+}{
+   "tmas_station_id": "5283",
+   "ris_station_number": "520517",
+   "route_id": "100362011",
+   "meters": 212.1836085344016,
+   "matched": false
+}{
+   "tmas_station_id": "1552",
+   "ris_station_number": "150337",
+   "route_id": "100082021",
+   "meters": 212.91198012567435,
+   "matched": false
+}{
+   "tmas_station_id": "6483",
+   "ris_station_number": "642028",
+   "route_id": "173178011",
+   "meters": 213.09735726527188,
+   "matched": false
+}{
+   "tmas_station_id": "8780",
+   "ris_station_number": "870113",
+   "route_id": "100460011",
+   "meters": 214.37493011095881,
+   "matched": false
+}{
+   "tmas_station_id": "1414",
+   "ris_station_number": "140101",
+   "route_id": "100514071",
+   "meters": 214.5336019086671,
+   "matched": false
+}{
+   "tmas_station_id": "283",
+   "ris_station_number": "25179",
+   "route_id": "256467011",
+   "meters": 214.59091537229537,
+   "matched": false
+}{
+   "tmas_station_id": "4481",
+   "ris_station_number": "440241",
+   "route_id": "100454011",
+   "meters": 216.3890968112847,
+   "matched": false
+}{
+   "tmas_station_id": "797",
+   "ris_station_number": "70112",
+   "route_id": "100206041",
+   "meters": 217.36592485178207,
+   "matched": false
+}{
+   "tmas_station_id": "3680",
+   "ris_station_number": "360032",
+   "route_id": "100759021",
+   "meters": 218.00717526983087,
+   "matched": false
+}{
+   "tmas_station_id": "2280",
+   "ris_station_number": "220048",
+   "route_id": "100483091",
+   "meters": 221.03554972940006,
+   "matched": false
+}{
+   "tmas_station_id": "181",
+   "ris_station_number": "872895",
+   "route_id": "209314011",
+   "meters": 221.1077411752185,
+   "matched": false
+}{
+   "tmas_station_id": "7501",
+   "ris_station_number": "756144",
+   "route_id": "263287011",
+   "meters": 222.667230078035,
+   "matched": false
+}{
+   "tmas_station_id": "5282",
+   "ris_station_number": "527011",
+   "route_id": "155020011",
+   "meters": 223.4668355843153,
+   "matched": false
+}{
+   "tmas_station_id": "7183",
+   "ris_station_number": "710199",
+   "route_id": "100032081",
+   "meters": 223.57941724374862,
+   "matched": false
+}{
+   "tmas_station_id": "7380",
+   "ris_station_number": "730172",
+   "route_id": "100032051",
+   "meters": 223.82399396028532,
+   "matched": false
+}{
+   "tmas_station_id": "4483",
+   "ris_station_number": "440054",
+   "route_id": "100147051",
+   "meters": 228.0471553770294,
+   "matched": false
+}{
+   "tmas_station_id": "1399",
+   "ris_station_number": "130475",
+   "route_id": "100181011",
+   "meters": 229.17342496572556,
+   "matched": false
+}{
+   "tmas_station_id": "7580",
+   "ris_station_number": "750046",
+   "route_id": "100339021",
+   "meters": 229.56955592513017,
+   "matched": false
+}{
+   "tmas_station_id": "6282",
+   "ris_station_number": "621007",
+   "route_id": "168784011",
+   "meters": 229.66342364310873,
+   "matched": false
+}{
+   "tmas_station_id": "8180",
+   "ris_station_number": "810174",
+   "route_id": "100147221",
+   "meters": 230.84894638882875,
+   "matched": false
+}{
+   "tmas_station_id": "3482",
+   "ris_station_number": "340293",
+   "route_id": "100023061",
+   "meters": 230.90728319670706,
+   "matched": false
+}{
+   "tmas_station_id": "7331",
+   "ris_station_number": "730096",
+   "route_id": "100032051",
+   "meters": 231.85160203607597,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "143025",
+   "route_id": "272755011",
+   "meters": 231.9019630107554,
+   "matched": false
+}{
+   "tmas_station_id": "5383",
+   "ris_station_number": "530441",
+   "route_id": "100295011",
+   "meters": 232.07082775567204,
+   "matched": false
+}{
+   "tmas_station_id": "5486",
+   "ris_station_number": "540093",
+   "route_id": "100126011",
+   "meters": 232.19841766138302,
+   "matched": false
+}{
+   "tmas_station_id": "8381",
+   "ris_station_number": "830362",
+   "route_id": "100668011",
+   "meters": 233.47120568734812,
+   "matched": false
+}{
+   "tmas_station_id": "4482",
+   "ris_station_number": "440469",
+   "route_id": "100331021",
+   "meters": 234.41771905487283,
+   "matched": false
+}{
+   "tmas_station_id": "4483",
+   "ris_station_number": "440054",
+   "route_id": "100147051",
+   "meters": 236.56224560471424,
+   "matched": false
+}{
+   "tmas_station_id": "1280",
+   "ris_station_number": "120503",
+   "route_id": "100494021",
+   "meters": 238.66726092311907,
+   "matched": false
+}{
+   "tmas_station_id": "6281",
+   "ris_station_number": "620193",
+   "route_id": "100175011",
+   "meters": 239.21912173489866,
+   "matched": false
+}{
+   "tmas_station_id": "181",
+   "ris_station_number": "872925",
+   "route_id": "209057011",
+   "meters": 239.29850775912416,
+   "matched": false
+}{
+   "tmas_station_id": "6680",
+   "ris_station_number": "660246",
+   "route_id": "100331011",
+   "meters": 242.15907124411447,
+   "matched": false
+}{
+   "tmas_station_id": "6340",
+   "ris_station_number": "630001",
+   "route_id": "100073021",
+   "meters": 243.68092694197398,
+   "matched": false
+}{
+   "tmas_station_id": "6282",
+   "ris_station_number": "620156",
+   "route_id": "100298011",
+   "meters": 244.12961405997012,
+   "matched": false
+}{
+   "tmas_station_id": "5282",
+   "ris_station_number": "527011",
+   "route_id": "155020011",
+   "meters": 246.48867139895765,
+   "matched": false
+}{
+   "tmas_station_id": "5281",
+   "ris_station_number": "520014",
+   "route_id": "100450011",
+   "meters": 247.50218680967723,
+   "matched": false
+}{
+   "tmas_station_id": "1400",
+   "ris_station_number": "140103",
+   "route_id": "100515151",
+   "meters": 248.48074981357294,
+   "matched": false
+}{
+   "tmas_station_id": "7181",
+   "ris_station_number": "710416",
+   "route_id": "100144011",
+   "meters": 251.4215937657137,
+   "matched": false
+}{
+   "tmas_station_id": "7480",
+   "ris_station_number": "740022",
+   "route_id": "100265041",
+   "meters": 252.71832417468778,
+   "matched": false
+}{
+   "tmas_station_id": "8380",
+   "ris_station_number": "830164",
+   "route_id": "100113101",
+   "meters": 255.84152078297726,
+   "matched": false
+}{
+   "tmas_station_id": "4482",
+   "ris_station_number": "440469",
+   "route_id": "100331021",
+   "meters": 257.3670768112891,
+   "matched": false
+}{
+   "tmas_station_id": "2180",
+   "ris_station_number": "210004",
+   "route_id": "100013041",
+   "meters": 257.5917009303952,
+   "matched": false
+}{
+   "tmas_station_id": "1531",
+   "ris_station_number": "150308",
+   "route_id": "100514091",
+   "meters": 257.7472568169834,
+   "matched": false
+}{
+   "tmas_station_id": "5280",
+   "ris_station_number": "526044",
+   "route_id": "155151011",
+   "meters": 258.98572138524946,
+   "matched": false
+}{
+   "tmas_station_id": "5280",
+   "ris_station_number": "526044",
+   "route_id": "155151011",
+   "meters": 260.88040681143167,
+   "matched": false
+}{
+   "tmas_station_id": "1531",
+   "ris_station_number": "150308",
+   "route_id": "100514091",
+   "meters": 260.97384341310834,
+   "matched": false
+}{
+   "tmas_station_id": "1281",
+   "ris_station_number": "120901",
+   "route_id": "270261011",
+   "meters": 262.72443651831514,
+   "matched": false
+}{
+   "tmas_station_id": "398",
+   "ris_station_number": "30283",
+   "route_id": "100026011",
+   "meters": 263.2439022653805,
+   "matched": false
+}{
+   "tmas_station_id": "4480",
+   "ris_station_number": "447004",
+   "route_id": "149233011",
+   "meters": 263.33424346128146,
+   "matched": false
+}{
+   "tmas_station_id": "5280",
+   "ris_station_number": "526044",
+   "route_id": "155151011",
+   "meters": 263.6052631845511,
+   "matched": false
+}{
+   "tmas_station_id": "280",
+   "ris_station_number": "24201",
+   "route_id": "256284011",
+   "meters": 264.14622441864896,
+   "matched": false
+}{
+   "tmas_station_id": "7231",
+   "ris_station_number": "720024",
+   "route_id": "100265061",
+   "meters": 265.7658312133004,
+   "matched": false
+}{
+   "tmas_station_id": "5484",
+   "ris_station_number": "540353",
+   "route_id": "100023011",
+   "meters": 265.9339190223619,
+   "matched": false
+}{
+   "tmas_station_id": "2380",
+   "ris_station_number": "230028",
+   "route_id": "100241081",
+   "meters": 266.9943266654775,
+   "matched": false
+}{
+   "tmas_station_id": "797",
+   "ris_station_number": "70112",
+   "route_id": "100206041",
+   "meters": 267.1083488163748,
+   "matched": false
+}{
+   "tmas_station_id": "8780",
+   "ris_station_number": "870113",
+   "route_id": "100460011",
+   "meters": 268.1613443919786,
+   "matched": false
+}{
+   "tmas_station_id": "5280",
+   "ris_station_number": "526044",
+   "route_id": "155151011",
+   "meters": 268.72704360315896,
+   "matched": false
+}{
+   "tmas_station_id": "7480",
+   "ris_station_number": "736039",
+   "route_id": "178345011",
+   "meters": 271.4461872432706,
+   "matched": false
+}{
+   "tmas_station_id": "398",
+   "ris_station_number": "30283",
+   "route_id": "100026011",
+   "meters": 274.2878404785382,
+   "matched": false
+}{
+   "tmas_station_id": "2180",
+   "ris_station_number": "210004",
+   "route_id": "100013041",
+   "meters": 277.9123467399125,
+   "matched": false
+}{
+   "tmas_station_id": "7500",
+   "ris_station_number": "750225",
+   "route_id": "100265051",
+   "meters": 278.2472090554621,
+   "matched": false
+}{
+   "tmas_station_id": "6340",
+   "ris_station_number": "630001",
+   "route_id": "100073021",
+   "meters": 279.1019314566027,
+   "matched": false
+}{
+   "tmas_station_id": "1642",
+   "ris_station_number": "160279",
+   "route_id": "100428131",
+   "meters": 281.1389361156886,
+   "matched": false
+}{
+   "tmas_station_id": "9380",
+   "ris_station_number": "930070",
+   "route_id": "100483011",
+   "meters": 284.0762493843231,
+   "matched": false
+}{
+   "tmas_station_id": "1552",
+   "ris_station_number": "150337",
+   "route_id": "100082021",
+   "meters": 285.4521877380344,
+   "matched": false
+}{
+   "tmas_station_id": "280",
+   "ris_station_number": "22095",
+   "route_id": "256349011",
+   "meters": 286.08035247811495,
+   "matched": false
+}{
+   "tmas_station_id": "7481",
+   "ris_station_number": "740166",
+   "route_id": "100122021",
+   "meters": 286.21526131565713,
+   "matched": false
+}{
+   "tmas_station_id": "280",
+   "ris_station_number": "26009",
+   "route_id": "256165011",
+   "meters": 286.26231528860626,
+   "matched": false
+}{
+   "tmas_station_id": "7501",
+   "ris_station_number": "750029",
+   "route_id": "100032061",
+   "meters": 290.61309487758047,
+   "matched": false
+}{
+   "tmas_station_id": "5281",
+   "ris_station_number": "520014",
+   "route_id": "100450011",
+   "meters": 291.5650964041688,
+   "matched": false
+}{
+   "tmas_station_id": "6310",
+   "ris_station_number": "638015",
+   "route_id": "170274011",
+   "meters": 292.27062931686487,
+   "matched": false
+}{
+   "tmas_station_id": "2531",
+   "ris_station_number": "250036",
+   "route_id": "100428121",
+   "meters": 292.56414184819454,
+   "matched": false
+}{
+   "tmas_station_id": "4481",
+   "ris_station_number": "446103",
+   "route_id": "148081011",
+   "meters": 292.813024093553,
+   "matched": false
+}{
+   "tmas_station_id": "725",
+   "ris_station_number": "70024",
+   "route_id": "100206041",
+   "meters": 295.93410132434514,
+   "matched": false
+}{
+   "tmas_station_id": "7182",
+   "ris_station_number": "710221",
+   "route_id": "100514141",
+   "meters": 301.9712418483673,
+   "matched": false
+}{
+   "tmas_station_id": "4180",
+   "ris_station_number": "410158",
+   "route_id": "100476021",
+   "meters": 302.9459027374251,
+   "matched": false
+}{
+   "tmas_station_id": "720",
+   "ris_station_number": "78154",
+   "route_id": "236297011",
+   "meters": 305.83778476840286,
+   "matched": false
+}{
+   "tmas_station_id": "725",
+   "ris_station_number": "70024",
+   "route_id": "100206041",
+   "meters": 307.422411272991,
+   "matched": false
+}{
+   "tmas_station_id": "2431",
+   "ris_station_number": "240019",
+   "route_id": "100280101",
+   "meters": 308.7251568666971,
+   "matched": false
+}{
+   "tmas_station_id": "4631",
+   "ris_station_number": "460002",
+   "route_id": "100135021",
+   "meters": 313.19160744448493,
+   "matched": false
+}{
+   "tmas_station_id": "5181",
+   "ris_station_number": "510044",
+   "route_id": "100097011",
+   "meters": 314.8292817565184,
+   "matched": false
+}{
+   "tmas_station_id": "3480",
+   "ris_station_number": "340257",
+   "route_id": "100032041",
+   "meters": 315.05035629258657,
+   "matched": false
+}{
+   "tmas_station_id": "7500",
+   "ris_station_number": "750225",
+   "route_id": "100265051",
+   "meters": 315.52424979485426,
+   "matched": false
+}{
+   "tmas_station_id": "1281",
+   "ris_station_number": "120901",
+   "route_id": "270261011",
+   "meters": 319.35019476711193,
+   "matched": false
+}{
+   "tmas_station_id": "9381",
+   "ris_station_number": "960031",
+   "route_id": "100154041",
+   "meters": 319.5716435461903,
+   "matched": false
+}{
+   "tmas_station_id": "6280",
+   "ris_station_number": "620204",
+   "route_id": "100073011",
+   "meters": 319.776580275927,
+   "matched": false
+}{
+   "tmas_station_id": "2531",
+   "ris_station_number": "250036",
+   "route_id": "100428121",
+   "meters": 320.5183945922912,
+   "matched": false
+}{
+   "tmas_station_id": "3732",
+   "ris_station_number": "470526",
+   "route_id": "100023041",
+   "meters": 320.57785490772824,
+   "matched": false
+}{
+   "tmas_station_id": "1280",
+   "ris_station_number": "120503",
+   "route_id": "100494021",
+   "meters": 321.4939033174723,
+   "matched": false
+}{
+   "tmas_station_id": "2380",
+   "ris_station_number": "230028",
+   "route_id": "100241081",
+   "meters": 328.71009636774204,
+   "matched": false
+}{
+   "tmas_station_id": "3680",
+   "ris_station_number": "360032",
+   "route_id": "100759021",
+   "meters": 331.3215256224488,
+   "matched": false
+}{
+   "tmas_station_id": "6485",
+   "ris_station_number": "640180",
+   "route_id": "100086011",
+   "meters": 337.52702814240007,
+   "matched": false
+}{
+   "tmas_station_id": "8381",
+   "ris_station_number": "830362",
+   "route_id": "100668011",
+   "meters": 339.15620616734867,
+   "matched": false
+}{
+   "tmas_station_id": "1231",
+   "ris_station_number": "120449",
+   "route_id": "100510031",
+   "meters": 343.44374855350173,
+   "matched": false
+}{
+   "tmas_station_id": "4181",
+   "ris_station_number": "412002",
+   "route_id": "139650011",
+   "meters": 344.0038679293283,
+   "matched": false
+}{
+   "tmas_station_id": "5381",
+   "ris_station_number": "530097",
+   "route_id": "100224011",
+   "meters": 347.36989919290784,
+   "matched": false
+}{
+   "tmas_station_id": "7231",
+   "ris_station_number": "720024",
+   "route_id": "100265061",
+   "meters": 349.3805859990942,
+   "matched": false
+}{
+   "tmas_station_id": "5484",
+   "ris_station_number": "540353",
+   "route_id": "100023011",
+   "meters": 350.27084312437285,
+   "matched": false
+}{
+   "tmas_station_id": "7181",
+   "ris_station_number": "710416",
+   "route_id": "100144011",
+   "meters": 355.20768045786076,
+   "matched": false
+}{
+   "tmas_station_id": "3381",
+   "ris_station_number": "330378",
+   "route_id": "100375041",
+   "meters": 356.03376209387665,
+   "matched": false
+}{
+   "tmas_station_id": "5283",
+   "ris_station_number": "520517",
+   "route_id": "100362011",
+   "meters": 357.2851232407895,
+   "matched": false
+}{
+   "tmas_station_id": "6310",
+   "ris_station_number": "638017",
+   "route_id": "170275011",
+   "meters": 360.4418383387605,
+   "matched": false
+}{
+   "tmas_station_id": "7580",
+   "ris_station_number": "750046",
+   "route_id": "100339021",
+   "meters": 366.8610749742129,
+   "matched": false
+}{
+   "tmas_station_id": "5486",
+   "ris_station_number": "540905",
+   "route_id": "100754011",
+   "meters": 367.9194617727622,
+   "matched": false
+}{
+   "tmas_station_id": "7481",
+   "ris_station_number": "740166",
+   "route_id": "100122021",
+   "meters": 369.1658560697585,
+   "matched": false
+}{
+   "tmas_station_id": "5182",
+   "ris_station_number": "513004",
+   "route_id": "275152011",
+   "meters": 372.0942213413504,
+   "matched": false
+}{
+   "tmas_station_id": "2280",
+   "ris_station_number": "220049",
+   "route_id": "100483091",
+   "meters": 372.53067326088313,
+   "matched": false
+}{
+   "tmas_station_id": "9180",
+   "ris_station_number": "910026",
+   "route_id": "100217011",
+   "meters": 373.97813461920725,
+   "matched": false
+}{
+   "tmas_station_id": "740",
+   "ris_station_number": "77127",
+   "route_id": "254175011",
+   "meters": 381.08383045547413,
+   "matched": false
+}{
+   "tmas_station_id": "720",
+   "ris_station_number": "78154",
+   "route_id": "236297011",
+   "meters": 386.384397547216,
+   "matched": false
+}{
+   "tmas_station_id": "720",
+   "ris_station_number": "70057",
+   "route_id": "100192031",
+   "meters": 390.52082322842153,
+   "matched": false
+}{
+   "tmas_station_id": "7183",
+   "ris_station_number": "710199",
+   "route_id": "100032081",
+   "meters": 415.6229937616187,
+   "matched": false
+}{
+   "tmas_station_id": "6310",
+   "ris_station_number": "638018",
+   "route_id": "170275011",
+   "meters": 418.52459647926105,
+   "matched": false
+}{
+   "tmas_station_id": "9381",
+   "ris_station_number": "936088",
+   "route_id": "214526011",
+   "meters": 430.3264396511767,
+   "matched": false
+}{
+   "tmas_station_id": "9381",
+   "ris_station_number": "936088",
+   "route_id": "214526011",
+   "meters": 432.49374795514916,
+   "matched": false
+}{
+   "tmas_station_id": "6310",
+   "ris_station_number": "638058",
+   "route_id": "170274011",
+   "meters": 470.06011356674946,
+   "matched": false
+}{
+   "tmas_station_id": "710",
+   "ris_station_number": "78100",
+   "route_id": "236276011",
+   "meters": 483.41321100900655,
+   "matched": false
+}{
+   "tmas_station_id": "5183",
+   "ris_station_number": "510478",
+   "route_id": "100407011",
+   "meters": 483.57952954226516,
+   "matched": false
+}{
+   "tmas_station_id": "5183",
+   "ris_station_number": "510478",
+   "route_id": "100407011",
+   "meters": 486.57746607974076,
+   "matched": false
+}{
+   "tmas_station_id": "8580",
+   "ris_station_number": "856071",
+   "route_id": "193302011",
+   "meters": 503.4372661209857,
+   "matched": false
+}{
+   "tmas_station_id": "5183",
+   "ris_station_number": "510478",
+   "route_id": "100407011",
+   "meters": 514.6107380756018,
+   "matched": false
+}{
+   "tmas_station_id": "5182",
+   "ris_station_number": "513001",
+   "route_id": "275149011",
+   "meters": 525.7699590777015,
+   "matched": false
+}{
+   "tmas_station_id": "8580",
+   "ris_station_number": "856071",
+   "route_id": "193302011",
+   "meters": 552.7666632070193,
+   "matched": false
+}{
+   "tmas_station_id": "8580",
+   "ris_station_number": "856071",
+   "route_id": "193302011",
+   "meters": 554.5045413437596,
+   "matched": false
+}{
+   "tmas_station_id": "5182",
+   "ris_station_number": "510027",
+   "route_id": "100362021",
+   "meters": 560.281166373749,
+   "matched": false
+}{
+   "tmas_station_id": "5182",
+   "ris_station_number": "510027",
+   "route_id": "100362021",
+   "meters": 563.049913436559,
+   "matched": false
+}{
+   "tmas_station_id": "8580",
+   "ris_station_number": "856071",
+   "route_id": "193302011",
+   "meters": 571.9030034170385,
+   "matched": false
+}{
+   "tmas_station_id": "5182",
+   "ris_station_number": "510027",
+   "route_id": "100362021",
+   "meters": 576.8633169532072,
+   "matched": false
+}{
+   "tmas_station_id": "740",
+   "ris_station_number": "75048",
+   "route_id": "243312011",
+   "meters": 754.2186943442194,
+   "matched": false
+}{
+   "tmas_station_id": "740",
+   "ris_station_number": "72201",
+   "route_id": "243282011",
+   "meters": 801.3493168151712,
+   "matched": false
+}{
+   "tmas_station_id": "740",
+   "ris_station_number": "77125",
+   "route_id": "254161011",
+   "meters": 827.7706522059993,
+   "matched": false
+}{
+   "tmas_station_id": "780",
+   "ris_station_number": "70937",
+   "route_id": "100554011",
+   "meters": 959.8787607798085,
+   "matched": false
+}{
+   "tmas_station_id": "780",
+   "ris_station_number": "70937",
+   "route_id": "100554011",
+   "meters": 960.9096885317035,
+   "matched": false
+}{
+   "tmas_station_id": "780",
+   "ris_station_number": "70937",
+   "route_id": "100554011",
+   "meters": 967.2536540833825,
+   "matched": false
+}{
+   "tmas_station_id": "780",
+   "ris_station_number": "70937",
+   "route_id": "100554011",
+   "meters": 982.2018695586202,
+   "matched": false
+}{
+   "tmas_station_id": "710",
+   "ris_station_number": "77184",
+   "route_id": "241440011",
+   "meters": 984.2945804697424,
+   "matched": false
+}{
+   "tmas_station_id": "780",
+   "ris_station_number": "70937",
+   "route_id": "100554012",
+   "meters": 998.3352513769042,
+   "matched": false
+}{
+   "tmas_station_id": "710",
+   "ris_station_number": "78100",
+   "route_id": "236276011",
+   "meters": 1227.8983486719987,
+   "matched": false
+}{
+   "tmas_station_id": "8131",
+   "ris_station_number": "936040",
+   "route_id": "215193011",
+   "meters": 1245.5717811455625,
+   "matched": false
+}{
+   "tmas_station_id": "8131",
+   "ris_station_number": "936040",
+   "route_id": "215193011",
+   "meters": 1321.9707274207835,
+   "matched": false
+}{
+   "tmas_station_id": "8131",
+   "ris_station_number": "936040",
+   "route_id": "215193011",
+   "meters": 1875.406091911683,
+   "matched": false
+}{
+   "tmas_station_id": "8131",
+   "ris_station_number": "936040",
+   "route_id": "215193011",
+   "meters": 1882.7997268670865,
+   "matched": false
+}{
+   "tmas_station_id": "8131",
+   "ris_station_number": "936178",
+   "route_id": "215236011",
+   "meters": 2182.399225339369,
+   "matched": false
+}

@@ -87,6 +87,8 @@
       { f: 'admin-panel-status-v2.html', t: 'admin panel status v2 · planner scope' },
       { f: 'admin-panel-status-v3.html', t: 'admin panel status v3 · re-run + create/fetch/geo/permissions' },
       { f: 'admin-panel-status-v4.html', t: 'admin panel status v4 · six families, dropped sections quarantined' },
+      { f: 'county-template-qa.html', t: 'county template front-end QA' },
+      { f: 'mny-transcribe-skills-to-git.html', t: 'transcribe skills → git' },
     ]},
   ];
 

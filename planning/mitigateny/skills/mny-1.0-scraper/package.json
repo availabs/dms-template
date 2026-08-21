@@ -1,0 +1,9 @@
+{
+  "name": "mny-1.0-scraper",
+  "private": true,
+  "type": "commonjs",
+  "description": "Reusable scraper for MitigateNY 1.0 county sites (CommonJS; overrides repo-root type:module)",
+  "dependencies": {
+    "puppeteer-core": "^25.4.0"
+  }
+}

@@ -5,10 +5,11 @@ import {
   GRAPH_TYPE_OPTIONS,
   MEASURE_OPTIONS,
   MEASURE_CATEGORIES,
-  RESOLUTION_OPTIONS,
+  resolutionOptionsFor,
   COMPARISON_MODE_OPTIONS,
   DEFAULT_PICK,
 } from '../MeasurePicker/composeMeasureConfig';
+import { MAP_MEASURE_OPTIONS } from '../MeasurePicker/composeMapConfig';
 import { MEASURE_DESCRIPTIONS, GRAPH_TYPE_DESCRIPTIONS } from './graphGuidanceCopy';
 import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_PRESETS, timeOfDayToken } from '../ReportRouteList/utils';
 
@@ -76,11 +77,12 @@ const GRAPH_TYPE_GLYPHS = {
 // This modal creates a brand-new section, so — unlike the shared chart-only
 // GRAPH_TYPE_OPTIONS (also used by the older in-place edit-bar surface, which re-composes an
 // already-created AVL Graph section and has no business offering "Table"/"Map" as a display
-// type) — it can offer Table/Map as real, distinct shapes to create. Map is included but
-// disabled: its compose path doesn't exist yet (see useAddGraphSection.js's note), so selecting
-// it would silently do nothing; better to show the roadmap than hide it.
+// type) — it can offer Table/Map as real, distinct shapes to create.
 const SHAPE_OPTIONS = [...GRAPH_TYPE_OPTIONS, { value: 'Table', label: 'Table' }, { value: 'Map', label: 'Map' }];
-const DISABLED_SHAPES = { Map: "Map graphs aren't built yet." };
+// No shapes disabled today — kept as a real mechanism (not deleted) since Map WAS disabled here
+// until Tier 5C (report-authoring-ux-overhaul.md, 2026-08-20) shipped a real compose path for it;
+// a future shape addition may need the same "show the roadmap, don't hide it" treatment.
+const DISABLED_SHAPES = {};
 
 // Guided "add a graph" flow — collapses the old two-step author path (+Add Component -> blank
 // AVL Graph -> open sectionMenu -> Measure Picker -> configure) into one modal. This component
@@ -107,16 +109,14 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     setSelectedRouteIds(new Set());
   }, [open]);
 
-  // A Map card draws one route at a time (m2SelectMode in the reference file) — clicking the
-  // already-selected route deselects it, clicking a different one REPLACES the selection rather
-  // than adding to it. Verified against the reference's own `m2-pick` handler: no toast/refusal
-  // for this per-row click (a toast only guards a "select all" affordance, which this modal
-  // doesn't have).
+  // report-authoring-ux-overhaul.md Tier 6B (2026-08-20): Map used to draw one route at a time
+  // (mirroring the reference mockup's `m2SelectMode`) — confirmed via direct research that this was
+  // a pure UI-gate choice, not a technical constraint: `materializeSeriesLayer`
+  // (useComparisonSeriesLayers.js) already clones a template layer once per assigned route with no
+  // route-count-specific logic, per-route coloring is already automatic, and the choropleth join
+  // operates per-TMC, not per-route. Map now uses the exact same add/remove selection every other
+  // shape already uses below.
   const toggleRoute = (id) => {
-    if (pick.graphType === 'Map') {
-      setSelectedRouteIds((prev) => (prev.has(id) && prev.size === 1 ? new Set() : new Set([id])));
-      return;
-    }
     setSelectedRouteIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -140,6 +140,13 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     });
   };
   const applyTodPreset = (preset) => setPick((p) => ({ ...p, start: preset.startTime, end: preset.endTime }));
+  const toggleMeasure = (m) => {
+    setPick((p) => {
+      const has = (p.measures || []).includes(m);
+      const nextMeasures = has ? p.measures.filter((x) => x !== m) : [...(p.measures || []), m];
+      return { ...p, measures: nextMeasures };
+    });
+  };
 
   // Difference graphs color `anchor - other` (see report-spec.md's "Difference graphs: anchor
   // and sign") — only meaningful once exactly 2 routes are checked. Order mirrors how
@@ -164,11 +171,25 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
     : [];
 
   const Glyph = GRAPH_TYPE_GLYPHS[pick.graphType] || BarGraphGlyph;
-  const measureLabel = MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || pick.measure;
-  const resolutionLabel = RESOLUTION_OPTIONS.find((o) => o.value === pick.resolution)?.label || pick.resolution;
+  const isTable = pick.graphType === 'Table';
+  // Map has no Resolution/Comparison-Mode/When concept at all — it's the assigned route's
+  // geometry (optionally colored by a measure), not a time-bucketed data query — so those fields
+  // hide below. Map DOES have its OWN, much shorter measure list (Tier 5I, 2026-08-20:
+  // MAP_MEASURE_OPTIONS, not MEASURE_OPTIONS) — "none" (plain geometry) or one of the few measures
+  // with an authored choropleth default.
+  const isMap = pick.graphType === 'Map';
+  const measureLabel = isTable
+    ? ((pick.measures || []).length
+        ? `${pick.measures.length} measure${pick.measures.length === 1 ? '' : 's'}`
+        : 'no measures selected')
+    : isMap
+      ? (MAP_MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || pick.measure)
+      : (MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || pick.measure);
+  const resolutionLabel = resolutionOptionsFor(pick.graphType).find((o) => o.value === pick.resolution)?.label || pick.resolution;
   const comparisonLabel = COMPARISON_MODE_OPTIONS.find((o) => o.value === pick.comparisonMode)?.label || pick.comparisonMode;
 
-  const canConfirm = selectedRouteIds.size >= 1 && !DISABLED_SHAPES[pick.graphType];
+  const canConfirm = selectedRouteIds.size >= 1 && !DISABLED_SHAPES[pick.graphType]
+    && (!isTable || (pick.measures || []).length >= 1);
 
   const handleConfirm = () => {
     onConfirm?.({ pick, selectedRouteIds: Array.from(selectedRouteIds) });
@@ -206,9 +227,7 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
             </div>
             {routes.length > 0 ? (
               <div className={t.routesNote}>
-                {pick.graphType === 'Map'
-                  ? 'A map draws one route at a time — picking another replaces it.'
-                  : 'Each route keeps its identity colour, so the new card reads against the ones already on the report. A route can feed any number of cards.'}
+                Each route keeps its identity colour, so the new card reads against the ones already on the report. A route can feed any number of cards.
               </div>
             ) : null}
           </div>
@@ -227,13 +246,27 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                     disabled={!!disabledReason}
                     title={disabledReason}
                     onClick={() => {
-                      setPick((p) => ({ ...p, graphType: o.value }));
-                      // Switching TO Map collapses an existing multi-selection to just its first
-                      // entry (mirrors the reference file's own graph-type-switch behavior) — a
-                      // Map card can only ever draw one route.
-                      if (o.value === 'Map') {
-                        setSelectedRouteIds((prev) => (prev.size > 1 ? new Set([Array.from(prev)[0]]) : prev));
-                      }
+                      setPick((p) => {
+                        const next = { ...p, graphType: o.value };
+                        // Seed the Table multi-select from whatever single measure was already
+                        // picked, so it never opens looking empty — but only the FIRST time (if
+                        // the author already built up a `measures` set, re-clicking Table after
+                        // browsing another shape shouldn't reset it back to one).
+                        if (o.value === 'Table' && !(p.measures || []).length) {
+                          next.measures = [p.measure];
+                        }
+                        // Map and every chart type read `measure` from two DIFFERENT, only
+                        // coincidentally-overlapping option lists (MAP_MEASURE_OPTIONS vs
+                        // MEASURE_OPTIONS) — reset whenever the current value isn't valid in the
+                        // list the NEW shape actually uses, so switching shapes never leaves a
+                        // stale/meaningless measure silently selected underneath.
+                        if (o.value === 'Map' && !MAP_MEASURE_OPTIONS.some((m) => m.value === p.measure)) {
+                          next.measure = 'none';
+                        } else if (p.graphType === 'Map' && o.value !== 'Map' && !MEASURE_OPTIONS.some((m) => m.value === p.measure)) {
+                          next.measure = DEFAULT_PICK.measure;
+                        }
+                        return next;
+                      });
                     }}
                   >
                     <ShapeGlyph className={t.shapeCardGlyph} />
@@ -242,31 +275,85 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 );
               })}
             </div>
-            <div className={t.pickerGrid}>
-              <div className={t.pickerField}>
-                <label className={t.pickerLabel}>Measure</label>
-                {/* Native <select>/<optgroup> — the shared Select/MultiSelect primitive has no
-                    grouped-option support, and adding one there is a bigger, separate change
-                    than this one field needs. */}
-                <select
-                  className={t.measureNativeSelect}
-                  value={pick.measure}
-                  onChange={(e) => setPick((p) => ({ ...p, measure: e.target.value }))}
-                >
+            {/* report-authoring-ux-overhaul.md Tier 5D (2026-08-20): Table is the one shape that
+                can hold more than one measure (one column each) — every chart type still draws
+                exactly one measure's worth of yAxis, so they keep the plain single select below.
+                Rendered full-width, above the 2-col pickerGrid, rather than squeezed into one of
+                its cells — a checklist needs more room than a `<select>` ever did. */}
+            {pick.graphType === 'Table' ? (
+              <div className={`${t.pickerField} mb-3`}>
+                <label className={t.pickerLabel}>Measures (pick any)</label>
+                <div className={t.measureChecklist}>
                   {MEASURE_CATEGORIES.map((cat) => (
-                    <optgroup key={cat.label} label={cat.label}>
+                    <div key={cat.label}>
+                      <div className={t.measureGroupLabel}>{cat.label}</div>
                       {cat.measures.map((m) => {
                         const opt = MEASURE_OPTIONS.find((o) => o.value === m);
-                        return opt ? <option key={m} value={m}>{opt.label}</option> : null;
+                        if (!opt) return null;
+                        const checked = (pick.measures || []).includes(m);
+                        return (
+                          <button
+                            key={m}
+                            type="button"
+                            className={checked ? t.routeItemSelected : t.routeItem}
+                            onClick={() => toggleMeasure(m)}
+                          >
+                            <input type="checkbox" className={t.routeCheckbox} checked={checked} readOnly />
+                            <span className={t.routeName}>{opt.label}</span>
+                          </button>
+                        );
                       })}
-                    </optgroup>
+                    </div>
                   ))}
-                </select>
+                </div>
+                {!(pick.measures || []).length ? (
+                  <div className={t.warningNote}>Pick at least one measure — a table with none has no columns to show.</div>
+                ) : null}
               </div>
-              <div className={t.pickerField}>
-                <label className={t.pickerLabel}>Resolution</label>
-                <Select options={RESOLUTION_OPTIONS} value={pick.resolution} onChange={(v) => setPick((p) => ({ ...p, resolution: v }))} />
-              </div>
+            ) : null}
+
+            <div className={t.pickerGrid}>
+              {!isTable && !isMap ? (
+                <div className={t.pickerField}>
+                  <label className={t.pickerLabel}>Measure</label>
+                  {/* Native <select>/<optgroup> — the shared Select/MultiSelect primitive has no
+                      grouped-option support, and adding one there is a bigger, separate change
+                      than this one field needs. */}
+                  <select
+                    className={t.measureNativeSelect}
+                    value={pick.measure}
+                    onChange={(e) => setPick((p) => ({ ...p, measure: e.target.value }))}
+                  >
+                    {MEASURE_CATEGORIES.map((cat) => (
+                      <optgroup key={cat.label} label={cat.label}>
+                        {cat.measures.map((m) => {
+                          const opt = MEASURE_OPTIONS.find((o) => o.value === m);
+                          return opt ? <option key={m} value={m}>{opt.label}</option> : null;
+                        })}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+              {/* Map's own, much shorter measure list (Tier 5I, 2026-08-20) — a novice pick, not
+                  the full chart vocabulary: "just show the route" or color it by one of the few
+                  measures with an authored choropleth default (composeMapConfig.js). */}
+              {isMap ? (
+                <div className={t.pickerField}>
+                  <label className={t.pickerLabel}>Color by</label>
+                  <Select
+                    options={MAP_MEASURE_OPTIONS}
+                    value={pick.measure}
+                    onChange={(v) => setPick((p) => ({ ...p, measure: v }))}
+                  />
+                </div>
+              ) : null}
+              {!isMap ? (
+                <div className={t.pickerField}>
+                  <label className={t.pickerLabel}>Resolution</label>
+                  <Select options={resolutionOptionsFor(pick.graphType)} value={pick.resolution} onChange={(v) => setPick((p) => ({ ...p, resolution: v }))} />
+                </div>
+              ) : null}
               {hasModeField ? (
                 <div className={t.pickerField}>
                   <label className={t.pickerLabel}>Comparison Mode</label>
@@ -284,6 +371,15 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                 </div>
               ) : null}
             </div>
+
+            {/* report-authoring-ux-overhaul.md Tier 5E (2026-08-20): Difference picked with the
+                wrong route count — this modal can't disable the Select option itself (see the
+                theme file's own note on `warningNote`), so a warning is the equivalent signal. */}
+            {hasModeField && pick.comparisonMode === 'difference' && selectedRouteIds.size !== 2 ? (
+              <div className={t.warningNote}>
+                Difference mode compares exactly two routes; {selectedRouteIds.size} selected right now.
+              </div>
+            ) : null}
 
             {/* When — time-of-day + day-of-week, the exact facets that moved off the route onto
                 the graph (design push #2, 2026-08-06). Not offered for Map (routeSelect is the
@@ -327,11 +423,30 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
             <div className={t.preview}>
               <Glyph className={t.previewGlyph} />
               <div className={t.previewTextWrap}>
-                <div className={t.previewTitle}>{measureLabel} — {SHAPE_OPTIONS.find((o) => o.value === pick.graphType)?.label}</div>
-                <div className={t.previewDescription}>{MEASURE_DESCRIPTIONS[pick.measure]}</div>
+                {/* Map, when its measure is 'none', has no measure at all — "None — just show
+                    the route — Map" would be redundant, so the title drops the measure prefix
+                    only in that one case. */}
+                <div className={t.previewTitle}>
+                  {isMap && pick.measure === 'none'
+                    ? SHAPE_OPTIONS.find((o) => o.value === pick.graphType)?.label
+                    : `${measureLabel} — ${SHAPE_OPTIONS.find((o) => o.value === pick.graphType)?.label}`}
+                </div>
+                {/* A single measure's description reads fine standing alone; once a table has
+                    2+, no ONE measure's blurb represents the whole card, so it's dropped rather
+                    than arbitrarily showing whichever measure `pick.measure` happens to still
+                    hold from before the shape switched to Table. Map's own MEASURE_DESCRIPTIONS
+                    lookup is keyed the same way charts already are (both read vocabulary.json's
+                    measure keys) — 'none' simply has no entry, so nothing renders for it. */}
+                {(!isTable || (pick.measures || []).length === 1) ? (
+                  <div className={t.previewDescription}>
+                    {MEASURE_DESCRIPTIONS[isTable ? pick.measures[0] : pick.measure]}
+                  </div>
+                ) : null}
                 <div className={t.previewDescription}>{GRAPH_TYPE_DESCRIPTIONS[pick.graphType]}</div>
                 <div className={t.previewSummary}>
-                  Shown at {resolutionLabel} resolution{pick.graphType !== 'Map' ? `, ${timeOfDayToken(pick.start, pick.end)} · ${(summarizeWeekdays(pick.weekdays) || 'all days').toLowerCase()}` : ''}{hasModeField ? `, ${comparisonLabel.toLowerCase()} mode` : ''}.
+                  {isMap
+                    ? 'Shows the selected route(s)’ geometry on a map — style and layers are editable afterward via the map’s own settings.'
+                    : <>Shown at {resolutionLabel} resolution, {timeOfDayToken(pick.start, pick.end)} · {(summarizeWeekdays(pick.weekdays) || 'all days').toLowerCase()}{hasModeField ? `, ${comparisonLabel.toLowerCase()} mode` : ''}.</>}
                 </div>
               </div>
             </div>

@@ -3,7 +3,20 @@
 // npmrds-report.js`'s `qcPill`/`qcIconPill`/`qcPop` functions), not a separate look invented for
 // this row.
 export const quickControlsTheme = {
-  wrapper: 'w-full flex items-center justify-end gap-1.5 flex-nowrap overflow-hidden',
+  // Outer row: pins the reorder group to the left edge while the pill cluster
+  // (a `flex-1` sibling, still internally `justify-end`) stays right-justified —
+  // two independently-aligned groups sharing one row, not one `justify-end` list
+  // where "first in DOM" only means "leftmost within the packed-right cluster."
+  rowWrapper: 'w-full flex items-center gap-1.5',
+  // Layout controls (Move Up/Down + Width) — deliberately outside `wrapper` below
+  // so the row-fit measurement there only ever sees the DATA pill cluster's own
+  // available width, not this group's. Named `reorderGroup` for its original
+  // members; Width joined it later (report-authoring-ux-overhaul.md Tier 5,
+  // 2026-08-20) per Ryan's own call that both layout controls read as one group.
+  reorderGroup: 'flex items-center gap-1 shrink-0',
+  reorderBtn: 'size-6 shrink-0 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] flex items-center justify-center text-slate-600',
+
+  wrapper: 'flex-1 min-w-0 flex items-center justify-end gap-1.5 flex-nowrap overflow-hidden',
 
   // Pills — the row's own trigger buttons. `pillDefault` is the plain/unset look; `pillStrong`
   // flags an attention-worthy state (no routes assigned yet, difference mode active).
@@ -36,6 +49,10 @@ export const quickControlsTheme = {
   popPillRow: 'flex flex-wrap items-center gap-1',
   pill: 'h-5 px-1.5 rounded border border-zinc-950/12 bg-slate-100 text-slate-600 font-mono text-[10px] hover:bg-slate-200',
   pillOn: 'h-5 px-1.5 rounded border border-[#1F3F8F] bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]',
+  // Tier 5E (2026-08-20): an option that's structurally unavailable right now (e.g.
+  // Difference mode below 2 routes) — visible so it stays discoverable, not just
+  // hidden, but not interactive.
+  pillDisabled: 'h-5 px-1.5 rounded border border-zinc-950/8 bg-slate-50 text-slate-300 font-mono text-[10px] cursor-not-allowed',
   dayOn: 'w-6 h-5 rounded border border-[#1F3F8F]/40 bg-[#1F3F8F]/10 text-[#16307A] font-mono text-[10px]',
   dayOff: 'w-6 h-5 rounded border border-zinc-950/12 bg-slate-100 text-slate-400 font-mono text-[10px]',
 };

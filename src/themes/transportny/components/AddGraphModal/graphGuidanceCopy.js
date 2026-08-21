@@ -24,5 +24,7 @@ export const GRAPH_TYPE_DESCRIPTIONS = {
   LineGraph: 'A continuous line per route — good for seeing trends over time.',
   GridGraph: 'A heatmap of value by time-of-day and route — good for spotting patterns across many time buckets at once.',
   Table: 'The same measure/resolution data as a chart, in rows and columns — good for reading exact values.',
-  Map: 'The selected routes drawn on a map, colored by the current measure — good for seeing where a value is high or low.',
+  // Tier 5C (report-authoring-ux-overhaul.md, 2026-08-20): this first cut is plain geometry only —
+  // no measure, no coloring by value. Revisit this copy if/when a choropleth-by-measure Map ships.
+  Map: 'The selected route drawn on a map — good for seeing exactly where it runs.',
 };
