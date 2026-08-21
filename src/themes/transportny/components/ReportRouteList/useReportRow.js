@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash-es';
 import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
 import { getColorRange } from '../../../../dms/packages/dms/src/ui/components/graph_new/colorSchemeUnifier';
+import { defaultRouteDateRange } from './relativeDateResolution';
 
 // Same palette a graph's own default series colors come from
 // (ComponentRegistry/graph_new/config.jsx's `DefaultPalette`) — reused here so a route's
@@ -281,8 +282,18 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
       const newRoutes = newRoutesData.map((newRouteData, i) => {
         const name = dedupeAgainst(newRouteData.name);
         existingNames.add(name);
+        // Ryan's call, 2026-08-20: every route should get a real date range the moment it's
+        // added, not "NO DATES SET" — an unbounded (all-history) query is silently wrong for
+        // almost every real use case, and this is already what happens today for any dateless
+        // route's Graph/Table/Map queries (transformReportRoutes' empty-date-array leaf gets
+        // dropped by buildUdaConfig.js as "no constraint", not "no rows"). Only applies when
+        // the incoming data carries NEITHER a fixed range NOR a derived-date formula — the
+        // catalog/tag-browser path never supplies either today, but this guard keeps the
+        // default from ever clobbering a real one if that changes.
+        const hasDateInfo = (newRouteData.startDate && newRouteData.endDate) || newRouteData.dateFormula;
         return {
           color: ROUTE_COLOR_PALETTE[(routes.length + i) % ROUTE_COLOR_PALETTE.length],
+          ...(hasDateInfo ? {} : defaultRouteDateRange()),
           ...newRouteData,
           name,
           route_comp_id: `comp-${maxId + 1 + i}`,
