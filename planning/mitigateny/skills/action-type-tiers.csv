@@ -1,0 +1,18 @@
+action_type,tier,within_tier_rank,in_boolean_set,notes
+"Large Flood Control - Dams, Levees, Floodwalls; Safe Rooms",1,1,yes,"Absorbs BOTH owner Tier-1 types ""Dam Rehabilitation/Removal"" and ""Other Large Flood Control (Levees, Floodwalls; Safe Rooms)"" — neither exists as a P/S/T option, and this option's own name covers dams. Set the dam_rehabilitation_removal boolean separately when the action is specifically a dam."
+"Community Infrastructure - Drainage, Underground Utilities",1,2,yes,Owner Tier 1 verbatim.
+"Infrastructure Projects",1,3,no,"P/S/T-only option, no boolean. Assigned Tier 1 because it is structural (so guardrails 5.1/5.3/5.4 fire correctly), but ranked LAST inside Tier 1 by the specificity tie-break. This is the substitute for ""Coastal Protection"", which has no P/S/T option — always set the coastal_protection boolean alongside so the true type is preserved."
+"Property Protection - Acquisition, Elevation or Relocation",2,1,yes,Owner Tier 2 verbatim.
+"Property Protection - Floodproofing, other",2,2,yes,Owner Tier 2 verbatim.
+"Wetland Protection/ Restoration",3,1,yes,"Owner Tier 3 (""Wetlands/Floodplains"")."
+"Power - Microgrids, Emergency Power for Critical Facilities",4,1,yes,Owner Tier 4 verbatim.
+"Codes/ Ordinance/ Zoning/ Policy/ Law/ Governance",5,1,yes,"Owner Tier 5. Subject to guardrail 5.4 (Policy Ceiling)."
+"Plans",6,1,yes,"Owner Tier 6 (""Planning""). Subject to guardrail 5.3 (Planning Ceiling)."
+"Studies and/or Risk Assessment",6,2,yes,Owner Tier 6. Subject to guardrail 5.3.
+"Project Scoping",6,3,yes,Owner Tier 6. Subject to guardrail 5.3.
+"Establishing Long-Term Programs",6,4,yes,Owner Tier 6. Subject to guardrail 5.3.
+"Risk/Vulnerability Assessment",6,5,no,"P/S/T-only option, no boolean. Same family as ""Studies and/or Risk Assessment"", so Tier 6, ranked after it as the less specific of the pair. Subject to guardrail 5.3."
+"Education & Awareness",7,1,yes,"Owner Tier 7 (""Education, Awareness, Outreach""). Subject to guardrail 5.5 (Outreach Lock)."
+"Preparedness and Response",7,2,yes,"Owner Tier 7 (""Preparedness & Response""). Subject to guardrail 5.5."
+"Prevention/Mitigation Projects",8,1,no,"P/S/T-only option, no boolean, and the vaguest value in the list. Placed in Tier 8 but ranked BEFORE ""Other"" so guardrail 5.6 (Other is strictly last) still holds."
+"Other",8,2,yes,"Owner Tier 8. Guardrail 5.6 — always lowest priority."

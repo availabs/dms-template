@@ -3,7 +3,11 @@
 Layer-2 profile for [`transcribing-a-consultant-plan.md`](../transcribing-a-consultant-plan.md).
 Everything here is Tetra Tech-specific. The MNY target side and the method live in the parent skill.
 
-**Counties seen:** Suffolk (2026, analyzed in depth), Nassau (source present, not yet analyzed).
+**Counties seen:** Suffolk (2026, analyzed in depth).
+
+> **Correction (2026-08-20):** this file previously listed **Nassau** as a Tetra Tech county. That was
+> wrong — Nassau's 2020 plan was authored by **Hagerty Consulting** (confirmed in its base plan), and
+> its annexes share none of the structure below. See [`hagerty.md`](./hagerty.md).
 **Reference annex:** `references/mny-transcribe/suffolk/Volume-II-Jurisdictional-Annexes/Chapter 15 - Islip (T).docx` (git-ignored)
 **Crosswalk produced:** `references/mny-transcribe/suffolk/suffolk-annex-crosswalk.csv` (git-ignored) (109 mappings) +
 [`worked-examples/suffolk-annex-crosswalk-report.md`](../worked-examples/suffolk-annex-crosswalk-report.md)

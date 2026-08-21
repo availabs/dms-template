@@ -18,7 +18,9 @@ How-to guides for transcribing county Hazard Mitigation Plans into MitigateNY 2.
 | Skill | Use when |
 |---|---|
 | [`transcribing-a-consultant-plan.md`](./transcribing-a-consultant-plan.md) | Loading a consultant-authored HMP's **jurisdictional annexes** into the MNY forms datasets (Jurisdictions, Actions, Roles, Participation, Hazards of Concern, Capabilities). **Start here.** |
-| [`profiles/tetratech.md`](./profiles/tetratech.md) | The source plan is a Tetra Tech / FEMA-style plan (Suffolk, Nassau). |
+| [`profiles/tetratech.md`](./profiles/tetratech.md) | The source plan is a Tetra Tech / FEMA-style plan (Suffolk). |
+| [`profiles/hagerty.md`](./profiles/hagerty.md) | The source plan is a Hagerty Consulting plan (Nassau) — short annexes, transposed tables, separate action worksheets. |
+| [`action-type-tiers.csv`](./action-type-tiers.csv) | You need to **infer** an action's Primary/Secondary/Tertiary Action Type. Consultant-invariant: no consultant states them. Tier scores for the live 17-option vocabulary; the method and guardrails are in the parent skill's Phase 3. |
 | [`loading-annexes-into-jurisdictions-dataset.md`](./loading-annexes-into-jurisdictions-dataset.md) | MitigateNY **1.0-site** annexes → the Jurisdictions dataset columns; the write path in depth (Schenectady, Delaware). ⚠ its §4 read-path guidance is marked obsolete in-file — `dms dataset query` now reads split rows anonymously, lexical columns included. |
 | [`loading-a-plan-into-a-2.0-pattern.md`](./loading-a-plan-into-a-2.0-pattern.md) | Loading a transcribed plan's **narrative** into a 2.0 county pattern's Annotation slots (enumerate → inventory → crosswalk → fill → verify). Established on Schenectady, applied to Delaware. |
 | [`mny-1.0-scraper/README.md`](./mny-1.0-scraper/README.md) | The source is a live **MitigateNY 1.0** county site (`<county>.mitigateny.org`) that must be scraped to markdown first. |
@@ -48,6 +50,10 @@ new county, they are more instructive than the skills alone:
 - [`suffolk-preflight-report.md`](./worked-examples/suffolk-preflight-report.md) ·
   [`suffolk-extraction-report.md`](./worked-examples/suffolk-extraction-report.md) — the corpus scan
   and the extraction run that preceded it.
+- [`nassau-annex-crosswalk-report.md`](./worked-examples/nassau-annex-crosswalk-report.md) — a
+  Phase-2 crosswalk (175 mappings) for a **second consultant**, Hagerty. Read it alongside the
+  Suffolk one: same target schema, same subject matter, near-opposite content model. It also folds
+  the corpus pre-flight in (all 52 Nassau annex folders) rather than splitting it into its own report.
 - [`schenectady-crosswalk-report.md`](./worked-examples/schenectady-crosswalk-report.md) ·
   [`schenectady-pattern-pages-report.md`](./worked-examples/schenectady-pattern-pages-report.md) ·
   [`delaware-load-report.md`](./worked-examples/delaware-load-report.md) ·
@@ -65,6 +71,7 @@ and expect county-specific constants inside.
 | [`scripts/suffolk/`](./scripts/suffolk/) | Tetra Tech extraction + the five dataset builders/writers (`docx_outline2.py`, `build_capabilities.mjs`, `write_jurisdictions.mjs`, `run_batch.mjs`, `rollback.mjs`, …) |
 | [`scripts/schenectady/`](./scripts/schenectady/) | The 1.0-site pipeline: `enumerate.mjs`/`build_inventory.mjs`/`fill_slot.mjs`, annex tooling (`annex_lib.mjs`, `gen_crosswalk_csv.mjs`, `write_annexes.mjs`), `lexical.mjs`, `fq.js` |
 | [`scripts/delaware/`](./scripts/delaware/) | The same pipeline, second application — the cleaner copy of several scripts |
+| [`scripts/nassau/`](./scripts/nassau/) | Hagerty corpus tooling: `preflight.py` (spine + table-shape scan, flags file hazards), `inventory.py` (every file in every folder + docx content probes), `build_manifest.py` (folder → authoritative annex + worksheet files, with the five hand-decided folders inline), `build_aliases.py` (folder → geoid, asserts collision-free). All import `docx_outline2.py` from `scripts/suffolk/`. |
 | [`mny-1.0-scraper/`](./mny-1.0-scraper/) | Puppeteer scraper for 1.0 county sites + its own `package.json` (`"type":"commonjs"`, deliberately overriding the repo root) |
 
 **Auth is the CLI's job, not these skills'.** No credentials appear anywhere in this tree, and none
