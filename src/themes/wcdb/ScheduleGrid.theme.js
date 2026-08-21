@@ -10,12 +10,37 @@ export const scheduleGridTheme = {
   wrapper: "w-full min-w-0",
 
   // ── version bar ──────────────────────────────────────────────────────────
+  // z-10, not z-30: the bar only has to out-stack the grid rows it slides over.
+  // Anything at or above the section chrome's own z-40 covers the section Settings
+  // menu (absolutely positioned in the same stacking context) and makes the
+  // section uneditable — which is exactly what z-30-over-nothing used to do.
   versionBar:
-    "sticky top-[8px] z-30 mb-3 rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-2)] " +
+    "sticky top-[8px] z-10 mb-3 rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-2)] " +
     "shadow-[var(--shadow-modal)] px-6 py-4 flex flex-wrap items-center gap-x-6 gap-y-3",
   versionGroup: "flex items-center gap-3",
   versionLabel: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-4)]",
   versionName: "font-[family-name:var(--font-display)] italic text-[18px] leading-none tracking-[-0.02em] text-[color:var(--ink-1)]",
+
+  // ── version selector ─────────────────────────────────────────────────────
+  // A native <select> deliberately: it is the one control that gets keyboard
+  // navigation, mobile pickers and long-list scrolling for free, and the version
+  // list is data, not design. `versionSelect` styles it as the display-italic
+  // version name it replaces so the bar reads the same as before it was editable.
+  versionSelectWrap: "relative inline-flex items-center",
+  versionSelect:
+    "appearance-none bg-transparent border-0 pr-6 pl-0 cursor-pointer " +
+    "font-[family-name:var(--font-display)] italic text-[18px] leading-none tracking-[-0.02em] " +
+    "text-[color:var(--ink-1)] focus:outline-none hover:text-[color:var(--accent)] transition-colors",
+  versionSelectCaret: "pointer-events-none absolute right-0 size-[13px] text-[color:var(--ink-4)]",
+  versionAction:
+    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--line-2)] " +
+    "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] " +
+    "whitespace-nowrap hover:border-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors cursor-pointer",
+  versionActionDisabled:
+    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--line-1)] " +
+    "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] " +
+    "whitespace-nowrap cursor-not-allowed",
+  versionActionIcon: "size-[12px]",
   versionMeta: "font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]",
   versionLive: "inline-flex items-center gap-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]",
   liveDot: "wcdb-on-air-dot",
@@ -103,4 +128,16 @@ export const scheduleGridTheme = {
     "inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-4)] " +
     "font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap cursor-not-allowed",
   dialogConfirmIcon: "size-[14px]",
+
+  // ── name dialog (new / duplicate version) ────────────────────────────────
+  // Reuses the publish dialog's shell keys (overlay/card/head/body/foot) — same
+  // modal, different body — so the two dialogs can never drift apart visually.
+  nameField: "flex flex-col gap-2",
+  nameLabel: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.14em] uppercase text-[color:var(--ink-4)]",
+  nameInput:
+    "w-full px-4 py-3 rounded-[12px] bg-[var(--bg-2)] border border-[var(--line-2)] " +
+    "font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-1)] " +
+    "placeholder:text-[color:var(--ink-4)] focus:outline-none focus:border-[color:var(--ink-3)] transition-colors",
+  nameHint: "font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--ink-3)] m-0 mt-3",
+  nameError: "font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] text-[color:var(--live)] m-0 mt-3",
 }

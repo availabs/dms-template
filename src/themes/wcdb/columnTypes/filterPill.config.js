@@ -10,6 +10,15 @@ import { FilterPillEdit, FilterPillView } from "./filterPill"
 // The page variable must be registered in the PAGE's `filters` array or the
 // write is silently dropped — see creating-interactive-pages.md Step 0.
 export default {
+    // Author controls, flattened into the Card's per-column toolbar.
+    cardControls: [
+        { type: 'input', inputType: 'text', label: 'Param Key', key: 'paramKey' },
+        { type: 'input', inputType: 'text', label: 'Param Value', key: 'paramValue' },
+        { type: 'input', inputType: 'text', label: 'Pill Label', key: 'pillLabel' },
+        { type: 'input', inputType: 'text', label: 'Pill Style', key: 'pillStyle' },
+        { type: 'input', inputType: 'text', label: 'Pill Icon', key: 'pillIcon' },
+        { type: 'toggle', label: 'Active When Unset', key: 'activeWhenUnset' },
+    ],
   EditComp: FilterPillEdit,
   ViewComp: FilterPillView,
   cardHints: {

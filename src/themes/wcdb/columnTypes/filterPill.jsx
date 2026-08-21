@@ -25,6 +25,11 @@ import { filterPillTheme } from "./filterPill.theme"
 //   pillLabel   the segment's label; falls back to customName
 //   activeWhenUnset  true → this segment reads as active while the variable
 //               has no value (the "All" / reset segment)
+//   pillStyle   a NAMED style from `theme.filterPill.styles[]` — `dayTile` and
+//               `solid` ship alongside the default. Unset → styles[0].
+//   pillIcon    an icon name from the theme's registry, rendered before the
+//               label. The schedule design puts a department glyph on each
+//               department pill; an unnamed icon renders nothing.
 
 const readParam = (pageState, key) =>
   (pageState?.filters || []).find(f => f.searchKey === key)?.values
@@ -36,10 +41,20 @@ export const FilterPillView = ({
   pillLabel,
   customName,
   activeWhenUnset = false,
+  pillStyle,
+  pillIcon,
   className,
 }) => {
-  const { theme: themeFromContext = {} } = React.useContext(ThemeContext) || {}
-  const t = { ...filterPillTheme, ...getComponentTheme(themeFromContext, "filterPill") }
+  const { theme: themeFromContext = {}, UI } = React.useContext(ThemeContext) || {}
+  // `pillStyle` picks a NAMED style from the theme — the third argument
+  // `getComponentTheme` already takes. One card can then carry two filter
+  // shapes (the schedule design's day tiles above its department pills)
+  // without either being hard-coded here. Unset → styles[0].
+  const t = {
+    ...filterPillTheme.styles[0],
+    ...getComponentTheme(themeFromContext, "filterPill", pillStyle),
+  }
+  const Icon = UI?.Icon
   const { pageState, updatePageStateFilters } = React.useContext(PageContext) || {}
 
   const current = readParam(pageState, paramKey)
@@ -67,6 +82,7 @@ export const FilterPillView = ({
       onClick={onClick}
       className={`${isActive ? t.pillActive : t.pill} ${className || ""}`}
     >
+      {pillIcon && Icon ? <Icon icon={pillIcon} className={t.icon} /> : null}
       <span className={t.label}>{label}</span>
       {count === undefined || count === null || count === "" ? null : (
         <span className={isActive ? t.countActive : t.count}>{count}</span>

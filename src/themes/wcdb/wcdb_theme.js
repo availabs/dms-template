@@ -480,6 +480,9 @@ const theme = {
         footEyebrow: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
         footHeadline: "font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)]",
         footBody: "font-[family-name:var(--font-sans)] text-[15px] leading-[1.5] max-w-[440px] text-[color:var(--inv-ink-2)]",
+        // The footer's one mono detail line — the request line under the
+        // address. Inverted ink, like everything else on that surface.
+        footMeta: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--inv-ink)]",
         footListHead: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
         footLink: "font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)] hover:underline",
         footColophon: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
