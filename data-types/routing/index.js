@@ -464,7 +464,7 @@ module.exports = {
         const loadMs = Date.now() - t0;
 
         const t1 = Date.now();
-        const result = memoryGraph.selectClosureDensityCandidates(graph, ogc_fid, num_candidates || 10, cost_objective || "distance");
+        const result = await memoryGraph.selectClosureDensityCandidates(graph, ogc_fid, num_candidates || 10, cost_objective || "distance");
         const searchMs = Date.now() - t1;
         console.log("[routing/trsp-memory-density-points]", {
           conflation_view_id, ogc_fid,

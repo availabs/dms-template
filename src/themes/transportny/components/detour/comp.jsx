@@ -22,30 +22,75 @@ import { ClosureDensityPanel } from "./components/ClosureDensityPanel";
 
 const bearing = ([lon1, lat1], [lon2, lat2]) => Math.atan2(lon2 - lon1, lat2 - lat1);
 
+// Real-world distance (meters) between two [lon,lat] coords - used to accumulate how far the
+// multi-hop walk below has actually traveled, not just how many hops it took.
+const haversineM = ([lon1, lat1], [lon2, lat2]) => {
+  const R = 6371000;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+};
+
+// Minimum real distance (2026-08-24, "keep more gap between points... more gap in a same
+// direction is must") the walk below travels along the same road before picking a start/end point
+// - the original one-hop version could land the point on the IMMEDIATE next node past the closed
+// segment, which on an interchange/ramp complex can be a point that's geometrically close to the
+// segment but requires a huge loop to actually reach in a routable way (live-tested: a 15mi/818-
+// edge loop and a full circle around a highway interchange for what looked like two adjacent
+// points). Walking farther out first gives the route search room to find a sane path instead of
+// starting right at the most tangled part of the network.
+const MIN_ENDPOINT_GAP_M = 200; // ~0.12mi
+const MAX_ENDPOINT_HOPS = 15; // bounds worst case on a short, tightly-curved road
+
 // Picks the trip start/end point at a segment's endpoint. 2026-08-20 correction: a plain nearest-
 // any-node search (the original build) can grab a point on a PARALLEL road that happens to be
 // geometrically closer than the real continuation of the SAME road - wrong for detour purposes,
 // since the point is "where would this trip have to be to actually use this road." Priority order:
-//   1. The nearest OTHER node reachable via an edge that continues the SAME road (same `highway`
-//      type, straightest bearing continuation - see findSameRoadNode.js) - progressively widens
-//      its search bbox up to 5x, same as the original nearest-any-node search did.
-//   2. Falls back to the plain nearest-any-node search ONLY if step 1 finds nothing at all within
-//      that widened search - a real, flagged case (a genuine dead-end/disconnected node), not a
-//      silent substitution. `usedFallback: true` on the result lets the UI say so.
+//   1. Walk the SAME road (same `highway` type, straightest bearing continuation each hop - see
+//      findSameRoadNode.js) for at least MIN_ENDPOINT_GAP_M of real distance, not just one hop -
+//      each hop's own bbox search progressively widens up to 5x if that hop's immediate
+//      neighborhood comes up empty, same as the original nearest-any-node search did.
+//   2. If the walk dead-ends before reaching the minimum gap, use the farthest point it DID reach
+//      (still a real, same-road continuation - better than nothing) rather than discarding all
+//      that progress just because the target wasn't hit exactly.
+//   3. Falls back to the plain nearest-any-node search ONLY if step 1 finds NOTHING at all, not
+//      even one hop - a real, flagged case (a genuine dead-end/disconnected node), not a silent
+//      substitution. `usedFallback: true` on the result lets the UI say so.
 const resolveEndpointNode = async (coord, neighborCoord, nodeId, excludeOgcFid, highway, conflationViewId, pgEnv) => {
-  const incomingBearing = bearing(neighborCoord, coord);
-  let delta = 0.0015; // ~150m at these latitudes
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const bbox = [coord[0] - delta, coord[1] - delta, coord[0] + delta, coord[1] + delta];
-    const edges = await resolveEdgesInBbox(bbox, conflationViewId, pgEnv);
-    const found = findSameRoadNode(edges, nodeId, excludeOgcFid, highway, incomingBearing);
-    if (found) return { lon: found.lon, lat: found.lat, sameHighway: found.sameHighway, usedFallback: false };
-    delta *= 2;
-  }
+  let incomingBearing = bearing(neighborCoord, coord);
+  let currentCoord = coord;
+  let currentNodeId = nodeId;
+  let excludeEdge = excludeOgcFid; // first hop excludes the closed segment itself; later hops exclude whichever edge was just traversed, so the walk doesn't immediately backtrack
+  let accumulatedM = 0;
+  let farthest = null;
 
-  // Nothing connected at all within the widened search - genuinely disconnected/dead-end case
-  // (see the task file's "disconnected segment" note) - fall back to plain nearest-any-node.
-  delta = 0.0015;
+  for (let hop = 0; hop < MAX_ENDPOINT_HOPS; hop++) {
+    let found = null;
+    let delta = 0.0015; // ~150m at these latitudes
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const bbox = [currentCoord[0] - delta, currentCoord[1] - delta, currentCoord[0] + delta, currentCoord[1] + delta];
+      const edges = await resolveEdgesInBbox(bbox, conflationViewId, pgEnv);
+      found = findSameRoadNode(edges, currentNodeId, excludeEdge, highway, incomingBearing);
+      if (found) break;
+      delta *= 2;
+    }
+    if (!found) break; // dead end reached - stop here, use whatever `farthest` already has (or fall through below if this was the very first hop)
+
+    accumulatedM += haversineM(currentCoord, [found.lon, found.lat]);
+    farthest = { lon: found.lon, lat: found.lat, sameHighway: found.sameHighway, usedFallback: false };
+    if (accumulatedM >= MIN_ENDPOINT_GAP_M) return farthest;
+
+    incomingBearing = bearing(currentCoord, [found.lon, found.lat]);
+    currentCoord = [found.lon, found.lat];
+    currentNodeId = found.id;
+    excludeEdge = found.edgeOgcFid;
+  }
+  if (farthest) return farthest; // dead-ended or hit the hop cap before the full gap - still a real same-road point, just closer than ideal
+
+  // Nothing connected at all, not even one hop - genuinely disconnected/dead-end case (see the
+  // task file's "disconnected segment" note) - fall back to plain nearest-any-node.
+  let delta = 0.0015;
   for (let attempt = 0; attempt < 5; attempt++) {
     const bbox = [coord[0] - delta, coord[1] - delta, coord[0] + delta, coord[1] + delta];
     const nodes = await resolveNodesInBbox(bbox, conflationViewId, pgEnv);
@@ -108,17 +153,21 @@ const Comp = ({ state, setState, map }) => {
   const [resolveError, setResolveError] = React.useState(null);
 
   // Both travel directions render simultaneously, always (2026-08-20 - replaces the earlier
-  // direction-toggle and "show all routes" ideas): AtoB is primary (bold), BtoA is secondary
-  // (dimmed/dashed) - or just whichever one direction actually has a route, if only one does.
-  // Only the SELECTED cost objective (shortest/fastest) shows for each direction, not all 4 at
-  // once - keeps the map readable while still surfacing the directional asymmetry this feature
-  // exists to show.
-  const primaryFeature = routes?.AtoB
-    ? routes.AtoB[selectedVariant]?.feature
-    : routes?.BtoA?.[selectedVariant]?.feature;
+  // direction-toggle and "show all routes" ideas): AtoB is ALWAYS primary (bold/solid), BtoA is
+  // ALWAYS secondary (dimmed/dashed) - a direction's line style is fixed, not reassigned based on
+  // which direction(s) happen to have a route. Only the SELECTED cost objective (shortest/fastest)
+  // shows for each direction, not all 4 at once - keeps the map readable while still surfacing the
+  // directional asymmetry this feature exists to show.
+  //
+  // Fixed 2026-08-24 ("the route possible is end to start but still hard yellow is there, it has
+  // to be dotted"): the old version PROMOTED BtoA to solid/primary styling whenever AtoB had no
+  // route, so the only available route rendered bold even though DetourDetailsPanel's own "End ->
+  // Start" swatch always shows dashed - a real mismatch between the panel's legend and the map.
+  // AtoB no longer falls back to BtoA for primaryFeature, and secondaryFeatures no longer requires
+  // BOTH directions to exist - BtoA renders dashed whenever it exists, period.
+  const primaryFeature = routes?.AtoB?.[selectedVariant]?.feature || null;
   const secondaryFeatures = React.useMemo(() => {
-    if (!routes?.AtoB || !routes?.BtoA) return []; // only one direction has a route - nothing to dim
-    const f = routes.BtoA[selectedVariant]?.feature;
+    const f = routes?.BtoA?.[selectedVariant]?.feature;
     return f ? [f] : [];
   }, [routes, selectedVariant]);
 
@@ -141,9 +190,14 @@ const Comp = ({ state, setState, map }) => {
   // Single-trip mode: its own route (primaryFeature/secondaryFeatures). Density mode: the
   // heatmap has its own layer instead, EXCEPT when the testing pair-picker has a route to show -
   // that borrows this same layer since only one of the two is ever active at once.
+  //
+  // Gated on `pickerActive`, not just `isDensityMode` (2026-08-24 - "if last option [Pick point
+  // pair] is turned off, that yellow route line is also get turned off"): `pickedRoute` state only
+  // clears when the selected SEGMENT changes, not when the picker toggle itself is switched off -
+  // so without this gate, a route picked earlier kept rendering after the toggle was turned off.
   useRouteLayer(
     map,
-    isDensityMode ? (pickedRoute?.shortest?.feature || null) : primaryFeature,
+    isDensityMode ? (pickerActive ? pickedRoute?.shortest?.feature || null : null) : primaryFeature,
     isDensityMode ? [] : secondaryFeatures,
   );
   const { clear: clearStartEndMarkers } = useStartEndMarkers(

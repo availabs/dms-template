@@ -1,6 +1,7 @@
 import React from "react";
 import { ThemeContext } from "../../../../../dms/packages/dms/src/ui/useTheme";
 import { DENSITY_COLOR_RAMP, DENSITY_NUM_CANDIDATES, DENSITY_STEP_FRACTIONS } from "../constants";
+import { RouteComparisonBarChart } from "./RouteComparisonBarChart";
 
 // Closure coverage / density analysis panel - the density-mode sibling of DetourDetailsPanel.
 // Same segment-picking flow (shared with single-trip mode), different action button and result
@@ -29,6 +30,13 @@ const ClosureDensityPanel = ({
 
   const hasResult = Boolean(density) || Boolean(error);
   const totalPairs = DENSITY_NUM_CANDIDATES * DENSITY_NUM_CANDIDATES;
+
+  // Route comparison tab (2026-08-24, planning/transportny/tasks/current/
+  // closure-density-route-comparison-tab.md) - "heatmap" (the original view) vs. "comparison" (new
+  // bar graph of per-pair open-vs-closed miles/time deltas). Only shown once pairComparisons has
+  // actually arrived (step 2 done), same gating as the heatmap legend above it.
+  const [resultTab, setResultTab] = React.useState("heatmap");
+  const hasComparisons = Boolean(density?.pairComparisons?.length);
 
   return (
     <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-10 w-auto sm:w-80 max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto">
@@ -78,33 +86,66 @@ const ClosureDensityPanel = ({
             {density.totalPairsFailed > 0 && ` (${density.totalPairsFailed} had no route)`}.
           </div>
 
-          <div className="mb-2">
-            <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
-              Times a road segment is used (0 – {density.maxCount})
-            </div>
-            <div className="flex h-3 rounded overflow-hidden">
-              {DENSITY_COLOR_RAMP.map((hex, i) => (
-                <div key={hex} className="flex-1" style={{ background: hex }} />
+          {hasComparisons && (
+            <div className="flex text-xs border-b mb-2">
+              {[
+                ["heatmap", "Heatmap"],
+                ["distance", "Distance cost"],
+                ["time", "Time cost"],
+              ].map(([key, tabLabel]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`px-2 py-1 -mb-px border-b-2 ${resultTab === key ? "border-blue-600 text-blue-700 font-semibold" : "border-transparent text-gray-500"}`}
+                  onClick={() => setResultTab(key)}
+                >
+                  {tabLabel}
+                </button>
               ))}
             </div>
-            {/* Numeric range under each swatch, computed from the SAME DENSITY_STEP_FRACTIONS the
-                map layer's own `step` paint expression uses, so the legend never drifts out of
-                sync with what's actually drawn (2026-08-21: "show numbers in left bottom range of
-                color" - replaces the earlier plain "fewer"/"more" labels). */}
-            <div className="flex text-[10px] text-gray-500 mt-0.5 font-mono">
-              {DENSITY_STEP_FRACTIONS.map((frac, i) => {
-                const lo = Math.round(density.maxCount * frac);
-                const hi = i < DENSITY_STEP_FRACTIONS.length - 1
-                  ? Math.max(lo, Math.round(density.maxCount * DENSITY_STEP_FRACTIONS[i + 1]) - 1)
-                  : density.maxCount;
-                return (
-                  <span key={frac} className="flex-1 text-center">
-                    {lo}{hi > lo ? `-${hi}` : ""}
-                  </span>
-                );
-              })}
+          )}
+
+          {resultTab === "heatmap" && (
+            <div className="mb-2">
+              <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+                Times a road segment is used (0 – {density.maxCount})
+              </div>
+              <div className="flex h-3 rounded overflow-hidden">
+                {DENSITY_COLOR_RAMP.map((hex, i) => (
+                  <div key={hex} className="flex-1" style={{ background: hex }} />
+                ))}
+              </div>
+              {/* Numeric range under each swatch, computed from the SAME DENSITY_STEP_FRACTIONS the
+                  map layer's own `step` paint expression uses, so the legend never drifts out of
+                  sync with what's actually drawn (2026-08-21: "show numbers in left bottom range of
+                  color" - replaces the earlier plain "fewer"/"more" labels). */}
+              <div className="flex text-[10px] text-gray-500 mt-0.5 font-mono">
+                {DENSITY_STEP_FRACTIONS.map((frac, i) => {
+                  const lo = Math.round(density.maxCount * frac);
+                  const hi = i < DENSITY_STEP_FRACTIONS.length - 1
+                    ? Math.max(lo, Math.round(density.maxCount * DENSITY_STEP_FRACTIONS[i + 1]) - 1)
+                    : density.maxCount;
+                  return (
+                    <span key={frac} className="flex-1 text-center">
+                      {lo}{hi > lo ? `-${hi}` : ""}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
+
+          {resultTab === "distance" && hasComparisons && (
+            <div className="mb-2">
+              <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="distance" />
+            </div>
+          )}
+
+          {resultTab === "time" && hasComparisons && (
+            <div className="mb-2">
+              <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="time" />
+            </div>
+          )}
         </>
       )}
 
@@ -113,7 +154,7 @@ const ClosureDensityPanel = ({
           seeing the aggregated heatmap. Only shown once there ARE candidate points to click. */}
       {pickPairTesting && density?.startPoints?.length > 0 && (
         <div className="mb-2 text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1.5">
-          <div className="font-semibold text-slate-700 mb-1">Pick a pair (testing)</div>
+          <div className="font-semibold text-slate-700 mb-1">Pick a pair (beta)</div>
           {!pickedStart && !pickedEnd && <div className="text-slate-500">Click a green (start) or red (end) point.</div>}
           {(pickedStart || pickedEnd) && (
             <div className="text-slate-600">

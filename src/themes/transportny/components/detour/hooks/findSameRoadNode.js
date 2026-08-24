@@ -40,7 +40,9 @@ export function findSameRoadNode(edges, nodeId, excludeOgcFid, highway, incoming
     const score = (sameHighway ? 0 : 1000) + straightness;
     if (score < bestScore) {
       bestScore = score;
-      best = { id: otherNodeId, lon: otherCoord[0], lat: otherCoord[1], sameHighway };
+      // edgeOgcFid (2026-08-24) - lets the caller (comp.jsx's multi-hop walk) exclude the edge it
+      // just traversed on the NEXT hop, so the walk doesn't immediately backtrack onto itself.
+      best = { id: otherNodeId, lon: otherCoord[0], lat: otherCoord[1], sameHighway, edgeOgcFid: edge.properties.ogc_fid };
     }
   }
   return best;

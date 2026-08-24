@@ -18,6 +18,8 @@
  * count.
  */
 
+const densitySearchPool = require("./densitySearchPool");
+
 const METERS_PER_MILE = 1609.344;
 const MPH_TO_MPS = 0.44704;
 
@@ -773,28 +775,11 @@ const closureContext = (graph, ogcFid, costObjective) => {
 // tallying. See the inline comments below for the full history of how this selection logic
 // evolved same day (evenly-spaced targets -> rejected, greedy-accept-first-N -> rejected,
 // same-road-first accidentally dropped then restored).
-const selectClosureDensityCandidates = (graph, ogcFid, numCandidates = 10, costObjective = "distance") => {
-  const { edgeIdx, excludedEdgeSet, costArray, routeUsesClosedSegment } = closureContext(graph, ogcFid, costObjective);
+const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10, costObjective = "distance") => {
+  const { edgeIdx, reverseIdx, excludedEdgeSet } = closureContext(graph, ogcFid, costObjective);
   const fromNode = graph.edgeSource[edgeIdx];
   const toNode = graph.edgeTarget[edgeIdx];
   const closedHighway = graph.edgeHighway[edgeIdx];
-
-  const openRouteCache = new Map(); // `${a}_${b}` -> edgePath | null (null = no open route at all)
-  // bidirectionalDijkstra, not dijkstraEdgeExpansion (2026-08-21 real perf fix - "Failed to
-  // fetch": point-selection was taking 35s, past this server's 30s default request timeout,
-  // because validating far-out candidates needs up to ~300+ of these open-route searches when
-  // most far candidates get rejected. Same exact correctness (both are exact edge-expansion
-  // Dijkstra, no heuristic), just explores roughly two half-radius circles instead of one full-
-  // radius circle - meaningfully faster per search, already used elsewhere in this file for long
-  // routes).
-  const getOpenRoute = (a, b) => {
-    const key = `${a}_${b}`;
-    if (openRouteCache.has(key)) return openRouteCache.get(key);
-    const result = bidirectionalDijkstra(graph, a, b, costArray, null); // no exclusion - the OPEN network
-    const path = result ? result.edgePath : null;
-    openRouteCache.set(key, path);
-    return path;
-  };
 
   // Point selection (2026-08-21, confirmed rule, refined twice same day). First refinement:
   // "it's not like evenly... it's like we want the BEST points to understand the value of the
@@ -850,6 +835,9 @@ const selectClosureDensityCandidates = (graph, ogcFid, numCandidates = 10, costO
   // support both. Halves the gap and retries until `count` is reached or the gap bottoms out at
   // 0 (accept any validated point, spacing no longer enforced) - only relaxes AFTER exhausting
   // room to keep the requested gap, so it still prefers well-spaced picks whenever possible.
+  // (A hard-floor variant - never relax below MIN_GAP_M, let count give way instead - was tried
+  // twice on 2026-08-24, each time reverted the same day: once when it collapsed to ~1 point per
+  // side on a small-pool segment, and again shortly after being reinstated.)
   // Returns `{ picked, gapUsedM }` (not just `picked`) - 2026-08-21, "it was not behaving like
   // that, the distance total also not 0.75 miles" - the relaxation was real but INVISIBLE: with
   // no way to see how far it had backed off, "the gap silently collapsed" and "the gap logic is
@@ -863,15 +851,6 @@ const selectClosureDensityCandidates = (graph, ogcFid, numCandidates = 10, costO
       picked = pickWithMinGap(sortedValid, count, gap);
     }
     return { picked, gapUsedM: picked.length >= count ? gap : null }; // null = count not reached even ungapped
-  };
-
-  const passesValidation = (candidate, oppositeSet, candidateIsStart) => {
-    if (oppositeSet.length === 0) return true; // bootstrap - nothing to validate against yet
-    const fails = oppositeSet.filter((other) => {
-      const path = candidateIsStart ? getOpenRoute(candidate.node, other.node) : getOpenRoute(other.node, candidate.node);
-      return !routeUsesClosedSegment(path || []);
-    }).length;
-    return fails / oppositeSet.length <= 0.5;
   };
 
   // The seed (bootstrap reference set) comes from the NEAREST end - close points reliably
@@ -927,32 +906,87 @@ const selectClosureDensityCandidates = (graph, ogcFid, numCandidates = 10, costO
   // no preference for staying on the same road when it didn't actually need to branch. Keeping
   // them separate lets the caller try same-road-ONLY first and fall back to the branch only if
   // that's not enough - not just at validation time, at SELECTION time too.
-  const validateBudget = (restPool, sameRoadCount, seed, oppositeSeed, candidateIsStart) => {
-    const sameRoadValid = [...seed]; // seed is always drawn from index 0 of the nearest-first pool, which is always same-road (see farthestToNearestNodes - same-road group comes first)
+  // Pure range computation, split out of validateBudget below so the SAME index ranges can be
+  // used twice: once to decide which pairs need a search (before dispatch), once to apply the
+  // results (after dispatch) - without duplicating the sameRoadCap/otherStart/otherEnd arithmetic.
+  const budgetTestIndices = (restPool, sameRoadCount) => {
     const sameRoadCap = Math.min(sameRoadCount, Math.ceil(MAX_ATTEMPTS / 2));
-    let idx = 0;
-    for (; idx < sameRoadCap; idx++) {
-      const candidate = restPool[idx];
-      if (passesValidation(candidate, oppositeSeed, candidateIsStart)) sameRoadValid.push(candidate);
-      else candidatesRejected++;
-    }
-    const otherValid = [];
-    const otherStart = Math.max(idx, sameRoadCount); // skip any untried same-road leftovers, jump straight to "other"
+    const otherStart = Math.max(sameRoadCap, sameRoadCount); // skip any untried same-road leftovers, jump straight to "other"
     const otherBudget = MAX_ATTEMPTS - sameRoadCap;
     const otherEnd = Math.min(restPool.length, otherStart + otherBudget);
-    for (let j = otherStart; j < otherEnd; j++) {
-      const candidate = restPool[j];
-      if (passesValidation(candidate, oppositeSeed, candidateIsStart)) otherValid.push(candidate);
-      else candidatesRejected++;
+    const indices = [];
+    for (let i = 0; i < sameRoadCap; i++) indices.push(i);
+    for (let j = otherStart; j < otherEnd; j++) indices.push(j);
+    return { indices, sameRoadCap };
+  };
+
+  // worker_threads pool (2026-08-24 perf, planning/transportny/tasks/current/
+  // closure-density-performance.md): every (candidate, opposite-seed-point) pair is an
+  // independent OPEN-network search, so instead of calling passesValidation live in the
+  // validateBudget loop below (one search at a time on the main thread), every pair either side's
+  // budget will check is dispatched to the pool in ONE combined batch up front - same exact
+  // pass/fail semantics (fails/oppositeSet.length <= 0.5), just computed in parallel instead of
+  // sequentially. No other selection logic changes - budget ranges, same-road split, gap
+  // enforcement, and count-vs-gap tradeoff below are all untouched.
+  const tasks = [];
+  const buildCells = (restPool, testIndices, oppositeSet, candidateIsStart) => {
+    const cells = testIndices.map(() => new Array(oppositeSet.length).fill(false));
+    testIndices.forEach((idx, ti) => {
+      const candidate = restPool[idx];
+      oppositeSet.forEach((other, oi) => {
+        tasks.push({
+          id: tasks.length,
+          sourceNodeIdx: candidateIsStart ? candidate.node : other.node,
+          destNodeIdx: candidateIsStart ? other.node : candidate.node,
+          _cells: cells, _ti: ti, _oi: oi,
+        });
+      });
+    });
+    return cells;
+  };
+
+  const startTest = budgetTestIndices(restStart, restStartSameRoadCount);
+  const endTest = budgetTestIndices(restEnd, restEndSameRoadCount);
+  const startCells = buildCells(restStart, startTest.indices, seedEnd, true);
+  const endCells = buildCells(restEnd, endTest.indices, seedStart, false);
+
+  if (tasks.length > 0) {
+    const pool = await densitySearchPool.getPool(graph, costObjective);
+    const resultsMap = await densitySearchPool.runBatch(pool, edgeIdx, reverseIdx, tasks);
+    for (const t of tasks) t._cells[t._ti][t._oi] = !!resultsMap.get(t.id);
+  }
+
+  // Same fails/oppositeSet.length <= 0.5 aggregation passesValidation used to do live, now reading
+  // the precomputed cells instead of calling out to a search.
+  const passedFromCells = (testIndices, cells, oppositeCount) => {
+    const passed = new Map(); // restPool index -> boolean
+    testIndices.forEach((idx, ti) => {
+      if (oppositeCount === 0) { passed.set(idx, true); return; } // bootstrap - shouldn't hit (seed excluded from testIndices)
+      const fails = cells[ti].filter((usesClosedSegment) => !usesClosedSegment).length;
+      passed.set(idx, fails / oppositeCount <= 0.5);
+    });
+    return passed;
+  };
+  const startPassed = passedFromCells(startTest.indices, startCells, seedEnd.length);
+  const endPassed = passedFromCells(endTest.indices, endCells, seedStart.length);
+
+  const applyBudget = (restPool, seed, { indices, sameRoadCap }, passed) => {
+    const sameRoadValid = [...seed]; // seed is always drawn from index 0 of the nearest-first pool, which is always same-road (see farthestToNearestNodes - same-road group comes first)
+    const otherValid = [];
+    for (const idx of indices) {
+      if (!passed.get(idx)) { candidatesRejected++; continue; }
+      const candidate = restPool[idx];
+      (idx < sameRoadCap ? sameRoadValid : otherValid).push(candidate);
     }
     // Each phase is already internally ascending by distance (restPool is nearest-first within
-    // each group), so no re-sort needed here - only the CALLER's combined fallback list (below)
-    // needs sorting, since same-road and other interleave once merged.
+    // each group, and `indices` was built same-road range first then other range), so no re-sort
+    // needed here - only the CALLER's combined fallback list (below) needs sorting, since
+    // same-road and other interleave once merged.
     return { sameRoadValid, otherValid };
   };
 
-  const { sameRoadValid: startSameValid, otherValid: startOtherValid } = validateBudget(restStart, restStartSameRoadCount, seedStart, seedEnd, true);
-  const { sameRoadValid: endSameValid, otherValid: endOtherValid } = validateBudget(restEnd, restEndSameRoadCount, seedEnd, seedStart, false);
+  const { sameRoadValid: startSameValid, otherValid: startOtherValid } = applyBudget(restStart, seedStart, startTest, startPassed);
+  const { sameRoadValid: endSameValid, otherValid: endOtherValid } = applyBudget(restEnd, seedEnd, endTest, endPassed);
 
   // Min-gap-enforced selection over the validated (nearest-to-farthest) list - "spread gradually
   // near to far among genuinely valid pairs, at least MIN_GAP_M apart," not "farthest possible,"
@@ -964,6 +998,8 @@ const selectClosureDensityCandidates = (graph, ogcFid, numCandidates = 10, costO
   // same road genuinely can't supply `numCandidates` even after fully relaxing the gap - "give
   // priority to the direction, if dead end then only expand the last branch." A long road with
   // plenty of its own valid, spread-out points should never need to touch the branch at all.
+  // (A "fall back sooner, whenever same-road needed any relaxation" variant was tried 2026-08-24
+  // alongside the hard gap floor above and reverted together with it the same day.)
   const selectPreferSameRoad = (sameValid, otherValid) => {
     const sameRoadOnly = pickWithBestEffortGap(sameValid, numCandidates, MIN_GAP_M);
     if (sameRoadOnly.picked.length >= numCandidates) return sameRoadOnly;
@@ -995,11 +1031,14 @@ const selectClosureDensityCandidates = (graph, ogcFid, numCandidates = 10, costO
 // slow analysis doesn't also re-pay for point selection, and so the frontend can show points
 // immediately without waiting on the full tally.
 const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmIds, endNodeOsmIds, costObjective = "distance") => {
-  const { excludedEdgeSet, costArray } = closureContext(graph, ogcFid, costObjective);
+  const { edgeIdx, reverseIdx } = closureContext(graph, ogcFid, costObjective);
   const resolve = (osmId) => graph.nodeIdToIndex.get(String(osmId));
-  const startCandidates = (startNodeOsmIds || []).map(resolve).filter((n) => n !== undefined);
-  const endCandidates = (endNodeOsmIds || []).map(resolve).filter((n) => n !== undefined);
-  if (!startCandidates.length || !endCandidates.length) {
+  // Route-comparison tab (2026-08-24, planning/transportny/tasks/current/
+  // closure-density-route-comparison-tab.md) - keep the original osm_id alongside each resolved
+  // node index so the per-pair comparison result can be labeled without a second lookup pass.
+  const startResolved = (startNodeOsmIds || []).map((osmId) => ({ osmId: String(osmId), node: resolve(osmId) })).filter((r) => r.node !== undefined);
+  const endResolved = (endNodeOsmIds || []).map((osmId) => ({ osmId: String(osmId), node: resolve(osmId) })).filter((r) => r.node !== undefined);
+  if (!startResolved.length || !endResolved.length) {
     throw new Error("No valid start/end points provided");
   }
 
@@ -1007,19 +1046,60 @@ const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmId
   let totalPairsComputed = 0;
   let totalPairsFailed = 0;
 
-  for (const start of startCandidates) {
-    for (const end of endCandidates) {
+  // worker_threads pool (2026-08-24 perf, planning/transportny/tasks/current/
+  // closure-density-performance.md) - every start/end pair needs TWO independent searches (open
+  // baseline + closed/detour), so ALL of them - both modes, every pair - run in ONE combined batch
+  // spread across the pool, not two sequential passes. Uses bidirectionalDijkstra (via the worker)
+  // instead of dijkstraEdgeExpansion - same exact edge-expansion Dijkstra semantics, no heuristic,
+  // already proven correct elsewhere in this file, just faster per search.
+  const tasks = [];
+  const pairs = [];
+  for (const start of startResolved) {
+    for (const end of endResolved) {
       totalPairsComputed++;
-      const result = dijkstraEdgeExpansion(graph, start, end, costArray, excludedEdgeSet);
-      if (!result) {
-        totalPairsFailed++;
-        continue;
-      }
-      for (const e of result.edgePath) {
-        frequency.set(e, (frequency.get(e) || 0) + 1);
-      }
+      const closedId = tasks.length;
+      tasks.push({ id: closedId, sourceNodeIdx: start.node, destNodeIdx: end.node, mode: "closed" });
+      const openId = tasks.length;
+      tasks.push({ id: openId, sourceNodeIdx: start.node, destNodeIdx: end.node, mode: "open" });
+      pairs.push({ start, end, closedId, openId });
     }
   }
+  const pool = await densitySearchPool.getPool(graph, costObjective);
+  const resultsMap = await densitySearchPool.runTallyBatch(pool, edgeIdx, reverseIdx, tasks);
+
+  // Sums the edgePath's REAL miles/seconds regardless of costObjective - matches findRoute's own
+  // totalLengthM/totalDurationS pattern (the search's cost objective only picks WHICH path wins,
+  // not what gets reported about it).
+  const pathStats = (edgePath) => {
+    let lengthM = 0, durationS = 0;
+    for (const e of edgePath) { lengthM += graph.edgeLengthM[e]; durationS += graph.edgeDurationS[e]; }
+    return { miles: lengthM / METERS_PER_MILE, durationS };
+  };
+
+  const pairComparisons = [];
+  for (const { start, end, closedId, openId } of pairs) {
+    const closedEdgePath = resultsMap.get(closedId);
+    if (!closedEdgePath) { totalPairsFailed++; continue; }
+    for (const e of closedEdgePath) {
+      frequency.set(e, (frequency.get(e) || 0) + 1);
+    }
+
+    const openEdgePath = resultsMap.get(openId);
+    if (!openEdgePath) continue; // no open-network route at all (shouldn't happen on a connected graph) - skip the comparison entry, heatmap tally above is unaffected
+
+    const openStats = pathStats(openEdgePath);
+    const closedStats = pathStats(closedEdgePath);
+    pairComparisons.push({
+      startOsmId: start.osmId, endOsmId: end.osmId,
+      openMiles: openStats.miles, openDurationS: openStats.durationS,
+      closedMiles: closedStats.miles, closedDurationS: closedStats.durationS,
+      deltaMiles: closedStats.miles - openStats.miles,
+      deltaDurationS: closedStats.durationS - openStats.durationS,
+    });
+  }
+  // Smallest to largest detour cost (2026-08-24, per the task's chosen chart form) - the frontend
+  // bar graph renders in this order directly, no client-side sort needed.
+  pairComparisons.sort((a, b) => a.deltaMiles - b.deltaMiles);
 
   const ogcFids = [...frequency.keys()].map((e) => graph.edgeOgcFid[e]);
   const { rows: geomRows } = await db.query(
@@ -1041,11 +1121,17 @@ const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmId
   return {
     edgeFrequencies, maxCount,
     totalPairsComputed, totalPairsFailed,
-    startCandidateCount: startCandidates.length, endCandidateCount: endCandidates.length,
+    startCandidateCount: startResolved.length, endCandidateCount: endResolved.length,
+    pairComparisons,
   };
 };
 
 module.exports = {
   getOrLoadGraph, invalidateGraph, findRoute,
   selectClosureDensityCandidates, computeClosureDensityFromPoints,
+  // Exported for graphSearchWorker.js (worker_threads pool, densitySearchPool.js) - the worker
+  // reconstructs a lightweight graph-like object from SharedArrayBuffers and calls this exact same
+  // pure search function directly, so the parallelized path is provably the same algorithm as the
+  // single-threaded one, not a reimplementation that could silently drift.
+  bidirectionalDijkstra,
 };
