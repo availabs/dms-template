@@ -16,6 +16,8 @@ export const MEASURE_DESCRIPTIONS = {
   avgCo2Emissions_passenger: 'Average per-day CO2 emitted by passenger vehicles on the route, in tonnes.',
   co2Emissions_truck: 'Total CO2 emitted by trucks on the route, in tonnes.',
   avgCo2Emissions_truck: 'Average per-day CO2 emitted by trucks on the route, in tonnes.',
+  length: 'Total length of the route, in miles.',
+  aadt: 'Average Annual Daily Traffic across the route\'s TMCs.',
 };
 
 // One sentence per composeMeasureConfig.js GRAPH_TYPE_OPTIONS key.

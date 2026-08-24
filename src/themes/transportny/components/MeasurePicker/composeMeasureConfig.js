@@ -69,6 +69,9 @@ export const MEASURE_CATEGORIES = [
     { label: 'Travel time', measures: ['travelTime'] },
     { label: 'Delay', measures: ['hoursOfDelay', 'avgHoursOfDelay'] },
     { label: 'Emissions', measures: ['co2Emissions_passenger', 'avgCo2Emissions_passenger', 'co2Emissions_truck', 'avgCo2Emissions_truck'] },
+    // gap #16 (report-authoring-ux-overhaul.md, 2026-08-24): info_box_templates.py's static
+    // (no year/bin dependency) length/aadt Info Box measures, ported to vocabulary.json.
+    { label: 'Route attributes', measures: ['length', 'aadt'] },
 ];
 
 const RESOLUTION_LABELS = {

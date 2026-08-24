@@ -19,6 +19,24 @@
       ],
       "reverseColors": false
     },
+    "length": {
+      "label": "Length (mi)",
+      "expr": "arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) as length",
+      "fn": "exempt",
+      "requiresJoin": [
+        "META_JOIN"
+      ],
+      "reverseColors": false
+    },
+    "aadt": {
+      "label": "AADT",
+      "expr": "arrayAvg(mapValues(maxMap(map(ds.tmc, table1.aadt)))) as aadt",
+      "fn": "exempt",
+      "requiresJoin": [
+        "META_JOIN"
+      ],
+      "reverseColors": false
+    },
     "travelTime": {
       "label": "Travel Time (min)",
       "expr": "arraySum(mapValues(avgMapIf(map(tmc, toFloat64(travel_time_all_vehicles)), travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles",
