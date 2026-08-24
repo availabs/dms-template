@@ -3,8 +3,9 @@
 **Consultant:** Hagerty Consulting · **Plan:** Nassau County Multi-Jurisdictional HMP, dated 2020-12-16
 **Reference annex analyzed:** `Nassau/All Annexes/01_CityofGlenCove/1_City of Glen Cove_Jurisdictional Annex.docx` + its two MAWs (git-ignored)
 **Structure verified against:** all 51 readable annexes (corpus pre-flight, §7)
-**Target workbook:** `planning/mitigateny/files/MNY Workbook - 08142026.xlsb` (Actions, Roles, Participation, Hazards of Concern, Capabilities)
-**Crosswalk:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` — 175 field-level mappings
+**Target schema:** the **live** sources — Actions `1029065` · Roles `1473295` · Participation `1473468` · Hazards of Concern `1473470`/`1473471` · Capabilities_Catalogue `1068273`.
+`planning/mitigateny/files/MNY Workbook - 08142026.xlsb` is **illustrative only** (owner, 2026-08-21).
+**Crosswalk:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` — 180 field-level mappings
 **Profile written:** [`profiles/hagerty.md`](../profiles/hagerty.md)
 **Date:** 2026-08-20 · **owner decisions resolved 2026-08-21, revised same day (§5)**
 
@@ -49,7 +50,7 @@ nothing in a Hagerty annex to put in it.
 > `9x2` profile boxes carry a real authored `Impact` narrative — so Nassau County gets a genuine
 > transcription where its 51 jurisdictions get a derived sentence. See §5g.
 
-### Where the 175 mappings land
+### Where the 180 mappings land
 
 | Target dataset | Mappings | What lands there |
 |---|---:|---|
@@ -533,12 +534,86 @@ matrix, and that the leftovers really are all `Withdrawn`. The uniqueness assert
 either bug surfaced.
 ---
 
-## 6. The workbook is not the schema — seven divergences found
+### 5i. Live-schema reads (2026-08-21) — and one open decision
 
-This section started as two findings and grew to seven as the mapping progressed. Taken together they
-are the most portable lesson in this report: **the workbook is a mapping aid, and the live source is
-the schema.** Three of the "no column exists" conclusions in an earlier draft were simply wrong,
-because the column existed in the database and was missing from the tab being mapped against.
+All five remaining forms sources were read live; **the live schemas are authoritative** and the
+workbook is wrong wherever they disagree. Full detail in the task doc's Phase 5b. The headlines:
+
+**No pre-load readiness problem.** 70/70 jurisdictions are present in both Jurisdictions and Hazards
+of Concern, with **exactly 17 HOC rows each, all `Not Reported`, all content columns empty**. So HOC is
+**884 updates + 306 rows left alone + 0 inserts**. Nothing to create — unlike Suffolk, which needed a
+synthetic geoid and 17 new rows for one entity.
+
+**⚠ The HOC source had a test view erroneously marked current — now deleted.** Source `1473470` had two
+views holding *different shapes*: the real grid `1473471` (1,190 Nassau rows, display-label hazards,
+real geoid arrays) and `1603024`, which `dataset dump` picked **by default** and which held 119
+statewide rows, **zero Nassau**, internal hazard codes, geoid arrays stored as *strings*, and a
+`likelihood` value (`"Likely"`) outside its own declared options.
+
+**The owner deleted it on 2026-08-21**, and re-verification confirms `1473470` now has exactly one view.
+So the trap is gone — but the lesson stands, and it is in Layer 1: count the rows and eyeball one record
+before trusting a view, and treat a zero-row result as a read to distrust rather than a fact. *(Two
+silent zeros happened here in one session: this view, and my own code looking for a `rows` key when the
+payload uses `items`.)*
+
+**⚠ Blast radius.** Roles holds **144 rows statewide**, Participation **324**, Capabilities_Catalogue
+**269**. Nassau adds roughly 250–350, 11 and ~900. This load *more than doubles* Roles and roughly
+quadruples Capabilities_Catalogue. Back up and dry-run before the first insert.
+
+**Three more workbook divergences, all useful.** Participation's `narrative` and `agenda_minutes` are
+`lexical`, not Text; it has a **`participation` text column absent from the workbook** that is an exact
+home for base-plan Table 7's *Participation* field; a **`meeting_unique_id`** for pairing split
+multi-date rows; and **`geoid_juris` is a multiselect**, so one county meeting row can carry every
+attending jurisdiction directly from the matrix — replacing the planned per-jurisdiction join with a
+direct read.
+
+**The four FEMA category columns I mapped Tables 3/4/5 onto are marked `(Delete)` live.** Re-mapped to
+`primary_capability_type` plus the capability-type checkboxes, which is what the live source derives
+its `… Category` columns from. **~35 of Capabilities_Catalogue's 136 columns are `(Delete)`-prefixed** —
+the workbook dictionary documents a schema that is being retired. Note the asymmetry this exposes: the
+*Capabilities* P/S/T vocabulary includes Coastal Protection and Dam Rehabilitation/Removal, and the
+*Actions* one doesn't.
+
+### The open decision: which dataset receives the capability tables?
+
+The crosswalk targets **`Capabilities_Catalogue`**, and that may be the wrong dataset.
+
+| | `Capabilities_Catalogue` (`1068273`) | `Capacities` (`1689772`) | `Capacities V2` (`2142341`) |
+|---|---|---|---|
+| Rows statewide | 269 | **2** | — (`internal_table`) |
+| Shape | one row per capability, 136 columns | one row per **jurisdiction**, 55 checkboxes | one row per jurisdiction × capacity type |
+| Extra fields | agency, contact, funding, hazards, categories | none | Availability · Adequacy · Interest/Need |
+| Nassau row count | ~900 | ~52 | ~900 |
+| Fit with Hagerty Tables 3–6 | partial — most of its 136 columns have no source | **near-exact vocabulary match** | good, plus fields the annex can't fill |
+
+`Capacities` reads like it was built for exactly this instrument: *Building Code · Capital Improvement
+Plan · Comprehensive/Master Plan · Site Plan Review Requirements · Zoning Ordinance · Subdivision
+Ordinance · Floodplain Ordinance · Stormwater Management · Emergency Manager · Civil Engineer · GIS
+Coordinator · Grant Writing · Community Planner · Chief Building Official · Floodplain Administrator ·
+Authority to Levy Taxes · CDBG · Impact Fees · Incur Debt Through GO/Special Tax Bonds · BCEGS · Fire
+Department ISO Rating · StormReady · Firewise*. That is Hagerty's Tables 3, 4, 5 and 6 almost
+line-for-line.
+
+But it holds **2 rows statewide**, and a V2 exists — so it is either new or abandoned, and that is not
+something the schema can tell me. `Capabilities_Catalogue` is the populated, evidently-live one, and it
+is what Suffolk loaded into.
+
+**RESOLVED (owner, 2026-08-21): stay on `Capabilities_Catalogue`.** `Capacities` and `Capacities V2`
+are **on hold / deprecated until further notice** — do not load into them, despite the vocabulary fit.
+So Capabilities is ~900 Nassau rows into the 269-row live dataset.
+---
+
+## 6. The workbook is illustrative only — thirteen divergences found
+
+This section started as two findings and grew to thirteen as the mapping progressed — and the owner
+then settled it as policy: **the workbook is illustrative only, may contain errors and
+inconsistencies, and the live schema always wins.** A column in the workbook but not the live source is
+most likely *deprecated*, not missing; workbook Multi-Select declarations are *unresolved relics*; and
+`geoid_juris` is never multi-valued regardless of what either source says.
+
+That reframes this section. It isn't a list of discrepancies to reconcile — it's evidence for not using
+the workbook as a schema at all. Three of the "no column exists" conclusions in an earlier draft were
+simply wrong, and at least one recorded gap was a column nobody intends to keep.
 
 | # | Divergence | Which side is right |
 |---|---|---|
@@ -549,6 +624,12 @@ because the column existed in the database and was missing from the tab being ma
 | 5 | `primary_action_type` had 16 options where secondary/tertiary had 17; `tertiary` carried a `Risk/Vulberability Assessment` typo | **neither** — a real defect, fixed by the owner 2026-08-21 |
 | 6 | `Roles.role` is a single `select` live; the workbook says **Multi-Select** | **live** — and it changes the row math (one row per person *per role*) |
 | 7 | `Roles.comments` is `lexical` live; the workbook says Text | **live** |
+| 8 | `Roles.address_optional` exists live, absent from the workbook | **live** |
+| 9 | Participation `narrative` / `agenda_minutes` are `lexical`; workbook says Text | **live** |
+| 10 | Participation `participation` and `meeting_unique_id` exist live, absent from the workbook | **live** |
+| 11 | Participation `geoid_juris` is a **multiselect** — one meeting row can list every attendee | **live** |
+| 12 | Capabilities' four FEMA category columns are `(Delete)`-prefixed live; ~35 of 136 columns are | **live** — the dictionary documents a retiring schema |
+| 13 | HOC `hazard` declares internal codes; all 1,190 stored Nassau rows use display labels | **the stored rows** |
 
 Reading the live attribute list costs seconds, needs no token, and would have prevented three wrong
 conclusions:
@@ -708,7 +789,7 @@ Same split that worked for Suffolk, with one change of emphasis.
 | **Crosswalk CSV** ✅ done | everything | CSV | The spec. Every downstream script cites a row of it. |
 | **Jurisdiction alias table** | 52 folders → geoid | CSV | Do this **first**. Two identity problems already known (Glen Cove ×2, Rockville Center/Centre) and 70 base-plan jurisdictions vs 52 annexes to reconcile. |
 | **Explicit file manifest** | 52 folders → 1 annex file + N MAW files | CSV | Nine folders need a human decision (§7.8). Committing the manifest makes the extraction reproducible. |
-| **Workbook tabs** | Roles, Capabilities, Hazards of Concern, Participation | `.xlsx` copy | Native shape for flat data; matches how DHSES reviews. |
+| **Review CSVs** | Roles, Capabilities, Hazards of Concern, Participation | `.csv`, one per dataset | The owner-review surface for the flat data. **Not an ingestion format** — nothing imports it (see below). |
 | **Actions tab** | 234 proposed + 284 prior + MAW enrichment | `.xlsx` | No consultant-delivered actions workbook exists for Nassau — **all of it is ours to build.** |
 | **Per-jurisdiction markdown** | the 6 Jurisdictions lexical columns | `.md` | Owner-review surface for the prose. |
 | **Lexical JSON payloads** | same 6 columns | `.json` | Compiled from the markdown; feeds `dms dataset update`. |
@@ -734,5 +815,34 @@ because the transposed 14-field table is completely regular.
    punch-list.
 7. **Owner review**, then compile and load.
 
-Step 7's flat-dataset import path is the same unknown flagged in the Suffolk report and is still not
-established.
+### ✅ Correction: the flat-dataset load path is NOT an open question
+
+Earlier drafts of this report — and several of my status summaries — carried the line *"the
+flat-dataset import path DHSES uses for workbook tabs is still not established."* **That was stale and
+wrong.** It was copied from the Suffolk *crosswalk* report (2026-08-14) without checking the Suffolk
+*load* report (2026-08-17), which closed it. That report's own before/after table says it plainly:
+
+> | flat-dataset import path unknown | `dms raw create` + `dms dataset update`; **no workbook needed** |
+
+The path is two CLI calls per row, and it is already documented in Layer 1:
+
+```bash
+dms raw create <app> "<sourceInstance>|<viewId>:data"        # -> new empty row id
+dms dataset update <source-id> <newId> --data <file.json>    # fill it
+```
+
+Two calls rather than one because `raw create --data` parses inline JSON only, which blows the Windows
+argument-length limit on prose columns. `dms raw delete` reverses it, so the whole load is undoable.
+
+**The consequence is that "workbook tabs" were never a deliverable.** Nothing ingests an `.xlsx`; the
+writes are scripted per row. Combined with the owner's 2026-08-21 ruling that the workbook is
+illustrative only, producing `.xlsx` copies would be effort spent on a format with no consumer. The
+flat-dataset review surface should be **CSV per dataset** instead — diffable, reviewable, and generated
+from the same JSON the loader consumes.
+
+**What genuinely remains open for Phase 7** is smaller and different: nothing about *how* to write, only
+*what to check before writing*. Prove the path with one throwaway row (create → fill → read back through
+the intended filter → delete) before generating the full set; record every created id to a file
+**before** filling it, or a mid-run failure leaves orphan empty rows with no record; and build a
+double-insert guard that does **not** rely on `--filter` over an array-valued column, because that
+reports zero existing rows always — precisely when the guard matters.

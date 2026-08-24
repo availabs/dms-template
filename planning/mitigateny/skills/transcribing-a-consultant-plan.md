@@ -34,6 +34,15 @@ layer.
 Existing profiles:
 - [`profiles/tetratech.md`](./profiles/tetratech.md) — Tetra Tech / FEMA-style, survey-shaped. Suffolk (2026).
 - [`profiles/hagerty.md`](./profiles/hagerty.md) — Hagerty Consulting, brief-and-prose-bearing. Nassau (2020).
+- [`profiles/independent-jurisdictional-plan.md`](./profiles/independent-jurisdictional-plan.md) —
+  **a document-class profile, not a consultant one.** A jurisdiction that wrote its own standalone
+  plan instead of an annex (Freeport, inside Nassau).
+
+**Layer 2 now holds two kinds of file, and they behave differently.** A *consultant* profile predicts
+the next instance, because a firm is consistent. A *document-class* profile cannot — an independent
+plan has no shared author, so two of them may share nothing but the FEMA requirements they were both
+written against. Read a consultant profile for the spine; read a document-class profile for the triage
+checklist and the traps.
 
 ---
 
@@ -84,13 +93,31 @@ needing `Hazard = Other` + `Hazard Name, If Other`. Nassau's *under*-ran it and 
 as deliberately not profiled, so no `Other` rows at all. Check which case you're in before designing
 the HOC load; they need different row math and different insert-vs-update logic.
 
-**4. Which *required* MNY fields have no source in this plan at all?**
+**4. Is every jurisdiction's content actually in the consultant's instrument?**
+
+One folder in a 52-folder corpus can hold something else entirely. Nassau's
+`51_Village of Freeport_Jurisdictional Annex.pdf` — filed among 51 real annexes, named like one — is
+the Village's own **standalone 177-page hazard mitigation plan**, with a table of contents, its own
+numbered chapters, its own hazard taxonomy and a Plan Adoption chapter. None of the consultant's
+spine headings appear in it.
+
+**The pre-flight already answers this if you look**: the file whose heading set matches nothing is the
+one. Two cheap structural tells that a document is standalone rather than an annex — it has a **table
+of contents**, and it has its own **plan-adoption / maintenance** chapter. An annex has neither; it
+inherits both from the county.
+
+Route it to [`profiles/independent-jurisdictional-plan.md`](./profiles/independent-jurisdictional-plan.md)
+and give it its own `pipeline` value in the manifest so it never enters the annex batch. **The method
+and the MNY target side transfer completely; the parser does not** — budget a fresh one (~150 lines
+for Freeport), not a pipeline rewrite.
+
+**5. Which *required* MNY fields have no source in this plan at all?**
 
 Do this before promising a load, not after. A field can be marked required in the workbook and simply
 not exist in the consultant's content model — and that is a decision for the owner, not something to
 paper over.
 
-Nassau is the cautionary case. `Hazards of Concern.general_vulnerability` and
+Nassau is the cautionary case here. `Hazards of Concern.general_vulnerability` and
 `Capabilities.Mitigation Connection` are both required, both federally motivated, and both have
 **zero** Hagerty source: hazard vulnerability is a category checklist and capabilities are Yes/No plus
 a citation. On Suffolk the same two columns were the *richest* content in the annex. Same target
@@ -369,8 +396,18 @@ All consultant-invariant.
 
 **`Roles.role` is a SINGLE select, and a role is the row entity.** The live source (`1473295`) has
 `role` as `select`, not `multiselect` — the workbook is wrong. So **a person holding two roles becomes
-two Roles rows**, identical except for `role`. Row math is *people × roles*, not people; size the load
-on that, and don't quietly pick one role per person to make the arithmetic tidy.
+two Roles rows**, identical except for `role`.
+
+In practice this multiplier is close to 1, and it is worth knowing *why* before you size a load on it:
+the live vocabulary has **52 options**, not the 19 the workbook lists, and they are specific enough
+that most job titles resolve to exactly one — *Mayor* → `Community Chief Executive Officer - Mayor`,
+*Superintendent* → `Highway Superintendent`, *Village Clerk* → `Fiscal Staff`. **So the row count is
+driven by how many PEOPLE the plan documents, not by the roles.** On Nassau that is ~239 distinct
+people (190 in the plan-wide roster + 102 annex contacts, only 49 of whom overlap) ⇒ ~239 rows.
+
+The 52-option vocabulary carries its own defects, so normalise before matching: *Emergency Management
+Personnel* appears **twice**, *Staekholder - Landowner* is a typo, and there are 6
+`Community Chief Executive Officer - …` and 15 `Stakeholder - …` variants.
 
 **Never populate `likelihood` unless the plan states a probability.** MNY's `likelihood` is a
 percentage band (*Minimum / Low / Medium / High / Maximum*, each with a range). Plans state qualitative
@@ -434,7 +471,23 @@ What the Nassau corpus taught, in the order it bites:
   Annex.pdf` is the Village's own standalone 177-page hazard mitigation plan — seven chapters, its own
   hazard taxonomy, none of the consultant's spine headings. **Probe structure, not the filename**, and
   route anything that fails the spine check to its own crosswalk instead of the shared parser.
-### The workbook is not the schema — read the live source before declaring a gap
+### The workbook is ILLUSTRATIVE ONLY — the live source is the schema
+
+**Standing rule (owner, 2026-08-21):** the MNY workbook *may contain errors and inconsistencies*.
+Always prefer the live source. Concretely:
+
+| Situation | What it means |
+|---|---|
+| Column in the workbook, **absent** from the live source | almost certainly **deprecated** — not a target, and **not a gap** |
+| Column in the live source, absent from the workbook | a real column; use it |
+| Type disagreement | the live type wins |
+| Workbook says **Multi-Select** | an **unresolved relic**. Treat as single-valued unless proven otherwise |
+| `geoid_juris` / `geoid_county` | **never multi-valued**, whatever either source declares |
+
+This demotes the workbook from "the target schema" to "a readable illustration of roughly what the
+datasets hold". Use it to orient; never to decide. And **stop recording workbook-only columns as
+gaps** — an earlier draft of the Nassau crosswalk logged several, which inflated the gap list with
+columns nobody intends to keep.
 
 Three of the "no column exists" findings on Nassau evaporated on contact with the live sources. Each
 was a column that exists in the database and is **missing from the workbook tab** we were mapping
@@ -455,9 +508,29 @@ It runs the other way too — the Capabilities *dictionary* describes ~110 colum
 dms raw get 1029065 | jq -r '.data.config | fromjson | .attributes[] | "\(.name)\t\(.type)\t\(.display_name)"'
 ```
 
-Also check for **`(dep)`** in display names before building on a column. `Actions.alternative_action_1`
-and `alternative_action_1_evaluation` are both marked deprecated; they still accept writes, but
-content that must survive belongs somewhere else as well.
+Also **grep display names for retirement markers** before building on a column. The live sources use
+at least three: `(dep)`, `(Deprecated)` and `(Delete)`. On Nassau,
+`Actions.alternative_action_1`/`_evaluation` are `(dep)`, `Capabilities.dam_rehabilitation_removal` is
+`(Deprecated)`, and **~35 of Capabilities_Catalogue's 136 columns are `(Delete)`-prefixed** — including
+all four FEMA category columns an earlier crosswalk draft mapped onto. They still accept writes, so
+nothing errors; the content just lands somewhere destined for deletion.
+
+### Verify a view before you trust it, and always name it explicitly
+
+A source can carry more than one view, and they are not necessarily versions of the same thing. Nassau's
+Hazards of Concern source had two: the real statewide grid (27,791 rows, display-label hazards, real
+geoid arrays) and a 119-row **test view erroneously marked current** whose shape differed in four ways
+— internal hazard codes, geoid arrays stored as *strings*, a `likelihood` value outside its own declared
+options, and `county` formatted `"Chemung (County)"` instead of `"Chemung"`. `dataset dump` with no
+`--view` picked the test one, which held **zero** rows for the county being loaded.
+
+*(That view has since been deleted by the owner, so the specific trap is gone — but the lesson isn't:
+count the rows and eyeball one record before believing a view.)*
+
+**A zero-row result is a read to distrust, not a fact.** Two separate silent zeros happened on Nassau
+in one session: the wrong view, and a payload-key mistake — `dataset dump` returns `{"items": [...]}`,
+and code looking for `rows`/`data`/`results` gets an empty list with no error. Before concluding "no
+data exists", print one raw record.
 
 Guardrails, applied after scoring and before assigning outputs:
 
