@@ -4,7 +4,7 @@ import { ThemeContext, getComponentTheme } from "../../../../dms/packages/dms/sr
 import { damaMapTheme } from "../../../../dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/map.theme";
 import { macroviewTheme } from "./macroview.theme";
 import { MEASURE_GROUPS, MEASURES, availableMeasures } from "./measures";
-import { GEOM_FAMILIES } from "./constants";
+import { GEOM_FAMILIES, singleYearViewsNewestFirst } from "./constants";
 
 // ── PANEL 1 · CONTROLS (top-left) ──────────────────────────────────────────────
 // Order is load-bearing (Alex, 2026-07-31): the always-on context first — Geography →
@@ -57,7 +57,8 @@ export const ControlsPanel = ({ pluginDataPath, setState, pluginData, yearLabel 
 
   const geography = get(pluginData, ["geography"], []) || [];
   const geomControlOptions = get(pluginData, ["geomControlOptions"], []) || [];
-  const views = get(pluginData, ["views"], []) || [];
+  // Newest year first, matching dataUpdate's default pick — see singleYearViewsNewestFirst.
+  const views = singleYearViewsNewestFirst(get(pluginData, ["views"], []) || []);
   const viewId = get(pluginData, ["viewId"], null);
   const measureFilters = get(pluginData, ["measureFilters"], {}) || {};
   const measureKey = get(measureFilters, ["measure", "value"], "lottr");

@@ -288,7 +288,10 @@ export const macroviewTheme = {
   scopeCountActive: "font-mono text-[10px] tabular-nums text-slate-500",
   scopeNote: "mt-2 font-proxima text-[11.5px] leading-[1.45] text-slate-500 capitalize",
 
-  formatSeg: "h-8 grid grid-cols-3 rounded-[6px] border border-zinc-950/10 overflow-hidden",
+  // TWO columns, not three: the disabled `json` button was removed on 2026-08-24 (ogr2ogr has no
+  // plain-JSON driver and pm3 will not be growing one), and a 3-column grid holding two buttons
+  // leaves a third of the segmented control as empty bordered white space.
+  formatSeg: "h-8 grid grid-cols-2 rounded-[6px] border border-zinc-950/10 overflow-hidden",
   formatBtnFirst: "bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider cursor-pointer",
   formatBtn:
     "bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider border-l border-zinc-950/10 cursor-pointer",

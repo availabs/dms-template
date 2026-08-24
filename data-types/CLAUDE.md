@@ -137,6 +137,44 @@ Routes that queue a task should return `{ etl_context_id, source_id }`.
 `etl_context_id` IS the new task_id — the legacy client polls events via
 `/events/query?etl_context_id=…` and that path still works.
 
+### ⚠ ALL VIEWS OF A SOURCE MUST HAVE EXACTLY THE SAME COLUMNS
+
+**`metadata.columns` lives on the SOURCE, not the view.** One column list describes every view, so
+DAMA assumes a single schema across all of them. This is a hard constraint of the model, not a
+convention to be careful about:
+
+- **Changing a dataType's column structure requires a NEW SOURCE.** Not a new view, not an `ALTER` —
+  a new source. There is nowhere else for the new column list to live.
+- Two views of one source with different columns is a broken source, not a versioned one. The
+  column-aware surfaces (DataWrapper, the Table page, the filter UI, any UDA page section) read the
+  source's list and apply it to whichever view is bound, so the mismatch shows up as columns that
+  render empty or vanish — silently, with no error.
+- Corollary: **a source is the unit of schema, a view is the unit of vintage.** Reruns, per-year
+  snapshots and republished versions are views. Anything that adds, removes or renames a column is a
+  source.
+
+Worked example: `pm3` published 2017–2025 across sources 2131→2135 during August 2026. Each new source
+existed because the measure set changed — coverage columns, the unfloored delay series, the
+`anchor_fallback` flag. Source 1410 carries eleven views (one per year, 121 columns each) and could
+never have gained the new measures in place. Source 2135 is the new schema at 330 columns.
+
+**Corollary in practice: per-year views, one runner-enforced column list.** Source 2135 was split on
+2026-08-24 from one multi-year view into one view per year (`version` = `'2017'`…`'2025'`, each with
+its own metrics table) plus a `version = 'all_years'` union view, and the `pm3` runner now *produces*
+that shape — a publish of N years creates N views. Two mechanics make it safe and are worth copying
+in any plugin that publishes vintages:
+
+- **Derive the column list from code, never from the physical table.** pm3 builds it from its metric
+  registry (`pm3MetricColumnNames`), so it cannot depend on the year, the run, or which metrics were
+  computed. Reading `information_schema` instead would pick up whatever a given run happened to add
+  and land it on one view but not another. `information_schema` is read only to *verify*.
+- **Retire "append" modes.** pm3's old append path re-used one view and one shared metrics table.
+  It made version isolation impossible, gave a mid-publish failure the blast radius of every year in
+  the table, and produced its own bug class (two metadata-merge bugs, one of them latent data loss).
+  See `data-types/pm3/worker.js` § 2 for the full argument.
+
+See also `dms-server/src/dama/CLAUDE.md` § "Per-view physical tables".
+
 ### Source `metadata.columns` contract
 
 **Whenever a plugin creates a per-view physical table, it must also write

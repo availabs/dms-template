@@ -7,6 +7,11 @@
  * handles the data_manager side (sources/views/tasks).
  *
  * Asserts the pm3 semantics that differ from map21:
+ *   - ONE VIEW PER YEAR: a publish of N years creates N views, each `version` = the
+ *     4-digit year, each with its own metrics table, all column-identical. The
+ *     append path (`descriptor.view_id`) is gone and is refused;
+ *   - the `all_years` union view is opt-in, reuses its row across rebuilds, and
+ *     refuses to union members whose columns disagree;
  *   - output table lives in the `pm3` schema with a named UNIQUE(tmc, year)
  *     constraint + GIST geometry index (map21: gis_datasets, UNIQUE(tmc));
  *   - per-metric upserts (METRIC_WRITES_DB=true): one ALTER + one
@@ -116,7 +121,20 @@ function stubChDb() {
 //
 // `type: 'postgres'` so the Postgres-only paths (the metrics⋈geometry view and
 // the npmrds_meta GIST index) actually run and can be asserted.
+//
+// The metrics table's columns come from the metric registry, exactly as the worker's bulk pre-create
+// builds them — the fake has to model a table that pre-create has run against, or the worker's
+// "declared column missing" guard fires. A short hand-written list would only ever test that guard.
+// FAKE_METRIC_COLUMNS stays as a spot check: one column from each of the three column shapes.
+const { pm3MetricColumnNames } = require('../worker.js');
+const { pm3ViewColumnNames } = require('../helpers.js');
+const REGISTRY_METRIC_COLUMNS = pm3MetricColumnNames();
 const FAKE_METRIC_COLUMNS = ['lottr_amp_lottr', 'speed_pctl_50', 'ted_truck_freeflow_all_xdelay_phrs'];
+
+// meta-layer table name → the year it holds, filled in once the fixtures exist. The per-TMC meta
+// query names its table, so the fake can answer with the right year and a multi-year publish writes
+// genuinely different years.
+const META_TABLE_YEAR = new Map();
 
 function fakeDataDb() {
   const queries = [];
@@ -127,16 +145,19 @@ function fakeDataDb() {
     async query(sql, params) {
       queries.push(sql);
       if (/information_schema\.columns/i.test(sql)) {
-        return {
-          rows: [
-            { column_name: 'ogc_fid' }, { column_name: 'tmc' }, { column_name: 'year' },
-            ...FAKE_METRIC_COLUMNS.map((column_name) => ({ column_name })),
-          ],
-        };
+        const table = String((params || [])[1] || '');
+        // A metrics TABLE: join key + every registry column. A published pm3 VIEW: the declared
+        // relation — which is what the union view's member-identity check reads.
+        const cols = table.endsWith('_metrics')
+          ? ['ogc_fid', 'tmc', 'year', ...REGISTRY_METRIC_COLUMNS]
+          : pm3ViewColumnNames({ metricColumns: REGISTRY_METRIC_COLUMNS });
+        return { rows: cols.map((column_name) => ({ column_name })) };
       }
       const metaMatch = /tmc = '([^']+)'/.exec(sql);
       if (/^\s*SELECT/i.test(sql) && metaMatch && ALL_TMCS.includes(metaMatch[1])) {
-        return { rows: [{ ...TMC_META_ROW, tmc: metaMatch[1] }] };
+        const from = /FROM\s+\S+\.(\S+)\s+t1/.exec(sql);
+        const year = (from && META_TABLE_YEAR.get(from[1])) || TMC_META_ROW.year;
+        return { rows: [{ ...TMC_META_ROW, tmc: metaMatch[1], year }] };
       }
       return { rows: [] };
     },
@@ -156,20 +177,24 @@ async function runTests() {
   const stamp = Date.now();
 
   // ── data_manager fixtures (real sqlite rows) ───────────────────────────────
-  // meta-layer source + view (per-year TMC attributes table)
+  // meta-layer source + one view per year (per-year TMC attributes table). TWO years, so the
+  // one-view-per-year behaviour can be exercised against genuinely different meta layers.
   const metaSrc = await metadata.createDamaSource({ name: `pm3_meta_${stamp}`, type: 'npmrds_tmc_meta_layer', user_id: 1 }, DAMA_TEST_DB);
   const metaView = await metadata.createDamaView({ source_id: metaSrc.source_id, user_id: 1 }, DAMA_TEST_DB);
+  const metaView24 = await metadata.createDamaView({ source_id: metaSrc.source_id, user_id: 1 }, DAMA_TEST_DB);
+  META_TABLE_YEAR.set(metaView.table_name, 2023);
+  META_TABLE_YEAR.set(metaView24.table_name, 2024);
 
   // prod NPMRDS source: per-year meta-layer map on the SOURCE metadata,
   // raw-view→year map + CH meta table location on the VIEW metadata.
   const prodSrc = await metadata.createDamaSource({
     name: `pm3_npmrds_prod_${stamp}`, type: 'npmrds', user_id: 1,
-    metadata: { npmrds_meta_layer_view_id: { 2023: metaView.view_id } },
+    metadata: { npmrds_meta_layer_view_id: { 2023: metaView.view_id, 2024: metaView24.view_id } },
   }, DAMA_TEST_DB);
   const prodView = await metadata.createDamaView({
     source_id: prodSrc.source_id, user_id: 1,
     metadata: {
-      npmrds_raw_view_id_to_year: { 101: 2023, 99: 2022 },
+      npmrds_raw_view_id_to_year: { 101: 2023, 99: 2022, 103: 2024 },
       table_schema: 'clickhouse.npmrds_meta',
       table_name: `meta_tbl_${stamp}`,
     },
@@ -345,33 +370,255 @@ async function runTests() {
     assert(ch.queries.some((q) => /avg_speed_all_vehicles/.test(q)), 'speed percentile query hits CH');
   });
 
-  await test('appending to an existing view deletes that year by `year` column (not begindate regex)', async () => {
-    const dataDb2 = fakeDataDb();
-    const ch2 = stubChDb();
+  await test('`version` is the 4-digit year and the year is in the table name', async () => {
+    // The macroview labels its year selector from `version` and rewrites the tile URL's
+    // `&filter=year=` from that label, so anything else drops the view out of the selector and
+    // leaves the tiles filtering on the wrong year (204 / 0 bytes, network vanishes).
+    const { rows } = await db.query(`SELECT version, table_name FROM views WHERE view_id = $1`, [result.view_id]);
+    assert(rows[0].version === '2023', `version should be '2023' (got ${JSON.stringify(rows[0].version)})`);
+    assert(/_2023$/.test(rows[0].table_name), `table name should end in the year (got ${rows[0].table_name})`);
+    assert(result.views.length === 1 && result.views[0].year === 2023, 'result reports one view for 2023');
+    assert(result.view_ids.length === 1, 'result reports one view id');
+  });
+
+  await test('a per-year publish never DELETEs — the table is new, nothing is being replaced', async () => {
+    // The append path opened every run with `DELETE FROM <shared metrics table> WHERE year in (...)`.
+    // Per-year tables make that impossible, and its absence is the whole point: a failed publish can
+    // no longer damage a year that already succeeded.
+    const deletes = dataDb.queries.filter((q) => /DELETE\s+FROM/i.test(q));
+    assert(deletes.length === 0, `expected no DELETEs, got ${deletes.length}: ${deletes[0] || ''}`);
+    assert(!dataDb.joined().includes('begindate'), 'must not use map21 begindate regex delete');
+  });
+
+  await test('the tile URL filters on this view\'s single year', async () => {
+    const { rows } = await db.query(`SELECT metadata FROM views WHERE view_id = $1`, [result.view_id]);
+    const url = parseJson(rows[0].metadata).tiles.sources[0].source.tiles[0];
+    assert(/filter=year=2023$/.test(url), `tile URL should filter year=2023 (got ${url})`);
+  });
+
+  await test('the append path is REFUSED: a descriptor carrying view_id fails loudly', async () => {
+    // Removed 2026-08-24. Silently ignoring view_id would publish to a new view while the caller
+    // believed it was appending, so the failure is explicit and names the replacement.
     const worker2 = makeWorker({
-      getChDb: () => ch2,
-      createDamaView: metadata.createDamaView,
-      ensureSchema: metadata.ensureSchema,
-      dataDb: dataDb2,
+      getChDb: () => stubChDb(), createDamaView: metadata.createDamaView,
+      ensureSchema: metadata.ensureSchema, dataDb: fakeDataDb(),
     });
-    const events2 = [];
-    const r2 = await worker2({
+    let err = null;
+    try {
+      await worker2({
+        pgEnv: DAMA_TEST_DB, db,
+        task: { task_id: 8, descriptor: {
+          source_id: pm3Src.source_id, npmrdsSourceId: prodSrc.source_id,
+          years: [2023], view_id: result.view_id, percentTmc: 100, user_id: 1,
+        } },
+        dispatchEvent: async () => {}, updateProgress: async () => {},
+      });
+    } catch (e) { err = e; }
+    assert(err, 'should throw');
+    assert(/append path .*was removed|one view per year/i.test(err.message),
+      `error should explain the removal (got: ${err.message})`);
+  });
+
+  // ── one view per year ──────────────────────────────────────────────────────
+  let multi;
+  const multiDataDb = fakeDataDb();
+  await test('a 2-year publish creates 2 views, one per year, each with its own metrics table', async () => {
+    const eventsM = [];
+    const workerM = makeWorker({
+      getChDb: () => stubChDb(), createDamaView: metadata.createDamaView,
+      ensureSchema: metadata.ensureSchema, dataDb: multiDataDb,
+    });
+    multi = await workerM({
       pgEnv: DAMA_TEST_DB, db,
-      task: { task_id: 8, descriptor: {
-        source_id: pm3Src.source_id,
-        npmrdsSourceId: prodSrc.source_id,
-        years: [2023],
-        view_id: result.view_id,
-        percentTmc: 100,
-        user_id: 1,
+      task: { task_id: 10, descriptor: {
+        source_id: pm3Src.source_id, npmrdsSourceId: prodSrc.source_id,
+        years: [2024, 2023], percentTmc: 100, user_id: 1,
       } },
-      dispatchEvent: async (type, message, payload) => { events2.push({ type }); },
+      dispatchEvent: async (type, message, payload) => { eventsM.push({ type, message, payload }); },
       updateProgress: async () => {},
     });
-    assert(r2.view_id === result.view_id, 'reuses the existing view');
-    assert(dataDb2.queries.some((q) => /DELETE FROM[\s\S]*year in \(2023\)/i.test(q)),
-      'clears existing rows by year IN (...)');
-    assert(!dataDb2.joined().includes('begindate'), 'must not use map21 begindate regex delete');
+    assert(multi.views.length === 2, `expected 2 views, got ${multi.views.length}`);
+    // Ascending year order regardless of descriptor order, so view ids follow the years.
+    assert(multi.views.map((v) => v.year).join(',') === '2023,2024',
+      `views should be year-ascending (got ${multi.views.map((v) => v.year).join(',')})`);
+    assert(multi.views[0].view_id !== multi.views[1].view_id, 'distinct view ids');
+    assert(multi.views[0].metrics_table !== multi.views[1].metrics_table,
+      'each year gets its OWN metrics table — that is what makes a year independently republishable');
+    for (const v of multi.views) {
+      const { rows } = await db.query(`SELECT version, table_schema FROM views WHERE view_id = $1`, [v.view_id]);
+      assert(rows[0].version === String(v.year), `view ${v.view_id} version should be ${v.year}`);
+      assert(rows[0].table_schema === 'pm3', 'lives in the pm3 schema');
+      const meta = parseJson((await db.query(`SELECT metadata FROM views WHERE view_id = $1`, [v.view_id])).rows[0].metadata);
+      assert(Array.isArray(meta.year) && meta.year.length === 1 && meta.year[0] === v.year,
+        `metadata.year should be exactly [${v.year}] (got ${JSON.stringify(meta.year)})`);
+      // The append bug class: these maps used to be REPLACED rather than merged and the view is
+      // rebuilt from them. One year, one entry — there is nothing left to merge.
+      assert(Object.keys(meta.npmrds_meta_layer_table).length === 1, 'one meta-layer table entry');
+      assert(meta.npmrds_meta_layer_table[String(v.year)], `meta-layer table recorded for ${v.year}`);
+    }
+    // Republishing 2023 (run 1 already published it) is allowed and announced.
+    assert(eventsM.some((e) => e.type === 'pm3:WARN' && /already has \d+ view\(s\) for 2023/.test(e.message)),
+      'should warn that 2023 already has a view');
+  });
+
+  await test('every per-year view exposes the SAME columns, in the same order', async () => {
+    // The hard DAMA invariant: metadata.columns lives on the SOURCE, so one list describes every
+    // view. Two views with different column sets is a broken source, not a versioned one.
+    const creates = multiDataDb.queries.filter((q) => /^\s*CREATE VIEW/m.test(q));
+    assert(creates.length === 2, `expected 2 CREATE VIEWs, got ${creates.length}`);
+    const outputCols = (sql) => {
+      const list = sql.slice(sql.indexOf('SELECT') + 6, sql.indexOf('FROM pm3.'));
+      // top-level commas only — the derived AADT/AVO expressions contain nested commas
+      const parts = [];
+      let depth = 0, cur = '';
+      for (const ch of list) {
+        if (ch === '(') depth++;
+        else if (ch === ')') depth--;
+        if (ch === ',' && depth === 0) { parts.push(cur); cur = ''; } else cur += ch;
+      }
+      parts.push(cur);
+      return parts.map((part) => {
+        const as = /\sAS\s+"([^"]+)"\s*$/i.exec(part);
+        if (as) return as[1];
+        const bare = /"([^"]+)"\s*$/.exec(part);
+        return bare ? bare[1] : part.trim();
+      });
+    };
+    const a = outputCols(creates[0]);
+    const b = outputCols(creates[1]);
+    assert(a.length === b.length, `column counts differ: ${a.length} vs ${b.length}`);
+    for (let i = 0; i < a.length; i++) {
+      assert(a[i] === b[i], `column ${i} differs: "${a[i]}" vs "${b[i]}"`);
+    }
+    // …and they are exactly what the SOURCE declares, which is the only list any consumer reads.
+    //
+    // Position-for-position, INCLUDING ogc_fid. This used to assert `declared.length + 1` on the
+    // grounds that metadata.columns did not list ogc_fid; that stopped being true on 2026-08-24,
+    // when it was declared FIRST and flagged `isIndex: true` so uda's `resolvePrimaryKey` stops
+    // falling back to `'id'` against a relation that is a VIEW (see buildPm3SourceColumns for the
+    // broken-map-popup symptom). The two lists now describe the same relation exactly, which is a
+    // stronger invariant than the offset-by-one one — so assert it as such.
+    const { rows } = await db.query(`SELECT metadata FROM sources WHERE source_id = $1`, [pm3Src.source_id]);
+    const declared = parseJson(rows[0].metadata).columns.map((c) => c.name);
+    assert(declared[0] === 'ogc_fid', `metadata.columns should lead with ogc_fid (got "${declared[0]}")`);
+    assert(a.length === declared.length,
+      `view exposes ${a.length} columns against ${declared.length} declared`);
+    for (let i = 0; i < declared.length; i++) {
+      assert(a[i] === declared[i], `position ${i}: view has "${a[i]}", source declares "${declared[i]}"`);
+    }
+  });
+
+  await test('each per-year view joins only its own year\'s meta table — one UNION branch', async () => {
+    const creates = multiDataDb.queries.filter((q) => /^\s*CREATE VIEW/m.test(q));
+    for (const [i, year] of [2023, 2024].entries()) {
+      assert(!creates[i].includes('UNION ALL'), `view for ${year} should have a single branch`);
+      assert(new RegExp(`WHERE m\\."year" = ${year}`).test(creates[i]), `branch filters year = ${year}`);
+    }
+  });
+
+  // ── the all_years union view ───────────────────────────────────────────────
+  await test('the union view is NOT built unless asked for', async () => {
+    assert(multi.union_view_id === null, 'union_view_id should be null without rebuildUnionView');
+    assert(!multiDataDb.joined().includes('all_years'), 'no union view SQL issued');
+    const { rows } = await db.query(`SELECT count(*) n FROM views WHERE source_id = $1 AND version = 'all_years'`, [pm3Src.source_id]);
+    assert(Number(rows[0].n) === 0, 'no all_years view row created');
+  });
+
+  let unionRun;
+  const unionDataDb = fakeDataDb();
+  await test('rebuildUnionView unions the newest view per year, in year order', async () => {
+    const eventsU = [];
+    const workerU = makeWorker({
+      getChDb: () => stubChDb(), createDamaView: metadata.createDamaView,
+      ensureSchema: metadata.ensureSchema, dataDb: unionDataDb,
+    });
+    unionRun = await workerU({
+      pgEnv: DAMA_TEST_DB, db,
+      task: { task_id: 11, descriptor: {
+        source_id: pm3Src.source_id, npmrdsSourceId: prodSrc.source_id,
+        years: [2024], percentTmc: 100, user_id: 1, rebuildUnionView: true,
+      } },
+      dispatchEvent: async (type, message, payload) => { eventsU.push({ type, message, payload }); },
+      updateProgress: async () => {},
+    });
+    assert(unionRun.union_view_id != null, 'union_view_id returned');
+    const { rows } = await db.query(`SELECT version, table_schema, table_name, metadata FROM views WHERE view_id = $1`,
+      [unionRun.union_view_id]);
+    assert(rows[0].version === 'all_years', `union version should be all_years (got ${rows[0].version})`);
+    assert(rows[0].table_schema === 'pm3' && /_all_years$/.test(rows[0].table_name),
+      `union table should be pm3.*_all_years (got ${rows[0].table_schema}.${rows[0].table_name})`);
+    const meta = parseJson(rows[0].metadata);
+    // 2023 and 2024 each have several views by now; the NEWEST of each wins, and 2024's newest is
+    // the one this run just published.
+    assert(JSON.stringify(meta.year) === '[2023,2024]', `union spans both years (got ${JSON.stringify(meta.year)})`);
+    assert(meta.union_of_view_ids.length === 2, 'two members recorded');
+    assert(meta.union_of_view_ids[1] === unionRun.views[0].view_id,
+      'the 2024 member is the view this run published (newest wins)');
+    const create = unionDataDb.queries.find((q) => /CREATE VIEW pm3\.\S+_all_years/.test(q));
+    assert(create, 'issues the union CREATE VIEW');
+    assert((create.match(/UNION ALL/g) || []).length === 1, 'one UNION ALL for two members');
+    assert(unionDataDb.queries.some((q) => /DROP VIEW IF EXISTS pm3\.\S+_all_years/.test(q)),
+      'drops before create — the column list changes whenever the registry grows');
+    assert(eventsU.some((e) => e.type === 'pm3:UNION_VIEW_BUILT'), 'emits pm3:UNION_VIEW_BUILT');
+  });
+
+  await test('a second rebuild REUSES the union view row so its view_id is stable', async () => {
+    // The union's view_id is what a page section or symbology binds to. Minting a new one on every
+    // publish would silently strand every consumer.
+    const workerU2 = makeWorker({
+      getChDb: () => stubChDb(), createDamaView: metadata.createDamaView,
+      ensureSchema: metadata.ensureSchema, dataDb: fakeDataDb(),
+    });
+    const r = await workerU2({
+      pgEnv: DAMA_TEST_DB, db,
+      task: { task_id: 12, descriptor: {
+        source_id: pm3Src.source_id, npmrdsSourceId: prodSrc.source_id,
+        years: [2023], percentTmc: 100, user_id: 1, rebuildUnionView: true,
+      } },
+      dispatchEvent: async () => {}, updateProgress: async () => {},
+    });
+    assert(r.union_view_id === unionRun.union_view_id,
+      `union view_id should be reused (${unionRun.union_view_id} -> ${r.union_view_id})`);
+    const { rows } = await db.query(`SELECT count(*) n FROM views WHERE source_id = $1 AND version = 'all_years'`, [pm3Src.source_id]);
+    assert(Number(rows[0].n) === 1, `exactly one all_years view (got ${rows[0].n})`);
+    // …and it now names the 2023 view this run published, because the newest per year wins.
+    const meta = parseJson((await db.query(`SELECT metadata FROM views WHERE view_id = $1`, [r.union_view_id])).rows[0].metadata);
+    assert(meta.union_of_view_ids[0] === r.views[0].view_id, 'the 2023 member is this run\'s view');
+  });
+
+  await test('the union rebuild REFUSES members whose columns disagree', async () => {
+    // A positional UNION ALL over relations whose same-typed columns sit in a different order is
+    // silently wrong and Postgres cannot catch it, so member identity is proven before the build.
+    const drifted = fakeDataDb();
+    const inner = drifted.query.bind(drifted);
+    let seen = 0;
+    drifted.query = async (sql, params) => {
+      const res = await inner(sql, params);
+      // Drop a column from the SECOND published view the identity check reads.
+      if (/information_schema\.columns/i.test(sql) && !String((params || [])[1] || '').endsWith('_metrics')) {
+        seen += 1;
+        if (seen === 2) return { rows: res.rows.slice(0, -1) };
+      }
+      return res;
+    };
+    const workerD = makeWorker({
+      getChDb: () => stubChDb(), createDamaView: metadata.createDamaView,
+      ensureSchema: metadata.ensureSchema, dataDb: drifted,
+    });
+    let err = null;
+    try {
+      await workerD({
+        pgEnv: DAMA_TEST_DB, db,
+        task: { task_id: 13, descriptor: {
+          source_id: pm3Src.source_id, npmrdsSourceId: prodSrc.source_id,
+          years: [2024], percentTmc: 100, user_id: 1, rebuildUnionView: true,
+        } },
+        dispatchEvent: async () => {}, updateProgress: async () => {},
+      });
+    } catch (e) { err = e; }
+    assert(err, 'should throw rather than build a mismatched union');
+    assert(/refusing to build the union view/.test(err.message), `unexpected error: ${err.message}`);
+    assert(/NEW SOURCE/.test(err.message), 'error should point at the actual remedy');
   });
 
   await test('pre-creates all metric columns once instead of ALTERing per TMC per metric', async () => {
@@ -431,12 +678,12 @@ async function runTests() {
       pgEnv: DAMA_TEST_DB, db,
       task: { task_id: 9, descriptor: {
         source_id: pm3Src.source_id, npmrdsSourceId: prodSrc.source_id,
-        years: [2023], view_id: result.view_id, percentTmc: 100, user_id: 1,
+        years: [2023], percentTmc: 100, user_id: 1,
         concurrency: 999,
       } },
       dispatchEvent: async () => {}, updateProgress: async () => {},
     });
-    assert(r3.view_id === result.view_id, 'run completes with an out-of-range concurrency');
+    assert(r3.view_id != null, 'run completes with an out-of-range concurrency');
     assert(MAX_CONCURRENCY < 10, 'cap must stay under the pg pool default of 10');
   });
 

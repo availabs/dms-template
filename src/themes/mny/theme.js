@@ -347,6 +347,14 @@ const theme = {
             1: { className: "col-span-6 md:col-span-9", iconSize: 75 },
             2: { className: "col-span-6 md:col-span-12", iconSize: 100 },
           },
+          // same shape as landbank/transportny/avail — lets a tall section (the
+          // Actions Dashboard map) sit beside a stacked column of siblings
+          rowspans: {
+            "1": { className: "" },
+            "2": { className: "md:row-span-2" },
+            "3": { className: "md:row-span-3" },
+            "4": { className: "md:row-span-4" },
+          },
         }
       ]
     },
@@ -638,6 +646,18 @@ const theme = {
       tier3: "bg-[#6D96AE]",
       tier4: "bg-[#C5D7E0]",
       tierNone: "bg-white border border-[#C5D7E0]",
+    },
+  },
+  // data_bar columnType palette — the Actions Dashboard portfolio-mix bar lists
+  // (hazards = primary mny-400, type-of-work = deep mny-700). Same registration
+  // pattern as stackedBar above.
+  dataBar: {
+    track: "relative flex-1 min-w-0 h-[14px] rounded-full bg-[#F3F8F9] overflow-hidden",
+    fill: "absolute inset-y-0 left-0 rounded-full",
+    fills: {
+      primary: "bg-[#6D96AE]",
+      deep: "bg-[#37576B]",
+      muted: "bg-[#C5D7E0]",
     },
   },
   attribution: {

@@ -11,45 +11,18 @@ const { resolveTable } = require('@availabs/dms-server/src/db/table-resolver');
 
 const { csvParseRows, csvFormatRow } = require("d3-dsv");
 
-const { checkForPoint } = require("./utils/checkForPoint.js");
+const { cacheGeocodes } = require("../_shared/location/geocode");
+
+// The waterfall itself — rung logic, precision codes, funnel shape and the
+// centroid-cache builder — lives in the shared module so actions_cleaned can
+// run the identical resolver in-process. See _shared/location/waterfall.js
+// for the rung-by-rung documentation.
 const {
-	cacheGeocodes,
-	checkGeocodeCache
-} = require("./utils/geocode");
-const GeometryTableCache = require("./utils/GeometryTableCache");
-const { countyKeys, isStatewideDeclared, isStateAction, NYC_WIDE, NYC_FIPS } = require("./utils/geoids");
-
-/**
- * The precision codes written to the output table.
- *
- *   1  explicit coordinates   the action's own lat/lon         ~0 m
- *   2  geocoded address       Census batch geocoder            ~50 m
- *   3  jurisdiction centroid  middle of the town               median 5.1 km error
- *   4  county centroid        middle of the county             median 25.9 km error
- *   5  statewide, no point    NULL geometry, on purpose        — see geoids.isStatewide
- *   0  unresolved             NULL geometry, nothing matched   —
- *
- * 5 and 0 both carry a NULL geometry. The difference is that 5 is a statement
- * ("this action has no single locality") and 0 is a failure.
- */
-const PRECISION = {
-	COORDS:     1,
-	GEOCODED:   2,
-	JURIS:      3,
-	COUNTY:     4,
-	STATEWIDE:  5,
-	UNRESOLVED: 0
-};
-
-const getDamaTable = async (db, view_id) => {
-	const sql = `
-		SELECT data_table
-			FROM data_manager.views
-				WHERE view_id = $1;
-	`;
-	const { rows } = await db.query(sql, [view_id]);
-	return rows?.length ? rows[0].data_table : null;
-};
+	PRECISION,
+	makeFunnel,
+	buildCentroidCaches,
+	resolveLevel
+} = require("../_shared/location/waterfall");
 
 const Worker = async ctx => {
 
@@ -99,186 +72,32 @@ const Worker = async ctx => {
 	}
   await updateProgress(0.2);
 
-	const jurisdictionsTableCache = new GeometryTableCache();
-	const jurisdictionsTable = await getDamaTable(db, jurisdictionsView);
-  await dispatchEvent('actions_location:GEOM_CACHE', `caching centroids from ${ jurisdictionsTable }`);
-	const jurisdictionsTableSql = `
-		SELECT census_geo AS geoid,
-				ST_AsGeoJSON(ST_Centroid(wkb_geometry)) AS geojson
-			FROM ${ jurisdictionsTable }
-				WHERE state_fips = '36';
-	`;
-	await jurisdictionsTableCache.cacheGeometryTable(db, jurisdictionsTableSql);
-
-	const countiesTableCache = new GeometryTableCache();
-	const countiesTable = await getDamaTable(db, countiesView);
-  await dispatchEvent('actions_location:GEOM_CACHE', `caching centroids from ${ countiesTable }`);
-	const countiesTableSql = `
-		SELECT geoid,
-				ST_AsGeoJSON(ST_Centroid(wkb_geometry)) AS geojson
-			FROM ${ countiesTable }
-				WHERE geoid LIKE '36%';
-	`;
-	await countiesTableCache.cacheGeometryTable(db, countiesTableSql);
-
-	// New York City is five counties, so it has no GEOID of its own — but 2,081
-	// actions carry the literal string "New York City" where a county GEOID
-	// belongs. Give the city one synthetic centroid (the centroid of the five
-	// boroughs unioned) so those actions can be placed at county precision.
-	// Actions that name an actual borough resolve to that borough instead — see
-	// geoids.countyKeys.
-	// ST_Collect, not ST_Union: the TIGER borough polygons have topology defects
-	// (ST_Union dies with "unable to assign free hole to a shell" on Brooklyn).
-	// ST_Centroid over a collection of polygons is the area-weighted centroid of
-	// the parts — the same answer, without asking GEOS to dissolve the shared
-	// boundaries first.
-	const nycCentroidSql = `
-		SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(wkb_geometry))) AS geojson
-			FROM ${ countiesTable }
-				WHERE geoid = ANY($1);
-	`;
-	const { rows: nycRows } = await db.query(nycCentroidSql, [NYC_FIPS]);
-	if (nycRows?.[0]?.geojson) {
-		countiesTableCache.setGeometry(NYC_WIDE, JSON.parse(nycRows[0].geojson).coordinates);
-		await dispatchEvent('actions_location:GEOM_CACHE', 'cached the New York City city-wide centroid');
-	}
-	else {
-		await dispatchEvent('actions_location:GEOM_CACHE', 'WARNING: could not build a New York City centroid');
-	}
+	const caches = await buildCentroidCaches(
+		db,
+		{ jurisdictionsView, countiesView },
+		(tag, message) => dispatchEvent(`actions_location:${ tag }`, message)
+	);
 
   await updateProgress(0.3);
 
 	// ── the waterfall ─────────────────────────────────────────────────────────
-	// Each stage only touches items no earlier stage resolved, and each records
-	// how many actions it was ABLE to try as well as how many it placed. That
-	// candidates-vs-hits gap is the funnel, and it is what makes a broken rung
-	// (thousands of candidates, one hit) distinguishable from a merely sparse one.
+	// resolveLevel records how many actions each rung was ABLE to try as well as
+	// how many it placed. That candidates-vs-hits gap is the funnel, and it is
+	// what makes a broken rung (thousands of candidates, one hit) distinguishable
+	// from a merely sparse one.
 
-	const funnel = {
-		coordsCandidates: 0,
-		geocodeCandidates: 0,
-		jurisCandidates: 0,
-		jurisMisses: 0,
-		countyCandidates: 0,
-		countyMisses: 0
-	};
+	const funnel = makeFunnel();
 
   async function* yieldDataItems(source) {
   	for await (const [[id, di]] of source) {
-  		yield { id, di: JSON.parse(di), level: PRECISION.UNRESOLVED, point: null };
+  		yield { id, di: JSON.parse(di) };
   	}
   }
 
-	// Rung 1 — the action's own coordinates. In this dataset they live in the
-	// free-text `geometry_lat_long_polygon_etc` field (checkForPoint reads it);
-	// coordinates typed into address_if_available arrive via the points cache.
-  async function* checkLevel1(source) {
+  async function* resolveItems(source) {
   	for await (const item of source) {
-  		const point = checkForPoint(item.di) || checkGeocodeCache(item.id, true);
-  		if (point) {
-  			++funnel.coordsCandidates;
-  			yield { ...item, level: PRECISION.COORDS, point };
-  		}
-  		else {
-  			yield item;
-  		}
-  	}
-  }
-
-	// Rung 2 — the geocoded street address.
-  async function* checkLevel2(source) {
-  	for await (const item of source) {
-  		if (item.level > 0) { yield item; continue; }
-
-  		if (item.di.address_if_available) ++funnel.geocodeCandidates;
-
-  		const point = checkGeocodeCache(item.id);
-  		if (point) {
-  			yield { ...item, level: PRECISION.GEOCODED, point };
-  		}
-  		else {
-  			yield item;
-  		}
-  	}
-  }
-
-	// Declared statewide — the action's own county field says "Statewide" (or its
-	// county_geoid is the state pseudo-GEOID 36000). Runs after the coordinate
-	// rungs (real coordinates always win) but BEFORE the centroid rungs, so such
-	// an action never receives a centroid asserting a locality it says it lacks.
-  async function* checkStatewideDeclared(source) {
-  	for await (const item of source) {
-  		if (item.level > 0) { yield item; continue; }
-
-  		if (isStatewideDeclared(item.di)) {
-  			yield { ...item, level: PRECISION.STATEWIDE, point: null };
-  		}
-  		else {
-  			yield item;
-  		}
-  	}
-  }
-
-	// Rung 3 — the jurisdiction (municipality) centroid.
-  async function* checkLevel3(source) {
-  	for await (const item of source) {
-  		if (item.level > 0) { yield item; continue; }
-
-  		const geoid = item.di.geoid_juris;
-  		const hasGeoid = geoid !== null && geoid !== undefined && String(geoid).trim() !== '';
-  		if (hasGeoid) ++funnel.jurisCandidates;
-
-  		// The cache coerces keys to strings, so the 721 rows whose geoid_juris is
-  		// a JSON *number* now hit instead of silently dropping a rung.
-  		const point = jurisdictionsTableCache.checkGeometryCache(geoid);
-  		if (point) {
-  			yield { ...item, level: PRECISION.JURIS, point };
-  		}
-  		else {
-  			if (hasGeoid) ++funnel.jurisMisses;
-  			yield item;
-  		}
-  	}
-  }
-
-	// Rung 4 — the county centroid. countyKeys unwraps the one-element array form
-	// (["36091"]), walks every element of a multi-county action, and maps the New
-	// York City rows onto a borough or the city-wide centroid.
-  async function* checkLevel4(source) {
-  	for await (const item of source) {
-  		if (item.level > 0) { yield item; continue; }
-
-  		const keys = countyKeys(item.di);
-  		if (keys.length) ++funnel.countyCandidates;
-
-  		let point = null;
-  		for (const key of keys) {
-  			point = countiesTableCache.checkGeometryCache(key);
-  			if (point) break;
-  		}
-
-  		if (point) {
-  			yield { ...item, level: PRECISION.COUNTY, point };
-  		}
-  		else {
-  			if (keys.length) ++funnel.countyMisses;
-  			yield item;
-  		}
-  	}
-  }
-
-	// Terminal statewide — a state-plan action that reached the end of the
-	// waterfall with no jurisdiction and no county. It is placeless by nature, so
-	// it is reported as precision 5 (a statement) rather than 0 (a failure).
-	// State actions that DO carry a locality kept their centroid above.
-  async function* checkStatewideTerminal(source) {
-  	for await (const item of source) {
-  		if (item.level === PRECISION.UNRESOLVED && isStateAction(item.di)) {
-  			yield { ...item, level: PRECISION.STATEWIDE, point: null };
-  		}
-  		else {
-  			yield item;
-  		}
+  		const { level, point } = resolveLevel({ id: item.id, di: item.di, caches, funnel });
+  		yield { ...item, level, point };
   	}
   }
 
@@ -348,12 +167,7 @@ const Worker = async ctx => {
 			),
 			split(csvParseRows),
 			yieldDataItems,
-			checkLevel1,
-			checkLevel2,
-			checkStatewideDeclared,
-			checkLevel3,
-			checkLevel4,
-			checkStatewideTerminal,
+			resolveItems,
 			parseResults,
 			pgClient.query(
 				pgCopyStreams.from(copyFromSql)

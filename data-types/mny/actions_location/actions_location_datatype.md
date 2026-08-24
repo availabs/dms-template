@@ -1,6 +1,17 @@
 # `actions_location` data-type — geolocate Mitigate-NY actions into a `gis_dataset`
 
-## Status: NOT STARTED
+## Status: SHIPPED (v2 = view 12463) — now DEPRECATED as a published source
+
+> **2026-08-24:** the geolocation waterfall this plugin implemented moved to
+> **`data-types/mny/_shared/location/`** and now runs **in-process inside
+> `actions_cleaned`** — one publish of Actions Cleaned (source `12453`)
+> produces rows AND geometry, so nothing needs this plugin's separate source
+> (`11725`) anymore. A 2026-08-24 audit found **zero live consumers** of
+> source 11725 / views 12462+12463 (no symbology, Map section, or dataWrapper
+> binding). This plugin's worker still runs (it calls the same shared
+> resolver), but treat it as diagnostic-only; the owner decides whether source
+> 11725 is eventually frozen or deleted. See
+> `planning/mitigateny/tasks/current/mny-actions-cleaned-unify-locations.md`.
 
 ## Audience
 
