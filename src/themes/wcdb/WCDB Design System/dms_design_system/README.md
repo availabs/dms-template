@@ -499,10 +499,55 @@ Read time (`9 min read`) is **derived from the body**, never typed.
 
 ### Not designed here
 
-- **A subscribe destination.** The footer's form is in the mockups, but nothing
-  in this folder decides where an address goes.
+- **A newsletter.** There was a signup in the footer through v0.3 — two of
+  them, in fact: the generic one and a `Weekly digest` variant on
+  `schedule.html`. **Both removed 2026-08-21**; the station is not launching one,
+  and a form with nowhere to post is worse than no form because it collects an
+  address and drops it. See "The footer" below for what the column carries now.
+  If a newsletter does launch, that is where it goes back — and it needs a
+  destination decided first.
 - **Per-post social/OG images.** The featured image is assumed to serve.
 - **Comments.** Out of scope; the station has never had them.
+
+## `schedule.html` — no "next week" section
+
+`card:next-week` ("Looking ahead / Next week's highlights / Full week →") was
+drawn through v0.3 and **removed 2026-08-21**. The page's job is the week that is
+on; a second, softer list of the week after competed with the day filter directly
+above it and answered a question nobody asked on the way to finding tonight's
+show. The filter card plus one steerable list is the whole page.
+
+## The footer
+
+An **inverted card** (`.wcdb-card-inv`) — it flips the mode, a light block on the
+dark site, so the foot of the page reads as a separate object rather than more
+page. Three tiers: a left column carrying the station's own voice, two link
+columns to its right, then a hairline and a colophon split to the two edges.
+
+**The left column is the station's particulars, not a newsletter pitch.** It held
+a mailing-list signup through v0.3; that was removed 2026-08-21 (see "Not
+designed"). Deleting it outright would have left the link lists floating in a
+1.4fr column, and the eyebrow, headline and paragraph were *all* the newsletter
+copy — so the column now carries what a station footer should: who is
+broadcasting, from where, and the number to call.
+
+    ON AIR SINCE 1977
+    WCDB Albany 90.9FM
+    Student-run radio from SUNY Albany, broadcasting from
+    Campus Center 316, 1400 Washington Avenue, Albany NY 12222.
+    REQUEST LINE (518) 442-4242      STATION INFO →
+
+The masthead is the station's full name, with `90.9FM` capitalised to match the
+home hero — the established treatment everywhere else in this folder. **No
+tagline**: one was tried here and removed, because the eyebrow already dates the
+station and the paragraph already says what it is, so a slogan between them was
+a third voice saying nothing new.
+
+Every value is one `station-info.html` already prints — nothing here is
+invented, and there is one place to correct it if the station moves.
+
+> **Not to be confused with `Subscribe` on `show.html`.** That button follows a
+> *show*; it is not a mailing list and was deliberately left alone.
 
 ## The admin section
 
