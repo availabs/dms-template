@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE (implemented as `composeAutoTitle`/`isTitleDirty`, no new field, per Ryan's explicit call — not yet live-clicked-through); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure deliberately deferred, not started; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED; Tier 6 (four more items, 2026-08-20 — Peak/DoW+Map/Table title gaps, Map multi-route, relative-dates span default) ALL DONE + live-verified 2026-08-20; Tier 7 (three more items, 2026-08-20 — multi-route Map color-scale question answered, AddGraphModal "When" step's own dead-scalar gap fixed, and a real `dms`-core rendering gap found: Table/Map had NO title renderer at all, so 6A's own "Table's title was already working" claim was wrong — reasoned from compose code, never DOM-verified) 7A/7B DONE + live-verified 2026-08-20; 7C's title-renderer code REVERTED by Ryan 2026-08-21 (not pursuing); Tier 8 (gap #16, 2026-08-21 — Route Compare's delta column + Info Box's Reliability/LOTTR/TTTR/Freeflow measures) 8A/8B DONE + live-verified, including two real bugs found+fixed (Route Compare's resolution-gate correctness, an orphaned-column bug caught via a live ClickHouseError) — gap #16 now mostly closed, see its own Parked-section entry for what's still open · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; Tier 3/5B's title auto-compose (`composeAutoTitle`/`isTitleDirty`) live-verified by Ryan 2026-08-24 (re-pick doesn't clobber a manual title) — **3A/5B now fully DONE**; `probe_corpus.mjs` re-baselined 2026-08-24 (all 8 entries PASS clean) after fixing two real harness bugs found along the way — see that date's Progress log entry: (1) the manifest's `authRequired: false` was stale, the site now requires login everywhere, flipped to `true`; (2) 12 accidental duplicate "Golden Corpus - *" pages had piled up and the 4 static entries' manifest URLs no longer resolved to any live page (silently falling back to the homepage) — deleted the duplicates, rebuilt fresh from spec with `--replace` added to prevent recurrence; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE, live-verified 2026-08-24 (see above); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure deliberately deferred, not started; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED; Tier 6 (four more items, 2026-08-20 — Peak/DoW+Map/Table title gaps, Map multi-route, relative-dates span default) ALL DONE + live-verified 2026-08-20; Tier 7 (three more items, 2026-08-20 — multi-route Map color-scale question answered, AddGraphModal "When" step's own dead-scalar gap fixed, and a real `dms`-core rendering gap found: Table/Map had NO title renderer at all, so 6A's own "Table's title was already working" claim was wrong — reasoned from compose code, never DOM-verified) 7A/7B DONE + live-verified 2026-08-20; 7C's title-renderer code REVERTED by Ryan 2026-08-21 (not pursuing); Tier 8 (gap #16, 2026-08-21 — Route Compare's delta column + Info Box's Reliability/LOTTR/TTTR/Freeflow measures) 8A/8B DONE + live-verified, including two real bugs found+fixed (Route Compare's resolution-gate correctness, an orphaned-column bug caught via a live ClickHouseError) — gap #16 now mostly closed, see its own Parked-section entry for what's still open · **Started:** 2026-08-19
 
 ## Objective
 
@@ -461,7 +461,7 @@ whenever the URL param is absent regardless of edit mode).
 
 ## Tier 3 — completeness (ongoing, per Item 2's framing)
 
-### 3A. Item 2's concrete deliverable — gap #15, Title/Description auto-compose
+### 3A. Item 2's concrete deliverable — gap #15, Title/Description auto-compose — DONE, live-verified 2026-08-24 (see 5B for the implementation, which is this item's actual delivery)
 
 **File**: `src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js`
 
@@ -480,9 +480,9 @@ checked, no existing `_isAutoGenerated`/`_pristine`-style field anywhere in this
 **Confirm approach with Ryan before implementing** — this is a real design decision, not a blind
 wire-up.
 
-- [ ] Decide (a) vs (b) with Ryan
-- [ ] Implement in `composeMeasureConfig.js`
-- [ ] Live-verify across at least 2 pill types + Add Graph, confirm an author's manually-set title is never clobbered by a later re-pick
+- [x] Decide (a) vs (b) with Ryan — 2026-08-20, picked (b), pristine-tracking, implemented as `composeAutoTitle`/`isTitleDirty` (see 5B)
+- [x] Implement in `composeMeasureConfig.js` — 2026-08-20 (see 5B)
+- [x] Live-verify across at least 2 pill types + Add Graph, confirm an author's manually-set title is never clobbered by a later re-pick — verified by Ryan 2026-08-24
 
 ---
 
@@ -691,7 +691,7 @@ position; zero console errors at any checkpoint (`read_console_messages`, `onlyE
 - [ ] Not done: `probe_corpus.mjs` (consistent with this whole arc's earlier deliberate skips);
       no golden-corpus entry exercises `/edit/...` at all (see Tier 1's own note on this same gap)
 
-### 5B. Graph/section title never auto-populates — re-raised, same gap as Tier 3 item 3A
+### 5B. Graph/section title never auto-populates — re-raised, same gap as Tier 3 item 3A — DONE, live-verified 2026-08-24
 
 Ryan re-hit this independently ("Graph/section title does not get populated at all, either via
 `Add Graph`, or changing the pill measures"). Re-confirmed by re-reading
@@ -1425,8 +1425,9 @@ throughout, confirmed via a clean console-tracking-from-navigation check (not ju
 - [x] Breathing room between measures checklist and Resolution — 2026-08-20
 - [x] Root-cause and fix the Table+Summary+2-routes "unknown identifier" bug — 2026-08-20,
       live-verified both the join and no-join branches, plus reload-persistence
-- [ ] Not done: live click-through of the title-dirty mechanism itself (create → auto-title →
-      hand-edit → re-pick → confirm survives)
+- [x] Live click-through of the title-dirty mechanism itself (create → auto-title → hand-edit →
+      re-pick → confirm survives) — verified by Ryan 2026-08-24, a manual title is never clobbered
+      by a later re-pick
 
 ### 5G. Third bug in the same family — inner SQL alias collisions across DISTINCT measures — DONE, live-verified 2026-08-20
 
@@ -2119,10 +2120,11 @@ skipped:
       Tier's changes land — **not run at all this pass.** Ryan's call, stated twice: first as "make
       a list of things you think might break, don't chase it down right now" (a reasoned regression-risk
       analysis was written into the Progress log instead of an actual run — see 2026-08-19 entries),
-      then again after live-verifying everything himself ("don't worry about probe corpus"). No
-      baseline exists for Tier 1/2's changes as of this write-up — the next session that touches RRL/
-      QuickControls/report pages again should run a full `probe_corpus.mjs --capture` pass to establish
-      one, since it's still missing.
+      then again after live-verifying everything himself ("don't worry about probe corpus"). **Resolved
+      2026-08-24**: ran a full `probe_corpus.mjs --capture` pass covering Tiers 1-8's cumulative
+      changes — see that date's Progress log entry for the two real harness bugs found and fixed along
+      the way (stale `authRequired: false`, 12 accidental duplicate golden-corpus pages masking a
+      silent fallback-to-homepage). All 8 entries now PASS clean against a fresh baseline.
 - [x] Update `src/dms/skills/traversing-dms-pages.md` / `traversing-report-pages.md` in the same
       session if live verification surfaces anything they don't already say — **not updated this
       pass**: Ryan did the live verification himself directly (not via this session's own browser
@@ -2340,6 +2342,37 @@ skipped:
   `npm run build` before live verification (transformed all 1186 modules cleanly; the one failure
   was a pre-existing, unrelated missing `colorbrewer` import in `macroview/updateFilters.jsx`, not
   touched this session).
+
+- **2026-08-24**: Ryan validated the title auto-compose mechanism (3A/5B) live-clicked-through
+  himself — confirmed working, including that re-picking a pill does not clobber a manually-set
+  title. **3A/5B now fully DONE**, including live verification (the one item left open from Tier
+  5's own checklist). Then re-ran `probe_corpus.mjs` to establish a fresh baseline for Tiers 1-8
+  (none had existed since 2026-08-17, predating all of this arc's changes). Surfaced two real
+  testing-harness issues before resolving, per Ryan's own request:
+  1. All 8 manifest entries were `authRequired: false`, but the site now requires login to view
+     every one of them (confirmed by Ryan directly in an incognito window) — unrelated to any of
+     this arc's changes, a site-wide auth-gate change from elsewhere. Flipped all 8 to
+     `authRequired: true` in `golden-corpus.json` per Ryan's direction.
+  2. With auth fixed, the 4 static `golden_corpus_*` entries still showed section-count blockers
+     (2→20, "had content→blank") — root cause: their manifest URLs (the spec's own explicit
+     `slug`, e.g. `golden_corpus_linegraph`) no longer matched any live page. 12 accidental
+     duplicate "Golden Corpus - *" pages had piled up across two build generations (repeat
+     rebuilds without `--replace`, plus url_slug drift to a title-derived form on a later resave)
+     — every probe was silently falling back to the site's real homepage instead of erroring.
+     Ryan confirmed all 12 were accidental and had me delete them, then rebuild fresh from each
+     entry's own spec. Added `--replace` to all 4 static entries' `rebuild` commands in the
+     manifest (matching the dynamic_report entries' existing convention) to prevent recurrence.
+  3. One minor, fully-resolved-not-a-bug thread: 3 of the 4 `dynamic_report_*` entries each showed
+     one dropped `/graph` query with no accompanying content/section-count change. Ruled out the
+     usual "past the ClickHouse data cliff" explanation (checked: max date in CH was 2026-08-09).
+     Ryan independently checked `monthly_congestion` live and confirmed Jan-Aug have real content,
+     Sept-Dec are blank (current date is in August) — matches the capture exactly; the dropped
+     query was confirmed harmless (that section still renders with real content; almost certainly
+     a wire-text shift from one of Tier 5's SQL/alias fixes, not data loss).
+  All 8 entries now PASS clean against a fresh 2026-08-24 baseline (exit 0). `dynamic_report_one_week_study`
+  — the entry covering the most surface area — passed with zero diffs on the very first post-auth-fix
+  run, before any of the page-rebuild work, which is good independent evidence Tiers 1-8's actual
+  report-rendering changes are sound.
 
 - **2026-08-21**: Ryan reverted 7C's Table/Map title-rendering code from the prior session with no
   reason given ("if we really need to add a title to these components, I'll circle back") — noted
