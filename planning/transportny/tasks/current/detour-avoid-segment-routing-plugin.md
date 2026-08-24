@@ -1,6 +1,6 @@
 # Detour / avoid-segment routing plugin
 
-**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS - rebuilding to corrected flow · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS - point selection confirmed working & committed (2026-08-24); performance follow-up tracked separately below · **Started:** 2026-08-19
 
 ## Objective (corrected 2026-08-19 - see "Flow correction" below)
 
@@ -1293,3 +1293,35 @@ prevention, same-road priority at both budget and selection time, real minimum-g
 hard count requirement, radius-as-cap not target, no timeout) in one clean reference, separate
 from this task file's chronological blow-by-blow. Read that file before touching this logic
 again; keep it in sync if the rules change.
+
+### Cleanup + commit (2026-08-24)
+
+User: "before that first can you clean the code i mean remove unnecessory code and make ready or
+commit in the branch." Reviewed `memoryGraph.js` for dead code left over from the iterative
+redesigns above - confirmed via grep that no references remain to any deleted function
+(`computeClosureDensity`, `bfsCandidateNodes`, `distanceCandidateNodes`,
+`candidateTargetDistancesM`, `dijkstraReachableNodes`, old `nearestToFarthestNodes` name); the
+iterative work had already self-cleaned. ESLint findings on the touched files were all either
+pre-existing/out-of-scope or established codebase convention (confirmed by diffing against sibling
+`routing/comp.jsx`) - no real cleanup needed.
+
+Found `src/dms` submodule in a detached-HEAD state carrying the timeout-bypass edit from the
+"Timeout removed entirely" fix above. User's instruction: "for dms just remove that line of code
+and make it clean and pull latest submodule" - discarded that edit and updated the submodule to
+latest `origin/master` instead of committing the change. **This reintroduces the plain 30s
+Express request timeout for both density routes** (`REQUEST_TIMEOUT=30_000` in
+`src/dms/packages/dms-server/src/index.js`) - the "no timeout" rule (#8) in
+`documentation/closure-density-point-selection.md` is now stale until timing work below lands or
+a scoped timeout is reinstated. Flagged to the user as a direct trade-off, not silently absorbed.
+
+Committed to `routing-plugin` (`145c816`): `data-types/routing/index.js`,
+`data-types/routing/memoryGraph.js`, this task file, `documentation/closure-density-point-selection.md`,
+the entire `src/themes/transportny/components/detour/` plugin directory, and the `src/dms`
+submodule pointer bump. Excluded `AGENTS.md` and `src/themes/transportny/theme.js` - both
+pre-existing/unrelated, confirmed via `git log`/`git diff` predating this session's work.
+
+### Next: response-timing improvements (tracked separately)
+
+Point selection now works correctly but can be slow per-request (CPU-bound Dijkstra search on the
+Node event loop). Broken out into its own task file so it doesn't get lost in this one's history:
+[Closure-density point-selection performance](./closure-density-performance.md).
