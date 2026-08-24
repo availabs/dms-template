@@ -1,6 +1,7 @@
 import React from "react"
 import { ThemeContext, getComponentTheme } from "../../dms/packages/dms/src/ui/useTheme"
-import { ComponentContext, PageContext } from "../../dms/packages/dms/src/patterns/page/context"
+import { ComponentContext, PageContext, CMSContext } from "../../dms/packages/dms/src/patterns/page/context"
+import { udaListViews, udaCreateView } from "../../dms/packages/dms/src/api"
 import { scheduleGridTheme } from "./ScheduleGrid.theme"
 import { HOURS, dayLabels, hourLabel, toBlocks } from "./ScheduleGrid.utils"
 
@@ -22,6 +23,58 @@ import { HOURS, dayLabels, hourLabel, toBlocks } from "./ScheduleGrid.utils"
 //
 // The component owns no data of its own: it is dataWrapper-bound to the
 // schedule source joined to shows, and renders `state.data`.
+
+// Name-a-version dialog. Lives INSIDE this component rather than as an authored
+// section group (which is how the add/edit-airing modals work) because it has no
+// data binding to author: it collects one string and hands it to a falcor call.
+// A modal section group would mean a page section whose only job is to hold an
+// input this component still has to read back out of the URL.
+function NameVersionDialog({ t, open, mode, sourceLabel, copyFrom, rowCount, busy, error, value, onChange, onClose, onConfirm, Icon }) {
+  if (!open) return null
+  const duplicating = mode === "duplicate"
+  return (
+    <div className={t.dialogOverlay} onClick={busy ? undefined : onClose}>
+      <div className={t.dialogCard} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true"
+           aria-label={duplicating ? "Duplicate version" : "New version"}>
+        <div className={t.dialogHead}>
+          <div className={t.dialogEyebrow}>{duplicating ? "Duplicate" : "New version"}</div>
+          <h3 className={t.dialogTitle}>{duplicating ? `Copy ${copyFrom || "this version"}?` : "Start a blank week"}</h3>
+        </div>
+        <form className={t.dialogBody} onSubmit={(e) => { e.preventDefault(); onConfirm() }}>
+          <div className={t.nameField}>
+            <label className={t.nameLabel} htmlFor="wcdb-version-name">Name this version</label>
+            <input
+              id="wcdb-version-name"
+              className={t.nameInput}
+              value={value}
+              autoFocus
+              disabled={busy}
+              placeholder={duplicating ? "Fall 2026 draft" : "Spring 2027"}
+              onChange={(e) => onChange(e.target.value)}
+            />
+          </div>
+          {error
+            ? <p className={t.nameError}>{error}</p>
+            : (
+              <p className={t.nameHint}>
+                {duplicating
+                  ? `${rowCount} airing${rowCount === 1 ? "" : "s"} will be copied into a new version of ${sourceLabel}. Editing the copy never touches the original.`
+                  : `A new empty version of ${sourceLabel}, with the same columns and nothing scheduled. Nothing goes live until you publish it.`}
+              </p>
+            )}
+        </form>
+        <div className={t.dialogFoot}>
+          <button type="button" className={t.dialogCancel} onClick={onClose} disabled={busy}>Cancel</button>
+          <button type="button" className={busy || !value.trim() ? t.dialogConfirmDisabled : t.dialogConfirm}
+                  disabled={busy || !value.trim()} onClick={onConfirm}>
+            {Icon ? <Icon icon={duplicating ? "Copy" : "Plus"} className={t.dialogConfirmIcon} /> : null}
+            {busy ? "Creating\u2026" : (duplicating ? "Duplicate" : "Create")}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function PublishDialog({ t, open, onClose, incoming, outgoing, rowCount, canPublish, blockedReason, Icon }) {
   if (!open) return null
@@ -80,9 +133,108 @@ export const ScheduleGridView = ({ isEdit }) => {
   // a prop — a `state` prop is always undefined, which renders as a bound
   // section with no rows (every hour open, "unbound" version) rather than as an
   // error. Card.jsx reads it the same way.
-  const { state = {} } = React.useContext(ComponentContext) || {}
+  const { state = {}, setState } = React.useContext(ComponentContext) || {}
   const { setActionParam } = React.useContext(PageContext) || {}
+  const { falcor } = React.useContext(CMSContext) || {}
   const [publishOpen, setPublishOpen] = React.useState(false)
+
+  // ── versions ────────────────────────────────────────────────────────────
+  // A "version" of the schedule is a VERSION OF THE DATASET — a DAMA view of the
+  // bound source, with its own table. That is why switching versions is a rebind
+  // (`externalSource.view_id`) and not a filter: the rows of a draft week live
+  // somewhere the live week's query cannot reach, so a half-finished draft can
+  // never leak onto the public site.
+  //
+  // The rebind is written into LOCAL section state. In view mode `setState` is a
+  // useImmer setter that is never persisted, so picking a version is a per-session
+  // choice an admin makes freely — it does not dirty the page, and it does not need
+  // page-edit rights. `externalSource.view_id` is part of dataWrapper's fetch key,
+  // so setting it is all that is needed to make the grid refetch.
+  const srcEnv = state.externalSource?.srcEnv || state.externalSource?.env
+  const sourceId = state.externalSource?.source_id
+  const viewId = state.externalSource?.view_id
+  const [versions, setVersions] = React.useState([])
+  const [nameDialog, setNameDialog] = React.useState(null) // null | 'new' | 'duplicate'
+  const [nameValue, setNameValue] = React.useState("")
+  const [creating, setCreating] = React.useState(false)
+  const [createError, setCreateError] = React.useState(null)
+  const [reloadVersions, setReloadVersions] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!falcor || !srcEnv || !sourceId) return
+    let live = true
+    udaListViews(falcor, { env: srcEnv, source_id: sourceId })
+      .then((rows) => { if (live) setVersions(rows) })
+      .catch((e) => { console.error("[ScheduleGrid] could not list versions:", e.message) })
+    return () => { live = false }
+  }, [falcor, srcEnv, sourceId, reloadVersions])
+
+  const versionLabel = React.useCallback((v) => {
+    if (!v) return null
+    const name = v.version && String(v.version).trim()
+    // `version` defaults to '1' for every DAMA view and to the view_id for ones this
+    // component creates unnamed, so a purely numeric label is not a name — it reads as
+    // a bare "1" in the picker. Prefix those; leave a real name ("Fall 2026") alone.
+    if (!name) return `Version ${v.view_id}`
+    return /^\d+$/.test(name) ? `Version ${name}` : name
+  }, [])
+
+  const switchVersion = (nextViewId) => {
+    const next = Number(nextViewId)
+    if (!Number.isInteger(next) || next === Number(viewId) || !setState) return
+    setState((draft) => {
+      if (!draft?.externalSource) return
+      draft.externalSource.view_id = next
+      const match = versions.find((v) => v.view_id === next)
+      if (match?.version) draft.externalSource.view_name = String(match.version)
+      // The previous version's rows must not linger while the refetch is in flight —
+      // they would read as this version's schedule for as long as the request takes.
+      draft.data = []
+    })
+  }
+
+  const openNameDialog = (mode) => {
+    setCreateError(null)
+    setNameValue(mode === "duplicate" ? `${versionLabel(versions.find((v) => v.view_id === Number(viewId))) || "Version"} copy` : "")
+    setNameDialog(mode)
+  }
+
+  const createVersion = async () => {
+    if (!falcor || !sourceId || creating) return
+    const label = nameValue.trim()
+    if (!label) return
+    setCreating(true)
+    setCreateError(null)
+    try {
+      const newViewId = await udaCreateView(falcor, {
+        env: srcEnv,
+        source_id: sourceId,
+        version: label,
+        copy_from_view_id: nameDialog === "duplicate" ? viewId : null,
+      })
+      if (!newViewId) throw new Error("The server created no version")
+      // Refresh the list BEFORE switching so switchVersion can find the new label.
+      const rows = await udaListViews(falcor, { env: srcEnv, source_id: sourceId })
+      setVersions(rows)
+      setReloadVersions((n) => n + 1)
+      setNameDialog(null)
+      if (setState) {
+        setState((draft) => {
+          if (!draft?.externalSource) return
+          draft.externalSource.view_id = newViewId
+          draft.externalSource.view_name = label
+          draft.data = []
+        })
+      }
+    } catch (e) {
+      // Surfaced in the dialog rather than a console line: the two failures a user
+      // will actually hit are "not authorized" and "no version to derive a schema
+      // from", and both are answerable only by the person who clicked.
+      setCreateError(e?.message || "Could not create the version")
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const display = React.useMemo(() => state.display || {}, [state.display])
   // Memoized so it can be a real dependency of the blocks memo below — rebuilt
@@ -128,8 +280,27 @@ export const ScheduleGridView = ({ isEdit }) => {
       <div className={t.versionBar}>
         <div className={t.versionGroup}>
           <span className={t.versionLabel}>Editing</span>
-          <span className={t.versionName}>{version.name}</span>
-          <span className={t.versionMeta}>{state.externalSource?.view_id ? `v${state.externalSource.view_id}` : "unbound"}</span>
+          {versions.length ? (
+            <span className={t.versionSelectWrap}>
+              <select
+                className={t.versionSelect}
+                value={viewId ?? ""}
+                aria-label="Which version of the schedule to edit"
+                onChange={(e) => switchVersion(e.target.value)}
+              >
+                {/* A bound view that isn't in the list yet (first render, or a view the
+                    source no longer lists) still has to be selectable, or the select
+                    would silently show someone else's version. */}
+                {versions.some((v) => v.view_id === Number(viewId)) ? null
+                  : <option value={viewId ?? ""}>{version.name}</option>}
+                {versions.map((v) => (
+                  <option key={v.view_id} value={v.view_id}>{versionLabel(v)}</option>
+                ))}
+              </select>
+              {Icon ? <Icon icon="ChevronDown" className={t.versionSelectCaret} /> : null}
+            </span>
+          ) : <span className={t.versionName}>{version.name}</span>}
+          <span className={t.versionMeta}>{viewId ? `v${viewId}` : "unbound"}</span>
         </div>
         <div className={t.versionGroup}>
           <span className={t.versionLabel}>Live now</span>
@@ -139,6 +310,26 @@ export const ScheduleGridView = ({ isEdit }) => {
           </span>
         </div>
         <div className={t.versionActions}>
+          <button
+            type="button"
+            className={falcor && sourceId ? t.versionAction : t.versionActionDisabled}
+            disabled={!falcor || !sourceId}
+            title={falcor && sourceId ? "Start an empty version" : "This section is not bound to an external source"}
+            onClick={() => openNameDialog("new")}
+          >
+            {Icon ? <Icon icon="Plus" className={t.versionActionIcon} /> : null}
+            New
+          </button>
+          <button
+            type="button"
+            className={falcor && sourceId && viewId ? t.versionAction : t.versionActionDisabled}
+            disabled={!falcor || !sourceId || !viewId}
+            title={viewId ? "Copy this version's airings into a new one" : "No version is bound to copy"}
+            onClick={() => openNameDialog("duplicate")}
+          >
+            {Icon ? <Icon icon="Copy" className={t.versionActionIcon} /> : null}
+            Duplicate
+          </button>
           <button type="button" className={t.publishButton} onClick={() => setPublishOpen(true)}>
             {Icon ? <Icon icon="Broadcast" className={t.publishIcon} /> : null}
             Publish
@@ -209,10 +400,27 @@ export const ScheduleGridView = ({ isEdit }) => {
 
         {isEdit ? (
           <p className={t.editNote}>
-            Which version this grid edits is its data binding — set the source view in Settings → Data.
+            The version picker in the bar above rebinds this grid for your session only; the
+            version this section OPENS on is its saved data binding (Settings → Data).
           </p>
         ) : null}
       </div>
+
+      <NameVersionDialog
+        t={t}
+        Icon={Icon}
+        open={Boolean(nameDialog)}
+        mode={nameDialog}
+        sourceLabel={state.externalSource?.name || "this schedule"}
+        copyFrom={version.name}
+        rowCount={blocks.length}
+        busy={creating}
+        error={createError}
+        value={nameValue}
+        onChange={setNameValue}
+        onClose={() => { if (!creating) { setNameDialog(null); setCreateError(null) } }}
+        onConfirm={createVersion}
+      />
 
       <PublishDialog
         t={t}

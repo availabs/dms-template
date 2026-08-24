@@ -226,6 +226,14 @@
  * at the `--inv-*` set, or it renders invisible against its own background.
  * Mirrors `.wcdb-card-inv` in the design system's `_shared.css`.
  * ───────────────────────────────────────────────────────────────────────── */
+/* The inverted card's own inset. It has to live here rather than on the
+ * section, because a section's padding is applied OUTSIDE its card surface —
+ * using it would shrink the card instead of insetting its contents, which is
+ * exactly how the footer ended up 32px narrower per side than the cards above
+ * it. The design's footer is `p-10`; 40px matches. */
+.wcdb-inv {
+  padding: 40px;
+}
 .wcdb-inv hr {
   width: 100%;
   border: 0;
