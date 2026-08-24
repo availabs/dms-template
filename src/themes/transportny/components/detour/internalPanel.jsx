@@ -33,7 +33,7 @@ const InternalPanel = () => [
   // ALSO on - the points have to be visible/clickable for this to do anything, per the user's own
   // framing ("it is depended on the point switch it must be on").
   {
-    label: "Pick point pair (testing)",
+    label: "Pick point pair (beta)",
     controls: [
       {
         type: "toggle",
