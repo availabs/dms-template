@@ -10,9 +10,14 @@ import {
   resolutionOptionsFor,
   COMPARISON_MODE_OPTIONS,
   DEFAULT_PICK,
+  resolveReliabilityBin,
+  resolveReliabilityYear,
+  RELIABILITY_BIN_LABELS,
+  PM3_VIEW_BY_YEAR,
 } from '../MeasurePicker/composeMeasureConfig';
 import { MAP_MEASURE_OPTIONS } from '../MeasurePicker/composeMapConfig';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
+import { resolveRouteDates } from '../ReportRouteList/relativeDateResolution';
 import { SELF_PARAM_KEY_SENTINEL } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_PRESETS, timeOfDayToken, formatDateShort } from '../ReportRouteList/utils';
 
@@ -158,6 +163,11 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   }, [pageState?.filters]);
   const routeIds = pick.routeIds || [];
   const routesById = useMemo(() => new Map(routeCatalog.map((r) => [r.route_comp_id, r])), [routeCatalog]);
+  // Gap #16 (2026-08-21): reliability's year resolution needs every route's REAL resolved date
+  // range — `routeCatalog` carries a derived route's raw (blank) startDate/endDate plus its
+  // `derivedFromRoute` pointer, so running it through `resolveRouteDates` once here (not per
+  // measure-pick) gives `resolveReliabilityYear` a routes array it can actually read dates from.
+  const allRoutesResolved = useMemo(() => resolveRouteDates(routeCatalog), [routeCatalog]);
 
   // `pick.weekdays`/`pick.start`/`pick.end` (the bare scalar) is dead — report_build.mjs stopped
   // writing it and useGraphPublish.js stopped reading it the moment `routeWindows` shipped
@@ -185,12 +195,12 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   // reconcile step here instead would reintroduce exactly that drift risk.
   const applyPick = (partial) => {
     const nextState = cloneDeep(state);
-    applyMeasurePick({ state: nextState, dwAPI: { setState: (updater) => updater(nextState) }, currentComponent, apiHost }, partial);
+    applyMeasurePick({ state: nextState, dwAPI: { setState: (updater) => updater(nextState) }, currentComponent, apiHost, allRoutes: allRoutesResolved }, partial);
     actions?.updateAttribute?.('element', { ...sectionValue?.element, 'element-data': JSON.stringify(nextState) });
     // Harmless no-op-for-persistence nicety under SectionView (see above); real instant feedback
     // under SectionEdit. Either way, the round-trip once draft_sections/sections comes back down
     // as a fresh `state` prop is what actually reflects the change.
-    if (dwAPI?.setState) applyMeasurePick({ state, dwAPI, currentComponent, apiHost }, partial);
+    if (dwAPI?.setState) applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allRoutes: allRoutesResolved }, partial);
   };
 
   // Writes ONE window to every currently-assigned route's routeWindows entry (index 0 only —
@@ -241,10 +251,29 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   };
 
   const isTable = graphType === 'Table';
+  // Gap #16 (2026-08-21): same "UI checks the identical gate compose uses" pattern routeCompare's
+  // Summary-only gate established — resolveReliabilityBin/resolveReliabilityYear are the EXACT
+  // functions composeTableMeasuresConfig itself calls, so this can never drift from what actually
+  // gets applied.
+  const reliabilityBin = isTable ? resolveReliabilityBin(pick.routeIds, pick.routeWindows) : null;
+  const reliabilityYear = isTable && reliabilityBin ? resolveReliabilityYear(pick.routeIds, allRoutesResolved) : null;
+  const reliabilityAvailable = isTable && pick.resolution === 'summary' && !!reliabilityBin && !!PM3_VIEW_BY_YEAR[reliabilityYear];
+  const reliabilityActive = reliabilityAvailable && !!pick.includeReliability;
+  const reliabilityDisabledReason = !isTable ? null
+    : pick.resolution !== 'summary' ? 'Reliability needs Summary resolution (one row per route).'
+    : !reliabilityBin ? 'Reliability needs the When window set to exactly AM Peak, Midday, PM Peak, or an all-weekend day mask — no other window has a precomputed value.'
+    : !PM3_VIEW_BY_YEAR[reliabilityYear] ? `No 1410 reliability data published for ${reliabilityYear ?? 'these routes’ dates'} yet.`
+    : null;
   const measureLabel = isTable
-    ? ((pick.measures || []).length
-        ? `${pick.measures.length} measure${pick.measures.length === 1 ? '' : 's'}`
-        : 'no measures')
+    ? (() => {
+        const base = (pick.measures || []).length
+          ? `${pick.measures.length} measure${pick.measures.length === 1 ? '' : 's'}`
+          : (reliabilityActive ? 'reliability' : 'no measures');
+        const extras = [];
+        if ((pick.measures || []).length && pick.routeCompare && pick.resolution === 'summary') extras.push('compare');
+        if ((pick.measures || []).length && reliabilityActive) extras.push('reliability');
+        return extras.length ? `${base} + ${extras.join(' + ')}` : base;
+      })()
     : isMapCard
       ? qcMeasureLabel(MAP_MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || 'None')
       : qcMeasureLabel(MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label);
@@ -399,9 +428,52 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
           ))}
         </div>
       )}
-      {isTable && !(pick.measures || []).length && (
+      {isTable && !(pick.measures || []).length && !reliabilityActive && (
         <div className={t.popWarning}>No measures selected — this table has no columns to show.</div>
       )}
+      {isTable && (pick.measures || []).length ? (
+        <div className={t.popPillRow}>
+          {/* report-authoring-ux-overhaul.md gap #16 (2026-08-21): only a real route-vs-route
+              comparison at Summary resolution — see composeTableMeasuresConfig's own doc comment
+              for why __ANCHOR__ can't produce a meaningful per-bucket delta at any other
+              resolution. Disabled (not hidden), matching the Mode pill's own Difference-count gate. */}
+          <button
+            type="button"
+            disabled={pick.resolution !== 'summary'}
+            title={pick.resolution !== 'summary' ? 'Route Compare only works at Summary resolution.' : undefined}
+            className={pick.resolution !== 'summary' ? t.pillDisabled : (pick.routeCompare ? t.pillOn : t.pill)}
+            onClick={() => applyPick({ routeCompare: !pick.routeCompare })}
+          >
+            Route Compare · % vs Main
+          </button>
+        </div>
+      ) : null}
+      {isTable && pick.resolution !== 'summary' ? (
+        <div className={t.popNote}>Route Compare needs Summary resolution (one row per route) to compare routes against each other.</div>
+      ) : isTable && pick.routeCompare ? (
+        <div className={t.popNote}>Adds a "% vs Main" column per measure, compared against whichever route is first in this report's list (the anchor).</div>
+      ) : null}
+      {isTable ? (
+        <div className={t.popPillRow}>
+          {/* Gap #16 (2026-08-21): source 1410's LOTTR/TTTR/Freeflow, joined live to whichever
+              Postgres view matches these routes' own year — see resolveReliabilityBin/Year's own
+              doc comments for exactly what has to line up before this can turn on. */}
+          <button
+            type="button"
+            disabled={!reliabilityAvailable}
+            title={reliabilityDisabledReason || undefined}
+            className={!reliabilityAvailable ? t.pillDisabled : (pick.includeReliability ? t.pillOn : t.pill)}
+            onClick={() => applyPick({ includeReliability: !pick.includeReliability })}
+          >
+            Reliability (LOTTR/TTTR/Freeflow)
+          </button>
+        </div>
+      ) : null}
+      {isTable && reliabilityDisabledReason ? (
+        <div className={t.popNote}>{reliabilityDisabledReason}</div>
+      ) : isTable && reliabilityActive ? (
+        <div className={t.popNote}>Adds LOTTR/TTTR ({RELIABILITY_BIN_LABELS[reliabilityBin]}) and Freeflow Speed columns from source 1410, year {reliabilityYear}.</div>
+      ) : null}
     </div>
   );
 

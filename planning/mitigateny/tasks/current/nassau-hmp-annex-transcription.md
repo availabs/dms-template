@@ -33,14 +33,14 @@ the first real test of whether the Layer-1 / Layer-2 skill split holds.
 |---|---|
 | Consultant profile (Hagerty) | [`../../skills/profiles/hagerty.md`](../../skills/profiles/hagerty.md) |
 | Crosswalk report | [`../../skills/worked-examples/nassau-annex-crosswalk-report.md`](../../skills/worked-examples/nassau-annex-crosswalk-report.md) |
-| Crosswalk CSV (175 mappings) | `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` *(git-ignored)* |
+| Crosswalk CSV (180 mappings) | `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` *(git-ignored)* |
 | Working folder | `references/mny-transcribe/Nassau/context/` — see its `README.md` |
 | Omissions register | `references/mny-transcribe/Nassau/context/omissions-register.csv` — **generated** from the crosswalk, 5 entries |
 | File manifest | `references/mny-transcribe/Nassau/context/file-manifest.csv` — 52 folders → authoritative annex + worksheet files + reason |
 | Jurisdiction aliases | `references/mny-transcribe/Nassau/context/nassau-jurisdiction-aliases.csv` — **70 jurisdictions** → 70 geoids, no collisions |
 | Action Type tiers | [`../../skills/action-type-tiers.csv`](../../skills/action-type-tiers.csv) |
 | Pre-flight scanner | [`../../skills/scripts/nassau/preflight.py`](../../skills/scripts/nassau/preflight.py) |
-| Target schema | `planning/mitigateny/files/MNY Workbook - 08142026.xlsb` |
+| Target schema | **the live sources** — Actions `1029065`, Roles `1473295`, Participation `1473468`, HOC `1473470`/`1473471`, Capabilities_Catalogue `1068273`. The workbook is **illustrative only** (owner, 2026-08-21). |
 | Method (Layer 1) | [`../../skills/transcribing-a-consultant-plan.md`](../../skills/transcribing-a-consultant-plan.md) |
 
 ## Phase 1 — Classify the source — DONE (2026-08-20)
@@ -213,7 +213,7 @@ patched, because defining a boost rule later would activate two dormant guardrai
   `Frequency` → `likelihood` needs a qualitative→band mapping with owner sign-off.
 - [x] **Identity resolved** — Glen Cove takes **`3629113`** (Place, not the `3605929113` cousub row);
   *Rockville **Centre*** is correct.
-- [x] **Freeport: use the PDF** — but see the finding below; it is not an annex.
+- [x] **Freeport: use the PDF** — but see the finding below; it is not an annex. **Fully extracted 2026-08-21, see Phase 6b.**
 
 ### ⚠ Finding: Freeport is not a Hagerty annex
 
@@ -271,9 +271,26 @@ not the schema* — with the one-line `dms raw get` recipe. Also logged: `Action
 and `alternative_action_1_evaluation` are both marked **`(dep)`** live, so the `Cost Benefit Notes`
 copy of the alternatives is the durable record.
 
+### Round 7 (2026-08-21) — policy, not just mappings
+
+- [x] **Capabilities target confirmed** — `Capabilities_Catalogue`; Capacities on hold/deprecated.
+- [x] **The workbook is ILLUSTRATIVE ONLY.** Always prefer the live schema; a workbook-only column is
+  most likely *deprecated*, not missing, and must not be recorded as a gap. Promoted to a Layer-1
+  standing rule, and it reframes report §6 from "divergences to reconcile" to "don't use the workbook
+  as a schema".
+- [x] **`geoid_juris` is never multi-valued**, and workbook Multi-Select declarations are unresolved
+  relics. **Reverses last round's plan** to carry every attending jurisdiction in one meeting row:
+  the attendance matrix becomes **254 Participation rows** (243 attendance marks + 11 county-level),
+  not 11.
+- [x] **HOC view trap resolved by the owner** — the test view erroneously marked current has been
+  deleted; source `1473470` re-verified as having exactly one view.
+- [x] **Roles row count corrected** — ~239, not the 250–350 previously estimated. Measured: 190 roster
+  + 102 annex POC people, only 49 overlapping. The ×roles multiplier is ≈1 because the live
+  vocabulary's 52 options are specific enough that most titles resolve to exactly one.
+
 ### Crosswalk after the decisions
 
-175 rows (was 163). **`gap-no-target` is zero**, and only **five** items have no home at all.
+180 rows (was 163). **`gap-no-target` is zero**, and only **five** items have no home at all.
 
 | Disposition | Before | After |
 |---|---:|---:|
@@ -303,36 +320,235 @@ copy of the alternatives is the durable record.
 - [x] **`file-manifest.csv` built** — all 52 folders reviewed file by file. 47 unambiguous, 5 decided
   by content (every mtime is identical, so filenames and dates carry no authority). Corrected the
   worksheet total from 139 to **143**.
-- [ ] Add `in_jurisdictions` / `in_hoc` flags to the alias table by reading the live sources — the
-  pre-load checklist, per the Suffolk precedent. **Not done.** Now needs checking for all **70**
-  jurisdictions, not 52.
+- [x] **`in_jurisdictions` / `in_hoc` flags added** to the alias table for all 70 jurisdictions —
+  70/70 yes on both, 17 HOC rows each. See Phase 5b.
 - [x] **Reconciled the 70 attendance-matrix jurisdictions against the 52 annexes** — the 52 `Adopting`
   rows map **1:1** onto the annex folders; the 18 without an annex are all incorporated Villages marked
   `Withdrawn`, **zero CDPs**, 14 with documented attendance, 34 named people in the roster. Owner rule
   2026-08-21: **Roles + Participation for all 70, everything else for the 52.** The alias table is
   rebuilt at **70 rows** with `has_annex` / `adoption_status` / `meetings_attended` / `in_scope_for`.
   Script: `reconcile_matrix.py`.
-- [ ] Verify the live Participation / Hazards_of_Concern / Capabilities schemas (Actions and Roles are
-  done — see Testing). **Not done.**
+- [x] **All five remaining live schemas read** (Participation, HOC, Capabilities_Catalogue,
+  Capacities, Capacities V2). See Phase 5b for the divergences and the pre-load census.
 
-## Phase 6 — Batch extraction — NOT STARTED
+## Phase 5b — Live-schema reads — DONE (2026-08-21)
 
-- [ ] Extract the 51 Hagerty annexes + 143 worksheets to structured JSON per `file-manifest.csv`,
-  with the nine variances encoded first. **Freeport is a separate track.**
-- [ ] Extract base-plan tables 0, 1 and 7 for Roles and Participation.
-- [ ] Run the QA assertions (report §8 / profile) and produce a punch-list:
-  Table 3's NFIP answer vs the NFIP Summary citation; no `No` answer carrying Details; contiguous
-  `Project Number` sets; annex↔MAW cost and name agreement.
+All five remaining forms sources read live. **The live schemas are authoritative** (owner,
+2026-08-21); where the workbook disagrees, the workbook is wrong. Dumps in
+`context/extracted/live_schemas.txt` and `live_<id>.json`.
+
+### Pre-load census: no readiness problem at all
+
+| Dataset | Source | Statewide rows | Nassau rows | Jurisdictions | Operation |
+|---|---|---:|---:|---:|---|
+| Hazards of Concern | `1473470` / view `1473471` | 27,791 | **1,190** | 70 | **UPDATE** |
+| Jurisdictions | `1346449` | 2,346 | 138 | 70 | **UPDATE** |
+| Roles | `1473295` | 144 | 0 | 0 | **INSERT** |
+| Participation | `1473468` | 324 | 0 | 0 | **INSERT** |
+| Capabilities_Catalogue | `1068273` | 269 | 0 | 0 | **INSERT** |
+| Capacities | `1689772` | 2 | 0 | 0 | **INSERT** |
+
+- [x] **`in_jurisdictions` / `in_hoc` flags written into the alias table** — **70/70 yes on both**,
+  and `n_hoc_rows = 17` for every single jurisdiction. Nothing to create, no jurisdiction to drop.
+  This is the clean case; Suffolk needed a synthetic geoid and 17 new rows for one entity.
+- [x] **HOC verified as an update, exactly as expected.** 1,190 Nassau rows = 70 × 17, **every one
+  `hazard_of_concern = "Not Reported"`**, every content column empty. So: **884 updates** (52 annex
+  jurisdictions × 17) + **306 rows deliberately untouched** (the 18 withdrawn villages) + **0 inserts**.
+
+> **⚠ Blast radius.** Roles has **144 rows statewide** and Participation **324**;
+> Capabilities_Catalogue has **269**. Nassau will add roughly 250–350, 11 and ~900 respectively — so
+> this load *more than doubles* Roles and roughly quadruples Capabilities_Catalogue. Dry-run and
+> back up before the first insert; a bad batch here is a material fraction of the whole dataset.
+
+### ⚠ The default HOC view is the wrong one
+
+Source `1473470` has two views and they hold **different shapes**:
+
+| | view `1473471` | view `1603024` (the default) |
+|---|---|---|
+| Rows | 27,791 statewide, **1,190 Nassau** | 119 statewide, **0 Nassau** |
+| `hazard` | display labels (`Coastal Hazards`) | internal codes (`wildfire`) |
+| `geoid_juris` | a real array `["3601000"]` | a **string** holding an array `"[3600116694]"` |
+| `likelihood` | null | `"Likely"` — **not one of the declared options** |
+| `county` | `Chemung` | `Chemung (County)` |
+
+`dataset dump` with no `--view` picks `1603024`. **Always pass `--view 1473471` explicitly**, or the
+load reads an empty, differently-shaped view and silently does nothing.
+
+### Schema divergences found (the workbook is wrong in all of these)
+
+**Hazards of Concern**
+- `hazard`'s declared options are internal codes (19, including `other` and `volcano`) but **all 1,190
+  stored Nassau rows use the 17 display labels.** Match on the stored labels.
+- `hazard_of_concern` is a `radio` with `Yes | No | Not Reported` — the tri-state decision is directly
+  expressible.
+- `climate_change` is `radio` with **`Yes | No` only** — no `Not Reported`, so leave it empty.
+- The four vulnerability columns are `checkbox` (`Yes|No`), not booleans.
+- `hazard_name_if_other` **exists** — confirms the Suffolk finding.
+
+**Participation** — five divergences, three of them useful:
+- `narrative` and `agenda_minutes` are **`lexical`**, not Text. They need lexical payloads.
+- **`participation` (text) exists and is absent from the workbook** — an exact home for base-plan
+  Table 7's *Participation* column. Re-mapped off `milestones`.
+- **`meeting_unique_id` (text) exists** — use it to pair the two rows of a split multi-date meeting.
+- **`geoid_juris` is a `multiselect`** — so one county-level meeting row can carry every attending
+  jurisdiction directly from the matrix. **This replaces the planned per-jurisdiction join** with a
+  direct read.
+- `format` has no `Multimedia` and `invite_method` no `Various Types`, both of which the workbook
+  lists. `milestones` is text, not Multi-Select.
+
+**Capabilities_Catalogue** — the significant one:
+- **The four FEMA category columns are named `(Delete) FEMA - …` live.** The crosswalk mapped Tables
+  3/4/5 onto three of them. **Re-mapped** to `primary_capability_type` (a 16-option select) plus the
+  capability-type checkboxes, from which the live source *derives* its `… Category` columns.
+- **~35 of its 136 columns are `(Delete)`-prefixed** — including every buildings / infrastructure /
+  RL-SRL / climate column the workbook dictionary describes. The dictionary documents a schema that is
+  being retired.
+- `dam_rehabilitation_removal` is `(Deprecated)`; `floodproofing_other`'s display name has a typo
+  (`PFloodproofing, other`); `administering_agency` and `administering_agency_organization` are two
+  columns with the *same* display name; `tertiary_hazard_type` carries `Tsuname/Seiche` and `WIldfire`.
+- Its `primary/secondary/tertiary_capability_type` vocabulary **does** include Coastal Protection and
+  Dam Rehabilitation/Removal — the two the *Actions* P/S/T vocabulary lacks. The same two concepts,
+  expressible in one dataset and not the other.
+
+---
+
+## Phase 6 — Batch extraction — DONE (2026-08-21)
+
+Full write-up: [`../../skills/worked-examples/nassau-extraction-report.md`](../../skills/worked-examples/nassau-extraction-report.md).
+Scripts committed to [`../../skills/scripts/nassau/`](../../skills/scripts/nassau/).
+
+- [x] **Extracted the 51 Hagerty annexes** → `extracted/annexes/<geoid>.json`, driven by
+  `file-manifest.csv` and keyed on the alias-table geoid. **Every total matches the Phase-3
+  pre-flight**: 102 contacts (51×2), 550 hazard rows (50×11), 894 capabilities, 282 prior actions,
+  2 completed, 234 proposed.
+- [x] **Extracted the 142 worksheets** → `extracted/maws.json`. 132 instruction-template tables
+  skipped; 142/142 carry a project number; **66 of 142 have a file index that disagrees with the
+  project number**, confirming the join-on-project-number rule empirically.
+- [x] **Extracted the base plan** → `extracted/baseplan.json`: 9 meetings → **11 Participation rows**
+  (the two-row rule applied), 243 attendance marks, 52/18 adoption split, 190 roster people (49 CPG),
+  11 hazards identified, 6 not profiled, 10 ranking rows, and the **12 per-hazard `9x2` profile
+  boxes** that feed county HOC.
+- [x] **QA assertions run** → `qa-punchlist.csv`, **115 findings, 12 at HIGH**. Four orphan
+  worksheets, each a different failure (hyphen-vs-underscore separator, wrong jurisdiction prefix,
+  one worksheet covering eight projects, one with no matching action); five real cost disagreements
+  including a transposed pair; Muttontown systematically unreliable (10 rows).
+
+### The Phase-6 headline: 27 ordinances nearly went missing
+
+The detail-beats-checkbox rule was implemented **row-locally** — a `No` with a non-empty detail cell.
+QA then flagged 29 of 51 jurisdictions with an NFIP-ordinance conflict, which was too many to be
+coincidence, so I hand-checked three instead of softening the check. The detail was real but **in the
+NFIP Summary prose, not Table 3's citation column** — Glen Cove: *"last amended 07/28/2009 … Chapter
+154, City Code, L.L. No. 6-2009"* against a Table 3 `No`. The extractor now reads that prose as
+detail (requiring an actual date/`Chapter`/`§`/`L.L.`, not a bare mention), recovering **27 new
+capability rows**. Lattingtown and Woodsburgh correctly still fail — they say only *"meets minimum
+requirements"*, with nothing to override the checkbox.
+
+### Design note: four silent parser bugs the corpus found
+
+1. **Footnote markers fused into header cells** — `"1Primary Point of Contact"` in five annexes.
+   Exact-match classification dropped their *entire* contact table: 92 contacts instead of 102, no
+   error. `delabel()` strips leading and trailing footnote digits.
+2. **POC cells use `<w:br/>`, not paragraphs.** `para_text()` joins `w:t` with `''`, so the cell reads
+   `Mayor Timothy Tenke, MayorCity of Glen Cove9 Glen Street…` and cannot be split. Added
+   `cell_lines()`.
+3. **`endswith` matched the parent heading.** `"Legal and Regulatory Capability Assessment"` ends with
+   `"Capability Assessment"`, so all four subsections filed under the parent and **every
+   `capability_summaries` value came out empty**. Match exact-first, then longest-suffix-first.
+4. **Merged banner rows** — the base plan's `9x2` profile boxes have a one-cell row 0 after
+   merged-cell dedupe, so a `len(row0) >= 2` guard found zero of 12; and the six not-profiled hazard
+   names are separate paragraphs in two merged cells, which `cell_text`'s space-join destroyed.
+
+### Design note: one QA check was mine, not the corpus
+
+`maw-cost-mismatch` first reported 13; four were my money parser pulling a fragment out of prose
+(`"~$30-$50 per linear foot"` → 30, `"approximately $3M"` → 3) and comparing it to a clean figure. It
+now refuses prose and reports `cost-not-comparable` instead. **A check firing on half the corpus is
+usually the check — but verify which.** Here the NFIP check firing 29× was real and the cost check
+firing 13× was not.
+
+## Phase 6b — Freeport, the independent plan — DONE (2026-08-21)
+
+Investigated on the hypothesis that an independent jurisdictional plan warrants its own generalized
+profile and that most extraction mechanics would transfer. **Half right**, and the half that's wrong
+is the useful part.
+
+- [x] **Structural analysis.** An independent jurisdictional plan is **not a big annex — it is a small
+  county plan.** Freeport's spine maps chapter-for-chapter onto the Nassau *base plan*, not onto the
+  annex spine. So the county-plan machinery is the closer analogue, scoped to a municipal geoid.
+- [x] **Measured what transfers.** Method ~100%, MNY target side ~100%, **parsing ~0%** — different
+  format, no table geometry, a prose instrument. `annex_lib.py` is inapplicable. The new parser was
+  ~150 lines, not a pipeline rewrite.
+- [x] **Extracted it** → `extracted/independent_3627485.json` via
+  [`extract_independent_plan.py`](../../skills/scripts/nassau/extract_independent_plan.py):
+  **53 actions** with 7 labelled fields (five at 53/53, feasibility 52/53, progress 51/53), 3 goals,
+  10 objectives, 22 committee members, 20 capability sections, 10 hazard profiles, 123 ToC entries.
+- [x] **Wrote [`profiles/independent-jurisdictional-plan.md`](../../skills/profiles/independent-jurisdictional-plan.md)**
+  as a **document-class** profile, stating up front that it cannot predict the next instance the way a
+  consultant profile does — there is no shared author.
+- [x] **Added Phase-0 question 4** to Layer 1: *is every jurisdiction's content actually in the
+  consultant's instrument?*
+
+### The transferable finding: in a PDF, prose beats tables
+
+Freeport's action summary table (p121) is destroyed by the text layer — 360 KB of extracted text
+contains **zero** tab-separated lines. The *same data* appears as labelled prose in §5.1 and extracts
+at 100%. So target the labelled prose and treat the summary table as the lossy duplicate — the
+opposite instinct from a consultant annex, where tables are everything.
+
+### Design note: one document needed two normalisations
+
+The action instrument reads best from **flattened** text (PDF line breaks are meaningless
+mid-sentence); the committee roster is **one member per line**, so flattening destroys its only
+delimiter. My first pass flattened everything and returned **0 committee members with no error**.
+Parse actions flattened and the roster line-anchored, in the same run.
+
+Two smaller traps: the spine must come from the **ToC**, not the body (critical-facility address lines
+like `2810 MERRICK RD EAS` match a numbered-heading pattern), and ToC titles can contain periods — a
+`[^\n.]+` title pattern silently dropped 2 of 20 capability sections.
+
+### Taxonomy contrast worth keeping
+
+**Nassau's consultant plan under-ran MNY's taxonomy and closed cleanly; one village's own plan
+over-ran it.** Freeport has five hazards with no MNY type (Terrorism, Hazardous Materials,
+Cyber-Terrorism, Urban/Structural Fire, Epidemic/Pandemic) → `Other` + `hazard_name_if_other`, plus a
+combined Nor'easter/Winter Storm/Ice Storm profile needing the split. Do not infer a county's taxonomy
+shape onto an independent jurisdiction inside it.
+
+### Still open for Freeport
+
+- Its §4 capability sections are **problem-oriented** (`FLOODING ON ROADS`) — some are capabilities,
+  some are problem statements for `lhmp_problem_areas`. Needs a section-by-section triage, and there
+  is no Yes/No column for the detail-beats-checkbox rule to act on.
+- Its 3 local goals need mapping onto the 6 SHMP goal booleans — a judgement call.
+- No crosswalk CSV of its own yet; the field map in the profile is the interim spec.
+
+---
 
 ## Phase 7 — Generate, review, load — NOT STARTED
 
-- [ ] Workbook tabs for Roles, Capabilities, Hazards of Concern, Participation.
+- [ ] Review CSVs for Roles, Capabilities, Hazards of Concern, Participation — a review surface,
+  **not** an ingestion format (nothing imports `.xlsx`; see the correction below).
 - [ ] Actions tab — 234 proposed + 284 prior + MAW enrichment.
 - [ ] Per-jurisdiction markdown for the 6 Jurisdictions lexical columns (owner-review surface).
 - [ ] Compile markdown → lexical JSON payloads; load via `dms dataset update`.
-- [ ] **Unresolved (carried over from Suffolk):** the flat-dataset import path DHSES uses for
-  workbook tabs is still not established, and it may constrain the tab format. Settle it before
-  generating tabs.
+- [x] ~~**Unresolved (carried over from Suffolk):** the flat-dataset import path…~~ **NOT AN OPEN
+  ITEM — my error.** Closed by the Suffolk load on 2026-08-17: `dms raw create` + `dms dataset update`,
+  **no workbook needed**. I copied the wording from the Suffolk *crosswalk* report (2026-08-14) without
+  checking the *load* report that superseded it, and repeated it in several status summaries. The
+  skills README even warns that the load report is authoritative where the two disagree. Corrected
+  2026-08-21.
+
+  **Knock-on:** "workbook tabs" were never a real deliverable — nothing ingests an `.xlsx`, and the
+  workbook is now illustrative only. Phase 7's flat-dataset review surface is **CSV per dataset**.
+
+  What actually remains for Phase 7 is narrower: prove the write path with one throwaway row
+  (create → fill → read back → delete); record created ids to a file **before** filling them; and
+  build a double-insert guard that does not use `--filter` over an array-valued column.
+- [x] **RESOLVED 2026-08-21 — capability tables load into `Capabilities_Catalogue` (`1068273`).**
+  `Capacities` (`1689772`) and `Capacities V2` (`2142341`) are **on hold / deprecated until further
+  notice**, despite Capacities being a near-exact vocabulary match for Hagerty Tables 3–6.
 
 ## Files created / changed this session
 

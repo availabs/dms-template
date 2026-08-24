@@ -1,6 +1,6 @@
 # Report Authoring UX Overhaul
 
-**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; `probe_corpus.mjs` deliberately not run this pass (Ryan's call); Tier 3 NOT STARTED; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE (implemented as `composeAutoTitle`/`isTitleDirty`, no new field, per Ryan's explicit call — not yet live-clicked-through); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure deliberately deferred, not started; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED; Tier 6 (four more items, 2026-08-20 — Peak/DoW+Map/Table title gaps, Map multi-route, relative-dates span default) ALL DONE + live-verified 2026-08-20; Tier 7 (three more items, 2026-08-20 — multi-route Map color-scale question answered, AddGraphModal "When" step's own dead-scalar gap fixed, and a real `dms`-core rendering gap found: Table/Map had NO title renderer at all, so 6A's own "Table's title was already working" claim was wrong — reasoned from compose code, never DOM-verified) ALL DONE + live-verified 2026-08-20 · **Started:** 2026-08-19
+**Project:** TransportNY · **Topic:** themes · **Status:** Tier 1 (1A/1B/1C) + Tier 2 (2A/2B/2C/2D) all DONE — code-complete and live-verified by Ryan 2026-08-19; Tier 3/5B's title auto-compose (`composeAutoTitle`/`isTitleDirty`) live-verified by Ryan 2026-08-24 (re-pick doesn't clobber a manual title) — **3A/5B now fully DONE**; `probe_corpus.mjs` re-baselined 2026-08-24 (all 8 entries PASS clean) after fixing two real harness bugs found along the way — see that date's Progress log entry: (1) the manifest's `authRequired: false` was stale, the site now requires login everywhere, flipped to `true`; (2) 12 accidental duplicate "Golden Corpus - *" pages had piled up and the 4 static entries' manifest URLs no longer resolved to any live page (silently falling back to the homepage) — deleted the duplicates, rebuilt fresh from spec with `--replace` added to prevent recurrence; Tier 4A DONE + live-verified 2026-08-19 (settings disclosure + always-live debounced date editing), 4B/4C documented only (4B a corrected hypothesis folding into Item 9, 4C explicitly lower priority); Tier 5A (QuickControls Width + Reorder pills) DONE + live-verified 2026-08-20; 5B DONE, live-verified 2026-08-24 (see above); 5C (Map creation UI) DONE + live-verified 2026-08-20 — plain-geometry-only scope (Ryan's call), self-binding wiring extracted as a shared helper, starter layer ported from the Python converter's proven route_map_none shape; choropleth-by-measure shipped in 5J/5K/Tier 10 (see below) — this line is stale, kept for history; 5D (Table multi-measure) DONE + live-verified 2026-08-20; 5E (difference-mode visibility policy) DONE + live-verified 2026-08-20 ("show but disable"); 5F (2nd round of live feedback: tag-browser order, table precision, Summary wording, spacing, and a real join/no-join duality bug in the Table+Summary path) DONE + live-verified 2026-08-20; 5G (a THIRD bug in the same family — inner-SQL-alias collisions between speed/speedTruck and the 4 CO2 variants, confirming 5D's own "unconfirmed" flag — plus a corrected stale `vocabulary.json` provenance note) DONE + live-verified 2026-08-20, including confirming Add Graph and QuickControls compose through the identical shared function (no divergence) after Ryan suspected one; `traversing-report-pages.md` and `MeasurePicker/README.md` both updated same session with this tier's durable facts; gap #16/facet 2 NOT YET TRIAGED; Tier 6 (four more items, 2026-08-20 — Peak/DoW+Map/Table title gaps, Map multi-route, relative-dates span default) ALL DONE + live-verified 2026-08-20; Tier 7 (three more items, 2026-08-20 — multi-route Map color-scale question answered, AddGraphModal "When" step's own dead-scalar gap fixed, and a real `dms`-core rendering gap found: Table/Map had NO title renderer at all, so 6A's own "Table's title was already working" claim was wrong — reasoned from compose code, never DOM-verified) 7A/7B DONE + live-verified 2026-08-20; 7C's title-renderer code REVERTED by Ryan 2026-08-21 (not pursuing); Tier 8 (gap #16, 2026-08-21 — Route Compare's delta column + Info Box's Reliability/LOTTR/TTTR/Freeflow measures) 8A/8B DONE + live-verified, including two real bugs found+fixed (Route Compare's resolution-gate correctness, an orphaned-column bug caught via a live ClickHouseError); Tier 9 (2026-08-24 — Info Box `length`/`aadt` measures ported to `vocabulary.json`) DONE + live-verified, closing gap #16's last remaining item — the unified "Add Report Section" picker idea is explicitly deferred to a future UX pass by someone else, not this arc's work; Tier 10 (2026-08-24 — Map choropleth extended to the 4 CO2 emissions measures) DONE + live-verified, including a real breaks-calibration bug caught and fixed before shipping (avgCo2Emissions's first-guess floor was too high, route rendered out-of-range) · **Started:** 2026-08-19
 
 ## Objective
 
@@ -461,7 +461,7 @@ whenever the URL param is absent regardless of edit mode).
 
 ## Tier 3 — completeness (ongoing, per Item 2's framing)
 
-### 3A. Item 2's concrete deliverable — gap #15, Title/Description auto-compose
+### 3A. Item 2's concrete deliverable — gap #15, Title/Description auto-compose — DONE, live-verified 2026-08-24 (see 5B for the implementation, which is this item's actual delivery)
 
 **File**: `src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js`
 
@@ -480,9 +480,9 @@ checked, no existing `_isAutoGenerated`/`_pristine`-style field anywhere in this
 **Confirm approach with Ryan before implementing** — this is a real design decision, not a blind
 wire-up.
 
-- [ ] Decide (a) vs (b) with Ryan
-- [ ] Implement in `composeMeasureConfig.js`
-- [ ] Live-verify across at least 2 pill types + Add Graph, confirm an author's manually-set title is never clobbered by a later re-pick
+- [x] Decide (a) vs (b) with Ryan — 2026-08-20, picked (b), pristine-tracking, implemented as `composeAutoTitle`/`isTitleDirty` (see 5B)
+- [x] Implement in `composeMeasureConfig.js` — 2026-08-20 (see 5B)
+- [x] Live-verify across at least 2 pill types + Add Graph, confirm an author's manually-set title is never clobbered by a later re-pick — verified by Ryan 2026-08-24
 
 ---
 
@@ -691,7 +691,7 @@ position; zero console errors at any checkpoint (`read_console_messages`, `onlyE
 - [ ] Not done: `probe_corpus.mjs` (consistent with this whole arc's earlier deliberate skips);
       no golden-corpus entry exercises `/edit/...` at all (see Tier 1's own note on this same gap)
 
-### 5B. Graph/section title never auto-populates — re-raised, same gap as Tier 3 item 3A
+### 5B. Graph/section title never auto-populates — re-raised, same gap as Tier 3 item 3A — DONE, live-verified 2026-08-24
 
 Ryan re-hit this independently ("Graph/section title does not get populated at all, either via
 `Add Graph`, or changing the pill measures"). Re-confirmed by re-reading
@@ -1425,8 +1425,9 @@ throughout, confirmed via a clean console-tracking-from-navigation check (not ju
 - [x] Breathing room between measures checklist and Resolution — 2026-08-20
 - [x] Root-cause and fix the Table+Summary+2-routes "unknown identifier" bug — 2026-08-20,
       live-verified both the join and no-join branches, plus reload-persistence
-- [ ] Not done: live click-through of the title-dirty mechanism itself (create → auto-title →
-      hand-edit → re-pick → confirm survives)
+- [x] Live click-through of the title-dirty mechanism itself (create → auto-title → hand-edit →
+      re-pick → confirm survives) — verified by Ryan 2026-08-24, a manual title is never clobbered
+      by a later re-pick
 
 ### 5G. Third bug in the same family — inner SQL alias collisions across DISTINCT measures — DONE, live-verified 2026-08-20
 
@@ -1813,7 +1814,7 @@ survived a full page reload. Zero console errors.
 - [x] Live-verify: AM Peak picked at Add-Graph time restricts the actual query (x-axis 6-10am),
       shows in the title immediately, and survives a full reload — 2026-08-20
 
-### 7C. Table/Map showed NO title at all — real `dms`-core rendering gap, DONE, live-verified 2026-08-20
+### 7C. Table/Map showed NO title at all — real `dms`-core rendering gap — REVERTED by Ryan 2026-08-21, not pursuing
 
 Ryan's screenshots of a fresh Table and Map (both created via Add Graph on `page_26`) showed column
 headers / map canvas with no title text anywhere above them, despite `composeTableMeasuresConfig`'s
@@ -1868,6 +1869,11 @@ Map shows "Speed (mph)" directly above the map canvas + legend. Both exactly mat
 - [x] `map/index.jsx` + `map.theme.js`: title block, themed — 2026-08-20
 - [x] Live-verify: pre-existing Table AND Map sections (state already in the DB, untouched by this
       session) now show their titles with zero recompose needed — 2026-08-20
+- [x] **Reverted by Ryan, 2026-08-21** — all of the above (`spreadsheet/index.jsx`,
+      `spreadsheet/config.jsx`, `table.theme.jsx`, `map/index.jsx`, `map.theme.js`) rolled back.
+      Ryan's call, no reason logged; "if we really need to add a title to these components, I'll
+      circle back." Confirmed reverted in the submodule working tree — zero title-related code
+      remains in either file. Not being pursued further unless Ryan re-raises it.
 - [ ] **Flagged, not chased further (Ryan's call — "idc that much about the titles")**: older
       Python-converter-built Route Compare/Info Box sections (also `element-type: Spreadsheet`)
       already carry BOTH a top-level section `title` (e.g. "Route Compare Component, Speed" —
@@ -1877,6 +1883,265 @@ Map shows "Speed (mph)" directly above the map canvas + legend. Both exactly mat
       keyed off the top-level `title` field) ever renders for these pages, this fix could show a
       double title on real production Route Compare/Info Box content. Not confirmed either way —
       worth a quick live check before touching Route Compare/Info Box pages again.
+
+---
+
+## Tier 8 — Gap #16, first two pieces: Route Compare + Reliability (2026-08-21) — DONE, live-verified
+
+Picked back up gap #16 (facet 2's "Info Box/Route Compare have zero creation UI" item, parked
+below since 2026-08-19). A background research pass first confirmed the real shape of the gap
+against the actual code (not the doc's stale "zero creation UI" framing): Info Box is just a
+Spreadsheet, and for `speed`/`travelTime`/`hoursOfDelay` at route grain, Table+Summary (Tier 5D)
+already produces an equivalent section — nothing to build there. The two genuinely missing pieces
+were Route Compare's `% vs Main` delta column and Info Box's `reliability`-bucket measures
+(LOTTR/TTTR/Freeflow), both ported below.
+
+### 8A. Route Compare — `% vs Main` delta column, Table-only toggle — DONE, live-verified
+
+Ports `scripts/npmrds-reports/convert_old_reports_lib/route_compare_template.py`'s delta-column
+composition into the live Table authoring path. New "Route Compare" toggle in both AddGraphModal's
+Table step and QuickControls' Measure pill, appending one `type: "delta"` "% vs Main" column per
+selected measure via the dms-server `__ANCHOR__(<expr>)` mechanism (resolves live to whichever
+route is first in the page's list — same "first-assigned route is Main" convention Difference mode
+already uses). `deltaGoodDirection` reuses each measure's existing `reverseColors` field rather
+than hand-maintaining a second copy of the same fact.
+
+**Real gap found and fixed mid-session, via a genuine ClickHouse error, not guessed**:
+`__ANCHOR__(<expr>)` collapses the anchor arm's ENTIRE row set into one scalar with no `GROUP BY`
+of its own — correct at Summary resolution (a true route-vs-route comparison), but at any
+time-bucketed resolution (Hour/Day/Weekday/Month) it compares each bucket against the anchor's
+*overall* average instead of another route's value at that bucket — on a single-route table this
+degenerates into "this hour vs. this same route's own average," not a route comparison at all.
+Route Compare is now hard-gated to `resolutionKey === 'summary'` in `composeTableMeasuresConfig`
+itself (not just the UI), with the toggle shown-but-disabled (same pattern as Difference mode's
+route-count gate) and an explanatory note at every other resolution.
+
+**Second real bug found live**: the new delta columns had no `target` field, so
+`MeasurePicker/index.js`'s `MANAGED_TARGETS`-based "replace this picker's own columns on re-pick"
+filter never recognized them as its own — stale delta columns survived every subsequent re-pick,
+piling up. Confirmed via an actual `ClickHouseError: Unknown expression or function identifier
+'ds.tmc'` in `dms-server.log`: an orphaned, join-qualified delta column survived a re-pick that
+dropped the join, leaving a `ds.`-qualified reference with no `AS ds` alias anywhere in the query.
+Fixed by tagging delta columns `target: 'delta'` and adding that to `MANAGED_TARGETS` — confirmed
+live afterward that a re-pick now fully cleans up prior delta columns, no matter how many
+accumulated pre-fix.
+
+**Live-verified** on a scratch page (since deleted, see 8C below): a fresh Summary-resolution,
+2-measure (Travel Time + Speed) Table built via Add Graph with Route Compare checked correctly
+showed the anchor route's own row as a clean `→ 0` on both delta columns and the other two routes
+with real signed percentages, correct color polarity per measure (travelTime down-is-good → red on
+increase; speed up-is-good → green on increase), title auto-composed as `"Route Compare, Travel
+Time (min), Speed (mph)"`, survived reload, zero console errors. Also toggled Route Compare on/off
+via QuickControls on a pre-existing, non-Summary (Hourly) table to confirm the resolution gate
+correctly disables it there and a forced re-pick cleans up any stale delta columns.
+
+- [x] `buildRouteCompareDeltaColumn` in `composeMeasureConfig.js`, reusing `measure.reverseColors`
+      — 2026-08-21
+- [x] `composeTableMeasuresConfig`: `routeCompare` param, hard-gated to Summary resolution — 2026-08-21
+- [x] AddGraphModal.jsx + QuickControls/index.jsx: toggle, disabled-state gating, explanatory notes
+      — 2026-08-21
+- [x] `composeAutoTitle`: "Route Compare, " prefix, gated identically — 2026-08-21
+- [x] Found + fixed: delta columns missing `target` → orphaned on re-pick (confirmed via a live
+      ClickHouseError) — tagged `target: 'delta'`, added to `MANAGED_TARGETS` — 2026-08-21
+- [x] Live-verified: fresh Table + Route Compare (correct values/colors/title), pre-existing table
+      + resolution-gate disable + forced-re-pick cleanup, zero console errors — 2026-08-21
+
+### 8B. Reliability (LOTTR/TTTR/Freeflow) — source 1410's pgFederated join — DONE, live-verified
+
+Ports `info_box_templates.py`'s `ensure_pm3_join_template` into the live Table authoring path.
+**Corrected an early framing mistake**: `pgFederated` (a live Postgres table joined into a
+ClickHouse query via ClickHouse's own `postgresql()` table function) is already a fully generic,
+tested dms-server join type (`uda/utils.js`'s `buildJoin`, `buildUdaConfig.js`'s client-side
+counterpart) with its own unit tests — zero dms-core engineering needed, the entire gap was purely
+this project's own `vocabulary.json`/composer never having an entry that used it. Once wired,
+LOTTR/TTTR/Freeflow are available to every existing compose path that reads this vocabulary file,
+not just Table.
+
+Two real constraints ported verbatim from the Python converter, both already-settled product
+decisions (never approximated):
+1. Source 1410 publishes one Postgres view **per year** (`PM3_VIEW_BY_YEAR`, 2018–2025 — a 2017
+   view exists but is missing every `speed_pctl_*` column, so it's excluded) — the join must
+   target whichever view matches the report's own route dates ("never substitute a different
+   year's data," round 17 of the Python converter). `resolveReliabilityYear` reads each assigned
+   route's REAL resolved date range (`relativeDateResolution.js`'s `resolveRouteDates` — a derived
+   route's raw stored dates are blank until resolved against its base).
+2. LOTTR/TTTR are precomputed against exactly 4 FHWA bins (AM Peak/Midday/PM Peak/Weekend) —
+   `resolveReliabilityBin` requires the graph's own "When" window to land unambiguously on one
+   (an explicit weekday-only mask + an exact AM/Midday/PM Peak time range, or an explicit
+   weekend-only mask regardless of time), never curve-fitting to the "closest" bin. Freeflow
+   (`speed_pctl_85`) has no bin dimension and rides along on the same join regardless.
+
+**Posed to Ryan via `AskUserQuestion` before implementing**: whether the bin should be derived
+automatically from the existing "When" pill (disabled with an explanatory note when it doesn't
+match one of the 4 bins) or given its own separate picker. Ryan picked **derive from the When
+pill** — no new UI concept, consistent with Route Compare's own "show but disable" gating.
+
+**Plumbing, since the live picker never previously had route-date awareness**: `useGraphPublish.js`'s
+route catalog gained a `derivedFromRoute` field (needed for `resolveRouteDates` to fill in a
+derived route's blank dates); `composeTableMeasuresConfig`/`applyMeasurePickToState`/
+`applyMeasurePick` all gained an `allRoutes` parameter; QuickControls computes it once via
+`resolveRouteDates(routeCatalog)`, AddGraphModal receives it as a new `allRoutesResolved` prop
+(deliberately separate from its existing `routes` prop, which drives the checklist display and
+Dynamic-Report placeholder behavior and shouldn't change); `useAddGraphSection.js` receives it as
+ReportRouteList's own already-resolved `effectiveRoutes`.
+
+**A live-testing detour worth recording**: while testing the happy path, a browser-automation date
+edit typo (triple-click + typing `"06/01/2024"` into a native `<input type="date">`, which doesn't
+parse `/`) corrupted a route's date to `12024-06-01`/`275760-06-30` — the resulting hung tab was
+initially suspected to be an app-level ClickHouse race (a real, documented hazard on this
+codebase — no query caps, a known client-side unfiltered-probe race), but the dms-server log
+during the hang showed zero query activity, and Ryan confirmed other pages loaded fine — the
+hang was browser/CDP-side, unrelated to the malformed date or any app code. Root-caused by
+checking the log's own timestamps against wall-clock time before assuming an app bug, per this
+doc's own standing convention. Fixed the actual date-input mechanics (click each MM/DD/YYYY
+segment, type digits only, no separators) for the retest.
+
+**Live-verified** on a fresh scratch page (a single route, fixed dates `2024-06-01`–`2024-06-30`,
+Weekdays + AM Peak): the Reliability toggle correctly stayed disabled with precise, distinct
+reasons at each gate — "needs Summary resolution," then "needs the When window set to exactly AM
+Peak/Midday/PM Peak/weekend" (before restricting to weekdays), then **"No 1410 reliability data
+published for 2026 yet"** (confirmed live on the ORIGINAL 2026-dated scratch page, before the
+retest — a real, correct rejection of a genuine out-of-coverage year, not a bug). Once
+Weekdays+AM Peak+Summary all lined up on a 2024-dated route, the toggle enabled and produced real
+data: Travel Time 0:27, LOTTR (AM Peak) 1.27, TTTR (AM Peak) 1.81, Freeflow Speed 41.67 mph —
+survived reload, zero console errors. Also toggled it off/on via QuickControls post-creation to
+confirm clean add/remove with no orphans (these columns were tagged `target: 'yAxis'` from the
+start, reusing the already-managed target rather than repeating 8A's `target: 'delta'` mistake).
+
+- [x] `AskUserQuestion`: bin-derivation approach — Ryan picked "derive from the When pill" — 2026-08-21
+- [x] `PM3_VIEW_BY_YEAR`, `resolveReliabilityBin`, `resolveReliabilityYear`,
+      `composeReliabilityColumns` in `composeMeasureConfig.js` — 2026-08-21
+- [x] `derivedFromRoute` added to `useGraphPublish.js`'s route catalog — 2026-08-21
+- [x] `allRoutes` threaded through `applyMeasurePickToState`/`applyMeasurePick`/
+      `composeTableMeasuresConfig`; QuickControls/AddGraphModal/useAddGraphSection each supply it
+      — 2026-08-21
+- [x] Toggle + disabled-state gating + precise reasons in both AddGraphModal.jsx and
+      QuickControls/index.jsx — 2026-08-21
+- [x] Live-verified: year-coverage rejection (2026), bin rejection (wrong window), full happy path
+      (2024, real LOTTR/TTTR/Freeflow values), clean QuickControls on/off round trip, zero console
+      errors — 2026-08-21
+
+### 8C. Scratch page churn this session
+
+Two scratch pages used and discarded, per Ryan's standing "never care about scratch pages, just
+recreate" call — no cleanup effort spent beyond what's noted here:
+- `converted_reports/page_26` (id `2214363`, the one reused across Tiers 5–7) — became genuinely
+  unstable (MapLibre tile requests + one dms-server request hanging, eventually crashing the tab)
+  after a live date edit cascaded across 3 routes (one base + two derived) plus the page's Map
+  section all recomputing at once — plausibly the documented ClickHouse unfiltered-probe race,
+  though not confirmed root-cause. **Deleted** (`dms page delete 2214363`) rather than repaired,
+  per Ryan's explicit instruction after confirming other pages loaded fine.
+- A fresh replacement page (also auto-slugged `converted_reports/page_26` once the id above freed
+  up) — single route, no Map section — used for 8A's forced-re-pick retest and all of 8B's
+  live-verification above. Left as-is, not deleted (harmless, not corrupted).
+
+---
+
+## Tier 9 — Info Box `length`/`aadt` measures ported to `vocabulary.json` (2026-08-24) — DONE, live-verified
+
+Closes the one remaining item from gap #16's "Still open" list above. Ported
+`info_box_templates.py`'s static (no year/bin dependency) `LENGTH_EXPR`/`AADT_EXPR` — confirmed to
+read off `table1`/META_JOIN only, same join every other plain measure already uses, no new join
+type unlike 8B's reliability — into the live authoring path, following the exact same shape every
+other `vocabulary.json` measure already uses (`{label, expr, fn: "exempt", requiresJoin:
+["META_JOIN"], reverseColors: false}`). Checked first that neither expression's trailing `AS
+length`/`AS aadt` alias collides with any of the 9 existing measures' aliases (per this file's own
+documented "aliases must be globally unique" constraint from Tier 5G) — confirmed clean.
+
+- [x] `vocabulary.json`: added `measures.length`/`measures.aadt`, copied verbatim from
+      `info_box_templates.py`'s route-grain `LENGTH_EXPR`/`AADT_EXPR` — 2026-08-24
+- [x] `composeMeasureConfig.js`: new `MEASURE_CATEGORIES` entry, `{ label: 'Route attributes',
+      measures: ['length', 'aadt'] }` — both the Table checklist and the plain chart Measure
+      dropdown pick this up for free, since both already read this same list — 2026-08-24
+- [x] `graphGuidanceCopy.js`: added `MEASURE_DESCRIPTIONS.length`/`.aadt` guidance copy, matching
+      every other measure's one-sentence description — 2026-08-24
+- [x] `vocab.py`: migrated `LENGTH_EXPR`/`AADT_EXPR` (route-grain only — `LENGTH_TMC_EXPR`/
+      `AADT_TMC_EXPR` stay as their own literals, no JS-side TMC-grain equivalent exists) to read
+      back out of `GRAPH_VOCAB["measures"]["length"/"aadt"]["expr"]`, matching the established
+      single-source-of-truth convention every other migrated measure constant in `expressions.py`
+      already follows. Verified byte-identical to the prior literal strings (zero drift into
+      `info_box_templates.py`'s existing `ensure_info_box_length_template`/
+      `ensure_info_box_aadt_template`) — 2026-08-24
+- [x] No `TABLE_MEASURE_FORMAT_FN` override needed — `decimal_2`'s own comment in `utils.jsx`
+      already documents `speed`/`length`/`aadt` as its original 2026-08-13 motivating trio, so the
+      existing default is the intended formatting, not a gap to special-case — 2026-08-24
+- [x] Live-verified via claude-in-chrome on scratch page `converted_reports/page_26` (id
+      `2214466`): built a fresh Summary-resolution Table (Travel Time + Length + AADT + Route
+      Compare) via Add Graph — both measures appeared under a new "ROUTE ATTRIBUTES" checklist
+      group, rendered real values (`Length 0.19` mi, matching the route's own known `0.2 MI`;
+      `AADT 6329.00`), each with a correct `% vs Main` delta column reading `→ 0` on the anchor's
+      own row. Confirmed via `dms raw get` on the new section (id `2214564`): correct join
+      (META_JOIN, view 983), correct `formatFn: "decimal_2"` on both value columns, correct
+      globally-unique delta-column aliases (`length_delta`, `aadt_delta`, no collision with
+      `travel_time_all_vehicles_delta`). Survived a full page reload, zero console errors before
+      and after — 2026-08-24
+
+---
+
+## Tier 10 — Map choropleth: 4 CO2 emissions measures added (2026-08-24) — DONE, live-verified
+
+Ryan's next pick after Tier 9: extend Map's "color by measure" choropleth (5J/5K) to the 4 CO2
+variants — the one gap 5K's own checklist explicitly flagged as "same mechanism would extend to
+them the same way it did for these three, whenever wanted." Confirmed before implementing that
+`buildChoroplethLayer`/`valueExprAsValue`/`buildMeasureJoin` in `composeMapConfig.js` are already
+fully generic over `GRAPH_VOCAB.measures[measureKey]` — no new mechanism needed, only new
+`MAP_MEASURE_OPTIONS`/`CHOROPLETH_DEFAULTS` entries. Ryan separately asked whether MacroView
+(`components/macroview/breaks.js`) already had authored colors/breaks for this measure to reuse,
+the way LOTTR/TTTR's did — checked directly: **no**. MacroView's own `measures.js` lists
+"Emissions" in its menu but flags it `available: false` — it was never actually implemented there
+either, so there was no real break set to port (unlike LOTTR/TTTR/PHED/TED, which `breaks.js`
+documents with real, data-validated edges). PHED's own log-decade methodology ("round powers of
+ten... distribution-appropriate and quotable") is worth applying here too if this ever gets a
+proper data-backed pass — not done this round, which used a single live data point instead (see
+below).
+
+- **`co2Emissions_passenger`/`co2Emissions_truck`** (`fn:"sum"`, 2-source join
+  META_JOIN+AADT_DIST_JOIN, same shape as `hoursOfDelay`): breaks authored from one real value —
+  a low-traffic 0.2mi/single-TMC route over a full calendar month showed 2.98t (passenger) / 1.36t
+  (truck). Breaks: `[1, 5, 15, 30]`, max `50`, `REVERSED_SPEED_RANGE` colors (higher = worse,
+  matching `route_map.py`'s own `REVERSE_COLORS_MEASURES` set, which lists both).
+- **`avgCo2Emissions_passenger`/`avgCo2Emissions_truck`** (`fn:"avg"`, same 2-source join): a
+  per-epoch (5-minute-bucket) mean, NOT a per-day rate like `avgHoursOfDelay` — three orders of
+  magnitude smaller. **First guess was wrong, caught by live-verifying rather than shipping
+  blind**: initial breaks (floor `0.0005`) put the same test route's real value (~0.0003,
+  cross-checked against the summed measure: 2.98t / ~8640 monthly epochs ≈ 0.00034) entirely
+  below the bottom bin — rendered as out-of-range grey, legend readout a useless "0 - 0" (the
+  live-value text display rounds to ~2 decimals regardless of breaks, same pre-existing
+  imprecision Table's own `decimal_2` formatFn already has for this measure — not something this
+  change fixes). Lowered breaks to `[0.0001, 0.0003, 0.0006, 0.0015]`, max `0.003` — re-verified
+  the same route now renders in-range (a real yellow, not grey).
+- Both `composeMapConfig.js`'s top-of-file doc comment and its `MAP_MEASURE_OPTIONS`/
+  `CHOROPLETH_DEFAULTS` inline comments updated to stop saying CO2 "is NOT offered."
+
+**Live-verified 2026-08-24** via claude-in-chrome on scratch page `converted_reports/page_26`: built
+a fresh Map section via Add Graph, "Color By → CO2 Emissions (tonnes) — Passenger" — real legend
+value `2.98 - 2.98`, matching the Table compose path's own `2.98` for the same measure/route
+exactly (a genuine cross-path consistency check, not just "it rendered something"). Confirmed via
+`dms raw get` on the new section: correct `sum(...) as value` wrapping, correct 2-source join
+(`table1`/`table2`), correct `groupBy: ['ds.tmc']` (join present → `ds.`-qualified, per 5K's own
+join/no-join fix), full title `"CO2 Emissions (tonnes) — Passenger"` stored correctly (the on-map
+header's "CO2 EMISSIONS" is just CSS truncation, not a data bug). Then re-picked to
+`avgCo2Emissions_passenger` via QuickControls, found and fixed the breaks-too-high bug above,
+re-verified in-range rendering. Survived a full page reload both times, zero console errors at
+every checkpoint. `co2Emissions_truck`/`avgCo2Emissions_truck` not independently re-clicked — same
+generic code path as the passenger variants, already proven for both the `sum` and `avg` `fn`
+shapes.
+
+- [x] Confirmed no MacroView prior art exists for this measure (Ryan's question, checked directly
+      against `measures.js`/`breaks.js`) — 2026-08-24
+- [x] `MAP_MEASURE_OPTIONS`: 4 new entries — 2026-08-24
+- [x] `CHOROPLETH_DEFAULTS`: 4 new entries, breaks grounded in one real live data point each for
+      the sum and avg shapes — 2026-08-24
+- [x] File header + inline comments updated to drop the stale "CO2 is NOT offered" framing —
+      2026-08-24
+- [x] Live-verified `co2Emissions_passenger` end-to-end (value matches Table's own compose path
+      exactly, correct join/groupBy/title via `dms raw get`) — 2026-08-24
+- [x] Live-verified `avgCo2Emissions_passenger`; caught + fixed a real breaks-calibration bug
+      (initial floor too high, route rendered out-of-range) before shipping — 2026-08-24
+- [ ] Not independently re-verified: `co2Emissions_truck`/`avgCo2Emissions_truck` (same code path,
+      lower marginal value)
+- [ ] Not done: same treatment for `length`/`aadt` on Map (raised as an option, not picked this
+      round — Ryan chose CO2-only for this pass)
 
 ---
 
@@ -1923,30 +2188,30 @@ and every write path always writes a single-element array, never appends
 (`QuickControls/index.jsx:99-102`'s own comment: "this pill has no concept of a route with 2+
 variants"). **No action planned.** Whenever picked up (v2), start at `toggleRoute`.
 
-### Gap #16 / Facet 2's broader scope (NOT YET TRIAGED — next research step)
+### Gap #16 / Facet 2's broader scope — MOSTLY DONE as of 2026-08-21, see Tier 8 above
 
-Confirmed (via grep) that `AddGraphModal.jsx` has **zero** references to Info Box or Route Compare
-section types — the only way to create either today is `report_build.mjs`'s Python-side spec grammar
-(`build_route_info_box_section_state`, `ensure_route_compare_template`) or the old Python converter.
-Both types render correctly once built (live-verified elsewhere, e.g. `annual_average_study`'s
-year-over-year Route Compare panel) — this is a pure authoring-surface absence, not a rendering bug.
-Genuinely different in kind from items 1-9: new capability, not a gating/wiring fix.
+Originally: confirmed (via grep) that `AddGraphModal.jsx` had **zero** references to Info Box or
+Route Compare section types — the only way to create either was `report_build.mjs`'s Python-side
+spec grammar or the old Python converter, a pure authoring-surface absence, not a rendering bug.
+
+**2026-08-21 triage + build (see Tier 8 above for the full account)**: Info Box turned out to need
+no new authoring surface at all for `speed`/`travelTime`/`hoursOfDelay` — Table+Summary (Tier 5D)
+already produces an equivalent section. The two real gaps were Route Compare's delta column (8A,
+DONE) and Info Box's `reliability`-bucket measures LOTTR/TTTR/Freeflow (8B, DONE) — both now have a
+live authoring path via AddGraphModal + QuickControls, no Python converter needed.
 
 `CalloutStatPicker` (Card's hero-stat picker) is a partial precedent — it DOES have a creation path (a
 Settings-drawer menu item, `sectionMenuExtensions["Card"]`), just no header pill yet (that part is
 Item 4's territory if ever built).
 
-**Open questions for the next triage pass** (not yet answered):
-- Does ANY JS-side (theme-layer) composition logic exist for Info Box/Route Compare at all, or would
-  a JS equivalent of `useAddGraphSection.js`/`applyMeasurePickToState` need to be built from scratch,
-  porting the shape from `convert_old_reports_lib`'s Python composition functions?
-- What would a unified "Add Report Section" picker look like — one coherent UI covering AVL Graph
-  variants + Info Box + Route Compare + Callout Stat, replacing/extending today's
-  `AddGraphModal.jsx`, matching facet 2's "clean representation of types" spirit?
-
-**Status: confirmed in scope 2026-08-19, not yet triaged at the code-level depth items 1-9 got.**
-Next step is a dedicated deep-dive (same treatment Item 4 got) before this can be sequenced —
-explicitly flagged to Ryan as the next thing to dig into.
+**Still open, not addressed 2026-08-21**:
+- A unified "Add Report Section" picker — one coherent UI covering AVL Graph variants + Route
+  Compare + Reliability + Callout Stat, replacing/extending today's `AddGraphModal.jsx` (which now
+  has quite a few Table-only sub-toggles stacked in one modal) — a UX consolidation question, not a
+  missing-capability one anymore. Discussed with Ryan 2026-08-24: explicitly deferred to a future
+  UX pass by someone else, not this arc's work.
+- ~~Info Box's `length`/`aadt` measures never got ported to `vocabulary.json`~~ — **DONE
+  2026-08-24, see Tier 9 below.**
 
 ---
 
@@ -1962,10 +2227,11 @@ skipped:
       Tier's changes land — **not run at all this pass.** Ryan's call, stated twice: first as "make
       a list of things you think might break, don't chase it down right now" (a reasoned regression-risk
       analysis was written into the Progress log instead of an actual run — see 2026-08-19 entries),
-      then again after live-verifying everything himself ("don't worry about probe corpus"). No
-      baseline exists for Tier 1/2's changes as of this write-up — the next session that touches RRL/
-      QuickControls/report pages again should run a full `probe_corpus.mjs --capture` pass to establish
-      one, since it's still missing.
+      then again after live-verifying everything himself ("don't worry about probe corpus"). **Resolved
+      2026-08-24**: ran a full `probe_corpus.mjs --capture` pass covering Tiers 1-8's cumulative
+      changes — see that date's Progress log entry for the two real harness bugs found and fixed along
+      the way (stale `authRequired: false`, 12 accidental duplicate golden-corpus pages masking a
+      silent fallback-to-homepage). All 8 entries now PASS clean against a fresh baseline.
 - [x] Update `src/dms/skills/traversing-dms-pages.md` / `traversing-report-pages.md` in the same
       session if live verification surfaces anything they don't already say — **not updated this
       pass**: Ryan did the live verification himself directly (not via this session's own browser
@@ -2183,3 +2449,84 @@ skipped:
   `npm run build` before live verification (transformed all 1186 modules cleanly; the one failure
   was a pre-existing, unrelated missing `colorbrewer` import in `macroview/updateFilters.jsx`, not
   touched this session).
+
+- **2026-08-21**: Ryan reverted 7C's Table/Map title-rendering code from the prior session with no
+  reason given ("if we really need to add a title to these components, I'll circle back") — noted
+  in place (7C's own section, and this file's own status line) rather than re-argued. Then picked
+  gap #16 back up. A background research pass first corrected the doc's own stale "zero creation
+  UI" framing: Info Box (`speed`/`travelTime`/`hoursOfDelay`) already has an equivalent via
+  Table+Summary (Tier 5D) — the two real gaps were Route Compare's delta column and Info Box's
+  reliability-bucket measures, both built and live-verified this session (see Tier 8 above for the
+  full account). Mid-conversation, Ryan asked what "backend" meant in an earlier summary — a real,
+  useful correction: `pgFederated` (reliability's join mechanism) turned out to be an
+  already-generic, already-tested dms-server capability, not something needing new server-side
+  engineering, which changed the actual scope of 8B from "backend + frontend work" to "frontend
+  vocabulary work only." Also flagged, per Ryan's own explicit request, NOT to chase the
+  "bucket-vs-own-average" metric that Route Compare's resolution-gate investigation surfaced as a
+  real but separate, un-scoped feature idea — parked without further discussion. Two scratch pages
+  churned (see 8C) after the first became genuinely unstable mid-session (MapLibre + one
+  dms-server request hanging, tab crashing) following a live multi-route date edit; confirmed via
+  the dms-server log that the hang wasn't query-side (log was idle throughout), and per Ryan's own
+  direct observation that other pages/a dynamic template loaded fine on his end — deleted rather
+  than repaired, per his standing "never care about scratch pages, just recreate" instruction. A
+  separate, genuine browser-automation mistake (a malformed date typed into a native date input)
+  was caught and root-caused via the same log-timestamp-vs-wall-clock method this doc already
+  documents, not conflated with the actual application bugs found this session.
+
+- **2026-08-24**: Ryan validated the title auto-compose mechanism (3A/5B) live-clicked-through
+  himself — confirmed working, including that re-picking a pill does not clobber a manually-set
+  title. **3A/5B now fully DONE**, including live verification (the one item left open from Tier
+  5's own checklist). Then re-ran `probe_corpus.mjs` to establish a fresh baseline for Tiers 1-8
+  (none had existed since 2026-08-17, predating all of this arc's changes). Surfaced two real
+  testing-harness issues before resolving, per Ryan's own request:
+  1. All 8 manifest entries were `authRequired: false`, but the site now requires login to view
+     every one of them (confirmed by Ryan directly in an incognito window) — unrelated to any of
+     this arc's changes, a site-wide auth-gate change from elsewhere. Flipped all 8 to
+     `authRequired: true` in `golden-corpus.json` per Ryan's direction.
+  2. With auth fixed, the 4 static `golden_corpus_*` entries still showed section-count blockers
+     (2→20, "had content→blank") — root cause: their manifest URLs (the spec's own explicit
+     `slug`, e.g. `golden_corpus_linegraph`) no longer matched any live page. 12 accidental
+     duplicate "Golden Corpus - *" pages had piled up across two build generations (repeat
+     rebuilds without `--replace`, plus url_slug drift to a title-derived form on a later resave)
+     — every probe was silently falling back to the site's real homepage instead of erroring.
+     Ryan confirmed all 12 were accidental and had me delete them, then rebuild fresh from each
+     entry's own spec. Added `--replace` to all 4 static entries' `rebuild` commands in the
+     manifest (matching the dynamic_report entries' existing convention) to prevent recurrence.
+  3. One minor, fully-resolved-not-a-bug thread: 3 of the 4 `dynamic_report_*` entries each showed
+     one dropped `/graph` query with no accompanying content/section-count change. Ruled out the
+     usual "past the ClickHouse data cliff" explanation (checked: max date in CH was 2026-08-09).
+     Ryan independently checked `monthly_congestion` live and confirmed Jan-Aug have real content,
+     Sept-Dec are blank (current date is in August) — matches the capture exactly; the dropped
+     query was confirmed harmless (that section still renders with real content; almost certainly
+     a wire-text shift from one of Tier 5's SQL/alias fixes, not data loss).
+  All 8 entries now PASS clean against a fresh 2026-08-24 baseline (exit 0). `dynamic_report_one_week_study`
+  — the entry covering the most surface area — passed with zero diffs on the very first post-auth-fix
+  run, before any of the page-rebuild work, which is good independent evidence Tiers 1-8's actual
+  report-rendering changes are sound.
+
+- **2026-08-24 (continued)**: Asked about gap #16's still-open "unified Add Report Section picker"
+  idea — explained it concretely (AddGraphModal's Table branch has accreted Route Compare/
+  Reliability as bolted-on checkboxes rather than first-class choices) and Ryan confirmed he wants
+  that as a future UX pass by someone else, not this arc's scope — noted in place, see gap #16's
+  own "Still open" bullet above. Separately confirmed (by reading `AddGraphModal.jsx` directly)
+  that Line/Bar/Grid difference-mode graphs are already fully authorable via the existing
+  "Comparison Mode"/"Anchor Route" fields — no gap there, nothing to build.
+
+  Then picked up the two remaining items Ryan named next: Info Box's `length`/`aadt` measures
+  ported to `vocabulary.json` (Tier 9, see above — DONE, live-verified) and Map choropleth-by-measure
+  beyond Speed (queued up next, not yet started this session).
+
+- **2026-08-24 (continued)**: Scoped Map choropleth via `AskUserQuestion` before implementing —
+  Ryan picked "add the 4 CO2 emissions variants" (the one gap 5K's own checklist had already
+  flagged as ready-to-extend) over also wiring `length`/`aadt`. Mid-implementation Ryan asked
+  whether MacroView already had authored colors for this measure (the same prior art 5J's own
+  research reused for the choropleth mechanism itself) — checked directly and found no, MacroView's
+  "Emissions" measure is listed but flagged `available: false`, never actually built; ported
+  `PHED`'s log-decade breaks methodology as a note for a future data-backed pass instead. Built and
+  live-verified all 4 measures (Tier 10, see above) — including catching and fixing a real
+  calibration bug on `avgCo2Emissions_passenger` (initial breaks floor too high, a real test
+  route's value rendered out-of-range/grey) by cross-checking against the Table compose path's own
+  already-verified value for the same route/measure, rather than shipping the first guess
+  unverified. `co2Emissions_passenger`'s live value (`2.98`) matched the Table path's own value for
+  the same route exactly, a real cross-mechanism consistency check. **Gap #16 is now fully closed**
+  except the explicitly-deferred UX-consolidation picker.

@@ -185,7 +185,9 @@ export default function ReportRouteList() {
 
   const { mileageByRouteCompId } = useRouteMileage({ apiLoad, routes: effectiveRoutes });
 
-  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
+  // `effectiveRoutes` is already the resolveRouteDates()'d array (see its own definition just
+  // above) — gap #16's reliability year-resolution reuses it directly rather than re-resolving.
+  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate, allRoutes: effectiveRoutes });
 
   // Design push #2 (2026-08-06) removed the per-graph assignment CHIPS a route used to show
   // (see RouteRow.jsx) — that's still gone, graph assignment is a QuickControls-owned field on
@@ -464,6 +466,11 @@ export default function ReportRouteList() {
                 open={isAddGraphModalOpen}
                 setOpen={setIsAddGraphModalOpen}
                 routes={routes}
+                // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
+                // already drives the checklist's own display and Dynamic-Report placeholder
+                // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
+                // `effectiveRoutes` instead, without changing what the checklist itself shows.
+                allRoutesResolved={effectiveRoutes}
                 onConfirm={handleConfirmAddGraph}
               />
             </div>

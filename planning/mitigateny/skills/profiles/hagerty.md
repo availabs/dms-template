@@ -8,7 +8,7 @@ Everything here is Hagerty-specific. The MNY target side and the method live in 
 support the County in updating the Plan."* (An earlier note in
 [`tetratech.md`](./tetratech.md) listed Nassau as Tetra Tech; that was wrong and has been corrected.)
 **Reference annex:** `references/mny-transcribe/Nassau/All Annexes/01_CityofGlenCove/1_City of Glen Cove_Jurisdictional Annex.docx` (git-ignored)
-**Crosswalk produced:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` (git-ignored) — 175 mappings +
+**Crosswalk produced:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` (git-ignored) — 180 mappings +
 [`worked-examples/nassau-annex-crosswalk-report.md`](../worked-examples/nassau-annex-crosswalk-report.md)
 
 ---
@@ -18,8 +18,8 @@ support the County in updating the Plan."* (An earlier note in
 A Hagerty annex is **a short document with real prose and a thin data spine** — 9 tables and ~17 KB
 of extracted text per jurisdiction, against Tetra Tech's ~30 tables and ~200 KB.
 
-Consequence for targeting (Nassau, 175 mappings): Actions 62, Capabilities 26,
-Hazards of Concern 25, Roles 24, Participation 8, **Jurisdictions 7**, no-target 22.
+Consequence for targeting (Nassau, 180 mappings): Actions 62, Capabilities 29,
+Hazards of Concern 26, Roles 24, Participation 9, **Jurisdictions 7**, no-target 23.
 
 The trade against Tetra Tech, and the thing to internalise before planning a load:
 
@@ -212,6 +212,25 @@ not the text.
 
 **Trailing empty rows.** Long Beach's proposed-actions table is `15x8`, not `14x8`. Classify action
 tables by their **column-0 label prefix** (`Project Number`, `Project Name`, …), never by row count.
+
+**Footnote markers fuse into header cells.** Five annexes render the POC header as
+`"1Primary Point of Contact"` — a superscript reference lands in the same run. Exact-match
+classification drops the **entire contact table** with no error (92 contacts instead of 102). Strip
+leading *and* trailing footnote digits before comparing any label.
+
+**POC cells use `<w:br/>` line breaks, not paragraphs.** `python-docx`'s text join drops them, so the
+cell reads `Mayor Timothy Tenke, MayorCity of Glen Cove9 Glen Street…` and cannot be split into
+fields. Read line breaks explicitly — `annex_lib.cell_lines()`.
+
+**Heading suffix-matching collapses the capability subsections.** `"Legal and Regulatory Capability
+Assessment"` ends with `"Capability Assessment"`, so a shortest-first `endswith` scan files all four
+under their parent and every capability-summary paragraph — the annex's only authored capability
+narrative — comes out empty. Match exact-first, then longest-suffix-first.
+
+**The NFIP ordinance citation is in the prose, not the table.** See the Phase-6 report: 29 of 51
+annexes answer `No` in Table 3 while citing a real ordinance with a date and legal reference in the
+NFIP Summary. Applying the detail-beats-checkbox rule row-locally loses the ordinance for over half
+the corpus.
 
 **Encoding:** curly apostrophes throughout. Set `PYTHONIOENCODING=utf-8` or Windows `cp1252` crashes
 the extractor mid-run.
@@ -490,6 +509,10 @@ email and phone — and enrich from the roster. Dedupe on `(jurisdiction geoid, 
 Normalise organisation names first: *FEMA* / *Federal Emergency Management Agency (FEMA)*, *NYS DHSES* /
 *New York State Department of Homeland Security and Emergency Services*, and a stray plural *Villages of
 Woodsburgh*.
+
+**Measured row math (2026-08-21):** 190 roster people + 102 annex POC people, **only 49 overlapping**
+⇒ **~239 distinct people**. The two sources are genuinely complementary, not redundant, which is why
+both load. At ~1 role each that is ~239 Roles rows.
 
 **The roster is also the only source for `Required Stakeholder?`.** 20 of its 190 people belong to 13
 non-municipal organisations — FEMA, NYS DHSES, NYSDEC, NYC Emergency Management, Suffolk County, the

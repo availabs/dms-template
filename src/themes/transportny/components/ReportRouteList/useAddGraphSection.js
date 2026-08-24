@@ -44,7 +44,7 @@ function findGroupForElementType(sectionList, elementType) {
 // `draft_sections`, `apiUpdate` -> `updateDMSAttrs.js` -> `dms.data.create`), not a new escape
 // hatch. See dynamic-reports-and-route-tags.md's "Implementation plan, 2026-08-03" (Workstream 3)
 // for the full design record.
-export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit }) {
+export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, allRoutes }) {
   // Only Map's own compose branch below reads this (a choropleth layer's tile join needs the
   // join-capable host — see composeMapConfig.js's header); every chart/table path is unaffected.
   const { API_HOST, fileUploadInfo } = useContext(CMSContext) || {};
@@ -79,6 +79,10 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit })
       const applied = applyMeasurePickToState(state, pick, {
         externalSourceColumns: BASE_SOURCE.sourceInfo.columns,
         defaultColors: graphComponent.defaultState?.display?.colors,
+        // Gap #16 (2026-08-21): reliability's year resolution needs each route's REAL resolved
+        // date range — `allRoutes` is ReportRouteList's own already-resolveRouteDates()'d
+        // `effectiveRoutes`, passed straight through rather than re-resolving here.
+        allRoutes,
       });
       if (!applied) return null;
       reconcileComparisonSeriesColumnOnState(state);

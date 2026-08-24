@@ -271,6 +271,11 @@ export function useGraphPublish({ item, isEdit, routes, pageState, setActionPara
       // year label the chart legend shows for a year-relative route — ReportPageHeader's routes
       // disclosure does exactly this, so it doesn't disagree with the chart under it.
       dateFormula: r.dateFormula,
+      // Gap #16 (2026-08-21): also needed so a consumer can run this catalog through
+      // `resolveRouteDates` itself (not just `resolvedRouteLabel`) — that function fills in a
+      // derived route's blank startDate/endDate by looking up its base via `derivedFromRoute`,
+      // which resolvedRouteLabel's own year-range formatting never needed.
+      derivedFromRoute: r.derivedFromRoute,
       color: r.color,
       startDate: r.startDate,
       endDate: r.endDate,

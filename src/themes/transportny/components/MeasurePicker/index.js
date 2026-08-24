@@ -49,8 +49,10 @@ import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages
 // the first time the picker ran on it. "categorize" (the comparison-series
 // discriminator, or any author-added grouping dimension) is deliberately
 // excluded — never owned by this picker, see the comment above
-// MEASURE_PICKER_COLUMN_ORIGIN.
-const MANAGED_TARGETS = ['xAxis', 'yAxis', 'color'];
+// MEASURE_PICKER_COLUMN_ORIGIN. "delta" added 2026-08-21 for Table's own Route Compare "% vs
+// Main" column (composeMeasureConfig.js's buildRouteCompareDeltaColumn) — same reasoning, a
+// picker-owned column that must be fully replaced (not left as an orphan) on every re-pick.
+const MANAGED_TARGETS = ['xAxis', 'yAxis', 'color', 'delta'];
 
 function selectItem({ id, name, options, value, onPick }) {
     const current = options.find(o => o.value === value);
@@ -88,7 +90,7 @@ export function isReportPage(siblingSections = []) {
 // (already merged with DEFAULT_PICK/any partial), not a partial. Returns whether composeMeasureConfig
 // actually produced something (an unknown measureKey composes nothing, and callers should skip
 // downstream bookkeeping — e.g. the reconcile call — in that case).
-export function applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors } = {}) {
+export function applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors, allRoutes } = {}) {
     // Captured before anything below overwrites `state.display._measurePick` — this is the pick
     // whatever's currently in `state.display.title.title` was actually generated FROM (or
     // undefined on a brand-new section). Tier 5B's title auto-population (near the bottom of this
@@ -111,6 +113,11 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
             measureKeys: pick.measures,
             resolutionKey: pick.resolution,
             externalSourceColumns,
+            routeCompare: pick.routeCompare,
+            includeReliability: pick.includeReliability,
+            routeIds: pick.routeIds,
+            routeWindows: pick.routeWindows,
+            allRoutes,
         })
         : composeMeasureConfig({
             graphType: pick.graphType,
@@ -239,7 +246,7 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 // QuickControls' "When" pill writes on a Map card the exact way it did before this list was fixed.
 const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds', 'routeWindows'];
 
-export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost }, partial) {
+export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allRoutes }, partial) {
     // Map has no AVL-Graph-shaped compose path (columns/join/display.graphType/
     // comparisonSeries.combine, per composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment) —
     // short-circuits to its own, much smaller, symbologies-shaped update instead of the AVL-Graph
@@ -287,6 +294,7 @@ export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost }, pa
             // source (see below), there's no other candidate it could be.
             externalSourceColumns: hasDataset ? state.externalSource.columns : BASE_SOURCE.sourceInfo.columns,
             defaultColors: currentComponent?.defaultState?.display?.colors,
+            allRoutes,
         });
     });
     if (!applied) return;
