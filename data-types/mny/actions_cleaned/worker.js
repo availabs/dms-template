@@ -2,13 +2,17 @@
  * actions_cleaned/publish — builds the "Actions Cleaned" derived dataset.
  *
  * Reads the MitigateNY actions internal dataset (dms-mercury-3), applies every
- * transform the actions data-quality report series recommends, joins the
- * published Actions Location precision + geometry, overlays the high/medium
- * confidence coordinates recovered from action text, and publishes the result
- * as a new view under the output source in the DAMA DB.
+ * transform the actions data-quality report series recommends, runs the
+ * geolocation waterfall in-process (coordinates → geocoded address →
+ * jurisdiction centroid → county centroid; _shared/location/waterfall.js),
+ * overlays the high/medium confidence coordinates recovered from action text,
+ * and publishes the result as a new view under the output source in the DAMA
+ * DB. Because the waterfall runs here, one publish produces a complete source
+ * — no separately-published locations source, no rows left behind because a
+ * locations snapshot predated them.
  *
- * Inputs are read-only: the actions dataset and the locations source are
- * never modified. Publishing again creates a new view; prior views stay.
+ * Inputs are read-only: the actions dataset and the boundary views are never
+ * modified. Publishing again creates a new view; prior views stay.
  *
  * Transforms, with the report that specified each:
  *   T1 flatten          id-last (401 inner `id` keys shadow the row id)
@@ -18,11 +22,15 @@
  *                       one locality; locality-less rows never grouped
  *   T4 boilerplate flag boilerplate-actions.html — flag, never delete
  *   T5 priority         priority-coverage.html — migrate, don't overwrite
- *   T6 location         join + location-from-text.html recovered overlay
+ *   T6 location         in-process waterfall (on the RAW rows — the rungs own
+ *                       the raw quirks) + location-from-text.html overlay
  *
- * descriptor: { sourceId, userId, actionsSource, actionsView, locationsView,
- *               dryRun? } — dryRun runs every transform and prints the funnel
- * without creating a view or writing any rows.
+ * descriptor: { sourceId, userId, actionsSource, actionsView,
+ *               jurisdictionsView, countiesView, skipGeocode?, dryRun? }
+ * — dryRun runs every transform and prints the funnel without creating a view
+ * or writing any rows; skipGeocode skips the Census batch pre-cache (faster
+ * iteration, but address-based rows fall through to their centroids, so
+ * precision counts shift — never publish with it).
  */
 const pgStuff = require("pg");
 
@@ -36,7 +44,9 @@ const {
 } = require("./utils/normalize");
 const { parsePriority } = require("./utils/priority");
 const { cleanRow } = require("./utils/hygiene");
-const { loadOverlay, loadLocations, resolveLocation } = require("./utils/locations");
+const { loadOverlay, locationFromWaterfall, resolveLocation } = require("./utils/locations");
+const { cacheGeocodes } = require("../_shared/location/geocode");
+const { makeFunnel, buildCentroidCaches, resolveLevel } = require("../_shared/location/waterfall");
 
 const PAGE_SIZE = 1000;
 const INSERT_BATCH = 400;
@@ -95,7 +105,7 @@ const COLUMNS = [
 	{ name: "is_valid", type: "BOOLEAN", display: "Is Valid",
 		desc: "The source dataset's own validation flag (583 rows carry false; they are kept and flagged)." },
 	{ name: "precision", type: "SMALLINT", display: "Precision",
-		desc: "How the point was resolved. 1 = the action's own coordinates (~0 m). 2 = geocoded address/intersection/route. 3 = jurisdiction centroid (median 5.1 km error). 4 = county centroid (median 25.9 km error). 5 = statewide, no point by design. 0 = unresolved. NULL = action not present in the joined locations view. Codes 3 and 4 say WHICH municipality or county, never WHERE." },
+		desc: "How the point was resolved. 1 = the action's own coordinates (~0 m). 2 = geocoded address/intersection/route. 3 = jurisdiction centroid (median 5.1 km error). 4 = county centroid (median 25.9 km error). 5 = statewide, no point by design. 0 = unresolved. NULL occurs only in views published before 2026-08, which joined a locations snapshot that predated some actions; later views run the waterfall in-process, so every row is coded. Codes 3 and 4 say WHICH municipality or county, never WHERE." },
 	{ name: "location_method", type: "TEXT", display: "Location Method",
 		desc: "pipeline:* = from the Actions Location waterfall; recovered:* = coordinate recovered from the action's own text (location-from-text report)." },
 	{ name: "location_confidence", type: "TEXT", display: "Location Confidence",
@@ -121,7 +131,9 @@ const Worker = async ctx => {
 		userId,
 		actionsSource,
 		actionsView,
-		locationsView,
+		jurisdictionsView,
+		countiesView,
+		skipGeocode = false,
 		dryRun = false
 	} = task.descriptor;
 
@@ -143,8 +155,10 @@ const Worker = async ctx => {
 		boilerplate: { templates: 0, flaggedRows: 0 },
 		priority: { High: 0, Medium: 0, Low: 0, notYet: 0, review: 0 },
 		location: {
-			byPrecision: {},
-			missingFromView: 0,
+			waterfallByLevel: {},     // per INPUT row — compare against actions_location baselines
+			waterfall: makeFunnel(),  // per-rung candidates vs hits (the broken-rung tell)
+			byPrecision: {},          // per OUTPUT row, after dedup best-of-members + overlay
+			missingEntry: 0,          // an id with no waterfall entry = wiring bug; must stay 0
 			overlayEligible: 0,
 			overlayApplied: 0,
 			overlayByTier: {},
@@ -223,11 +237,37 @@ const Worker = async ctx => {
 		await updateProgress(0.2);
 
 		// ── location inputs ─────────────────────────────────────────────────────
-		const locations = await loadLocations(db, locationsView);
+		// The waterfall runs in-process: build its caches now (Census batch
+		// geocode + the two centroid tables), then resolveLevel handles each row
+		// as pass B streams it. `locations` fills during pass B.
+		if (skipGeocode) {
+			await dispatchEvent("actions_cleaned:GEOCODE",
+				"SKIPPED (skipGeocode) — address-based rows fall through to centroid rungs; do not publish this run");
+		}
+		else {
+			await dispatchEvent("actions_cleaned:GEOCODE", "pre-caching Census batch geocodes");
+			const geocodeResult = await cacheGeocodes(dmsClient, actionsTable);
+			if (!geocodeResult.ok) {
+				await dispatchEvent("actions_cleaned:GEOCODE",
+					`geocoding failed: ${ geocodeResult.error } — affected rows fall through to centroid rungs`);
+			}
+			else {
+				await dispatchEvent("actions_cleaned:GEOCODE",
+					`geocoding retrieved ${ geocodeResult.results } coordinates`);
+			}
+		}
+
+		const caches = await buildCentroidCaches(
+			db,
+			{ jurisdictionsView, countiesView },
+			(tag, message) => dispatchEvent(`actions_cleaned:${ tag }`, message)
+		);
+
+		const locations = new Map();   // id (string) → { precision, lon, lat }, per input row
 		const { overlay, skippedReview, skippedLow } = loadOverlay();
 		funnel.location.overlayEligible = overlay.size;
 		await dispatchEvent("actions_cleaned:LOCATIONS",
-			`${ locations.size } located actions from view ${ locationsView } · ` +
+			`waterfall ready (${ caches.jurisdictions.size } jurisdiction + ${ caches.counties.size } county centroids) · ` +
 			`${ overlay.size } recovered coordinates (${ skippedLow } low-confidence + ${ skippedReview } review rows excluded)`);
 		await updateProgress(0.3);
 
@@ -285,7 +325,7 @@ const Worker = async ctx => {
 			if (b) ++funnel.boilerplate.flaggedRows;
 
 			const loc = resolveLocation({ ids: [id, ...mergedIds], locations, overlay });
-			if (loc.missing) ++funnel.location.missingFromView;
+			if (loc.missing) ++funnel.location.missingEntry;
 			else funnel.location.byPrecision[loc.precision] =
 				(funnel.location.byPrecision[loc.precision] || 0) + 1;
 			if (loc.overlaid) {
@@ -345,6 +385,17 @@ const Worker = async ctx => {
 					lastId = Number(r.id);
 					++scanned;
 					const id = String(r.id);
+
+					// T6 waterfall, on the RAW row — the rungs own the raw quirks
+					// (array county_geoid, numeric geoid_juris, "New York City"), so
+					// this runs before any cleaning. Every streamed row gets an entry,
+					// which is what lets a merged group take the best precision among
+					// its members at resolution time.
+					const wf = resolveLevel({ id, di: r.data, caches, funnel: funnel.location.waterfall });
+					funnel.location.waterfallByLevel[wf.level] =
+						(funnel.location.waterfallByLevel[wf.level] || 0) + 1;
+					locations.set(id, locationFromWaterfall(wf));
+
 					const gi = groupOfId.get(id);
 					if (gi != null) {
 						groups[gi].members.push({ id, data: r.data, updated_at: r.updated_at });
@@ -470,7 +521,9 @@ const Worker = async ctx => {
 		console.log(`dedup       ${ f.dedup.groups } groups (auto ${ f.dedup.autoGroups } / rule ${ f.dedup.ruleGroups }) · dropped ${ f.dedup.droppedRows } · blanks filled ${ f.dedup.blanksFilled }`);
 		console.log(`boilerplate ${ f.boilerplate.templates } templates · ${ f.boilerplate.flaggedRows } rows flagged`);
 		console.log(`priority    High ${ f.priority.High } · Medium ${ f.priority.Medium } · Low ${ f.priority.Low } · not-yet ${ f.priority.notYet } · review ${ f.priority.review }`);
-		console.log(`location    precision ${ JSON.stringify(f.location.byPrecision) } · missing from view ${ f.location.missingFromView }`);
+		const w = f.location.waterfall;
+		console.log(`location    waterfall (per input row) ${ JSON.stringify(f.location.waterfallByLevel) } · output precision ${ JSON.stringify(f.location.byPrecision) } · missing entries ${ f.location.missingEntry }${ skipGeocode ? " · GEOCODE SKIPPED" : "" }`);
+		console.log(`  rungs     coords found ${ w.coordsCandidates } · addresses ${ w.geocodeCandidates } · juris tried ${ w.jurisCandidates } missed ${ w.jurisMisses } · county tried ${ w.countyCandidates } missed ${ w.countyMisses }`);
 		console.log(`overlay     eligible ${ f.location.overlayEligible } · applied ${ f.location.overlayApplied } ${ JSON.stringify(f.location.overlayByTier) } · already-p1 ${ f.location.overlaySkippedAlreadyP1 } · addresses filled ${ f.location.addressFilled }`);
 		console.log("###########################################\n");
 

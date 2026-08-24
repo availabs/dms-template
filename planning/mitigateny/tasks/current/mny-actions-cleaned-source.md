@@ -120,6 +120,12 @@ shift and new rows simply have no recovered coordinate. Log actuals vs. these ba
   **actions form itself** — out of scope here.
 
 ### T6 — Location: join + recovered-coordinate overlay
+
+> **Being superseded (2026-08-24):** the view-`12463` join below is being replaced by running the
+> geolocation waterfall in-process, so one publish produces a complete source with no dependency
+> on the separately-published Actions Location source. See
+> [`mny-actions-cleaned-unify-locations.md`](./mny-actions-cleaned-unify-locations.md). The CSV
+> overlay and everything else in this section is unchanged.
 - **Join** `precision` + `wkb_geometry` from view **12463** by `action_id`. Baseline v2
   distribution: p0 373 · p1 46 · p2 28 · p3 11,920 · p4 5,775 · p5 236 (96.7% geolocated).
 - **Overlay** the `apply=yes` rows of `static/location_updates.csv` (2,399: tier A explicit-coords
@@ -285,10 +291,11 @@ counts sit slightly above the report baselines. The dedup baselines reproduced *
   First view 13191 had the seondary-null-key bug — dropped and replaced by 13192; source has
   exactly one view. All testing-checklist items verified (above).
 - **Follow-ups:**
-  - The **530 precision-NULL rows** are actions added after locations view 12463 was published.
-    Fix = re-run `actions_location/publish` (new view on 11725), then re-publish actions_cleaned
-    against it — both are additive re-runs. Needs owner go-ahead (the locations pass hits the
-    Census geocoder for rung 2).
+  - ~~The **530 precision-NULL rows**~~ — **RESOLVED 2026-08-24 by the unify-locations task**
+    ([`mny-actions-cleaned-unify-locations.md`](./mny-actions-cleaned-unify-locations.md)): the
+    waterfall now runs in-process in this plugin's worker (no locations-view join), and **view
+    `13272`** carries a precision on every row (the 530 resolved to 501 p3 + 15 p4 + 14 p0;
+    all previously-coded rows byte-identical).
   - Server plugin + frontend registration only exist in this repo until the owner deploys
     dms-server / the frontend. The published dataset itself is already live in `hazmit_dama`
     (tiles serve by view_id, UDA reads metadata.columns) — only the publish route / Create page

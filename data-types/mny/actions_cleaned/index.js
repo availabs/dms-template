@@ -19,14 +19,16 @@ module.exports = {
 				userId = null,
 				actionsSource,
 				actionsView,
-				locationsView
+				jurisdictionsView,
+				countiesView
 			} = args;
 
 			const missingArgs = [];
 			if (!sourceName && !sourceId) missingArgs.push("sourceName");
 			if (!actionsSource) missingArgs.push("actionsSource");
 			if (!actionsView) missingArgs.push("actionsView");
-			if (!locationsView) missingArgs.push("locationsView");
+			if (!jurisdictionsView) missingArgs.push("jurisdictionsView");
+			if (!countiesView) missingArgs.push("countiesView");
 
 			try {
 				if (missingArgs.length) {
@@ -43,8 +45,9 @@ module.exports = {
 							"MitigateNY actions with every recommended data-quality transform applied: " +
 							"schema hygiene, same-place duplicates merged (keep-the-richer-copy), " +
 							"boilerplate templates flagged, priority normalized (originals preserved), " +
-							"and location precision + geometry joined from Actions Location with " +
-							"high/medium-confidence coordinates recovered from action text. " +
+							"and location precision + geometry computed in-process by the geolocation " +
+							"waterfall (coordinates → geocoded address → jurisdiction/county centroid), " +
+							"with high/medium-confidence coordinates recovered from action text overlaid. " +
 							"Derived read-only from the actions dataset — the inputs are never modified."
 					}, req.params.pgEnv);
 

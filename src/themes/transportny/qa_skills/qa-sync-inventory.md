@@ -20,8 +20,11 @@ DMS_AUTH_TOKEN=… node src/themes/transportny/qa_skills/tools/cr_sync.mjs --app
    (`SURFACE_PREFIX`/`KEY_FILE_OVERRIDE` → `dms_design_system_v2/pages/*.html`), inlines
    `_shared.css`, strips `ds-nav.js`, writes `design_file` + `design_html`. Re-ingested every
    run so design edits propagate.
-5. **Ticket hygiene**: missing `ticket_id` → max+1 (form-created tickets); empty `status` →
-   `Triage`; empty `opened/updated` → today; denormalizes target-page `name/route/stage`.
+5. **Ticket hygiene**: empty `status` → `Triage`; empty `opened/updated` → today; denormalizes
+   target-page `name/route/stage` + `surface`. **No `ticket_id` healing** — removed 2026-07-15
+   (`cr_sync.mjs` ~line 406): ticket identity is the **DMS row id**, and renumbering a ticket after
+   someone has cited its displayed number would silently rename it. Expect many rows with a blank
+   `ticket_id`; that is correct, not drift.
 6. **Page counters + stage-tuple reconcile**: recomputes `open_bugs/blockers/majors` (+`rag`
    red/amber/green) per page from open tickets, and reconciles `stage_order`/`next_step` from
    `stage` (the QA page's editable stage pill writes only `stage`).

@@ -37,14 +37,18 @@ Sections, in page order (all `data-dms`-annotated like the county page):
 6. **Local priority** (col-5) — the normalized priority column (High 8,631 / Medium 3,641 /
    Low 1,492 / Not Yet Prioritized 1,671 / *Needs plan legend* 1,513) — only expressible on
    Actions Cleaned.
-7. **County × progress** — top-12 counties by actions moved beyond Proposed, stacked
-   In-Progress + Completed with each county's own-share %. (Monroe 34%, NYC 255 actions, …)
-8. **County × local priority** — 100%-stacked amber ramp + gray "not prioritized / needs legend"
-   per county, High-share % on the right; caption calls out Allegany's 11–16 scoring rubric.
-9. **County × hazard matrix** — 12 counties × 8 hazard columns, row-normalized % heatmap on the
-   sequential ramp, native tooltips carrying the counts.
-10. **County × location quality** — 100%-stacked site / town centroid / county centroid / no point,
-    with the on-site % and a side panel explaining the centroid caveat (745 site-located statewide).
+7.–9. **The county band (reshaped 2026-08-19 per client)** — three panels at 1/3 · 1/3 · 1/3, each
+   covering **ALL 58 county-plan units** (NYC one entity) in ONE shared order (action count desc)
+   with fixed-height headers, so a county's row reads straight across:
+   - **Beyond proposed** — absolute stacked In-Progress + Completed scaled to the biggest mover,
+     own-share % right (Monroe 34%, Chemung 57%).
+   - **Local priority** — 100%-stacked amber ramp + gray, High share right; Allegany legend caveat.
+   - **Hazard focus** — was a 12-county heatmap, now a 100%-stacked bar like its siblings:
+     Flooding #37576B / Most-all #6D96AE / Hurricane #EAAD43 / Snow-ice #54B99B / Other #C5D7E0 /
+     Not Reported light+ring (palette validator: CVD 10.9 + normal 17.9 pass; muted-token contrast
+     relieved by 2px gaps, tooltips, legend, leaderboard); Flooding share right.
+   The **county × location quality** section was REMOVED at client request (its data still reads in
+   the leaderboard's Site-Located column).
 11. **County leaderboard** — all 58 county-plan units (57 counties + NYC), scrollable, sticky
     header: Actions · Jurisdictions · Beyond Proposed · High Priority % · Cost Reported % ·
     Site-Located · Template % · Top Hazard. The table view backing (and a11y fallback for) the
@@ -96,3 +100,6 @@ low-contrast legend tints; missing data always gray/dashed and last.
 ## Log
 - 2026-08-19: built + verified; registered in ds-nav; pipeline parked at
   `references/actions/scripts/18|19_*.mjs`.
+- 2026-08-19 (client pass): county-location-quality section removed; hazard heatmap → 100%-stacked
+  panel; the three county charts now sit 1/3·1/3·1/3 with ALL counties (NYC one entity), shared row
+  order, first rows verified pixel-aligned (y equal across panels), zero console errors / overflow.

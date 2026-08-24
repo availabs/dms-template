@@ -33,6 +33,11 @@ const cleanAddress = address => {
 }
 
 const cacheGeocodes = async (db, table) => {
+	// The caches are module-level and this module is shared by more than one
+	// worker in a long-lived server process — start each run clean so an address
+	// removed or changed since the last publish can't serve a stale point.
+	geocodeCache.clear();
+	pointsCache.clear();
 	const sql = `
 		SELECT id, LOWER(data->>'address_if_available') AS address
 			FROM ${ table }

@@ -2,12 +2,15 @@
  * Run the actions_cleaned worker locally, outside the dms-server task queue.
  *
  *   node data-types/mny/actions_cleaned/test.js --dry             # full transform + funnel, writes NOTHING
+ *   node data-types/mny/actions_cleaned/test.js --dry --skip-geocode  # dry run without the Census batch call
+ *                                                                     # (address rows fall to centroids — counts shift)
  *   node data-types/mny/actions_cleaned/test.js --source-id <id>  # publish a new view under an existing source
  *   node data-types/mny/actions_cleaned/test.js --create-source   # create the "Actions Cleaned" source, then publish
  *
  * A real run CREATES A NEW VIEW (and its physical table) under the output
  * source — that is how a new version of the dataset is published. It never
- * touches the actions dataset, the Actions Location source, or prior views.
+ * touches the actions dataset or prior views. --skip-geocode is refused on a
+ * real run: it would publish degraded precisions.
  */
 const Worker = require("./worker.js");
 const { getDb } = require("@availabs/dms-server/src/db");
@@ -17,9 +20,15 @@ const PG_ENV = "hazmit_dama";
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry");
+const skipGeocode = args.includes("--skip-geocode");
 const createSource = args.includes("--create-source");
 const sidIdx = args.indexOf("--source-id");
 let sourceId = sidIdx >= 0 ? Number(args[sidIdx + 1]) : null;
+
+if (skipGeocode && !dryRun) {
+	console.error("--skip-geocode is a dry-run-only flag: a real publish would write degraded precisions");
+	process.exit(1);
+}
 
 const DESCRIPTOR = {
 	userId: null,
@@ -28,9 +37,11 @@ const DESCRIPTOR = {
 	actionsSource: 1029065,
 	actionsView: 1074456,
 
-	// input: Actions Location v2 (precision + geometry), source 11725
-	locationsView: 12463,
+	// waterfall centroid inputs: NFIP community layer + TIGER counties
+	jurisdictionsView: 2297,
+	countiesView: 2157,
 
+	skipGeocode,
 	dryRun
 };
 
@@ -47,10 +58,11 @@ const DESCRIPTOR = {
 				"MitigateNY actions with every recommended data-quality transform applied: " +
 				"schema hygiene, same-place duplicates merged (keep-the-richer-copy), " +
 				"boilerplate templates flagged, priority normalized (originals preserved), " +
-				"and location precision + geometry joined from Actions Location with " +
-				"high/medium-confidence coordinates recovered from action text. " +
-				"Derived read-only from the actions dataset (source 1029065) and " +
-				"Actions Location (source 11725) — the inputs are never modified."
+				"and location precision + geometry computed in-process by the geolocation " +
+				"waterfall (coordinates → geocoded address → jurisdiction/county centroid), " +
+				"with high/medium-confidence coordinates recovered from action text overlaid. " +
+				"Derived read-only from the actions dataset (source 1029065) — the inputs " +
+				"are never modified."
 		}, PG_ENV);
 		sourceId = source.source_id;
 		// match Actions Location (11725): legacy-public visibility, not creator-private

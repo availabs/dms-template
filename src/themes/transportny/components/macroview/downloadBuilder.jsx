@@ -13,12 +13,22 @@ import { macroviewTheme } from "./macroview.theme";
 // chrome, so this belongs to the plugin. No core change was needed.
 //
 // HONEST GAPS (backported into the mockup 2026-08-12):
-//   · `json` is drawn but disabled — the create-download endpoint takes `fileTypes` and
-//     the pipeline emits CSV/GPKG; nothing produces JSON today.
 //   · The mockup's third scope ("Region 8, all measures") is a per-geography, all-measure
 //     export. The endpoint takes ONE geography filter and an explicit column list, so the
 //     two honest scopes are "current filters" and "statewide" — the geography is already
 //     part of "current filters".
+//
+// FORMAT: csv · gpkg, and that is the whole list (2026-08-24).
+//   · The disabled `json` button is GONE rather than permanently greyed out. ogr2ogr has no
+//     plain-JSON driver, so producing it means a second writer in the shared worker; that was
+//     declined (see pm3-download-route.md § Phase 3), and a control that will never be enabled
+//     is worse than an absent one — it reads as "coming soon" forever.
+//   · GeoJSON is not offered and pm3's route refuses it outright (SUPPORTED_FILE_TYPES in
+//     data-types/pm3/download.js). Policy, not capability.
+//   · `ESRI Shapefile` IS accepted by the route but is deliberately not drawn here: the
+//     directory-datastore path has never been exercised end to end from this panel, and a
+//     format button whose output nobody has opened is how the last three silent failures in
+//     this feature started.
 
 const META_COLUMNS = [
   "ogc_fid", "tmc", "urban_code", "region_code", "county",
@@ -43,6 +53,7 @@ export const DownloadBuilder = ({
   fmtCount,
   loading,
   existingUrl,
+  error,
   onSubmit,
 }) => {
   const { UI, theme: themeFromContext = {} } = React.useContext(ThemeContext) || {};
@@ -126,14 +137,6 @@ export const DownloadBuilder = ({
                     onClick={() => setFileType("GPKG")}
                   >
                     gpkg
-                  </button>
-                  <button
-                    type="button"
-                    className={t.formatBtn}
-                    disabled
-                    title="JSON export is not produced by the download pipeline yet"
-                  >
-                    json
                   </button>
                 </div>
               </div>
@@ -226,7 +229,11 @@ export const DownloadBuilder = ({
                 </span>
               </button>
               <p className={t.builderNote}>
-                Values are exactly what the map is drawing — same filters, same year, same bins.
+                {/* The server's own words when it refuses (unknown column, unsupported format,
+                    bad geography filter). Nothing else in this panel can say why nothing
+                    happened, and a rejected request otherwise looked like a successful one. */}
+                {error
+                  || "Values are exactly what the map is drawing — same filters, same year, same bins."}
               </p>
             </div>
           </div>
