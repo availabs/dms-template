@@ -56,6 +56,60 @@ def norm_heading(t):
     return None
 
 
+# The 14 canonical proposed-action field labels, and the variants seen in the corpus.
+# Whitespace is collapsed before matching, so "PriorityRanking" (Sea Cliff, no space) resolves
+# without an explicit alias; "Hazard Ranking" (Bayville) needs one -- verified to hold
+# High/Medium/Low priority values, not hazard names.
+CANON_ACTION_LABELS = [
+    'Project Number', 'Project Name', 'Goal being met', 'Hazards to be mitigated',
+    'Priority Ranking', 'Description of the Problem', 'Description of the Solution',
+    'Critical Facility', 'EHP Issues', 'Estimated Timeline', 'Lead Agency', 'Estimated Costs',
+    'Estimated Benefits', 'Potential Funding Sources',
+]
+ACTION_LABEL_ALIASES = {'hazardranking': 'Priority Ranking'}
+_CANON_BY_SQUASH = {re.sub(r'\s+', '', c).lower(): c for c in CANON_ACTION_LABELS}
+
+
+def canon_action_label(label):
+    """Canonical label + whether it was a variant. Keys only; values are never touched."""
+    squash = re.sub(r'\s+', '', (label or '')).lower()
+    hit = _CANON_BY_SQUASH.get(squash) or ACTION_LABEL_ALIASES.get(squash)
+    if not hit:
+        return label, False
+    return hit, hit != (label or '').strip()
+
+
+def canonicalise_actions(records, rec, table_label):
+    """Rewrite action-record KEYS to the canonical labels, warning on each variant."""
+    out = []
+    for r in records:
+        new_r, seen_variants = {}, []
+        for k, v in r.items():
+            ck, was_variant = canon_action_label(k)
+            if was_variant:
+                seen_variants.append((k, ck))
+            new_r[ck] = v
+        if seen_variants:
+            for orig, ck in seen_variants:
+                rec['warnings'].append(
+                    f'LABEL VARIANT ({table_label}): field labelled "{orig}" canonicalised to '
+                    f'"{ck}" - value carried verbatim')
+            new_r['_source_labels'] = {ck: orig for orig, ck in seen_variants}
+        out.append(new_r)
+    return out
+
+
+# Verified project-number corrections applied to the ANNEX side, keyed on (folder, wrong).
+# Owner decision 2026-08-21, Cove Neck: the worksheet writes "VCN-1" and the annex "VCN_1";
+# use the hyphen. Consistent with worksheet-precedence. Keyed on the folder because project
+# numbers are unique only WITHIN a jurisdiction.
+# NOTE the visible consequence: VCN-1 then sits alongside VCN_2 / VCN_3 / VCN_4, so one of Cove
+# Neck's four actions carries a different separator from its siblings. Cosmetic, in a text field.
+ANNEX_NUMBER_CORRECTIONS = {
+    ('12_VillageofCoveNeck', 'VCN_1'): 'VCN-1',
+}
+
+
 def yesno(v):
     """Answers are not clean Yes/No — test whether the value BEGINS with no/yes."""
     s = (v or '').strip().lower()
@@ -195,9 +249,20 @@ def extract(path, meta):
         rec['prior_actions'] += rowwise_records(table_grid(t)[0])
         rec['warnings'].append('prior actions are ROW-WISE, not transposed')
     for t in tables['completed_actions']:
-        rec['completed_actions'] += transposed_records(table_grid(t)[0])
+        rec['completed_actions'] += canonicalise_actions(
+            transposed_records(table_grid(t)[0]), rec, 'completed actions')
     for t in tables['proposed_actions']:
-        rec['proposed_actions'] += transposed_records(table_grid(t)[0])
+        rec['proposed_actions'] += canonicalise_actions(
+            transposed_records(table_grid(t)[0]), rec, 'proposed actions')
+    for a in rec['proposed_actions']:
+        raw = (a.get('Project Number') or '').strip()
+        fixed = ANNEX_NUMBER_CORRECTIONS.get((meta['folder'], raw))
+        if fixed:
+            a['Project Number'] = fixed
+            a['_project_number_source'] = raw
+            rec['warnings'].append(
+                f'NUMBER CORRECTED: annex "{raw}" -> "{fixed}" to match the worksheet '
+                f'(owner decision: use the hyphen)')
 
     rec['counts'] = {'contacts': len(rec['contacts']),
                      'hazards': len(rec['hazard_impacts']),

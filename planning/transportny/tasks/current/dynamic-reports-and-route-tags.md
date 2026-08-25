@@ -48,7 +48,8 @@ both the normal "+ Add Route" flow (`selectionMode="any"`) and Dynamic Reports' 
   moving the hide-in-view decision into `ReportRouteList.jsx` itself, keyed off `editPageMode`.
 - **Not merged**: a per-page sidebar-width lever (`sidebarGroup.width` in core `sectionGroup.jsx`)
   was prototyped and live-demoed, then **stashed by Ryan 2026-08-05** — no decision made on
-  template-default vs. per-page vs. a real Settings-pane control.
+  template-default vs. per-page vs. a real Settings-pane control. **Reviewed 2026-08-24: Ryan
+  considers this done/irrelevant now**, not independently re-verified.
 
 See the archive's "## 1. Add Route Flow (RRL)" section for full code traces and verification records.
 
@@ -454,6 +455,7 @@ LineGraph's own tooltip read, `valueFormat` every other chart type. `showTotal` 
   Only `monthly_congestion`, `seasonality`, and `this_month_vs_last_month_vs_last_year` were
   confirmed to need no `routeWindows` migration and so never got rebuilt at all — those 3 are the
   ones still needing a plain `--update <id> --publish` to pick up the color/tooltip/join fixes.
+  **Reviewed 2026-08-24: Ryan considers this done/irrelevant now**, not independently re-verified.
 - **`length`/`aadt`'s Info Box columns have the same missing-`formatFn` gap `speed`'s did** (see the
   `one_week_study` section above) — flagged, not fixed, since neither has a live consumer yet. Cheap
   to fix the same way (`decimal_2` for length, likely `comma` for aadt) once one does.
@@ -462,6 +464,7 @@ Mostly resolved — see the archive's own "Open questions" section for the full 
 live:
 
 - The multi-year query-size platform limit (`Monthly Speed Comparisons`'s 6-year comp).
+  **Reviewed 2026-08-24: Ryan considers this done/irrelevant now**, not independently re-verified.
 - **`report_build.mjs`'s Dynamic Report support: all 12 catalog templates now spec-built, DONE
   2026-08-11** — see item 3's table entry above and `report-spec-and-build-script.md`. Two real
   gaps surfaced along the way:
@@ -489,8 +492,9 @@ live:
   **The `ReportPageHeader.jsx` half RESOLVED 2026-08-17** — see "Report header routes disclosure..."
   section above (`resolvedRouteLabel`/`yearRangeForDateFormula` show the resolved calendar year(s)
   for year-relative routes, in both the header and the chart legend). The general
-  "Today"/"4 Days Ago"-style day/week labels are day/week-span formulas, not year-span, and are
-  untouched by that fix — still open.
+  "Today"/"4 Days Ago"-style day/week labels are day/week-span formulas, not year-span, and were
+  flagged as untouched by that fix — **Ryan confirmed 2026-08-24 this is now fixed** (not
+  independently re-verified against a live page this session).
 - A gap-logged "year-comparison candidate" heuristic for future old-template conversions (2026-08-11
   finding — no reliable automatic detection exists, human-confirmed opt-in only).
 - Section-title text across the 7 templates fixed 2026-08-11 still shows stale conversion-time
