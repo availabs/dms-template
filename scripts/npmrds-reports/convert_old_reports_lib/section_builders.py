@@ -794,9 +794,25 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         # src/dms/skills/regression-testing-npmrds-reports.md.
         window = resolve_measure_pick_window(info["assigned"], comps_by_id or {}, gaps,
                                               old_graph.get("id"))
+        # 2026-08-25: `weekdays`/`start`/`end` here are DEAD — commit cff5318 (2026-08-14)
+        # moved the live read (useGraphPublish.js's transformReportRoutes) onto
+        # `routeWindows: {[route_comp_id]: [{weekdays,start,end}, ...]}` exclusively, two
+        # days after this function started baking the flat fields in (round 70). Every
+        # report converted since 2026-08-14 silently reverted to "all days, all hours"
+        # again — same failure mode round 70 fixed, new mechanism. Fan the one
+        # graph-level window (every assigned comp already agreed, or it's the gap-logged
+        # empty default) out to each assigned comp's own routeWindows entry — this
+        # converter has no per-comp variation to preserve (round 70 never captured that
+        # granularity; see resolve_measure_pick_window's own "no single correct answer"
+        # framing for the disagreement case), so one shared variant per comp is the
+        # faithful translation of what round 70 already computed, not a new decision.
         state.setdefault("display", {})["_measurePick"] = {
             "weekdays": window["weekdays"], "start": window["start"], "end": window["end"],
             "routeIds": list(info["assigned"]),
+            "routeWindows": {
+                cid: [{"weekdays": window["weekdays"], "start": window["start"], "end": window["end"]}]
+                for cid in info["assigned"]
+            },
         }
     state_json = json.dumps(state)
     return {

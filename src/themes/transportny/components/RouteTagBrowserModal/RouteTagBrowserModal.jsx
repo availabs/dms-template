@@ -1,9 +1,13 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme';
+import { CMSContext } from '../../../../dms/packages/dms/src/patterns/page/context';
 import { routeTagBrowserModalTheme } from './RouteTagBrowserModal.theme';
 import { useTagBrowser } from './useTagBrowser';
 import { TAG_CATEGORIES, AUTO_GENERATED_TAG, parseTags, tagToLabel } from './tagCategories';
 import { parseTmcArray } from '../ReportRouteList/utils';
+import { routeScore, isFragment, EXCLUDE_FRAGMENTS_FILTER } from './routeScore';
+import { rankByScore, isOwnedByCurrentUser } from '../PickerModal/pickerScoring';
+import { PickerSearchInput, PickerFacetChips, PickerCountBar } from '../PickerModal/PickerModalParts';
 
 // Shared route-picker modal — mirrors the old tool's folder-browser *organizing effect* (drill
 // into a category, see routes, select) without real folders in the data model; tags stand in for
@@ -11,6 +15,14 @@ import { parseTmcArray } from '../ReportRouteList/utils';
 // route-slot entry gate (`selectionMode: 'exact'` + `requiredCount` + `initialSelectedRoutes`,
 // the last added so a slot/URL-count mismatch pre-populates already-resolved groups instead of
 // discarding them) — see planning/transportny/tasks/current/dynamic-reports-and-route-tags.md.
+//
+// 2026-08-25 (npmrds-picker-modals redesign): default sort is now prominence-weighted
+// (routeScore.js) instead of pure recency; a "mine" facet works against the real `created_by`
+// column; every row carries a mine/auto-generated/curated badge (UI.Pill) instead of the merge
+// living only in the tag-browse tree; single-TMC "fragment" routes collapse behind an explicit
+// "show N short segments" toggle in any unscoped (non-search) view. The search-input/facet-chip/
+// count-bar chrome is shared with ReportPickerModal via `../PickerModal/` — see that folder's
+// own comments for why (Ryan: the two pickers should share code/styling, not drift).
 export default function RouteTagBrowserModal({
   open,
   setOpen,
@@ -41,7 +53,9 @@ export default function RouteTagBrowserModal({
   asOfDateValue,
 }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Input, Icon, Modal } = UI || {};
+  const { Button, Input, Icon, Modal, Pill } = UI || {};
+  const { user } = useContext(CMSContext) || {};
+  const currentUserId = user?.id;
   const t = { ...routeTagBrowserModalTheme, ...getComponentTheme(themeFromContext, 'routeTagBrowserModal') };
 
   // view: 'root' | 'category' | 'value' | 'other'
@@ -54,6 +68,14 @@ export default function RouteTagBrowserModal({
   const [otherTagTerm, setOtherTagTerm] = useState('');
   const [selected, setSelected] = useState(new Map()); // id -> route row
   const [asOfDate, setAsOfDate] = useState(asOfDateValue || '');
+  // "mine"/"curated"/"auto-generated" narrow-by facets (independent toggles, persist across
+  // view navigation within one open — see the module comment). Client-side only: the "mine"
+  // value comes from CMSContext's signed-in user, never server-verified against an auth token
+  // (Ryan's own explicit v1 scope call — not an oversight to harden later).
+  const [routeFacets, setRouteFacets] = useState({ mine: false, curated: false, autogen: false });
+  // Single-TMC "fragment" routes collapse behind this toggle in any unscoped (non-search) view;
+  // reset at each navigation point below so a stale expansion doesn't survive into a new list.
+  const [fragmentsExpanded, setFragmentsExpanded] = useState(false);
 
   // Reset all transient state on open — a stale drill-down/selection from a previous open would
   // otherwise persist across unrelated add-route sessions. `selected` seeds from
@@ -71,6 +93,8 @@ export default function RouteTagBrowserModal({
     setOtherTagTerm('');
     setSelected(new Map((initialSelectedRoutes || []).filter((r) => r?.id != null).map((r) => [r.id, r])));
     setAsOfDate(asOfDateValue || '');
+    setRouteFacets({ mine: false, curated: false, autogen: false });
+    setFragmentsExpanded(false);
   }, [open]);
 
   const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
@@ -79,6 +103,25 @@ export default function RouteTagBrowserModal({
   const tagValue = view === 'value' ? activeValue?.value : null;
   const tagLikeTerm = view === 'other' ? otherTagTerm.trim() : null;
 
+  // Collapse single-TMC "fragment" routes out of any UNSCOPED (non-search) view, behind an
+  // explicit "show short segments too" reveal — a plain tag-folder/root browse can otherwise be
+  // dominated by near-point segments (confirmed live: 72% of the whole catalog is single-TMC,
+  // and the most-recently-created rows are a fragments-only batch — see
+  // routeScore.js's EXCLUDE_FRAGMENTS_FILTER comment for why this has to be a SERVER-side
+  // exclusion, not just a client-side re-sort). Any typed search (name search, or the "Other
+  // tags" free-text search which requires a query to show anything at all) is a direct match, so
+  // fragments it surfaces stay inline, badge and all — never collapsed.
+  const collapseFragments = view !== 'other' && !searchTerm.trim();
+
+  const extraFilterGroups = useMemo(() => {
+    const groups = [];
+    if (routeFacets.mine && currentUserId) groups.push({ col: 'created_by', op: 'filter', value: [String(currentUserId)] });
+    if (routeFacets.curated) groups.push({ col: 'tags', op: 'exclude', value: [AUTO_GENERATED_TAG] });
+    if (routeFacets.autogen) groups.push({ col: 'tags', op: 'filter', value: [AUTO_GENERATED_TAG] });
+    if (collapseFragments && !fragmentsExpanded) groups.push(EXCLUDE_FRAGMENTS_FILTER);
+    return groups;
+  }, [routeFacets, currentUserId, collapseFragments, fragmentsExpanded]);
+
   const { results, loading, error } = useTagBrowser({
     apiLoad,
     routeSourceInfo,
@@ -86,6 +129,7 @@ export default function RouteTagBrowserModal({
     searchTerm,
     tagValue,
     tagLikeTerm: tagLikeTerm || null,
+    extraFilterGroups,
   });
 
   // Stringified: callers may pass a mix of `id` and legacy `route_id` values (see
@@ -101,12 +145,16 @@ export default function RouteTagBrowserModal({
   // free-text tag search — still surfaces them, just flagged via `alreadyAdded` so the list stays
   // informative without blocking a real re-add.
   const isUnscopedRecentView = view === 'root' && !rootSearchTerm.trim();
+  // Prominence-ranked, ready-to-render results (2026-08-25): score+sort always applies — this
+  // is the "Best match" default sort replacing plain created_at/name ordering everywhere a route
+  // list renders, not just the root view.
   const visibleResults = useMemo(() => {
     const withIds = results.filter((r) => r.id != null);
-    return isUnscopedRecentView
+    const scoped = isUnscopedRecentView
       ? withIds.filter((r) => !excludeSet.has(String(r.id)))
       : withIds.map((r) => ({ ...r, alreadyAdded: excludeSet.has(String(r.id)) }));
-  }, [results, excludeSet, isUnscopedRecentView]);
+    return rankByScore(scoped, (r) => routeScore(r, { currentUserId }));
+  }, [results, excludeSet, isUnscopedRecentView, currentUserId]);
 
   const visibleCategoryValues = useMemo(() => {
     if (!activeCategory) return [];
@@ -124,11 +172,19 @@ export default function RouteTagBrowserModal({
     });
   };
 
-  const goRoot = () => { setView('root'); setActiveCategoryKey(null); setActiveValue(null); setCategoryFilterTerm(''); };
+  const goRoot = () => { setView('root'); setActiveCategoryKey(null); setActiveValue(null); setCategoryFilterTerm(''); setFragmentsExpanded(false); };
   const goCategory = (key) => { setView('category'); setActiveCategoryKey(key); setActiveValue(null); setCategoryFilterTerm(''); };
-  const goValue = (v) => { setView('value'); setActiveValue(v); setWithinSearchTerm(''); };
-  const goOther = () => { setView('other'); setOtherTagTerm(''); };
-  const goAutoGenerated = () => { setView('value'); setActiveValue({ value: AUTO_GENERATED_TAG, label: 'Auto-generated' }); setWithinSearchTerm(''); };
+  const goValue = (v) => { setView('value'); setActiveValue(v); setWithinSearchTerm(''); setFragmentsExpanded(false); };
+  const goOther = () => { setView('other'); setOtherTagTerm(''); setFragmentsExpanded(false); };
+  const goAutoGenerated = () => { setView('value'); setActiveValue({ value: AUTO_GENERATED_TAG, label: 'Auto-generated' }); setWithinSearchTerm(''); setFragmentsExpanded(false); };
+
+  const toggleFacet = (key) => setRouteFacets((prev) => ({ ...prev, [key]: !prev[key] }));
+  const clearFacets = () => setRouteFacets({ mine: false, curated: false, autogen: false });
+  const facetChips = [
+    { key: 'mine', label: 'Mine', active: routeFacets.mine },
+    { key: 'curated', label: 'Curated', active: routeFacets.curated },
+    { key: 'autogen', label: 'Auto-generated', active: routeFacets.autogen },
+  ];
 
   const selectedCount = selected.size;
   const isExact = selectionMode === 'exact';
@@ -146,39 +202,64 @@ export default function RouteTagBrowserModal({
     setOpen?.(false);
   };
 
+  // Mine / auto-generated / curated badge for one row — a merged classification instead of the
+  // separate browse-tree distinction the modal used to rely on entirely.
+  const ownershipBadge = (r) => {
+    if (isOwnedByCurrentUser(r.created_by, currentUserId)) return <Pill text="Mine" activeStyle="blue" />;
+    if (parseTags(r.tags).includes(AUTO_GENERATED_TAG)) return <Pill text="Auto-generated" activeStyle="zinc" />;
+    return <Pill text="Curated" activeStyle="green" />;
+  };
+
+  const renderRouteRow = (r) => {
+    const tmcCount = parseTmcArray(r.tmc_array).length;
+    const isSelected = selected.has(r.id);
+    const tags = parseTags(r.tags);
+    return (
+      <button
+        key={r.id}
+        type="button"
+        className={isSelected ? t.routeItemSelected : t.routeItem}
+        onClick={() => toggleSelect(r)}
+      >
+        <input type="checkbox" className={t.routeCheckbox} checked={isSelected} readOnly />
+        <span className={t.routeItemBody}>
+          <span className={t.routeItemTopLine}>
+            <span className={t.routeName}>{r.name}</span>
+            <span className={t.routeMeta}>{tmcCount} TMC{tmcCount === 1 ? '' : 's'}</span>
+          </span>
+          <span className={t.routeBadgeRow}>
+            {ownershipBadge(r)}
+            {tmcCount === 1 ? <Pill text="Fragment" activeStyle="amber" /> : null}
+            {r.alreadyAdded ? <span className={t.alreadyAddedBadge}>Already on report</span> : null}
+          </span>
+          {tags.length > 0 && (
+            <span className={t.routeTagChips}>
+              {tags.map((tag) => <span key={tag} className={t.routeTagChip}>{tagToLabel(tag)}</span>)}
+            </span>
+          )}
+        </span>
+      </button>
+    );
+  };
+
+  // `showFragmentsToggle`: this view is currently excluding fragments server-side (
+  // collapseFragments) and hasn't been expanded yet — offer the reveal regardless of whether
+  // the current (already-filtered) list is empty, since we don't fetch a count of what's
+  // excluded (that would need a second round-trip) — the label is deliberately count-free.
+  const showFragmentsToggle = collapseFragments && !fragmentsExpanded;
+
   const renderRouteList = (list) => {
     if (loading) return <div className={t.loading}>Loading…</div>;
     if (error) return <div className={t.error}>{error}</div>;
-    if (!list.length) return <div className={t.empty}>No routes found.</div>;
+    if (!list.length && !showFragmentsToggle) return <div className={t.empty}>No routes found.</div>;
     return (
       <div className={t.routeList}>
-        {list.map((r) => {
-          const tmcCount = parseTmcArray(r.tmc_array).length;
-          const isSelected = selected.has(r.id);
-          const tags = parseTags(r.tags);
-          return (
-            <button
-              key={r.id}
-              type="button"
-              className={isSelected ? t.routeItemSelected : t.routeItem}
-              onClick={() => toggleSelect(r)}
-            >
-              <input type="checkbox" className={t.routeCheckbox} checked={isSelected} readOnly />
-              <span className={t.routeItemBody}>
-                <span className={t.routeItemTopLine}>
-                  <span className={t.routeName}>{r.name}</span>
-                  {r.alreadyAdded ? <span className={t.alreadyAddedBadge}>Already on report</span> : null}
-                  <span className={t.routeMeta}>{tmcCount} TMC{tmcCount === 1 ? '' : 's'}</span>
-                </span>
-                {tags.length > 0 && (
-                  <span className={t.routeTagChips}>
-                    {tags.map((tag) => <span key={tag} className={t.routeTagChip}>{tagToLabel(tag)}</span>)}
-                  </span>
-                )}
-              </span>
-            </button>
-          );
-        })}
+        {list.map(renderRouteRow)}
+        {showFragmentsToggle ? (
+          <button type="button" className={t.fragmentsToggle} onClick={() => setFragmentsExpanded(true)}>
+            Show short segments too
+          </button>
+        ) : null}
       </div>
     );
   };
@@ -209,6 +290,8 @@ export default function RouteTagBrowserModal({
     </div>
   );
 
+  const showFacetsAndCount = view === 'root' || view === 'value' || (view === 'other' && tagLikeTerm);
+
   return (
     <Modal open={open} setOpen={setOpen} activeStyle="wide">
       <div className={t.wrapper}>
@@ -229,31 +312,32 @@ export default function RouteTagBrowserModal({
         ) : null}
 
         {view === 'root' ? (
-          <div className={t.searchWrapper}>
-            <Icon icon="Search" className={t.searchIcon} />
-            <Input placeholder="Search routes by name…" value={rootSearchTerm} onChange={(e) => setRootSearchTerm(e.target.value)} />
-          </div>
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={rootSearchTerm}
+            onChange={(e) => setRootSearchTerm(e.target.value)} placeholder="Search routes by name…" />
         ) : null}
 
         {view === 'category' ? (
-          <div className={t.searchWrapper}>
-            <Icon icon="Search" className={t.searchIcon} />
-            <Input placeholder={`Filter ${activeCategory?.label.toLowerCase()}…`} value={categoryFilterTerm} onChange={(e) => setCategoryFilterTerm(e.target.value)} />
-          </div>
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={categoryFilterTerm}
+            onChange={(e) => setCategoryFilterTerm(e.target.value)} placeholder={`Filter ${activeCategory?.label.toLowerCase()}…`} />
         ) : null}
 
         {view === 'value' ? (
-          <div className={t.searchWrapper}>
-            <Icon icon="Search" className={t.searchIcon} />
-            <Input placeholder="Search within this tag…" value={withinSearchTerm} onChange={(e) => setWithinSearchTerm(e.target.value)} />
-          </div>
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={withinSearchTerm}
+            onChange={(e) => setWithinSearchTerm(e.target.value)} placeholder="Search within this tag…" />
         ) : null}
 
         {view === 'other' ? (
-          <div className={t.searchWrapper}>
-            <Icon icon="Search" className={t.searchIcon} />
-            <Input placeholder="Type a tag (e.g. a project number)…" value={otherTagTerm} onChange={(e) => setOtherTagTerm(e.target.value)} />
-          </div>
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={otherTagTerm}
+            onChange={(e) => setOtherTagTerm(e.target.value)} placeholder="Type a tag (e.g. a project number)…" />
+        ) : null}
+
+        {showFacetsAndCount ? (
+          <PickerFacetChips t={t} Pill={Pill} facets={facetChips} onToggle={toggleFacet} onClearAll={clearFacets} />
+        ) : null}
+        {showFacetsAndCount && !loading && !error ? (
+          <PickerCountBar t={t}
+            countLabel={`${visibleResults.length} route${visibleResults.length === 1 ? '' : 's'}${showFragmentsToggle ? ' (short segments hidden)' : ''}`}
+          />
         ) : null}
 
         <div className={t.body}>

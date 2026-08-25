@@ -32,6 +32,7 @@
       { f: 'npmrds-home.html', t: 'home' }, { f: 'npmrds-macro.html', t: 'macro view' },
       { f: 'npmrds-tmc.html', t: 'segment · tmc' },
       { f: 'npmrds-reports.html', t: 'reports' }, { f: 'npmrds-report.html', t: 'report' },
+      { f: 'npmrds-picker-modals.html', t: 'picker modals (proposal)' },
       { f: 'npmrds-route-creation.html', t: 'route creation' },
       { f: 'route-comparison.html', t: 'route comparison' },
       { f: 'map-21.html', t: 'map-21 · per-year' }, { f: 'map-21-system-performance.html', t: 'map-21 · system performance' },

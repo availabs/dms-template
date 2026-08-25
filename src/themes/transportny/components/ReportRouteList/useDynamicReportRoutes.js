@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchCatalogRows } from '../RouteTagBrowserModal/fetchCatalogRows';
+import { fetchCatalogRows } from '../PickerModal/fetchCatalogRows';
 
 // A Dynamic Report's persisted `routes` (from useReportRow) are SLOT PLACEHOLDERS — each carries
 // a stable route_comp_id/color (assigned once, at authoring time, via the same addRoutes flow a

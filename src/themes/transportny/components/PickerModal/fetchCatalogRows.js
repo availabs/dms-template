@@ -1,15 +1,22 @@
 import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 
-// The one canonical routes-catalog fetch — originally private to useTagBrowser.js, extracted so
-// useDynamicReportRoutes.js (Dynamic Reports' view-time route resolution) can reuse it instead of
-// growing a third near-duplicate copy (a second one, ReportRouteList/useRouteSearch.js, was
-// already deleted as superseded by this one — see useTagBrowser.js's own history).
+// The one canonical "fetch rows from a DMS catalog source via UDA" helper — originally private
+// to RouteTagBrowserModal/useTagBrowser.js, extracted there so useDynamicReportRoutes.js
+// (Dynamic Reports' view-time route resolution) could reuse it instead of growing a third
+// near-duplicate copy, then promoted here (2026-08-25, the npmrds-picker-modals work) so
+// ReportPickerModal/useReportSearch.js can reuse it a fourth time — this function was never
+// route-specific (the `routeSourceInfo` param name is a naming leftover, not a constraint; any
+// `externalSource`-shaped catalog works, e.g. reports_snap_2).
 //
 // Generalized over arbitrary AND-composed filterGroups, since callers need very different
-// queries: useTagBrowser.js's four views (recent/search/tag-browse/tag-browse+search) filter on
-// name/tags/created_at; useDynamicReportRoutes.js filters on `id` (resolving specific route ids
-// supplied via a page's URL param).
-export async function fetchCatalogRows({ apiLoad, routeSourceInfo, filterGroups, sort, limit }) {
+// queries: RouteTagBrowserModal's views (recent/search/tag-browse/tag-browse+search) filter on
+// name/tags/created_at/created_by; useDynamicReportRoutes.js filters on `id` (resolving specific
+// route ids supplied via a page's URL param); ReportPickerModal filters on name/description.
+// `extraColumns` (2026-08-25): additional column definitions appended verbatim — e.g. a
+// `selectOnly`/`calculated` sort-only column (the routes picker's fragment-rank ordering, see
+// routeScore.js's FRAGMENT_RANK_SORT_COLUMN) that doesn't correspond to any real column on
+// `routeSourceInfo` and wouldn't survive being merged into the snapshot-based list below.
+export async function fetchCatalogRows({ apiLoad, routeSourceInfo, filterGroups, sort, limit, extraColumns = [] }) {
   const columns = [
     // The routes catalog join-source binding (`routeSourceInfo`, see ReportRouteList.jsx's
     // comment on it) snapshots its column list at author-configure time and never refreshes —
@@ -24,6 +31,7 @@ export async function fetchCatalogRows({ apiLoad, routeSourceInfo, filterGroups,
       .map((c) => (sort && c.name === sort.col ? { ...c, show: true, sort: sort.dir } : { ...c, show: true })),
     { name: 'tags', type: 'multiselect', options: null, show: true },
     { name: 'id', systemCol: true, show: true },
+    ...extraColumns,
   ];
 
   const udaConfig = buildUdaConfig({
