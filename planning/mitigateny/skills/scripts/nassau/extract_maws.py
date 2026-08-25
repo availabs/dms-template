@@ -39,6 +39,60 @@ LABELS = ('Project Name:', 'Project Number:', 'Hazard of Concern:', 'Description
           'Update Evaluation of the Problem and/or Solution:')
 
 
+# --------------------------------------------------------------------------
+# Verified project-number corrections, keyed on (folder, wrong number).
+#
+# Keying on the FOLDER as well as the number is not defensive padding -- it is required.
+# "VMP_1" and "VMP_2" are GENUINE project numbers in two other annexes (Massapequa Park and
+# Munsey Park), because project numbers are only unique WITHIN a jurisdiction. A correction
+# keyed on the number alone would rewrite their real actions.
+#
+# Muttontown (owner decision 2026-08-21): its two worksheets are numbered VMP_* while its annex
+# uses VMTT_*. Three independent checks confirm the worksheets are Muttontown's and that the
+# SUFFIX is already correct, so only the prefix is wrong:
+#   * Responsible Organization reads "Village of Muttontown" on both
+#   * project names match the annex (VMP_2 "Remsens Lane Culvert" = VMTT_2 "Remsen's Lane
+#     Culvert"; VMP_1 "Catch Basin Midlane South" = VMTT_1, same name)
+#   * the problem narratives match the annex near-verbatim
+# Root cause is prefix ambiguity, not a copy-paste: Munsey Park, Muttontown and Massapequa Park
+# all abbreviate to VMP.
+PROJECT_NUMBER_CORRECTIONS = {
+    ('34_VillageofMuttontown', 'VMP_1'): 'VMTT_1',
+    ('34_VillageofMuttontown', 'VMP_2'): 'VMTT_2',
+}
+
+
+# Worksheets whose relationship to the annex is not one-to-one (owner decisions 2026-08-21).
+#
+# ORPHAN_ACTIONS: the worksheet is the ONLY source for a real action -- the annex table simply
+# does not list it. Oyster Bay's annex stops at TOB_13; TOB_14 exists only as a worksheet and
+# carries every field a proposed action needs. Phase 7 emits an Actions row from the worksheet.
+ORPHAN_ACTIONS = {
+    ('05_TownofOysterBay', 'TOB_14'): 'annex table stops at TOB_13; keep this as an action '
+                                      'sourced from the worksheet alone',
+}
+#
+# ROLLUPS: ONE worksheet describes a PROGRAMME covering several annex actions, so it is a
+# different granularity -- not a competing statement about the same thing. Worksheet-precedence
+# therefore does NOT apply to its name, cost or narrative; those would overwrite N specific
+# projects with one generic description and inflate the cost N-fold.
+#
+# Village of Hempstead MAW1 is numbered "VOH_1, VOH_2, ... VOH_8" and named "Emergency Generator
+# Installation". PROOF it is a roll-up: its cost is $1,005,000.00, which is EXACTLY the sum of
+# the eight annex costs (100+180+120+70+95+155+155+130 thousand). The annex names eight specific
+# firehouses; the worksheet names none of them.
+ROLLUPS = {
+    ('20_VillageofHempstead', 'VOH_1, VOH_2, VOH_3, VOH_4, VOH_5, VOH_6, VOH_7, VOH_8'): {
+        'covers': ['VOH_1', 'VOH_2', 'VOH_3', 'VOH_4', 'VOH_5', 'VOH_6', 'VOH_7', 'VOH_8'],
+        'precedence_applies': False,
+        'note': 'programme-level roll-up; cost equals the sum of the eight components. Attach '
+                'worksheet-only fields (Level of Protection, Useful Life, Local Planning '
+                'Mechanisms, alternatives) to all eight as shared context, but do NOT overwrite '
+                'their names, costs or narratives.',
+    },
+}
+
+
 def is_instructions(grid):
     flat = ' '.join(c for row in grid for c in row)
     return any(m in flat for m in INSTRUCTION_MARKERS)
@@ -73,12 +127,23 @@ def parse_maw(grid):
             rec['critical_facility'] = ans
             rec['_critical_facility_raw'] = vals
             continue
-        # rows that pair two label/value couples across the width
-        pairs = [(lab, next((v for v in vals if v), ''))]
+        # Rows pair two label/value couples across the width. Taking "the next non-empty
+        # cell" is wrong when the value cell is EMPTY -- it falls through to the NEXT LABEL.
+        # VRG_1 has empty Level of Protection / Useful Life / Estimated Cost cells and so
+        # reported its cost as the literal string "Estimated Benefits (losses avoided):".
+        def value_after(cells):
+            for v in cells:
+                if not v:
+                    continue
+                if v.endswith(':'):      # hit the next label -> this field is genuinely empty
+                    return ''
+                return v
+            return ''
+
+        pairs = [(lab, value_after(vals))]
         for i, v in enumerate(vals):
             if v.endswith(':') and i + 1 < len(vals):
-                nxt = next((x for x in vals[i + 1:] if x), '')
-                pairs.append((v, nxt))
+                pairs.append((v, value_after(vals[i + 1:])))
         for k, v in pairs:
             k = k.strip()
             if k and k.endswith(':') and k not in rec:
@@ -117,10 +182,40 @@ def main():
             rec['geoid'] = geoid
             rec['folder'] = m['folder']
             rec['maw_file'] = fn
-            rec['project_number'] = rec.get('Project Number:', '')
+            raw_pn = (rec.get('Project Number:') or '').strip()
+            corrected = PROJECT_NUMBER_CORRECTIONS.get((m['folder'], raw_pn))
+            rec['project_number'] = corrected or raw_pn
+            rec['project_number_source'] = raw_pn
+            if corrected:
+                rec['project_number_corrected'] = True
+                tot['project_number_corrected'] += 1
+                warn.append(f'{m["folder"]}/{fn}: project number "{raw_pn}" corrected to '
+                            f'"{corrected}" (verified by name + problem text + responsible org)')
             rec['project_name'] = rec.get('Project Name:', '')
             if not rec['project_number']:
                 warn.append(f'{m["folder"]}/{fn}: no Project Number - cannot join')
+            key = (m['folder'], raw_pn)
+            if key in ORPHAN_ACTIONS:
+                rec['creates_action'] = True
+                rec['relationship'] = 'orphan-action'
+                rec['relationship_note'] = ORPHAN_ACTIONS[key]
+                tot['orphan_actions_kept'] += 1
+                warn.append(f'{m["folder"]}/{fn}: {raw_pn} has no annex row - kept as a '
+                            f'worksheet-only action')
+            elif key in ROLLUPS:
+                r = ROLLUPS[key]
+                rec['relationship'] = 'rollup'
+                rec['covers'] = r['covers']
+                rec['precedence_applies'] = r['precedence_applies']
+                rec['relationship_note'] = r['note']
+                rec['project_number'] = ''          # it is not a single project number
+                tot['rollup_worksheets'] += 1
+                warn.append(f'{m["folder"]}/{fn}: programme-level roll-up covering '
+                            f'{len(r["covers"])} actions - worksheet-precedence NOT applied')
+            else:
+                rec['relationship'] = 'one-to-one'
+                rec['precedence_applies'] = True
+
             fnum = re.match(r'MAW[_]?(\d+)', fn, re.I)
             rec['file_index'] = fnum.group(1) if fnum else ''
             if rec['file_index'] and rec['project_number'] and \

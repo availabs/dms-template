@@ -56,10 +56,11 @@ new county, they are more instructive than the skills alone:
   and the extraction run that preceded it.
 - [`nassau-extraction-report.md`](./worked-examples/nassau-extraction-report.md) — the **Phase-6
   extraction run**: 51 annexes + 142 worksheets + the base plan, every total reconciled against the
-  pre-flight, four silent parser bugs, and the 115-item QA punch-list. Read it for how a QA pass
+  pre-flight, four silent parser bugs, the 116-item QA punch-list, and the alignment pass that made
+  all 52 records one uniformly-readable group. Read it for how a QA pass
   distinguishes a document defect from a parser bug.
 - [`nassau-annex-crosswalk-report.md`](./worked-examples/nassau-annex-crosswalk-report.md) — a
-  Phase-2 crosswalk (180 mappings) for a **second consultant**, Hagerty. Read it alongside the
+  Phase-2 crosswalk (185 mappings) for a **second consultant**, Hagerty. Read it alongside the
   Suffolk one: same target schema, same subject matter, near-opposite content model. It also folds
   the corpus pre-flight in (all 52 Nassau annex folders) rather than splitting it into its own report.
 - [`schenectady-crosswalk-report.md`](./worked-examples/schenectady-crosswalk-report.md) ·
@@ -79,7 +80,7 @@ and expect county-specific constants inside.
 | [`scripts/suffolk/`](./scripts/suffolk/) | Tetra Tech extraction + the five dataset builders/writers (`docx_outline2.py`, `build_capabilities.mjs`, `write_jurisdictions.mjs`, `run_batch.mjs`, `rollback.mjs`, …) |
 | [`scripts/schenectady/`](./scripts/schenectady/) | The 1.0-site pipeline: `enumerate.mjs`/`build_inventory.mjs`/`fill_slot.mjs`, annex tooling (`annex_lib.mjs`, `gen_crosswalk_csv.mjs`, `write_annexes.mjs`), `lexical.mjs`, `fq.js` |
 | [`scripts/delaware/`](./scripts/delaware/) | The same pipeline, second application — the cleaner copy of several scripts |
-| [`scripts/nassau/`](./scripts/nassau/) | The Hagerty pipeline, in run order: `preflight.py` (spine + table-shape scan) → `inventory.py` (every file, with docx content probes) → `build_manifest.py` (folder → authoritative files) → `build_aliases.py` (→ geoid, asserts collision-free) → `reconcile_matrix.py` (attendance matrix vs annexes) → `schema_dump.py` / `preload_flags.py` / `verify_hoc.py` (live schema + insert-vs-update census) → **`annex_lib.py` + `extract_annexes.py` + `extract_maws.py` + `extract_baseplan.py`** (Phase 6) → `qa_assertions.py` (punch-list). Plus `extract_independent_plan.py` — the labelled-prose parser for a standalone jurisdictional plan (Freeport), which shares none of the docx machinery. `annex_lib` adds `cell_lines()` and footnote-tolerant table classification on top of `scripts/suffolk/docx_outline2.py`. |
+| [`scripts/nassau/`](./scripts/nassau/) | The Hagerty pipeline, in run order: `preflight.py` (spine + table-shape scan) → `inventory.py` (every file, with docx content probes) → `build_manifest.py` (folder → authoritative files) → `build_aliases.py` (→ geoid, asserts collision-free) → `reconcile_matrix.py` (attendance matrix vs annexes) → `schema_dump.py` / `preload_flags.py` / `verify_hoc.py` (live schema + insert-vs-update census) → **`annex_lib.py` + `extract_annexes.py` + `extract_maws.py` + `extract_baseplan.py`** (Phase 6) → `qa_assertions.py` (punch-list). Plus `extract_independent_plan.py` (labelled-prose parser for a standalone jurisdictional plan — shares none of the docx machinery), `align_independent_plan.py` (reshapes it into the annex envelope, asserting nothing altered or dropped) and `verify_group.py` (asserts one code path reads all 52 records). `annex_lib` adds `cell_lines()` and footnote-tolerant table classification on top of `scripts/suffolk/docx_outline2.py`. |
 | [`mny-1.0-scraper/`](./mny-1.0-scraper/) | Puppeteer scraper for 1.0 county sites + its own `package.json` (`"type":"commonjs"`, deliberately overriding the repo root) |
 
 **Auth is the CLI's job, not these skills'.** No credentials appear anywhere in this tree, and none

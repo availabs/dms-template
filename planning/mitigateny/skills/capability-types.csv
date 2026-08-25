@@ -1,0 +1,51 @@
+capability_name,source_table,primary_capability_type,secondary_capability_type,confidence,note
+Building Code,Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,,high,A code by name.
+NFIP Flood Damage Prevention Ordinance(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,"Floodproofing, other",high,Regulatory instrument; flood-specific.
+Zoning Ordinance(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,,high,Named in the vocabulary itself.
+Zoning Law(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,,high,Variant spelling of the above.
+Subdivision Ordinance(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,,high,Regulatory instrument.
+Subdivision Law(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,,high,Variant spelling of the above.
+Special Purpose Ordinance(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,,high,Regulatory instrument.
+Post Disaster Recovery Ordinance(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,Preparedness & Response,high,Regulatory instrument with a response purpose.
+Site Plan Review Requirement(s),Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,,high,"A regulatory REQUIREMENT, not a plan - the word ""Plan"" here is part of the review process name."
+Real Estate Disclosure Requirements,Legal and Regulatory,Codes/Ordinance/Zoning/Policy/Law/Governance,"Education, Awareness, Outreach",high,Regulatory requirement whose effect is public awareness.
+Stormwater Management Plan(s),Legal and Regulatory,Planning,"Community Infrastructure (Drainage, Underground Utilities)",high,A plan governing drainage infrastructure.
+Floodplain Management Plan(s),Legal and Regulatory,Planning,Wetlands/Floodplains,high,A plan; floodplain-specific.
+Capital Improvement Plan,Legal and Regulatory,Planning,,high,A plan.
+Community Development Plan,Legal and Regulatory,Planning,,high,A plan.
+Comprehensive Plan / Master Plan,Legal and Regulatory,Planning,,high,A plan.
+Open Space Plan(s),Legal and Regulatory,Planning,Other Nature-Based Solutions,high,A plan; open space is a nature-based measure.
+Resilience Plan(s),Legal and Regulatory,Planning,,high,A plan.
+Growth Management Plan(s),Legal and Regulatory,Planning,,high,A plan.
+Economic Development Plan(s),Legal and Regulatory,Planning,,high,A plan.
+Transportation Plan(s),Legal and Regulatory,Planning,,high,A plan.
+Small Area Development Plan(s),Legal and Regulatory,Planning,,high,A plan.
+Climate Action Plan,Legal and Regulatory,Planning,,high,A plan.
+Access and Functional Needs Plan,Legal and Regulatory,Planning,Preparedness & Response,high,A plan serving emergency response for AFN populations.
+Emergency Response Plan(s),Legal and Regulatory,Preparedness & Response,Planning,high,"Response is the more specific type; the vocabulary has an explicit slot for it."
+Post Disaster Recovery Plan(s),Legal and Regulatory,Planning,Preparedness & Response,medium,"Recovery sits between the two; Planning taken as primary because the artifact is a plan."
+Emergency Manager(s),Administrative and Technical,Preparedness & Response,,high,Staff whose function is emergency management.
+Personnel trained in construction practices related to buildings/infrastructure,Administrative and Technical,Codes/Ordinance/Zoning/Policy/Law/Governance,,medium,"Construction-practice staff are the code-enforcement capability; no ""staff capacity"" type exists."
+Engineer(s) trained in construction practices related to buildings/infrastructure,Administrative and Technical,Codes/Ordinance/Zoning/Policy/Law/Governance,,medium,As above.
+Engineer(s) with knowledge of land development and land management practices,Administrative and Technical,Planning,,medium,Land-development expertise supports planning.
+Engineer(s) with an understanding of natural and/or human caused hazards,Administrative and Technical,Studies and/or Risk Assessment,,high,Hazard expertise is assessment capacity.
+Planner(s) with knowledge of land development and land management practices,Administrative and Technical,Planning,,high,Planning staff.
+Planner(s) with an understanding of natural hazards,Administrative and Technical,Studies and/or Risk Assessment,Planning,high,Hazard expertise is assessment capacity.
+Scientist(s) familiar with natural hazards,Administrative and Technical,Studies and/or Risk Assessment,,high,Hazard expertise is assessment capacity.
+Personnel skilled or trained in Geographic Information Systems,Administrative and Technical,Studies and/or Risk Assessment,,high,GIS is the analytical/assessment capability.
+Surveyors,Administrative and Technical,Studies and/or Risk Assessment,Project Scoping,medium,Survey work supports assessment and scoping.
+Grant Writers,Administrative and Technical,Establishing Long-Term Programs,,medium,"Grant capacity sustains programs; no ""funding"" capability type exists."
+Capital improvements project funding,Fiscal,Establishing Long-Term Programs,,medium,"Fiscal mechanism; the vocabulary has no funding type, so the sustaining-programs slot is used."
+Ability to incur debt through general obligation bonds,Fiscal,Establishing Long-Term Programs,,medium,As above.
+Ability to incur dept through special tax bonds,Fiscal,Establishing Long-Term Programs,,medium,"As above. Source misspells ""debt"" - kept verbatim in capability_name."
+Ability to incur debt through private activity bonds,Fiscal,Establishing Long-Term Programs,,medium,As above.
+Authority to levy taxes for specific purposes,Fiscal,Establishing Long-Term Programs,,medium,As above.
+Authority to utilize user fees for utility services,Fiscal,Establishing Long-Term Programs,,medium,As above.
+Authority to withhold public expenditures in hazard prone areas,Fiscal,Codes/Ordinance/Zoning/Policy/Law/Governance,Establishing Long-Term Programs,medium,A governance power that steers development away from hazard areas.
+Impact fees for home buyers and/or developers,Fiscal,Establishing Long-Term Programs,Codes/Ordinance/Zoning/Policy/Law/Governance,medium,Fiscal mechanism established by ordinance.
+Community Development Block Grants (CDBG),Fiscal,Establishing Long-Term Programs,,high,A named federal program.
+State mitigation grant programs,Fiscal,Establishing Long-Term Programs,,high,A named program.
+Community Rating System (CRS),Community Classification,Establishing Long-Term Programs,Codes/Ordinance/Zoning/Policy/Law/Governance,high,An ongoing NFIP program earned through floodplain regulation.
+Building Code Effectiveness Grading Schedule (BCEGS),Community Classification,Codes/Ordinance/Zoning/Policy/Law/Governance,Establishing Long-Term Programs,high,A rating of code administration.
+Public Protection Classification Program,Community Classification,Preparedness & Response,Establishing Long-Term Programs,high,An ISO rating of fire-response capability.
+Other Classifications,Community Classification,Establishing Long-Term Programs,,low,"Catch-all label; the real content is in the description. Flagged gap-weak in the crosswalk."

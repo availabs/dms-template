@@ -16,6 +16,7 @@ import sys
 CTX = 'references/mny-transcribe/Nassau/context/'
 ANN = CTX + 'extracted/annexes/'
 OUT = CTX + 'qa-punchlist.csv'
+RESOLUTIONS = CTX + 'qa-resolutions.csv'
 
 CANON_HAZARDS = ['Coastal Hazards', 'Drought', 'Extreme Temperatures', 'Flooding',
                  'Ground Failure', 'Hurricane and Tropical Storms', 'Hail', 'Lightning',
@@ -64,10 +65,20 @@ def main():
     for fn in sorted(os.listdir(ANN)):
         d = json.load(io.open(ANN + fn, encoding='utf-8'))
         g = d['geoid']
+        # A record reshaped from another document class shares the ENVELOPE but not the
+        # instrument. Running Hagerty-shaped checks against it reports the document class as a
+        # pile of defects, which buries the real ones.
+        klass = d.get('document_class', 'hagerty-annex')
+        independent = klass != 'hagerty-annex'
 
         # 1 -- Table 2's hazard set must be the canonical 11 (county excepted)
         hz = [h['hazard'] for h in d['hazard_impacts']]
-        if g == '36059':
+        if independent:
+            add(g, 'independent-plan-taxonomy', 'info',
+                f'{klass}: {len(hz)} hazards from its own taxonomy, not the canonical 11 - '
+                f'{[x[:24] for x in hz]}. Expect Other + hazard_name_if_other for the '
+                f'non-MNY types')
+        elif g == '36059':
             if hz:
                 add(g, 'county-has-hazard-table', 'info',
                     'the county annex is expected to have no hazard-impacts table')
@@ -75,6 +86,14 @@ def main():
             add(g, 'hazard-set-deviation', 'high',
                 f'expected the canonical 11, got {len(hz)}: '
                 f'missing={set(CANON_HAZARDS) - set(hz)} extra={set(hz) - set(CANON_HAZARDS)}')
+
+        if independent:
+            # what a reshaped record legitimately lacks, reported once instead of as five defects
+            add(g, 'independent-plan-shape', 'info',
+                'reshaped into the annex envelope: no NFIP Summary section, no per-section '
+                'capability summaries, no impact-category matrix, no Yes/No capability column, '
+                'and no primary/alternate contact designation. See _alignment in the record.')
+            continue
 
         # 2 -- NFIP ordinance: Table 3 answer vs the NFIP prose
         nfip = ' '.join(d['nfip_paragraphs'])
@@ -127,13 +146,31 @@ def main():
         # 5 -- worksheet cross-checks
         my_maws = maw_by_geoid.get(g, [])
         ann_nums = {n.strip() for n in nums if n.strip()}
-        maw_nums = {m['project_number'].strip() for m in my_maws if m['project_number'].strip()}
+        # A worksheet with a declared non-1:1 relationship is not an orphan -- it has been
+        # adjudicated. Roll-ups carry no single project number by design; orphan-actions are
+        # deliberately kept as worksheet-only actions.
+        maw_nums = {m['project_number'].strip() for m in my_maws
+                    if m['project_number'].strip()
+                    and m.get('relationship', 'one-to-one') == 'one-to-one'}
         orphan = maw_nums - ann_nums
         if orphan:
             add(g, 'maw-orphan-project', 'high',
                 f'worksheet project number(s) {sorted(orphan)} do not appear in the annex '
                 f'action tables ({sorted(ann_nums)})')
         for m in my_maws:
+            rel = m.get('relationship', 'one-to-one')
+            if rel == 'rollup':
+                add(g, 'maw-rollup', 'info',
+                    f'programme-level worksheet covering {len(m.get("covers", []))} actions '
+                    f'({", ".join(m.get("covers", []))}) - worksheet-precedence deliberately NOT '
+                    f'applied; its cost equals the sum of the components')
+                continue
+            if rel == 'orphan-action':
+                add(g, 'maw-orphan-action-kept', 'info',
+                    f'{m["project_number"]} has no annex row and is kept as a worksheet-only '
+                    f'action: {m.get("relationship_note", "")}')
+                continue
+        for m in [x for x in my_maws if x.get('relationship', 'one-to-one') == 'one-to-one']:
             pn = m['project_number'].strip()
             match = next((a for a in d['proposed_actions']
                           if a.get('Project Number', '').strip() == pn), None)
@@ -174,27 +211,44 @@ def main():
     seen = {json.load(io.open(ANN + f, encoding='utf-8'))['geoid'] for f in os.listdir(ANN)}
     for gid, a in alias.items():
         if a['has_annex'] == 'yes' and gid not in seen:
-            sev = 'info' if a['pipeline'] == 'freeport-standalone' else 'high'
-            note = (' - expected: the standalone village plan, on its own track'
-                    if sev == 'info' else '')
-            add(gid, 'annex-not-extracted', sev,
-                f'no extract produced for {a["annex_file"]}{note}')
+            add(gid, 'annex-not-extracted', 'high',
+                f'the manifest lists {a["annex_file"]} but no extract was produced')
 
+    # ---- join the owner's dispositions so decided findings stop reading as open ----
+    res = {}
+    if os.path.exists(RESOLUTIONS):
+        res = {r['check']: r for r in csv.DictReader(io.open(RESOLUTIONS, encoding='utf-8'))}
+    for f in findings:
+        r = res.get(f['check'])
+        f['disposition'] = (r['disposition'] if r else 'open')
+        f['decided'] = (r['decided'] if r else '')
+        f['decision'] = (r['decision'] if r else '')
+
+    cols = ['disposition', 'severity', 'check', 'geoid', 'jurisdiction', 'detail', 'decided',
+            'decision']
     with io.open(OUT, 'w', encoding='utf-8', newline='') as fh:
-        w = csv.DictWriter(fh, fieldnames=['severity', 'check', 'geoid', 'jurisdiction', 'detail'])
+        w = csv.DictWriter(fh, fieldnames=cols)
         w.writeheader()
         order = {'high': 0, 'medium': 1, 'low': 2, 'info': 3}
-        for f in sorted(findings, key=lambda x: (order[x['severity']], x['check'], x['geoid'])):
-            w.writerow({k: f[k] for k in ('severity', 'check', 'geoid', 'jurisdiction', 'detail')})
+        for f in sorted(findings, key=lambda x: (x['disposition'] != 'open',
+                                                 order[x['severity']], x['check'], x['geoid'])):
+            w.writerow({k: f[k] for k in cols})
 
-    print(f'wrote {OUT}  ({len(findings)} findings)\n')
-    by = collections.Counter((f['severity'], f['check']) for f in findings)
-    for (sev, chk), n in sorted(by.items(), key=lambda x: ({'high': 0, 'medium': 1, 'low': 2, 'info': 3}[x[0][0]], -x[1])):
-        print(f'  {sev:7s} {n:3d}  {chk}')
+    openf = [f for f in findings if f['disposition'] == 'open']
+    print(f'wrote {OUT}  ({len(findings)} findings; {len(openf)} OPEN, '
+          f'{len(findings) - len(openf)} resolved)\n')
+    by = collections.Counter((f['disposition'], f['severity'], f['check']) for f in findings)
+    for (disp, sev, chk), n in sorted(
+            by.items(), key=lambda x: (x[0][0] != 'open',
+                                       {'high': 0, 'medium': 1, 'low': 2, 'info': 3}[x[0][1]],
+                                       -x[1])):
+        print(f'  {disp:9s} {sev:7s} {n:3d}  {chk}')
     print()
-    for f in findings:
-        if f['severity'] == 'high':
-            print(f'  HIGH  {f["jurisdiction"][:30]:32s} {f["check"]:28s} {f["detail"][:110]}')
+    if not openf:
+        print('  no open findings')
+    for f in openf:
+        print(f'  OPEN [{f["severity"]}]  {f["jurisdiction"][:26]:28s} {f["check"]:22s} '
+              f'{f["detail"][:96]}')
 
 
 if __name__ == '__main__':

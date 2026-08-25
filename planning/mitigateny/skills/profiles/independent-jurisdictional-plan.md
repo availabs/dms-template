@@ -143,10 +143,34 @@ transcribing.
 
 ### Taxonomy: it OVER-runs MNY (the Suffolk case, not the Nassau one)
 
-Five of Freeport's ten hazards have **no MNY type**: **Terrorism · Hazardous Materials · Cyber-Terrorism
-· Urban/Structural Fire · Epidemic/Pandemic**. Per the standing rule these become `Hazard = Other`
-with the verbatim name in `hazard_name_if_other`. `Nor'easter/Winter Storm/Ice Storm` is a combined
-profile needing the split treatment.
+**Owner rule (2026-08-21):** shoehorn into a comparable MNY hazard where one exists; where none exists
+create a **new row** with `Hazard = Other` and `Hazard Name, If Other` set to the plan's own hazard
+name **verbatim**. Freeport's mapping is committed as `freeport-hazard-map.csv` — 23 rows from 10
+profiles:
+
+| Kind | n | Which |
+|---|---:|---|
+| named | 7 | Hurricane · Wind · Flooding · Ice storm · Snowstorm · Earthquake · Tornado |
+| **`Other`** (inserts) | **6** | Nor'easter · Terrorism · Hazardous Materials at Fixed Sites and in Transit · Cyber-Terrorism · Urban/Structural Fire · Epidemic/Pandemic |
+| not profiled → `No` | 10 | Avalanche · Coastal Hazards · Drought · Extreme Cold · Extreme Heat · Hail · Landslide · Lightning · Tsunami/Seiche · Wildfire |
+
+Two traps in that table:
+
+**Count hazards, not headings.** `NOR'EASTER/WINTER STORM/ICE STORM` is *three* hazards in one
+heading — Winter Storm and Ice Storm both shoehorn, Nor'easter does not. Counting headings gives five
+`Other` rows; counting hazards gives **six**.
+
+**Do not shoehorn `Urban/Structural Fire` into Wildfire.** Different hazards, and Freeport profiles no
+wildfire at all — mapping it would assert a wildfire assessment the plan never made. When the nearest
+MNY type is merely *adjacent*, `Other` is the correct answer.
+
+**`Other` is storable and established** — verified against all 27,791 live HOC rows: 271 already use
+the display label `Other` and 275 already set `hazard_name_if_other`. Use the label `Other`, not the
+internal code `other` (3 rows). This retires the Suffolk-era note that `hazard` had no `Other` option.
+
+**An independent plan is likely to be a county's only HOC insert.** Its 17 pre-seeded rows update like
+any jurisdiction's; the `Other` rows are new. On Nassau that is the whole corpus's insert count: 884
+updates + 306 untouched + **6 inserts, all Freeport's**.
 
 Note the contrast worth carrying: **the county's consultant plan under-ran MNY's taxonomy and closed
 cleanly; one village's own plan over-ran it.** Do not infer a county's taxonomy shape onto an

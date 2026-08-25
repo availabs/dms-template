@@ -8,7 +8,7 @@ Everything here is Hagerty-specific. The MNY target side and the method live in 
 support the County in updating the Plan."* (An earlier note in
 [`tetratech.md`](./tetratech.md) listed Nassau as Tetra Tech; that was wrong and has been corrected.)
 **Reference annex:** `references/mny-transcribe/Nassau/All Annexes/01_CityofGlenCove/1_City of Glen Cove_Jurisdictional Annex.docx` (git-ignored)
-**Crosswalk produced:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` (git-ignored) — 180 mappings +
+**Crosswalk produced:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` (git-ignored) — 185 mappings +
 [`worked-examples/nassau-annex-crosswalk-report.md`](../worked-examples/nassau-annex-crosswalk-report.md)
 
 ---
@@ -18,7 +18,7 @@ support the County in updating the Plan."* (An earlier note in
 A Hagerty annex is **a short document with real prose and a thin data spine** — 9 tables and ~17 KB
 of extracted text per jurisdiction, against Tetra Tech's ~30 tables and ~200 KB.
 
-Consequence for targeting (Nassau, 180 mappings): Actions 62, Capabilities 29,
+Consequence for targeting (Nassau, 185 mappings): Actions 64, Capabilities 29,
 Hazards of Concern 26, Roles 24, Participation 9, **Jurisdictions 7**, no-target 23.
 
 The trade against Tetra Tech, and the thing to internalise before planning a load:
@@ -195,10 +195,53 @@ Take table 0 only, or you load instruction text as authored content.
 **MAW file numbering does not match project numbering.** Glen Cove's `MAW1` is project `CGC_3` and
 `MAW2` is `CGC_2`. Join on the worksheet's `Project Number:` row, never on the filename.
 
-**MAW and annex disagree on names and hazards for the same project.** Glen Cove: *"Sea Cliff Ave
-Flood Correction"* (MAW) vs *"Sea Cliff Ave. Flood Mitigation"* (annex); *"Morgan Park Seawall"* vs
-*"Morgan Park Sea Wall"*; `Hazard of Concern = Flood` (MAW) vs `Hazards to be mitigated = Flooding`
-(annex). Prefer the annex table's name, normalise the hazard, and flag the pair.
+**MAW and annex disagree constantly, and the WORKSHEET WINS** (owner, 2026-08-21 — set annex-first,
+then reversed the same day on review: the worksheets are more detailed and more intentional).
+Measured: **23 name disagreements** across 17 jurisdictions and **5 cost disagreements**, including
+Great Neck Estates with `VGNE_1`/`VGNE_2` transposed. Glen Cove alone: *"Sea Cliff Ave Flood
+Correction"* (worksheet) vs *"Sea Cliff Ave. Flood Mitigation"* (annex), *"Morgan Park Seawall"* vs
+*"Morgan Park Sea Wall"*, and `Flood` vs `Flooding`.
+
+**But it only governs 59% of the actions.** Only **137 of 234** proposed actions have a matching
+worksheet; the other **97 take the annex value unchanged**. Worksheet fill rates where one exists are
+near-total — 142/142 for Project Name, Hazard of Concern, Prioritization and Potential Funding
+Sources; 141/142 for both narratives, Responsible Organization and Estimated Time Required; and only
+59/142 for Local Planning Mechanisms.
+
+**Cost needs a mechanical split.** `Estimated Cost ($)` is numeric live, and **72 of 142** worksheet
+cost cells are not parseable numbers — ranges (`$10,000-$25,000`), rates (`$250/year`), bounds
+(`Less than $1,000,000`), qualitative (`TBD`, `Unknown (Low)`, `Several million dollars`). Load the
+worksheet text verbatim to `Cost Notes` and let the numeric slot fall back to the annex figure.
+
+**A value cell that is empty must read empty, not borrow the next label.** `VRG_1` leaves Level of
+Protection, Useful Life and Estimated Cost blank; walking right for "the next non-empty cell" returns
+the *adjacent label*, so its cost read `"Estimated Benefits (losses avoided):"`. Harmless under
+annex-precedence, load-affecting under worksheet-precedence. Stop the pair-walker at any cell ending
+in `:`.
+
+**The orphan cases are the ones the rule cannot touch.** Where a worksheet's project number has no
+annex counterpart there is nothing to prefer. Four found, one since resolved:
+
+| Jurisdiction | Failure | Status |
+|---|---|---|
+| Muttontown | worksheets `VMP_1/2` against an annex using `VMTT_1/2` | **resolved** — corrected to `VMTT_*` |
+| Cove Neck | `VCN-1` vs `VCN_1` — hyphen for underscore | **resolved** — annex adopts the hyphen |
+| Village of Hempstead | one worksheet numbered `"VOH_1, … VOH_8"` | **resolved** — a programme-level **roll-up**; its cost is exactly the sum of the eight, so precedence must NOT be applied |
+| Oyster Bay (T) | `TOB_14` with no matching annex action | **resolved** — kept as a worksheet-only action; the annex stops at TOB_13 |
+
+**A cheap test for roll-ups:** when one worksheet claims several project numbers, sum the component
+costs. If the sum matches the worksheet cost it is a programme roll-up, and worksheet-precedence must
+not overwrite the components — that would replace N specific projects with one generic description and
+inflate the cost N-fold. Village of Hempstead: 100+180+120+70+95+155+155+130 = 1,005,000, exactly the
+worksheet figure.
+
+⚠ **Project numbers are unique only within a jurisdiction.** `VMP_1` and `VMP_2` are *genuine*
+numbers in **Massapequa Park** and **Munsey Park** — all three of Munsey Park, Muttontown and
+Massapequa Park abbreviate to `VMP`. So join worksheets on `(geoid, project_number)`, and key any
+correction table on `(folder, wrong_number)`; a global fix would rewrite two other jurisdictions'
+real actions. Muttontown's correction was verified three ways before applying — Responsible
+Organization reads *"Village of Muttontown"*, project names match the annex, and the problem
+narratives match near-verbatim.
 
 **POC cells are labelless blobs.** One cell is
 `Mayor Timothy Tenke, Mayor` + agency + street + city/state/ZIP + email + phone, newline-joined with
@@ -212,6 +255,13 @@ not the text.
 
 **Trailing empty rows.** Long Beach's proposed-actions table is `15x8`, not `14x8`. Classify action
 tables by their **column-0 label prefix** (`Project Number`, `Project Name`, …), never by row count.
+
+**Action FIELD labels vary too, not just table shapes.** Two jurisdictions rename the priority field:
+Bayville calls it **`Hazard Ranking`** and Sea Cliff **`PriorityRanking`** (no space). Both hold
+`High`/`Medium`/`Low` — check the values before aliasing, since *Hazard* Ranking could plausibly have
+held hazard names. Keying action records on the raw label drops `Local Priority` for those 7 actions
+**silently**. Canonicalise labels whitespace-insensitively, keep an alias map, and record the original
+label for provenance. A group-cohesion check that counts distinct key sets is what surfaces this.
 
 **Footnote markers fuse into header cells.** Five annexes render the POC header as
 `"1Primary Point of Contact"` — a superscript reference lands in the same run. Exact-match
@@ -242,8 +292,11 @@ Tech there is no need to stage to text first.
 
 Nassau's 11 hazards expand to **14 of MNY's 17 named types**, and the base plan explicitly names the
 other three as not profiled. So `17 = 14 assessed + 3 confirmed-No`, and — unlike Tetra Tech —
-**no `Other` row is needed and `Hazard Name, If Other` stays empty**. The live-schema blocker Suffolk
-hit (`hazard` has no `Other` select option) does not arise.
+**no `Other` row is needed and `Hazard Name, If Other` stays empty** — for the 51 Hagerty annexes.
+
+*(Two later corrections, 2026-08-21: the Suffolk blocker was retired — `Other` **is** storable, with
+271 live rows already using it. And Nassau does produce `Other` rows after all, just not from a Hagerty
+annex: Freeport's independent plan needs **6**. See `independent-jurisdictional-plan.md`.)*
 
 | Hagerty hazard | MNY type(s) | Kind |
 |---|---|---|
