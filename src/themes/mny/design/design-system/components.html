@@ -517,6 +517,109 @@
         </div>
 
         <!-- ============================================================
+             FILTER BAR — pill controls
+             The viewer-facing filter vocabulary used by the county-actions
+             pages (dashboard / County Prioritization). LIVE THEME CONTRACT:
+             the band     = theme.filters styles["pillBar"].filtersWrapper
+             the pill row = …pillBar.conditionRowInline (+ filterLabel)
+             the control  = theme.multiselect styles["pill"] (select) and
+                            theme.input styles["pill"] (search text), selected
+                            via filters.pillBar.controlStyle = "pill".
+             Group headers + the result count are SIBLING sections (lexical
+             eyebrow + a one-cell count Card), not filter chrome.
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-6">Filter Bar (Pill Controls)</h2>
+
+            <div data-dms="section" data-name="filter-bar" class="grid grid-cols-1 gap-6">
+
+              <!-- group headers + result count row -->
+              <div>
+                <div class="component-group-title">Group header row — eyebrow · result count · clear all</div>
+                <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+                  <p class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-700">Find &amp; Filter</p>
+                  <span class="font-proxima text-[13px] text-mny-700">Showing <span class="font-[700] tabular-nums">474</span> actions</span>
+                  <button class="font-proxima text-[12px] font-[600] text-mny-400 hover:text-mny-900 underline underline-offset-2">Clear all</button>
+                  <p class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-700 ml-auto">Action Development</p>
+                </div>
+              </div>
+
+              <!-- the band itself -->
+              <div>
+                <div class="component-group-title">Filter band — search pill · select pills (resting / valued / focused)</div>
+                <div class="w-full bg-[#F3F8F9] rounded-[12px] border border-[#E0EBF0] px-4 py-3 flex flex-wrap items-center gap-2">
+                  <!-- search pill: the row draws the box; the input inside is bare -->
+                  <label class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] focus-within:border-[#6D96AE] transition-colors">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Search</span>
+                    <input type="text" placeholder="Search actions…" disabled class="w-[150px] bg-transparent border-0 outline-none p-0 font-proxima text-[13px] text-[#2D3E4C] placeholder:text-[#6D96AE]">
+                  </label>
+                  <!-- select pill, resting: label · "All" placeholder · caret -->
+                  <span class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE] transition-colors cursor-pointer">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Jurisdiction</span>
+                    <span class="font-proxima text-[13px] text-[#6D96AE]">All</span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </span>
+                  <!-- select pill with a selected value token -->
+                  <span class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE] transition-colors cursor-pointer">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Status</span>
+                    <span class="inline-flex items-center gap-x-1 rounded-full bg-[#E0EBF0] px-2 py-0.5 font-proxima text-[12px] font-[600] text-[#37576B] whitespace-nowrap">Proposed
+                      <!-- icon: XMark -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+                    </span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </span>
+                  <!-- select pill, focused/open -->
+                  <span class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#6D96AE] transition-colors cursor-pointer">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Hazard</span>
+                    <span class="font-proxima text-[13px] text-[#6D96AE]">All</span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-[#6D96AE] rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </span>
+                </div>
+              </div>
+
+              <!-- open menu -->
+              <div>
+                <div class="component-group-title">Select menu (open) — search input · option rows · hover row</div>
+                <div class="w-[220px] p-1.5 rounded-[12px] bg-white shadow-lg ring-1 ring-[#C5D7E0]">
+                  <input type="text" placeholder="search…" disabled class="block w-full appearance-none rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] border border-[#E0EBF0] bg-[#F3F8F9] text-[#2D3E4C] placeholder:text-[#6D96AE]">
+                  <div class="mt-1">
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] bg-[#F3F8F9] cursor-pointer">Proposed</div>
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] hover:bg-[#F3F8F9] cursor-pointer">In-Progress</div>
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] hover:bg-[#F3F8F9] cursor-pointer">Completed</div>
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] hover:bg-[#F3F8F9] cursor-pointer">Discontinued/Paused</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- attribute checkboxes -->
+              <div>
+                <div class="component-group-title">Key-characteristic checkboxes — ANDed attributes, not exclusive facets</div>
+                <div class="flex flex-wrap gap-x-4 gap-y-2">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" checked disabled class="size-4 rounded border-[#C5D7E0] text-[#2D3E4C]">
+                    <span class="font-proxima text-[12px] text-[#37576B] whitespace-nowrap">Critical Facility</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" disabled class="size-4 rounded border-[#C5D7E0]">
+                    <span class="font-proxima text-[12px] text-[#37576B] whitespace-nowrap">Potential Buyout</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" disabled class="size-4 rounded border-[#C5D7E0]">
+                    <span class="font-proxima text-[12px] text-[#37576B] whitespace-nowrap">RL/SRL</span>
+                  </label>
+                </div>
+                <p class="state-label mt-2">Not yet expressible live — Filter controls need real columns; the flag fields live in JSONB until the next actions_cleaned schema rev.</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
              PILLS / TAGS / LABELS
              ============================================================ -->
         <div data-dms="group" data-name="content" class="w-full mb-6">
