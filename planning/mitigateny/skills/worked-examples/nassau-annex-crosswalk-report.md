@@ -5,7 +5,7 @@
 **Structure verified against:** all 51 readable annexes (corpus pre-flight, §7)
 **Target schema:** the **live** sources — Actions `1029065` · Roles `1473295` · Participation `1473468` · Hazards of Concern `1473470`/`1473471` · Capabilities_Catalogue `1068273`.
 `planning/mitigateny/files/MNY Workbook - 08142026.xlsb` is **illustrative only** (owner, 2026-08-21).
-**Crosswalk:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` — 180 field-level mappings
+**Crosswalk:** `references/mny-transcribe/Nassau/context/nassau-annex-crosswalk.csv` — 185 field-level mappings
 **Profile written:** [`profiles/hagerty.md`](../profiles/hagerty.md)
 **Date:** 2026-08-20 · **owner decisions resolved 2026-08-21, revised same day (§5)**
 
@@ -50,14 +50,14 @@ nothing in a Hagerty annex to put in it.
 > `9x2` profile boxes carry a real authored `Impact` narrative — so Nassau County gets a genuine
 > transcription where its 51 jurisdictions get a derived sentence. See §5g.
 
-### Where the 180 mappings land
+### Where the 185 mappings land
 
 | Target dataset | Mappings | What lands there |
 |---|---:|---|
-| **Actions** | 62 | Proposed (14-field transposed tables) + prior-cycle + the MAW worksheets |
-| **Capabilities** | 26 | Tables 3–6 — regulatory, staffing, fiscal, classifications |
+| **Actions** | 64 | Proposed (14-field transposed tables) + prior-cycle + the MAW worksheets |
+| **Capabilities** | 28 | Tables 3–6 — regulatory, staffing, fiscal, classifications |
 | **Roles** | 24 | Annex POC table (2/jurisdiction) + **base-plan roster (190 people)**, one row per person **per role** |
-| **Hazards of Concern** | 25 | Jurisdictions from Table 2; **the county row entirely from the base plan**, where the prose is real |
+| **Hazards of Concern** | 28 | Jurisdictions from Table 2; **the county row entirely from the base plan**, where the prose is real |
 | **Participation** | 8 | **Base plan only** — 9 meetings → 11 rows |
 | **Jurisdictions** (lexical) | 7 | Development trends, capability summary, NFIP, problem areas, risk overview, planning process |
 | *(no target)* | 22 | boilerplate, auto-populated, the five remaining omissions, and Freeport |
@@ -66,19 +66,19 @@ Dispositions after the 2026-08-21 decisions (the pre-decision counts are in the 
 
 | Disposition | Count | Meaning |
 |---|---:|---|
-| `dataset-fill` | 92 | Transcribe into a forms dataset |
-| `derived` | 23 | Must be inferred — flag, never present as a direct read |
-| `constant` | 17 | Fixed value per source table (`Included in Last HMP=TRUE`, `State or Local=Local`) |
-| `gap-empty` | 17 | The column exists; the plan has no source; left empty |
-| `boilerplate` | 10 | Identical across all 51 annexes; transcribe nothing |
+| `dataset-fill` | 94 | Transcribe into a forms dataset |
+| `derived` | 32 | Must be inferred — flag, never present as a direct read |
+| `constant` | 14 | Fixed value per source table (`Included in Last HMP=TRUE`, `State or Local=Local`) |
+| `gap-empty` | 16 | The column exists; the plan has no source; left empty |
+| `boilerplate` | 11 | Identical across all 51 annexes; transcribe nothing |
 | `auto-populated` | 5 | MNY 2.0 generates it (census, NFIP claims, Hazus, declarations) |
 | `filter` | 4 | Include/exclude — but see §5g, `No` filters only when the detail cell is empty |
-| `gap-partial` | 2 | Source exists but the fit is poor |
+| `gap-partial` | 3 | Source exists but the fit is poor |
 | `superseded` | 1 | A mapping this report proposed that a later decision retired |
 | `lossy` / `gap-weak` / `accepted-loss` | 3 | One each |
 | `separate-track` | 1 | Freeport — a different document class entirely |
 
-**`gap-no-target` is zero, and only five items have no home at all** — see the omissions register in
+**`gap-no-target` is zero, and only six items have no home at all** — see the omissions register in
 §5f. No schema additions were made; the reduction came from reading the *live* sources instead of the
 workbook, which turned three declared gaps into real columns.
 
@@ -791,7 +791,7 @@ Same split that worked for Suffolk, with one change of emphasis.
 | **Explicit file manifest** | 52 folders → 1 annex file + N MAW files | CSV | Nine folders need a human decision (§7.8). Committing the manifest makes the extraction reproducible. |
 | **Review CSVs** | Roles, Capabilities, Hazards of Concern, Participation | `.csv`, one per dataset | The owner-review surface for the flat data. **Not an ingestion format** — nothing imports it (see below). |
 | **Actions tab** | 234 proposed + 284 prior + MAW enrichment | `.xlsx` | No consultant-delivered actions workbook exists for Nassau — **all of it is ours to build.** |
-| **Per-jurisdiction markdown** | the 6 Jurisdictions lexical columns | `.md` | Owner-review surface for the prose. |
+| **Per-jurisdiction markdown** | the 7 Jurisdictions lexical columns | `.md` | Owner-review surface for the prose. |
 | **Lexical JSON payloads** | same 6 columns | `.json` | Compiled from the markdown; feeds `dms dataset update`. |
 
 **The one structural difference from Suffolk: there is no consultant actions workbook.** Tetra Tech

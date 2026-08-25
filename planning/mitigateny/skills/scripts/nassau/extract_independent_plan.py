@@ -158,7 +158,9 @@ def main():
                 fieldcov[k] += 1
     rec['counts'] = {'spine_headings': len(spine), 'goals': len(rec['goals']),
                      'objectives': len(rec['objectives']), 'actions': len(rec['actions']),
-                     'committee': len(members), 'capability_sections': len(caps),
+                     # len(ded), not len(members) -- the DEDUPED list
+                     'committee': len(ded),
+                     'capability_sections': len(caps),
                      'hazard_profiles': len(haz)}
     rec['action_field_coverage'] = dict(fieldcov)
 

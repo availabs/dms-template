@@ -471,6 +471,28 @@ What the Nassau corpus taught, in the order it bites:
   Annex.pdf` is the Village's own standalone 177-page hazard mitigation plan — seven chapters, its own
   hazard taxonomy, none of the consultant's spine headings. **Probe structure, not the filename**, and
   route anything that fails the spine check to its own crosswalk instead of the shared parser.
+### Project numbers are unique only WITHIN a jurisdiction — join on (geoid, number)
+
+Never join a worksheet, workbook row or supplementary document to an action on the project number
+alone. On Nassau, **`VMP_1` and `VMP_2` each appear in two different annexes** — Massapequa Park and
+Munsey Park — because *Munsey Park*, *Muttontown* and *Massapequa Park* all abbreviate to `VMP`. 285
+distinct numbers cover 287 actions.
+
+Two consequences, and the second is the dangerous one:
+
+- **Join on `(geoid, project_number)`.** A global join would have silently attached one
+  jurisdiction's worksheet detail to another's action — no error, no mismatch warning, just wrong
+  content under the wrong municipality.
+- **Key any correction table on the folder too.** Muttontown's worksheets were numbered `VMP_*`
+  against an annex using `VMTT_*`. Correcting `VMP_1 → VMTT_1` keyed on the *number* would have
+  rewritten Massapequa Park's and Munsey Park's genuine actions. Key it on
+  `(folder, wrong_number)`.
+
+**Verify a renumbering three ways before applying it.** For Muttontown: `Responsible Organization`
+read *"Village of Muttontown"* on both worksheets, the project names matched the annex, and the
+problem narratives matched near-verbatim. Name agreement alone would not have been enough, because
+neighbouring villages copy each other's boilerplate.
+
 ### The workbook is ILLUSTRATIVE ONLY — the live source is the schema
 
 **Standing rule (owner, 2026-08-21):** the MNY workbook *may contain errors and inconsistencies*.
@@ -670,6 +692,148 @@ next person doesn't relitigate them.
 
 Note `pyxlsb` is **read-only** — writing means emitting `.xlsx` or driving Excel. Check for `~$`
 lock files before writing anywhere near a workbook someone has open.
+
+### Phase 5a — Reconcile against what is already in the system BEFORE loading anything
+
+**Standing requirement (owner, 2026-08-24). Never load a flat dataset without first checking
+whether the rows are already there.** A county is rarely a blank slate: Nassau already held
+**189 Actions rows across 38 of its 70 jurisdictions** before a single row of its 2020 plan was
+loaded. Inserting blind would have built a parallel duplicate set for over half the county.
+
+A matched row carries the existing row's **id** and becomes an **UPDATE**; everything else stays
+an INSERT. Payload rows get `_op` (`insert`/`update`) and `_existing_id`, and the review surface
+must show both — which existing record a row will overwrite is the most consequential thing a
+reviewer can check.
+
+#### Scope a county by GEOID. Never by the `county` name column
+
+**`county` is expected to be deprecated** (owner, 2026-08-24), and it is a human-readable name —
+the same thing this skill already tells you not to join on, because names drift ("Suffolk County"
+vs "Suffolk (County)"). Scope every reconciliation query on the **geoid** columns.
+
+This matters more here than for an ordinary join. If the scoping query breaks, it does not error
+— it returns **0 rows**, which reads as *"this county has no existing rows"*, which is precisely
+the wrong answer that causes a duplicate load. A name column that may vanish is not a safe thing
+to hang that on.
+
+Pick the strategy from the geoid columns, in this order:
+
+1. **`geoid_juris` declared `select`** → one small filtered query per jurisdiction
+2. **`geoid_county` declared `select`** → one filtered query for the county
+3. **neither is filterable** → **full fetch, match geoid client-side.** Size it first.
+
+#### ⚠ Why the declared type decides: the `--filter` trap
+
+`--filter` is compiled from the column's **declared** type. **A filter on any column declared
+`multiselect` returns 0 rows regardless of what is stored.** Measured across the five MNY forms
+datasets, 2026-08-24:
+
+| Dataset | `geoid_juris` | `geoid_county` / `county_geoid` | Strategy |
+|---|---|---|---|
+| Actions | `select` | `multiselect` | per-jurisdiction |
+| Capabilities | `select` | `select` | per-jurisdiction |
+| Hazards of Concern | `multiselect` | `select` | by county geoid |
+| Roles | `multiselect` | `multiselect` | **full fetch** (516 statewide) |
+| Participation | `multiselect` | `multiselect` | **full fetch** (324 statewide) |
+
+**Roles and Participation have no filterable geoid column at all.** That absence is exactly what
+tempts you toward the county-name filter — it works, so it looks fine. Take the full fetch
+instead: both are tiny. **If a dataset in that position were large, that is a real problem to
+raise, not to paper over with a name filter** — so size it and refuse loudly above a threshold.
+
+This also supersedes the narrower rule from the Suffolk load ("the filter fails on array-valued
+columns"). Actions stores `county` as a **bare string** and still cannot be filtered on it, so
+*"is the stored value an array?"* is the wrong question. Read the declared type.
+
+**Verify every zero.** Re-run the same query shape against a county known to hold data. A real
+zero reproduces as non-zero there; a broken filter returns 0 for both. Nassau's Roles and
+Participation zeros were only trustworthy once Suffolk returned non-zero for the same shape.
+Build this into the fetch tool as a `--verify` flag so it cannot be skipped.
+
+**Cross-check the strategy against a known number where one exists.** Fetching Hazards of
+Concern on `geoid_county` returned exactly **1,190 rows across 70/70 jurisdictions**, matching
+the independently-cached seeded grid — which validates the whole approach rather than just that
+one query. Look for an opportunity like this in every county; it is the cheapest real assurance
+available.
+
+**Filter on `id` and text columns freely** — both are declared plainly and work. `action_name=…`
+returning exactly 1 row is a useful smoke test that the query machinery is alive at all before
+you conclude anything from a zero.
+
+#### On a matched row, the uploaded fields overwrite the existing fields
+
+**Standing rule (owner, 2026-08-24). No per-column exceptions.** The transcribed plan is the
+authority on every field it carries. `dataset update --data` shallow-merges at the top level, so
+columns you do not send survive untouched — which is what makes a plain overwrite safe.
+
+**A shorter value is not evidence of a mistake.** Removing detail is frequently a deliberate
+editorial choice by the plan's authors, and the transcription pipeline is not entitled to
+second-guess it. Do not build append rules, do-not-overwrite-the-name rules, or
+skip-the-trivial-diff rules; they substitute the transcriber's judgement for the plan's.
+
+Two things to do anyway, because they are cheap and they are not second-guessing:
+
+- **Check the curation fields specifically.** Workflow state (`county_priority`,
+  `mitigation_action_readiness`, `application_readiness`, `project_maturity`, `dhses_comments`,
+  `fema_comments`, grant-submission) is *not* plan content and is not yours to overwrite. On
+  Nassau all six were empty on all 131 matched rows, so the question never arose — but confirm
+  it rather than assuming, because a county mid-review would have them populated.
+- **Classify the diffs for sampling, not for gating.** Tag each overwrite (adds detail /
+  normalised into a select vocabulary / same digits reformatted / case-only / shorter) so a
+  reviewer can sample a thousand changes without reading a thousand rows. Nassau's 982 broke down
+  to ~50% additive-or-normalisation and 78 shortenings, of which 5 were prose. That is a useful
+  map. It is not a veto.
+
+#### Pick the match mode from the field, not by habit
+
+| Mode | Use for | Why |
+|---|---|---|
+| **Jaccard** on token sets | Actions, Capabilities | Identity lives in free text and gets reworded between cycles |
+| **Exact normalised key** | Roles `(name, role)`, Participation `(meeting_name, date)`, HOC `(geoid, hazard)` | A natural key exists |
+
+**Do not run Jaccard on short structured fields.** "Ann Smith" vs "Ann Jones" scores 0.33 on a
+two-token set, and any threshold low enough to catch real spelling variants would also merge
+different people. Normalise case and punctuation, then require an exact match.
+
+#### The discriminator guard — what makes Jaccard matching safe
+
+Jaccard rates these **above** a 0.85 name-only threshold, and they are **different facilities**:
+
+| Score | | |
+|---|---|---|
+| 0.925 | Well **1** generator | Well **4** Generator |
+| 0.886 | Generator Installation – **East** End Fire House | … **West** End Fire House |
+| 0.867 | Generator Replacement – **Headquarters** Fire House | … **Southside** Fire House |
+
+Mitigation corpora are full of these: one village had **eight** near-identically-named fire-house
+generator projects. Two bugs compounded it — a tokeniser dropping tokens of ≤2 characters made
+`1` and `4` vanish, so *"Well 1 generator"* and *"Well 4 Generator"* became the **same token
+set**. A greedy one-to-one assignment did reject them, but only because the correct pair happened
+to claim the slot first. **That is ordering luck, not correctness.**
+
+**The rule: whatever tells two names apart must match.** If the symmetric difference of the two
+name token sets contains a number or a compass direction, refuse the pair outright regardless of
+score. On Nassau this refused 148 pairs — with **0 refusals where the two names were identical**,
+which is the check that proves the guard is not over-eager. Always measure that.
+
+#### Four more practices worth copying
+
+- **Assign strictly one-to-one, greedily by descending score.** Two payload rows carrying the
+  same `_existing_id` would update one record twice and silently lose one. Assert it: Nassau
+  ended with 131 distinct ids, none claimed twice.
+- **Report below the threshold.** A similarity cut-off is a judgement call, so write every
+  candidate pair from a low floor upward into a review CSV, marked applied / refused /
+  below-threshold. Near-misses are exactly what a reviewer needs to see. Apply nothing below the
+  threshold.
+- **Sanity-check both extremes of the applied set.** On Nassau the *lowest*-scoring applied
+  matches turned out to have **identical names**, scoring low only because the existing
+  descriptions were shorter — which is what the name-only rule is for. Checking only the top
+  would have missed that the rule was carrying the work.
+- **Self-test a code path that had nothing to match.** Nassau had 0 existing Roles and
+  Participation rows, so those runs exercised the key path against nothing and proved nothing.
+  Feed the payload back in as the "existing" set: every row must match itself exactly once. That
+  also surfaces empty keys and within-jurisdiction key collisions, both of which silently
+  guarantee a duplicate insert later.
 
 ### The Jurisdictions write path (proven twice)
 
@@ -1050,6 +1214,20 @@ appears.
       high-population columns you have no mapping for, declared-vs-stored types, checkbox and geoid
       storage, select vocabularies, and any second population inside the dataset
 - [ ] **Cross-table key sets asserted equal** before mapping; join keys normalised; unmapped keys fail loudly
+- [ ] **Existing rows fetched and reconciled BEFORE any load** — matched rows carry `_existing_id`
+      and become UPDATEs, not duplicate inserts
+- [ ] **County scoped by GEOID, never by the `county` name column** (it is expected to be
+      deprecated, and a broken scoping query returns 0 rather than erroring)
+- [ ] **Filter column chosen from the DECLARED type** — anything declared `multiselect` returns 0
+      rows whatever the content; where no geoid column is filterable, full-fetch and size it first
+- [ ] **Every zero verified** against a county known to hold data; a real zero reproduces as
+      non-zero there, a broken filter returns 0 for both
+- [ ] **Match mode picked from the field** — Jaccard for free-text identity, exact normalised key
+      where a natural key exists; never Jaccard on short structured fields like a person's name
+- [ ] **Discriminator guard on** — refuse a pair whose names are told apart by a number or a
+      compass direction, and assert **0 refusals where the names are identical**
+- [ ] **Match assignment asserted strictly one-to-one**; sub-threshold near-misses reported, not applied
+- [ ] **Both extremes of the applied match set eyeballed**, not just the top scores
 - [ ] **Insert path proven with one throwaway row** (create → fill → query → delete) before the batch
 - [ ] **Created ids recorded before each fill**; double-insert guard verified to actually fire
 - [ ] Update-in-place targets backed up; non-default content refused; no-collateral-change asserted
