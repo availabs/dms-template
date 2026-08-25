@@ -4,6 +4,7 @@
  * quietly-incomplete published year, or (b) exceeds the pg pool and stalls.
  */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'fs';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -79,10 +80,27 @@ describe('runPool', () => {
     expect(calls).toBe(1);
   });
 
-  it('caps the default at the pg pool size', () => {
-    // pg defaults to max 10 connections; above that, workers queue on
-    // pool.connect() instead of doing work.
+  it('never exceeds either connection pool it depends on', () => {
+    // Replaces an assertion of `MAX_CONCURRENCY < 10`, whose premise ("pg defaults to max 10") stopped
+    // being true when concurrency was raised to 16 on 2026-08-23. A hardcoded number could not express
+    // the real invariant, which is a coupling across three files: concurrency must not exceed the pg
+    // pool OR the ClickHouse client's socket cap, or workers queue on connect() instead of working.
+    // Reading both from source means raising concurrency without raising a pool fails HERE rather than
+    // silently halving throughput in production.
     expect(DEFAULT_CONCURRENCY).toBeLessThanOrEqual(MAX_CONCURRENCY);
-    expect(MAX_CONCURRENCY).toBeLessThan(10);
+
+    const SRV = new URL('../../../src/dms/packages/dms-server/', import.meta.url);
+    const pgMax = JSON.parse(
+      readFileSync(new URL('src/db/configs/npmrds2.config.json', SRV), 'utf8')
+    ).max;
+    const chSrc = readFileSync(new URL('src/db/adapters/clickhouse.js', SRV), 'utf8');
+    const chMatch = chSrc.match(/max_open_connections:\s*(\d+)/);
+
+    // If either probe stops finding its value, fail loudly rather than vacuously pass.
+    expect(pgMax, 'npmrds2.config.json must set an explicit pg pool `max`').toBeGreaterThan(0);
+    expect(chMatch, 'could not read max_open_connections from the clickhouse adapter').toBeTruthy();
+
+    expect(MAX_CONCURRENCY).toBeLessThanOrEqual(pgMax);
+    expect(MAX_CONCURRENCY).toBeLessThanOrEqual(Number(chMatch[1]));
   });
 });

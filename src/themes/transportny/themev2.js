@@ -96,6 +96,13 @@ const textSettings = {
     displayMD:   `${F_DISP} font-semibold text-[28px] leading-[1.1] ${INK}`,
     displaySM:   `${F_DISP} font-medium text-[22px] leading-[1.2] ${INK}`,
     displayXS:   `${F_DISP} font-medium text-[18px] leading-[1.25] ${INK}`,
+    // 26px UPPERCASE — the ladder had no rung between `displayLG` (38px, uppercase)
+    // and `displayMD` (28px, proper case), and the NPMRDS Reports header drops its
+    // page title to 26px uppercase so it sits on the search row's baseline
+    // (npmrds-reports.html revision 9: "fit the title the search bar and the buttons
+    // on one line"). ADDITIVE — neither neighbour changes, so every existing page
+    // title renders exactly as before.
+    displayMDCaps: `${F_DISP} font-semibold text-[26px] leading-[1.05] tracking-tight uppercase ${INK}`,
 
     // ── Display italic — editorial pull quotes ──
     displayItalicLG: `${F_DISP} italic font-medium text-[28px] leading-[1.2] ${INK_2}`,
@@ -123,6 +130,13 @@ const textSettings = {
     // Accent meta — the amber data callout under hero KPIs ("51% non-recurrent —
     // incidents, work zones, weather"). Mono like metaMD, NOT uppercase, amber-700.
     metaAccent: `font-mono! text-[12px]! leading-[1.45] tabular-nums font-medium text-[#B45309]!`,
+    // ── Emphasised metric pair (additive, 2026-08-24) — a mono/tabular figure that needs
+    // more weight than metaMD/metaAccent without competing with a statXL headline. Added for
+    // the congestion Cost-of-Congestion card, where the recurrent / non-recurrent split sat at
+    // 12px under a 52px total and was reported unreadable (QA 2211340). `metaStrongAccent` is
+    // the amber twin so the non-recurrent figure keeps its colour distinction when both grow.
+    metaStrong: `font-mono! text-[15px]! leading-[1.35] tabular-nums font-semibold ${INK}!`,
+    metaStrongAccent: `font-mono! text-[15px]! leading-[1.35] tabular-nums font-semibold text-[#B45309]!`,
     // Chip — the bordered as-of badge on data cards ("2025 · statewide",
     // "thru 2026-04"). Mono micro-caps in a hairline rounded box; works as a
     // Card valueFontStyle or a Lexical /Style token.
@@ -146,6 +160,15 @@ const textSettings = {
     // label wraps to a second line in a card column and costs 22px of band height.
     // ADDITIVE — `kicker` itself is unchanged, so every band head renders as before.
     kickerXS: `font-mono! text-[10px]! uppercase tracking-[0.18em] text-[#CA8A04]!`,
+    // Group-head kicker — the numeral that heads a template GROUP inside a band
+    // (npmrds-reports.html: `font-mono text-[10.5px] uppercase tracking-[0.2em]
+    // text-[#CA8A04]`, byte-for-byte). Why it cannot be `kicker`: `kicker` declares no
+    // leading, and a lexical section's own wrapper sets an ABSOLUTE `leading-[22.4px]`
+    // that every child inherits — so a one-line kicker paragraph measured a 22.4px line
+    // box against the mockup's 15.75px (P7, 2026-08-20; 9 places on the reports page).
+    // `leading-[1.5]` makes the line box relative to the token's own size again.
+    // ADDITIVE — `kicker` is the BAND kicker on every transportny page and is unchanged.
+    kickerSM: `font-mono! text-[10.5px]! leading-[1.5] uppercase tracking-[0.2em] text-[#CA8A04]!`,
     nav:    `${F_DISP} font-medium text-[13.5px] uppercase tracking-wide`,
 
     // Card title — Oswald uppercase 18px (product / feature cards)
@@ -707,6 +730,22 @@ const button = {
       button: "inline-flex items-center leading-[15px] font-mono text-[10px] uppercase tracking-wider text-slate-500 hover:text-[#1F3F8F] cursor-pointer",
     },
     {
+      // linkMonoRow — `linkMono` plus the ROW GUTTER, for a footer/nav run of mono deep-links
+      // laid out as inline siblings in one lexical paragraph. Why the gutter has to live in the
+      // button style: the mockup's footer link row is `flex flex-wrap gap-x-6`, and a lexical
+      // PARAGRAPH is the only primitive that flows-and-wraps like that (a layout-container is a
+      // grid — one item per link measured +65.9px at 390 because a grid cannot reflow) — but a
+      // lexical `button` node has no margin knob, so six `linkMono`s in one paragraph rendered
+      // as "HOMEMACRO-VIEWREPORTROUTE-COMPARISONMAP-21DOCS" (P7, 2026-08-20). `mr-6` IS the
+      // mockup's `gap-x-6` (24px) and, unlike `px-3`, it does not inset the first link from the
+      // band's left edge. NO `last:mr-0`: the lexical ButtonNode wraps each button in its own
+      // element, so `last:` matched EVERY link and cancelled the gutter outright (measured — the
+      // links closed back up to 0px). The trailing 24px after the final link is harmless.
+      // ADDITIVE — `linkMono` itself is unchanged.
+      name: "linkMonoRow",
+      button: "inline-flex items-center mr-6 font-mono text-[11px] uppercase tracking-[0.14em] text-[#475569] hover:text-[#1F3F8F] cursor-pointer",
+    },
+    {
       // rail — full-width product-panel CTA (landing "exit panels"): navy bar,
       // white sign type left, gold arrow right; brightens on hover.
       name: "rail",
@@ -1206,6 +1245,23 @@ const dataCard = {
       //     description, 2 for a stacked title+description row).
       proseSMClamp1: `${F_SANS} text-[12.5px]! leading-[1.55]! text-slate-500! line-clamp-1`,
       proseXSClamp2: `${F_SANS} text-[11.5px]! leading-[1.5]! text-slate-500! line-clamp-2`,
+      // proseSMClamp2 — the template/result card's two-line description
+      // (npmrds-reports.html: `font-proxima text-[12px] leading-[1.5] text-slate-600
+      // line-clamp-2`). ADDITIVE, and NOT proseXSClamp2 with a different colour: that
+      // token is 11.5px/slate-500 and is already in use, so tightening its colour
+      // would change every card that clamps today (feedback_card_edits_bc). 12.5px is
+      // the brand's `proseSM` rung; `text-slate-600` is the design's body ink, the
+      // same disagreement proseSMInk exists to resolve.
+      proseSMClamp2: `${F_SANS} text-[12.5px]! leading-[1.5]! text-slate-600! line-clamp-2`,
+      // proseSMClamp2's ONE-LINE sibling, in the placeholder colour — the search trigger's
+      // prompt. The mockup gives that prompt `truncate` (one line, ellipsis) because the
+      // trigger is a fixed-height control; a Card value cell has no truncation knob at all
+      // (`wrapText` only toggles `whitespace-pre-wrap`), so the prompt wrapped onto a second
+      // line and pushed the header off the mockup's 40px row — measured 426.7px of text in a
+      // 357.3px cell at 1480 (P7, 2026-08-20). `line-clamp-1` is the same mechanism
+      // proseSMClamp2 already uses on this page's template cards. slate-500 because a
+      // placeholder is not body copy (the mockup: `text-slate-500`). ADDITIVE.
+      proseSMClamp1: `${F_SANS} text-[12.5px]! leading-[1.5]! text-slate-500! line-clamp-1`,
       // proseSMTrunc1 — `proseSMClamp1` plus `break-all`, i.e. the mockup's `truncate`
       // rendered faithfully. ADDITIVE, not a change to proseSMClamp1: the two differ in
       // where the ellipsis lands, and both are legitimate.
@@ -1304,6 +1360,8 @@ const dataCard = {
       ctaRailSlate: `${F_DISP} flex items-center justify-between h-11 px-5 w-[calc(100%+2px)] -mx-px -mb-px rounded-b-[7px] bg-[#37576B] hover:bg-[#1f3450] transition-colors text-white! uppercase text-[13px]! tracking-wide no-underline! cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]`,
       ctaRailGold: `${F_DISP} flex items-center justify-between h-11 px-5 w-[calc(100%+2px)] -mx-px -mb-px rounded-b-[7px] bg-[#8A5F03] hover:bg-[#6d4b02] transition-colors text-white! uppercase text-[13px]! tracking-wide no-underline! cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]`,
       metaAccent: `${F_MONO} text-[12px]! leading-[1.45] tabular-nums font-medium text-[#B45309]!`,
+      metaStrong: `${F_MONO} text-[15px]! leading-[1.35] tabular-nums font-semibold ${INK}!`,
+      metaStrongAccent: `${F_MONO} text-[15px]! leading-[1.35] tabular-nums font-semibold text-[#B45309]!`,
       // As-of / methodology badge. Full-width (fills its cell so stacked chips'
       // borders align) with symmetric vertical padding. The inner value wrapper
       // ships `text-end justify-items-end min-h-[20px]` (column justify:'right' +
@@ -1313,6 +1371,29 @@ const dataCard = {
       // would hit every value cell). `!` beats theme.value's merged `px-3 pb-3`.
       chip: `${F_MONO} text-[9.5px]! uppercase tracking-[0.14em] leading-none text-slate-400! border border-zinc-950/10 rounded w-full! px-2! py-1! text-center! [&_div]:text-center [&_div]:min-h-0`,
       metaXS: `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-slate-400!`,
+      // metaXSLink — metaXS in the brand's action blue, for a card's foot LINK
+      // ("use template →", "open →"; npmrds-reports.html draws it
+      // `font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#1F3F8F]`). A link
+      // cell's valueFontStyle is resolved against THIS map and lands on the anchor
+      // itself, so the blue and the no-underline have to live here — the `button`
+      // theme's linkMono* styles are only reachable from a Lexical button node.
+      // ADDITIVE: metaXS is unchanged, so every meta cell renders as before.
+      metaXSLink: `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-[#1F3F8F]! no-underline!`,
+      // plateEmpty — patterns.html §14's "no preview" tile: the 4:5 plate footprint,
+      // kept so the row stays on rhythm, saying what is missing rather than showing a
+      // broken image. Box-shaped tokens must carry their own width (`w-full!`) and
+      // beat theme.value's merged `px-3 pb-3` — same rules as `chip` above, which is
+      // also why the `[&_div]` descendants are re-centred and un-min-heighted.
+      // This is the fallback rung of the plate's preference order (a captured
+      // thumbnail at usable resolution → a layout-derived shape → this); the first
+      // two need a re-capture pipeline and a new column type (task Escalations).
+      plateEmpty: `${F_MONO} text-[8px]! uppercase tracking-[0.14em] leading-none text-slate-400! border border-zinc-950/10 rounded-[4px] bg-[#ECEEF2] w-full! aspect-[4/5] flex items-center justify-center px-1! py-1! text-center! [&_div]:text-center [&_div]:min-h-0`,
+      // ── Parity with textSettings — a Card cell resolves valueFontStyle HERE, so a
+      // token that exists only in textSettings silently falls back to `textXS`.
+      // These three were missing; adding them changes nothing that already renders.
+      displayMDCaps: `${F_DISP} font-semibold text-[26px]! leading-[1.05] tracking-tight uppercase ${INK}`,
+      btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+      btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
       // ── Unit suffix in a list row (npmrds-home § 01: `ratio` / `veh-hr` / `tons/yr`).
       // ADDITIVE, not a change to metaXS: the design draws this run at `text-[9px]`
       // where metaXS is 9.5px, and metaXS is shared by as-of badges and card meta all
@@ -1496,6 +1577,13 @@ const pill = {
     { name: "status_bad",  wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B] [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-[#EF4444]" },
     { name: "status_na",   wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-100 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-slate-400" },
     { name: "route", wrapper: "inline-flex items-center gap-2 h-8 pl-2.5 pr-2 rounded-full bg-white text-slate-700 shadow-sm border border-zinc-950/5 text-[12.5px] font-proxima" },
+    // chip_meta — the design's NEUTRAL metadata chip: a hairline box with mono
+    // micro-caps and no status dot (npmrds-reports.html's difficulty chips, which
+    // draw beginner / intermediate / advanced identically because difficulty is a
+    // label, not a verdict). The status_* styles all carry a coloured ::before dot,
+    // which would read as a state. ADDITIVE — appended, and `options.activeStyle`
+    // still points at styles[0], so nothing that resolves a pill today moves.
+    { name: "chip_meta", wrapper: "inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500" },
   ],
 };
 

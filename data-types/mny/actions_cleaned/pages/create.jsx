@@ -37,8 +37,11 @@ const Create = ({ context, source }) => {
 
 	useFetchSources({ falcor, falcorCache, pgEnv, startLoading, stopLoading });
 
-	const [locationsSource, setLocationsSource] = React.useState(null);
-	const [locationsView, setLocationsView] = React.useState(null);
+	const [jurisdictionsSource, setJurisdictionsSource] = React.useState(null);
+	const [jurisdictionsView, setJurisdictionsView] = React.useState(null);
+
+	const [countiesSource, setCountiesSource] = React.useState(null);
+	const [countiesView, setCountiesView] = React.useState(null);
 
 	const requestArgs = React.useMemo(() => {
 		const args = {
@@ -47,14 +50,19 @@ const Create = ({ context, source }) => {
 			actionsSource: actionsSource?.source_id,
 			actionsView: actionsView?.view_id,
 
-			locationsSource,
-			locationsView
+			jurisdictionsSource,
+			jurisdictionsView,
+
+			countiesSource,
+			countiesView
 		}
 		if (source.source_id) {
 			args.sourceId = source.source_id;
 		}
 		return args;
-	}, [source, actionsSource, actionsView, locationsSource, locationsView]);
+	}, [source, actionsSource, actionsView,
+			jurisdictionsSource, jurisdictionsView,
+			countiesSource, countiesView]);
 
 	const okToSend = React.useMemo(() => {
 		if (!API_HOST) return false;
@@ -107,19 +115,35 @@ const Create = ({ context, source }) => {
 			</div>
 
 			<SourceAndViewSelectors
-				label="Select the Actions Location Source and View (precision + geometry)"
+				label="Select a Source and View for Jurisdiction Geometries"
 				Select={ Select }
 				falcor={ falcor }
 				falcorCache={ falcorCache }
 				pgEnv={ pgEnv }
-				categories={ ["Action Locations"] }
-				columns={ ["action_id", "precision"] }
-				source_id={ locationsSource }
-				setSource={ setLocationsSource }
-				sourcePlaceholder="select an actions location source..."
-				view_id={ locationsView }
-				setView={ setLocationsView }
-				viewPlaceholder="select an actions location view..."
+				categories={ ["jurisdictions"] }
+				columns={ ["wkb_geometry", "census_geo"] }
+				source_id={ jurisdictionsSource }
+				setSource={ setJurisdictionsSource }
+				sourcePlaceholder="select a jurisdictions geometry source..."
+				view_id={ jurisdictionsView }
+				setView={ setJurisdictionsView }
+				viewPlaceholder="select a jurisdictions geometry view..."
+				baseUrl={ baseUrl }/>
+
+			<SourceAndViewSelectors
+				label="Select a Source and View for County Geometries"
+				Select={ Select }
+				falcor={ falcor }
+				falcorCache={ falcorCache }
+				pgEnv={ pgEnv }
+				categories={ { or: ["Geography", "tiger"] } }
+				columns={ ["wkb_geometry", "geoid"] }
+				source_id={ countiesSource }
+				setSource={ setCountiesSource }
+				sourcePlaceholder="select a counties geometry source..."
+				view_id={ countiesView }
+				setView={ setCountiesView }
+				viewPlaceholder="select a counties geometry view..."
 				baseUrl={ baseUrl }/>
 
 			<div className="flex justify-end">

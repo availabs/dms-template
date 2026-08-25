@@ -73,10 +73,17 @@ Two real bugs found and fixed during verification:
 
 ## Open items
 
-- **Stray duplicate `reports_snap_2` rows** from the pre-2026-07-20 graphIds bug are still in the
-  DB (page 13 confirmed, likely others) — cleanup needs explicit user authorization before any
-  deletes, per standing policy. Inert garbage, not an active bug (only the latest row per
-  `report_id` is ever read).
+- ~~**Stray duplicate `reports_snap_2` rows**~~ — **CLEANED UP 2026-08-24, per Ryan's explicit
+  go-ahead.** Scope was much larger than "page 13, likely others" suggested: 666 distinct
+  `report_id`s had duplicates, 701 stale rows total (out of 1654) across
+  `data_items__s2177438_v2177440_reports_snap_2`. All 701 backed up to
+  `scratchpad/npmrds-sub/reports_snap_2_stale_rows_backup_20260824.json` before deleting, then
+  deleted via `dms raw delete npmrdsv5 "reports_snap_2|2177440:data" <id>` (kept the max-`id` row
+  per `report_id`, matching the app's own `sort:'desc'` "latest row wins" read convention).
+  Verified after: 953 rows remain, zero duplicate groups, and a spot-check of page 13's own row
+  (id `2195222`, report_id `2195012`) confirms its real ~19KB routes payload survived untouched. A
+  second, empty split table (`..._v2211489_reports_snap_2`, 0 rows) was found during this pass —
+  not touched, nothing to clean up there.
 - **The graphIds fix's "ghost routes from another report" symptom** — the task file that shipped
   the fix left this explicitly unvalidated. It was later re-tested informally (a fresh report from
   the template showed no ghost routes) and appears resolved on its own, but was never re-verified

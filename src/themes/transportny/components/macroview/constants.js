@@ -137,3 +137,27 @@ export {
   WORST_POINTS_LAYER_ID,
   WORST_POINT_RADIUS
 };
+
+/**
+ * The SINGLE-YEAR views a source offers, newest first.
+ *
+ * The macroview is built for one view per year — that is the shape it reads, with the year carried as
+ * the view's `version`. It deliberately does NOT support multi-year views: the map would paint every
+ * year's geometry for the same TMC on top of itself, and the plumbing to make that mean something
+ * buys nothing.
+ *
+ * So non-numeric versions are FILTERED OUT, not merely sorted last. Source 2135 carries a union view
+ * whose version is "all_years", published for cross-year SQL analysis; it is a legitimate view of the
+ * source and must stay one, but it has no place in a year picker. Excluding it also removes a lexical
+ * trap — "all_years" > "2025" as strings, so a plain sort would have made it the default year.
+ *
+ * Ordering matters twice and both consumers must agree, or the label and the loaded view diverge: the
+ * Year control renders this list, and `dataUpdate` defaults to the FIRST entry when nothing is
+ * selected. That default is therefore always the most recent year.
+ */
+export const singleYearViewsNewestFirst = (views) =>
+  (views || [])
+    .map((v) => ({ v, year: Number(String(v?.version ?? v?.label ?? v?.name ?? "").trim()) }))
+    .filter(({ year }) => Number.isInteger(year) && year >= 1900 && year <= 2999)
+    .sort((a, b) => b.year - a.year)
+    .map(({ v }) => v);

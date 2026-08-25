@@ -107,7 +107,12 @@ scoping. Permissions/ACL is now the only piece of the original 2026-07-27 ruling
 7. **RRL has no reliable per-instance rename** — two instances of the same route can't
    be given distinct display labels, only distinct dates/colors. Cheapest workaround
    today is naming the underlying route sensibly up front; a real fix needs the rename
-   control's input-commit bug found (typed text doesn't reliably commit).
+   control's input-commit bug found (typed text doesn't reliably commit). **Deprioritized
+   2026-08-24 (Ryan): not worth spending time on proactively, probably fine as-is — revisit
+   only if it comes up again in practice.** Also worth noting RRL's rename control changed
+   significantly since this gap was written (report-authoring-ux-overhaul.md's Tier 4A rebuilt
+   `RouteRow.jsx` entirely, removing the pencil/Save gate site-wide) — re-check whether this
+   specific input-commit bug still reproduces before picking it back up.
 8. **Difference-graph anchor is "whichever instance was added to the report first"**
    (`route_comp_id` order) — invisible in the UI, so getting the sign right is a
    coin-flip unless you already know the add-order convention. The spec's `anchor`

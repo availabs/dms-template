@@ -9,18 +9,21 @@
  * - `'none'` — plain route geometry, flat line color, no data join. Ported verbatim (source id,
  *   tile-URL pattern, sub-layer structure, `series-template` flag) from
  *   `ensure_route_map_none_template` in convert_old_reports_lib/route_map.py.
- * - a real measure key (`'speed'`/`'travelTime'`/`'hoursOfDelay'`/`'avgHoursOfDelay'` —
- *   MAP_MEASURE_OPTIONS) — a choropleth layer colored by that measure's value, shape ported from
- *   route_map.py's `ensure_route_map_*_template` functions. Needs a data join (built via the real
- *   `buildJoin` from buildUdaConfig.js — the exact function every chart's own join already goes
+ * - a real measure key (any `MAP_MEASURE_OPTIONS` entry with a `CHOROPLETH_DEFAULTS` entry) — a
+ *   choropleth layer colored by that measure's value, shape ported from route_map.py's
+ *   `ensure_route_map_*_template` functions (`speed`/`travelTime`/`hoursOfDelay`/
+ *   `avgHoursOfDelay`) or authored fresh with no Python precedent (`co2Emissions_passenger`/
+ *   `avgCo2Emissions_passenger`/`co2Emissions_truck`/`avgCo2Emissions_truck` — route_map.py never
+ *   built a CO2 choropleth). Needs a data join (built via the real `buildJoin` from
+ *   buildUdaConfig.js — the exact function every chart's own join already goes
  *   through, NOT a hand-rolled wire format — confirmed generic enough for 2-source joins too,
  *   since chart measures like hoursOfDelay already use it in production) and a paint/legend
  *   (built via the real `choroplethPaint` from Map's own `ComponentRegistry/map/utils.js` —
  *   confirmed via route_map.py's own docstring that its Python `choropleth_paint` is "ported
  *   index-arithmetic-for-index-arithmetic" from this exact JS function, so calling it directly
- *   guarantees byte-identical shape to what Map's own live re-break mechanism would produce).
- *   `co2Emissions_*`/`avgCo2Emissions_*` are NOT offered — no authored choropleth defaults exist
- *   for them yet (CHOROPLETH_DEFAULTS below); adding one there is what it takes to add them here.
+ *   guarantees byte-identical shape to what Map's own live re-break mechanism would produce). Any
+ *   OTHER vocabulary.json measure (currently just `length`/`aadt`) is likewise not offered here —
+ *   adding a `CHOROPLETH_DEFAULTS` entry is what it takes.
  *
  * Breaks/colors are FIXED, author-chosen constants, not live-computed from real data — same
  * design already proven in this codebase's own MacroView plugin (components/macroview/breaks.js):
@@ -63,6 +66,10 @@ export const MAP_MEASURE_OPTIONS = [
     { value: 'travelTime', label: 'Travel Time (min)' },
     { value: 'hoursOfDelay', label: 'Hours of Delay' },
     { value: 'avgHoursOfDelay', label: 'Avg. Hours of Delay' },
+    { value: 'co2Emissions_passenger', label: 'CO2 Emissions (tonnes) — Passenger' },
+    { value: 'avgCo2Emissions_passenger', label: 'Avg. CO2 Emissions (tonnes) — Passenger' },
+    { value: 'co2Emissions_truck', label: 'CO2 Emissions (tonnes) — Truck' },
+    { value: 'avgCo2Emissions_truck', label: 'Avg. CO2 Emissions (tonnes) — Truck' },
 ];
 
 // Fixed choropleth breaks/colors per measure — see this file's header for why these are authored
@@ -100,6 +107,44 @@ const CHOROPLETH_DEFAULTS = {
         colors: REVERSED_SPEED_RANGE,
         breaks: [0.1, 0.5, 1, 3],
         maxValue: 5,
+    },
+    // gap #16 (report-authoring-ux-overhaul.md Tier 10, 2026-08-24): no Python precedent to port —
+    // route_map.py never built a CO2 choropleth (only REVERSE_COLORS_MEASURES lists co2Emissions/
+    // avgCo2Emissions as reverse-colored, confirming the polarity below, nothing else). Breaks
+    // authored from one real live data point (a low-traffic 0.2mi/single-TMC route, full calendar
+    // month): co2Emissions_passenger 2.98t, co2Emissions_truck 1.36t — same cumulative-sum shape as
+    // hoursOfDelay, scaled down roughly 10x for this measure's own units. Same "fixed, refinable
+    // later" contract as every other entry in this file — not independently re-verified against a
+    // real distribution of routes.
+    co2Emissions_passenger: {
+        colors: REVERSED_SPEED_RANGE,
+        breaks: [1, 5, 15, 30],
+        maxValue: 50,
+    },
+    co2Emissions_truck: {
+        colors: REVERSED_SPEED_RANGE,
+        breaks: [1, 5, 15, 30],
+        maxValue: 50,
+    },
+    // avgCo2Emissions_* is a per-epoch (5-minute-bucket) mean, NOT a per-day rate like
+    // avgHoursOfDelay (whose own vocabulary.json expr divides by count(DISTINCT date) internally —
+    // this measure's `fn:"avg"` just averages the raw per-epoch value as-is) — three orders of
+    // magnitude smaller. First guess (0.0005 floor) live-verified WRONG 2026-08-24: a real
+    // low-traffic single-TMC route's live tile value fell entirely below it (rendered as
+    // out-of-range grey, legend readout "0 - 0" after rounding) — its true value is ~0.0002-0.0004,
+    // confirmed by cross-checking Table's own summed co2Emissions_passenger (2.98t) against this
+    // route's ~8640 5-minute epochs for the month (2.98/8640 ≈ 0.00034, consistent with the
+    // out-of-range render). Breaks lowered accordingly; still a single-data-point placeholder, not
+    // verified across a real distribution.
+    avgCo2Emissions_passenger: {
+        colors: REVERSED_SPEED_RANGE,
+        breaks: [0.0001, 0.0003, 0.0006, 0.0015],
+        maxValue: 0.003,
+    },
+    avgCo2Emissions_truck: {
+        colors: REVERSED_SPEED_RANGE,
+        breaks: [0.0001, 0.0003, 0.0006, 0.0015],
+        maxValue: 0.003,
     },
 };
 

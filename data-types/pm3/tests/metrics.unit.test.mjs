@@ -8,6 +8,10 @@
  */
 import { describe, it, expect } from 'vitest';
 import worker from '../worker.js';
+import { makeFakeCh } from './fakeCh.mjs';
+import { createRequire } from 'node:module';
+
+const createRequireSync = createRequire(import.meta.url);
 
 const { METRIC_NAMES, buildMetricConfigs } = worker;
 
@@ -37,9 +41,14 @@ const LEGACY_PM3_METRIC_NAMES = [
 // R2: the four delay measures recomputed against a FIXED single-era free-flow reference, published
 //     alongside the own-year versions for a transition period (worth +6.69% on network delay).
 const POST_FORK_METRIC_NAMES = [
+  // Data coverage as its own measure — completeness is a property of (stream, bin), not of a measure.
+  'coverage',
   'tttr_p80',
   'phed_freeflow_anchored', 'phed_truck_freeflow_anchored',
   'ted_freeflow_anchored', 'ted_truck_freeflow_anchored',
+  // R13: the unfloored (relative) delay series — the only form comparable across functional classes.
+  'phed_freeflow_relative', 'phed_truck_freeflow_relative',
+  'ted_freeflow_relative', 'ted_truck_freeflow_relative',
 ];
 
 describe('pm3 metric registry', () => {
@@ -61,12 +70,15 @@ describe('pm3 metric registry', () => {
     for (const m of MAP21_METRIC_NAMES) expect(METRIC_NAMES).toContain(m);
     const pm3Only = METRIC_NAMES.filter((m) => !MAP21_METRIC_NAMES.includes(m));
     expect(pm3Only).toEqual([
+      'coverage',
       'speed_pctl',
       'tttr_p80',
       'phed_freeflow', 'phed_truck', 'phed_truck_freeflow',
       'ted', 'ted_freeflow', 'ted_truck', 'ted_truck_freeflow',
       'phed_freeflow_anchored', 'phed_truck_freeflow_anchored',
       'ted_freeflow_anchored', 'ted_truck_freeflow_anchored',
+      'phed_freeflow_relative', 'phed_truck_freeflow_relative',
+      'ted_freeflow_relative', 'ted_truck_freeflow_relative',
     ]);
   });
 
@@ -139,144 +151,76 @@ describe('pm3 metric registry', () => {
   });
 });
 
-// ── R4: per-time-bin completeness from the TTR calculator ───────────────────
-describe('R4 — calcTtrMeasure reports completeness per time bin', () => {
-  // Same idiom the metric-registry test above uses: this file is ESM and the calculators are CJS.
-  async function lib() {
-    const { createRequire } = await import('node:module');
-    const req2 = createRequire(import.meta.url);
-    return {
-      calcTtrMeasure: req2('../lib/calcTtrMeasure.js').calcTtrMeasure,
-      ...req2('../lib/constants.js'),
-    };
-  }
-
-  // Bin means with a KNOWN epoch depth each: 3,3,3,2,1 -> mean 2.4 epochs per bin over 5 bins.
-  const BINS = [
-    { tt: 100, n_epochs: 3 }, { tt: 110, n_epochs: 3 }, { tt: 120, n_epochs: 3 },
-    { tt: 130, n_epochs: 2 }, { tt: 400, n_epochs: 1 },
-  ];
-  const chDb = {
-    query: async () => ({ json: async () => ({ rows: BINS.length, data: BINS }) }),
-  };
-
-  it('returns n_bins and mean_epochs_per_bin alongside the ratio', async () => {
-    const { calcTtrMeasure, BIN_NAMES, ALL_VEHICLES } = await lib();
-    const r = await calcTtrMeasure({
-      db: null, chDb, metricName: 'lottr', curTmcId: 'x', year: 2025,
-      npmrdsDataKeys: ALL_VEHICLES, dataTableName: 't', timeBins: [BIN_NAMES.AMP],
-    });
-    expect(r.AMP_n_bins).toBe(5);
-    expect(r.AMP_mean_epochs_per_bin).toBe(2.4);
-    // the ratio itself must be unaffected by the new bookkeeping
-    expect(r.AMP_lottr).toBeGreaterThan(1);
-  });
-
-  it('reports completeness independently for each time bin', async () => {
-    const { calcTtrMeasure, BIN_NAMES, ALL_VEHICLES } = await lib();
-    const r = await calcTtrMeasure({
-      db: null, chDb, metricName: 'lottr', curTmcId: 'x', year: 2025,
-      npmrdsDataKeys: ALL_VEHICLES, dataTableName: 't',
-      timeBins: [BIN_NAMES.AMP, BIN_NAMES.MIDD],
-    });
-    // Per-bin, not once per row: the ~5x diurnal coverage swing means one figure per row would
-    // misdescribe an AM-peak LOTTR and an overnight TTTR on the same segment.
-    for (const b of ['AMP', 'MIDD']) {
-      expect(r[`${b}_n_bins`]).toBe(5);
-      expect(r[`${b}_mean_epochs_per_bin`]).toBe(2.4);
-    }
-  });
-
-  it('degrades safely to zero when the feed omits the epoch count', async () => {
-    const { calcTtrMeasure, BIN_NAMES, ALL_VEHICLES } = await lib();
-    const bare = { query: async () => ({ json: async () => ({ rows: 2, data: [{ tt: 100 }, { tt: 200 }] }) }) };
-    const r = await calcTtrMeasure({
-      db: null, chDb: bare, metricName: 'lottr', curTmcId: 'x', year: 2025,
-      npmrdsDataKeys: ALL_VEHICLES, dataTableName: 't', timeBins: [BIN_NAMES.AMP],
-    });
-    expect(r.AMP_n_bins).toBe(2);
-    expect(r.AMP_mean_epochs_per_bin).toBe(0);
-  });
-
-  it('an empty bin reports zero rather than NaN', async () => {
-    const { calcTtrMeasure, BIN_NAMES, ALL_VEHICLES } = await lib();
-    const empty = { query: async () => ({ json: async () => ({ rows: 0, data: [] }) }) };
-    const r = await calcTtrMeasure({
-      db: null, chDb: empty, metricName: 'lottr', curTmcId: 'x', year: 2025,
-      npmrdsDataKeys: ALL_VEHICLES, dataTableName: 't', timeBins: [BIN_NAMES.AMP],
-    });
-    expect(r.AMP_n_bins).toBe(0);
-    expect(r.AMP_mean_epochs_per_bin).toBe(0);
-  });
-});
-
-// ── R4 (cont): pct_bins_reporting and truck probe-depth ─────────────────────
-describe('R4 — completeness percentage and truck probe depth', () => {
+// ── R4/coverage: completeness is its own measure ───────────────────────────
+describe('coverage — completeness decoupled from the performance measures', () => {
   async function lib() {
     const { createRequire } = await import('node:module');
     const r = createRequire(import.meta.url);
-    return {
-      calcTtrMeasure: r('../lib/calcTtrMeasure.js').calcTtrMeasure,
-      getExpectedBinsForYear: r('../lib/helpers.js').getExpectedBinsForYear,
-      ...r('../lib/constants.js'),
-    };
+    return { ...r('../coverageCalculator.js'),
+             getExpectedBinsForYear: r('../lib/helpers.js').getExpectedBinsForYear,
+             ...r('../lib/constants.js') };
   }
 
-  it('derives each bin group its OWN denominator, not a shared one', async () => {
-    const { getExpectedBinsForYear, REPORTING_BINS } = await lib();
-    const exp = (name, year) => {
-      const b = REPORTING_BINS.find((x) => x.name === name);
-      return getExpectedBinsForYear({ hours: b.hours, dow: b.dow, year });
+  it('publishes both percentages per (stream, bin) and nothing per measure', async () => {
+    const { coverageColumnNames } = await lib();
+    const names = coverageColumnNames();
+    // Two streams x their bins x two percentages, with no measure name anywhere in the column.
+    expect(names.length).toBe(26);
+    for (const n of names) {
+      expect(n.startsWith('coverage_')).toBe(true);
+      expect(/lottr|tttr|phed|ted/.test(n)).toBe(false);
+    }
+    expect(names).toContain('coverage_all_vehicles_amp_pct_bins_reporting');
+    expect(names).toContain('coverage_all_vehicles_amp_pct_epochs_reporting');
+    expect(names).toContain('coverage_freight_trucks_ovn_pct_epochs_reporting');
+  });
+
+  it('keeps ALT_PMP distinct from PMP — different windows, different denominators', async () => {
+    const { coverageColumnNames, getExpectedBinsForYear, REPORTING_BINS } = await lib();
+    const names = coverageColumnNames();
+    expect(names).toContain('coverage_all_vehicles_pmp_pct_bins_reporting');
+    expect(names).toContain('coverage_all_vehicles_alt_pmp_pct_bins_reporting');
+    // PMP is 16-19, ALT_PMP is 15-18 — collapsing them would misreport one of the two.
+    const exp = (n) => {
+      const b = REPORTING_BINS.find((x) => x.name === n);
+      return getExpectedBinsForYear({ hours: b.hours, dow: b.dow, year: 2025 });
     };
-    // AMP is 4 hours x Mon-Fri; OVN is 10 hours x every day. A single network denominator would
-    // misstate both. These two figures are cross-checked against the campaign's own numbers:
-    // H1b independently derived "a year contains 14,600" overnight bins, and measured an AM-peak
-    // p90 of 4,152 against this 4,176 ceiling.
-    expect(exp('AMP', 2025)).toBe(4176);
-    expect(exp('OVN', 2025)).toBe(14600);
-    expect(exp('ALL', 2025)).toBe(35040);
-    // leap year adds exactly one day's worth of bins
-    expect(exp('ALL', 2024) - exp('ALL', 2025)).toBe(96);
+    expect(exp('PMP')).toBe(exp('ALT_PMP'));      // same width...
+    const pmp = REPORTING_BINS.find((x) => x.name === 'PMP');
+    const alt = REPORTING_BINS.find((x) => x.name === 'ALT_PMP');
+    expect(pmp.hours).not.toEqual(alt.hours);      // ...but not the same hours
   });
 
-  it('pct_bins_reporting is the observed count over that denominator', async () => {
-    const { calcTtrMeasure, BIN_NAMES, ALL_VEHICLES } = await lib();
-    // 1,044 bins observed against AMP's 4,176 possible = exactly 25%
-    const rows = Array.from({ length: 1044 }, (_, i) => ({ tt: 100 + (i % 50), n_epochs: 3 }));
-    const chDb = { query: async () => ({ json: async () => ({ rows: rows.length, data: rows }) }) };
-    const r = await calcTtrMeasure({
-      db: null, chDb, metricName: 'lottr', curTmcId: 'x', year: 2025,
-      npmrdsDataKeys: ALL_VEHICLES, dataTableName: 't', timeBins: [BIN_NAMES.AMP],
-    });
-    expect(r.AMP_n_bins).toBe(1044);
-    expect(r.AMP_pct_bins_reporting).toBe(25);
+  it('computes both percentages, epochs never above bins', async () => {
+    const { coverageCalculator } = await lib();
+    // 1,000 bins present, each backed by 2 epochs. Large enough that rounding both percentages to
+    // 2 dp does not dominate the ratio check below — at 2-bin scale the rounded values are 0.05 and
+    // 0.03 and the identity looks broken when it is not.
+    const rows = Array.from({ length: 1000 }, (_, i) => ({ tt: 100 + (i % 20), n_epochs: 2 }));
+    const chDb = makeFakeCh(rows);
+    const r = await coverageCalculator({ db: null, chDb, year: 2025, dataTableName: 't', curTmcId: 'x' });
+    // Result keys are UNPREFIXED — the row writer adds the metric name.
+    const bins = r.all_vehicles_amp_pct_bins_reporting;
+    const eps  = r.all_vehicles_amp_pct_epochs_reporting;
+    expect(bins).toBeGreaterThan(0);
+    // epochs% must be BELOW bins%, since a bin counts as present when any one of its three
+    // 5-minute epochs did.
+    expect(eps).toBeLessThan(bins);
+    // and the ratio recovers probe depth: 2,000 epochs / 1,000 bins = 2.0 per bin
+    expect((eps / bins) * 3).toBeCloseTo(2.0, 2);
   });
 
-  it('pct_epochs_density_a is the share of contributing epochs on 1-4 probes', async () => {
-    const { calcTtrMeasure, BIN_NAMES, FREIGHT_TRUCKS } = await lib();
-    // 10 epochs total, 4 of them density A -> 40%
-    const rows = [
-      { tt: 100, n_epochs: 3, n_epochs_density_a: 1 },
-      { tt: 120, n_epochs: 3, n_epochs_density_a: 1 },
-      { tt: 140, n_epochs: 4, n_epochs_density_a: 2 },
-    ];
-    const chDb = { query: async () => ({ json: async () => ({ rows: rows.length, data: rows }) }) };
-    const r = await calcTtrMeasure({
-      db: null, chDb, metricName: 'tttr', curTmcId: 'x', year: 2025,
-      npmrdsDataKeys: FREIGHT_TRUCKS, dataTableName: 't', timeBins: [BIN_NAMES.OVN],
-    });
-    expect(r.OVN_pct_epochs_density_a).toBe(40);
-  });
-
-  it('both degrade to null rather than NaN on an empty bin', async () => {
-    const { calcTtrMeasure, BIN_NAMES, ALL_VEHICLES } = await lib();
-    const chDb = { query: async () => ({ json: async () => ({ rows: 0, data: [] }) }) };
-    const r = await calcTtrMeasure({
-      db: null, chDb, metricName: 'lottr', curTmcId: 'x', year: 2025,
-      npmrdsDataKeys: ALL_VEHICLES, dataTableName: 't', timeBins: [BIN_NAMES.AMP],
-    });
-    expect(r.AMP_pct_bins_reporting).toBe(0);       // 0 of 4,176 is a real 0%, not unknown
-    expect(r.AMP_pct_epochs_density_a).toBe(null);  // no epochs contributed -> share undefined
+  it('reports every stream and bin, including the delay measures\' ALL bin', async () => {
+    const { coverageCalculator } = await lib();
+    const rows = [{ tt: 100, n_epochs: 3 }];
+    const chDb = makeFakeCh(rows);
+    const r = await coverageCalculator({ db: null, chDb, year: 2025, dataTableName: 't', curTmcId: 'x' });
+    // TED/PHED read the ALL and ALT_PMP bins and previously had NO completeness column at all.
+    for (const k of ['all_vehicles_all_pct_bins_reporting',
+                     'all_vehicles_alt_pmp_pct_bins_reporting',
+                     'freight_trucks_all_pct_epochs_reporting']) {
+      expect(r[k], k).not.toBeUndefined();
+    }
   });
 });
 
@@ -295,24 +239,29 @@ describe('R2 — the anchored free-flow reference reads a fixed window', () => {
 
   // Records every SQL string calcPhed issues so the date predicate can be inspected. The p15 query
   // is the only one that reads the reference window.
+  // Records every SQL string calcPhed issues so the date predicate can be inspected, and answers
+  // the pushdown aggregates from the fixture via the JS oracle in fakeCh.mjs.
   function recordingChDb(sqls) {
-    return {
-      query: async ({ query }) => {
-        sqls.push(query);
-        // month/dow/timeBinNum are required: calcPhed indexes the hourly traffic-distribution
-        // profile as percentAadt[month - 1][dow][timeBinNum], so a row without them throws.
-        return {
-          json: async () => ({
-            rows: 2,
-            data: [
-              { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 28, tt: 100, n_epochs: 3 },
-              { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 29, tt: 400, n_epochs: 3 },
-            ],
-          }),
-        };
-      },
-    };
+    // month/dow/timeBinNum are required: calcPhed indexes the hourly traffic-distribution profile
+    // as percentAadt[month - 1][dow][timeBinNum], so a row without them throws.
+    const rows = [
+      { month: 3, dow: 1, timeBinNum: 28, tt: 100, n_epochs: 3 },
+      { month: 3, dow: 1, timeBinNum: 29, tt: 400, n_epochs: 3 },
+    ];
+    // The reference window returns DIFFERENT travel times, so a threshold sourced from the wrong
+    // window is visible as a wrong number rather than only as a missing query.
+    const windowRows = [
+      { month: 3, dow: 1, timeBinNum: 28, tt: 200, n_epochs: 3 },
+      { month: 3, dow: 1, timeBinNum: 29, tt: 800, n_epochs: 3 },
+    ];
+    return makeFakeCh(rows, {
+      onQuery: (q) => sqls.push(q),
+      rowsFor: (q) => (q.includes(WINDOW_START) ? windowRows : null),
+    });
   }
+
+  // Read once at module scope so recordingChDb can key on it without an async lib() call.
+  const WINDOW_START = createRequireSync('../lib/eras.js').FREEFLOW_REFERENCE_WINDOW.dates[0];
 
   const META = {
     tmc: 'x', miles: 1.0, avg_speedlimit: 55, directionalaadt: 5000, directionalaadttruck: 300,
@@ -344,10 +293,28 @@ describe('R2 — the anchored free-flow reference reads a fixed window', () => {
     expect(anchoredP15).toContain(`date >= '${W.dates[0]}'`);
     expect(anchoredP15).toContain(`date <= '${W.dates[1]}'`);
 
-    // The own-year variant must NOT reach for the window — it is the legacy behaviour, kept
-    // unchanged for the dual-publish overlap.
-    expect(ownYear.sqls.some((q) => q.includes(W.dates[0]))).toBe(false);
     expect(ownYear.sqls.some((q) => /EXTRACT\(YEAR from date\) = 2025/.test(q))).toBe(true);
+
+    // The assertion that matters: each variant's threshold comes from ITS OWN window. The fixture
+    // gives the window doubled travel times, so p15 200 vs 100 separates them by value.
+    //
+    // Note this is deliberately no longer "the own-year variant never queries the window". Since the
+    // delay pushdown, every delay variant warms BOTH p15s once per TMC to build the shared threshold
+    // set that lets all 16 variants share one delay query per (stream, bin) — so the own-year variant
+    // does now issue a window query, and asserting otherwise would test the fetch plan rather than
+    // the measure. In production both p15s are needed and memoised regardless, so the shared set
+    // costs nothing; see getTmcThresholdSet.
+    // R type-7 interpolation over the two fixture bins: window [200, 800] -> 200*0.85 + 800*0.15
+    // = 290; own year [100, 400] -> 145. Interpolated, not a picked element — which is itself the
+    // estimator quantilesExactInclusive implements.
+    expect(anchored.res.tt_15_pct).toBe(290);
+    expect(ownYear.res.tt_15_pct).toBe(145);
+    // Both then land on threshold_speed 20 — a 1-mile segment at a 290s or 145s p15 implies 12.4 or
+    // 24.8 mph free-flow, so 0.6x that is 7.4 or 14.9 and the floor raises both. The threshold is
+    // therefore the WRONG place to look for the window's effect at these speeds, which is RQ18's
+    // finding in miniature: on slow facilities the floor, not the reference, decides the number.
+    expect(anchored.res.threshold_speed).toBe(20);
+    expect(ownYear.res.threshold_speed).toBe(20);
   });
 
   it('both variants still publish a tt_15_pct and a threshold', async () => {
@@ -361,11 +328,39 @@ describe('R2 — the anchored free-flow reference reads a fixed window', () => {
 
   it('the speed_limit variant reads no percentile at all', async () => {
     const { res, sqls } = await run('speed_limit');
-    expect(res.tt_15_pct).toBe(null);
+    // The key is now OMITTED rather than set to null: emitting a null key created an undeclared
+    // physical column that was never populated (see the registry-wide invariant test).
+    expect('tt_15_pct' in res).toBe(false);
     // threshold = max(0.6 * 55, 20) = 33 mph, straight off posted speed
     expect(res.threshold_speed).toBe(33);
+    // The threshold is derived from posted speed and from nothing else — asserted on the VALUE
+    // rather than on the absence of a percentile query, because the shared threshold set means this
+    // variant does warm both p15s (see the note in the window test above). What must never happen is
+    // a percentile leaking INTO the posted-speed threshold.
+    expect(res.threshold_travel_time_sec).toBe(Math.round((1.0 / 33) * 3600));
+    expect(sqls.length).toBeGreaterThan(0);
+  });
+
+  it('never CONTAINS a whole publish year, and its overlaps are declared', async () => {
     const { FREEFLOW_REFERENCE_WINDOW: W } = await lib();
-    expect(sqls.some((q) => q.includes(W.dates[0]))).toBe(false);
+    // Replaces an assertion that the window was disjoint from every publish year. That held while
+    // CY2025 was the whole scope; across the 2017-2025 archive NO window can be disjoint from all of
+    // them, so the invariant has to change rather than the anchor being forced to satisfy it.
+    //
+    // Two things still matter, and this pins both.
+    const [start, end] = W.dates;
+    const PUBLISH_YEARS = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+
+    // 1. HARD LINE: the window must never contain a whole publish year. That is the E8 case —
+    //    E8 (2024-12..2026-01) contained all of CY2025, so the anchored figure came out 0.04% from
+    //    own-year and the measure was a no-op. Partial overlap damps a year; total overlap erases it.
+    const contained = PUBLISH_YEARS.filter((y) => start <= `${y}-01-01` && end >= `${y}-12-31`);
+    expect(contained, `anchor ${start}..${end} CONTAINS ${contained.join(',')} — that year's anchored figure would be a no-op`).toEqual([]);
+
+    // 2. The years it partially overlaps must be the ones declared on the window, so moving the
+    //    anchor forces updating the caveat instead of silently changing which years are damped.
+    const overlapping = PUBLISH_YEARS.filter((y) => !(end < `${y}-01-01` || start > `${y}-12-31`));
+    expect(overlapping).toEqual(W.selfReferentialYears);
   });
 
   it('the reference window lies inside a single coverage era', async () => {
@@ -444,7 +439,7 @@ describe('R6 — precision bands from H1b\'s measured curves', () => {
   it('the calculator publishes a band and a bar, both writable', async () => {
     const { calcTtrMeasure, BIN_NAMES, ALL_VEHICLES } = await lib();
     const rows = Array.from({ length: 100 }, (_, i) => ({ tt: 100 + (i % 40), n_epochs: 3 }));
-    const chDb = { query: async () => ({ json: async () => ({ rows: rows.length, data: rows }) }) };
+    const chDb = makeFakeCh(rows);
     const r = await calcTtrMeasure({
       db: null, chDb, metricName: 'lottr', curTmcId: 'x', year: 2025,
       npmrdsDataKeys: ALL_VEHICLES, dataTableName: 't', timeBins: [BIN_NAMES.AMP],
@@ -480,12 +475,7 @@ describe('R2 perf — one p15 derivation per (TMC, reference window)', () => {
   // ted_* metric reads the ALL bin, so its measure query has the same all-hours/all-days shape as
   // the p15 query and no regex separates them. Totals are unambiguous.
   function countingChDb(counter) {
-    return {
-      query: async () => {
-        counter.all += 1;
-        return { json: async () => ({ rows: ROWS.length, data: ROWS }) };
-      },
-    };
+    return makeFakeCh(ROWS, { onQuery: () => { counter.all += 1; } });
   }
   async function runFamily({ withCache }) {
     const { calcPhed, BIN_NAMES, ALL_VEHICLES, FREIGHT_TRUCKS } = await lib();
@@ -512,24 +502,23 @@ describe('R2 perf — one p15 derivation per (TMC, reference window)', () => {
   it('derives the p15 once for a four-metric family instead of four times', async () => {
     const without = await runFamily({ withCache: false });
     const with_ = await runFamily({ withCache: true });
-    // Each metric issues one p15 query plus one query per time bin (all four here have a single
-    // bin). Uncached: 4 x (1 p15 + 1 measure) = 8. Cached: 1 p15 + 4 measures = 5.
-    expect(without.all).toBe(8);
-    expect(with_.all).toBe(5);
-    // 3 of the 4 p15 derivations were redundant. The percentile is taken over ALL_VEHICLES
+    // Each metric derives TWO p15s — its own reference window plus the other one, because the
+    // shared threshold set needs both (getTmcThresholdSet) — and issues one delay query per time
+    // bin, all four here having a single bin.
+    //   uncached: 4 x (2 p15 + 1 delay)                       = 12 ... plus the anchored p15 each
+    //             metric fetches for its own threshold before the set = 16
+    //   cached:   2 p15 once + 4 delay                        = 6
+    expect(without.all).toBe(16);
+    expect(with_.all).toBe(6);
+    // 10 of the 14 percentile derivations were redundant. The percentile is taken over ALL_VEHICLES
     // whichever stream the measure reads, so the truck metrics share the value.
-    expect(without.all - with_.all).toBe(3);
+    expect(without.all - with_.all).toBe(10);
   });
 
   it('keeps the own-year and anchored windows separate in the same cache', async () => {
     const { calcPhed, BIN_NAMES, ALL_VEHICLES, FREEFLOW_REFERENCE_WINDOW: W } = await lib();
     const seen = [];
-    const chDb = {
-      query: async ({ query }) => {
-        seen.push(query);
-        return { json: async () => ({ rows: ROWS.length, data: ROWS }) };
-      },
-    };
+    const chDb = makeFakeCh(ROWS, { onQuery: (q) => seen.push(q) });
     const cache = new Map();
     for (const v of ['freeflow', 'freeflow_anchored', 'freeflow', 'freeflow_anchored']) {
       await calcPhed({
@@ -547,5 +536,152 @@ describe('R2 perf — one p15 derivation per (TMC, reference window)', () => {
     // which is the exact bug R2 exists to remove — so assert the window query really was issued.
     expect(seen.some((q) => q.includes(W.dates[0]))).toBe(true);
     expect(seen.some((q) => /EXTRACT\(YEAR from date\) = 2025/.test(q))).toBe(true);
+  });
+});
+
+// ── R13: the configurable delay-threshold floor ─────────────────────────────
+describe('R13 — the delay-threshold floor is configurable and defaults to the federal 20 mph', () => {
+  async function lib() {
+    const { createRequire } = await import('node:module');
+    const r = createRequire(import.meta.url);
+    return { calcPhed: r('../lib/calcPhed.js').calcPhed, ...r('../lib/constants.js') };
+  }
+  // A deliberately SLOW segment: 0.4 mi covered in 60 s = 24 mph achievable. 0.6 x 24 = 14.4 mph,
+  // which the 20 mph floor overrides — the arterial case RQ18 found dominates two thirds of state delay.
+  const SLOW = {
+    tmc: 'x', miles: 0.4, avg_speedlimit: 30, directionalaadt: 5000, directionalaadttruck: 300,
+    avg_vehicle_occupancy: 1.7, avgvehicleoccupancytruck: 10.7, functionalclass: 'NONFREEWAY',
+    congestion_level: 'NO2LOW_CONGESTION', directionality: 'AM_PEAK', nhs_pct: 100, nhs: '0',
+  };
+  const ROWS = [
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 28, tt: 60, n_epochs: 3 },
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 29, tt: 90, n_epochs: 3 },
+  ];
+  async function run(extra) {
+    const { calcPhed, BIN_NAMES, ALL_VEHICLES } = await lib();
+    const chDb = makeFakeCh(ROWS);
+    return calcPhed({
+      db: null, chDb, tmcMeta: SLOW, curTmcId: 'x', year: 2025, dataTableName: 't',
+      npmrdsDataKeys: ALL_VEHICLES, avoKey: 'avg_vehicle_occupancy', dirAadtKey: 'directionalaadt',
+      thresholdSpeedVersion: 'freeflow_anchored', timeBins: [BIN_NAMES.AMP], ...extra,
+    });
+  }
+
+  it('defaults to 20 mph when no floor is configured — the federal formula, unchanged', async () => {
+    const r = await run({});
+    // achievable ~24 mph -> 0.6 x 24 = 14.4, floored up to 20
+    expect(r.threshold_speed).toBe(20);
+  });
+
+  it('thresholdFloorMph: 0 gives the pure relative threshold', async () => {
+    const r = await run({ thresholdFloorMph: 0 });
+    // now 0.6 x achievable stands, well below the floor
+    expect(r.threshold_speed).toBeLessThan(20);
+    expect(r.threshold_speed).toBeGreaterThan(0);
+  });
+
+  it('a lower threshold means LESS delay counted — the direction RQ18 measured', async () => {
+    const floored = await run({});
+    const relative = await run({ thresholdFloorMph: 0 });
+    // The floor raises the bar on slow facilities, so it manufactures delay relative to the
+    // achievable-speed logic. Removing it must reduce delay, never increase it.
+    expect(relative.all_xdelay_phrs).toBeLessThan(floored.all_xdelay_phrs);
+  });
+
+  it('the floor is inert where achievable speed is high — the Interstate case', async () => {
+    const FAST = { ...SLOW, miles: 1.0, avg_speedlimit: 65, functionalclass: 'FREEWAY' };
+    const { calcPhed, BIN_NAMES, ALL_VEHICLES } = await lib();
+    // 1 mi in 55 s = 65 mph achievable -> 0.6 x 65 = 39 mph, far above any floor
+    const fast = [{ tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 28, tt: 55, n_epochs: 3 }];
+    const chDb = makeFakeCh(fast);
+    const base = { db: null, chDb, tmcMeta: FAST, curTmcId: 'x', year: 2025, dataTableName: 't',
+      npmrdsDataKeys: ALL_VEHICLES, avoKey: 'avg_vehicle_occupancy', dirAadtKey: 'directionalaadt',
+      thresholdSpeedVersion: 'freeflow_anchored', timeBins: [BIN_NAMES.AMP] };
+    const withFloor = await calcPhed({ ...base });
+    const without  = await calcPhed({ ...base, thresholdFloorMph: 0 });
+    expect(withFloor.threshold_speed).toBe(without.threshold_speed);
+  });
+
+  it('only the freeflow base gets an unfloored variant, never speed_limit', async () => {
+    const { createRequire } = await import('node:module');
+    const w = createRequire(import.meta.url)('../worker.js');
+    const cfgs = w.buildMetricConfigs({ chMetaTableName: 'x' });
+    for (const [name, c] of Object.entries(cfgs)) {
+      if (c.kind !== 'phed') continue;
+      if (c.thresholdFloorMph === 0) {
+        // 0.6 x a POSTED LIMIT unfloored is not an alternative reading of anything — the base has to
+        // be a measurement for the relative interpretation to mean something. And that formula is the
+        // federally defined one (23 CFR 490).
+        expect(c.thresholdSpeedVersion, name).not.toBe('speed_limit');
+      }
+    }
+  });
+});
+
+// ── PERF: the per-TMC binned-data memo ──────────────────────────────────────
+describe('perf — one binned-data fetch per (stream, bin) per TMC', () => {
+  async function lib() {
+    const { createRequire } = await import('node:module');
+    return createRequire(import.meta.url)('../worker.js');
+  }
+  const META = {
+    tmc: 'x', miles: 1.0, avg_speedlimit: 55, directionalaadt: 5000, directionalaadttruck: 300,
+    avg_vehicle_occupancy: 1.7, avgvehicleoccupancytruck: 10.7, functionalclass: 'FREEWAY',
+    congestion_level: 'NO2LOW_CONGESTION', directionality: 'AM_PEAK', nhs_pct: 100, nhs: '0', year: 2025,
+  };
+  const ROWS = [
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 28, tt: 100, n_epochs: 3, avg_speed_all_vehicles: 55 },
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 29, tt: 400, n_epochs: 2, avg_speed_all_vehicles: 40 },
+  ];
+
+  // Runs the whole registry for one TMC and returns (query count, every output value).
+  async function runAllMetrics(useCache) {
+    const w = await lib();
+    const cfgs = w.buildMetricConfigs({ chMetaTableName: 'npmrds_meta.t' });
+    let n = 0;
+    const chDb = makeFakeCh(ROWS, { onQuery: () => { n += 1; } });
+    const shared = useCache ? { binnedDataCache: new Map(), freeflowP15Cache: new Map() } : {};
+    const out = {};
+    for (const [name, cfg] of Object.entries(cfgs)) {
+      const r = await cfg.calculator({
+        db: null, chDb, pgEnv: 'x', curTmcId: 'x', year: 2025,
+        dataTableName: 't', tmcMeta: META, metricName: name, ...shared, ...cfg,
+      });
+      if (r) for (const [k, v] of Object.entries(r)) out[`${name}|${k}`] = v;
+    }
+    return { n, out };
+  }
+
+  it('cuts queries per TMC by more than half', async () => {
+    const without = await runAllMetrics(false);
+    const withMemo = await runAllMetrics(true);
+    // 64 -> 22 at the time of writing. Asserted as a ratio rather than a literal so the test survives
+    // registry growth, which is exactly what made this optimisation necessary.
+    expect(withMemo.n).toBeLessThan(without.n * 0.5);
+  });
+
+  it('produces byte-identical output — the acceptance test for any perf change', async () => {
+    const without = await runAllMetrics(false);
+    const withMemo = await runAllMetrics(true);
+    // The memo returns the SAME rows to every caller; only the number of fetches changes. A
+    // difference here means a caller mutated a shared row in place, which would silently corrupt
+    // every later consumer for that TMC.
+    expect(Object.keys(withMemo.out).length).toBe(Object.keys(without.out).length);
+    expect(withMemo.out).toEqual(without.out);
+  });
+
+  it('shares fetches across metrics that read the same stream and bin', async () => {
+    const w = await lib();
+    const cfgs = w.buildMetricConfigs({ chMetaTableName: 'npmrds_meta.t' });
+    let n = 0;
+    const chDb = makeFakeCh(ROWS, { onQuery: () => { n += 1; } });
+    const binnedDataCache = new Map();
+    const base = { db: null, chDb, pgEnv: 'x', curTmcId: 'x', year: 2025, dataTableName: 't',
+                   tmcMeta: META, binnedDataCache, freeflowP15Cache: new Map() };
+    // tttr and tttr_p80 read the identical truck stream over identical bins — the second must be free.
+    await cfgs.tttr.calculator({ ...base, metricName: 'tttr', ...cfgs.tttr });
+    const afterFirst = n;
+    await cfgs.tttr_p80.calculator({ ...base, metricName: 'tttr_p80', ...cfgs.tttr_p80 });
+    expect(n).toBe(afterFirst);
   });
 });

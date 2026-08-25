@@ -22,6 +22,7 @@ const {
   MINUTES_PER_EPOCH,
   EPOCHS_IN_HOUR,
 } = require('./lib/constants.js');
+const { CH_QUERY_SETTINGS } = require('./lib/calcTtrMeasure.js');
 
 const PERCENTILES = [5, 20, 25, 50, 75, 80, 85, 95];
 
@@ -99,7 +100,7 @@ const speedPercentilesCalculator = async (props) => {
     epochsPerBin,
   });
 
-  const chResp = await (await chDb.query({ query: speedQuery, format: 'JSON' })).json();
+  const chResp = await (await chDb.query({ query: speedQuery, format: 'JSON', clickhouse_settings: CH_QUERY_SETTINGS })).json();
   const { data } = chResp;
 
   const speeds = (data || []).map((row) => row.avg_speed_all_vehicles);

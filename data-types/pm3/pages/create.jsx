@@ -42,7 +42,10 @@ const loadNpmrdsSources = async ({ falcor, pgEnv, setSources }) => {
   setSources(npmrdsSources);
 };
 
-const submitPublish = async ({ rtPfx, source, npmrdsSourceId, years, percentTmc, newVersion, user }) => {
+// A publish of N years creates N views, one per year, each with `version` set to the 4-digit year.
+// `newVersion` is deliberately NOT sent: the runner names the version after the year (that is what the
+// macroview's year selector reads), so a free-text version has nothing left to set.
+const submitPublish = async ({ rtPfx, source, npmrdsSourceId, years, percentTmc, user }) => {
   const url = `${rtPfx}/pm3/publish`;
   const body = JSON.stringify({
     source_values: {
@@ -53,7 +56,6 @@ const submitPublish = async ({ rtPfx, source, npmrdsSourceId, years, percentTmc,
     npmrdsSourceId,
     years: years.map((y) => parseInt(y, 10)),
     percentTmc: percentTmc ?? 100,
-    newVersion: newVersion || (new Date()).toLocaleString(),
     user_id: user?.id,
     email: user?.email,
   });
@@ -67,7 +69,7 @@ const submitPublish = async ({ rtPfx, source, npmrdsSourceId, years, percentTmc,
   return res.json();
 };
 
-function Create({ source, newVersion, baseUrl, context }) {
+function Create({ source, baseUrl, context }) {
   const navigate = useNavigate();
   const ctx = React.useContext(context);
   const { user, falcor, datasources, API_HOST } = ctx || {};
@@ -113,7 +115,7 @@ function Create({ source, newVersion, baseUrl, context }) {
     setLoading(true);
     try {
       const result = await submitPublish({
-        rtPfx, source, npmrdsSourceId, years, percentTmc, newVersion, user,
+        rtPfx, source, npmrdsSourceId, years, percentTmc, user,
       });
       const { etl_context_id, source_id } = result || {};
       console.log('[pm3] response', result);

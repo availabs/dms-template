@@ -243,7 +243,10 @@ INFO_BOX_SPEED_TITLES = {"route": "Route Speed", "tmc": "TMC Speed"}
 # combinator already proven in SPEED_EXPR's numerator. No year/bin/override
 # dependency — a TMC's `miles` is a static join column, not a per-epoch fact.
 INFO_BOX_LENGTH_BUCKET = ("length", "travel_time_all")
-LENGTH_EXPR = "arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) as length"
+# 2026-08-24: ported into vocabulary.json's `measures.length` (gap #16's Info Box length/aadt
+# port to the live authoring path) — read back out of it now, same convention every other
+# route-grain measure constant in this file follows (see this file's own header comment).
+LENGTH_EXPR = GRAPH_VOCAB["measures"]["length"]["expr"]
 # TMC grain groups by a real `tmc` column (round-33/round-38 categorize
 # convention), so each CH group is already scoped to one TMC — the
 # distinct-tmc map combinator above would be a redundant (and, live-verified
@@ -263,7 +266,8 @@ LENGTH_TMC_EXPR = "table1.miles as length"
 # correctly gap-log `aadt_override_not_applied` in that case rather than
 # silently drop the override, same as any other unmatched fragment.
 INFO_BOX_AADT_BUCKET = ("aadt", "travel_time_all")
-AADT_EXPR = "arrayAvg(mapValues(maxMap(map(ds.tmc, table1.aadt)))) as aadt"
+# 2026-08-24: same port as LENGTH_EXPR above — see its comment.
+AADT_EXPR = GRAPH_VOCAB["measures"]["aadt"]["expr"]
 # See LENGTH_TMC_EXPR above — same reasoning, same live-verified fix.
 AADT_TMC_EXPR = "table1.aadt as aadt"
 # Round 40: BASE_DATA_TYPES' `hoursOfDelay` key (reducer/tmcReducer both

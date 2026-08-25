@@ -266,6 +266,31 @@ function buildPm3ViewSql({ viewName, metricsTable, metaTableByYear, metricColumn
   `;
 }
 
+/**
+ * SQL for the source's `all_years` union view: `SELECT * FROM <member> UNION ALL …`.
+ *
+ * `SELECT *` is deliberate rather than an explicit column list. The members are pm3 views built by
+ * buildPm3ViewSql, so they are column-identical by construction, and a positional UNION ALL over
+ * `SELECT *` inherits their order exactly — an explicit list here would be a second place for the
+ * column contract to live and drift from.
+ *
+ * The caller MUST prove member identity first. Postgres rejects a UNION ALL whose branches disagree
+ * in arity or type, but it happily unions two relations whose same-typed columns sit in a DIFFERENT
+ * ORDER — and nearly every pm3 column is NUMERIC, so that failure mode is silent and total.
+ *
+ * @param {string} viewName        fully-qualified target, e.g. `pm3.s2135_v3741_..._all_years`
+ * @param {string[]} memberTables  fully-qualified per-year views, in the order to union them
+ */
+function buildPm3UnionViewSql({ viewName, memberTables }) {
+  if (!Array.isArray(memberTables) || !memberTables.length) {
+    throw new Error('buildPm3UnionViewSql: memberTables is empty');
+  }
+  return `
+    CREATE VIEW ${viewName} AS
+    ${memberTables.map((t) => `SELECT * FROM ${t}`).join('\n    UNION ALL\n    ')}
+  `;
+}
+
 module.exports = {
   toMetricDbRow,
   generateUpdateColumnsSql,
@@ -278,6 +303,7 @@ module.exports = {
   buildAddMetaColumnsSql,
   buildMetaSelectParts,
   buildPm3ViewSql,
+  buildPm3UnionViewSql,
   pm3ViewColumnNames,
   ERA_COLUMNS,
   DERIVED_META_COLUMNS,

@@ -5,7 +5,8 @@
  *   - creates the source when no source_id is given, queues a pm3/publish task,
  *     returns { etl_context_id, source_id };
  *   - descriptor carries npmrdsSourceId, years, percentTmc (default 100);
- *   - validates npmrdsSourceId + years with 400s;
+ *   - validates npmrdsSourceId + years with 400s, and REJECTS the retired append
+ *     descriptor (`view_id`) with a 400 rather than queueing a task that will fail;
  *   - NEVER touches the legacy data_manager.etl_contexts table
  *     (parent_context_id must not 500).
  *
@@ -125,6 +126,36 @@ async function runTests() {
       const res = mockRes();
       await handler({ params: { pgEnv: DAMA_TEST_DB }, body: { npmrdsSourceId: 1, years } }, res);
       assert(res.statusCode === 400, `should 400 for years=${JSON.stringify(years)} (got ${res.statusCode})`);
+    }
+  });
+
+  await test('publish rejects view_id with 400 — the append path is gone', async () => {
+    // A publish creates ONE VIEW PER YEAR (version = the 4-digit year), so `view_id` has no
+    // meaning. Rejecting at the route means a caller still sending the old descriptor finds out
+    // immediately instead of after a task has been queued and a surprise view has appeared.
+    const handler = getPublishHandler(plugin, helpers);
+    const res = mockRes();
+    await handler({ params: { pgEnv: DAMA_TEST_DB }, body: {
+      npmrdsSourceId: 1, years: [2023], view_id: 4242, user_id: 1,
+    } }, res);
+    assert(res.statusCode === 400, `should 400 (got ${res.statusCode})`);
+    assert(/one view per year/i.test(res.body.error), `error should explain (got ${res.body.error})`);
+  });
+
+  await test('publish forwards rebuildUnionView only when explicitly true', async () => {
+    // Opt-in: the union view defines a published trend series, and after a republish "which 2025?"
+    // is a human decision. Nothing implicit turns it on.
+    const handler = getPublishHandler(plugin, helpers);
+    for (const [sent, expected] of [[undefined, false], [true, true], ['yes', false]]) {
+      const res = mockRes();
+      await handler({ params: { pgEnv: DAMA_TEST_DB }, body: {
+        npmrdsSourceId: 1, years: [2023], user_id: 1, rebuildUnionView: sent,
+        source_values: { name: `pm3_union_${Date.now()}_${String(sent)}`, type: 'pm3' },
+      } }, res);
+      assert(res.statusCode !== 500, `should not 500 (got ${res.statusCode})`);
+      const status = await tasks.getTaskStatus(res.body.etl_context_id, DAMA_TEST_DB);
+      assert(parseJson(status.descriptor).rebuildUnionView === expected,
+        `rebuildUnionView=${JSON.stringify(sent)} should queue ${expected}`);
     }
   });
 

@@ -175,7 +175,7 @@ async function createDataTable({ db, table_schema, table_name, columns = false }
 async function getListTmcId({ chDb, dataTableName, year }) {
   const yearClause = year ? `WHERE EXTRACT(YEAR from date) = ${year}` : '';
   const sql = `SELECT distinct(tmc) FROM ${dataTableName} ${yearClause}`;
-  const result = await chDb.query({ query: sql, format: 'JSON' });
+  const result = await chDb.query({ query: sql, format: 'JSON', clickhouse_settings: { max_threads: 4 } });
   return result.json();
 }
 

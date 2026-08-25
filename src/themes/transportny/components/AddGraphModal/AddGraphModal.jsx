@@ -8,6 +8,10 @@ import {
   resolutionOptionsFor,
   COMPARISON_MODE_OPTIONS,
   DEFAULT_PICK,
+  resolveReliabilityBin,
+  resolveReliabilityYear,
+  RELIABILITY_BIN_LABELS,
+  PM3_VIEW_BY_YEAR,
 } from '../MeasurePicker/composeMeasureConfig';
 import { MAP_MEASURE_OPTIONS } from '../MeasurePicker/composeMapConfig';
 import { MEASURE_DESCRIPTIONS, GRAPH_TYPE_DESCRIPTIONS } from './graphGuidanceCopy';
@@ -91,7 +95,7 @@ const DISABLED_SHAPES = {};
 // touch PageContext, mirroring RouteTagBrowserModal's own contract (a picker component, not a
 // persistence layer). See planning/transportny/tasks/current/dynamic-reports-and-route-tags.md's Add-Graph
 // modal implementation plan for the full design record and why each piece looks the way it does.
-export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
+export default function AddGraphModal({ open, setOpen, routes, allRoutesResolved, onConfirm }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Select, Modal } = UI || {};
   const t = { ...addGraphModalTheme, ...getComponentTheme(themeFromContext, 'addGraphModal') };
@@ -178,10 +182,27 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
   // MAP_MEASURE_OPTIONS, not MEASURE_OPTIONS) — "none" (plain geometry) or one of the few measures
   // with an authored choropleth default.
   const isMap = pick.graphType === 'Map';
+  // Gap #16 (2026-08-21): same bin/year gates QuickControls' own Reliability pill uses, computed
+  // from this modal's pre-confirm selection state (selectedRouteIds + the flat weekdays/start/end
+  // fields, not yet the per-route `routeWindows` shape `handleConfirmAddGraph` builds at confirm
+  // time) rather than duplicating the resolution logic.
+  const previewRouteIds = useMemo(() => Array.from(selectedRouteIds), [selectedRouteIds]);
+  const previewRouteWindows = useMemo(
+    () => Object.fromEntries(previewRouteIds.map((id) => [id, [{ weekdays: pick.weekdays, start: pick.start, end: pick.end }]])),
+    [previewRouteIds, pick.weekdays, pick.start, pick.end]
+  );
+  const reliabilityBin = isTable ? resolveReliabilityBin(previewRouteIds, previewRouteWindows) : null;
+  const reliabilityYear = isTable && reliabilityBin ? resolveReliabilityYear(previewRouteIds, allRoutesResolved) : null;
+  const reliabilityAvailable = isTable && pick.resolution === 'summary' && !!reliabilityBin && !!PM3_VIEW_BY_YEAR[reliabilityYear];
+  const reliabilityDisabledReason = !isTable ? null
+    : pick.resolution !== 'summary' ? 'Reliability needs Summary resolution (one row per route).'
+    : !reliabilityBin ? 'Reliability needs the When window set to exactly AM Peak, Midday, PM Peak, or an all-weekend day mask — no other window has a precomputed value.'
+    : !PM3_VIEW_BY_YEAR[reliabilityYear] ? `No 1410 reliability data published for ${reliabilityYear ?? 'these routes’ dates'} yet.`
+    : null;
   const measureLabel = isTable
     ? ((pick.measures || []).length
-        ? `${pick.measures.length} measure${pick.measures.length === 1 ? '' : 's'}`
-        : 'no measures selected')
+        ? `${pick.measures.length} measure${pick.measures.length === 1 ? '' : 's'}${pick.routeCompare && pick.resolution === 'summary' ? ' + compare' : ''}${reliabilityAvailable && pick.includeReliability ? ' + reliability' : ''}`
+        : (reliabilityAvailable && pick.includeReliability ? 'reliability only' : 'no measures selected'))
     : isMap
       ? (MAP_MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || pick.measure)
       : (MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || pick.measure);
@@ -189,7 +210,7 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
   const comparisonLabel = COMPARISON_MODE_OPTIONS.find((o) => o.value === pick.comparisonMode)?.label || pick.comparisonMode;
 
   const canConfirm = selectedRouteIds.size >= 1 && !DISABLED_SHAPES[pick.graphType]
-    && (!isTable || (pick.measures || []).length >= 1);
+    && (!isTable || (pick.measures || []).length >= 1 || (reliabilityAvailable && pick.includeReliability));
 
   const handleConfirm = () => {
     onConfirm?.({ pick, selectedRouteIds: Array.from(selectedRouteIds) });
@@ -306,8 +327,55 @@ export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
                     </div>
                   ))}
                 </div>
-                {!(pick.measures || []).length ? (
-                  <div className={t.warningNote}>Pick at least one measure — a table with none has no columns to show.</div>
+                {!(pick.measures || []).length && !(reliabilityAvailable && pick.includeReliability) ? (
+                  <div className={t.warningNote}>Pick at least one measure, or turn on Reliability below — a table with neither has no columns to show.</div>
+                ) : null}
+                {(pick.measures || []).length ? (
+                  <>
+                    {/* report-authoring-ux-overhaul.md gap #16 (2026-08-21): Route Compare's "% vs
+                        Main" delta only ever computes a real route-vs-route difference at Summary
+                        resolution — __ANCHOR__ collapses the anchor route's ENTIRE range into one
+                        scalar with no per-bucket grouping of its own, so at any time-bucketed
+                        resolution the delta compares each bucket against the anchor's overall
+                        average instead of another route's value at that same bucket. Disabled
+                        (not hidden) outside Summary, matching the Difference-mode-count gate's own
+                        "show but disable" precedent elsewhere in this file. */}
+                    <button
+                      type="button"
+                      disabled={pick.resolution !== 'summary'}
+                      title={pick.resolution !== 'summary' ? 'Route Compare only works at Summary resolution — it compares each route\'s overall value, not a single time bucket.' : undefined}
+                      className={pick.routeCompare ? t.routeItemSelected : t.routeItem}
+                      onClick={() => setPick((p) => ({ ...p, routeCompare: !p.routeCompare }))}
+                    >
+                      <input type="checkbox" className={t.routeCheckbox} checked={!!pick.routeCompare} readOnly />
+                      <span className={t.routeName}>Route Compare — add a "% vs Main" column per measure</span>
+                    </button>
+                    {pick.resolution !== 'summary' ? (
+                      <div className={t.routesNote}>Only available at Summary resolution — set Resolution to "Summary (one row per route)" below to compare routes against each other.</div>
+                    ) : pick.routeCompare ? (
+                      <div className={t.routesNote}>
+                        Each measure gets an extra column showing this row's % difference from whichever route is first in this report's list (the anchor) — the server resolves this live, so reordering routes later changes which one is "Main."
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
+                {/* Gap #16 (2026-08-21): source 1410's LOTTR/TTTR/Freeflow. Rendered regardless of
+                    whether any other measure is checked — Info Box's own real shape had no
+                    "other measure" concept at all, reliability could always stand alone. */}
+                <button
+                  type="button"
+                  disabled={!reliabilityAvailable}
+                  title={reliabilityDisabledReason || undefined}
+                  className={pick.includeReliability ? t.routeItemSelected : t.routeItem}
+                  onClick={() => setPick((p) => ({ ...p, includeReliability: !p.includeReliability }))}
+                >
+                  <input type="checkbox" className={t.routeCheckbox} checked={!!pick.includeReliability} readOnly />
+                  <span className={t.routeName}>Reliability — add LOTTR/TTTR/Freeflow columns</span>
+                </button>
+                {reliabilityDisabledReason ? (
+                  <div className={t.routesNote}>{reliabilityDisabledReason}</div>
+                ) : reliabilityAvailable && pick.includeReliability ? (
+                  <div className={t.routesNote}>Adds LOTTR/TTTR ({RELIABILITY_BIN_LABELS[reliabilityBin]}) and Freeflow Speed columns, joined live from source 1410's year-{reliabilityYear} view.</div>
                 ) : null}
               </div>
             ) : null}

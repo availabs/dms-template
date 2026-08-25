@@ -1,15 +1,21 @@
 /**
  * Location inputs for actions_cleaned:
  *
- * 1. The published Actions Location view (source 11725) — precision +
- *    point per action_id, joined in from the same DB the output lives in.
+ * 1. The geolocation waterfall (_shared/location/waterfall.js), run IN-PROCESS
+ *    by the worker on the same raw rows it streams for the other transforms —
+ *    one publish produces a complete source, with no dependency on the
+ *    separately-published Actions Location source. (Until 2026-08, precision +
+ *    geometry were instead JOINED from Actions Location view 12463 — which
+ *    left every action added after that view was published with NULL
+ *    precision.) The worker builds the caches (Census batch geocode, two
+ *    centroid tables) up front; locationFromWaterfall below converts each
+ *    row's waterfall result into the per-id entry resolveLocation consumes.
  *
  * 2. static/location_updates.csv — the coordinates recovered from action
  *    text by references/actions/scripts/14_build_location_updates.mjs
  *    (reports/location-from-text.html). The CSV is copied here because
  *    references/actions/ is gitignored and the deployed worker must be able
- *    to read it. Geocoding already happened when the CSV was built — the
- *    worker never calls a geocoder.
+ *    to read it. Geocoding of the CSV already happened when it was built.
  *
  *    Per the owner's 2026-08-14 decision only the high/medium-confidence
  *    rows overlay (tiers A coords / B address / C intersection / D route);
@@ -51,31 +57,17 @@ const loadOverlay = ({ includeLowConfidence = false } = {}) => {
 	return { overlay, totalCsvRows: rows.length, skippedReview, skippedLow };
 };
 
-const loadLocations = async (db, locationsView) => {
-	const { rows: viewRows } = await db.query(
-		`SELECT data_table FROM data_manager.views WHERE view_id = $1;`,
-		[locationsView]
-	);
-	const dataTable = viewRows?.[0]?.data_table;
-	if (!dataTable) {
-		throw new Error(`no data_table found for locations view ${ locationsView }`);
-	}
-	const { rows } = await db.query(`
-		SELECT action_id, precision,
-				ST_X(wkb_geometry) AS lon,
-				ST_Y(wkb_geometry) AS lat
-			FROM ${ dataTable };
-	`);
-	const locations = new Map();
-	for (const r of rows) {
-		locations.set(String(r.action_id), {
-			precision: r.precision,
-			lon: r.lon == null ? null : Number(r.lon),
-			lat: r.lat == null ? null : Number(r.lat)
-		});
-	}
-	return locations;
-};
+/**
+ * Convert one waterfall result ({ level, point }) into the per-id entry the
+ * `locations` Map holds — the same shape the retired view join produced, so
+ * resolveLocation below is unchanged. The geocode cache hands back string
+ * coordinate pairs (they come from the Census CSV response), hence Number().
+ */
+const locationFromWaterfall = ({ level, point }) => ({
+	precision: level,
+	lon: point == null ? null : Number(point[0]),
+	lat: point == null ? null : Number(point[1])
+});
 
 // pipeline precision code → provenance columns for rows the overlay didn't touch
 const PIPELINE_METHOD = {
@@ -95,7 +87,9 @@ const precisionRank = p => p == null ? 6 : (PRECISION_RANK[p] ?? 6);
  * Resolve the location columns for one output row. `ids` is the surviving
  * action id first, then any merged-away duplicate ids — a merged group takes
  * the best location any member had (they are the same action in the same
- * place by definition).
+ * place by definition). `locations` is the Map of per-input-row waterfall
+ * results (every streamed row has an entry, so the `missing` branch below
+ * should never fire — it is kept as a loud tell for a wiring bug).
  */
 const resolveLocation = ({ ids, locations, overlay }) => {
 	let base = null;
@@ -129,7 +123,7 @@ const resolveLocation = ({ ids, locations, overlay }) => {
 	}
 
 	if (base == null) {
-		// action is missing from the locations view (added since it was published)
+		// no waterfall entry for any member id — a wiring bug, not a data state
 		return { precision: null, location_method: null, location_confidence: null,
 			dist_from_centroid_km: null, lon: null, lat: null, overlayAddress: null,
 			overlaid: false, missing: true };
@@ -147,4 +141,4 @@ const resolveLocation = ({ ids, locations, overlay }) => {
 	};
 };
 
-module.exports = { loadOverlay, loadLocations, resolveLocation };
+module.exports = { loadOverlay, locationFromWaterfall, resolveLocation };
