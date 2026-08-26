@@ -88,12 +88,15 @@ const getNodesInBbox = async (db, nodesTable, [minLon, minLat, maxLon, maxLat]) 
 };
 
 // Viewport-scoped edge lookup for the detour/avoid-segment plugin's segment-picker layer
-// (planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md) - same
-// never-return-the-whole-network discipline as getNodesInBbox above. Returns each edge as a
-// GeoJSON LineString feature (ogc_fid as the feature id) so the frontend can render + click it
-// directly, no client-side geometry assembly needed.
-const EDGES_QUERY_LIMIT = 2000;
-
+// (planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md). Returns each edge
+// as a GeoJSON LineString feature (ogc_fid as the feature id) so the frontend can render + click
+// it directly, no client-side geometry assembly needed.
+//
+// No LIMIT (2026-08-26, "i want all bbox must be working and showing all" - the earlier 2000-row
+// cap silently dropped edges in a dense viewport, and without a deterministic order the dropped
+// set could even change between identical repeat queries, looking like segments randomly
+// vanishing/reappearing on revisit). ORDER BY ogc_fid still applied for stable, reproducible
+// results.
 const getEdgesInBbox = async (db, edgesTable, [minLon, minLat, maxLon, maxLat]) => {
   const { rows } = await db.query(
     // `osm` (2026-08-25, detour plugin's endpoint-picker walk) - the OSM WAY id each edge belongs
@@ -105,8 +108,8 @@ const getEdgesInBbox = async (db, edgesTable, [minLon, minLat, maxLon, maxLat]) 
     `SELECT ogc_fid, osm, highway, from_node, to_node, ST_AsGeoJSON(wkb_geometry) AS geojson
        FROM ${edgesTable}
        WHERE wkb_geometry && ST_MakeEnvelope($1, $2, $3, $4, 4326)
-       LIMIT $5;`,
-    [minLon, minLat, maxLon, maxLat, EDGES_QUERY_LIMIT]
+       ORDER BY ogc_fid;`,
+    [minLon, minLat, maxLon, maxLat]
   );
   return rows.map((r) => ({
     type: "Feature",
