@@ -10,6 +10,26 @@ import {
 } from "../constants";
 import { runWhenStyleReady } from "./runWhenStyleReady";
 
+// Bbox chunking (2026-08-26, "it is taking a lot of time and got timeout, divided full state into
+// multiple like how the layer is calling apis" - the /routing/edges query has no row cap anymore
+// [it must return everything in view, not an arbitrary subset], so a single huge bbox at a wide
+// zoom could mean one enormous, slow query). Same idea as vector-tile loading: split the current
+// viewport into fixed-size cells and fetch each one separately (in parallel) instead of one
+// request for the whole thing - bounds any single request's cost regardless of how far zoomed out
+// the map is.
+const EDGE_CHUNK_SIZE_DEG = 0.1; // ~10km cells - keeps a single chunk's row count in the range already confirmed fast
+const MAX_EDGE_CHUNKS = 128; // safety ceiling - beyond this the viewport is too large to load the pickable network at all; zoom in instead of firing hundreds of parallel requests
+
+const splitBboxIntoChunks = ([minLon, minLat, maxLon, maxLat], chunkSize) => {
+  const chunks = [];
+  for (let lon = minLon; lon < maxLon; lon += chunkSize) {
+    for (let lat = minLat; lat < maxLat; lat += chunkSize) {
+      chunks.push([lon, lat, Math.min(lon + chunkSize, maxLon), Math.min(lat + chunkSize, maxLat)]);
+    }
+  }
+  return chunks;
+};
+
 // Renders the conflation network for the current viewport as a clickable line layer, lets the
 // user pick ONE segment (corrected flow, 2026-08-19 - see the task file's "Flow correction":
 // single-segment only for this pass, multi-select deferred).
@@ -41,7 +61,16 @@ export const useEdgeLayer = (map, conflationViewId, pgEnv, isActive) => {
     const b = map.getBounds();
     const bbox = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
     try {
-      const edges = await resolveEdgesInBbox(bbox, conflationViewId, pgEnv);
+      const chunks = splitBboxIntoChunks(bbox, EDGE_CHUNK_SIZE_DEG);
+      if (chunks.length > MAX_EDGE_CHUNKS) return; // viewport too large - zoom in to load the pickable network (avoids firing hundreds of parallel requests)
+      const chunkResults = await Promise.all(chunks.map((c) => resolveEdgesInBbox(c, conflationViewId, pgEnv)));
+      // Dedupe by ogc_fid (2026-08-26, "divided full state into multiple like how the layer is
+      // calling apis" - the &&-bbox-intersection query in a neighboring chunk can also match an
+      // edge whose geometry spans the chunk boundary, so the same edge can come back from more
+      // than one chunk).
+      const edgeById = new Map();
+      for (const chunkEdges of chunkResults) for (const e of chunkEdges) edgeById.set(e.id, e);
+      const edges = [...edgeById.values()];
       if (!isActiveRef.current) return; // went inactive while this fetch was in flight - don't re-add
       edgesRef.current = edges;
       const data = { type: "FeatureCollection", features: edges };
