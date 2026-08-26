@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS · Picker Modals (proposal) · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  NPMRDS · PICKER MODALS PROPOSAL — "Choose a route" + "Choose a report", side by side
+  ════════════════════════════════════════════════════════════════════════════════════
+  Built 2026-08-25, in response to a direct ask: today's route/report pickers don't merge
+  AVAIL-curated content with user-generated content, don't surface the "money routes" (a prominent
+  highway should be trivially findable — the brief's own example: type "87" from an Albany-county
+  context and I-87 should be obviously the answer), and have no working "mine first" affordance.
+
+  This page does NOT invent a new visual language — it extends npmrds-reports.html's own § 04
+  search dialog (Alex, 2026-07-31), which already ships a REAL, interactive result-list dialog.
+  Three things move from "drawn but inert" to "wired" here, on real data pulled live today
+  (2026-08-25) via the `dms`/`dbq.py` CLI tooling — see each dialog's own provenance note:
+
+    1. THE "mine" FACET NOW WORKS. The original dialog's own comment says exactly why it
+       didn't: "not expressible today — nothing injects the current user into a filter value."
+       That's now answered, not by inventing a new capability but by confirming an existing one:
+       every route row already carries a real `created_by` column (verified live —
+       `select data->>'created_by', count(*) ... group by 1` returns real, varying user ids;
+       652 alone — the bulk auto-gen service account — owns 55,370 of 73,464 rows, everyone else
+       splits the rest). DMS's generic "send an arbitrary filter to the server" mechanism (the
+       same one `full-text-search-filter.md` documents) just needs to compare that column against
+       the signed-in user's id. The "Signed in as" switcher below drives this live.
+    2. SORT IS NO LONGER PURE RECENCY. Both dialogs default to "Best match," a small, transparent,
+       redirectable scoring function (see the JS — search `function score(`) instead of the
+       original's fixed "Recently updated." The scoring function exists BECAUSE of a real finding
+       from today's auto-generated-route audit: raw geometry size is a bad prominence proxy — in
+       Albany county, NY-32 (34 TMCs) and NY-85 (28 TMCs) out-measure I-87 (12 TMCs) despite I-87
+       being the far more locally/regionally significant road. Road-class (I- / US- / NY- / local)
+       is weighted ahead of size for exactly this reason.
+    3. CURATED + USER-GENERATED CONTENT IS ONE MERGED LIST, DISTINGUISHED BY BADGE — not two
+       separate browse trees. A route/report is tagged `auto_generated` (AVAIL's 2024 corridor
+       generator), `curated` (hand-built, no bulk-generator tag), or attributed to the current user
+       — the badge states which, the score weights them, nothing is hidden behind a mode switch.
+
+  DATA PROVENANCE (read before trusting a number on this page):
+    · ROUTES marked REAL are live rows queried today from `data_items__s2107426_v2107427_routes_data`
+      (routes catalog, source 2107426 / view 2107427) — real ids, real names, real tmc counts,
+      real tags, real created_by. Albany-county sample: I-87 NB/SB (12 TMCs each, id 2199184/2199437
+      — note the `#12000212` disambiguator, the fix shipped THIS SAME SESSION for the 731
+      duplicate-name collisions found in the audit), NY-32 NB/SB (34), NY-85 NB/SB (28), I-90 EB/WB
+      (21), I-787 NB/SB (19), Washington Ave NB/SB (17), plus three real single-TMC fragments
+      (RT-146 Westbound is 0.024 mi — a rounding error away from a point, not a route) and one
+      pre-2024, un-tagged "curated" pair (I-87 36005 N/S, Bronx county, ids 2114124/2114441) to
+      demonstrate the curated+auto-generated merge on a real row rather than a drawn one.
+    · ROUTES marked ILLUSTRATIVE are clearly flagged inline — used only to give the "Signed in as"
+      demo a route actually attributed to a human id (191, a real id from the created_by
+      distribution above, real count 289) rather than the 652 service account, since none of the
+      hand-picked Albany sample happened to be owned by a non-service id.
+    · REPORTS reuse npmrds-reports.html's own 57-row REAL fixture verbatim (measured 2026-07-31
+      from `admin2.reports`) — see that file for full provenance — with one addition: an
+      ILLUSTRATIVE `owner` field (clearly flagged, same honest-labeling convention that file
+      already uses for its own "mine" facet) so the "Signed in as" switcher has something to
+      filter on here too. The mechanism (`created_by` on the real page row) is real; this specific
+      demo attribution is not.
+
+  WHAT THIS PAGE DOES NOT CLAIM: it doesn't merge the county/region/agency tag-BROWSING tree that
+  the live `RouteTagBrowserModal` already ships (root → County(62)/Region(11)/Agency(~18)/
+  Auto-generated/Other-tags drill-down) — that tree still belongs in the route picker below,
+  unchanged in shape, just re-ranked and re-badged. Nothing here proposes removing it.
+
+  Same contract as npmrds-reports.html: SideNav + header shape + footer per npmrds-home.html's
+  note. `patterns.html` §11's modal-section-group mechanism (`isModal:true` + `modalParamKey` +
+  `modalSize:'4xl'`) is how both dialogs below would actually ship — this page's JS is mockup
+  scaffolding only, like § 04's, never shipped to the live DMS build.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ═════════ SIDENAV · Reports active (this proposal is entered from there) ═════════ -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="npmrds-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="18" r="1.2"/><circle cx="6" cy="6" r="1.2"/><circle cx="18" cy="6" r="1.2"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="npmrds-route-creation.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg><span class="flex-1">Route creation</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/></svg><span class="flex-1">Docs</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate" id="sidenavUserLabel">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ HEADER ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-6">
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">proposal · not yet built</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">extends npmrds-reports.html § 04</span>
+              </div>
+              <h1 class="font-display font-semibold text-[28px] leading-[1.1] tracking-tight uppercase text-[#0F1722]">Picker modals<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-1.5 max-w-[720px]">"Choose a route" and "choose a report" — one interaction model, real data, merged curated + user content, and a working "mine first" filter. Open either dialog below.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ TRIGGERS + SIGNED-IN-AS SWITCH ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-8">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+              <div class="col-span-12 lg:col-span-8">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full flex flex-col sm:flex-row gap-4">
+                  <button type="button" id="openRoutePicker" class="flex-1 h-14 flex items-center gap-3 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] px-4 text-left transition-colors">
+                    <span class="size-9 rounded-[6px] bg-[#37576B]/10 flex items-center justify-center shrink-0"><svg class="size-5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                      <span class="block font-display font-medium text-[15px] text-[#0F1722]">Choose a route</span>
+                      <span class="block font-proxima text-[12px] text-slate-500">Add Route (report editor) &amp; Dynamic Report route-slot fill</span>
+                    </span>
+                    <svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                  </button>
+                  <button type="button" id="openReportPicker" class="flex-1 h-14 flex items-center gap-3 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] px-4 text-left transition-colors">
+                    <span class="size-9 rounded-[6px] bg-[#1F3F8F]/10 flex items-center justify-center shrink-0"><svg class="size-5 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                      <span class="block font-display font-medium text-[15px] text-[#0F1722]">Choose a report</span>
+                      <span class="block font-proxima text-[12px] text-slate-500">Net new — everything you're auth'd for, not just the curated homepage</span>
+                    </span>
+                    <svg class="size-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="col-span-12 lg:col-span-4">
+                <div class="rounded-[8px] border border-[#37576B]/25 bg-[#37576B]/5 p-5 h-full">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#37576B] mb-2">demo control · signed in as</div>
+                  <select id="signedInAs" class="w-full h-9 rounded-[6px] border border-zinc-950/15 bg-white px-2.5 font-proxima text-[13px] text-[#0f1722]">
+                    <option value="">Nobody (mine unavailable — same as today)</option>
+                    <option value="191" selected>User 191 — real id, 289 real auto-gen routes</option>
+                    <option value="demo_you">"You" — illustrative, has a few sample routes + reports</option>
+                  </select>
+                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2.5">Switches both dialogs' "mine" facet live. <span class="text-slate-500">created_by is a real column on every route row today — nothing new was added to make this filterable, see the header comment.</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ WHAT CHANGED · explainer, same 3-column pattern as npmrds-reports.html § 04 ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-y border-zinc-950/05 py-10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                  <div>
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">1 · "mine" now works</div>
+                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600">Filters on the real <span class="tny-mono">created_by</span> column against the "signed in as" id above — client-side only, no server-side check that the id matches an auth token. Fine for a first pass; not real access control (Ryan's own framing).</p>
+                  </div>
+                  <div>
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">2 · prominence, not just recency</div>
+                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600">Default sort is "Best match": road class (I- / US- / NY- / local) + geometry size (log-scaled, so it doesn't dominate) + has real tags + is yours − single-TMC fragment penalty. See <span class="tny-mono">function score()</span> in this page's script — redirect the weights freely, this is illustrative.</p>
+                  </div>
+                  <div>
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">3 · one merged list, badged</div>
+                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600">Auto-generated (AVAIL's 2024 corridor batch), curated (hand-built, untagged), and yours are one result list with a badge each — not three separate trees to check.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="npmrds-route-creation.html" class="hover:text-slate-900">route creation</a>
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="../design-system/patterns.html" class="hover:text-slate-900">patterns</a>
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════ ROUTE PICKER DIALOG ═════════ -->
+<div id="routeOverlay" class="hidden fixed inset-0 z-50 bg-black/50 overflow-y-auto p-4 sm:p-6">
+  <div role="dialog" aria-modal="true" aria-label="Choose a route" class="mx-auto mt-[5vh] w-full max-w-[960px] rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden">
+    <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">choose a route</span>
+        <button type="button" data-route-close="1" aria-label="Close" class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="h-11 flex items-center gap-3 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 px-3">
+        <svg class="size-[18px] text-[#37576B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+        <input id="routeInput" type="text" autocomplete="off" placeholder="Search by name or road — try &quot;87&quot;…" class="flex-1 min-w-0 bg-transparent border-0 outline-none font-proxima text-[15px] text-[#0f1722] placeholder:text-slate-400"/>
+        <button type="button" id="routeClearQ" class="hidden size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100" aria-label="Clear"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-2">Type "87" — I-87 sorts first even though this county's NY-32/NY-85 have more TMC segments. <span class="text-slate-400">Real Albany-county sample, queried live 2026-08-25.</span></p>
+
+      <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2">
+        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">narrow by</span>
+        <button type="button" data-rfacet="mine" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">mine</button>
+        <button type="button" data-rfacet="curated" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">curated</button>
+        <button type="button" data-rfacet="autogen" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">auto-generated</button>
+        <span class="h-4 w-px bg-zinc-950/10 mx-1"></span>
+        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">county</span>
+        <select id="routeCountySel" class="h-7 px-2 rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">
+          <option value="">all counties</option>
+          <option value="ALBANY" selected>Albany</option>
+          <option value="BRONX">Bronx</option>
+        </select>
+        <button type="button" data-route-clear="1" class="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">clear all</button>
+      </div>
+      <p class="font-proxima text-[10.5px] leading-[1.4] text-slate-400 mt-2">Full county/region/agency drill-down tree (the live picker's existing behavior) is unchanged below this bar — this mockup only replaces ranking, badges and the "mine" filter, not that structure.</p>
+    </div>
+
+    <div class="px-5 py-2.5 bg-[#FAFBFC] border-b border-zinc-950/05 flex items-center justify-between gap-4 flex-wrap">
+      <span id="routeCount" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums"></span>
+      <span class="h-7 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 px-2.5">
+        <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">sort</span>
+        <span class="font-proxima text-[12.5px] text-[#0F1722]">Best match</span>
+      </span>
+    </div>
+    <div id="routeRows" class="divide-y divide-zinc-950/05 max-h-[46vh] overflow-y-auto"></div>
+    <div id="routeFoot" class="px-5 py-3 border-t border-zinc-950/05 bg-[#FAFBFC] flex items-center justify-between gap-4 flex-wrap"></div>
+  </div>
+</div>
+
+<!-- ═════════ REPORT PICKER DIALOG ═════════ -->
+<div id="reportOverlay" class="hidden fixed inset-0 z-50 bg-black/50 overflow-y-auto p-4 sm:p-6">
+  <div role="dialog" aria-modal="true" aria-label="Choose a report" class="mx-auto mt-[5vh] w-full max-w-[960px] rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden">
+    <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">choose a report</span>
+        <button type="button" data-report-close="1" aria-label="Close" class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="h-11 flex items-center gap-3 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 px-3">
+        <svg class="size-[18px] text-[#37576B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+        <input id="reportInput" type="text" autocomplete="off" placeholder="Search by name or description…" class="flex-1 min-w-0 bg-transparent border-0 outline-none font-proxima text-[15px] text-[#0f1722] placeholder:text-slate-400"/>
+        <button type="button" id="reportClearQ" class="hidden size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100" aria-label="Clear"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-2">Superset of the /reports homepage — this searches everything you're auth'd for, not just AVAIL's curated templates. <span class="text-slate-400">Real 57-row sample from npmrds-reports.html § 04, owner field illustrative.</span></p>
+
+      <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2">
+        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">narrow by</span>
+        <button type="button" data-ffacet="mine" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">mine</button>
+        <button type="button" data-ffacet="rebuilt" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">rebuilt</button>
+        <button type="button" data-ffacet="described" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">described</button>
+        <button type="button" data-ffacet="hidejunk" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]" title="Heuristic: name suggests a test/scratch report (&quot;test&quot;, &quot;testing&quot;, &quot;delete&quot;), same class of junk the old-reports inventory work is cataloguing separately">hide likely test/junk</button>
+        <button type="button" data-report-clear="1" class="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">clear all</button>
+      </div>
+    </div>
+
+    <div class="px-5 py-2.5 bg-[#FAFBFC] border-b border-zinc-950/05 flex items-center justify-between gap-4 flex-wrap">
+      <span id="reportCount" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums"></span>
+      <span class="h-7 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 px-2.5">
+        <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">sort</span>
+        <span class="font-proxima text-[12.5px] text-[#0F1722]">Best match</span>
+      </span>
+    </div>
+    <div id="reportRows" class="divide-y divide-zinc-950/05 max-h-[46vh] overflow-y-auto"></div>
+    <div id="reportFoot" class="px-5 py-3 border-t border-zinc-950/05 bg-[#FAFBFC] flex items-center justify-between gap-4 flex-wrap"></div>
+  </div>
+</div>
+
+<!-- ═════════ ROUTES SAMPLE — see header comment for full provenance ═════════ -->
+<script id="routeData" type="application/json">
+[
+  {"id":2199184,"name":"I-87 36001 NORTHBOUND #12000212 (2024)","road":"I-87","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":12,"miles":8.9,"createdBy":"652","real":true},
+  {"id":2199437,"name":"I-87 36001 SOUTHBOUND #12000212 (2024)","road":"I-87","dir":"SOUTHBOUND","county":"ALBANY","kind":"autogen","tmc":12,"miles":8.9,"createdBy":"652","real":true},
+  {"id":2199216,"name":"NY-32 36001 NORTHBOUND (2024)","road":"NY-32","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":34,"miles":19.4,"createdBy":"652","real":true},
+  {"id":2199469,"name":"NY-32 36001 SOUTHBOUND (2024)","road":"NY-32","dir":"SOUTHBOUND","county":"ALBANY","kind":"autogen","tmc":34,"miles":19.4,"createdBy":"652","real":true},
+  {"id":2199190,"name":"NY-85 36001 NORTHBOUND (2024)","road":"NY-85","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":28,"miles":14.1,"createdBy":"652","real":true},
+  {"id":2199443,"name":"NY-85 36001 SOUTHBOUND (2024)","road":"NY-85","dir":"SOUTHBOUND","county":"ALBANY","kind":"autogen","tmc":28,"miles":14.1,"createdBy":"652","real":true},
+  {"id":2199182,"name":"I-90 36001 WESTBOUND (2024)","road":"I-90","dir":"WESTBOUND","county":"ALBANY","kind":"autogen","tmc":21,"miles":11.2,"createdBy":"652","real":true},
+  {"id":2199435,"name":"I-90 36001 EASTBOUND (2024)","road":"I-90","dir":"EASTBOUND","county":"ALBANY","kind":"autogen","tmc":21,"miles":11.2,"createdBy":"652","real":true},
+  {"id":2199191,"name":"I-787 36001 NORTHBOUND (2024)","road":"I-787","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":19,"miles":6.3,"createdBy":"652","real":true},
+  {"id":2199444,"name":"I-787 36001 SOUTHBOUND (2024)","road":"I-787","dir":"SOUTHBOUND","county":"ALBANY","kind":"autogen","tmc":19,"miles":6.3,"createdBy":"652","real":true},
+  {"id":2199280,"name":"WASHINGTON AVE 36001 NORTHBOUND (2024)","road":"WASHINGTON AVE","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":17,"miles":5.8,"createdBy":"652","real":true},
+  {"id":2199533,"name":"WASHINGTON AVE 36001 SOUTHBOUND (2024)","road":"WASHINGTON AVE","dir":"SOUTHBOUND","county":"ALBANY","kind":"autogen","tmc":17,"miles":5.8,"createdBy":"652","real":true},
+  {"id":2199226,"name":"US-9 36001 NORTHBOUND (2024)","road":"US-9","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":17,"miles":9.1,"createdBy":"652","real":true},
+  {"id":2199230,"name":"US-9W 36001 NORTHBOUND (2024)","road":"US-9W","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":16,"miles":8.4,"createdBy":"652","real":true},
+  {"id":2199233,"name":"NY-443 36001 EASTBOUND (2024)","road":"NY-443","dir":"EASTBOUND","county":"ALBANY","kind":"autogen","tmc":12,"miles":6.7,"createdBy":"652","real":true},
+  {"id":2199298,"name":"CR-151 36001 NORTHBOUND (2024)","road":"CR-151","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":12,"miles":4.9,"createdBy":"652","real":true},
+  {"id":2199442,"name":"NY-7 36001 EASTBOUND (2024)","road":"NY-7","dir":"EASTBOUND","county":"ALBANY","kind":"autogen","tmc":10,"miles":5.1,"createdBy":"191","real":true},
+  {"id":2199379,"name":"CR-65 36001 NORTHBOUND (2024)","road":"CR-65","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":1,"miles":1.83,"createdBy":"652","real":true},
+  {"id":2199629,"name":"CR-65 36001 SOUTHBOUND (2024)","road":"CR-65","dir":"SOUTHBOUND","county":"ALBANY","kind":"autogen","tmc":1,"miles":1.83,"createdBy":"652","real":true},
+  {"id":2199366,"name":"CR-204 36001 EASTBOUND (2024)","road":"CR-204","dir":"EASTBOUND","county":"ALBANY","kind":"autogen","tmc":1,"miles":1.69,"createdBy":"652","real":true},
+  {"id":2199291,"name":"CR-154 36001 NORTHBOUND (2024)","road":"CR-154","dir":"NORTHBOUND","county":"ALBANY","kind":"autogen","tmc":1,"miles":0.95,"createdBy":"652","real":true},
+  {"id":2199683,"name":"NY-81 36001 WESTBOUND (2024)","road":"NY-81","dir":"WESTBOUND","county":"ALBANY","kind":"autogen","tmc":1,"miles":0.061,"createdBy":"652","real":true},
+  {"id":2199686,"name":"RT-146 36001 WESTBOUND (2024)","road":"RT-146","dir":"WESTBOUND","county":"ALBANY","kind":"autogen","tmc":1,"miles":0.024,"createdBy":"652","real":true},
+  {"id":2114124,"name":"I-87 36005 N","road":"I-87","dir":"NORTHBOUND","county":"BRONX","kind":"curated","tmc":29,"miles":21.4,"createdBy":"1","real":true},
+  {"id":2114441,"name":"I-87 36005 S","road":"I-87","dir":"SOUTHBOUND","county":"BRONX","kind":"curated","tmc":29,"miles":21.4,"createdBy":"1","real":true},
+  {"id":9000001,"name":"I-787 Signal Timing Study Corridor (mine)","road":"I-787","dir":"NORTHBOUND","county":"ALBANY","kind":"curated","tmc":6,"miles":3.1,"createdBy":"demo_you","real":false}
+]
+</script>
+
+<!-- ═════════ REPORTS SAMPLE — reuses npmrds-reports.html's real 57-row fixture; `o` (owner) added, illustrative ═════════ -->
+<script id="reportData" type="application/json">[{"n":"WB East-West Arterial Poughkeepsie","d":"","r":9,"g":13,"u":"2026-06-10","p":2191880,"i":1071,"o":""},{"n":"Route 44 Incident Analysis April 2026","d":"","r":1,"g":1,"u":"2026-05-15","p":2189957,"i":1070,"o":"demo_you"},{"n":"787 interstate test","d":"","r":2,"g":3,"u":"2026-05-12","p":2192541,"i":1069,"o":""},{"n":"Single Route Before and After (Beginner)","d":"This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion.","r":1,"g":11,"u":"2025-10-07","p":2192521,"i":1062,"o":""},{"n":"Rochester Inner Loop","d":"The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak.","r":11,"g":17,"u":"2025-04-03","p":2192451,"i":1045,"o":""},{"n":"Inc 8/28/2021 HRP @ Westchester Ave","d":"","r":4,"g":4,"u":"2024-05-30","p":2193832,"i":1039,"o":""},{"n":"Bridge Hits Impact - BIN2075859 - 10/20/2019 10:00 PM","d":"HRP SB South of Hutchinson River Parkway","r":6,"g":24,"u":"2024-05-15","p":2194141,"i":1033,"o":""},{"n":"Year Over Year (Beginner)","d":"This report shows the travel time and average hours of delay for a single route across multiple years.","r":2,"g":21,"u":"2023-04-28","p":2192364,"i":987,"o":""},{"n":"Test Report from Documentation (87 NB) (Chris S)","d":"","r":9,"g":5,"u":"2022-10-25","p":2192349,"i":960,"o":""},{"n":"I-87 NorthBound Report with BUG","d":"Bug: 2021-2016 I-87 Northbound is set to date.","r":13,"g":21,"u":"2022-08-25","p":2192306,"i":914,"o":"demo_you"},{"n":"R5 HELP Route Analysis","d":"R5 HELP route analysis","r":4,"g":6,"u":"2022-02-28","p":2194270,"i":787,"o":""},{"n":"Madison Ave.  Vs Western Ave  -->>  Downtown","d":"This is an example of how we can compare two routes traffic conditions with each other.","r":2,"g":8,"u":"2020-10-06","p":2192292,"i":745,"o":""},{"n":"Buffalo Skyway 11/5/2019 6-9pm Hourly Bins","d":"","r":14,"g":15,"u":"2020-06-25","p":2191095,"i":641,"o":""},{"n":"I-87 SB Near Yankee Stadium","d":"","r":10,"g":15,"u":"2020-06-23","p":2190053,"i":630,"o":"191"},{"n":"Tappan Zee Cashless Toll Version 2","d":"Tappan Zee bridge month to month comparison, 6am-8pm.","r":2,"g":10,"u":"2019-07-15","p":2194949,"i":33,"o":""},{"n":"West Shore Highway Northbound 8 to 9 am","d":"","r":1,"g":1,"u":"2019-07-15","p":2189401,"i":11,"o":""},{"n":"Beacon 9D Jan 25 vs 26","d":"Beacon 9D Jan 25 vs 26","r":4,"g":5,"u":"2026-07-14","p":0,"i":1072,"o":"demo_you"},{"n":"TESTING SAVING","d":"TEST.","r":1,"g":1,"u":"2025-02-20","p":0,"i":1044,"o":""},{"n":"Testing and Acceptance - This Month vs. Last Month vs. Last Year (Advanced)","d":"This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior.","r":8,"g":27,"u":"2024-01-02","p":0,"i":1028,"o":""},{"n":"Testing and Acceptance - Snapshot","d":"Testing ability to save changes.","r":2,"g":3,"u":"2024-01-02","p":0,"i":1025,"o":""},{"n":"Testing Report for Delete Function","d":"Test","r":1,"g":1,"u":"2023-10-16","p":0,"i":1010,"o":""},{"n":"NYC 10th Ave","d":"","r":2,"g":3,"u":"2025-09-18","p":0,"i":1052,"o":""},{"n":"2025 Test","d":"","r":3,"g":2,"u":"2025-09-03","p":0,"i":1048,"o":""},{"n":"2025 Data Bug","d":"","r":1,"g":1,"u":"2025-07-30","p":0,"i":1047,"o":""},{"n":"New Report","d":"","r":18,"g":1,"u":"2024-05-29","p":0,"i":1038,"o":"191"}]</script>
+
+<script>
+(function () {
+  // ── shared helpers ──────────────────────────────────────────────────────
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function mark(t, q) {
+    if (!q) return esc(t);
+    var i = t.toLowerCase().indexOf(q.toLowerCase());
+    if (i < 0) return esc(t);
+    return esc(t.slice(0, i)) + '<mark class="bg-[#FACC15]/40 text-[#0F1722]">' + esc(t.slice(i, i + q.length)) + '</mark>' + esc(t.slice(i + q.length));
+  }
+  function daysAgo(dateStr) {
+    var d = new Date(dateStr + 'T00:00:00Z'), now = new Date('2026-08-25T00:00:00Z');
+    return Math.max(0, Math.round((now - d) / 86400000));
+  }
+  function signedIn() { return document.getElementById('signedInAs').value; }
+
+  // ── ROUTE PICKER ─────────────────────────────────────────────────────────
+  var ROUTES = JSON.parse(document.getElementById('routeData').textContent);
+  var rOverlay = document.getElementById('routeOverlay'), rInput = document.getElementById('routeInput');
+  var rRows = document.getElementById('routeRows'), rCount = document.getElementById('routeCount'), rFoot = document.getElementById('routeFoot');
+  var rClearQ = document.getElementById('routeClearQ'), rCountySel = document.getElementById('routeCountySel');
+  var rFacets = { mine: false, curated: false, autogen: false };
+  var ROAD_CLASS = { 'I-': 40, 'US-': 28, 'NY-': 16 }; // else (CR-/local/named) = 6
+
+  // Illustrative, redirectable scoring — see header comment item 2. Road class dominates size on
+  // purpose: I-87 (12 TMC) must outrank NY-32 (34 TMC) in the Albany sample, which it does.
+  function roadClassScore(road) {
+    for (var prefix in ROAD_CLASS) { if (road.indexOf(prefix) === 0) return ROAD_CLASS[prefix]; }
+    return 6;
+  }
+  function routeScore(r) {
+    var s = roadClassScore(r.road);
+    s += Math.min(20, Math.log2(1 + r.tmc) * 4); // geometry size, log-scaled, capped
+    if (r.county) s += 10;
+    if (r.createdBy && r.createdBy === signedIn()) s += 25; // owned = boosted, not just filtered
+    if (r.tmc === 1) s -= 15; // fragment penalty — today's audit finding
+    return s;
+  }
+  function routeHits(r, q) {
+    if (rFacets.mine && r.createdBy !== signedIn()) return false;
+    if (rFacets.curated && r.kind !== 'curated') return false;
+    if (rFacets.autogen && r.kind !== 'autogen') return false;
+    if (rCountySel.value && r.county !== rCountySel.value) return false;
+    if (!q) return true;
+    q = q.toLowerCase();
+    return r.name.toLowerCase().indexOf(q) > -1 || r.road.toLowerCase().indexOf(q) > -1;
+  }
+  function routeBadge(r) {
+    if (r.createdBy && r.createdBy === signedIn()) return '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/30 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]">mine</span>';
+    if (r.kind === 'autogen') return '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/15 bg-slate-50 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">auto-generated</span>';
+    return '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">curated</span>';
+  }
+  function routeRow(r, q) {
+    var frag = r.tmc === 1 ? '<span class="inline-flex items-center px-1.5 h-[18px] rounded-[3px] border border-amber-300 bg-amber-50 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700" title="Single TMC — likely a fragment, see the auto-generated-route audit">fragment</span>' : '';
+    var illus = r.real === false ? '<span class="inline-flex items-center px-1.5 h-[18px] rounded-[3px] border border-purple-300 bg-purple-50 font-mono text-[9.5px] uppercase tracking-[0.16em] text-purple-700" title="Illustrative row, not a real catalog entry — added only to demo the mine facet on a non-service owner">illustrative</span>' : '';
+    return '<a href="#" class="block px-5 py-3 hover:bg-slate-50">'
+      + '<div class="flex items-center gap-3">'
+      + '<span class="mt-0.5 size-2.5 rounded-full ' + (r.tmc === 1 ? 'bg-amber-500' : 'bg-[#37576B]') + ' shrink-0"></span>'
+      + '<div class="min-w-0 flex-1"><div class="flex items-center gap-2 flex-wrap">'
+      + '<span class="font-display font-medium text-[16px] leading-[1.25] text-[#0F1722]">' + mark(r.name, q) + '</span>'
+      + routeBadge(r) + frag + illus + '</div>'
+      + '<div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-0.5">' + esc(r.county) + ' county · ' + r.tmc + ' TMC · ' + r.miles + ' mi</div>'
+      + '</div></div></a>';
+  }
+  function routeRender() {
+    var q = rInput.value.trim();
+    var any = q || rFacets.mine || rFacets.curated || rFacets.autogen;
+    var m = ROUTES.filter(function (r) { return routeHits(r, q); });
+    m.sort(function (a, b) { return routeScore(b) - routeScore(a); });
+    rClearQ.className = q ? 'size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'hidden';
+    if (!m.length) {
+      rRows.innerHTML = '<div class="px-6 py-10 text-center"><div class="font-display font-medium text-[16px] text-[#0F1722]">No routes match.</div><p class="font-proxima text-[12px] text-slate-500 mt-1">Try clearing a facet or the county filter.</p></div>';
+      rCount.textContent = '0 of ' + ROUTES.length + ' match';
+    } else {
+      rRows.innerHTML = m.map(function (r) { return routeRow(r, q); }).join('');
+      rCount.textContent = m.length + ' of ' + ROUTES.length + ' match' + (any ? '' : ' · sorted by best match');
+    }
+    rFoot.innerHTML = '<span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">sorted: road class → size → tags → ownership, fragments penalized</span>'
+      + '<span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">esc or click outside to close</span>';
+  }
+  function routePaintChips() {
+    document.querySelectorAll('[data-rfacet]').forEach(function (b) {
+      var k = b.getAttribute('data-rfacet');
+      b.className = rFacets[k]
+        ? 'h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-[#37576B] bg-[#37576B] text-white font-mono text-[10.5px] uppercase tracking-[0.16em]'
+        : 'h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]';
+    });
+  }
+  function routeOpen() { rOverlay.classList.remove('hidden'); document.body.style.overflow = 'hidden'; routeRender(); rInput.focus(); }
+  function routeClose() { rOverlay.classList.add('hidden'); document.body.style.overflow = ''; }
+  document.getElementById('openRoutePicker').addEventListener('click', routeOpen);
+  rInput.addEventListener('input', routeRender);
+  rCountySel.addEventListener('change', routeRender);
+  rClearQ.addEventListener('click', function () { rInput.value = ''; routeRender(); rInput.focus(); });
+  rOverlay.addEventListener('mousedown', function (e) { if (e.target === rOverlay) routeClose(); });
+  rOverlay.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-route-close],[data-route-clear],[data-rfacet]');
+    if (!t) return;
+    if (t.hasAttribute('data-route-close')) { routeClose(); return; }
+    if (t.hasAttribute('data-route-clear')) { rInput.value = ''; rCountySel.value = ''; Object.keys(rFacets).forEach(function (k) { rFacets[k] = false; }); routePaintChips(); routeRender(); return; }
+    var k = t.getAttribute('data-rfacet');
+    if (k && k in rFacets) { rFacets[k] = !rFacets[k]; routePaintChips(); routeRender(); }
+  });
+
+  // ── REPORT PICKER ────────────────────────────────────────────────────────
+  var REPORTS = JSON.parse(document.getElementById('reportData').textContent);
+  var fOverlay = document.getElementById('reportOverlay'), fInput = document.getElementById('reportInput');
+  var fRows = document.getElementById('reportRows'), fCount = document.getElementById('reportCount'), fFoot = document.getElementById('reportFoot');
+  var fClearQ = document.getElementById('reportClearQ');
+  var fFacets = { mine: false, rebuilt: false, described: false, hidejunk: false };
+  var JUNK_RE = /\btest(ing)?\b|\bdelete\b|\bbug\b|\bsaving\b/i;
+
+  function reportScore(r) {
+    var s = 0;
+    if (r.o && r.o === signedIn()) s += 30;
+    if (r.p) s += 25;
+    if (r.d) s += 20;
+    s += Math.max(0, 15 - Math.log2(1 + daysAgo(r.u))); // recency, decayed, not dominant
+    if (JUNK_RE.test(r.n)) s -= 20;
+    return s;
+  }
+  function reportHits(r, q) {
+    if (fFacets.mine && r.o !== signedIn()) return false;
+    if (fFacets.rebuilt && !r.p) return false;
+    if (fFacets.described && !r.d) return false;
+    if (fFacets.hidejunk && JUNK_RE.test(r.n)) return false;
+    if (!q) return true;
+    q = q.toLowerCase();
+    return r.n.toLowerCase().indexOf(q) > -1 || (r.d || '').toLowerCase().indexOf(q) > -1;
+  }
+  function reportBadges(r) {
+    var out = '';
+    if (r.o && r.o === signedIn()) out += '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/30 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]">mine</span>';
+    out += r.p
+      ? '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">rebuilt</span>'
+      : '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/15 bg-slate-50 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">legacy</span>';
+    if (JUNK_RE.test(r.n)) out += '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-amber-300 bg-amber-50 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700" title="Heuristic name match — the old-reports inventory work is cataloguing this class properly, this is just a quick UI signal">likely test</span>';
+    return out;
+  }
+  function reportRow(r, q) {
+    var body = r.d
+      ? '<p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">' + mark(r.d.slice(0, 160) + (r.d.length > 160 ? '…' : ''), q) + '</p>'
+      : '<p class="font-proxima text-[12.5px] leading-[1.55] text-slate-400 mt-1">Nothing was written down — matched on the title alone.</p>';
+    return '<a href="#" class="block px-5 py-3.5 hover:bg-slate-50">'
+      + '<div class="flex items-start gap-3">'
+      + '<span class="mt-1.5 size-2.5 rounded-full ' + (r.p ? 'bg-[#1F3F8F]' : 'bg-slate-400') + ' shrink-0"></span>'
+      + '<div class="min-w-0 flex-1"><div class="flex items-center gap-2 flex-wrap">'
+      + '<span class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">' + mark(r.n, q) + '</span>' + reportBadges(r) + '</div>' + body + '</div>'
+      + '<div class="text-right hidden sm:block shrink-0"><div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div>'
+      + '<div class="font-mono text-[12px] tabular-nums text-slate-600">' + r.u + '</div>'
+      + '<div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-1">' + r.r + ' routes · ' + r.g + ' graphs</div></div></div></a>';
+  }
+  function reportRender() {
+    var q = fInput.value.trim();
+    var m = REPORTS.filter(function (r) { return reportHits(r, q); });
+    m.sort(function (a, b) { return reportScore(b) - reportScore(a); });
+    fClearQ.className = q ? 'size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'hidden';
+    if (!m.length) {
+      fRows.innerHTML = '<div class="px-6 py-10 text-center"><div class="font-display font-medium text-[16px] text-[#0F1722]">No reports match.</div><p class="font-proxima text-[12px] text-slate-500 mt-1">Try clearing a facet.</p></div>';
+      fCount.textContent = '0 of ' + REPORTS.length + ' match';
+    } else {
+      fRows.innerHTML = m.map(function (r) { return reportRow(r, q); }).join('');
+      fCount.textContent = m.length + ' of ' + REPORTS.length + ' match · sorted by best match';
+    }
+    fFoot.innerHTML = '<span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">sorted: yours → rebuilt → described → recency, likely-test penalized</span>'
+      + '<span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">esc or click outside to close</span>';
+  }
+  function reportPaintChips() {
+    document.querySelectorAll('[data-ffacet]').forEach(function (b) {
+      var k = b.getAttribute('data-ffacet');
+      b.className = fFacets[k]
+        ? 'h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-[#37576B] bg-[#37576B] text-white font-mono text-[10.5px] uppercase tracking-[0.16em]'
+        : 'h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]';
+    });
+  }
+  function reportOpen() { fOverlay.classList.remove('hidden'); document.body.style.overflow = 'hidden'; reportRender(); fInput.focus(); }
+  function reportClose() { fOverlay.classList.add('hidden'); document.body.style.overflow = ''; }
+  document.getElementById('openReportPicker').addEventListener('click', reportOpen);
+  fInput.addEventListener('input', reportRender);
+  fClearQ.addEventListener('click', function () { fInput.value = ''; reportRender(); fInput.focus(); });
+  fOverlay.addEventListener('mousedown', function (e) { if (e.target === fOverlay) reportClose(); });
+  fOverlay.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-report-close],[data-report-clear],[data-ffacet]');
+    if (!t) return;
+    if (t.hasAttribute('data-report-close')) { reportClose(); return; }
+    if (t.hasAttribute('data-report-clear')) { fInput.value = ''; Object.keys(fFacets).forEach(function (k) { fFacets[k] = false; }); reportPaintChips(); reportRender(); return; }
+    var k = t.getAttribute('data-ffacet');
+    if (k && k in fFacets) { fFacets[k] = !fFacets[k]; reportPaintChips(); reportRender(); }
+  });
+
+  // ── shared: esc closes whichever is open, signed-in-as switch re-scores both live ──
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!rOverlay.classList.contains('hidden')) routeClose();
+    if (!fOverlay.classList.contains('hidden')) reportClose();
+  });
+  document.getElementById('signedInAs').addEventListener('change', function () {
+    var label = document.getElementById('sidenavUserLabel');
+    var v = this.value;
+    label.textContent = v === 'demo_you' ? 'you@albany.edu (demo)' : v === '191' ? 'user191@nysdot.gov' : 'amuro@albany.edu';
+    routeRender(); reportRender();
+  });
+
+  routePaintChips(); reportPaintChips();
+})();
+</script>
+<script src="../ds-nav.js"></script>
+</body>
+</html>
