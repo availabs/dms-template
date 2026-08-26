@@ -24,7 +24,7 @@ import { runWhenStyleReady } from "./runWhenStyleReady";
 // comp.jsx passes `!hasResult` (once "Get detour" is pressed, the pickable network hides
 // entirely). "Clear detour" flips isActive back on to resume picking.
 export const useEdgeLayer = (map, conflationViewId, pgEnv, isActive) => {
-  const [selectedSegment, setSelectedSegment] = useState(null); // { ogcFid, fromNode, toNode, geometry } | null
+  const [selectedSegment, setSelectedSegment] = useState(null); // { ogcFid, osm, fromNode, toNode, geometry } | null
   const edgesRef = useRef([]);
 
   // Mirrors `isActive` in a ref so the async continuation below can re-check the CURRENT value,
@@ -197,7 +197,7 @@ export const useEdgeLayer = (map, conflationViewId, pgEnv, isActive) => {
           renderSelection(null);
           return null;
         }
-        const next = { ogcFid, fromNode: feature.properties.from_node, toNode: feature.properties.to_node, highway: feature.properties.highway, geometry: feature.geometry };
+        const next = { ogcFid, osm: feature.properties.osm, fromNode: feature.properties.from_node, toNode: feature.properties.to_node, highway: feature.properties.highway, geometry: feature.geometry };
         renderSelection(next);
         return next;
       });

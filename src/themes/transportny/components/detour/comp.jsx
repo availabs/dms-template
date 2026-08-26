@@ -12,93 +12,23 @@ import { useClosureDensityLayer } from "./hooks/useClosureDensityLayer";
 import { useDensityCandidatesLayer } from "./hooks/useDensityCandidatesLayer";
 import { useDensityPointPicker } from "./hooks/useDensityPointPicker";
 import { usePickedPairRoute } from "./hooks/usePickedPairRoute";
-import { resolveNodesInBbox } from "./hooks/resolveNodesInBbox";
-import { resolveEdgesInBbox } from "./hooks/resolveEdgesInBbox";
-import { findNearestOtherNode } from "./hooks/findNearestOtherNode";
-import { findSameRoadNode } from "./hooks/findSameRoadNode";
+import { resolveDetourEndpoints } from "./hooks/resolveDetourEndpoints";
 import { DEFAULT_CONFLATION_VIEW_ID } from "./constants";
 import { DetourDetailsPanel } from "./components/DetourDetailsPanel";
 import { ClosureDensityPanel } from "./components/ClosureDensityPanel";
 
-const bearing = ([lon1, lat1], [lon2, lat2]) => Math.atan2(lon2 - lon1, lat2 - lat1);
-
-// Real-world distance (meters) between two [lon,lat] coords - used to accumulate how far the
-// multi-hop walk below has actually traveled, not just how many hops it took.
-const haversineM = ([lon1, lat1], [lon2, lat2]) => {
-  const R = 6371000;
-  const toRad = (d) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-};
-
-// Minimum real distance (2026-08-24, "keep more gap between points... more gap in a same
-// direction is must") the walk below travels along the same road before picking a start/end point
-// - the original one-hop version could land the point on the IMMEDIATE next node past the closed
-// segment, which on an interchange/ramp complex can be a point that's geometrically close to the
-// segment but requires a huge loop to actually reach in a routable way (live-tested: a 15mi/818-
-// edge loop and a full circle around a highway interchange for what looked like two adjacent
-// points). Walking farther out first gives the route search room to find a sane path instead of
-// starting right at the most tangled part of the network.
-const MIN_ENDPOINT_GAP_M = 200; // ~0.12mi
-const MAX_ENDPOINT_HOPS = 15; // bounds worst case on a short, tightly-curved road
-
-// Picks the trip start/end point at a segment's endpoint. 2026-08-20 correction: a plain nearest-
-// any-node search (the original build) can grab a point on a PARALLEL road that happens to be
-// geometrically closer than the real continuation of the SAME road - wrong for detour purposes,
-// since the point is "where would this trip have to be to actually use this road." Priority order:
-//   1. Walk the SAME road (same `highway` type, straightest bearing continuation each hop - see
-//      findSameRoadNode.js) for at least MIN_ENDPOINT_GAP_M of real distance, not just one hop -
-//      each hop's own bbox search progressively widens up to 5x if that hop's immediate
-//      neighborhood comes up empty, same as the original nearest-any-node search did.
-//   2. If the walk dead-ends before reaching the minimum gap, use the farthest point it DID reach
-//      (still a real, same-road continuation - better than nothing) rather than discarding all
-//      that progress just because the target wasn't hit exactly.
-//   3. Falls back to the plain nearest-any-node search ONLY if step 1 finds NOTHING at all, not
-//      even one hop - a real, flagged case (a genuine dead-end/disconnected node), not a silent
-//      substitution. `usedFallback: true` on the result lets the UI say so.
-const resolveEndpointNode = async (coord, neighborCoord, nodeId, excludeOgcFid, highway, conflationViewId, pgEnv) => {
-  let incomingBearing = bearing(neighborCoord, coord);
-  let currentCoord = coord;
-  let currentNodeId = nodeId;
-  let excludeEdge = excludeOgcFid; // first hop excludes the closed segment itself; later hops exclude whichever edge was just traversed, so the walk doesn't immediately backtrack
-  let accumulatedM = 0;
-  let farthest = null;
-
-  for (let hop = 0; hop < MAX_ENDPOINT_HOPS; hop++) {
-    let found = null;
-    let delta = 0.0015; // ~150m at these latitudes
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const bbox = [currentCoord[0] - delta, currentCoord[1] - delta, currentCoord[0] + delta, currentCoord[1] + delta];
-      const edges = await resolveEdgesInBbox(bbox, conflationViewId, pgEnv);
-      found = findSameRoadNode(edges, currentNodeId, excludeEdge, highway, incomingBearing);
-      if (found) break;
-      delta *= 2;
-    }
-    if (!found) break; // dead end reached - stop here, use whatever `farthest` already has (or fall through below if this was the very first hop)
-
-    accumulatedM += haversineM(currentCoord, [found.lon, found.lat]);
-    farthest = { lon: found.lon, lat: found.lat, sameHighway: found.sameHighway, usedFallback: false };
-    if (accumulatedM >= MIN_ENDPOINT_GAP_M) return farthest;
-
-    incomingBearing = bearing(currentCoord, [found.lon, found.lat]);
-    currentCoord = [found.lon, found.lat];
-    currentNodeId = found.id;
-    excludeEdge = found.edgeOgcFid;
-  }
-  if (farthest) return farthest; // dead-ended or hit the hop cap before the full gap - still a real same-road point, just closer than ideal
-
-  // Nothing connected at all, not even one hop - genuinely disconnected/dead-end case (see the
-  // task file's "disconnected segment" note) - fall back to plain nearest-any-node.
-  let delta = 0.0015;
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const bbox = [coord[0] - delta, coord[1] - delta, coord[0] + delta, coord[1] + delta];
-    const nodes = await resolveNodesInBbox(bbox, conflationViewId, pgEnv);
-    const found = findNearestOtherNode(nodes, coord, nodeId);
-    if (found) return { lon: found.lon, lat: found.lat, sameHighway: false, usedFallback: true };
-    delta *= 2;
-  }
-  return null;
+// Simple detour mode's endpoint picker (2026-08-25 perf) - moved server-side entirely
+// (resolveDetourEndpoints.js -> POST .../trsp-memory-detour-endpoints ->
+// memoryGraph.js's walkToFirstBranch). The old client-side walk made one HTTP request PER HOP
+// (resolveEdgesInBbox), which on a highway with short edges over a multi-mile budget could mean
+// hundreds of sequential network round trips just to pick the start/end points, before "Get
+// detour" even ran the real route search. Same walk-to-first-branch rule either way (pure
+// topology - a node with more than one viable next edge is a real branch, take exactly one more
+// hop past it and stop that direction), just one fast in-memory call now instead of many.
+const resolveVerifiedEndpoints = async (segment, conflationViewId, pgEnv) => {
+  const result = await resolveDetourEndpoints(segment.ogcFid, conflationViewId, pgEnv);
+  if (!result?.start || !result?.end) return null; // genuinely isolated end, no candidate at all
+  return { start: result.start, end: result.end };
 };
 
 // Detour/avoid-segment plugin - answers "what happens to any trip through this segment if it's
@@ -116,15 +46,25 @@ const Comp = ({ state, setState, map }) => {
 
   // Closure coverage / density analysis mode (2026-08-20) - a second "view" within this same
   // plugin, toggled from the Legend panel's "Closure density mode" switch (internalPanel.jsx),
-  // shared with the "Display default legend" toggle via the same
-  // state.symbology.pluginData.detour store. Segment picking (useEdgeLayer below) is reused as-is
-  // in both modes - only what happens after selection differs.
-  const isDensityMode = Boolean(get(state, "symbology.pluginData.detour['density-mode']", false));
+  // shared with the "Display default legend" toggle via the same plugin-data store. Segment
+  // picking (useEdgeLayer below) is reused as-is in both modes - only what happens after selection
+  // differs.
+  //
+  // pluginDataPath branches on `state.symbologies` vs `state.symbology` (2026-08-25 fix, same
+  // pattern as macroview/comp.jsx and macroview.plugin.jsx's mapRegister) - a hardcoded
+  // `symbology.pluginData.detour` path only resolves inside the mapeditor test harness, where
+  // `state.symbology` sits at the top level. A regular DMS page's Map section nests it instead
+  // under `state.symbologies['<symbName>'].symbology.pluginData.detour`, so without this branch
+  // every toggle here silently read/wrote nothing there and the plugin appeared inert.
+  const pluginDataPath = state.symbologies
+    ? `symbologies['${Object.keys(state.symbologies)[0]}'].symbology.pluginData.detour`
+    : "symbology.pluginData.detour";
+  const isDensityMode = Boolean(get(state, `${pluginDataPath}['density-mode']`, false));
   // "Show candidate points" Legend-panel toggle (2026-08-21) - independent of density mode itself.
-  const showCandidatePoints = Boolean(get(state, "symbology.pluginData.detour['show-candidates']", false));
+  const showCandidatePoints = Boolean(get(state, `${pluginDataPath}['show-candidates']`, false));
   // Testing-only pair picker toggle - only takes effect when density mode + show-candidates are
   // ALSO on, per the user's own framing ("it is depended on the point switch it must be on").
-  const pickPairTesting = Boolean(get(state, "symbology.pluginData.detour['pick-pair-testing']", false));
+  const pickPairTesting = Boolean(get(state, `${pluginDataPath}['pick-pair-testing']`, false));
 
   const {
     routes, baselineRoutes, selectedVariant, setSelectedVariant,
@@ -240,22 +180,13 @@ const Comp = ({ state, setState, map }) => {
     }
 
     let cancelled = false;
-    const coords = selectedSegment.geometry.coordinates;
-    const startCoord = coords[0], endCoord = coords.at(-1);
-    const startNeighbor = coords[1] || coords[0];
-    const endNeighbor = coords.at(-2) || coords.at(-1);
-    const { highway } = selectedSegment;
-
     setResolving(true);
     setResolveError(null);
-    Promise.all([
-      resolveEndpointNode(startCoord, startNeighbor, selectedSegment.fromNode, selectedSegment.ogcFid, highway, DEFAULT_CONFLATION_VIEW_ID, pgEnv),
-      resolveEndpointNode(endCoord, endNeighbor, selectedSegment.toNode, selectedSegment.ogcFid, highway, DEFAULT_CONFLATION_VIEW_ID, pgEnv),
-    ]).then(([startNode, endNode]) => {
+    resolveVerifiedEndpoints(selectedSegment, DEFAULT_CONFLATION_VIEW_ID, pgEnv).then((result) => {
       if (cancelled) return;
       setResolving(false);
-      if (startNode && endNode) {
-        setStartEnd({ start: startNode, end: endNode });
+      if (result) {
+        setStartEnd(result);
       } else {
         // Genuinely isolated - even the plain-nearest-node fallback found nothing nearby at one
         // or both ends. A real, visible dead end, not a silent stuck state.

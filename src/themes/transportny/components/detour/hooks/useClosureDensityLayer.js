@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
-import { DENSITY_SOURCE_ID, DENSITY_LAYER_ID, DENSITY_LABEL_LAYER_ID, DENSITY_COLOR_RAMP, DENSITY_STEP_FRACTIONS } from "../constants";
+import { DENSITY_SOURCE_ID, DENSITY_LAYER_ID, DENSITY_LABEL_LAYER_ID, DENSITY_COLOR_RAMP, computeDensityStops } from "../constants";
 import { runWhenStyleReady } from "./runWhenStyleReady";
 
 // Renders the closure-density heatmap: one line feature per edge that appeared in at least one
@@ -31,14 +31,21 @@ export const useClosureDensityLayer = (map, edgeFrequencies, maxCount) => {
       // be visibly thicker too. Breakpoints (20/40/60/80% of maxCount) match
       // DENSITY_STEP_FRACTIONS in constants.js, which the panel legend also reads from so the
       // legend's numeric ranges always match what's actually drawn.
+      // Breakpoints MUST be strictly increasing - MapLibre's `step` expression rejects (silently,
+      // via setPaintProperty - no thrown error, which is why this went unnoticed) a stop sequence
+      // that isn't. computeDensityStops (constants.js, 2026-08-24 live bug fix: maxCount=2 produced
+      // raw stops [1,1,1,2] - labels kept rendering from the source data, but the line-color paint
+      // update was silently dropped, leaving the heatmap invisible) forces each stop to be at least
+      // 1 more than the previous one, and is shared with the panel's legend so both stay in sync.
+      const stops = computeDensityStops(maxCount);
       const lineColor = maxCount > 0
         ? [
             "step", ["get", "count"],
             DENSITY_COLOR_RAMP[0],
-            Math.max(1, Math.round(maxCount * DENSITY_STEP_FRACTIONS[1])), DENSITY_COLOR_RAMP[1],
-            Math.max(1, Math.round(maxCount * DENSITY_STEP_FRACTIONS[2])), DENSITY_COLOR_RAMP[2],
-            Math.max(1, Math.round(maxCount * DENSITY_STEP_FRACTIONS[3])), DENSITY_COLOR_RAMP[3],
-            Math.max(1, Math.round(maxCount * DENSITY_STEP_FRACTIONS[4])), DENSITY_COLOR_RAMP[4],
+            stops[0], DENSITY_COLOR_RAMP[1],
+            stops[1], DENSITY_COLOR_RAMP[2],
+            stops[2], DENSITY_COLOR_RAMP[3],
+            stops[3], DENSITY_COLOR_RAMP[4],
           ]
         : DENSITY_COLOR_RAMP[0];
       // Narrower range (was 2.5-9) so a bidirectional road's two offset direction-lines don't

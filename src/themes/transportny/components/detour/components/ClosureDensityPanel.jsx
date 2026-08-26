@@ -1,6 +1,6 @@
 import React from "react";
 import { ThemeContext } from "../../../../../dms/packages/dms/src/ui/useTheme";
-import { DENSITY_COLOR_RAMP, DENSITY_NUM_CANDIDATES, DENSITY_STEP_FRACTIONS } from "../constants";
+import { DENSITY_COLOR_RAMP, DENSITY_NUM_CANDIDATES, computeDensityStops } from "../constants";
 import { RouteComparisonBarChart } from "./RouteComparisonBarChart";
 
 // Closure coverage / density analysis panel - the density-mode sibling of DetourDetailsPanel.
@@ -31,14 +31,15 @@ const ClosureDensityPanel = ({
   const hasResult = Boolean(density) || Boolean(error);
   const totalPairs = DENSITY_NUM_CANDIDATES * DENSITY_NUM_CANDIDATES;
 
-  // Route comparison tab (2026-08-24, planning/transportny/tasks/current/
-  // closure-density-route-comparison-tab.md) - "heatmap" (the original view) vs. "comparison" (new
-  // bar graph of per-pair open-vs-closed miles/time deltas). Only shown once pairComparisons has
-  // actually arrived (step 2 done), same gating as the heatmap legend above it.
-  const [resultTab, setResultTab] = React.useState("heatmap");
+  // Route comparison (2026-08-24, planning/transportny/tasks/current/
+  // closure-density-route-comparison-tab.md) - heatmap legend + both bar graphs all visible at
+  // once now (2026-08-25 - "keep all visible on window, no tabs for that"), not tab-switched. The
+  // comparison charts live in their own panel (bottom-right) so the main results panel here
+  // (bottom-left) doesn't get overcrowded - see the second returned panel below.
   const hasComparisons = Boolean(density?.pairComparisons?.length);
 
   return (
+    <>
     <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-10 w-auto sm:w-80 max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto">
       <div className="font-bold mb-1">Closure coverage / density</div>
 
@@ -86,66 +87,31 @@ const ClosureDensityPanel = ({
             {density.totalPairsFailed > 0 && ` (${density.totalPairsFailed} had no route)`}.
           </div>
 
-          {hasComparisons && (
-            <div className="flex text-xs border-b mb-2">
-              {[
-                ["heatmap", "Heatmap"],
-                ["distance", "Distance cost"],
-                ["time", "Time cost"],
-              ].map(([key, tabLabel]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`px-2 py-1 -mb-px border-b-2 ${resultTab === key ? "border-blue-600 text-blue-700 font-semibold" : "border-transparent text-gray-500"}`}
-                  onClick={() => setResultTab(key)}
-                >
-                  {tabLabel}
-                </button>
+          <div className="mb-2">
+            <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+              Times a road segment is used (0 – {density.maxCount})
+            </div>
+            <div className="flex h-3 rounded overflow-hidden">
+              {DENSITY_COLOR_RAMP.map((hex, i) => (
+                <div key={hex} className="flex-1" style={{ background: hex }} />
               ))}
             </div>
-          )}
-
-          {resultTab === "heatmap" && (
-            <div className="mb-2">
-              <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
-                Times a road segment is used (0 – {density.maxCount})
-              </div>
-              <div className="flex h-3 rounded overflow-hidden">
-                {DENSITY_COLOR_RAMP.map((hex, i) => (
-                  <div key={hex} className="flex-1" style={{ background: hex }} />
-                ))}
-              </div>
-              {/* Numeric range under each swatch, computed from the SAME DENSITY_STEP_FRACTIONS the
-                  map layer's own `step` paint expression uses, so the legend never drifts out of
-                  sync with what's actually drawn (2026-08-21: "show numbers in left bottom range of
-                  color" - replaces the earlier plain "fewer"/"more" labels). */}
-              <div className="flex text-[10px] text-gray-500 mt-0.5 font-mono">
-                {DENSITY_STEP_FRACTIONS.map((frac, i) => {
-                  const lo = Math.round(density.maxCount * frac);
-                  const hi = i < DENSITY_STEP_FRACTIONS.length - 1
-                    ? Math.max(lo, Math.round(density.maxCount * DENSITY_STEP_FRACTIONS[i + 1]) - 1)
-                    : density.maxCount;
-                  return (
-                    <span key={frac} className="flex-1 text-center">
-                      {lo}{hi > lo ? `-${hi}` : ""}
-                    </span>
-                  );
-                })}
-              </div>
+            {/* Numeric range under each swatch, computed from the SAME computeDensityStops the
+                map layer's own `step` paint expression uses (constants.js, 2026-08-24 - fixes a
+                real bug where a low maxCount produced duplicate/non-increasing stops), so the
+                legend never drifts out of sync with what's actually drawn (2026-08-21: "show
+                numbers in left bottom range of color" - replaces plain "fewer"/"more" labels). */}
+            <div className="flex text-[10px] text-gray-500 mt-0.5 font-mono">
+              {[0, ...computeDensityStops(density.maxCount)].map((lo, i, stops) => {
+                const hi = i < stops.length - 1 ? stops[i + 1] - 1 : density.maxCount;
+                return (
+                  <span key={lo} className="flex-1 text-center">
+                    {lo}{hi > lo ? `-${hi}` : ""}
+                  </span>
+                );
+              })}
             </div>
-          )}
-
-          {resultTab === "distance" && hasComparisons && (
-            <div className="mb-2">
-              <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="distance" />
-            </div>
-          )}
-
-          {resultTab === "time" && hasComparisons && (
-            <div className="mb-2">
-              <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="time" />
-            </div>
-          )}
+          </div>
         </>
       )}
 
@@ -188,6 +154,24 @@ const ClosureDensityPanel = ({
         </Button>
       )}
     </div>
+
+    {/* Route comparison - its own panel, bottom-right (2026-08-25 - "keep all visible on window,
+        no tabs... make it bottom right or give me the proper themed UX"). Same card treatment as
+        the results panel opposite it (bg-white/95, border, shadow) so the two read as a matched
+        pair rather than a bolted-on extra, distance/time each always visible, no tab click needed. */}
+    {hasComparisons && !loading && !error && (
+      // `fixed`, not `absolute` (2026-08-25) - anchors to the actual browser viewport corner
+      // regardless of how the map container itself is sized/bounded, rather than the nearest
+      // positioned ancestor (which is what made this land short of the true bottom-right corner).
+      <div className="fixed bottom-4 right-4 z-10 w-auto sm:w-80 max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto">
+        <div className="font-bold mb-3">Detour cost distribution</div>
+        <div className="text-slate-700 text-xs font-semibold mb-1.5">Distance</div>
+        <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="distance" />
+        <div className="text-slate-700 text-xs font-semibold mt-4 mb-1.5 pt-3 border-t border-gray-200">Time</div>
+        <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="time" />
+      </div>
+    )}
+    </>
   );
 };
 
