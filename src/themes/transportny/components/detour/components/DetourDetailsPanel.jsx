@@ -101,6 +101,11 @@ const DetourDetailsPanel = ({
   // case), worth surfacing rather than presenting it as an ordinary pick.
   const anyFallback = startEnd?.start?.usedFallback || startEnd?.end?.usedFallback;
 
+  // 2026-08-25: some segments (a long highway with no nearby cross-road) genuinely have no real
+  // intersection within a reasonable distance - the endpoint picker gives up after 10mi rather than
+  // walking forever, and flags it here so that's visible instead of looking like an ordinary pick.
+  const anyDistanceCap = startEnd?.start?.hitDistanceCap || startEnd?.end?.hitDistanceCap;
+
   const asymmetric = routes?.AtoB && routes?.BtoA &&
     routes.AtoB.shortest.feature.properties.edge_count !== routes.BtoA.shortest.feature.properties.edge_count;
 
@@ -125,6 +130,13 @@ const DetourDetailsPanel = ({
       {selectedSegment && resolveError && (
         <div className="mb-2 text-xs bg-red-50 border border-red-200 rounded px-2 py-1.5">
           <span className="text-red-700">{resolveError}</span>
+        </div>
+      )}
+
+      {selectedSegment && anyDistanceCap && (
+        <div className="mb-2 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded px-2 py-1">
+          One end of this segment had no real intersection within 10 miles (common for a long
+          highway stretch) - using the farthest point reached instead.
         </div>
       )}
 

@@ -96,6 +96,22 @@ const DENSITY_COLOR_RAMP = [
 // legend so the legend's printed numeric ranges always match what's actually drawn on the map.
 const DENSITY_STEP_FRACTIONS = [0, 0.2, 0.4, 0.6, 0.8];
 
+// Turns DENSITY_STEP_FRACTIONS into the 4 non-zero bucket-boundary counts actually used by BOTH
+// the map layer's `step` paint expression and the panel's legend (2026-08-24 live bug fix): a
+// plain `Math.round(maxCount * fraction)` can collapse several fractions to the SAME integer at a
+// low maxCount (a real case: maxCount=2 produced [1,1,1,2]) - MapLibre's `step` expression
+// requires STRICTLY increasing stops and silently drops the whole paint update if they aren't
+// (no thrown error, so the map just quietly stopped coloring the heatmap). Forcing each stop to be
+// at least 1 more than the previous one fixes both the map paint AND keeps the legend's printed
+// ranges honestly matching what's drawn, since both read this same function.
+const computeDensityStops = (maxCount) => {
+  let lastStop = 0;
+  return DENSITY_STEP_FRACTIONS.slice(1).map((frac) => {
+    lastStop = Math.max(lastStop + 1, Math.round(maxCount * frac));
+    return lastStop;
+  });
+};
+
 // Candidate start/end points BFS-picked for the density analysis (2026-08-21: "i want to know
 // which can be the start and end points that you pick") - small toggleable dots, separate from
 // the heatmap lines. Reuses MARKER_COLORS' green/red start/end convention.
@@ -128,6 +144,7 @@ export {
   DENSITY_NUM_CANDIDATES,
   DENSITY_COLOR_RAMP,
   DENSITY_STEP_FRACTIONS,
+  computeDensityStops,
   DENSITY_CANDIDATES_SOURCE_ID,
   DENSITY_CANDIDATES_LAYER_ID,
 };

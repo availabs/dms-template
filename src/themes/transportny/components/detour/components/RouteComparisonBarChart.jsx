@@ -23,7 +23,7 @@ const NUM_BUCKETS = 5;
 // logic, only in which field/label/unit they read.
 const METRICS = {
   distance: { valueOf: (p) => p.deltaMiles, unit: "mi", decimals: 2, label: "added detour distance" },
-  time: { valueOf: (p) => p.deltaDurationS / 60, unit: "min", decimals: 1, label: "added detour time" },
+  time: { valueOf: (p) => p.deltaDurationS, unit: "sec", decimals: 0, label: "added detour time" },
 };
 
 const buildBuckets = (pairComparisons, valueOf) => {
@@ -50,17 +50,23 @@ const RouteComparisonBarChart = ({ pairComparisons, metric = "distance" }) => {
   }
 
   const { valueOf, unit, decimals, label } = METRICS[metric];
-  const avgDeltaMiles = pairComparisons.reduce((sum, p) => sum + p.deltaMiles, 0) / pairComparisons.length;
-  const avgDeltaMinutes = pairComparisons.reduce((sum, p) => sum + p.deltaDurationS, 0) / pairComparisons.length / 60;
+  // 2026-08-25 fix - this used to always show BOTH the miles and minutes average under EVERY
+  // section (identical text repeated under Distance and under Time), which read as a bug, not a
+  // summary. Now shows only the metric this chart is actually for, as the visual hero number
+  // ("highlight those main avg numbers... those were the important ones").
+  const avgValue = pairComparisons.reduce((sum, p) => sum + valueOf(p), 0) / pairComparisons.length;
   const buckets = buildBuckets(pairComparisons, valueOf);
   const maxCount = Math.max(...buckets.map((b) => b.count), 1);
 
   return (
     <div>
-      <div className="text-xs text-gray-600 mb-2 font-mono">
-        Avg detour: +{avgDeltaMiles.toFixed(2)} mi · +{avgDeltaMinutes.toFixed(1)} min
+      <div className="flex items-baseline gap-1.5 mb-2">
+        <span className="text-2xl font-bold tabular-nums" style={{ color: ROUTE_COLOR }}>
+          +{avgValue.toFixed(decimals)}
+        </span>
+        <span className="text-sm font-medium text-gray-500">{unit} avg</span>
       </div>
-      <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+      <div className="text-gray-500 text-[11px] uppercase tracking-wide mb-1.5 pt-1.5 border-t">
         Pairs by {label} ({pairComparisons.length} total)
       </div>
       <div className="space-y-1.5">
