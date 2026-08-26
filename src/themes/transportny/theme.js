@@ -7,6 +7,8 @@ import { npmrdsMeasureMenu } from "./components/MeasurePicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import { RoutecreationPlugin } from "./components/routecreation/routecreation.plugin"
 import { MacroviewPlugin } from "./components/macroview/macroview.plugin"
+import { RoutingPlugin } from "./components/routing/routing.plugin"
+import { DetourPlugin } from "./components/detour/detour.plugin"
 const theme = {
   pageComponents: {
     "AddPageButton": AddPageButton,
@@ -33,7 +35,9 @@ const theme = {
   },
   mapPlugins: {
     routecreation: RoutecreationPlugin,
-    macroview: MacroviewPlugin
+    macroview: MacroviewPlugin,
+    routing: RoutingPlugin,
+    detour: DetourPlugin
   },
   "navOptions": {
     "authMenu": {
