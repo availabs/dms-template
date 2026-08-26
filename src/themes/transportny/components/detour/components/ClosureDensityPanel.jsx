@@ -34,13 +34,23 @@ const ClosureDensityPanel = ({
   // Route comparison (2026-08-24, planning/transportny/tasks/current/
   // closure-density-route-comparison-tab.md) - heatmap legend + both bar graphs all visible at
   // once now (2026-08-25 - "keep all visible on window, no tabs for that"), not tab-switched. The
-  // comparison charts live in their own panel (bottom-right) so the main results panel here
-  // (bottom-left) doesn't get overcrowded - see the second returned panel below.
+  // comparison charts live in their own panel, stacked above the main results panel below (both
+  // bottom-left) so the results panel doesn't get overcrowded - see the second panel below.
   const hasComparisons = Boolean(density?.pairComparisons?.length);
 
   return (
-    <>
-    <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-10 w-auto sm:w-80 max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto">
+    // Both panels stacked in ONE bottom-left region (2026-08-26 - "just above the closure
+    // coverage density so both will manage... both need to be working accordingly not overlap"):
+    // scattering panels across all 4 corners kept colliding with something else already claimed
+    // there (Legend at top-right, the plugin control panel at top-left, native map controls at
+    // bottom-right) - staying in the one region nothing else uses sidesteps every collision.
+    // `flex-col-reverse` puts the FIRST child (density results) at the bottom and stacks later
+    // children (the comparison panel) above it, so the visual order matches "comparison above
+    // density" without hardcoded offsets. No internal scroll/height cap on either panel
+    // (2026-08-26 - "no scroll also full stretch") - each just stretches to fit its own content;
+    // gap-3 on the wrapper keeps them visually separated as they grow.
+    <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-10 flex flex-col-reverse gap-3 pointer-events-none">
+    <div className="w-auto sm:w-80 bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto">
       <div className="font-bold mb-1">Closure coverage / density</div>
 
       {!selectedSegment && !loading && (
@@ -155,15 +165,12 @@ const ClosureDensityPanel = ({
       )}
     </div>
 
-    {/* Route comparison - its own panel, bottom-right (2026-08-25 - "keep all visible on window,
-        no tabs... make it bottom right or give me the proper themed UX"). Same card treatment as
-        the results panel opposite it (bg-white/95, border, shadow) so the two read as a matched
-        pair rather than a bolted-on extra, distance/time each always visible, no tab click needed. */}
+    {/* Route comparison - stacked ABOVE the density results panel via flex-col-reverse (see the
+        wrapper's comment above), same bottom-left region, no separate corner. Same card treatment
+        (bg-white/95, border, shadow) so the two still read as a matched pair, distance/time each
+        always visible, no tab click needed. */}
     {hasComparisons && !loading && !error && (
-      // `fixed`, not `absolute` (2026-08-25) - anchors to the actual browser viewport corner
-      // regardless of how the map container itself is sized/bounded, rather than the nearest
-      // positioned ancestor (which is what made this land short of the true bottom-right corner).
-      <div className="fixed bottom-4 right-4 z-10 w-auto sm:w-80 max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto">
+      <div className="w-auto sm:w-80 bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto">
         <div className="font-bold mb-3">Detour cost distribution</div>
         <div className="text-slate-700 text-xs font-semibold mb-1.5">Distance</div>
         <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="distance" />
@@ -171,7 +178,7 @@ const ClosureDensityPanel = ({
         <RouteComparisonBarChart pairComparisons={density.pairComparisons} metric="time" />
       </div>
     )}
-    </>
+    </div>
   );
 };
 
