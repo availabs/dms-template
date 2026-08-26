@@ -163,6 +163,11 @@ export const useEdgeLayer = (map, conflationViewId, pgEnv, isActive) => {
   // Finds the nearest pickable edge within CLICK_TOLERANCE_PX screen pixels of `point`
   // ({x,y} in the map container, e.g. from a mouse event) - shared by both hover and click.
   const queryNearbyEdge = useCallback((point) => {
+    // Guard against a race (2026-08-26 - "layer does not exist in the map's style"): the
+    // mousemove/click listeners attach as soon as `isActive` is true, but the layer itself is
+    // only added once the bbox-chunked fetch actually resolves and runWhenStyleReady's callback
+    // runs - a mousemove/click during that window queried a layer id that isn't in the style yet.
+    if (!map.getLayer(EDGES_LAYER_ID)) return null;
     const box = [
       [point.x - CLICK_TOLERANCE_PX, point.y - CLICK_TOLERANCE_PX],
       [point.x + CLICK_TOLERANCE_PX, point.y + CLICK_TOLERANCE_PX],
