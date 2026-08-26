@@ -83,6 +83,19 @@ def gen_year(year, regions):
             key = (tmclinear, road, county_code, county_name, direction)
             grouped.setdefault(key, []).append((road_order, tmc))
 
+        # A (road, county, direction) triple can have more than one distinct
+        # tmclinear group — e.g. an avenue interrupted by a park, or split by
+        # a road-class change. Each is a real, separately-geometried route
+        # (the grouping key above already keeps them apart) but until
+        # 2026-08-25 the *name* dropped tmclinear, so any such county silently
+        # produced 2+ rows with byte-identical names — confirmed live: all 731
+        # duplicate-name groups audited that day had 0 identical-geometry
+        # matches, i.e. every one was this bug, not a real duplicate route.
+        name_counts = {}
+        for (tmclinear, road, county_code, county_name, direction) in grouped:
+            name_counts[(road, county_code, direction)] = name_counts.get(
+                (road, county_code, direction), 0) + 1
+
         per_region_counts[region] = len(grouped)
         for (tmclinear, road, county_code, county_name, direction), members in grouped.items():
             ordered = [tmc for _, tmc in sorted(members, key=lambda m: m[0])]
@@ -94,12 +107,18 @@ def gen_year(year, regions):
             county_tag = canonical_county_tag(county_name)
             if county_tag:
                 tags.append(county_tag)
+            name = f"{road} {county_code} {direction} ({year})"
+            if name_counts[(road, county_code, direction)] > 1:
+                # Disambiguate with the tmclinear id itself — stable, already
+                # unique per group by construction, and traceable straight
+                # back to the source data if someone asks "what is this."
+                name = f"{road} {county_code} {direction} #{tmclinear} ({year})"
             routes.append({
                 # Year in the name: this is a distinct row per (corridor, year)
                 # by design (Ryan's call, 2026-08-03) — without it, every
                 # year's regeneration of the same real-world corridor would
                 # share one ambiguous name in every route picker/search.
-                "name": f"{road} {county_code} {direction} ({year})",
+                "name": name,
                 "description": f"Auto-generated route from TMC Linear: {tmclinear} ({year})",
                 "tmcs": ordered,
                 "tags": tags,

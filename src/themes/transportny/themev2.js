@@ -42,6 +42,7 @@ import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 import CreateReportButton from "./components/CreateReportButton"
+import ChooseReportButton from "./components/ChooseReportButton"
 
 import icons from "./icons";
 
@@ -2791,6 +2792,7 @@ const pageComponents = {
   ReportPageHeader,
   RouteComparison,
   CreateReportButton,
+  ChooseReportButton,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

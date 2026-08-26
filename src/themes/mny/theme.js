@@ -2,6 +2,142 @@ import { Icons } from "./icons";
 import mny_auth from "./auth.js";
 
 
+// ─────────────────────────────────────────────────────────────────────────────
+// avlGraph — brand chart defaults for the AVL Graph section (graph_new).
+//
+// `chartDefaults` merges UNDER a section's own `display` (per-section author
+// overrides always win) — see graph_new/index.jsx mergeChartDefaults. Every key
+// here is one the library already reads, so this is pure theming: no section
+// needs configuration to look on-brand.
+//
+// NOT to be confused with the legacy `graph` key below, which themes the older
+// ui/components/graph component and is deliberately left untouched.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// CSS font stacks — NOT Tailwind classes. The axis renderers apply these inline
+// via .style("font-family", …). Mirrors design/theme/index.css.additions.
+const MNY_F_DISPLAY = `"Oswald", "Bebas Neue", sans-serif`;
+const MNY_F_PROSE = `"Proxima Nova", "Source Sans 3", system-ui, sans-serif`;
+
+// Categorical series palette. Blue is the primary family and amber the sole warm
+// accent (design-system/theme.html), so a 2-series chart — by far the common
+// case — lands on blue-700 + amber-700, the highest-contrast on-brand pair.
+// Later stops follow the stacked-bar order used in pages/county-actions/state-dashboard.html.
+const MNY_GRAPH_PALETTE = [
+  "#37576B", // blue 700   — primary series
+  "#EAAD43", // yellow 700 — the accent
+  "#6D96AE", // blue 400
+  "#54B99B", // green 700
+  "#EA8954", // orange 400
+  "#C5D7E0", // blue 200
+  "#DD524C", // red 500
+];
+
+const mnyChartDefaults = {
+  colors: { type: "palette", value: MNY_GRAPH_PALETTE },
+  // left 64 (the library default is 100): fits MNY's count-sized numeric ticks
+  // and horizontal-bar category labels without eating a quarter of a narrow card.
+  margin: { top: 16, right: 20, bottom: 44, left: 64 },
+  height: 300,
+
+  // Line look — slightly bolder line, smooth curve. `area` stays opt-in so
+  // non-trend graphs aren't forced into area mode.
+  interpolation: "catmullrom",
+  strokeWidth: 2,
+  area: false,
+  areaOpacity: 0.14,
+
+  // Bars — solid fills (the 0.75 avl-graph CSS default reads washed out on MNY's
+  // white and mny-50 surfaces), and real spacing between bars. `paddingInner` is
+  // the d3 band-scale inner padding: 0.3 reads like the design-system bar rows;
+  // the library default is 0.0, i.e. bars touching.
+  barOpacity: 1,
+  paddingInner: 0.3,
+  paddingOuter: 0.15,
+
+  // Axis chrome. Ticks = Prose voice (Proxima, mny-400); axis titles = Meta voice
+  // (Oswald, mny-700). axisColor is the mny-100 hairline used for every border in
+  // the design system. Gridline COLOR is hardcoded to currentColor in the axis
+  // renderers, so only its opacity is themeable — 0.12 approximates #E0EBF0
+  // against the mny-900 ink this style sets as textColor.
+  xAxis: {
+    show: true, showGridLines: false, rotateLabels: false, tickDensity: 2,
+    gridLineOpacity: 0.12, axisColor: "#E0EBF0",
+    tickFontFamily: MNY_F_PROSE, tickFontSize: "11px", tickFontWeight: "600", tickColor: "#6D96AE",
+    labelFontFamily: MNY_F_DISPLAY, labelFontSize: "12px", labelFontWeight: "500", labelColor: "#37576B",
+  },
+  yAxis: {
+    show: true, showGridLines: true, format: "Integer",
+    gridLineOpacity: 0.12, axisColor: "#E0EBF0",
+    tickFontFamily: MNY_F_PROSE, tickFontSize: "11px", tickFontWeight: "600", tickColor: "#6D96AE",
+    labelFontFamily: MNY_F_DISPLAY, labelFontSize: "12px", labelFontWeight: "500", labelColor: "#37576B",
+  },
+
+  // MNY's dashboard mockups label rows/bars directly and carry no legend. A
+  // section turns it back on with display.legend = {show:true, position:"right"}
+  // — BarGraph renders no legend at all without a left/right position.
+  legend: { show: false },
+};
+
+const mny_avlGraph = {
+  options: { activeStyle: 0 },
+  styles: [
+    {
+      name: "default",
+      bgColor: "bg-white",
+      textColor: "text-[#2D3E4C]",
+      // Built-in breathing room so the plot doesn't sit flush against the section edge.
+      padding: "p-4",
+      chartDefaults: mnyChartDefaults,
+      // ⚠ Deliberately NOT the legacy `graph.text` — that one is `uppercase
+      // font-[Oswald]`, and since the axis renderers set font-family/size/weight
+      // inline but NOT text-transform, an uppercase wrapper class cascades into
+      // the SVG and upper-cases every category tick label ("Community
+      // infrastructure" → "COMMUNITY INFRASTRUCTURE").
+      text: `font-['Proxima_Nova'] text-[12px] text-[#37576B]`,
+      headerWrapper: "flex items-baseline justify-between gap-3 mb-2",
+      title: "font-[Oswald] font-[500] text-[16px] text-[#2D3E4C] uppercase leading-[1] shrink-0",
+      subtitle: "font-['Proxima_Nova'] text-[12px] text-[#6D96AE] leading-[140%] text-right",
+      columnControlWrapper: "px-1 font-semibold border border-[#E0EBF0] bg-[#F3F8F9] text-[#37576B]",
+      scaleWrapper: "flex rounded-[8px] divide-x border w-fit border-[#E0EBF0] overflow-hidden",
+      scaleItem:
+        "px-[12px] py-[7px] font-[Oswald] font-medium text-[12px] text-[#2D3E4C] text-center leading-[100%] uppercase cursor-pointer",
+      scaleItemActive: "bg-white",
+      scaleItemInActive: "bg-[#F3F8F9]",
+    },
+    {
+      // For the dark topo bands (pages/home.html hero). Bars go amber on dark,
+      // ticks go mny-200, per that mockup's bar chart.
+      name: "dark",
+      bgColor: "bg-transparent",
+      textColor: "text-white",
+      padding: "p-4",
+      chartDefaults: {
+        ...mnyChartDefaults,
+        colors: { type: "palette", value: ["#EAAD43", "#FFFFFF", "#F1CA87", "#C5D7E0", "#6D96AE"] },
+        xAxis: {
+          ...mnyChartDefaults.xAxis,
+          tickColor: "#C5D7E0", labelColor: "#C5D7E0", axisColor: "rgba(255,255,255,0.25)",
+        },
+        yAxis: {
+          ...mnyChartDefaults.yAxis,
+          tickColor: "#C5D7E0", labelColor: "#C5D7E0", axisColor: "rgba(255,255,255,0.25)",
+        },
+      },
+      text: `font-['Proxima_Nova'] text-[12px] text-[#C5D7E0]`,
+      headerWrapper: "flex items-baseline justify-between gap-3 mb-2",
+      title: "font-[Oswald] font-[500] text-[16px] text-white uppercase leading-[1] shrink-0",
+      subtitle: "font-['Proxima_Nova'] text-[12px] text-[#C5D7E0] leading-[140%] text-right",
+      columnControlWrapper: "px-1 font-semibold border border-white/20 bg-white/10 text-[#C5D7E0]",
+      scaleWrapper: "flex rounded-[8px] divide-x border w-fit border-white/20 overflow-hidden",
+      scaleItem:
+        "px-[12px] py-[7px] font-[Oswald] font-medium text-[12px] text-white text-center leading-[100%] uppercase cursor-pointer",
+      scaleItemActive: "bg-white/20",
+      scaleItemInActive: "bg-transparent",
+    },
+  ],
+};
+
 const theme = {
   // -------------------- Layout ------------------------
   layout: {
@@ -648,6 +784,13 @@ const theme = {
       tierNone: "bg-white border border-[#C5D7E0]",
     },
   },
+  // Map section container: h-full/flex-1 so a Map with NO height option set
+  // fills its section cell — pair with section height:'fill' (+ rowspan) to let
+  // a sibling column drive the band height (Actions Dashboard map ↔ charts).
+  // Maps WITH a height option keep it (inline style wins over the class).
+  damaMap: {
+    container: "w-full relative h-full flex-1 min-h-[300px]",
+  },
   // data_bar columnType palette — the Actions Dashboard portfolio-mix bar lists
   // (hazards = primary mny-400, type-of-work = deep mny-700). Same registration
   // pattern as stackedBar above.
@@ -903,22 +1046,77 @@ const theme = {
       },
       {
         // Style 1: pillBar — horizontal rounded-pill filter bar (MNY Action
-        // Prioritize v3, gap #3). Everything not overridden here inherits from
+        // Prioritize v3, gap #3; aligned to the county-actions mockup filter
+        // bar 2026-08-25). Everything not overridden here inherits from
         // styles[0] (toggle switch, tokens, clear-all, loadingText, input …).
         // `placement:'inline'` puts each label beside its control inside a
         // white rounded-full pill; the whole set sits in a tinted band.
+        // `controlStyle` names the multiselect/input style the actual control
+        // renders with (see the `multiselect`/`input` pill styles below).
         name: "pillBar",
         placement: "inline",
+        controlStyle: "pill",
         filtersWrapper:
-          "w-full bg-[#F3F8F9] rounded-[12px] border border-[#E0EBF0] px-3 py-2.5 flex flex-wrap items-center gap-2",
+          "w-full bg-[#F3F8F9] rounded-[12px] border border-[#E0EBF0] px-4 py-3 flex flex-wrap items-center gap-2",
         conditionsGrid: "w-full flex flex-wrap items-center gap-2",
         conditionRowInline:
-          "flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1 border border-[#E0EBF0] hover:border-[#6D96AE] transition-colors",
+          "flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE] focus-within:border-[#6D96AE] transition-colors",
         labelWrapperInline: "w-auto shrink-0",
-        filterSettingsWrapperInline: "w-auto",
+        filterSettingsWrapperInline: "w-auto min-w-[64px]",
         filterLabel:
           "font-['Proxima_Nova'] text-[13px] text-[#37576B] whitespace-nowrap capitalize",
-        activeTokensWrapper: "flex flex-wrap items-center gap-2",
+        activeTokensWrapper: "flex flex-wrap items-center gap-2 pt-0.5",
+      },
+    ],
+  },
+  // Filter-bar CONTROL styles — referenced by filters.pillBar.controlStyle.
+  // styles[0] is intentionally EMPTY (name only): components merge the resolved
+  // style over their library defaults, so an empty default = library look, and
+  // only sections whose filter style names 'pill' get the branded treatment.
+  multiselect: {
+    options: { activeStyle: 0 },
+    styles: [
+      { name: "default" },
+      {
+        // Borderless trigger that lives INSIDE the pillBar's white pill row
+        // (the row draws the pill; the control is just value text + caret),
+        // plus the branded dropdown menu.
+        name: "pill",
+        inputWrapper:
+          "relative flex flex-wrap items-center gap-1 w-full min-h-0 cursor-pointer border-0 bg-transparent pl-0 pr-5 py-0 text-[13px] focus-within:ring-0",
+        caretWrapper: "pointer-events-none absolute inset-y-0 right-0 flex items-center",
+        caretIcon: "size-3.5 stroke-[#6D96AE]",
+        singleValue: "truncate font-['Proxima_Nova'] text-[13px] text-[#2D3E4C]",
+        singlePlaceholder: "truncate font-['Proxima_Nova'] text-[13px] text-[#6D96AE]",
+        statusWrapper: "flex items-center font-['Proxima_Nova'] text-[13px] text-[#37576B]",
+        singleClearWrapper:
+          "absolute inset-y-0 right-4 flex items-center cursor-pointer text-[#6D96AE] hover:text-[#DD524C]",
+        tokenWrapper:
+          "inline-flex items-center gap-x-1 rounded-full bg-[#E0EBF0] px-2 py-0.5 font-['Proxima_Nova'] text-[12px] font-[600] text-[#37576B] whitespace-nowrap",
+        menuWrapper:
+          "isolate min-w-[var(--button-width,11rem)] p-1.5 rounded-[12px] bg-white shadow-lg ring-1 ring-[#C5D7E0]",
+        alwaysOpenMenuWrapper: "w-full p-1.5 rounded-[12px] bg-white ring-1 ring-[#C5D7E0] z-20",
+        input:
+          "block w-full appearance-none rounded-[8px] focus:outline-none px-2.5 py-1.5 font-['Proxima_Nova'] text-[13px] border border-[#E0EBF0] bg-[#F3F8F9] text-[#2D3E4C] placeholder:text-[#6D96AE] focus:ring-1 focus:ring-[#6D96AE]",
+        optionsWrapper: "mt-1 max-h-[280px] overflow-auto scrollbar-sm",
+        menuItem:
+          "flex items-center gap-2 rounded-[8px] cursor-pointer outline-none px-2.5 py-1.5 font-['Proxima_Nova'] text-[13px] text-[#2D3E4C] hover:bg-[#F3F8F9]",
+        smartMenuItem:
+          "inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-['Proxima_Nova'] font-[600] cursor-pointer bg-[#F3F8F9] text-[#37576B] hover:bg-[#E0EBF0]",
+        selectedValueIcon: "size-4 text-[#EAAD43]",
+      },
+    ],
+  },
+  input: {
+    options: { activeStyle: 0 },
+    styles: [
+      { name: "default" },
+      {
+        // Bare input INSIDE the pillBar pill row — the row is the box.
+        name: "pill",
+        inputContainer: "w-full flex",
+        input:
+          "w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 p-0 font-['Proxima_Nova'] text-[13px] text-[#2D3E4C] placeholder:text-[#6D96AE]",
       },
     ],
   },
@@ -936,6 +1134,9 @@ const theme = {
     scaleItemActive: "bg-white",
     scaleItemInActive: "bg-[#F3F8F9]",
   },
+  // The AVL Graph (graph_new) section — brand defaults defined at the top of this
+  // file. Separate from `graph` above, which themes the legacy graph component.
+  avlGraph: mny_avlGraph,
   icon: {
     icon: "text-slate-400 hover:text-blue-500 size-4",
   },

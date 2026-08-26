@@ -1630,6 +1630,10 @@ const Comp = ({ state, setState, map }) => {
         rowCount={filteredCount}
         fmtCount={fmtCount}
         onOpenDownload={openBuilder}
+        // `polling` is exactly "the server is building the file": set when a download has been
+        // requested but `view.metadata.download[hash]` has not appeared yet, cleared the moment it
+        // does (and the browser download fires) or if the request never produced a name.
+        downloading={polling}
       />
       <DownloadBuilder
         open={modalState.open}
