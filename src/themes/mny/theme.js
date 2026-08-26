@@ -1120,6 +1120,16 @@ const theme = {
       },
     ],
   },
+  // filter_control Card cells — the cell wrapper IS the white pill; pair the
+  // column with activeStyle:'pill' so the control inside is the bare variant.
+  filterControlCell: {
+    wrapper:
+      "w-full flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE] focus-within:border-[#6D96AE] transition-colors",
+    label: "font-['Proxima_Nova'] text-[13px] text-[#37576B] whitespace-nowrap",
+    icon: "size-4 text-[#6D96AE] shrink-0",
+    toggleWrapper: "flex items-center gap-1.5 cursor-pointer",
+    checkbox: "size-4 rounded border-[#C5D7E0] text-[#2D3E4C] focus:ring-[#E0EBF0]",
+  },
   graph: {
     text: "text-[#2D3E4C] font-[Oswald] font-semibold text-[12px] leading-[100%] tracking-[0px] uppercase",
     darkModeText:

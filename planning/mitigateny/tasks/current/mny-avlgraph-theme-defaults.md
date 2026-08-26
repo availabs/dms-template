@@ -1,6 +1,6 @@
 # MNY — avlGraph brand defaults (palette · axes · bar spacing)
 
-**Project:** MitigateNY · **Topic:** themes · **Status:** NOT STARTED · **Created:** 2026-08-25
+**Project:** MitigateNY · **Topic:** themes · **Status:** IMPLEMENTED + LIVE-VERIFIED · **Created:** 2026-08-25 · **Implemented:** 2026-08-25
 
 ## Objective
 
@@ -18,9 +18,11 @@ AVL Graph section on a MitigateNY site renders on-brand with **no per-section co
 ## Scope
 
 **In scope**
-- `src/themes/mny/theme.js` — add an `avlGraph` key (`options`/`styles` shape) carrying
-  `chartDefaults`, plus a `dark` style for the dark hero bands.
-- Optionally: a **Graphs** spec section in `src/themes/mny/design/design-system/components.html`
+- [x] `src/themes/mny/theme.js` — add an `avlGraph` key (`options`/`styles` shape) carrying
+  `chartDefaults`, plus a `dark` style for the dark hero bands. **DONE** — `MNY_F_DISPLAY` /
+  `MNY_F_PROSE` / `MNY_GRAPH_PALETTE` / `mnyChartDefaults` / `mny_avlGraph` added above
+  `const theme = {` (theme.js:14-137); registered as `avlGraph: mny_avlGraph` (theme.js:1139).
+- [x] A **Graphs** spec section in `src/themes/mny/design/design-system/components.html`
   so the chart vocabulary is documented where every other MNY primitive is (see
   [Design reference](#design-reference-where-the-numbers-come-from) — it currently only exists
   implicitly inside page mockups).
@@ -254,9 +256,13 @@ Then register it in the exported theme object (the `graph` key stays untouched):
    `avl-graph/utils/index.js:163` does `scale.paddingInner(padding || paddingInner)` — a section
    that sets the single `padding` key wins over the theme's `paddingInner`/`paddingOuter`.
 
-6. **Legend position.** BarGraph only renders a legend at `position: "left" | "right"`;
-   `{show:true}` with no position renders nothing. Since the default here is `{show:false}`,
-   a section turning it on must also set a position.
+6. **Legend position.** ~~BarGraph only renders a legend at `position: "left" | "right"`;
+   `{show:true}` with no position renders nothing.~~ **Corrected 2026-08-25 by live evidence:**
+   the policies-dashboard graphs carry `legend: {show:true, position:"bottom"}` and their legend
+   *does* render (visible under both charts). The claim was carried over from
+   `src/dms/skills/authoring-graphs.md`; it is at best imprecise for this render path. Not
+   re-tested for a bare `{show:true}` with no position at all. The theme default stays
+   `{show:false}` regardless.
 
 7. **`groupMode` defaults to `stacked`.** Not changed by this task, but worth knowing when
    verifying a 2-series bar chart: side-by-side bars need `display.groupMode: "grouped"`, and
@@ -274,29 +280,128 @@ Each would be a small additive change under `src/dms/planning/`:
   uppercase Oswald, but there's no way to set `text-transform` on an axis title from the theme;
   the author has to type the label in caps.
 
+## Implementation results — 2026-08-25
+
+### Pre-flight: what actually renders MNY graphs (this corrected the plan's framing)
+
+Enumerated all **72** MitigateNY pages (app `mitigat-ny-prod`, type `prod`) against the local
+dms-server on :3001 (`dms-mercury-3`), read-only, via `dms page list --limit 500` +
+`dms section list` per page. Element-type census across every section on every page:
+
+| element-type | count |
+|---|---|
+| Card | 215 |
+| lexical | 193 |
+| Spreadsheet | 69 |
+| Filter | 20 |
+| **Graph** | **6** |
+| Header: Default Header | 4 |
+| Map | 3 |
+| PDFGenerator | 1 |
+| Table: Components Index | 1 |
+
+**Finding — zero sections use the `AVL Graph` element-type.** All 6 graphs are the legacy
+`Graph` type. That looked like the theme would reach nothing, but it does:
+`ComponentRegistry/index.jsx:59` maps **`Graph: GraphNew`** (with `"AVL Graph"` kept only as a
+hidden alias), and `Graph.migrate.js` reshapes legacy element-data at render time. **So all 6
+live graphs already render through `graph_new` and read `theme.avlGraph.chartDefaults`.**
+
+The 6, all `BarGraph`:
+
+| page | slug | sections |
+|---|---|---|
+| 1380302 | `forms/other_forms/policies/policies_dashboard` | 1380455, 1380456 |
+| 1427792 | `web_analytics` | 2173471, 2173472 |
+| 566463 | `home` (admin pattern) | 2386424, 2386425 |
+
+### What the theme reaches on those 6, and what it doesn't
+
+Ran each section's real `element-data.display` through the actual `migrateGraphDisplay` plus a
+faithful copy of `mergeChartDefaults`. All 6 behave identically:
+
+| Key | Reaches the live graphs? | Why |
+|---|---|---|
+| `paddingInner: 0.3` | ✅ **yes** | no section sets it |
+| `barOpacity: 1` | ✅ **yes** | no section sets it |
+| axis tick font/size/weight/color | ✅ **yes** | `xAxis`/`yAxis` deep-merge; sections never set the font keys |
+| `axisColor: #E0EBF0` | ✅ **yes** | same deep-merge |
+| `colors` (palette) | ❌ **no** | all 6 carry a baked-in 20-colour rainbow (`#D72638`, `#007F5F`, `#F8A100`, …) |
+| `margin` | ❌ **no** | all 6 carry the legacy `marginLeft: 100`, migrated to `margin.left: 100` |
+| `legend` | ❌ **no** | all 6 set their own |
+| `height` | ❌ **no** | all 6 set `300` — identical to the theme default, so no visual difference |
+
+### Live verification (Playwright, real rendered DOM)
+
+Ran a second Vite dev server on :5174 against the local dms-server (the user's own :5173 server,
+which points at the hosted `dmsserver.availabs.org`, was left untouched), authenticated with a
+locally-minted dev token, and measured the rendered SVG.
+
+**Bar spacing** — bars sit inside transformed `<g>` wrappers, so rect `x` is always 0; measured
+band geometry from screen-space bounding boxes instead, then derived the padding from the d3
+band-scale identity `bandwidth = step × (1 − paddingInner)`:
+
+| section | orientation | bands | bandwidth | step | **gap** | implied `paddingInner` |
+|---|---|---|---|---|---|---|
+| 1380455 | vertical | 3 | 27.69px | 39.56px | **11.87px** | **0.300** ✅ |
+| 1380456 | horizontal | 12 | 13.42px | 19.17px | **5.75px** | **0.300** ✅ |
+
+Exactly the theme value. (The two `web_analytics` charts are 1158- and 442-band daily time
+series at a ~0.06px step — sub-pixel, so band geometry is not measurable there and they are not
+a usable test case for spacing at any padding.)
+
+**Axis chrome + fills**, read as computed style off the live tick/domain nodes — identical on all
+four measurable charts:
+
+- tick `font-family` = `"Proxima Nova", "Source Sans 3", system-ui, sans-serif` ✅
+- tick `font-size` = `11px`, `font-weight` = `600` ✅
+- tick `fill` = `rgb(109, 150, 174)` = **`#6D96AE`** ✅
+- axis `path.domain` stroke = `rgb(224, 235, 240)` = **`#E0EBF0`** ✅
+- bar `fill-opacity` = `1` ✅ (solid)
+- bar fills = `#D72638` … ❌ **section palette, as predicted**
+
+Screenshot of `/admin/forms/other_forms/policies/policies_dashboard` confirms visually: clear
+gaps between bars, solid fills, small blue-grey Proxima ticks, faint gridlines — and red bars.
+
+### The one remaining gap — needs an owner decision
+
+The palette (and `margin.left: 100`, which visibly squeezes the left chart into a ~119px plot)
+is **baked into those 6 sections' own data**, so no theme change can reach it. Closing it means
+deleting `colors` / `margin` / `legend` from the 6 sections' `element-data.display` so they fall
+through to the theme — a **write to production content**, which was not authorized and was not
+performed. Options, for the owner:
+
+1. **Leave as-is** — every newly-authored graph is on-brand; these 6 keep their rainbow.
+2. **Strip the overrides on the 6** — one `dms section update` each, draft-only, then publish.
+3. **Strip `colors` only** — keeps each section's deliberate margin/legend choices.
+
 ## Testing checklist
 
-- [ ] `npm run dev` — a page with an AVL Graph renders with no console errors.
-- [ ] **Bar spacing:** a BarGraph shows a visible gap between bars with **no section config**
-      (the headline ask). Check both `orientation: "vertical"` and `"horizontal"`.
-- [ ] **Grouped bars:** `groupMode: "grouped"` with 2 series — bars are side-by-side, groups are
-      separated, and the two series read as blue-700 / amber-700.
-- [ ] **Palette:** a categorize-mode graph with ≥5 categories walks the MNY palette in order and
-      no two adjacent series are near-indistinguishable.
-- [ ] **Axes:** tick labels render in Proxima 11px `#6D96AE`; axis titles in Oswald `#37576B`;
-      the axis rule is the `#E0EBF0` hairline, not full-strength ink.
-- [ ] **Tick labels are NOT upper-cased** (gotcha #2) — verify with a long sentence-case category
-      like "Community infrastructure".
-- [ ] **Gridlines** are faint, not black.
-- [ ] **LineGraph** unaffected in a bad way: 2px stroke, smooth curve, no forced area fill.
-- [ ] **Dark style:** switch a graph section to the `dark` avlGraph style inside a dark topo band
-      — amber bars, `#C5D7E0` ticks, transparent background, nothing black-on-black.
-- [ ] **Margins:** `left: 64` still fits the longest y-tick and horizontal-bar category label on
-      a real MNY chart; no clipping.
-- [ ] **No regression on existing sections:** for each live MNY AVL Graph found in the pre-flight
-      (gotcha #1), screenshot before/after and confirm the change is an improvement, not a
-      surprise — sections carrying their own `colors`/`paddingInner` are expected to be unchanged.
-- [ ] Legend off by default; a section that sets `{show:true, position:"right"}` still gets one.
+Verified live unless noted.
+
+- [x] Theme module loads and every value resolves as authored (probed the built theme object).
+- [x] `npx eslint src/themes/mny/theme.js` — clean.
+- [x] **Bar spacing:** visible gaps with **no section config** — 11.87px (vertical) and 5.75px
+      (horizontal), implied `paddingInner` 0.300 on both.
+- [x] Both orientations covered (1380455 vertical, 1380456 horizontal).
+- [x] **Axes:** ticks Proxima 11px/600 `#6D96AE`; axis rule `#E0EBF0`. Read as computed style.
+- [x] **Tick labels are NOT upper-cased** — live ticks render `Local`, `State`, `Federal`,
+      `2025-08-13` in sentence/native case, confirming the `text` key change (gotcha #2) works.
+- [x] **Gridlines** faint, not black.
+- [x] **No regression on existing sections** — the merge was computed for all 6 before the fact
+      and matched what rendered; the only changes are spacing, solidity and axis chrome.
+- [x] Bar fills solid (`fill-opacity: 1`).
+- [x] HTML of the new design-system Graphs section validates (balanced tags, no unclosed nodes).
+- [ ] **Palette not verifiable on live content** — all 6 sections override `colors`. Needs either
+      a newly-authored graph or the owner decision above.
+- [ ] **Axis label (title) typography** — no live graph sets `xAxis.label`/`yAxis.label`, so the
+      Oswald `#37576B` axis-title tokens are shipped but unexercised.
+- [ ] **LineGraph** (`strokeWidth: 2`, `catmullrom`, no forced area) — no live MNY LineGraph
+      exists; unexercised.
+- [ ] **Dark style** — shipped but no live section selects it; needs a graph placed in a dark
+      topo band.
+- [ ] **`margin.left: 64`** — unexercised, since all 6 sections override margin.
+- [ ] Legend default `{show:false}` — unexercised for the same reason.
+
 
 ## References
 
