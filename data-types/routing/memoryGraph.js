@@ -661,17 +661,17 @@ const findRoute = async (db, graph, { lon: srcLon, lat: srcLat }, { lon: dstLon,
 // all the plausible trips that would have used this segment, which surrounding roads absorb the
 // most rerouted traffic," not one trip's detour.
 const MILE_M = 1609.34;
-// Max search radius for candidate points (2026-08-21, moved repeatedly: 5-20mi -> 1-10mi -> 5mi
-// -> 4mi -> 5mi -> now 20mi flat - "there is not miles limit i mean the radius wise but i want
-// 10-10 points" combined with "each points are like 0.5 to 0.75 miles apart": 10 points needs at
-// least ~7mi of spaced-out valid road to fit at that gap without relaxing it, so a short fixed
-// cap works against the count+gap requirement directly. NOT a literal "unlimited" (an actually
-// unbounded Dijkstra would traverse the WHOLE graph, not just this feature's search space) - 20mi
-// is generous headroom past the ~7mi minimum needed, while still a real distance bound on the
-// pool-generation search itself. `MAX_ATTEMPTS` below (not this radius) is what actually bounds
-// validation cost, so widening this doesn't reintroduce the earlier "taking minutes" problem on
-// its own.
-const MAX_CANDIDATE_DISTANCE_M = 20 * MILE_M;
+// Max search radius for candidate points, MEASURED FROM THE SEED POINT (walkToFirstBranch's
+// result), not the segment's own endpoint. Shrunk 20mi -> 8mi (2026-08-25 perf - "why is it still
+// taking a lot of time": the 20mi figure was sized back when candidates started right at the
+// segment's own endpoint, to guarantee enough spread for 10 points at 0.5-0.75mi apart. Now that
+// seeding (walkToFirstBranch) already pushes the search origin out to a real branch - sometimes
+// itself up to 10mi out on a segment with no nearby cross-road - stacking a full 20mi candidate
+// radius ON TOP of that seed distance means every validation/tally search may need to traverse a
+// much longer route than before, which is real Dijkstra work no amount of worker-pool parallelism
+// shrinks. 8mi still comfortably covers the ~7mi of spread 10 points at that spacing needs, without
+// compounding the seed distance into a combined 20-30mi search radius on already-far-seeded sides.
+const MAX_CANDIDATE_DISTANCE_M = 8 * MILE_M;
 
 // Candidate search - ONE continuous search from the closed segment's own endpoint, not two
 // separate searches stitched together (2026-08-21 rewrite, replacing an earlier same-road-then-
@@ -688,7 +688,12 @@ const MAX_CANDIDATE_DISTANCE_M = 20 * MILE_M;
 // everywhere regardless (so it never gets stuck at a dead end the way the old hard-filtered same-
 // road pass could), but same-road-reached nodes are surfaced first when building the candidate
 // list, farthest first within each group.
-const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited, maxDistanceM, preferredHighway = null, farthestFirst = true, blockedNode = -1) => {
+const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited, maxDistanceM, preferredHighway = null, farthestFirst = true, blockedNodes = null) => {
+  // Accepts a single node id (legacy call shape) or an iterable of them - normalized to a Set once
+  // up front rather than checked per-edge-relaxation.
+  const blocked = blockedNodes instanceof Set ? blockedNodes
+    : (blockedNodes === null || blockedNodes === undefined || blockedNodes === -1) ? new Set()
+    : new Set(Array.isArray(blockedNodes) ? blockedNodes : [blockedNodes]);
   const { numNodes, adjHead, adjEdgeIndex, inAdjHead, inAdjEdgeIndex, edgeSource, edgeTarget, edgeLengthM, edgeHighway } = graph;
   const dist = new Float64Array(numNodes).fill(Infinity);
   const reachedVia = new Int32Array(numNodes).fill(-1); // the edge that reached this node, for the same-road tag below
@@ -717,7 +722,7 @@ const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited
       const e = adjEdgeIndex[i];
       if (excludedEdgeSet.has(e)) continue;
       const n = edgeTarget[e];
-      if (n === blockedNode) continue;
+      if (blocked.has(n)) continue;
       const nd = d + edgeLengthM[e];
       if (nd < dist[n]) { dist[n] = nd; reachedVia[n] = e; heap.push(n, nd); }
     }
@@ -725,7 +730,7 @@ const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited
       const e = inAdjEdgeIndex[i];
       if (excludedEdgeSet.has(e)) continue;
       const n = edgeSource[e];
-      if (n === blockedNode) continue;
+      if (blocked.has(n)) continue;
       const nd = d + edgeLengthM[e];
       if (nd < dist[n]) { dist[n] = nd; reachedVia[n] = e; heap.push(n, nd); }
     }
@@ -758,6 +763,155 @@ const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited
   return { nodes, sameRoadCount: sameRoad.length };
 };
 
+// Walks from `startNode` along the network (both edge directions, since a real intersection can be
+// reached via either) until it finds a REAL BRANCH - a node with more than one viable next edge,
+// pure topology (edge count), same rule as the simple detour mode's endpoint picker
+// (comp.jsx/findSameRoadNode.js) - then takes exactly ONE more hop and stops there. 2026-08-25,
+// "the same kind of first expansion I need in the closure density mode - this must be the first
+// point, then expand network after that point": ported server-side (not reusing the client's
+// bbox-fetch version) because the in-memory CSR graph already has full adjacency in memory, so
+// this is a fast synchronous walk, not a per-hop network round trip. Excludes `excludedEdgeSet`
+// (the closed segment itself) and never crosses through `blockedNode` (the segment's OTHER
+// endpoint - same crossing-prevention rule `farthestToNearestNodes` uses), so the seed point for
+// each side stays confined to its own side of the closure. Falls back to whatever node the walk
+// dead-ended at (or the start node itself, if nothing connects at all) rather than failing -
+// "if dead end keep it there, it's okay."
+const MAX_SEED_WALK_HOPS = 2000;
+const MAX_SEED_WALK_DISTANCE_M = 10 * MILE_M; // per side - "10 miles in a single dir"
+// Returns `{ node, path }` - `path` is every node visited along the way (including `startNode` and
+// the final `node`), not just the destination. 2026-08-25 fix: once each side's search starts from
+// a SEED further out (not the segment's own endpoint), blocking only the opposite side's final
+// seed node isn't enough to keep the two sides from crossing - the search can still reach into the
+// other side's territory via a path that never touches that one blocked node, especially along a
+// shared road (live-tested: start/end candidate points interleaving on the same street). Blocking
+// the WHOLE corridor each seed-walk traveled closes that gap.
+// Bearing in degrees [0,360) from node `a` to node `b`, using nodeLon/nodeLat - same formula as
+// the old client-side walk (comp.jsx's bearing(), now unused there since this replaced it), needed
+// here so `walkToFirstBranch` can tell "the road continuing straight ahead" apart from "a cross
+// street that happens to touch this same node."
+const bearingDeg = (graph, a, b) => {
+  const lat1 = (graph.nodeLat[a] * Math.PI) / 180;
+  const lat2 = (graph.nodeLat[b] * Math.PI) / 180;
+  const dLon = ((graph.nodeLon[b] - graph.nodeLon[a]) * Math.PI) / 180;
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+};
+const bearingDiff = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
+
+// Two independent copies (2026-08-26, "make search for both separate" - simple mode and density
+// mode were sharing one function via a `stopAtBranch` flag; kept identical logic today, but now
+// each mode can be tuned on its own without any risk of the other regressing). Both walk from
+// `startNode` (both edge directions - a real intersection can be reached via either) until a
+// REAL BRANCH - a node with more than one viable next edge, pure topology - then take exactly one
+// more hop past it and stop. `hop > 0` guards the closed segment's OWN endpoint, which OSM almost
+// always splits ways at (so it's itself technically a "branch") - without the guard the walk would
+// misfire on hop 0, before any real bearing-based continuation choice could apply. Falls back to
+// wherever the walk dead-ended (or the start node, if nothing connects) rather than failing.
+const walkToFirstBranchSimple = (graph, startNode, blockedNode, excludedEdgeSet) => {
+  const { adjHead, adjEdgeIndex, inAdjHead, inAdjEdgeIndex, edgeSource, edgeTarget, edgeLengthM } = graph;
+  let current = startNode;
+  let prevNode = -1;
+  let prevEdge = -1;
+  let incomingBearing = null; // direction just travelled TO `current`, null on the very first hop
+  let travelledM = 0;
+  const path = [startNode];
+
+  for (let hop = 0; hop < MAX_SEED_WALK_HOPS; hop++) {
+    if (travelledM >= MAX_SEED_WALK_DISTANCE_M) return { node: current, path, reason: "distance_cap" };
+
+    const candidates = []; // { node, edge, lengthM }
+    for (let i = adjHead[current]; i < adjHead[current + 1]; i++) {
+      const e = adjEdgeIndex[i];
+      if (e === prevEdge || excludedEdgeSet.has(e)) continue;
+      const n = edgeTarget[e];
+      if (n === blockedNode || n === prevNode) continue;
+      candidates.push({ node: n, edge: e, lengthM: edgeLengthM[e] });
+    }
+    for (let i = inAdjHead[current]; i < inAdjHead[current + 1]; i++) {
+      const e = inAdjEdgeIndex[i];
+      if (e === prevEdge || excludedEdgeSet.has(e)) continue;
+      const n = edgeSource[e];
+      if (n === blockedNode || n === prevNode) continue;
+      candidates.push({ node: n, edge: e, lengthM: edgeLengthM[e] });
+    }
+    if (!candidates.length) return { node: current, path, reason: "dead_end" };
+
+    const isBranch = candidates.length > 1; // pure topology, matches comp.jsx's hasIncomingBranch
+
+    // Pick the STRAIGHTEST-continuing edge, not just the first one adjacency happens to list -
+    // no incoming bearing yet on the very first hop, so candidates[0] there is fine (just leaving
+    // the closed segment's own endpoint, before any branch could have been seen).
+    const next = incomingBearing === null || candidates.length === 1
+      ? candidates[0]
+      : candidates.reduce((best, c) => {
+          const diff = bearingDiff(incomingBearing, bearingDeg(graph, current, c.node));
+          return diff < best._diff ? { ...c, _diff: diff } : best;
+        }, { ...candidates[0], _diff: bearingDiff(incomingBearing, bearingDeg(graph, current, candidates[0].node)) });
+    prevNode = current;
+    prevEdge = next.edge;
+    incomingBearing = bearingDeg(graph, current, next.node);
+    current = next.node;
+    travelledM += next.lengthM;
+    path.push(current);
+
+    if (isBranch && hop > 0) return { node: current, path, reason: "branch" }; // took the one hop past the branch - stop this direction here
+  }
+  return { node: current, path, reason: "hop_cap" };
+};
+
+const walkToFirstBranchDensity = (graph, startNode, blockedNode, excludedEdgeSet) => {
+  const { adjHead, adjEdgeIndex, inAdjHead, inAdjEdgeIndex, edgeSource, edgeTarget, edgeLengthM } = graph;
+  let current = startNode;
+  let prevNode = -1;
+  let prevEdge = -1;
+  let incomingBearing = null; // direction just travelled TO `current`, null on the very first hop
+  let travelledM = 0;
+  const path = [startNode];
+
+  for (let hop = 0; hop < MAX_SEED_WALK_HOPS; hop++) {
+    if (travelledM >= MAX_SEED_WALK_DISTANCE_M) return { node: current, path, reason: "distance_cap" };
+
+    const candidates = []; // { node, edge, lengthM }
+    for (let i = adjHead[current]; i < adjHead[current + 1]; i++) {
+      const e = adjEdgeIndex[i];
+      if (e === prevEdge || excludedEdgeSet.has(e)) continue;
+      const n = edgeTarget[e];
+      if (n === blockedNode || n === prevNode) continue;
+      candidates.push({ node: n, edge: e, lengthM: edgeLengthM[e] });
+    }
+    for (let i = inAdjHead[current]; i < inAdjHead[current + 1]; i++) {
+      const e = inAdjEdgeIndex[i];
+      if (e === prevEdge || excludedEdgeSet.has(e)) continue;
+      const n = edgeSource[e];
+      if (n === blockedNode || n === prevNode) continue;
+      candidates.push({ node: n, edge: e, lengthM: edgeLengthM[e] });
+    }
+    if (!candidates.length) return { node: current, path, reason: "dead_end" };
+
+    const isBranch = candidates.length > 1; // pure topology, matches comp.jsx's hasIncomingBranch
+
+    // Pick the STRAIGHTEST-continuing edge, not just the first one adjacency happens to list -
+    // no incoming bearing yet on the very first hop, so candidates[0] there is fine (just leaving
+    // the closed segment's own endpoint, before any branch could have been seen).
+    const next = incomingBearing === null || candidates.length === 1
+      ? candidates[0]
+      : candidates.reduce((best, c) => {
+          const diff = bearingDiff(incomingBearing, bearingDeg(graph, current, c.node));
+          return diff < best._diff ? { ...c, _diff: diff } : best;
+        }, { ...candidates[0], _diff: bearingDiff(incomingBearing, bearingDeg(graph, current, candidates[0].node)) });
+    prevNode = current;
+    prevEdge = next.edge;
+    incomingBearing = bearingDeg(graph, current, next.node);
+    current = next.node;
+    travelledM += next.lengthM;
+    path.push(current);
+
+    if (isBranch && hop > 0) return { node: current, path, reason: "branch" }; // took the one hop past the branch - stop this direction here
+  }
+  return { node: current, path, reason: "hop_cap" };
+};
+
 // Resolves the closed segment + a same/open-route helper shared by both split steps below.
 const closureContext = (graph, ogcFid, costObjective) => {
   const edgeIdx = findEdgeIndexByOgcFid(graph.edgeOgcFid, +ogcFid);
@@ -770,6 +924,25 @@ const closureContext = (graph, ogcFid, costObjective) => {
   return { edgeIdx, reverseIdx, excludedEdgeSet, costArray, routeUsesClosedSegment };
 };
 
+// Simple detour mode's endpoint picker, moved server-side (2026-08-25 perf) - the client-side
+// version (comp.jsx's walkForward) made ONE HTTP request per hop of the walk, which on a highway
+// with short edges over a 10-mile budget could mean hundreds of sequential network round trips
+// just to pick the start/end points, before "Get detour" even ran the real route search. This is
+// the exact same walk-to-first-branch rule (`walkToFirstBranch` above, already used by
+// selectClosureDensityCandidates), just exposed as one fast in-memory call instead of many.
+const resolveDetourEndpoints = (graph, ogcFid) => {
+  const { edgeIdx, excludedEdgeSet } = closureContext(graph, ogcFid, "distance"); // costObjective is irrelevant here - only used for excludedEdgeSet/edgeIdx
+  const fromNode = graph.edgeSource[edgeIdx];
+  const toNode = graph.edgeTarget[edgeIdx];
+  const startWalk = walkToFirstBranchSimple(graph, fromNode, toNode, excludedEdgeSet);
+  const endWalk = walkToFirstBranchSimple(graph, toNode, fromNode, excludedEdgeSet);
+  const toPoint = (n, walk) => ({
+    lon: graph.nodeLon[n], lat: graph.nodeLat[n], osm_id: String(graph.nodeOsmId[n]),
+    hitDistanceCap: walk.reason === "distance_cap",
+  });
+  return { start: toPoint(startWalk.node, startWalk), end: toPoint(endWalk.node, endWalk) };
+};
+
 // Step 1/2 (2026-08-21 - split into two API calls so the frontend can show/confirm candidate
 // points before committing to the expensive full analysis): point SELECTION only, no route
 // tallying. See the inline comments below for the full history of how this selection logic
@@ -780,6 +953,17 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   const fromNode = graph.edgeSource[edgeIdx];
   const toNode = graph.edgeTarget[edgeIdx];
   const closedHighway = graph.edgeHighway[edgeIdx];
+
+  // Seed each side from its FIRST REAL BRANCH past the closed segment (2026-08-25, "the same kind
+  // of first expansion I need in the closure density mode - this must be the first point, then
+  // expand network after that point") - same walk-to-first-branch rule as the simple detour mode's
+  // endpoint picker, so the expansion below starts from a genuine junction (somewhere a detour
+  // actually has options) instead of the segment's own endpoint, which by OSM's own way-splitting
+  // convention is usually already sitting exactly at an intersection.
+  const startWalk = walkToFirstBranchDensity(graph, fromNode, toNode, excludedEdgeSet);
+  const endWalk = walkToFirstBranchDensity(graph, toNode, fromNode, excludedEdgeSet);
+  const startSeed = startWalk.node;
+  const endSeed = endWalk.node;
 
   // Point selection (2026-08-21, confirmed rule, refined twice same day). First refinement:
   // "it's not like evenly... it's like we want the BEST points to understand the value of the
@@ -804,8 +988,12 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   // out) rather than jumping straight to the far end.
   // blockedNode = the OTHER endpoint - keeps the start side's search from crossing through it to
   // reach the end side's own territory, and vice versa (see farthestToNearestNodes' comment).
-  const { nodes: rawStartPool, sameRoadCount: startSameRoadCount } = farthestToNearestNodes(graph, fromNode, excludedEdgeSet, [toNode], MAX_CANDIDATE_DISTANCE_M, closedHighway, false, toNode);
-  const { nodes: rawEndPool, sameRoadCount: endSameRoadCount } = farthestToNearestNodes(graph, toNode, excludedEdgeSet, [fromNode], MAX_CANDIDATE_DISTANCE_M, closedHighway, false, fromNode);
+  // Block the OPPOSITE side's entire seed-walk corridor (every node it passed through, not just
+  // its final seed point - see walkToFirstBranch's comment) - 2026-08-25 fix for a live-tested bug
+  // where start/end candidate points interleaved along the same shared road once each side's
+  // search started from a seed farther out than the segment's own endpoint.
+  const { nodes: rawStartPool, sameRoadCount: startSameRoadCount } = farthestToNearestNodes(graph, startSeed, excludedEdgeSet, endWalk.path, MAX_CANDIDATE_DISTANCE_M, closedHighway, false, endWalk.path);
+  const { nodes: rawEndPool, sameRoadCount: endSameRoadCount } = farthestToNearestNodes(graph, endSeed, excludedEdgeSet, startWalk.path, MAX_CANDIDATE_DISTANCE_M, closedHighway, false, startWalk.path);
 
   // MIN_GAP_M (2026-08-21 - "do not take points nearby, take one far apart... a barrier of 0.25
   // to 0.5 miles minimum distance between 2 start and 2 end points"): the earlier evenly-spaced-
@@ -859,6 +1047,10 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   // the main walk below covers everything AFTER that seed head (so the seed is never
   // re-validated against itself). Reduced from 3 to 1 (2026-08-21 - "still a lot of time" even
   // after switching to bidirectionalDijkstra) - each candidate now costs 1 open-route search.
+  // Tried restoring to 3 on 2026-08-25 to make passedFromCells's ">50% matched route" check a
+  // genuine majority vote again (not a degenerate single check) - measured 20s -> 52s on a real
+  // cold run and reverted. The SEED_COUNT/">50%" gap stays open; fixing it needs a real perf
+  // budget for the extra searches, not a free win.
   const SEED_COUNT = Math.min(1, numCandidates);
   const seedStart = rawStartPool.slice(0, SEED_COUNT);
   const seedEnd = rawEndPool.slice(0, SEED_COUNT);
@@ -958,6 +1150,12 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
 
   // Same fails/oppositeSet.length <= 0.5 aggregation passesValidation used to do live, now reading
   // the precomputed cells instead of calling out to a search.
+  //
+  // A closed-network BFS reachability check was added here 2026-08-25 (catch a candidate whose
+  // OPEN route passes validation but is genuinely disconnected once actually closed) and reverted
+  // 2026-08-26 - it made point-selection noticeably slower (per-candidate BFS on the main thread),
+  // and this call needs to stay fast for the demo. Revisit as a properly-parallelized version
+  // (worker pool, like the >50% check below) rather than re-adding it inline here.
   const passedFromCells = (testIndices, cells, oppositeCount) => {
     const passed = new Map(); // restPool index -> boolean
     testIndices.forEach((idx, ti) => {
@@ -1129,6 +1327,7 @@ const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmId
 module.exports = {
   getOrLoadGraph, invalidateGraph, findRoute,
   selectClosureDensityCandidates, computeClosureDensityFromPoints,
+  resolveDetourEndpoints,
   // Exported for graphSearchWorker.js (worker_threads pool, densitySearchPool.js) - the worker
   // reconstructs a lightweight graph-like object from SharedArrayBuffers and calls this exact same
   // pure search function directly, so the parallelized path is provably the same algorithm as the

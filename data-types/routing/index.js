@@ -88,24 +88,33 @@ const getNodesInBbox = async (db, nodesTable, [minLon, minLat, maxLon, maxLat]) 
 };
 
 // Viewport-scoped edge lookup for the detour/avoid-segment plugin's segment-picker layer
-// (planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md) - same
-// never-return-the-whole-network discipline as getNodesInBbox above. Returns each edge as a
-// GeoJSON LineString feature (ogc_fid as the feature id) so the frontend can render + click it
-// directly, no client-side geometry assembly needed.
-const EDGES_QUERY_LIMIT = 2000;
-
+// (planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md). Returns each edge
+// as a GeoJSON LineString feature (ogc_fid as the feature id) so the frontend can render + click
+// it directly, no client-side geometry assembly needed.
+//
+// No LIMIT (2026-08-26, "i want all bbox must be working and showing all" - the earlier 2000-row
+// cap silently dropped edges in a dense viewport, and without a deterministic order the dropped
+// set could even change between identical repeat queries, looking like segments randomly
+// vanishing/reappearing on revisit). ORDER BY ogc_fid still applied for stable, reproducible
+// results.
 const getEdgesInBbox = async (db, edgesTable, [minLon, minLat, maxLon, maxLat]) => {
   const { rows } = await db.query(
-    `SELECT ogc_fid, highway, from_node, to_node, ST_AsGeoJSON(wkb_geometry) AS geojson
+    // `osm` (2026-08-25, detour plugin's endpoint-picker walk) - the OSM WAY id each edge belongs
+    // to. Ground truth for "is this the same road" instead of guessing from highway-type string
+    // match + bearing angle: two edges sharing the same `osm` id are literally the same mapped
+    // way (including its own reverse-direction pair, for a two-way road), while a different `osm`
+    // id at a shared node is a genuinely distinct road meeting there - real relation/way metadata,
+    // not inference from geometry alone.
+    `SELECT ogc_fid, osm, highway, from_node, to_node, ST_AsGeoJSON(wkb_geometry) AS geojson
        FROM ${edgesTable}
        WHERE wkb_geometry && ST_MakeEnvelope($1, $2, $3, $4, 4326)
-       LIMIT $5;`,
-    [minLon, minLat, maxLon, maxLat, EDGES_QUERY_LIMIT]
+       ORDER BY ogc_fid;`,
+    [minLon, minLat, maxLon, maxLat]
   );
   return rows.map((r) => ({
     type: "Feature",
     id: +r.ogc_fid,
-    properties: { ogc_fid: +r.ogc_fid, highway: r.highway, from_node: r.from_node, to_node: r.to_node },
+    properties: { ogc_fid: +r.ogc_fid, osm: r.osm, highway: r.highway, from_node: r.from_node, to_node: r.to_node },
     geometry: JSON.parse(r.geojson),
   }));
 };
@@ -337,7 +346,6 @@ module.exports = {
           });
         }
 
-        console.log("[routing/trsp] request:", { conflation_view_id, source, destination, source_node_id, dest_node_id });
         const db = helpers.getDb(req.params.pgEnv);
         const { shortest, fastest } = await computeTrspRoutes(db, req.params.pgEnv, {
           conflation_view_id, source, destination, source_node_id, dest_node_id,
@@ -393,7 +401,6 @@ module.exports = {
           memoryGraph.findRoute(db, graph, source, destination, "time", resolvedAlgorithm, excluded_edge_ids),
         ]);
         const searchMs = Date.now() - t1;
-        console.log("[routing/trsp-memory]", { conflation_view_id, algorithm: resolvedAlgorithm, excludedCount: excluded_edge_ids?.length || 0, loadMs, searchMs });
 
         res.json({ ok: true, result: { routes: { shortest, fastest }, timing: { loadMs, searchMs } } });
       } catch (err) {
@@ -442,6 +449,35 @@ module.exports = {
         res.json({ ok: true, result: { edges } });
       } catch (err) {
         console.error("[routing/edges] failed:", err);
+        res.json({ ok: false, error: err.message });
+      }
+    });
+
+    // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory-detour-endpoints
+    // Simple detour mode's endpoint picker, moved server-side (2026-08-25 perf) - replaces the
+    // client-side per-hop-HTTP-request walk (comp.jsx's old walkForward) with ONE fast in-memory
+    // call using the same walk-to-first-branch rule (memoryGraph.js's walkToFirstBranch, shared
+    // with selectClosureDensityCandidates's own seeding).
+    router.post("/trsp-memory-detour-endpoints", async (req, res) => {
+      try {
+        const { conflation_view_id, ogc_fid } = req.body || {};
+        if (!conflation_view_id || !ogc_fid) {
+          return res.status(400).json({ ok: false, error: "conflation_view_id and ogc_fid are required" });
+        }
+
+        const db = helpers.getDb(req.params.pgEnv);
+        const t0 = Date.now();
+        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv, conflation_view_id);
+        const loadMs = Date.now() - t0;
+
+        const t1 = Date.now();
+        const result = memoryGraph.resolveDetourEndpoints(graph, ogc_fid);
+        const searchMs = Date.now() - t1;
+        console.log("[routing/trsp-memory-detour-endpoints]", { conflation_view_id, ogc_fid, loadMs, searchMs });
+
+        res.json({ ok: true, result: { ...result, timing: { loadMs, searchMs } } });
+      } catch (err) {
+        console.error("[routing/trsp-memory-detour-endpoints] failed:", err);
         res.json({ ok: false, error: err.message });
       }
     });
