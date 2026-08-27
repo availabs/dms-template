@@ -1131,6 +1131,62 @@ it would replace whatever a jurisdiction had authored with a visually-blank docu
   `general_vulnerability` / `other_comments` / `reason_for_exclusion` and Participation's
   `narrative` / `agenda_minutes` are lexical too.
 
+### Gate 1 — backup + verified rollback — DONE (2026-08-25)
+
+`backup_before_write.py` -> `backups/20260825T164929Z/`, written read-only with a manifest.
+
+| Dataset | Rows | Column writes | Columns the update INTRODUCES |
+|---|---|---|---|
+| actions | 131 | 4,713 | `Hazards` on 126 rows |
+| hoc | 884 | 5,724 | none |
+| jurisdictions | 70 | 341 | all 7 lexical columns |
+
+**1,085 rows / 10,778 column writes** — every row Phase 7 will update, snapshotted before any
+write. Inserts need no backup; they are reversed by deleting the ids the loader records.
+
+**A rollback is not "re-send the old data".** `dataset update --data` shallow-merges, and merging
+never deletes — so re-sending the original row would leave every column the update *added* still
+present, and the row would not be back where it started. The manifest shows this is not
+hypothetical: 126 Actions rows gain `Hazards`, and all 70 Jurisdictions rows gain lexical columns
+they never had. So each rollback restores originals for pre-existing columns **and explicitly
+clears the introduced ones**.
+
+Verified by simulating the server's merge twice per row — apply the update to the pre-state,
+apply the rollback to that, assert the result equals the pre-state. **All 1,085 verified.**
+
+**⚠ The verification was wrong before it was right.** The first run reported **1,015 failures
+whose diff list was empty** — every value matched, yet the dicts compared unequal, because live
+rows carry explicit `null`s and I was treating "absent" and "null" as different states. *An empty
+diff on a reported failure is the tell that the comparison is broken, not the data.* Worth
+recording because the same bug pointing the other way would have printed "ALL VERIFIED" over a
+rollback that does not work.
+
+### Gate 2 — write path proven on one throwaway row — DONE (2026-08-25)
+
+`prove_write_path.mjs`, in Capabilities (the dataset Suffolk proved this path on). Six steps:
+create → **record the id to disk before filling** → fill → read back and diff → **exercise the
+real rollback shape** → delete and confirm gone.
+
+Second run clean end to end: 10 fields written, all 10 verified on read-back, all 10 cleared by
+the rollback, row deleted, deletion confirmed by query. Swept afterwards for the marker string
+and both ids — **0 rows remain**, and Nassau's Capabilities count is still 0.
+
+**⚠ The first run left a row in production.** `raw delete` takes `<app> <type> <id>`, not a bare
+id, so step 6 failed *after* the row existed — the exact scenario step 2 exists for. The id was
+on disk, so cleanup was immediate and certain rather than a hunt.
+
+Two things this validates beyond the mechanics:
+
+- **The id-before-fill rule earned itself on its first real outing.** It was carried over from
+  Suffolk as a precaution; it turned a stranded production row into a thirty-second fix.
+- **Rolling back is now exercised, not just simulated.** The 1,085 backup entries use the same
+  patch shape that just round-tripped against the live server.
+
+Auth: minted per `src/dms/skills/authenticating-the-dms-cli.md` via `mint-token.mjs` for
+`mitigat-ny-prod`, ~6h expiry. Note that `page list` and `site tree` did **not** discriminate
+between anonymous and authenticated on this server, so neither is a usable auth probe — the write
+itself is the only reliable check.
+
 ### 7d — Prove the write path on ONE throwaway row
 
 Before generating the full set. All four steps, in order:

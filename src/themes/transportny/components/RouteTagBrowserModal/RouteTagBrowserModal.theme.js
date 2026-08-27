@@ -1,4 +1,10 @@
+import { pickerModalTheme } from '../PickerModal/PickerModal.theme';
+
+// Spreads the shared picker-modal chrome (search box, facet chips, count/sort bar — see
+// PickerModal.theme.js) first, then layers route-specific keys on top — real STYLING sharing
+// with ReportPickerModal.theme.js, not just component code, per Ryan's 2026-08-25 correction.
 export const routeTagBrowserModalTheme = {
+  ...pickerModalTheme,
   wrapper: 'flex flex-col h-[70vh] max-h-[640px]',
   header: 'text-base font-bold text-slate-800 mb-1',
   breadcrumb: 'flex items-center flex-wrap gap-1 text-xs text-slate-500 mb-2',
@@ -9,8 +15,6 @@ export const routeTagBrowserModalTheme = {
   selectedChip: 'flex items-center gap-1 pl-2 pr-1 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700 max-w-[220px]',
   selectedChipLabel: 'truncate',
   selectedChipRemove: 'shrink-0 text-blue-400 hover:text-blue-600',
-  searchWrapper: 'flex items-center gap-1.5 mb-2',
-  searchIcon: 'w-3.5 h-3.5 text-slate-400 shrink-0',
   body: 'flex-1 min-h-0 overflow-y-auto',
   // 3 fixed/enumerable axes (County/Region/Agency) as header-weight pills; the other two
   // discovery paths (Auto-generated, Other tags) demoted to plain text links below them —
@@ -34,6 +38,13 @@ export const routeTagBrowserModalTheme = {
   routeItemBody: 'flex-1 min-w-0 flex flex-col gap-0.5',
   routeItemTopLine: 'flex items-center gap-2',
   routeName: 'text-sm text-slate-700 truncate flex-1 min-w-0',
+  // "Show N short segments" reveal for fragment-collapsed lists (2026-08-25) — styled as a
+  // plain list row so it sits inline with the routes it's hiding, not as a separate button bar.
+  fragmentsToggle: 'w-full text-left px-1.5 py-1.5 text-xs text-blue-600 hover:underline',
+  // Badge line (mine/auto-generated/curated + fragment + already-added) — its own row below
+  // name+TMC-count (2026-08-25) rather than crowded onto the name line, so the Pill badges can
+  // wrap freely without fighting the name's `truncate`.
+  routeBadgeRow: 'flex flex-wrap items-center gap-1.5',
   alreadyAddedBadge: 'px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700 border border-amber-200 shrink-0',
   routeMeta: 'text-[11px] text-slate-400 shrink-0',
   routeTagChips: 'flex flex-wrap items-center gap-1',

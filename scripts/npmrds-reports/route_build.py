@@ -426,6 +426,184 @@ def existing_route_names():
     return out
 
 
+def fetch_all_routes(tag_filter=None, page_size=5000):
+    """Paginate the full routes catalog (73k+ rows as of 2026-08, well past any
+    single-request limit). Tags are stored as a JSON-array string on `.data.tags`
+    (see cmd_build's payload construction) — the CLI's `--filter` is exact-match
+    only, no array-containment support, so tag filtering happens client-side
+    here rather than server-side."""
+    # `--order id:asc` is required for LIMIT/OFFSET pagination to be stable:
+    # without an explicit, unique sort key the DB is free to return ties (e.g.
+    # rows sharing a bulk-insert `created_at`) in a different order per query,
+    # which silently duplicates some rows across pages and drops others.
+    # Caught live 2026-08-25: an unsorted first pass reported 93% of
+    # auto_generated routes as "duplicate names" — every one was this bug
+    # (the exact same id appearing twice), not a real duplicate route.
+    offset = 0
+    seen_ids = set()
+    out = []
+    while True:
+        res = dms(["dataset", "query", str(ROUTES_SOURCE_ID), "--view", str(ROUTES_VIEW_ID),
+                   "--limit", str(page_size), "--offset", str(offset), "--order", "id:asc"])
+        items = res.get("items", [])
+        if not items:
+            break
+        for it in items:
+            rid = it.get("id")
+            if rid in seen_ids:
+                continue
+            seen_ids.add(rid)
+            out.append(it)
+        offset += len(items)
+        if offset >= res.get("total", 0):
+            break
+    if tag_filter is None:
+        return out
+    filtered = []
+    for it in out:
+        raw_tags = (it.get("data") or {}).get("tags")
+        if not raw_tags:
+            continue
+        try:
+            tags = json.loads(raw_tags) if isinstance(raw_tags, str) else raw_tags
+        except json.JSONDecodeError:
+            continue
+        if tag_filter in tags:
+            filtered.append(it)
+    return filtered
+
+
+def cmd_audit(args):
+    """Flag likely-junk auto_generated routes for human triage: single-TMC
+    routes (a corridor generator producing a 1-segment "route" is usually a
+    sign the underlying road/tmclinear grouping degenerated) and duplicate
+    names (e.g. two rows both named "10TH AVE 36061 NORTHBOUND (2024)" — a
+    generator re-run or region-boundary overlap, not two real routes).
+    Each flagged item is enriched with the evidence a drop/combine/rename
+    decision actually needs: the TMC's real road/direction/county (is this a
+    genuine short road or a fragment?), and whether same-named rows share
+    identical geometry (safe to combine) or differ (a name collision that
+    needs renaming, not merging). Deliberately does NOT cross-reference
+    reports_snap_2 usage — these routes are brand-new 2024 auto-generated
+    corridors with no counterpart in the old tool, so "is any live report
+    using this yet" is close to meaningless signal this early (Ryan's call,
+    2026-08-25). Read-only; only ever prints/writes a report, never touches
+    the catalog."""
+    rows = fetch_all_routes(tag_filter=args.tag)
+    if not rows:
+        print(f"no routes tagged {args.tag!r} found.")
+        return 0
+    print(f"{len(rows)} route(s) tagged {args.tag!r}.")
+
+    tmc_arrays_by_id = {}
+    tags_by_id = {}
+    name_by_id = {}
+    by_name = {}
+    for it in rows:
+        d = it.get("data") or {}
+        rid = it.get("id")
+        name = d.get("name") or "(unnamed)"
+        try:
+            tmcs = json.loads(d.get("tmc_array") or "[]")
+        except json.JSONDecodeError:
+            tmcs = []
+        try:
+            tags = json.loads(d.get("tags") or "[]")
+        except json.JSONDecodeError:
+            tags = []
+        tmc_arrays_by_id[rid] = tmcs
+        tags_by_id[rid] = tags
+        name_by_id[rid] = name
+        by_name.setdefault(name, []).append(rid)
+
+    single_tmc_ids = [rid for rid, tmcs in tmc_arrays_by_id.items() if len(tmcs) == 1]
+    dupes = {name: ids for name, ids in sorted(by_name.items()) if len(ids) > 1}
+
+    print("fetching TMC identity (ClickHouse) for evidence...", file=sys.stderr)
+    single_tmcs = {tmc_arrays_by_id[rid][0] for rid in single_tmc_ids}
+    tmc_info = fetch_tmcs(single_tmcs)
+
+    single_tmc_detail = []
+    for rid in single_tmc_ids:
+        tmc = tmc_arrays_by_id[rid][0]
+        info = tmc_info.get(tmc, {})
+        single_tmc_detail.append({
+            "id": rid,
+            "name": name_by_id[rid],
+            "tmc": tmc,
+            "road": info.get("road"),
+            "direction": info.get("direction"),
+            "county": info.get("county"),
+            "miles": info.get("miles"),
+            "tags": tags_by_id[rid],
+        })
+
+    dup_detail = []
+    for name, ids in dupes.items():
+        arrays = [tuple(tmc_arrays_by_id.get(i, [])) for i in ids]
+        identical = len(set(arrays)) == 1
+        members = [{
+            "id": i,
+            "tmc_count": len(tmc_arrays_by_id.get(i, [])),
+            "tags": tags_by_id.get(i, []),
+        } for i in ids]
+        dup_detail.append({
+            "name": name,
+            "member_count": len(ids),
+            "identical_geometry": identical,
+            "members": members,
+        })
+    dup_identical = [g for g in dup_detail if g["identical_geometry"]]
+    dup_differing = [g for g in dup_detail if not g["identical_geometry"]]
+    dup_rows_total = sum(g["member_count"] for g in dup_detail)
+
+    print()
+    print(f"Single-TMC routes: {len(single_tmc_detail)} / {len(rows)} "
+          f"({100 * len(single_tmc_detail) / len(rows):.1f}%)")
+    print(f"Duplicate-named routes: {len(dup_detail)} distinct name(s), {dup_rows_total} row(s) total — "
+          f"{len(dup_identical)} group(s) share IDENTICAL geometry (safe to combine/dedupe), "
+          f"{len(dup_differing)} group(s) are DIFFERENT geometry under the same name "
+          f"(name collision — needs renaming, not merging)")
+    print()
+
+    if args.out:
+        payload = {
+            "tag": args.tag,
+            "total": len(rows),
+            "single_tmc": {
+                "count": len(single_tmc_detail),
+                "rows": single_tmc_detail,
+            },
+            "duplicate_names": {
+                "distinct_names": len(dup_detail),
+                "total_rows": dup_rows_total,
+                "identical_geometry_groups": len(dup_identical),
+                "differing_geometry_groups": len(dup_differing),
+                "groups": dup_detail,
+            },
+        }
+        with open(args.out, "w") as f:
+            json.dump(payload, f, indent=2)
+        print(f"full detail written to {args.out}")
+        return 0
+
+    if single_tmc_detail:
+        print(f"Single-TMC routes (showing 20 of {len(single_tmc_detail)}; "
+              f"use --out for the full list):")
+        for r in single_tmc_detail[:20]:
+            print(f"  id={r['id']}  {r['name']!r}  tmc={r['tmc']} "
+                  f"({r['road']} {r['direction']}, {r['county']}, {r['miles']} mi)")
+        print()
+    if dup_detail:
+        print(f"Duplicate names, differing-geometry-first (showing 20 of {len(dup_detail)}; "
+              f"use --out for the full list):")
+        for g in sorted(dup_detail, key=lambda g: g["identical_geometry"])[:20]:
+            kind = "IDENTICAL geometry" if g["identical_geometry"] else "DIFFERING geometry"
+            print(f"  {g['name']!r}: {g['member_count']} rows, {kind}, "
+                  f"ids {[m['id'] for m in g['members']]}")
+    return 0
+
+
 def cmd_build(args):
     with open(args.spec) as f:
         spec = json.load(f)
@@ -571,8 +749,18 @@ def main():
                         f"snapshot ({TMC_TABLE}) — use for historical-year "
                         "corridors whose TMCs may not be in the frozen table")
 
+    a = sub.add_parser("audit", help="flag likely-junk routes for a tag "
+                        "(default auto_generated): single-TMC routes + duplicate names")
+    a.add_argument("--tag", default="auto_generated",
+                    help="only consider routes carrying this tag (default: auto_generated)")
+    a.add_argument("--out", help="write full JSON detail here instead of a truncated printout")
+
     args = p.parse_args()
-    return cmd_find(args) if args.cmd == "find" else cmd_build(args)
+    if args.cmd == "find":
+        return cmd_find(args)
+    if args.cmd == "audit":
+        return cmd_audit(args)
+    return cmd_build(args)
 
 
 if __name__ == "__main__":

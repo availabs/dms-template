@@ -517,6 +517,109 @@
         </div>
 
         <!-- ============================================================
+             FILTER BAR — pill controls
+             The viewer-facing filter vocabulary used by the county-actions
+             pages (dashboard / County Prioritization). LIVE THEME CONTRACT:
+             the band     = theme.filters styles["pillBar"].filtersWrapper
+             the pill row = …pillBar.conditionRowInline (+ filterLabel)
+             the control  = theme.multiselect styles["pill"] (select) and
+                            theme.input styles["pill"] (search text), selected
+                            via filters.pillBar.controlStyle = "pill".
+             Group headers + the result count are SIBLING sections (lexical
+             eyebrow + a one-cell count Card), not filter chrome.
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-6">Filter Bar (Pill Controls)</h2>
+
+            <div data-dms="section" data-name="filter-bar" class="grid grid-cols-1 gap-6">
+
+              <!-- group headers + result count row -->
+              <div>
+                <div class="component-group-title">Group header row — eyebrow · result count · clear all</div>
+                <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+                  <p class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-700">Find &amp; Filter</p>
+                  <span class="font-proxima text-[13px] text-mny-700">Showing <span class="font-[700] tabular-nums">474</span> actions</span>
+                  <button class="font-proxima text-[12px] font-[600] text-mny-400 hover:text-mny-900 underline underline-offset-2">Clear all</button>
+                  <p class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-700 ml-auto">Action Development</p>
+                </div>
+              </div>
+
+              <!-- the band itself -->
+              <div>
+                <div class="component-group-title">Filter band — search pill · select pills (resting / valued / focused)</div>
+                <div class="w-full bg-[#F3F8F9] rounded-[12px] border border-[#E0EBF0] px-4 py-3 flex flex-wrap items-center gap-2">
+                  <!-- search pill: the row draws the box; the input inside is bare -->
+                  <label class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] focus-within:border-[#6D96AE] transition-colors">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Search</span>
+                    <input type="text" placeholder="Search actions…" disabled class="w-[150px] bg-transparent border-0 outline-none p-0 font-proxima text-[13px] text-[#2D3E4C] placeholder:text-[#6D96AE]">
+                  </label>
+                  <!-- select pill, resting: label · "All" placeholder · caret -->
+                  <span class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE] transition-colors cursor-pointer">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Jurisdiction</span>
+                    <span class="font-proxima text-[13px] text-[#6D96AE]">All</span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </span>
+                  <!-- select pill with a selected value token -->
+                  <span class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE] transition-colors cursor-pointer">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Status</span>
+                    <span class="inline-flex items-center gap-x-1 rounded-full bg-[#E0EBF0] px-2 py-0.5 font-proxima text-[12px] font-[600] text-[#37576B] whitespace-nowrap">Proposed
+                      <!-- icon: XMark -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+                    </span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </span>
+                  <!-- select pill, focused/open -->
+                  <span class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#6D96AE] transition-colors cursor-pointer">
+                    <span class="font-proxima text-[13px] text-[#37576B] whitespace-nowrap">Hazard</span>
+                    <span class="font-proxima text-[13px] text-[#6D96AE]">All</span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-[#6D96AE] rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </span>
+                </div>
+              </div>
+
+              <!-- open menu -->
+              <div>
+                <div class="component-group-title">Select menu (open) — search input · option rows · hover row</div>
+                <div class="w-[220px] p-1.5 rounded-[12px] bg-white shadow-lg ring-1 ring-[#C5D7E0]">
+                  <input type="text" placeholder="search…" disabled class="block w-full appearance-none rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] border border-[#E0EBF0] bg-[#F3F8F9] text-[#2D3E4C] placeholder:text-[#6D96AE]">
+                  <div class="mt-1">
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] bg-[#F3F8F9] cursor-pointer">Proposed</div>
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] hover:bg-[#F3F8F9] cursor-pointer">In-Progress</div>
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] hover:bg-[#F3F8F9] cursor-pointer">Completed</div>
+                    <div class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 font-proxima text-[13px] text-[#2D3E4C] hover:bg-[#F3F8F9] cursor-pointer">Discontinued/Paused</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- attribute checkboxes -->
+              <div>
+                <div class="component-group-title">Key-characteristic checkboxes — ANDed attributes, not exclusive facets</div>
+                <div class="flex flex-wrap gap-x-4 gap-y-2">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" checked disabled class="size-4 rounded border-[#C5D7E0] text-[#2D3E4C]">
+                    <span class="font-proxima text-[12px] text-[#37576B] whitespace-nowrap">Critical Facility</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" disabled class="size-4 rounded border-[#C5D7E0]">
+                    <span class="font-proxima text-[12px] text-[#37576B] whitespace-nowrap">Potential Buyout</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" disabled class="size-4 rounded border-[#C5D7E0]">
+                    <span class="font-proxima text-[12px] text-[#37576B] whitespace-nowrap">RL/SRL</span>
+                  </label>
+                </div>
+                <p class="state-label mt-2">Not yet expressible live — Filter controls need real columns; the flag fields live in JSONB until the next actions_cleaned schema rev.</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
              PILLS / TAGS / LABELS
              ============================================================ -->
         <div data-dms="group" data-name="content" class="w-full mb-6">
@@ -753,6 +856,104 @@
                 The progress lede is the same chip in amber: it is the only stat on a work page that states how much of the job is left.
               </p>
             </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             GRAPHS — AVL Graph brand defaults
+             The chart vocabulary had no spec page until now; it lived only
+             inside pages/home.html and pages/county-actions/*.html. LIVE THEME
+             CONTRACT: every value below ships in theme.js as
+             `avlGraph.styles[].chartDefaults`, which the graph_new component
+             merges UNDER a section's own `display` — so an author gets this
+             look with ZERO section configuration, and can still override any
+             single key per graph.
+             NOTE: element-type "Graph" and "AVL Graph" both resolve to the
+             same component, so legacy Graph sections read these defaults too.
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Graphs (AVL Graph)</h2>
+            <p class="font-proxima text-[14px] text-[#37576B] mb-6">Brand chart defaults. Blue is the primary family; amber is the sole warm accent, so a two-series chart lands on the highest-contrast on-brand pair.</p>
+
+            <div data-dms="section" data-name="graph-palette" class="mb-8">
+              <div class="component-group-title">Series palette — assigned to series in column order</div>
+              <div class="flex flex-wrap gap-3">
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#37576B"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">1 · Blue 700</span><span class="font-proxima text-[10px] text-[#6D96AE]">#37576B</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#EAAD43"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">2 · Yellow 700</span><span class="font-proxima text-[10px] text-[#6D96AE]">#EAAD43</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#6D96AE"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">3 · Blue 400</span><span class="font-proxima text-[10px] text-[#6D96AE]">#6D96AE</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#54B99B"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">4 · Green 700</span><span class="font-proxima text-[10px] text-[#6D96AE]">#54B99B</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#EA8954"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">5 · Orange 400</span><span class="font-proxima text-[10px] text-[#6D96AE]">#EA8954</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#C5D7E0"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">6 · Blue 200</span><span class="font-proxima text-[10px] text-[#6D96AE]">#C5D7E0</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#DD524C"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">7 · Red 500</span><span class="font-proxima text-[10px] text-[#6D96AE]">#DD524C</span></div>
+              </div>
+              <p class="font-proxima text-[12px] text-[#6D96AE] mt-3">On the dark topo bands the palette flips to amber-first — <span class="font-[700] text-[#37576B]">#EAAD43 · #FFFFFF · #F1CA87 · #C5D7E0 · #6D96AE</span> — via the <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">dark</code> avlGraph style.</p>
+            </div>
+
+            <div data-dms="section" data-name="graph-bar-spacing" class="mb-8 pt-6 border-t border-[#E0EBF0]">
+              <div class="component-group-title">Bar spacing — <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">paddingInner: 0.3</code> (d3 band-scale inner padding)</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+                <div>
+                  <p class="font-proxima text-[12px] font-[700] text-[#37576B] mb-2">Correct — 0.3</p>
+                  <div class="flex items-end gap-[11px] h-[120px]">
+                    <div class="w-[28px] rounded-t-[3px]" style="height:100%;background:#37576B"></div>
+                    <div class="w-[28px] rounded-t-[3px]" style="height:42%;background:#37576B"></div>
+                    <div class="w-[28px] rounded-t-[3px]" style="height:78%;background:#37576B"></div>
+                    <div class="w-[28px] rounded-t-[3px]" style="height:55%;background:#37576B"></div>
+                  </div>
+                  <p class="font-proxima text-[11px] text-[#6D96AE] mt-2">Band step 39.6px → 27.7px bar + 11.9px gap.</p>
+                </div>
+                <div>
+                  <p class="font-proxima text-[12px] font-[700] text-[#6D96AE] mb-2">Library default — 0.0 (bars touch)</p>
+                  <div class="flex items-end gap-0 h-[120px]">
+                    <div class="w-[40px]" style="height:100%;background:#C5D7E0"></div>
+                    <div class="w-[40px]" style="height:42%;background:#C5D7E0"></div>
+                    <div class="w-[40px]" style="height:78%;background:#C5D7E0"></div>
+                    <div class="w-[40px]" style="height:55%;background:#C5D7E0"></div>
+                  </div>
+                  <p class="font-proxima text-[11px] text-[#6D96AE] mt-2">What every MNY chart rendered before the theme carried defaults.</p>
+                </div>
+              </div>
+              <p class="font-proxima text-[12px] text-[#37576B] mt-4">Bars are also <span class="font-[700]">solid</span> (<code class="bg-[#F3F8F9] px-1 rounded text-[11px]">barOpacity: 1</code>) — the component's 0.75 default reads washed out on white and mny-50 surfaces.</p>
+            </div>
+
+            <div data-dms="section" data-name="graph-axes" class="pt-6 border-t border-[#E0EBF0]">
+              <div class="component-group-title">Axis chrome — ticks speak Prose, axis titles speak Meta</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+                <div class="space-y-3">
+                  <div class="flex items-baseline gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Tick label</span>
+                    <span class="font-proxima text-[11px] font-[600] text-[#6D96AE]">1,284 · Flooding · 2025</span>
+                  </div>
+                  <div class="flex items-baseline gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Axis title</span>
+                    <span class="font-display text-[12px] font-[500] uppercase text-[#37576B]">Number of Actions</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Axis rule</span>
+                    <span class="flex-1 h-px" style="background:#E0EBF0"></span>
+                    <span class="font-proxima text-[10px] text-[#6D96AE]">#E0EBF0</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Gridline</span>
+                    <span class="flex-1 h-px" style="background:rgba(45,62,76,0.12)"></span>
+                    <span class="font-proxima text-[10px] text-[#6D96AE]">12% ink</span>
+                  </div>
+                </div>
+                <div class="bg-[#F3F8F9] rounded-[8px] p-4">
+                  <p class="font-proxima text-[12px] text-[#37576B] leading-[1.6]">
+                    Tick font is a <span class="font-[700]">CSS stack</span>, not a Tailwind class — the axis renderers apply it inline.
+                    Y gridlines are on by default, X gridlines off. Legend is <span class="font-[700]">off</span> by default: these
+                    dashboards label rows and bars directly.
+                  </p>
+                  <p class="font-proxima text-[12px] text-[#37576B] leading-[1.6] mt-2">
+                    Known gap: gridline <span class="font-[700]">color</span> is hardcoded to the wrapper's ink, so only its opacity
+                    is themeable — and bars have no corner radius, so live bars are square where these mockups draw them rounded.
+                  </p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 

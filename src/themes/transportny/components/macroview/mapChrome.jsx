@@ -27,7 +27,7 @@ import { macroviewTheme } from "./macroview.theme";
 //     `MapActions.setMapStyle`, which is not handed to plugin components.
 // The freshness dates are the VIEW's own `metadata.dates`, not a hard-coded range.
 
-export const MapChrome = ({ freshFrom, freshTo, yearLabel, rowCount, fmtCount, onOpenDownload }) => {
+export const MapChrome = ({ freshFrom, freshTo, yearLabel, rowCount, fmtCount, onOpenDownload, downloading }) => {
   const { UI, theme: themeFromContext = {} } = React.useContext(ThemeContext) || {};
   const { Icon } = UI || {};
   const t = { ...macroviewTheme, ...getComponentTheme(themeFromContext, "macroview") };
@@ -53,10 +53,29 @@ export const MapChrome = ({ freshFrom, freshTo, yearLabel, rowCount, fmtCount, o
             PM3 year <span className={t.freshnessNum}>{yearLabel || "—"}</span>
           </span>
         </div>
-        <button type="button" className={t.dockPill} onClick={onOpenDownload}>
-          <Icon icon="Download" className={t.dockPillIcon} />
-          Download{" "}
-          <span className={t.dockPillCount}>{rowCount != null ? fmtCount(rowCount) : "—"}</span> rows
+        {/* While the server is building the file the pill becomes the progress indicator: the modal
+            has already closed, so without this the click has no visible consequence until the browser
+            save dialog appears — which can be a while for a statewide export. The glyph swaps in place
+            (same size-4 box) so the pill does not reflow, and the row count is replaced by the state
+            rather than sitting there looking like a fresh, actionable count. */}
+        <button
+          type="button"
+          className={t.dockPill}
+          onClick={onOpenDownload}
+          aria-busy={downloading ? "true" : undefined}
+        >
+          {downloading ? (
+            <>
+              <Icon icon="Spinner" className={t.dockPillSpinner} />
+              <span className={t.dockPillBusy}>Preparing download…</span>
+            </>
+          ) : (
+            <>
+              <Icon icon="Download" className={t.dockPillIcon} />
+              Download{" "}
+              <span className={t.dockPillCount}>{rowCount != null ? fmtCount(rowCount) : "—"}</span> rows
+            </>
+          )}
         </button>
       </div>
     </>

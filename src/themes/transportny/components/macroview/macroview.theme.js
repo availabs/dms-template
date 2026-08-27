@@ -255,6 +255,10 @@ export const macroviewTheme = {
   dockPill:
     "h-9 px-3 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center gap-2 text-[12px] font-medium text-zinc-700 hover:border-zinc-950/20 pointer-events-auto cursor-pointer",
   dockPillIcon: "size-4 text-zinc-500",
+  // Same box as dockPillIcon so swapping the glyph cannot reflow the pill mid-request. `animate-spin`
+  // follows the precedent in ui/components/map/avl-map.jsx.
+  dockPillSpinner: "size-4 text-zinc-500 animate-spin",
+  dockPillBusy: "text-zinc-500",
   dockPillCount: "tabular-nums text-zinc-500",
 
   // ── download builder ─────────────────────────────────────────────────────────
