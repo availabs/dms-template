@@ -497,6 +497,10 @@ const theme = {
             fullwidth: "",
           },
           sizes: {
+            // sub-1/4 steps (added 2026-08-27): small chrome sections — e.g. the
+            // dashboard's auth-gated CTA buttons — that shouldn't claim a quarter row
+            "1/12": { className: "col-span-3 md:col-span-1", iconSize: 8 },
+            "1/6": { className: "col-span-3 md:col-span-2", iconSize: 16 },
             "1/4": { className: "col-span-6 md:col-span-3", iconSize: 25 },
             "1/3": { className: "col-span-6 md:col-span-4", iconSize: 33 },
             "1/2": { className: "col-span-6 md:col-span-6", iconSize: 50 },
@@ -618,10 +622,21 @@ const theme = {
       {
         name: 'secondarySmall',
         button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
+        icon: 'inline-block size-4 shrink-0',
       },
       {
         name: 'primarySmall',
         button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px]`,
+        icon: 'inline-block size-4 shrink-0',
+      },
+      {
+        // the design's white table-chrome pill (dashboard mockup CSV/Columns
+        // buttons): white, mny-200 hairline darkening on hover, 13px/600
+        // sentence-case label + optional 14px leading icon (`icon` key — the
+        // lexical button's author-picked icon takes its classes from here)
+        name: 'pillWhite',
+        button: `cursor-pointer inline-flex items-center gap-1.5 bg-white border border-[#C5D7E0] hover:border-[#6D96AE] text-[#37576B] font-['Proxima_Nova'] font-[600] text-[13px] normal-case rounded-full transition-colors focus:outline-none disabled:text-[#C5D7E0] disabled:border-[#E0EBF0] disabled:cursor-not-allowed px-3 py-[6px]`,
+        icon: 'inline-block size-3.5 shrink-0 text-[#37576B]',
       },
     ],
   },
@@ -802,8 +817,10 @@ const theme = {
         tableContainerNoPagination: "border-b border-[#E0EBF0] rounded-b-[12px]",
         headerCellContainer:
             "w-full font-[500] py-3 px-4 font-[Oswald] text-[11px] uppercase tracking-wider text-[#37576B]",
-        headerCellContainerBg: "bg-[#F3F8F9]",
-        headerCellContainerBgSelected: "bg-[#E0EBF0] text-[#2D3E4C]",
+        // border-b = the design's thead rule (mny-100) — per-cell, so it reads
+        // as one continuous line under the header band
+        headerCellContainerBg: "bg-[#F3F8F9] border-b border-[#E0EBF0]",
+        headerCellContainerBgSelected: "bg-[#E0EBF0] border-b border-[#E0EBF0] text-[#2D3E4C]",
         // the design has NO vertical header dividers — the resizer strip blends in
         // and only surfaces on its own hover (still draggable)
         colResizer: "z-5 -ml-2 w-[1px] hover:w-[2px] bg-transparent hover:bg-[#C5D7E0]",
@@ -840,9 +857,11 @@ const theme = {
         cellActionIcon: "flex items-center justify-center text-[#6D96AE] hover:text-[#2D3E4C] [&_svg]:size-4",
         // pagination completes the card: mny-50 bar, bottom rounding + border
         paginationContainer:
-            "w-full px-3 py-2.5 rounded-b-[12px] bg-[#F3F8F9] border-x border-b border-t border-[#E0EBF0] flex items-center justify-between",
-        paginationPagesInfo: "font-['Proxima_Nova'] text-[12px] text-[#6D96AE]",
-        paginationRowsInfo: "font-['Proxima_Nova'] text-[12px] text-[#6D96AE]",
+            "w-full px-3 py-1.5 rounded-b-[12px] bg-[#F3F8F9] border-x border-b border-t border-[#E0EBF0] flex items-center justify-between",
+        // tight leading pulls the Page/Rows lines together so the footer stays
+        // one compact bar (the design's is single-line)
+        paginationPagesInfo: "font-['Proxima_Nova'] text-[12px] leading-[15px] text-[#6D96AE]",
+        paginationRowsInfo: "font-['Proxima_Nova'] text-[12px] leading-[15px] text-[#6D96AE]",
         paginationControlsContainer: "flex flex-row items-center gap-1",
         pageRangeItem:
             "cursor-pointer min-w-7 h-7 px-1.5 rounded-md flex items-center justify-center font-['Proxima_Nova'] text-[12px] font-[600] tabular-nums",
