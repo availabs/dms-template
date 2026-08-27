@@ -1,0 +1,32 @@
+# Per-Dockerfile ignore override for Dockerfile.ssr (BuildKit picks
+# "<dockerfile-name>.dockerignore" over the plain .dockerignore for a build
+# using that specific -f). Deliberately keeps only a minimal set of
+# exclusions from the real .dockerignore — dist, node_modules, package.json,
+# public, vite.config.js, index.html, .env, and the src/dms/packages/dms
+# exclusions are all needed by the SSR client+server build and must NOT be
+# excluded here. See setup/tasks/current/enable-ssr-mode.md.
+#
+# .env is deliberately NOT excluded (unlike the real .dockerignore, and
+# unlike an earlier version of this file): `npm run build:ssr` runs Vite's
+# client build inside this Dockerfile's builder stage via `COPY . .`, and
+# Vite bakes VITE_* vars into the compiled client bundle at build time. If
+# .env isn't present in the build context, VITE_DMS_APP resolves to
+# undefined and App.jsx's `|| "wcdb"` fallback gets compiled in statically —
+# real bug hit and fixed 2026-08-27 (the SSR HTML was correct, but
+# the client bundle that hydrated it was wired for the wrong site). The
+# runtime stage only COPYs specific paths from the builder (dist,
+# node_modules, dms-server, dms/src, data-types, entry-ssr.jsx) — .env is
+# never copied into the final image, so this doesn't leak secrets there;
+# it's only present in the (unpublished, local-only) builder-stage layer.
+
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+
+**/ritis.config.json
