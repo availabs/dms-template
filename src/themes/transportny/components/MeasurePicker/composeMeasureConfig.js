@@ -21,6 +21,13 @@
 // which no downstream project can resolve — it broke transportNY's build on first sync. Keep it a
 // sibling; do not move it back out of the synced tree.
 import vocab from './vocabulary.json';
+// Round 80 (2026-08-27, old-reports-conversion.md): the same shared static-breaks table
+// composeMapConfig.js's Route Map choropleth reads — see that file's header comment and
+// colorBreaks.json's own `_provenance` for the full "why static, why shared" rationale. Used below
+// to give GridGraph/BarGraph's rdylgn magnitude scale a fixed [min,max] domain instead of computing
+// one from whatever's currently loaded, the same "very similar charts, different color scales"
+// problem Ryan flagged for Route Map applying equally here.
+import colorBreaks from './colorBreaks.json';
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): the same time-of-day/day-of-week helpers
 // QuickControls'/AddGraphModal's own "When" pill already use, reused here (not re-derived) so the
 // auto-title's phrasing of a window never drifts from what the pill itself shows for it.
@@ -250,6 +257,39 @@ function buildGridBreakdownColumn(externalSourceColumns) {
     return { ...(src || { name: 'tmc', type: 'string', source_id: 583 }), show: true, target: 'yAxis', group: true, sort: 'asc', origin: MEASURE_PICKER_COLUMN_ORIGIN };
 }
 
+// Table's per-TMC row dimension (round 79, old-reports-conversion.md — Info
+// Box's `grain: 'tmc'` shape). Same tmc-column lookup as
+// buildGridBreakdownColumn above, but targeted "categorize" (Table's own
+// row-grouping convention, per `info_box_templates.py`'s `tmc_col`) rather
+// than GridGraph's "yAxis" — two different shapes' own conventions, not
+// interchangeable, hence the separate small function rather than a shared
+// one with a target param.
+function buildTmcCategorizeColumn(externalSourceColumns) {
+    const src = (externalSourceColumns || []).find(c => c.name === 'tmc' && c.source_id === 583)
+        || (externalSourceColumns || []).find(c => c.name === 'tmc');
+    return { ...(src || { name: 'tmc', type: 'string', source_id: 583 }), show: true, target: 'categorize', group: true, origin: MEASURE_PICKER_COLUMN_ORIGIN };
+}
+
+// Info Box's TMC-grain shape needs a genuinely different SQL form for
+// length/aadt specifically, not just a different grouping column. Their
+// route-grain vocab.json expr is a self-aggregating map-combinator (`fn:
+// "exempt"`) — correct grouped by route/__series, but ClickHouse rejects
+// wrapping an already-self-aggregating expression in an outer `fn: "avg"`
+// (a nested aggregate, `ILLEGAL_AGGREGATION`, live-caught in the Python
+// converter 2026-07-14 — see info_box_templates.py's own comment). Every
+// TMC-grain CH group is already scoped to one TMC, so the plain per-tmc
+// join-column read (`avg`'d, since one route can carry >1 raw row per tmc)
+// is the correct form instead. Ported verbatim from
+// convert_old_reports_lib/vocab.py's LENGTH_TMC_EXPR/AADT_TMC_EXPR. speed/
+// travelTime/hoursOfDelay all degrade correctly to their route-grain
+// self-aggregating form at TMC grain (round 35/42's own proof, reused by
+// info_box_templates.py's own comments too), so only these two measures
+// need an override.
+const TMC_GRAIN_MEASURE_OVERRIDE = {
+    length: { expr: 'table1.miles as length', fn: 'avg' },
+    aadt: { expr: 'table1.aadt as aadt', fn: 'avg' },
+};
+
 // "Summary" (one bar per route, no time bucket) reuses every measure's
 // existing `expr`/`fn` verbatim EXCEPT avgHoursOfDelay — confirmed by reading
 // convert_old_reports_lib/expressions.py: SPEED_SUMMARY_EXPR/TRAVEL_TIME_EXPR/
@@ -474,9 +514,20 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // "good" (see its use in buildDiffColors) — reuse it here to orient
         // the same red(bad)-yellow-green(good) scale for a raw (non-diff)
         // magnitude value.
+        // `domainMin`/`domainMax`: a static fixed domain from the shared
+        // colorBreaks.json when this measure has one — GridGraph.jsx/
+        // BarGraph.jsx (round 80) check these first and skip their own
+        // data-computed range entirely when present. Same two-flat-key shape
+        // as the existing `yAxis.domainMin`/`domainMax` fixed-axis override.
+        // Measures with no entry (length/aadt/reliability aren't offered here
+        // at all) silently keep today's per-section dynamic range — same
+        // "compose nothing extra" contract every other optional field in this
+        // file already follows.
+        const staticBreaks = colorBreaks.measures[measureKey];
         displayPatch.colors = {
             type: 'scheme', scheme: 'rdylgn', reverse: measure.reverseColors,
             ...(graphType === 'BarGraph' ? { byValue: true } : {}),
+            ...(staticBreaks ? { domainMin: staticBreaks.domain[0], domainMax: staticBreaks.domain[1] } : {}),
         };
     } else {
         displayPatch.colors = defaultColors || null;
@@ -678,12 +729,17 @@ export function resolveReliabilityYear(routeIds, allRoutes) {
     return years.size ? Math.max(...years) : null;
 }
 
-function composeReliabilityColumns({ routeIds, routeWindows, allRoutes }) {
-    const bin = resolveReliabilityBin(routeIds, routeWindows);
-    if (!bin) return null;
-    const year = resolveReliabilityYear(routeIds, allRoutes);
+// Round 79 (old-reports-conversion.md): split out of composeReliabilityColumns
+// so a caller that already knows its own (bin, year) — the Python converter's
+// bridge, minting a static per-(grain,year,bin) Info Box template with no
+// live route data to derive them from, the same way `ensure_pm3_join_template`
+// takes `year`/`bin_` as plain params — can build the column/join shape
+// directly, without needing routeIds/routeWindows/allRoutes at all.
+// `composeReliabilityColumns` (below) is the live-authoring-path wrapper that
+// derives bin/year from a graph's actual assigned routes first.
+function buildReliabilityColumns(bin, year) {
     const viewId = year != null ? PM3_VIEW_BY_YEAR[year] : null;
-    if (!viewId) return null;
+    if (!bin || !viewId) return null;
 
     const joinSource = {
         pgFederated: { pgEnv: 'npmrds2', table: `s1410_v${viewId}_pm_3`, schema: 'gis_datasets' },
@@ -703,6 +759,12 @@ function composeReliabilityColumns({ routeIds, routeWindows, allRoutes }) {
           origin: MEASURE_PICKER_COLUMN_ORIGIN },
     ];
     return { columns, joinSource, bin, year };
+}
+
+function composeReliabilityColumns({ routeIds, routeWindows, allRoutes }) {
+    const bin = resolveReliabilityBin(routeIds, routeWindows);
+    const year = resolveReliabilityYear(routeIds, allRoutes);
+    return buildReliabilityColumns(bin, year);
 }
 
 /**
@@ -755,14 +817,30 @@ function composeReliabilityColumns({ routeIds, routeWindows, allRoutes }) {
  *
  * Returns null if no measureKey in `measureKeys` is recognized AND reliability doesn't apply
  * either (mirrors composeMeasureConfig's own "unknown measure -> nothing to apply" contract).
+ *
+ * `grain` (optional, default 'route' — round 79, old-reports-conversion.md): Info Box's other real
+ * axis, alongside measure selection — 'route' groups by the comparisonSeries `__series`
+ * discriminator (one row per route, the live Table checkbox's own only prior shape), 'tmc' groups
+ * by a real per-TMC categorize column instead (`buildTmcCategorizeColumn`) — mirrors
+ * info_box_templates.py's identical route-vs-tmc split on every one of its own builders. `length`/
+ * `aadt` need a different SQL form at TMC grain too, not just a different grouping column — see
+ * `TMC_GRAIN_MEASURE_OVERRIDE`'s own comment.
+ *
+ * `reliabilityBin`/`reliabilityYear` (optional — round 79): a caller that already knows its own
+ * bin/year (the Python converter's bridge, minting a static per-(grain,year,bin) template with no
+ * live route data to derive them from) can pass them directly instead of `routeIds`/`routeWindows`/
+ * `allRoutes`; the live-authoring path (which has real route data but not a pre-resolved bin/year)
+ * keeps using those three as before. Only meaningful together with `includeReliability`.
  */
-export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externalSourceColumns, routeCompare, includeReliability, routeIds, routeWindows, allRoutes }) {
+export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externalSourceColumns, routeCompare, includeReliability, routeIds, routeWindows, allRoutes, grain = 'route', reliabilityBin, reliabilityYear }) {
     const measures = (measureKeys || [])
         .map((k) => ({ key: k, measure: vocab.measures[k] }))
         .filter((entry) => entry.measure);
 
     const reliability = (includeReliability && resolutionKey === 'summary')
-        ? composeReliabilityColumns({ routeIds, routeWindows, allRoutes })
+        ? (reliabilityBin != null || reliabilityYear != null
+            ? buildReliabilityColumns(reliabilityBin, reliabilityYear)
+            : composeReliabilityColumns({ routeIds, routeWindows, allRoutes }))
         : null;
     if (!measures.length && !reliability) return null;
 
@@ -771,12 +849,19 @@ export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externa
     const tableHasJoin = unionJoinKeys.length > 0;
 
     const valueColumns = measures.flatMap(({ key, measure }) => {
-        const overrideExpr = tableHasJoin ? QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN[key] : undefined;
-        const column = buildMeasureYAxisColumn(overrideExpr ? { ...measure, expr: overrideExpr } : measure);
+        const tmcOverride = grain === 'tmc' ? TMC_GRAIN_MEASURE_OVERRIDE[key] : null;
+        const overrideExpr = tmcOverride ? tmcOverride.expr
+            : (tableHasJoin ? QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN[key] : undefined);
+        const effectiveMeasure = (overrideExpr || tmcOverride)
+            ? { ...measure, ...(overrideExpr ? { expr: overrideExpr } : {}), ...(tmcOverride ? { fn: tmcOverride.fn } : {}) }
+            : measure;
+        const column = buildMeasureYAxisColumn(effectiveMeasure);
         column.formatFn = TABLE_MEASURE_FORMAT_FN[key] || DEFAULT_TABLE_MEASURE_FORMAT_FN;
         return applyRouteCompare ? [column, buildRouteCompareDeltaColumn(key, measure, tableHasJoin)] : [column];
     });
-    const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
+    const groupColumn = grain === 'tmc'
+        ? buildTmcCategorizeColumn(externalSourceColumns)
+        : buildXAxisColumn(resolutionKey, externalSourceColumns);
 
     // Measure-required joins are keyed `table1`/`table2`/... positionally (buildJoinFromKeys) —
     // the reliability join keeps its literal `pm3` alias instead, since composeReliabilityColumns'
@@ -787,7 +872,7 @@ export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externa
         : measureJoin;
 
     return {
-        columns: [...valueColumns, ...(reliability?.columns || []), xAxisColumn].filter(Boolean),
+        columns: [...valueColumns, ...(reliability?.columns || []), groupColumn].filter(Boolean),
         join,
         comparisonSeriesCombine: null,
         displayPatch: { graphType: 'Table', fetchMode: 'force' },

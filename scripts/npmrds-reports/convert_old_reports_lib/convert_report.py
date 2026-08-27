@@ -572,12 +572,6 @@ def convert_report(old_id, dry_run=False, replace=False):
     # add-route-flow-improvements.md task).
     section_datas = [build_cloned_section_data(page_id, tmpl, str(uuid.uuid4()))
                       for tmpl in template_framework_sections(page_template)]
-    # Route-Map choropleth baking (M2) needs each graph's assigned comps'
-    # TMCs/date ranges — all three pieces already computed above for the
-    # reports_snap_2 route entries; bundle rather than widen every other
-    # build_graph_section_data call with three more positional params.
-    route_map_value_ctx = {"comps_by_id": comps_by_id, "old_routes": old_routes,
-                           "resolved_tmcs": resolved_tmcs}
     for (g, info, tmpl), tid, aadt_ov in zip(convertible, graph_tracking_ids,
                                              graph_aadt_overrides):
         # Info Box sections all render an otherwise-identical "TMC/Route Info
@@ -605,7 +599,6 @@ def convert_report(old_id, dry_run=False, replace=False):
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
                                      aadt_override=aadt_ov,
-                                     route_map_value_ctx=route_map_value_ctx,
                                      diff_invert=route_diff_invert.get(
                                          g.get("id"), False),
                                      comps_by_id=comps_by_id))

@@ -25,9 +25,26 @@
  *
  * CONTRACT
  * --------
- * stdin (or the file path arg): a JSON array of request objects —
- *   { key, graphType, measureKey, resolutionKey, comparisonModeKey?,
- *     anchorInvert?, seriesCount?, summaryDelayGrainKey? }
+ * stdin (or the file path arg): a JSON array of request objects. Two shapes,
+ * selected by `graphType`:
+ *   - Chart (LineGraph/BarGraph/GridGraph): { key, graphType, measureKey,
+ *     resolutionKey, comparisonModeKey?, anchorInvert?, seriesCount?,
+ *     summaryDelayGrainKey? } — composed via `composeMeasureConfig` (through
+ *     `applyMeasurePick`).
+ *   - Table (round 78-79, 2026-08-27): { key, graphType: "Table", measureKeys,
+ *     resolutionKey, routeCompare?, includeReliability?, grain?, reliabilityBin?,
+ *     reliabilityYear?, pageSize?, showAttribution? } — composed via
+ *     `composeTableMeasuresConfig` (same `applyMeasurePick` entrypoint, which
+ *     dispatches by `graphType==='Table'` internally — see index.js's
+ *     `applyMeasurePickToState`). `pageSize`/`showAttribution` are bridge-only
+ *     display overrides (Spreadsheet's own `defaultState` has no opinion on
+ *     either; Route Compare/Info Box's old Python templates hardcoded specific
+ *     values — passed through here rather than baked into
+ *     composeMeasureConfig.js, which stays display-shape-agnostic for Table).
+ *     `grain` ('route'|'tmc', default 'route') and `reliabilityBin`/
+ *     `reliabilityYear` (pre-resolved, since a minted template has no live
+ *     route data) are Info Box-only — see composeTableMeasuresConfig's own
+ *     comment.
  * `summaryDelayGrainKey` ('5-minutes'|'day'|'weekday') is only meaningful for
  * measureKey 'avgHoursOfDelay' + resolutionKey 'summary' — see
  * composeMeasureConfig.js's own comment for why that one combo needs it.
@@ -77,19 +94,35 @@ try {
     '/src/themes/transportny/components/MeasurePicker/index.js');
   const graphCfg = await server.ssrLoadModule(
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/graph_new/config.jsx');
+  const spreadsheetCfg = await server.ssrLoadModule(
+    '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/spreadsheet/config.jsx');
   const avlGraph = graphCfg.default;
+  const spreadsheet = spreadsheetCfg.default;
 
   for (const req of requests) {
     if (!req.key) throw new Error(`request missing "key": ${JSON.stringify(req)}`);
+    const isTable = req.graphType === 'Table';
+    const componentCfg = isTable ? spreadsheet : avlGraph;
     // Fresh defaultState per request (structuredClone, same as
     // report_build.mjs's own per-graph .map()) — applyMeasurePick mutates in
     // place via dwAPI.setState, so each request needs its own clone, not a
     // shared/reused object.
-    const state = structuredClone(avlGraph.defaultState);
+    const state = structuredClone(componentCfg.defaultState);
     const dwAPI = { setState: (fn) => fn(state) };
     let composedOk = true;
     try {
-      mp.applyMeasurePick({ state, dwAPI, currentComponent: avlGraph }, {
+      mp.applyMeasurePick({ state, dwAPI, currentComponent: componentCfg }, isTable ? {
+        graphType: 'Table',
+        measures: req.measureKeys,
+        resolution: req.resolutionKey,
+        routeCompare: req.routeCompare,
+        includeReliability: req.includeReliability,
+        // Round 79: converter-only fields for Info Box's grain/reliability
+        // shape — see composeTableMeasuresConfig's own comment.
+        grain: req.grain,
+        reliabilityBin: req.reliabilityBin,
+        reliabilityYear: req.reliabilityYear,
+      } : {
         graphType: req.graphType,
         measure: req.measureKey,
         resolution: req.resolutionKey,
@@ -100,6 +133,14 @@ try {
         // buckets — see composeMeasureConfig.js's own comment.
         summaryDelayGrainKey: req.summaryDelayGrainKey,
       });
+      // Round 78: bridge-only display overrides for Table requests — see the
+      // contract comment above. Applied only on a successful compose (never
+      // create a phantom pageSize/showAttribution on an otherwise-empty
+      // no-op state).
+      if (isTable && state.columns?.length > 0) {
+        if (req.pageSize != null) state.display.pageSize = req.pageSize;
+        if (req.showAttribution != null) state.display.showAttribution = req.showAttribution;
+      }
     } catch (err) {
       // applyMeasurePickToState returning false (unknown measure/resolution)
       // is the normal "compose nothing" contract (see composeMeasureConfig's

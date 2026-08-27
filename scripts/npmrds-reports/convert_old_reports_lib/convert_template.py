@@ -58,19 +58,18 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
     drift between the two is an accepted, deliberate cost of that choice.
 
     Route Map sections ARE converted (2026-08-03, added after the initial
-    244-only pass) — but deliberately WITHOUT the per-report choropleth
-    color-break bake (`route_map_value_ctx=None` below): that bake
-    (bake_route_map_choropleth_paint/bake_route_map_delay_paint) computes
-    quantile breaks over the report's actual routes' real values, which
-    can't exist for an unfilled slot. Read `ensure_route_map_speed_template`'s
-    own docstring: the shared per-year template it mints already carries a
-    real, working PLACEHOLDER color range (a generic quantile scale over
-    typical speed/delay values) precisely so every real conversion has
-    something correct to render before its own per-report bake customizes
-    it — skipping the bake for a Dynamic Report isn't a degraded fallback,
-    it's the actually-correct behavior: there's no single "this report's
-    routes" to bake against when a different real route may fill the slot
-    on every view.
+    244-only pass). Round 80 (2026-08-27): the per-report choropleth
+    color-break bake this paragraph used to describe skipping
+    (`route_map_value_ctx=None`, `bake_route_map_choropleth_paint`/
+    `bake_route_map_delay_paint`) has been retired entirely, for every
+    caller, not just this one — every `route_map_*_template` now carries
+    PERMANENT static breaks from the shared `colorBreaks.json` (same table
+    the live-authoring Map/GridGraph/BarGraph read), so there's no per-report
+    bake left to skip. This was already the right call for a Dynamic Report
+    slot specifically (there's no single "this report's routes" to bake
+    against when a different real route may fill the slot on every view) —
+    now it's simply how every Route Map conversion works, template slot or
+    real report alike.
 
     Route Difference Graph / TMC Difference Grid ARE also converted
     (2026-08-03) — `resolve_difference_pair` is called with `old_routes={}`
@@ -437,15 +436,6 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
                                      aadt_override=None,
-                                     # Deliberately None, not a gap: this graph
-                                     # type's per-report choropleth bake needs
-                                     # real per-route data that doesn't exist
-                                     # for an unfilled slot — the shared
-                                     # per-year template's own built-in
-                                     # placeholder color range is the correct
-                                     # render, not a degraded one. See
-                                     # convert_template()'s docstring.
-                                     route_map_value_ctx=None,
                                      diff_invert=route_diff_invert.get(g.get("id"), False),
                                      comps_by_id=comps_by_id))
 

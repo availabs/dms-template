@@ -231,4 +231,35 @@ BRIDGE_GRAPH_SPECS = {
     "tmc_avg_delay_summary_bar_graph_5min": {"graphType": "BarGraph", "measureKey": "avgHoursOfDelay", "resolutionKey": "summary", "summaryDelayGrainKey": "5-minutes"},
     "tmc_avg_delay_summary_bar_graph_day": {"graphType": "BarGraph", "measureKey": "avgHoursOfDelay", "resolutionKey": "summary", "summaryDelayGrainKey": "day"},
     "tmc_avg_delay_summary_bar_graph_weekday": {"graphType": "BarGraph", "measureKey": "avgHoursOfDelay", "resolutionKey": "summary", "summaryDelayGrainKey": "weekday"},
+
+    # Round 78 (2026-08-27) — Route Compare Component (2). Table-shaped, not
+    # chart-shaped: `composeTableMeasuresConfig` (built 2026-08-21 for an
+    # unrelated Table "Route Compare" checkbox feature) already produces the
+    # exact same delta-column mechanism `route_compare_template.py` hand-built
+    # — confirmed byte-identical `__ANCHOR__(...)`/rounding-residual/
+    # deltaGoodDirection logic before migrating. `pageSize`/`showAttribution`
+    # are bridge-only overrides (see compose_bridge.mjs's contract comment) —
+    # Spreadsheet's own defaultState has no opinion on either; these match
+    # route_compare_template.py's old hardcoded values so converted pages
+    # don't change shape. Names preserved exactly (`route_compare_{measure}`)
+    # for continuity with already-minted DB rows.
+    "route_compare_speed": {"graphType": "Table", "measureKeys": ["speed"], "resolutionKey": "summary", "routeCompare": True, "pageSize": 50, "showAttribution": True},
+    "route_compare_travelTime": {"graphType": "Table", "measureKeys": ["travelTime"], "resolutionKey": "summary", "routeCompare": True, "pageSize": 50, "showAttribution": True},
+
+    # Round 79 (2026-08-27) — Info Box static (no year/bin dependency) measures
+    # (10; 5 measures x 2 grains). The reliability bucket
+    # (`{grain}_info_box_reliability_{year}_{bin}`) is NOT here — its name AND
+    # composition depend on a per-report resolved year/bin, not expressible as
+    # a static dict entry; see graph_templates.py's `ensure_dynamic_bridge_template`
+    # and info_box_templates.py's `ensure_pm3_join_template`.
+    "route_info_box_speed": {"graphType": "Table", "measureKeys": ["speed"], "resolutionKey": "summary", "grain": "route", "pageSize": 50, "showAttribution": True},
+    "tmc_info_box_speed": {"graphType": "Table", "measureKeys": ["speed"], "resolutionKey": "summary", "grain": "tmc", "pageSize": 50, "showAttribution": True},
+    "route_info_box_traveltime": {"graphType": "Table", "measureKeys": ["travelTime"], "resolutionKey": "summary", "grain": "route", "pageSize": 50, "showAttribution": True},
+    "tmc_info_box_traveltime": {"graphType": "Table", "measureKeys": ["travelTime"], "resolutionKey": "summary", "grain": "tmc", "pageSize": 50, "showAttribution": True},
+    "route_info_box_length": {"graphType": "Table", "measureKeys": ["length"], "resolutionKey": "summary", "grain": "route", "pageSize": 50, "showAttribution": True},
+    "tmc_info_box_length": {"graphType": "Table", "measureKeys": ["length"], "resolutionKey": "summary", "grain": "tmc", "pageSize": 50, "showAttribution": True},
+    "route_info_box_aadt": {"graphType": "Table", "measureKeys": ["aadt"], "resolutionKey": "summary", "grain": "route", "pageSize": 50, "showAttribution": True},
+    "tmc_info_box_aadt": {"graphType": "Table", "measureKeys": ["aadt"], "resolutionKey": "summary", "grain": "tmc", "pageSize": 50, "showAttribution": True},
+    "route_info_box_delay": {"graphType": "Table", "measureKeys": ["hoursOfDelay"], "resolutionKey": "summary", "grain": "route", "pageSize": 50, "showAttribution": True},
+    "tmc_info_box_delay": {"graphType": "Table", "measureKeys": ["hoursOfDelay"], "resolutionKey": "summary", "grain": "tmc", "pageSize": 50, "showAttribution": True},
 }

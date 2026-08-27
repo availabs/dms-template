@@ -64,6 +64,19 @@ VOCAB_PATH = os.path.join(
 with open(VOCAB_PATH) as _f:
     GRAPH_VOCAB = json.load(_f)
 
+# Round 80 (2026-08-27, old-reports-conversion.md): the same shared static
+# color-breaks table composeMapConfig.js/composeMeasureConfig.js read (see
+# that file's own `_provenance` for the full "why static, why shared"
+# rationale) — same cross-language-single-source-of-truth pattern as
+# GRAPH_VOCAB above, so route_map.py's Route Map choropleth breaks can never
+# independently drift from what the live-authoring Map/GridGraph/BarGraph
+# actually render.
+COLOR_BREAKS_PATH = os.path.join(
+    REPO, "src/themes/transportny/components/MeasurePicker/colorBreaks.json"
+)
+with open(COLOR_BREAKS_PATH) as _f:
+    COLOR_BREAKS = json.load(_f)["measures"]
+
 # ── New-system constants (npmrdsv5/dev2 dev site) ──────────────────────────
 DMS_ENV = {
     "DMS_HOST": os.environ.get("DMS_HOST", "http://localhost:3001"),

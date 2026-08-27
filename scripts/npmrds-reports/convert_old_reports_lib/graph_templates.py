@@ -362,6 +362,61 @@ def ensure_graph_templates(needed_names, templates, dry_run):
     return templates
 
 
+def _mint_or_update_bridge_template(name, bridge_state, is_table, templates, dry_run):
+    """Shared mint-or-drift-fix body for ONE bridge-composed template row,
+    given its already-composed `bridge_state` — factored out of
+    `ensure_bridge_graph_templates`'s per-name loop (round 79) so
+    `ensure_dynamic_bridge_template` below (dynamically-NAMED templates whose
+    spec depends on a runtime-resolved value, e.g. Info Box's
+    per-(year,bin) reliability buckets — not expressible as a static
+    BRIDGE_GRAPH_SPECS entry) can reuse the identical create/drift logic
+    instead of a second copy that could drift from this one."""
+    existing = templates.get(name)
+    if existing is None:
+        base = templates.get(TEMPLATE_BASE_NAME)
+        if not base:
+            raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+        # Round 78: Table-shaped specs (Route Compare, Info Box) mint a
+        # Spreadsheet row, not an AVL Graph one. layoutJson/includesLayout/etc.
+        # still come from TEMPLATE_BASE_NAME regardless of element type
+        # (row-envelope-only fields, no element-type-specific content — same
+        # convention ensure_route_compare_template's own old mint branch used).
+        element_type = "Spreadsheet" if is_table else "AVL Graph"
+        data = {
+            "name": name, "slug": name,
+            "stateJson": json.dumps(bridge_state),
+            "layoutJson": base["data"].get("layoutJson"),
+            "elementType": element_type, "componentType": element_type,
+            "includesLayout": base["data"].get("includesLayout", False),
+            "includesSource": base["data"].get("includesSource", True),
+            "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
+            "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
+        }
+        if dry_run:
+            print(f"[dry-run] would create bridge-composed template '{name}'")
+            templates[name] = {"id": None, "data": data}
+            return templates
+        r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+        templates[name] = {"id": r["id"], "data": data}
+        print(f"created bridge-composed template '{name}' id={r['id']}")
+        return templates
+
+    existing_state = json.loads(existing["data"]["stateJson"])
+    if existing_state == bridge_state:
+        return templates  # no drift
+    new_data = {**existing["data"], "stateJson": json.dumps(bridge_state),
+                "updatedAt": now_iso()}
+    if dry_run:
+        print(f"[dry-run] would recompose drifted bridge template '{name}' "
+              f"id={existing['id']}")
+    else:
+        dms(["raw", "update", str(existing["id"])], data=new_data)
+        print(f"recomposed bridge template '{name}' id={existing['id']} "
+              f"(drift fix)")
+    templates[name] = {"id": existing["id"], "data": new_data}
+    return templates
+
+
 def ensure_bridge_graph_templates(needed_names, templates, dry_run):
     """Sibling to ensure_graph_templates above, for the GridGraph templates
     listed in BRIDGE_GRAPH_SPECS (see that dict's own comment for the full
@@ -377,12 +432,7 @@ def ensure_bridge_graph_templates(needed_names, templates, dry_run):
     correspondingly simpler — one whole-object comparison against a fresh
     compose call, not ~10 individual field-level checks — since the bridge
     is now the single, complete source of truth for this shape, not
-    Python's own reconstruction of pieces of it.
-
-    Only `layoutJson`/`includesLayout`/`includesSource`/`createdBy`/
-    `updatedBy` (row-envelope fields outside stateJson, DMS-specific, no
-    compose_bridge.mjs equivalent) still come from TEMPLATE_BASE_NAME's own
-    row, same convention ensure_graph_templates' own mint branch uses."""
+    Python's own reconstruction of pieces of it."""
     pending = [n for n in needed_names if n in BRIDGE_GRAPH_SPECS]
     if not pending:
         return templates
@@ -395,45 +445,30 @@ def ensure_bridge_graph_templates(needed_names, templates, dry_run):
             f"BRIDGE_GRAPH_SPECS' measureKey/resolutionKey against "
             f"vocabulary.json's measures/resolutions")
     for name in pending:
-        bridge_state = composed[name]
-        existing = templates.get(name)
-        if existing is None:
-            base = templates.get(TEMPLATE_BASE_NAME)
-            if not base:
-                raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
-            data = {
-                "name": name, "slug": name,
-                "stateJson": json.dumps(bridge_state),
-                "layoutJson": base["data"].get("layoutJson"),
-                "elementType": "AVL Graph", "componentType": "AVL Graph",
-                "includesLayout": base["data"].get("includesLayout", False),
-                "includesSource": base["data"].get("includesSource", True),
-                "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
-                "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
-            }
-            if dry_run:
-                print(f"[dry-run] would create bridge-composed template '{name}'")
-                templates[name] = {"id": None, "data": data}
-                continue
-            r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
-            templates[name] = {"id": r["id"], "data": data}
-            print(f"created bridge-composed template '{name}' id={r['id']}")
-            continue
-
-        existing_state = json.loads(existing["data"]["stateJson"])
-        if existing_state == bridge_state:
-            continue  # no drift
-        new_data = {**existing["data"], "stateJson": json.dumps(bridge_state),
-                    "updatedAt": now_iso()}
-        if dry_run:
-            print(f"[dry-run] would recompose drifted bridge template '{name}' "
-                  f"id={existing['id']}")
-        else:
-            dms(["raw", "update", str(existing["id"])], data=new_data)
-            print(f"recomposed bridge template '{name}' id={existing['id']} "
-                  f"(drift fix)")
-        templates[name] = {"id": existing["id"], "data": new_data}
+        is_table = BRIDGE_GRAPH_SPECS[name].get("graphType") == "Table"
+        templates = _mint_or_update_bridge_template(
+            name, composed[name], is_table, templates, dry_run)
     return templates
+
+
+def ensure_dynamic_bridge_template(name, spec, templates, dry_run):
+    """Single-name counterpart to ensure_bridge_graph_templates, for a
+    template whose NAME (and composition) depends on a runtime-resolved
+    value not knowable as a static BRIDGE_GRAPH_SPECS entry — Info Box's
+    reliability bucket, `{grain}_info_box_reliability_{year}_{bin}` (round
+    79), the same "one shared template per (grain, year, bin), reused across
+    every report matching that year/bin" model every other Info Box
+    measure uses, just with the year/bin baked into the name at call time
+    instead of fixed in the dict. `spec` is the same shape a BRIDGE_GRAPH_SPECS
+    value would be (`{graphType, measureKeys, resolutionKey, ...}`)."""
+    composed = call_compose_bridge([{"key": name, **spec}])
+    if name not in composed:
+        raise RuntimeError(
+            f"compose_bridge.mjs returned nothing for '{name}' (spec {spec}) — "
+            f"check its measureKeys/resolutionKey/reliabilityBin/reliabilityYear "
+            f"against vocabulary.json/PM3_VIEW_BY_YEAR")
+    return _mint_or_update_bridge_template(
+        name, composed[name], spec.get("graphType") == "Table", templates, dry_run)
 
 
 def graph_max_year(info, comps_by_id):
