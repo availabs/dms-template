@@ -1,0 +1,139 @@
+# DMS Template Server — SSR variant. Builds the Vite client+server bundles
+# and runs dms-server with DMS_SSR=1 (server-side render + serve the client
+# bundle itself), instead of the API-only image (../Dockerfile) that assumes
+# a separate nginx-served static build.
+#
+# New file, deliberate exception to setup/CLAUDE.md's "dms-template is never
+# modified by anything in here" rule — see
+# setup/tasks/current/enable-ssr-mode.md for why. Only used when
+# DMS_SSR=1 is set in dms-template/.env; the default (unset/0) path still
+# builds ../Dockerfile, unchanged.
+#
+# Build:  docker build -f Dockerfile.ssr -t dms-server-ssr .
+# Run:    docker run -d --env-file .env -p 5555:5555 \
+#           -v dms-template-data:/app/src/dms/packages/dms-server/var \
+#           --name dms-server-ssr dms-server-ssr
+
+# ── Stage 1: builder ─────────────────────────────────────────────────
+FROM node:22-bookworm-slim AS builder
+
+WORKDIR /app
+
+# Same OS packages as the API-only Dockerfile — needed to compile
+# better-sqlite3/sharp/gdal-async during npm install, and chromium is needed
+# at runtime (not build time) by the RITIS/SSO datatype plugins, but staying
+# consistent with the runtime stage below is simpler than tracking two
+# separate package lists.
+RUN apt-get update && apt-get install -y \
+      gdal-bin \
+      libgdal-dev \
+      build-essential \
+      python3 \
+      zip \
+      unzip \
+      chromium \
+      fonts-liberation \
+      --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Full repo copy (unlike ../Dockerfile, which stages only dms-server +
+# data-types) — the Vite/Tailwind client+server build needs the frontend
+# source, themes, public/, index.html, vite.config.js, all of which
+# ../.dockerignore deliberately excludes. Dockerfile.ssr.dockerignore (this
+# build's per-Dockerfile override) is what makes those available here.
+COPY . .
+
+# Full install, including devDependencies — Vite/Tailwind/React Compiler are
+# devDeps and the build step needs them.
+RUN npm install
+
+# dms-server is consumed via a `file:` link (see /app/node_modules/@availabs
+# symlinks), but its own runtime deps (express, etc.) live in its own
+# node_modules — a plain root install does not install them; only npm
+# workspaces would, and this repo isn't set up as one.
+RUN cd src/dms/packages/dms-server && npm install --omit=dev
+
+# dist/client/ (static assets) + dist/server/entry-ssr.js (render function)
+RUN npm run build:ssr
+
+# ── Stage 2: runtime ─────────────────────────────────────────────────
+FROM node:22-bookworm-slim
+
+WORKDIR /app
+
+# Native addons (sharp, better-sqlite3, gdal-async) + chromium (RITIS/SSO
+# datatype plugins) are needed at runtime too, same as ../Dockerfile.
+RUN apt-get update && apt-get install -y \
+      gdal-bin \
+      libgdal-dev \
+      build-essential \
+      python3 \
+      zip \
+      unzip \
+      chromium \
+      fonts-liberation \
+      --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/src/dms/packages/dms-server ./src/dms/packages/dms-server
+# dms-server/src/index.js dynamically imports
+# '../../dms/src/render/ssr2/express/setup.mjs' at runtime — a relative
+# filesystem path, not a node_modules package resolution — and that pulls in
+# the rest of @availabs/dms's source (handler.jsx -> dmsSiteFactory.jsx ->
+# utils/, etc.) via further relative imports. None of it is bundled into
+# dist/server/entry-ssr.js (that's only the app's own render function), so
+# the raw source has to be present here. Only src/ (7.8M) is needed, not the
+# package's own node_modules/tests/cli/docs (227M total) — everything that
+# src/ imports from an actual npm package (react, lodash-es,
+# @availabs/avl-falcor, ...) resolves via /app/node_modules above instead.
+COPY --from=builder /app/src/dms/packages/dms/src ./src/dms/packages/dms/src
+COPY --from=builder /app/data-types ./data-types
+COPY --from=builder /app/src/entry-ssr.jsx ./src/entry-ssr.jsx
+
+# setup.mjs's production branch does `await import('express')` (for
+# express.static(clientDir) — the only bare-specifier npm package the dms
+# package's own source needs beyond node built-ins). Node's ESM resolution
+# walks up from the importing file's own directory
+# (src/dms/packages/dms/src/render/ssr2/express/) checking each ancestor's
+# node_modules — dms-server/node_modules (a *sibling* of dms/, not an
+# ancestor) is never on that path, so express isn't found there even though
+# it's installed. Symlinking it in at this ancestor level is simpler and
+# more deterministic than relying on npm's file:-dependency hoisting
+# behavior (empirically, a root `npm install` here does NOT hoist
+# dms-server's own deps to /app/node_modules — that's exactly why the
+# separate `cd dms-server && npm install` above exists).
+RUN ln -s ../dms-server/node_modules /app/src/dms/packages/dms/node_modules
+
+# Persistent storage: host ID, upload temp files, local file storage —
+# identical mount point to ../Dockerfile so setup/docker-compose.yml's
+# dms-template-var volume works unchanged in either mode.
+VOLUME /app/src/dms/packages/dms-server/var
+
+ENV NODE_ENV=production \
+    PORT=5555 \
+    DMS_EXTRA_DATATYPES=/app/data-types/register-datatypes.js
+
+EXPOSE 5555
+
+# Liveness-only healthcheck, identical to ../Dockerfile — SSR doesn't change
+# what "is the server up" means for deploy-gating purposes. (SSR readiness
+# itself is verified manually — see enable-ssr-mode.md rollout step 4's curl
+# check — not folded into this healthcheck.)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD node -e "fetch('http://localhost:' + (process.env.PORT || 5555) + '/graph', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(()=>process.exit(0)).catch(()=>process.exit(1))"
+
+# Matches ../Dockerfile's WORKDIR-at-launch (not /app) even though mountSSR's
+# own root/clientDir resolution is __dirname-relative and doesn't actually
+# depend on this — kept identical to the proven-working image rather than
+# auditing every other path in dms-server for a hidden process.cwd() reliance.
+WORKDIR /app/src/dms/packages/dms-server
+
+CMD ["node", "--max-http-header-size=1048576", "src/index.js"]
