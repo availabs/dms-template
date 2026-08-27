@@ -23,6 +23,27 @@ const MNY_F_PROSE = `"Proxima Nova", "Source Sans 3", system-ui, sans-serif`;
 // accent (design-system/theme.html), so a 2-series chart — by far the common
 // case — lands on blue-700 + amber-700, the highest-contrast on-brand pair.
 // Later stops follow the stacked-bar order used in pages/county-actions/state-dashboard.html.
+// ─────────────────────────────────────────────────────────────────────────────
+// MNY_RULE — the brand's divider scale. One weight (1px); three inks, chosen by
+// the surface the rule sits on. Census of the 74 design mockups: mny-100 is the
+// canonical rule (2,229 uses), mny-200 the strong one (1,736), mny-50 the
+// subtle one (797); every neutral rule in the design is 1px (the 2px/4px
+// borders are accents — the amber heading underline, active tabs).
+//
+// Documented in design/design-system/components.html → "Rules & dividers".
+//
+//   subtle (#F3F8F9) — inside a block: a heading underline, a row separator
+//   base   (#E0EBF0) — the default: between blocks, around framed white cards
+//   strong (#C5D7E0) — on the mny-50 tint, where a base rule disappears
+// ─────────────────────────────────────────────────────────────────────────────
+const MNY_RULE = { subtle: '#F3F8F9', base: '#E0EBF0', strong: '#C5D7E0' };
+const ruleSides = (ink, bottomInk = ink) => ({
+  top:    `border-t border-t-[${ink}] rounded-none!`,
+  right:  `border-r border-r-[${ink}] rounded-none!`,
+  bottom: `border-b border-b-[${bottomInk}] rounded-none!`,
+  left:   `border-l border-l-[${ink}] rounded-none!`,
+});
+
 const MNY_GRAPH_PALETTE = [
   "#37576B", // blue 700   — primary series
   "#EAAD43", // yellow 700 — the accent
@@ -476,6 +497,10 @@ const theme = {
             fullwidth: "",
           },
           sizes: {
+            // sub-1/4 steps (added 2026-08-27): small chrome sections — e.g. the
+            // dashboard's auth-gated CTA buttons — that shouldn't claim a quarter row
+            "1/12": { className: "col-span-3 md:col-span-1", iconSize: 8 },
+            "1/6": { className: "col-span-3 md:col-span-2", iconSize: 16 },
             "1/4": { className: "col-span-6 md:col-span-3", iconSize: 25 },
             "1/3": { className: "col-span-6 md:col-span-4", iconSize: 33 },
             "1/2": { className: "col-span-6 md:col-span-6", iconSize: 50 },
@@ -597,10 +622,21 @@ const theme = {
       {
         name: 'secondarySmall',
         button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
+        icon: 'inline-block size-4 shrink-0',
       },
       {
         name: 'primarySmall',
         button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px]`,
+        icon: 'inline-block size-4 shrink-0',
+      },
+      {
+        // the design's white table-chrome pill (dashboard mockup CSV/Columns
+        // buttons): white, mny-200 hairline darkening on hover, 13px/600
+        // sentence-case label + optional 14px leading icon (`icon` key — the
+        // lexical button's author-picked icon takes its classes from here)
+        name: 'pillWhite',
+        button: `cursor-pointer inline-flex items-center gap-1.5 bg-white border border-[#C5D7E0] hover:border-[#6D96AE] text-[#37576B] font-['Proxima_Nova'] font-[600] text-[13px] normal-case rounded-full transition-colors focus:outline-none disabled:text-[#C5D7E0] disabled:border-[#E0EBF0] disabled:cursor-not-allowed px-3 py-[6px]`,
+        icon: 'inline-block size-3.5 shrink-0 text-[#37576B]',
       },
     ],
   },
@@ -765,6 +801,81 @@ const theme = {
         // Registered in design-system/components.html.
         name: "mny-clean",
         cell: "relative flex items-center min-h-[36px] border-b border-[#E0EBF0]",
+      },
+      {
+        // "mny-inventory" (styles[3]) — the Actions Dashboard "Action inventory"
+        // table (design/pages/county-actions/dashboard.html §actions-table):
+        // fully-rounded bordered card, mny-50 header band with 11px Oswald
+        // tracking-wider headers, horizontal-only row rules in mny-50, roomy px-3
+        // cells at 13px, and an in-card pagination bar (square page buttons, dark
+        // active). Inherits every other key from styles[0] ("mny"); selected
+        // per-section with display.tableStyle:'mny-inventory', so other mny tables
+        // are untouched (BC). Registered in design-system/components.html.
+        name: "mny-inventory",
+        tableContainer:
+            "relative flex flex-col w-full h-full min-h-[200px] max-h-[calc(100vh_-_90px)] overflow-y-auto overflow-x-auto scrollbar-sm border-x border-t border-[#E0EBF0] rounded-t-[12px]",
+        tableContainerNoPagination: "border-b border-[#E0EBF0] rounded-b-[12px]",
+        headerCellContainer:
+            "w-full font-[500] py-3 px-4 font-[Oswald] text-[11px] uppercase tracking-wider text-[#37576B]",
+        // border-b = the design's thead rule (mny-100) — per-cell, so it reads
+        // as one continuous line under the header band
+        headerCellContainerBg: "bg-[#F3F8F9] border-b border-[#E0EBF0]",
+        headerCellContainerBgSelected: "bg-[#E0EBF0] border-b border-[#E0EBF0] text-[#2D3E4C]",
+        // the design has NO vertical header dividers — the resizer strip blends in
+        // and only surfaces on its own hover (still draggable)
+        colResizer: "z-5 -ml-2 w-[1px] hover:w-[2px] bg-transparent hover:bg-[#C5D7E0]",
+        // header menu opener reads as the design's sort affordance
+        headerCellMenuIcon: 'ArrowsVertical',
+        headerCellMenuIconClass: 'text-[#A9BECC] group-hover:text-[#37576B] transition ease-in-out duration-200 print:hidden',
+        cell: "relative flex items-center min-h-[52px] border-b border-[#F3F8F9]",
+        // px-4/py-4 (not the mockup's px-3/py-3): live cells sit flush in fixed
+        // grid tracks so 12px x-padding reads too tight, and the mockup's rows
+        // carry a chip line under the action name (≈77px tall) that we don't
+        // render — py-4 (52px rows) restores the design's vertical air.
+        // BLOCK, not flex (styles[0] uses flex): truncate can't ellipsize a flex
+        // container, so overflowing text clipped at the cell's outer edge —
+        // running straight through the right padding into the next column.
+        // Block + truncate = real ellipsis that stops at the content box; the
+        // `.cell` wrapper's items-center keeps vertical centering.
+        cellInner: `
+          w-full block truncate py-4 px-4
+          font-['Proxima_Nova'] font-[400] text-[13px] text-[#37576B] leading-[20px]
+      `,
+        // whole-ROW hover (the design's `<tr>` hover): the row is a named group
+        // and every cell tints on it — not per-cell hover
+        row: "group/row",
+        cellBg: "bg-white group-hover/row:bg-[#F3F8F9]/60",
+        cellBgOdd: "bg-white group-hover/row:bg-[#F3F8F9]/60",
+        cellBgEven: "bg-white group-hover/row:bg-[#F3F8F9]/60",
+        // The design's emphasized identity columns (Jurisdiction, Action Name):
+        // a column opts in with valueFontStyle:'cellEmphasis' (TableCell resolves
+        // valueFontStyle keys against the merged table style).
+        cellEmphasis: "font-['Proxima_Nova'] text-[14px] font-[600] text-[#2D3E4C]",
+        // icon-only action column (linkIcon link body): centered 16px chevron in
+        // the design's muted blue, darkening on hover (flex restores centering —
+        // cellInner is block in this style)
+        cellActionIcon: "flex items-center justify-center text-[#6D96AE] hover:text-[#2D3E4C] [&_svg]:size-4",
+        // pagination completes the card: mny-50 bar, bottom rounding + border
+        paginationContainer:
+            "w-full px-3 py-1.5 rounded-b-[12px] bg-[#F3F8F9] border-x border-b border-t border-[#E0EBF0] flex items-center justify-between",
+        // tight leading pulls the Page/Rows lines together so the footer stays
+        // one compact bar (the design's is single-line)
+        paginationPagesInfo: "font-['Proxima_Nova'] text-[12px] leading-[15px] text-[#6D96AE]",
+        paginationRowsInfo: "font-['Proxima_Nova'] text-[12px] leading-[15px] text-[#6D96AE]",
+        paginationControlsContainer: "flex flex-row items-center gap-1",
+        pageRangeItem:
+            "cursor-pointer min-w-7 h-7 px-1.5 rounded-md flex items-center justify-center font-['Proxima_Nova'] text-[12px] font-[600] tabular-nums",
+        pageRangeItemInactive: "text-[#37576B] hover:bg-[#E0EBF0]",
+        pageRangeItemActive: "bg-[#2D3E4C] text-white font-[700]",
+        // expand caret + inline expansion sit on the blue-gray tint (not the
+        // amber worklist tint styles[0] uses); the expander is the design's
+        // chevron pair (right = collapsed, down = expanded), not InfoCircle
+        openOutIconWrapper:
+            "mx-1 size-6 rounded-md flex items-center justify-center cursor-pointer bg-transparent text-[#6D96AE] hover:text-[#2D3E4C] hover:bg-[#E0EBF0]",
+        openOutIcon: 'ChevronRight',
+        openOutIconOpen: 'ChevronDown',
+        openOutIconSize: 16,
+        openOutInlineRow: "w-full px-3 pb-4 bg-[#F3F8F9]/40",
       }
     ]
   },
@@ -794,6 +905,17 @@ const theme = {
   // data_bar columnType palette — the Actions Dashboard portfolio-mix bar lists
   // (hazards = primary mny-400, type-of-work = deep mny-700). Same registration
   // pattern as stackedBar above.
+  // code_with_sub — the rail's two-part rows ("Highway Department" over "Town of
+  // Delaware", "Community Infrastructure" over "Drainage, underground utilities").
+  // The library default is an INLINE Oswald-uppercase code + tiny slate sub; the mny
+  // design stacks a proseSMSemibold line over a proseXS line. `flex flex-col` with no
+  // items-* keeps alignment with the cell (the rail cells justify right).
+  code_with_sub: {
+    wrapper: "flex flex-col",
+    code: "font-semibold font-[Proxima Nova] text-[14px] leading-[140%] normal-case text-[#2D3E4C]",
+    sub:  "font-normal font-[Proxima Nova] text-[12px] leading-[140%] normal-case text-[#6D96AE]",
+  },
+
   dataBar: {
     track: "relative flex-1 min-w-0 h-[14px] rounded-full bg-[#F3F8F9] overflow-hidden",
     fill: "absolute inset-y-0 left-0 rounded-full",
@@ -850,8 +972,93 @@ const theme = {
       { name: 'tier_3',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#C5D7E0] bg-[#F3F8F9] font-['Proxima_Nova'] font-[600] text-[12px] text-[#37576B]" },
       { name: 'tier_4',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#E0EBF0] bg-white font-['Proxima_Nova'] font-[600] text-[12px] text-[#6D96AE]" },
       { name: 'tier_unset', wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-dashed border-[#EAAD43] bg-white font-['Proxima_Nova'] font-[600] text-[12px] text-[#2D3E4C]" },
+
+      // --- mny jurisdictional-priority pills (Actions Dashboard inventory table;
+      // shape = the dashboard mockup's High pill, weights = the state-dashboard
+      // amber ramp High #EAAD43 → Medium #F1CA87 → Low #FCF6EC+ring; unset
+      // values render as muted italic TEXT per the design, not a pill) ---
+      { name: 'priority_high',   wrapper: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EAAD43]/15 border border-[#EAAD43]/60 font-['Proxima_Nova'] text-[11px] font-[700] text-[#2D3E4C]" },
+      { name: 'priority_medium', wrapper: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#F1CA87]/20 border border-[#F1CA87] font-['Proxima_Nova'] text-[11px] font-[700] text-[#2D3E4C]" },
+      { name: 'priority_low',    wrapper: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#FCF6EC] border border-[#C5D7E0] font-['Proxima_Nova'] text-[11px] font-[700] text-[#37576B]" },
+      { name: 'priority_unset',  wrapper: "inline-flex items-center font-['Proxima_Nova'] text-[13px] italic text-[#6D96AE]" },
     ],
   },
+  // ───────────────────────────────────────────────────────────────────────────
+  // textSettings — the global type scale, 1:1 with the Type section of
+  // design/design-system/theme.html (§7.2.1 of designing-a-dms-design-system).
+  //
+  // ADDED 2026-08-27 (type audit). Before this, mny had NO textSettings block at
+  // all: `buildFontStyleOptions` in Card.config.jsx builds the toolbar's Value /
+  // Header font pickers from `getComponentTheme(theme,'textSettings')`, so those
+  // dropdowns were EMPTY for every mny author — a token could only be applied by
+  // editing element-data directly. The type keys lived under `dataCard` instead,
+  // where Card.jsx's `{...textSettings, ...dataCard}` merge still resolved them
+  // at render time, which is why pages looked right while authoring was broken.
+  //
+  // ADDITIVE: the legacy `textXS … text8XL` keys stay on dataCard untouched, so
+  // every page built against them (the Actions Dashboard, the prioritize pages)
+  // renders byte-identically. New work uses the names below.
+  //
+  // Two intrinsic properties are baked in rather than left as call-site modifiers,
+  // because a DMS Card cell has ONE style slot and no way to add a class beside it:
+  //   · prose carries `normal-case!` — `dataCard.header` forces `uppercase` on every
+  //     header cell, so a prose label would render shouty without it.
+  //   · metaXXS carries its 0.05em tracking and #6D96AE ink — both are uniform
+  //     across all 45 uses in the mockups, so they are part of the role, not a
+  //     variation of it.
+  // ───────────────────────────────────────────────────────────────────────────
+  textSettings: {
+    options: {
+      activeStyle: 0,
+      // Lexical's `/Style:` slash menu lists every textSettings key unless this
+      // allow-list is present. The three `*Semibold` keys exist only so a Card
+      // cell can reach the weight modifier — in a lexical block weight is a
+      // call-site class, so they'd just be noise in the menu.
+      slashKeys: [
+        'displayHero', 'displayXL', 'displayLG', 'displayMD', 'displaySM', 'displayXS',
+        'metaLG', 'metaMD', 'metaSM', 'metaXS', 'metaXXS',
+        'proseLG', 'prose', 'proseSM', 'proseXS',
+      ],
+    },
+    styles: [
+      {
+        name: 'default',
+
+        // ── Display — Oswald 500, always uppercase (headlines) ──
+        displayHero: "font-medium font-[Oswald] text-[96px] leading-[95%] uppercase tracking-[-0.02em]",
+        displayXL:   "font-medium font-[Oswald] text-[72px] leading-[100%] uppercase",
+        displayLG:   "font-medium font-[Oswald] text-[60px] leading-[100%] uppercase",
+        displayMD:   "font-medium font-[Oswald] text-[48px] leading-[100%] uppercase",
+        displaySM:   "font-medium font-[Oswald] text-[36px] leading-[100%] uppercase tracking-[-0.05em]",
+        displayXS:   "font-medium font-[Oswald] text-[30px] leading-[100%] uppercase tracking-[-0.05em]",
+
+        // ── Meta — Oswald 500, uppercase (labels, chrome, eyebrows) ──
+        metaLG:  "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase",
+        metaMD:  "font-medium font-[Oswald] text-[16px] leading-[100%] uppercase",
+        metaSM:  "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
+        metaXS:  "font-medium font-[Oswald] text-[12px] leading-[100%] uppercase",
+        // earned 2026-08-27 — the field-label voice (1,397 uses across pages/)
+        metaXXS: "font-medium font-[Oswald] text-[10px] leading-[100%] uppercase tracking-[0.05em] text-[#6D96AE]",
+
+        // ── Prose — Proxima Nova / Source Sans 3 (body, captions) ──
+        proseLG: "font-normal font-['Proxima_Nova',_system-ui,_sans-serif] text-[20px] leading-[140%] normal-case!",
+        prose:   "font-normal font-['Proxima_Nova',_system-ui,_sans-serif] text-[16px] leading-[140%] normal-case!",
+        proseSM: "font-normal font-['Proxima_Nova',_system-ui,_sans-serif] text-[14px] leading-[140%] normal-case!",
+        proseXS: "font-normal font-['Proxima_Nova',_system-ui,_sans-serif] text-[12px] leading-[140%] normal-case!",
+
+        // ── Weight modifier, reachable from a Card cell ──
+        // Same three prose ROLES, not new ones. The design system expresses weight
+        // as a call-site class; a Card cell has no call site, so it gets these.
+        proseLGSemibold: "font-semibold font-['Proxima_Nova',_system-ui,_sans-serif] text-[20px] leading-[140%] normal-case!",
+        proseSemibold:   "font-semibold font-['Proxima_Nova',_system-ui,_sans-serif] text-[16px] leading-[140%] normal-case!",
+        proseSMSemibold: "font-semibold font-['Proxima_Nova',_system-ui,_sans-serif] text-[14px] leading-[140%] normal-case!",
+        // earned 2026-08-27 — the chart-row label voice (Actions Dashboard bar
+        // lists: proxima 12px/600, tight leading so two-line labels stay compact)
+        proseXSSemibold: "font-semibold font-['Proxima_Nova',_system-ui,_sans-serif] text-[12px] leading-[115%] normal-case!",
+      }
+    ]
+  },
+
   dataCard: {
     styles: [
       {
@@ -869,8 +1076,25 @@ const theme = {
         headerValueWrapper:
             "w-full rounded-[12px] flex items-center gap-[4px] justify-center p-2",
         headerValueWrapperCompactView: "rounded-none ",
+        // Per-side cell borders, read by Card.jsx's `cellBorderSides()` for the
+        // per-column cellBorderTop/Right/Bottom/Left (cellBorderBelow = bottom).
+        // Without this mny fell through to the library default
+        // (`border-b-zinc-950/15`), which is both the wrong ink AND keeps the
+        // cell's `rounded-[12px]` — so every divider rendered as a curved grey
+        // hairline. `rounded-none!` squares the cell whenever a side is drawn.
+        // A `top` rule separates blocks (structural → base ink); a `bottom` rule
+        // underlines a heading inside a block (decorative → subtle ink). That is
+        // the distinction the mockups draw, and it falls out of Card usage for
+        // free. Cards on other surfaces pick the `tinted` / `framed` style below.
+        cellBorderSides: ruleSides(MNY_RULE.base, MNY_RULE.subtle),
         headerValueWrapperBorderBelow: "border-b border-[#C0D8E1] rounded-none", // custom added border
         headerValueWrapperSimpleView: "",
+        // Card surface border. The library default is 'border shadow'; mny's cards
+        // are flat panels with a hairline (the shadow lives on the section/layout).
+        // NOTE: `display.cardsBorderColor` is inert in this build — Card.jsx forwards
+        // only a subset of `display` to resolveCellsGridStyle and drops
+        // cardsRadius/cardsBorderColor — so the card hairline has to come from here.
+        cardBorder: 'border border-[#E0EBF0] shadow-none',
         itemBorder: 'border shadow',
         // active state for an `activeOnSearchParam` link cell (stat strip): the cell
         // whose link params match the live page filters gets a tint + ring. Replaces
@@ -892,6 +1116,25 @@ const theme = {
         justifyTextLeft: "text-start justify-items-start",
         justifyTextRight: "text-end justify-items-end",
         justifyTextCenter: "text-center justify-items-center",
+        // chart-row label ROLE (Actions Dashboard bar lists): proseXSSemibold's
+        // voice + the design's link colors (mny-700, darkening on hover). A role
+        // key rather than color on the prose token — the type scale stays
+        // color-free; reached per-column via valueFontStyle (Card resolves it
+        // against the {textSettings, ...dataCard} merge).
+        chartRowLabel:
+            "font-semibold font-['Proxima_Nova',_system-ui,_sans-serif] text-[12px] leading-[115%] normal-case! text-[#37576B] hover:text-[#2D3E4C]",
+        // stat-card ROLES (Actions Dashboard status strip): 11px tracked label
+        // (Strong = the "All actions" card), value = displayXS at the cell level,
+        // 11px muted "N% of actions" subline (via subValueFontStyle)
+        statCardLabel:
+            "font-['Proxima_Nova'] text-[11px] font-[600] uppercase tracking-wide leading-[140%] text-[#37576B]",
+        statCardLabelStrong:
+            "font-['Proxima_Nova'] text-[11px] font-[700] uppercase tracking-wide leading-[140%] text-[#2D3E4C]",
+        // w-full: the subline div takes only this key's classes, and the cell
+        // wrapper centers non-full children — full width keeps it left-aligned
+        // under the value like the design
+        statCardSub:
+            "w-full font-['Proxima_Nova'] text-[11px] leading-[140%] text-[#6D96AE] mt-1",
         textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
         textXSReg:
             "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
@@ -967,6 +1210,22 @@ const theme = {
         header: "w-full flex-1 uppercase text-[#C5D7E0]",
         value: "w-full text-white",
         description: "text-[#C5D7E0] font-light normal-case font-[Oswald] text-[12px]",
+      },
+      {
+        // Card sitting ON the mny-50 tint (the Action View key-facts rail). A
+        // base rule disappears against the tint, so every side steps up to the
+        // strong ink — which is exactly what the mockups draw there.
+        // Named styles inherit every other key from styles[0] (getComponentTheme),
+        // so this is a one-key style. Reach it with `display.cardStyle: 'tinted'`
+        // (toolbar: Card style).
+        name: "tinted",
+        cellBorderSides: ruleSides(MNY_RULE.strong),
+      },
+      {
+        // Framed white card (the Action Record). Its own hairline is the base
+        // ink, so its internal rules match rather than dropping to subtle.
+        name: "framed",
+        cellBorderSides: ruleSides(MNY_RULE.base),
       }
     ]
   },
@@ -1127,7 +1386,10 @@ const theme = {
       "w-full flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE] focus-within:border-[#6D96AE] transition-colors",
     label: "font-['Proxima_Nova'] text-[13px] text-[#37576B] whitespace-nowrap",
     icon: "size-4 text-[#6D96AE] shrink-0",
+    // toggles are BARE per the design (checkbox + 12px label, no pill chrome)
+    toggleCellWrapper: "w-full flex items-center",
     toggleWrapper: "flex items-center gap-1.5 cursor-pointer",
+    toggleLabel: "font-['Proxima_Nova'] text-[12px] text-[#37576B] whitespace-nowrap",
     checkbox: "size-4 rounded border-[#C5D7E0] text-[#2D3E4C] focus:ring-[#E0EBF0]",
   },
   graph: {
@@ -1163,6 +1425,16 @@ const theme = {
       {
         // Style 0: Default (mny branded)
         name: "default",
+        // Lexical horizontal rule. The library default is a 2px #ccc bar
+        // (ui/components/lexical/theme.js hr_after) — twice the brand's weight
+        // and an off-brand grey, on every <hr> an author inserts anywhere on the
+        // site. Brought onto the brand's 1px base rule (design-system →
+        // "Rules & dividers"). NOTE the keys are FLAT (`hr_after`), not a nested
+        // `hr: {}` — buildLexicalInternalTheme assembles the nested object from
+        // them, so a nested override silently no-ops.
+        hr_base: "p-px border-none my-4 cursor-pointer relative",
+        hr_after: `absolute left-0 right-0 h-px bg-[${MNY_RULE.base}] leading-[1px]`,
+        hr_selected: "outline-[2px] outline-solid outline-[#6D96AE] select-none",
         contentEditable: "border-none relative [tab-size:1] outline-0",
         editorScroller: "min-h-[150px] border-0 flex relative outline-0 z-0 resize-y",
         viewScroller: "border-0 flex relative outline-0 z-0 resize-none",
