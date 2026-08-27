@@ -9,7 +9,7 @@ from .template_specs import MEASURE_EXPR
 from .db import dms, fetch_old_template, flatten_route_comps, now_iso
 from .dates import resolve_relative_dates
 from .transforms import build_slot_entry, generic_comp_label, group_route_comps, merged_group_date_label, route_comp_merge_key, route_settings_gaps
-from .graph_templates import ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
+from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
@@ -172,6 +172,7 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
                                       i["data_column"]))
               for _, i in analyzed if i["type"] not in INFO_BOX_GRAIN} - {None}
     graph_templates = ensure_graph_templates(needed, graph_templates, dry_run)
+    graph_templates = ensure_bridge_graph_templates(needed, graph_templates, dry_run)
 
     info_box_tmpl_name = {}
     info_box_bin_year = {}

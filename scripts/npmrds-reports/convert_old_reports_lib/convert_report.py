@@ -9,7 +9,7 @@ from .template_specs import MEASURE_EXPR
 from .db import dms, fetch_old_report, fetch_old_routes, flatten_route_comps, now_iso
 from .dates import report_is_pre_2017_only, resolve_relative_dates
 from .transforms import build_route_entry, group_route_comps, route_comp_display_name, route_comp_merge_key
-from .graph_templates import ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
+from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
@@ -166,6 +166,7 @@ def convert_report(old_id, dry_run=False, replace=False):
                                       i["data_column"]))
               for _, i in analyzed if i["type"] not in INFO_BOX_GRAIN} - {None}
     graph_templates = ensure_graph_templates(needed, graph_templates, dry_run)
+    graph_templates = ensure_bridge_graph_templates(needed, graph_templates, dry_run)
 
     # Route/TMC Info Box: resolve + mint the period-matched pm3 template per
     # graph (see INFO_BOX_GRAIN above) before the main mapping pass below, so
@@ -444,8 +445,23 @@ def convert_report(old_id, dry_run=False, replace=False):
         old_route = old_routes.get(rid)
         if old_route is not None and not old_route.get("tmc_array"):
             s = rc.get("settings") or {}
-            years = {str(s.get(k))[:4] for k in ("startDate", "endDate")
-                     if s.get(k)}
+            years = set()
+            for k in ("startDate", "endDate"):
+                v = s.get(k)
+                if not v:
+                    continue
+                y = str(v)[:4]
+                if y.isdigit():
+                    years.add(y)
+                else:
+                    # Old-tool relativeDate template substitution occasionally left a
+                    # garbled placeholder (e.g. "{recent-NaN}ent-NaN}") literally in
+                    # startDate/endDate instead of a real YYYYMMDD value — nothing
+                    # recoverable behind it. Drop it from `years` (same as if the
+                    # field were absent) instead of crashing on int().
+                    gaps.append({"kind": "malformed_relative_date_value",
+                                 "route": rc.get("compId"),
+                                 "detail": {"field": k, "value": v}})
             comp_years = range(int(min(years)), int(max(years)) + 1) if years else []
             tmcs = resolve_tmc_array(rid, comp_years, gaps)
             resolved_tmcs[rc.get("compId")] = tmcs

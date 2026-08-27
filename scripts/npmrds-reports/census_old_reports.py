@@ -41,7 +41,8 @@ from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from convert_old_reports import (  # noqa: E402
-    REPO, GRAPH_TEMPLATE_MAP, TEMPLATE_SPECS, COLOR_RANGE_GRAPH_TYPES,
+    REPO, GRAPH_TEMPLATE_MAP, TEMPLATE_SPECS, BRIDGE_GRAPH_SPECS, GRAPH_VOCAB,
+    COLOR_RANGE_GRAPH_TYPES,
     ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET,
     INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR, BAR_SUMMARY_PM3_BUCKET,
     INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
@@ -104,9 +105,26 @@ NO_EQUIVALENT_TYPES = {
 }
 # Templates whose calculated column consumes table1.aadt (delay/CO2) — the
 # only place overrides.aadt matters (mirrors convert_report's `consuming`).
+# Round 77: bridge-composed templates (BRIDGE_GRAPH_SPECS) have no raw SQL
+# dict to substring-scan the way hand-built TEMPLATE_SPECS entries do — their
+# expression lives in vocabulary.json (GRAPH_VOCAB), keyed by measureKey.
+# Same "table1.aadt" substring check, applied to the measure's own `expr`
+# instead of the whole spec dict. Without this, every aadt/CO2-consuming
+# template round 77 moved off TEMPLATE_SPECS (avgHoursOfDelay/hoursOfDelay/
+# co2Emissions*/avgCo2Emissions* BarGraph+LineGraph+diff templates) would
+# silently stop being recognized by the aadt_override_mixed gap check below —
+# a real gap that already existed, unnoticed, for round 76's GridGraph
+# bridge-composed delay/CO2 templates before this fix.
+_AADT_CONSUMING_MEASURES = {
+    key for key, m in GRAPH_VOCAB["measures"].items()
+    if "table1.aadt" in (m.get("expr") or "")
+}
 AADT_CONSUMING_TEMPLATES = {
     name for name, spec in TEMPLATE_SPECS.items()
     if "table1.aadt" in json.dumps(spec)
+} | {
+    name for name, spec in BRIDGE_GRAPH_SPECS.items()
+    if spec.get("measureKey") in _AADT_CONSUMING_MEASURES
 }
 
 

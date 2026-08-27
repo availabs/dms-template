@@ -266,8 +266,45 @@ function buildGridBreakdownColumn(externalSourceColumns) {
 // section before this resolution existed. Guarded here (not silently wrong)
 // rather than gated from the picker entirely, matching this file's own
 // "any combo is offered" author-empowerment stance for every OTHER combo.
-function isUnsupportedSummaryMeasure(resolutionKey, measureKey) {
-    return resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
+// Round 77 (2026-08-27, old-reports-conversion.md): ported from
+// convert_old_reports_lib/expressions.py's `_avg_delay_summary_expr` so the
+// Python converter's 3 `tmc_avg_delay_summary_bar_graph_*` templates could
+// move onto this same bridge-composed path (see BRIDGE_GRAPH_SPECS' own
+// comment) instead of staying hand-built Python forever. Same two-level fold
+// as the Python original: per-(tmc, bucket) delay sum ÷ per-(tmc, bucket)
+// distinct-date count, then a plain mean across buckets — `bucketExpr` is
+// the one thing that varies per grain (epoch/date/day-of-week), so ONE
+// parameterized expression covers all three, exactly like the Python
+// version. Reuses `vocab.measures.hoursOfDelay.expr` (stripping its own
+// trailing " as hours_of_delay" alias) rather than a second hardcoded copy
+// of the delay formula, so the two can never independently drift.
+const SUMMARY_DELAY_BUCKET_EXPR = {
+    '5-minutes': 'ds.epoch',
+    day: 'ds.date',
+    weekday: 'toDayOfWeek(ds.date)',
+};
+
+function avgDelaySummaryExpr(bucketExpr) {
+    const key = `concat(ds.tmc, '|', toString(${bucketExpr}))`;
+    const delayExpr = vocab.measures.hoursOfDelay.expr;
+    const inner = delayExpr.slice(0, delayExpr.lastIndexOf(' as '));
+    return `arrayAvg(arrayMap((s, d) -> s / d, `
+        + `mapValues(sumMap(map(${key}, coalesce(${inner}, 0)))), `
+        + `mapValues(uniqExactMap(map(${key}, ds.date))))) `
+        + `as avg_hours_of_delay`;
+}
+
+// `summaryDelayGrainKey` is NOT a live-authoring-UI field — the Resolution
+// picker only ever sends 'summary' here, with no secondary grain dimension,
+// so this stays unsupported (returns true = "nothing to apply", same as
+// before this round) for every live Measure Picker / QuickControls call.
+// Only the Python converter's bridge requests (compose_bridge.mjs, forwarded
+// from BRIDGE_GRAPH_SPECS' own `summaryDelayGrainKey`) ever pass one, for
+// the 3 old-report buckets that need it (round-36 corpus survey: 63x5-min,
+// 12xday, 1xweekday).
+function isUnsupportedSummaryMeasure(resolutionKey, measureKey, summaryDelayGrainKey) {
+    if (resolutionKey !== 'summary' || measureKey !== 'avgHoursOfDelay') return false;
+    return !SUMMARY_DELAY_BUCKET_EXPR[summaryDelayGrainKey];
 }
 
 // Positional: first join key -> table1, second -> table2 (see vocabulary README's "joins"
@@ -331,21 +368,26 @@ function buildDiffColors(measure, graphType) {
  * block below); omit when unknown, which keeps the existing categorical
  * default (BC).
  */
-export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors, seriesCount }) {
+export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors, seriesCount, summaryDelayGrainKey }) {
     const measure = vocab.measures[measureKey];
     if (!measure) return null;
     // See isUnsupportedSummaryMeasure's own comment — avgHoursOfDelay's summary value is
-    // bucket-grain-dependent and this picker has no equivalent of expressions.py's
-    // per-grain `_avg_delay_summary_expr`. Returning null here (rather than composing a
+    // bucket-grain-dependent; composing it needs a `summaryDelayGrainKey` telling us WHICH
+    // grain's fold to use (only the Python converter's bridge requests ever supply one — see
+    // that function's own comment). Returning null here (rather than composing a
     // confidently-wrong number) reuses the exact same "nothing to apply" contract an
     // unknown measureKey already gets — callers already skip downstream bookkeeping
     // when this happens.
-    if (isUnsupportedSummaryMeasure(resolutionKey, measureKey)) return null;
+    if (isUnsupportedSummaryMeasure(resolutionKey, measureKey, summaryDelayGrainKey)) return null;
+    const isAvgDelaySummary = resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
+    const yAxisMeasure = isAvgDelaySummary
+        ? { ...measure, expr: avgDelaySummaryExpr(SUMMARY_DELAY_BUCKET_EXPR[summaryDelayGrainKey]) }
+        : measure;
 
     // GridGraph's value column targets "color" (per-cell heat), every other
     // graph type targets "yAxis" — same rule TEMPLATE_SPECS' own entries use.
     const yAxisTarget = graphType === 'GridGraph' ? 'color' : 'yAxis';
-    const yAxisColumn = buildMeasureYAxisColumn(measure, yAxisTarget);
+    const yAxisColumn = buildMeasureYAxisColumn(yAxisMeasure, yAxisTarget);
     const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
     const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
     const join = buildJoin(measure);

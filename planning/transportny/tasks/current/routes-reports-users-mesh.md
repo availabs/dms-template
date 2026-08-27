@@ -4,9 +4,11 @@
 `RouteTagBrowserModal`/`ReportPickerModal` implementation, sharing a new `PickerModal/` layer) and
 **C** (auto-generated route audit + cleanup) **DONE** same day, both independently live-verified. **B** (old-reports reconversion inventory) also ran same
 day, in its own file (`src/dms/planning/tasks/current/old-reports-conversion.md`, not here — see
-below) — surfaced a real live regression worth flagging here even though full detail lives there:
-graphs converted from old reports have silently reverted to "all days, all hours" again since a
-2026-08-14 rendering-contract migration (`routeWindows`) the converter was never updated for. D
+below) — surfaced a real live regression, fixed same day: graphs converted from old reports had
+silently reverted to "all days, all hours" again since a 2026-08-14 rendering-contract migration
+(`routeWindows`) the converter was never updated for (round 72, live-verified). A second,
+unrelated crash bug (13/870 corpus reports, a corrupted old-tool relativeDate placeholder) was
+fixed 2026-08-26 (round 73) — see that file for both. D
 (auth) is intentionally minimal, touched only via A4. E (Route Creation Plugin redesign) explicitly
 last, not started.
 · **Started:** 2026-08-25
@@ -256,6 +258,35 @@ mockup can borrow its visual language.
 
 ## Progress log
 
+- **2026-08-26**: Ryan corrected a standing wrong assumption: `/converted_reports` (page
+  2188366) is the site's real homepage, not `/converted_reports/reports` (page 2208581, the
+  curated Reports catalog one level under it) — fixed throughout `traversing-report-pages.md`.
+  On the real homepage, fixed the **"New Report"** button (was a dead static `Card` link to
+  `/converted_reports/reports`, section 2214127) and added an **"Open Report"** button next to
+  it, both by reusing the exact same registered `CreateReportButton`/`ChooseReportButton`
+  components already proven live one level down on 2208581 — new published rows 2214758/2214759
+  in 2188366's `Header` section group. Live-verified via claude-in-chrome: real `<button>`s (not
+  links), "Choose a report" pops the real `ReportPickerModal` with 60 results, zero console
+  errors, `title`/`url_slug`/`published` unaffected. Full writeup incl. the new safe-write-path
+  finding (`dms page update --data` with a `sections`-only payload is safe for page-level array
+  fields, unlike `--set`) in `traversing-report-pages.md`'s new "The real homepage" section.
+  **Follow-up same day**: Ryan flagged the first pass as too heavy visually — reused button
+  section data verbatim, which stacked both buttons full-width with a redundant header band
+  instead of sitting compact and inline. Fixed on BOTH pages (Reports page 2214746/2214747 too,
+  not just the homepage) via 4 single-field `--set` calls (`size: "6"→"3"` on both buttons,
+  `title: ""` on `ChooseReportButton`, matching `padding.top:8` so they align) — no code changes.
+  Root cause + fix fully written up in `traversing-report-pages.md`. **Second follow-up, same
+  day**: Ryan then wanted the buttons truly inline with "New Route" (not just with each other).
+  Found a stale, unrelated draft (2026-08-20, predates today's work) that had already solved this
+  for `CreateReportButton` alone by splitting row 1 into 5 narrower cells — reused that proven
+  layout, resized the published row-1 cells (heading/search/freshness+route Cards, byte-identical
+  content to the draft, confirmed via `dms raw get` before touching) to make room, landing all six
+  pieces (heading, search, freshness+route, New Route, Create Report, Choose a Report) on one row.
+  Hit one real CLI footgun along the way: `dms section update --data {...}` never unsets a field
+  just because it's absent from the payload (the shallow `||` merge only adds/overwrites present
+  keys) — had to explicitly send `{"padding": null}` to clear a stale `padding.top` override.
+  DONE, Ryan confirmed final result live. Full detail + the footgun in
+  `traversing-report-pages.md`.
 - **2026-08-25**: Kicked off from a large multi-topic ask (Routes/Reports/Users mesh focus, old-reports
   reconversion, auto-gen route cleanup, a minimal auth touch, Route Creation Plugin redesign
   mentioned-but-deferred). Grounding research via 4 parallel forks (task-file tail, existing HTML

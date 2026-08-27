@@ -138,6 +138,11 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
             // recomposes with the real count). Stripped back out of `pick` below
             // before it's persisted — it's a compose-time hint, not stored state.
             seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
+            // Round 77 (old-reports-conversion.md): converter-only field, see
+            // composeMeasureConfig's own comment — never set by any live-UI
+            // caller, only by compose_bridge.mjs's forwarded BRIDGE_GRAPH_SPECS
+            // request for the 3 avgHoursOfDelay-summary buckets.
+            summaryDelayGrainKey: pick.summaryDelayGrainKey,
         });
     if (!composed) return false;
 
