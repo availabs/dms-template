@@ -272,3 +272,93 @@ MEASURES.append(section("Glossary",
     bullet("Coverage era", "a period over which the feed's completeness is stable. There are nine between 2017 and 2026; comparisons within one are safe, comparisons across one need stating."),
   ]),
 ))
+
+# ══════════════ PAGE 280612 · Regional Analysis — Macro View guide ══════════════
+
+GUIDE.append(section("What the Macro View is for",
+  P(T("It answers "), T("“where is this measure worst, across a whole region?”", B), T(" — and it is the fastest way to export a measure for every segment in a geography. It is a starting point, not a finishing one: once you know "), T("which", I), T(" segments matter, the other tools go deeper.")),
+  P(IMG("macro-01-overview.avif","The Macro View showing LOTTR for the AM peak across New York State, with the control panel on the left and the measure reference panel on the right.")),
+  P(T("The default view: LOTTR, AM peak, statewide, PM3 year 2025. The left panel drives the query, the right panel explains the measure and summarises the distribution, and the bar at the bottom exports it. Captured 2026-08-27.", I)),
+  H("h3", T("When another tool is the right one")),
+  UL([
+    bullet("Rank or compare every segment in a region", "the Macro View — you are in the right place."),
+    bullet("Study one corridor over time, in detail", "Reports. Build a route, then chart it."),
+    bullet("Compare two or more routes side by side", "Route Comparison."),
+    bullet("Look at one segment in full", "the segment (TMC) view."),
+    bullet("Report a figure to FHWA", "the MAP-21 pages — not this tool."),
+  ]),
+))
+
+GUIDE.append(section("The control model — the one thing to understand",
+  P(T("Pick the measure first. The controls below it then change.", B), T(" Every measure declares which reference controls apply to it, so the panel is never showing you a control that does nothing. The panel tells you how many are in play — note the count under the measure select.")),
+  P(IMG("macro-02-measure-menu.avif","The measure menu open, showing seven measures in four groups: reliability, congestion, speed and data quality.")),
+  P(T("The measure menu, grouped. LOTTR is selected, and the panel underneath reads 1 CONTROL — just peak period. Captured 2026-08-27.", I)),
+  P(IMG("macro-03-phed-controls.avif","PHED selected in the Macro View. The control panel now shows four controls: threshold, unit, traffic type and peak period.")),
+  P(T("Switch to PHED and the same panel reads 4 CONTROLS — threshold, unit, traffic type, peak period. The map recolours, and the right panel now reports 21,209 of 52,127 segments with 30,918 no data, not coloured. Captured 2026-08-27.", I)),
+  H("h3", T("Why so many segments go grey on PHED")),
+  P(T("Delay needs traffic volume and a speed reference, and a large share of the network has neither. Those segments are "), T("not coloured rather than coloured zero", B), T(" — an absent measure and a measure of zero are different claims, and the map keeps them different. Check the no-data count in the right panel before reading a delay map as coverage of the whole state.")),
+))
+
+GUIDE.append(section("Geography and year",
+  H("h3", T("Geography")),
+  P(T("Type into "), T("add a region, county or MPO", B), T(" to filter. Leave it empty and you get the whole state — which is the right choice when you want the statewide distribution behind the legend. Adding a geography narrows the map, the distribution summary, the worst-segments ranking and the download all at once.")),
+  H("h3", T("Year")),
+  P(T("The year list is the set of "), T("published PM3 years", B), T(", not a free date range — each is a complete annual computation. Compare years sits next to Single year in the View control.")),
+  P(T("Before comparing years", B), T(", read the two traps on the Measures & Methodology page — coverage and AADT vintage both move across years for reasons that have nothing to do with traffic.")),
+))
+
+GUIDE.append(section("Reading the map and the right-hand panel",
+  P(T("The right panel is the measure's own explainer — the same definition text this documentation uses — plus the legend and the distribution of values actually on screen.")),
+  UL([
+    bullet("Legend", "seven fixed bins. For LOTTR the breaks are policy-anchored — pinned to the 1.50 reliability threshold rather than to the data — so the colours mean the same thing in every geography and every year. For delay the bins are log decades, because delay spans orders of magnitude."),
+    bullet("Value distribution", "a histogram of what is currently on the map, with the threshold marked. This is the fastest check that a filter did what you meant."),
+    bullet("Summary figures", "median, 80th percentile, and the share past the threshold — for the current filter, not the state, unless the filter is empty."),
+    bullet("No data", "counted and stated explicitly, and drawn uncoloured. Grey is not zero."),
+    bullet("Get to a segment", "search a TMC code or county to jump straight to it."),
+  ]),
+))
+
+GUIDE.append(section("Check coverage before you trust a pattern",
+  P(T("Coverage is a measure in the menu like any other, and it is the one worth looking at "), T("first", B), T(" when something surprising shows up. A region that looks unusually unreliable may simply have less data behind it.")),
+  P(IMG("macro-04-coverage.avif","The Macro View with the Coverage measure selected, showing data completeness across the state.")),
+  P(T("Coverage · data completeness, mapped the same way as any other measure. Thin data inflates the reliability ratios and deflates the delay measures — opposite directions from the same cause. Captured 2026-08-27.", I)),
+))
+
+GUIDE.append(section("Worst segments — ranking bottlenecks",
+  P(T("Worst 25 segments", B), T(" in the right panel ranks the current measure over the "), T("current filter", I), T(" — the label says “in current filter” for exactly that reason. Set your geography first, or you will rank the whole state.")),
+  P(IMG("macro-05-worst-segments.avif","The worst-segments ranking panel open in the Macro View, listing the highest-value segments for the current measure and filter.")),
+  P(T("The ranking is a view of the same query, not a separate one — change the measure, period or geography and the list follows. Captured 2026-08-27.", I)),
+  H("h3", T("Two cautions before you act on a ranking")),
+  UL([
+    [T("Short segments dominate reliability rankings.", B), T(" 24.3% of segments are under 0.05 mi and are flagged unreliable 7.7 times more often than long ones. A top-25 by LOTTR can be mostly a list of very short segments.")],
+    [T("Delay rankings favour high-volume roads by construction", B), T(", since delay is multiplied by traffic. That is usually what you want — but it is not the same question as “where is traffic slowest”.")],
+  ]),
+))
+
+GUIDE.append(section("Downloading the data",
+  P(T("The download button carries a row count so you know the size before you ask for it. "), T("What you get is exactly what the map is drawing", B), T(" — same filters, same year, same bins.")),
+  P(IMG("macro-06-download-builder.avif","The download builder modal, showing scope, format, include-geometry, and the list of columns that will be exported.")),
+  P(T("Choose scope (current filters or the whole year), format (CSV or GPKG), and whether to include geometry. “Columns you'll get” lists them explicitly before you commit, and you can add metadata or extra measure columns. Captured 2026-08-27.", I)),
+  UL([
+    bullet("CSV or GPKG?", "CSV for spreadsheets and analysis. GPKG when you want geometry for GIS — it carries the segment shapes, so no join to a network layer is needed."),
+    bullet("The package explains itself", "every download ships method notes covering precision, the delay floor, coverage and the AADT-vintage caveat — the same facts this documentation states. If a year range straddles the 2021–22 AADT revision, the package says so."),
+  ]),
+))
+
+GUIDE.append(section("Sharing a view",
+  P(T("The URL "), T("is", I), T(" the state. Copy it from the address bar and whoever opens it sees what you saw. Two rules govern it, and both are deliberate.")),
+  UL([
+    bullet("Only what you changed is written", "a fresh Macro View leaves the URL clean. Parameters appear only as you move away from the defaults, so a shared link is a readable description of your choices rather than a wall of state."),
+    bullet("Unknown values degrade, they do not break", "every value in a link is checked against the live vocabulary and quietly dropped if it no longer resolves. An old link whose measure or year has since retired still opens — it falls back to the default rather than erroring."),
+  ]),
+  P(T("Because of the second rule, a shared link is "), T("not", B), T(" a permanent citation. If a figure matters, download it — the export is fixed, the link is live.")),
+))
+
+# ── write payloads ───────────────────────────────────────────────────────────
+OUT = 'scratchpad/npmrdsv5-dev2/docs-sections'
+os.makedirs(OUT, exist_ok=True)
+for page, secs, tag in [('281670', MEASURES, 'measures'), ('280612', GUIDE, 'guide')]:
+    for i, s in enumerate(secs):
+        with io.open(f'{OUT}/{tag}_{i:02d}.json', 'w', encoding='utf-8') as f:
+            json.dump(s, f, ensure_ascii=False)
+    print(f'{tag}: {len(secs)} sections ->', [s['title'] for s in secs])
