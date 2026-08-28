@@ -194,3 +194,81 @@ MEASURES.append(section("The measure catalogue",
   H("h3", T("How much to trust it")),
   P(T("This is the measure to read first. Coverage is not stationary — there are nine distinct coverage eras between 2017 and 2026 — and it confounds everything else on the map.")),
 ))
+
+MEASURES.append(section("Which delay measure should I use?",
+  P(T("Several delay variants are published so that different questions can be answered honestly. "), T("That is not an invitation to choose freely — most combinations are wrong for most purposes.", B), T(" Pick from this list and nothing else.")),
+  H("h3", T("Default — how much delay, and is it getting worse?")),
+  P(T("Use the "), T("anchored free-flow", B), T(" variants. A fixed reference means year-over-year change is real rather than partly the yardstick moving. They keep the floor, so they stay comparable to the federal figure.")),
+  H("h3", T("Comparing delay across functional classes")),
+  P(T("Use the "), T("relative (unfloored)", B), T(" variants. "), T("This is required, not optional.", B), T(" With the floor in place an arterial figure is about 90% floored and a freeway's about 3%, so a floored cross-class comparison compares the floor, not congestion.")),
+  H("h3", T("Delay against the posted speed limit")),
+  P(T("Use the "), T("speed-limit threshold", B), T(" variants — the federal formula. Note this measures degradation from a "), T("policy", I), T(" number, so on roads that cannot reach their posted limit it reports delay during normal operation.")),
+  H("h3", T("Anything reported to FHWA")),
+  P(T("Use the MAP-21 pages, not this tool. That pipeline is frozen and is the compliant path; this one is deliberately different.")),
+  H("h3", T("Comparing to previously published figures")),
+  P(T("Use the "), T("own-year free-flow", B), T(" variants — "), T("transitional only", B), T(". Their reference tracks prevailing traffic almost perfectly, so they structurally cannot measure multi-year deterioration. Do not start new analysis on them.")),
+  HR(),
+  QUOTE(P(T("There is no single variant that is right for everything, and pretending otherwise would be the real error. Two axes move independently: which reference is used governs whether change over time is measurable, and whether the floor applies governs whether classes are comparable to each other.", B))),
+))
+
+MEASURES.append(section("Coverage is not stationary",
+  P(T("The single most common way to misread this data is to treat a change in how much data arrived as a change in traffic.")),
+  UL([
+    bullet("Nine coverage eras", "distinct feed regimes between 2017 and 2026. Four of the nine published years blend two eras."),
+    bullet("All-vehicle bins reporting", "ranges from 36.3% to 51.5% across published years. Not a trend — a property of the feed."),
+    bullet("Truck bins reporting", "ranges from 8.0% to 23.5%. Truck coverage roughly tripled over the period, so any truck trend must control for it."),
+  ]),
+  H("h3", T("The two families move in opposite directions")),
+  P(T("Thinning the probes behind a bin "), T("inflates", B), T(" the reliability ratios, while removing reporting bins "), T("deflates", B), T(" the delay measures. Same cause, opposite signs. So if reliability and delay appear to disagree across years, check coverage before concluding anything about the road.")),
+  P(T("The rule: ", B), T("compare within a coverage era, or state that you are crossing one. Every published row carries the coverage columns needed to check.")),
+  P(T("For scale: 88.1% of records rest on four probes or fewer, and trucks are absent from 59.6% of records outright.")),
+))
+
+MEASURES.append(section("Two traps when reading across years and measures",
+  P(T("Both of these are known, measured, and easy to walk into.")),
+  H("h2", T("Trap 1 · a delay trend is partly an AADT revision history")),
+  P(T("Delay scales "), T("linearly", B), T(" in traffic volume, and volume comes from an estimated AADT dataset with its own revision cycle. On a fixed panel of identical segments, total directional AADT falls 14.9% between 2021 and 2022 — and "), T("rose", I), T(" 2.3% in 2020, meaning the series does not register COVID at all. Traffic does not do that; a revision cycle does.")),
+  UL([
+    bullet("2019", "272.07M directional AADT, +1.5% against 2017."),
+    bullet("2020", "274.06M, +2.3% — the year traffic actually collapsed."),
+    bullet("2021", "273.94M, +2.2%."),
+    bullet("2022", "227.92M, −14.9%. A revision, not a traffic change."),
+  ]),
+  P(T("What to do: ", B), T("read a multi-year delay series per unit of AADT, or pin a single AADT vintage. Normalised this way the 2021→2022 step falls from −18.5% to −2.2%. Single-year and cross-sectional comparisons are unaffected — within one year there is one vintage. The download package flags this automatically when a requested year range straddles the boundary.")),
+  HR(),
+  H("h2", T("Trap 2 · “PM peak” means two different windows")),
+  P(T("LOTTR and TTTR compute their PM peak over 16:00–19:59. PHED computes its PM peak over 15:00–18:59 — and publishes it under the same “pmp” label.")),
+  P(T("Do not join a LOTTR PM-peak figure to a PHED PM-peak figure and assume the same window.", B), T(" The labels match; the hours do not. This predates the current pipeline and is not corrected, because renaming a published column would break every existing consumer. Coverage is exempt — it publishes both windows separately, so its denominators are unambiguous.")),
+))
+
+MEASURES.append(section("In development",
+  P(T("Three measures are declared but not yet computed. They are deliberately kept "), T("out of the measure menu", B), T(" — you cannot select one and get an empty map — while still being listed in the Macro View's own measure reference, so the gap is visible rather than silent.")),
+  UL([
+    bullet("Free-flow speed", "how fast the road runs when nothing is in the way; the 85th percentile of off-peak observed speed. Computed internally today as the reference behind the delay family, but not yet published as a measure in its own right."),
+    bullet("Emissions", "what the traffic on a segment puts into the air — a speed-binned emission rate applied to vehicle-miles travelled. Blocked on confirming the emission-rate table with NYSDOT. The rate curve is fleet-dependent, so the fleet year it represents will be published alongside every value."),
+    bullet("Attributes", "network metadata itself — functional class, AADT, ownership — coloured straight from a field joined off the network table, with no measure controls."),
+  ]),
+))
+
+MEASURES.append(section("Measures that used to be here",
+  P(T("Earlier versions of this documentation listed measures the current tool no longer offers. If you used one of them, here is what happened to it.")),
+  UL([
+    [T("Planning Time Index (PTI), Buffer Index, Travel Time Index", B), T(" — not currently computed. Percentile speed gives the underlying distribution; reinstating this family is under evaluation.")],
+    [T("RIS attributes", B), T(" — AADT variants, posted speed, DDHV, adjusted rated capacity, volume-to-capacity, K and D factors — not currently exposed. The Attributes measure above is the intended home for these.")],
+    [T("Percent bins reporting", B), T(" — "), T("restored", B), T(". It is now published as the Data coverage measure, per stream per period.")],
+  ]),
+))
+
+MEASURES.append(section("Glossary",
+  UL([
+    bullet("TMC", "Traffic Message Channel — the road segment this data is reported on. New York has roughly 52,000. Median length is about 0.28 mi, and 24.3% are under 0.05 mi."),
+    bullet("Epoch", "one 5-minute observation of travel time on one segment. The rawest unit in the feed."),
+    bullet("Reporting bin", "a 15-minute window — three epochs — averaged before any percentile is taken. This averaging is the pipeline's largest outlier suppressor, removing roughly 80% of extreme epochs."),
+    bullet("Stream", "which vehicles a travel time describes: all vehicles, passenger vehicles, or freight trucks. The streams arrive independently and on different calendars."),
+    bullet("Precision band", "the expected spread of a measure at the sample size behind that row, measured by down-sampling real segments rather than assumed from a formula. Advisory — nothing is ever suppressed for being imprecise."),
+    bullet("Minimum-n bar", "the observation count a measure needs for ±0.05 precision, published next to the row's own count so you can make the comparison yourself."),
+    bullet("Free-flow reference", "the uncongested speed a segment is compared against. Taken as the 15th-percentile travel time, which is equivalent to the conventional 85th percentile of speed."),
+    bullet("The floor", "the 20 mph minimum on the excessive-delay threshold. It governs 62.7% of all measured delay and almost none of it on freeways."),
+    bullet("Coverage era", "a period over which the feed's completeness is stable. There are nine between 2017 and 2026; comparisons within one are safe, comparisons across one need stating."),
+  ]),
+))
