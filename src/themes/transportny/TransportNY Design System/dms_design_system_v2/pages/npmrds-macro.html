@@ -95,8 +95,9 @@
       no per-mile or RIS-AADT columns.
   10. Control labels here are the ones that shipped ("Peak period", "Threshold", "Unit",
       "Percentile") — the plugin maps its internal filter names onto this copy.
-  11. The § 01 head's `methodology →` link has NO live counterpart yet (npmrds_sub has no
-      docs page), so it is not built. The footer links only the four routes that exist.
+  11. RESOLVED 2026-08-27 — the § 01 head's `methodology →` link now points at
+      `npmrds-measures.html`, the new Measures & Methodology page (mockup for the live rewrite of
+      npmrds_docs row 281670). It pointed at docs-overview.html as a stand-in.
   12. The hover popup is CORE (the shared map hover component reading the layer's
       `hover-columns`), not plugin code — the plugin can only choose the field list, and
       "click to pin" is core behaviour, not a plugin knob.
@@ -361,7 +362,7 @@
                   </div>
                   <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Measure reference.</h2>
                 </div>
-                <a href="docs-overview.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1"><!-- npmrds/p_m_3_measures -->methodology <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                <a href="npmrds-measures.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1"><!-- npmrds/p_m_3_measures 281670 -->methodology <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
               </div>
 
               <!-- BACKPORT 2026-08-12: the LIVE § 01 is one lexical section whose rows are
@@ -369,7 +370,7 @@
                    below `md` each measure STACKS into a block instead (verified at 390px). The
                    three amber "not yet computed" chips are the honest state of the measures the
                    pm3 runner has not produced yet; they are also absent from the measure select.
-                   The `methodology →` link above is NOT built: npmrds_sub has no docs page yet. -->
+                   The `methodology →` link above now resolves to npmrds-measures.html (2026-08-27). -->
               <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                   <table class="w-full min-w-[880px]">

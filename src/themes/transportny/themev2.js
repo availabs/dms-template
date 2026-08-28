@@ -689,12 +689,19 @@ const logo = {
 // logoNav — the product-switcher dropdown at the top of the sidenav (LogoNav.jsx).
 // `sites` is the product registry the dropdown lists: icon/chip reuse the landing
 // page's product identity (solid shield + white product icon), `tag` is the mono
-// one-word descriptor. Subdomains match the live pattern mounts.
+// one-word descriptor.
+//
+// `path` is the live mount and what the dropdown links to — the three products
+// share ONE origin so switching between them keeps the user's session (the DMS
+// token is origin-scoped localStorage, so the old per-product subdomains logged
+// people out on every hop). `subdomain` is retained ONLY as LogoNav's fallback
+// while the retired hosts still resolve; drop it once the 301s have soaked. See
+// planning/transportny/tasks/current/subdomain-to-path-consolidation.md.
 const logoNav = {
   sites: [
-    { name: "NPMRDS",        subdomain: "npmrds",        icon: "ProductNpmrds",       chip: "bg-[#0F2D4D]", tag: "travel time" },
-    { name: "TSMO",          subdomain: "tsmo2",         icon: "ProductTsmo",         chip: "bg-[#37576B]", tag: "operations" },
-    { name: "Freight Atlas", subdomain: "freightatlas2", icon: "ProductFreightAtlas", chip: "bg-[#1F3F8F]", tag: "freight" },
+    { name: "NPMRDS",        path: "/npmrds",       subdomain: "npmrds",        icon: "ProductNpmrds",       chip: "bg-[#0F2D4D]", tag: "travel time" },
+    { name: "TSMO",          path: "/tsmo",         subdomain: "tsmo2",         icon: "ProductTsmo",         chip: "bg-[#37576B]", tag: "operations" },
+    { name: "Freight Atlas", path: "/freightatlas", subdomain: "freightatlas2", icon: "ProductFreightAtlas", chip: "bg-[#1F3F8F]", tag: "freight" },
   ],
 };
 

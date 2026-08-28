@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Measures &amp; Methodology · NPMRDS · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  npmrds-measures.html · NPMRDS DOCS — Measures & Methodology (the trust layer for the whole category).
+  Layout `app` · NPMRDS SideNav, Docs active. Structure follows tsmo-methodology.html (the precedent
+  one section over): numbered sections + sticky right-rail TOC (freight-atlas-about pattern, skill
+  §7.6.5).
+
+  WHAT THIS PAGE IS. The destination of the macro view's `methodology ->` link
+  (npmrds-macro.html § 01 head, which has pointed at docs-overview.html as a stand-in) and the mockup
+  for the live rewrite of `npmrds/p_m_3_measures` row **281670** on pattern **1411813**.
+
+  WHY IT IS A REWRITE, NOT A NEW PAGE. Live 281670 is a 2024 federal-PM3 primer whose "Using the Tools"
+  half documents an older, simpler tool, plus a "PM3 Data Export - Coming Soon" stub. The live measure
+  list (section 280815 on `npmrds/regional_analysis`) is the legacy measuresInfoController catalogue:
+  it advertises measures the tool no longer offers (PTI, RIS AADT, DDHV, V/C, K/D factors) and omits
+  every measure the 2026 campaign added (tttr_p80, coverage, the anchored/relative delay variants).
+  See planning/transportny/tasks/current/npmrds-macro-docs-pages.md.
+
+  SOURCING RULE, APPLIED THROUGHOUT. Measure copy in the catalogue cards is VERBATIM from
+  `macroview/measures.js` (`answers` / `definition` / `equation`), so the tool and the docs cannot
+  drift. Every measured figure traces to `data-types/pm3/PROVENANCE.md`, `pm3/lib/precision.js`, or
+  `pm3/downloadManifest.js`'s MEASURED block - the same facts the download package states, so a reader
+  of the docs and a reader of a download are never told different things. No invented numbers.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ════════ SIDENAV · NPMRDS (Docs active) ════════ -->
+<aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="npmrds-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ PAGE HEADER ═════════ -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-12" data-dms-section="page-header">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4"><a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a><span class="text-slate-300 px-1">/</span><a href="docs-overview.html" class="hover:text-[#0f1722]">Documentation</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Measures &amp; Methodology</span></nav>
+              <div class="flex items-center gap-3 mb-2"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// how every number is made</span><span class="h-px w-10 bg-[#CA8A04]/50"></span></div>
+              <h1 class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">Measures &amp; Methodology<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[15px] leading-[1.65] text-slate-700 mt-3 max-w-[760px]">Every measure this site publishes, what it answers, how it is computed &mdash; and the choices behind it, because most of these numbers required a decision that could reasonably have gone another way. Where a measure is fragile, thin, or easy to misread, this page says so rather than leaving you to find out.</p>
+              <div class="mt-4 flex items-center gap-2 flex-wrap">
+                <span class="h-7 inline-flex items-center gap-2 rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>7 measures published &middot; 3 in development</span>
+                <span class="h-7 inline-flex items-center rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600">figures measured on CY2025</span>
+                <span class="h-7 inline-flex items-center rounded-full border border-amber-500/30 bg-amber-50 px-3 font-mono text-[10px] uppercase tracking-wider text-amber-800">analytical series &mdash; not the federal submittal</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ CONTENT + TOC ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- MAIN -->
+              <div class="col-span-12 lg:col-span-8 space-y-10">
+
+                <!-- 01 · Two families that share names -->
+                <section id="two-families" data-dms-section="two-families">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Federal PM3, and what this site publishes</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">Read this first. Two different measure families share the same names, and telling them apart changes what a number means.</p>
+
+                  <div class="rounded-[8px] border-l-[3px] border-l-[#CA8A04] border border-zinc-950/10 bg-white shadow-sm p-4 mb-3">
+                    <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65]">LOTTR, TTTR and PHED are <strong>federally defined</strong> measures under MAP-21 (23&nbsp;CFR&nbsp;490). New York submits them to FHWA every year. This site also computes an <strong>analytical</strong> version of the same measures &mdash; same probe feed, same segments, deliberately different choices &mdash; so that questions the federal formula cannot answer can still be answered honestly.</p>
+                    <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mt-2">They are separate pipelines that no longer move together. <strong>The numbers will not always agree, and that is by design.</strong></p>
+                  </div>
+
+                  <div class="overflow-x-auto rounded-[8px] border border-zinc-950/10 bg-white shadow-sm">
+                    <table class="w-full min-w-[620px] text-left">
+                      <thead><tr class="border-b border-zinc-950/10 bg-slate-50/60">
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">&nbsp;</th>
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">federal submittal</th>
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">this site&rsquo;s analytical series</th>
+                      </tr></thead>
+                      <tbody class="font-proxima text-[12.5px] text-slate-700">
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Pipeline</td><td class="px-4 py-2.5 font-mono text-[11.5px]">map21</td><td class="px-4 py-2.5 font-mono text-[11.5px]">pm3</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Measures</td><td class="px-4 py-2.5">LOTTR, TTTR, PHED &mdash; and nothing else</td><td class="px-4 py-2.5">Those three plus TTTR&#8320;&#8320;, delay variants, percentile speed, coverage</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Rules</td><td class="px-4 py-2.5">Fixed by 23&nbsp;CFR&nbsp;490. Frozen &mdash; it does not change.</td><td class="px-4 py-2.5">Free to improve on the evidence, and documented when it does</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Use it for</td><td class="px-4 py-2.5">Anything reported to FHWA</td><td class="px-4 py-2.5">Analysis, prioritisation, corridor and regional work</td></tr>
+                        <tr><td class="px-4 py-2.5 font-medium text-[#0F1722]">Where to get it</td><td class="px-4 py-2.5"><a href="map-21.html" class="text-[#1F3F8F] hover:underline">MAP-21 pages &rarr;</a></td><td class="px-4 py-2.5"><a href="npmrds-macro.html" class="text-[#1F3F8F] hover:underline">Macro view &rarr;</a> &middot; <a href="npmrds-reports.html" class="text-[#1F3F8F] hover:underline">Reports &rarr;</a></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55] mt-3"><strong class="text-amber-800">If you are filling in a federal form, use the MAP-21 pages.</strong> The measures on this page are the analytical series and are not the compliant figure.</p>
+                </section>
+
+                <!-- 02 · The measure catalogue -->
+                <section id="catalogue" data-dms-section="measure-catalogue">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The measure catalogue</h2></div>
+                  <figure class="mb-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" data-dms-section="figure:measure-menu">
+                    <!-- captured 2026-08-27 · http://npmrds.localhost:5231/macro · measure select open -->
+                    <img src="../assets/screens/macro-02-measure-menu.png" alt="The macro view's measure menu, open, listing seven measures grouped as reliability, congestion, speed and data quality." class="w-full h-auto block"/>
+                    <figcaption class="px-4 py-2.5 border-t border-zinc-950/10 bg-slate-50/60 font-proxima text-[12px] text-slate-600 leading-[1.5]">The seven published measures as the tool groups them &mdash; <strong>reliability</strong>, <strong>congestion</strong>, <strong>speed</strong>, <strong>data quality</strong>. <span class="font-mono text-[10.5px] text-slate-500">macro view &middot; measure menu open &middot; captured 2026-08-27</span></figcaption>
+                  </figure>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">Seven measures are published today. Each card answers the same five questions in the same order: what it answers, how it is computed, <strong>the choices made</strong>, how much to trust it, and where it breaks down. Descriptions are the same text the tool itself shows.</p>
+                  <div class="space-y-3">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" id="m-lottr" data-dms-section="measure:m-lottr">
+                      <div class="px-4 min-h-11 py-2 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-wrap">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1 min-w-0">Level of Travel Time Reliability &middot; LOTTR</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">reliability</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">ratio</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">How much longer a bad trip takes than a typical one. The 80th-percentile travel time divided by the 50th, per segment per peak period.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-col gap-y-1.5 font-mono text-[10.5px] text-slate-600"><span>periods &middot; <strong class="text-[#0F1722]">AM peak &middot; midday &middot; PM peak &middot; weekend</strong></span><span>stream &middot; <strong class="text-[#0F1722]">all vehicles</strong></span><span>a segment is called <strong class="text-[#0F1722]">unreliable at LOTTR &ge; 1.50</strong></span></div>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>LOTTR = TT₈₀ ÷ TT₅₀
+
+per segment × period × year
+all-vehicle travel times
+15-minute reporting bins</code></pre>
+                      </div>
+                      <div class="px-4 pb-4 grid md:grid-cols-2 gap-4">
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-1.5">the choices made</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>The 80/50 percentile pair is the federal definition and is kept unchanged, so the analytical series stays readable next to the submittal.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Nothing is suppressed for thin sample. A segment with few observations still publishes, and carries its own precision columns &mdash; <strong>flag, never gate</strong>. Suppression would bias every roll-up toward well-observed urban segments.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Because the 80th percentile ignores the top 0.1% of trips by construction, LOTTR is the <strong>most outlier-robust measure published here</strong>. Grouping segments by how heavy their own tail is barely moves it.</span></li></ul>
+                        </div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-white p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#37576B] mb-1.5">how much to trust it</div>
+                          <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.5]">A precision band is published on every row. Measured by down-sampling real segments: the spread of the ratio falls from <strong>&plusmn;0.079 at 25 observations to &plusmn;0.007 at 1,000</strong>. The bar for &plusmn;0.05 precision is <strong>707 bins</strong>, and <strong>85.0%</strong> of segments clear it.</p>
+                          <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700 mb-1.5">known limits</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Thin-but-present data pushes LOTTR <strong>up</strong>: a high percentile of a small sample skews high. A coverage change of the size actually observed moves LOTTR ~3% and the flagged-unreliable population ~23% relative.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Short segments are fragile. <strong>24.3% of segments are under 0.05&nbsp;mi</strong> and are flagged unreliable <strong>7.7&times; more often</strong> (56.0% vs 7.3%) &mdash; weight by mileage or VMT before drawing a network conclusion.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Statewide unreliability is <strong>29.1% by segment count, 9.2% by mileage, 17.8% by VMT</strong>. Say which one you mean.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Its <code class="font-mono text-[11px]">pmp</code> window is 16:00&ndash;19:59 &mdash; <strong>not</strong> the same as PHED&rsquo;s. See &sect;&nbsp;05.</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" id="m-tttr" data-dms-section="measure:m-tttr">
+                      <div class="px-4 min-h-11 py-2 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-wrap">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1 min-w-0">Truck Travel Time Reliability &middot; TTTR</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">reliability</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">ratio</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">The same question for freight, at a stricter percentile. The 95th-percentile truck travel time divided by the 50th, per segment per peak period.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-col gap-y-1.5 font-mono text-[10.5px] text-slate-600"><span>periods &middot; <strong class="text-[#0F1722]">AM &middot; midday &middot; PM &middot; weekend &middot; overnight</strong></span><span>stream &middot; <strong class="text-[#0F1722]">freight trucks</strong> (all-vehicle fallback)</span><span>federal reporting threshold &middot; <strong class="text-[#0F1722]">TTTR &ge; 1.50</strong></span></div>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>TTTR = TT₉₅ ÷ TT₅₀
+
+freight-truck travel times,
+falling back to all-vehicle
+where truck data is missing</code></pre>
+                      </div>
+                      <div class="px-4 pb-4 grid md:grid-cols-2 gap-4">
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-1.5">the choices made</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>The 95/50 pair is the federal definition, kept unchanged.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span><strong>Where a bin has no truck data, an all-vehicle travel time is substituted.</strong> This is a real choice with a measured cost: about <strong>37% of AM-peak bins</strong> carry a substituted value, and removing the substitution moves TTTR by <strong>+1.06%</strong> (1.8821 &rarr; 1.9020 over 400 segments). Defensible, but it means TTTR is not a pure truck measure.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Reading the 95th percentile of a thin stream is what makes this measure expensive. That cost is the entire reason TTTR&#8320;&#8320; exists alongside it.</span></li></ul>
+                        </div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-white p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#37576B] mb-1.5">how much to trust it</div>
+                          <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><strong class="text-amber-800">A per-segment TTTR never meets its own precision bar.</strong> &plusmn;0.05 precision needs <strong>57,832 overnight bins</strong>; an overnight year contains <strong>14,600</strong>. The bar is unreachable by construction, and only <strong>1.15%</strong> of segments clear it in any period. That is the honest signal, not a typo.</p>
+                          <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700 mb-1.5">known limits</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Truck coverage is thin and has changed enormously &mdash; truck reporting bins run <strong>8.0% to 23.5%</strong> across the nine coverage eras. A year-over-year truck comparison is a coverage comparison unless checked.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>For per-segment or corridor work, prefer <strong>TTTR&#8320;&#8320;</strong> below. Reserve TTTR for comparison against federal figures and for large aggregates.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Overnight is the federal reporting period for trucks and the thinnest data on the network. Treat single-segment overnight TTTR as indicative only.</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" id="m-tttr80" data-dms-section="measure:m-tttr80">
+                      <div class="px-4 min-h-11 py-2 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-wrap">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1 min-w-0">Truck Travel Time Reliability, 80th percentile &middot; TTTR&#8320;&#8320;</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">AVAIL measure</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">ratio</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">The same ratio as TTTR but taken at the 80th percentile instead of the 95th. Reads lower than TTTR by construction; its value is that it needs a far smaller sample for the same confidence, which matters because truck coverage is thin.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-col gap-y-1.5 font-mono text-[10.5px] text-slate-600"><span>periods &middot; <strong class="text-[#0F1722]">AM &middot; midday &middot; PM &middot; weekend &middot; overnight</strong></span><span>stream &middot; <strong class="text-[#0F1722]">freight trucks</strong> (all-vehicle fallback)</span><span><strong class="text-[#0F1722]">not a federal measure</strong></span></div>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>TTTR₈₀ = p80(TT) / p50(TT)
+
+same stream, same bins,
+same calculator as TTTR —
+read at a shallower percentile</code></pre>
+                      </div>
+                      <div class="px-4 pb-4 grid md:grid-cols-2 gap-4">
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-1.5">the choices made</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span><strong>This is an AVAIL measure, not a federal one.</strong> It exists because the federal one is not estimable per segment on this network.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Nothing else changes &mdash; same truck stream, same periods, same calculator. Only the percentile moves, so any difference from TTTR is purely the depth of the tail being read.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Published alongside TTTR rather than replacing it, so the federal figure remains available and the two can be compared directly.</span></li></ul>
+                        </div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-white p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#37576B] mb-1.5">how much to trust it</div>
+                          <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.5]">It reaches the same &plusmn;0.05 precision bar at <strong>195 bins</strong> against TTTR&rsquo;s 57,832 &mdash; <strong>297&times; cheaper</strong>. <strong>68.8%</strong> of segments clear it, against TTTR&rsquo;s 1.15%.</p>
+                          <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700 mb-1.5">known limits</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>Its values are lower than TTTR by construction</strong> and must never be presented as a TTTR figure or compared to a federal threshold.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>It reads a shallower tail, so it is less sensitive to rare severe events &mdash; which is the point, but it means it is not a substitute when the question really is about worst-case freight delay.</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" id="m-phed" data-dms-section="measure:m-phed">
+                      <div class="px-4 min-h-11 py-2 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-wrap">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1 min-w-0">Peak Hour Excessive Delay &middot; PHED</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">congestion</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">person-hours</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">The same, restricted to peak hours and counted per person. Excessive delay is the extra time spent under a speed threshold &mdash; 20 mph or 60% of the reference speed, whichever is greater.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-col gap-y-1.5 font-mono text-[10.5px] text-slate-600"><span>periods &middot; <strong class="text-[#0F1722]">AM peak &middot; PM peak</strong></span><span>controls &middot; <strong class="text-[#0F1722]">unit</strong> (person / vehicle hours) &middot; <strong class="text-[#0F1722]">per mile</strong></span><span>volume from <strong class="text-[#0F1722]">directional AADT</strong> &times; hourly factors</span></div>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>threshold = max(0.6 × reference, 20 mph)
+delay      = max(0, TT_obs − TT_thr)
+PHED       = Σ delay × volume × occupancy
+
+peak hours only</code></pre>
+                      </div>
+                      <div class="px-4 pb-4 grid md:grid-cols-2 gap-4">
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-1.5">the choices made</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>The threshold is the federal formula. <strong>Which reference speed it is 60% of is a choice</strong>, and it changes the number &mdash; see &sect;&nbsp;03 below.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Both floored and unfloored variants are published. The floor is retained by default because without it a street whose achievable free-flow is 13&nbsp;mph gets a 7.8&nbsp;mph threshold, and crawling at 9&nbsp;mph all day would register <em>zero</em> delay.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>A <strong>per-functional-class floor was considered and rejected on the data</strong>: within-class spread exceeds between-class spread, so a per-class constant is nearly as blunt as the global one.</span></li></ul>
+                        </div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-white p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#37576B] mb-1.5">how much to trust it</div>
+                          <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><strong>No precision band is published for the delay family</strong>, and that is deliberate: the down-sampling experiment that produced the reliability bands was never run for delay, and a band without a measurement behind it would be a guess. No measured curve &rarr; no column &rarr; no claim.</p>
+                          <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700 mb-1.5">known limits</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>The floor governs most of what you are looking at.</strong> 62.7% of all measured delay is computed against a threshold pinned at 20&nbsp;mph &mdash; 89.7% on principal arterials. Removing it moves network delay &minus;41.4% but Interstates only &minus;1.3%.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>Never compare delay across functional classes in the floored variants</strong> &mdash; you would be comparing the floor, not congestion. Use the relative variant. See &sect;&nbsp;03.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>61% of network mileage is absent from the delay family entirely</strong> (no AADT, no speed limit, or excluded by the AADT gate). A statewide delay total is a total over the 39% that qualifies.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>PHED publishes its PM peak as <code class="font-mono text-[11px]">pmp</code> but computes it over <strong>15:00&ndash;18:59</strong>, unlike LOTTR/TTTR. See &sect;&nbsp;05.</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" id="m-ted" data-dms-section="measure:m-ted">
+                      <div class="px-4 min-h-11 py-2 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-wrap">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1 min-w-0">Total Excessive Delay &middot; TED</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">congestion</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">vehicle-hours</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">How many vehicle-hours are lost below the delay threshold speed. Excessive delay is the extra time spent under a speed threshold &mdash; 20 mph or 60% of the reference speed, whichever is greater.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-col gap-y-1.5 font-mono text-[10.5px] text-slate-600"><span>period &middot; <strong class="text-[#0F1722]">all hours</strong></span><span>controls &middot; <strong class="text-[#0F1722]">threshold</strong> &middot; <strong class="text-[#0F1722]">per mile</strong> &middot; <strong class="text-[#0F1722]">AADT source</strong></span><span>PHED is this measure restricted to peak hours and weighted by occupancy</span></div>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>threshold = max(0.6 × reference, 20 mph)
+TED = Σ (TT − TT_threshold) × volume
+
+all hours, not just peak</code></pre>
+                      </div>
+                      <div class="px-4 pb-4 grid md:grid-cols-2 gap-4">
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-1.5">the choices made</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>TED is the all-hours sibling of PHED and shares its threshold, its reference choice and its floor. Everything in the PHED card applies here.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Reported in vehicle-hours by default, since an all-hours figure has no single defensible occupancy assumption.</span></li></ul>
+                        </div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-white p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#37576B] mb-1.5">how much to trust it</div>
+                          <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.5]">No precision band, for the same reason as PHED. TED is, however, the measure most exposed to outliers of anything published here: grouping segments by their own tail weight moves median TED across a <strong>37&times; range</strong>, against LOTTR&rsquo;s near-immunity.</p>
+                          <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700 mb-1.5">known limits</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Highly sensitive to extreme single-epoch travel times &mdash; but a heavy tail is also what congestion genuinely looks like, so this cannot be screened away with a threshold.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Inherits the AADT vintage problem directly, because delay scales linearly in volume. See &sect;&nbsp;05 before charting TED over multiple years.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Same 61%-of-mileage absence as PHED.</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" id="m-speed" data-dms-section="measure:m-speed">
+                      <div class="px-4 min-h-11 py-2 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-wrap">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1 min-w-0">Percentile speed</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">speed</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">mph</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">What speed a chosen share of trips beat &mdash; the floating-car view. The chosen percentile of observed speed over all travel times.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-col gap-y-1.5 font-mono text-[10.5px] text-slate-600"><span>percentiles &middot; <strong class="text-[#0F1722]">5th, 20th, 25th, 50th, 75th, 80th, 85th, 95th</strong></span><span>periods &middot; <strong class="text-[#0F1722]">all periods</strong></span><span>stream &middot; <strong class="text-[#0F1722]">all vehicles</strong></span></div>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>speed = quantile(speed, p)
+speed = miles / travel_time × 3600
+
+p ∈ 5, 20, 25, 50, 75, 80, 85, 95</code></pre>
+                      </div>
+                      <div class="px-4 pb-4 grid md:grid-cols-2 gap-4">
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-1.5">the choices made</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Speed is <strong>derived</strong>, not measured: the feed carries travel time, and speed is segment length divided by it. Segment length therefore enters every speed figure.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>Percentiles are taken over observed travel times with no imputation for missing epochs.</span></li></ul>
+                        </div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-white p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#37576B] mb-1.5">how much to trust it</div>
+                          <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.5]">No precision band is published. The percentile depth is the thing to watch: the 5th and 95th read a thin tail and are far less stable than the median on a sparse segment.</p>
+                          <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700 mb-1.5">known limits</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>Bad geometry produces impossible speeds.</strong> On very short segments a one-second travel-time error becomes a large speed error &mdash; and 0.49% of travel times in the feed are under one second.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>The feed contains <strong>no records below 2&nbsp;mph</strong> &mdash; a vendor floor we cannot inspect. Very low speeds are truncated before we see them.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>36.2% of records show trucks moving faster than passenger cars</strong>, which is physically implausible at scale and is a known property of the feed rather than of the road.</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" id="m-coverage" data-dms-section="measure:m-coverage">
+                      <div class="px-4 min-h-11 py-2 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-wrap">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1 min-w-0">Data coverage</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">data quality</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">percent</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Two percentages on the same 0-100 scale. Bins reporting is how much of a bin-based measure&rsquo;s own input arrived &mdash; the sample size its percentiles rest on. Epochs reporting is how much of the raw 5-minute feed arrived, and is lower by construction, since a bin counts as present when any one of its three epochs did.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-col gap-y-1.5 font-mono text-[10.5px] text-slate-600"><span>controls &middot; <strong class="text-[#0F1722]">stream</strong> (all vehicles / trucks) &middot; <strong class="text-[#0F1722]">period</strong></span><span>published <strong class="text-[#0F1722]">per stream per bin</strong>, not per measure</span><span>all-vehicle bins <strong class="text-[#0F1722]">36.3&ndash;51.5%</strong> &middot; truck bins <strong class="text-[#0F1722]">8.0&ndash;23.5%</strong></span></div>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>coverage = present / possible
+
+bins reporting   — the sample a
+                   percentile rests on
+epochs reporting — the raw 5-minute feed</code></pre>
+                      </div>
+                      <div class="px-4 pb-4 grid md:grid-cols-2 gap-4">
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-1.5">the choices made</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span><strong>Coverage is published as a measure in its own right, not as a footnote</strong>, and sits in its own group so it cannot be mistaken for a property of traffic. It describes the input, not the road.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>It is published <strong>once per stream per bin</strong> rather than duplicated onto every measure that reads the same stream.</span></li><li class="flex gap-2"><span class="text-[#CA8A04] shrink-0">&bull;</span><span>The bin count is the count of bins <em>where that stream actually had a value</em> &mdash; not bins where the feed had any row. Counting feed rows had been inflating the truck figure roughly 2&times;.</span></li></ul>
+                        </div>
+                        <div class="rounded-[6px] border border-zinc-950/10 bg-white p-3">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#37576B] mb-1.5">how much to trust it</div>
+                          <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.5]">This is the measure to read <strong>first</strong>. Coverage is not stationary &mdash; there are nine distinct coverage eras between 2017 and 2026 &mdash; and it confounds everything else on the map.</p>
+                          <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-700 mb-1.5">known limits</div>
+                          <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]"><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>Thin data biases the two families in opposite directions</strong>: it <em>inflates</em> the reliability ratios and <em>deflates</em> the delay measures. They will disagree under a coverage change rather than both drifting one way.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>88.1% of records rest on four probes or fewer</strong>, and trucks are absent from 59.6% of records outright.</span></li><li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span>Do not compare across coverage eras without saying so. See &sect;&nbsp;04.</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </section>
+
+                <!-- 03 · Which delay measure -->
+                <section id="which-delay" data-dms-section="which-delay">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Which delay measure should I use?</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">Several delay variants are published so that different questions can be answered honestly. <strong>That is not an invitation to choose freely &mdash; most combinations are wrong for most purposes.</strong> Pick from this table and nothing else.</p>
+
+                  <div class="overflow-x-auto rounded-[8px] border border-zinc-950/10 bg-white shadow-sm">
+                    <table class="w-full min-w-[720px] text-left">
+                      <thead><tr class="border-b border-zinc-950/10 bg-slate-50/60">
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 w-[34%]">your question</th>
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 w-[22%]">use</th>
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">why</th>
+                      </tr></thead>
+                      <tbody class="font-proxima text-[12.5px] text-slate-700">
+                        <tr class="border-b border-zinc-950/05 bg-emerald-50/40"><td class="px-4 py-3"><strong class="text-[#0F1722]">Default.</strong> How much delay, and is it getting worse?</td><td class="px-4 py-3 font-mono text-[11.5px] text-[#0F1722]">anchored free-flow</td><td class="px-4 py-3">A fixed reference, so year-over-year change is real rather than partly the yardstick moving. Keeps the floor, so it stays comparable to the federal figure.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-3">Comparing delay <strong>across functional classes</strong> &mdash; where is congestion worst?</td><td class="px-4 py-3 font-mono text-[11.5px] text-[#0F1722]">relative (unfloored)</td><td class="px-4 py-3"><strong class="text-amber-800">Required, not optional.</strong> With the floor in place an arterial figure is ~90% floored and a freeway&rsquo;s ~3%, so a floored cross-class comparison compares the floor, not congestion.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-3">Delay against the <strong>posted speed limit</strong></td><td class="px-4 py-3 font-mono text-[11.5px] text-[#0F1722]">speed-limit threshold</td><td class="px-4 py-3">The federal formula. Note this measures degradation from a <em>policy</em> number &mdash; on roads that cannot reach their posted limit it reports delay during normal operation.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-3">Anything reported to <strong>FHWA</strong></td><td class="px-4 py-3 font-mono text-[11.5px] text-[#0F1722]">the MAP-21 pages</td><td class="px-4 py-3">That pipeline is frozen and is the compliant path. This one is deliberately different. <a href="map-21.html" class="text-[#1F3F8F] hover:underline">Go there &rarr;</a></td></tr>
+                        <tr><td class="px-4 py-3">Comparing to <strong>previously published</strong> figures</td><td class="px-4 py-3 font-mono text-[11.5px] text-slate-500">own-year free-flow</td><td class="px-4 py-3"><strong class="text-amber-800">Transitional only.</strong> Its reference tracks prevailing traffic almost perfectly, so it structurally cannot measure multi-year deterioration. Do not start new analysis on it.</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="mt-3 rounded-[8px] border-l-[3px] border-l-[#37576B] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">There is no single variant that is right for everything</div>
+                    <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Pretending otherwise would be the real error. Two axes move independently: <strong>which reference</strong> is used governs whether change over time is measurable, and <strong>whether the floor applies</strong> governs whether classes are comparable to each other. The default above answers the common question; the others answer specific ones.</p>
+                  </div>
+                </section>
+
+                <!-- 04 · Coverage is not stationary -->
+                <section id="coverage-eras" data-dms-section="coverage-eras">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Coverage is not stationary</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">The single most common way to misread this data is to treat a change in how much data arrived as a change in traffic.</p>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-1">coverage eras</div>
+                      <div class="font-display font-semibold text-[30px] leading-none text-[#0F1722] tabular-nums">9</div>
+                      <p class="font-proxima text-[12px] text-slate-600 leading-[1.5] mt-2">distinct feed regimes between 2017 and 2026. Four of the nine published years blend two eras.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-1">all-vehicle bins reporting</div>
+                      <div class="font-display font-semibold text-[30px] leading-none text-[#0F1722] tabular-nums">36&ndash;52<span class="text-[16px] text-slate-400">%</span></div>
+                      <p class="font-proxima text-[12px] text-slate-600 leading-[1.5] mt-2">range across published years. Not a trend &mdash; a property of the feed.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-1">truck bins reporting</div>
+                      <div class="font-display font-semibold text-[30px] leading-none text-[#0F1722] tabular-nums">8&ndash;24<span class="text-[16px] text-slate-400">%</span></div>
+                      <p class="font-proxima text-[12px] text-slate-600 leading-[1.5] mt-2">truck coverage roughly tripled over the period. Any truck trend must control for this.</p>
+                    </div>
+                  </div>
+
+                  <div class="rounded-[8px] border-l-[3px] border-l-amber-500 border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">The two families move in opposite directions</div>
+                    <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Thinning the probes behind a bin <strong>inflates</strong> the reliability ratios, while removing reporting bins <strong>deflates</strong> the delay measures. Same cause, opposite signs. So if reliability and delay appear to disagree across years, check coverage before concluding anything about the road.</p>
+                    <p class="font-proxima text-[13px] text-slate-700 leading-[1.6] mt-2"><strong>The rule:</strong> compare within a coverage era, or state that you are crossing one. Every published row carries the coverage columns needed to check.</p>
+                  </div>
+                </section>
+
+                <!-- 05 · Reading a multi-year chart -->
+                <section id="multi-year" data-dms-section="multi-year">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Two traps when reading across years and measures</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">Both of these are known, measured, and easy to walk into.</p>
+
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden mb-3">
+                    <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Trap 1 &middot; a delay trend is partly an AADT revision history</span>
+                      <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-50 border border-amber-500/30 text-amber-800">affects delay</span>
+                    </div>
+                    <div class="p-4">
+                      <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Delay scales <strong>linearly</strong> in traffic volume, and volume comes from an estimated AADT dataset with its own revision cycle. On a fixed panel of identical segments, total directional AADT falls <strong>14.9% between 2021 and 2022</strong> &mdash; and <em>rose</em> 2.3% in 2020, meaning the series does not register COVID at all. Traffic does not do that; a revision cycle does.</p>
+                      <div class="mt-3 overflow-x-auto">
+                        <table class="w-full min-w-[420px] text-left">
+                          <thead><tr class="border-b border-zinc-950/10"><th class="py-2 pr-4 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">year</th><th class="py-2 pr-4 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">directional AADT, fixed panel</th><th class="py-2 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">vs 2017</th></tr></thead>
+                          <tbody class="font-mono text-[11.5px] text-slate-700 tabular-nums">
+                            <tr class="border-b border-zinc-950/05"><td class="py-1.5 pr-4">2019</td><td class="py-1.5 pr-4">272.07M</td><td class="py-1.5">+1.5%</td></tr>
+                            <tr class="border-b border-zinc-950/05"><td class="py-1.5 pr-4">2020</td><td class="py-1.5 pr-4">274.06M</td><td class="py-1.5 text-amber-800">+2.3%</td></tr>
+                            <tr class="border-b border-zinc-950/05"><td class="py-1.5 pr-4">2021</td><td class="py-1.5 pr-4">273.94M</td><td class="py-1.5">+2.2%</td></tr>
+                            <tr><td class="py-1.5 pr-4">2022</td><td class="py-1.5 pr-4 font-semibold text-[#0F1722]">227.92M</td><td class="py-1.5 font-semibold text-amber-800">&minus;14.9%</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <p class="font-proxima text-[13px] text-slate-700 leading-[1.6] mt-3"><strong>What to do:</strong> read a multi-year delay series <strong>per unit of AADT</strong>, or pin a single AADT vintage. Normalised this way the 2021&rarr;2022 step falls from &minus;18.5% to &minus;2.2%. Single-year and cross-sectional comparisons are unaffected &mdash; within one year there is one vintage.</p>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55] mt-2">The download package flags this automatically when a requested year range straddles the boundary.</p>
+                    </div>
+                  </div>
+
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Trap 2 &middot; &ldquo;PM peak&rdquo; means two different windows</span>
+                      <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-50 border border-amber-500/30 text-amber-800">affects joins</span>
+                    </div>
+                    <div class="p-4">
+                      <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">LOTTR and TTTR compute their PM peak over <strong>16:00&ndash;19:59</strong>. PHED computes its PM peak over <strong>15:00&ndash;18:59</strong> &mdash; and publishes it under the same <code class="font-mono text-[11.5px] px-1 rounded bg-slate-100">pmp</code> label.</p>
+                      <p class="font-proxima text-[13px] text-slate-700 leading-[1.6] mt-2"><strong>Do not join a LOTTR PM-peak figure to a PHED PM-peak figure and assume the same window.</strong> The labels match; the hours do not. This predates the current pipeline and is not corrected, because renaming a published column would break every existing consumer. Coverage is exempt &mdash; it publishes both windows separately, so its denominators are unambiguous.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 06 · In development -->
+                <section id="in-development" data-dms-section="in-development">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">In development</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">Three measures are declared but not yet computed. They are deliberately kept <strong>out of the measure menu</strong> &mdash; you cannot select one and get an empty map &mdash; while still being listed in the macro view&rsquo;s own measure reference, so the gap is visible rather than silent.</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="rounded-[8px] border border-dashed border-zinc-950/20 bg-white/60 shadow-sm p-4">
+                      <div class="flex items-center gap-2 mb-1.5"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Free-flow speed</span><span class="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-slate-500">not yet computed</span></div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.5]">How fast the road runs when nothing is in the way. The 85th percentile of off-peak observed speed.</p>
+                      <p class="font-proxima text-[12px] text-slate-500 leading-[1.5] mt-2">Computed internally today as the reference behind the delay family, but not yet published as a measure in its own right.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-dashed border-zinc-950/20 bg-white/60 shadow-sm p-4">
+                      <div class="flex items-center gap-2 mb-1.5"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Emissions</span><span class="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-slate-500">not yet computed</span></div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.5]">What the traffic on this segment puts into the air. A speed-binned emission rate applied to the segment&rsquo;s vehicle-miles travelled.</p>
+                      <p class="font-proxima text-[12px] text-slate-500 leading-[1.5] mt-2">Blocked on confirming the emission-rate table with NYSDOT. The rate curve is fleet-dependent, so the fleet year it represents will be published alongside every value.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-dashed border-zinc-950/20 bg-white/60 shadow-sm p-4">
+                      <div class="flex items-center gap-2 mb-1.5"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Attributes</span><span class="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-slate-500">not yet computed</span></div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.5]">Network metadata itself &mdash; functional class, AADT, ownership. Coloured straight from a field joined off the network table; no measure controls.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 07 · Measures that used to be here -->
+                <section id="retired" data-dms-section="retired">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Measures that used to be here</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">Earlier versions of this documentation listed measures the current tool no longer offers. If you used one of them, here is what happened to it.</p>
+                  <div class="overflow-x-auto rounded-[8px] border border-zinc-950/10 bg-white shadow-sm">
+                    <table class="w-full min-w-[620px] text-left">
+                      <thead><tr class="border-b border-zinc-950/10 bg-slate-50/60">
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">measure</th>
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">status</th>
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">what to use instead</th>
+                      </tr></thead>
+                      <tbody class="font-proxima text-[12.5px] text-slate-700">
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5"><strong class="text-[#0F1722]">Planning Time Index (PTI)</strong>, Buffer Index, Travel Time Index</td><td class="px-4 py-2.5">Not currently computed</td><td class="px-4 py-2.5">Percentile speed gives the underlying distribution. Reinstating this family is under evaluation.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5"><strong class="text-[#0F1722]">RIS attributes</strong> &mdash; AADT variants, posted speed, DDHV, adjusted rated capacity, volume-to-capacity, K and D factors</td><td class="px-4 py-2.5">Not currently exposed</td><td class="px-4 py-2.5">The Attributes measure (&sect;&nbsp;06) is the intended home for these.</td></tr>
+                        <tr><td class="px-4 py-2.5"><strong class="text-[#0F1722]">Percent bins reporting</strong></td><td class="px-4 py-2.5"><strong class="text-emerald-700">Restored</strong></td><td class="px-4 py-2.5">Now published as the Data coverage measure, per stream per period.</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <!-- 08 · Glossary -->
+                <section id="glossary" data-dms-section="glossary">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Glossary</h2></div>
+                  <div class="mt-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm divide-y divide-zinc-950/05">
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">TMC</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Traffic Message Channel &mdash; the road segment this data is reported on. New York has roughly 52,000. Median length is about 0.28&nbsp;mi, and 24.3% are under 0.05&nbsp;mi.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Epoch</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">One 5-minute observation of travel time on one segment. The rawest unit in the feed.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Reporting bin</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">A 15-minute window &mdash; three epochs &mdash; averaged before any percentile is taken. This averaging step is the pipeline&rsquo;s largest outlier suppressor, removing roughly 80% of extreme epochs.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Stream</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Which vehicles a travel time describes: all vehicles, passenger vehicles, or freight trucks. The streams arrive independently and on different calendars.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Precision band</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The expected spread of a measure at the sample size behind that row, measured by down-sampling real segments rather than assumed from a formula. Advisory &mdash; nothing is ever suppressed for being imprecise.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Minimum-n bar</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The observation count a measure needs for &plusmn;0.05 precision. Published next to the row&rsquo;s own count so you can make the comparison yourself.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Free-flow reference</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The uncongested speed a segment is compared against. Taken as the 15th-percentile travel time, which is equivalent to the conventional 85th percentile of speed.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">The floor</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The 20&nbsp;mph minimum on the excessive-delay threshold. It governs 62.7% of all measured delay and almost none of it on freeways.</div></div>
+                    <div class="p-4 grid md:grid-cols-[180px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Coverage era</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">A period over which the feed&rsquo;s completeness is stable. There are nine between 2017 and 2026; comparisons within one are safe, comparisons across one need stating.</div></div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- TOC (sticky) -->
+              <aside class="col-span-12 lg:col-span-4" data-dms-section="toc">
+                <div class="sticky top-4 space-y-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                    <a href="#two-families" class="tny-toc-item active">Federal PM3 vs. this site</a>
+                    <a href="#catalogue" class="tny-toc-item">The measure catalogue</a>
+                    <a href="#which-delay" class="tny-toc-item">Which delay measure?</a>
+                    <a href="#coverage-eras" class="tny-toc-item">Coverage is not stationary</a>
+                    <a href="#multi-year" class="tny-toc-item">Two traps</a>
+                    <a href="#in-development" class="tny-toc-item">In development</a>
+                    <a href="#retired" class="tny-toc-item">Measures that used to be here</a>
+                    <a href="#glossary" class="tny-toc-item">Glossary</a>
+                  </div>
+
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">jump to a measure</div>
+                    <a href="#m-lottr" class="tny-toc-item">LOTTR</a>
+                    <a href="#m-tttr" class="tny-toc-item">TTTR</a>
+                    <a href="#m-tttr80" class="tny-toc-item">TTTR&#8320;&#8320;</a>
+                    <a href="#m-phed" class="tny-toc-item">PHED</a>
+                    <a href="#m-ted" class="tny-toc-item">TED</a>
+                    <a href="#m-speed" class="tny-toc-item">Percentile speed</a>
+                    <a href="#m-coverage" class="tny-toc-item">Data coverage</a>
+                  </div>
+
+                  <div class="rounded-[8px] border border-[#1F3F8F]/20 bg-white shadow-sm p-5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">see it in use</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">Every measure here is on the map</div>
+                    <div class="mt-3 space-y-2">
+                      <a href="npmrds-macro-guide.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Book --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>How to use the macro view</a>
+                      <a href="npmrds-macro.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Map --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 4 6 2 6-2v14l-6 2-6-2-6 2V6Z"/><path d="M9 4v14M15 6v14"/></svg>Open the macro view</a>
+                      <a href="map-21.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Activity --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>MAP-21 federal figures</a>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[11.5px] text-slate-500">Every downloaded dataset carries these same method notes in its manifest &mdash; the docs and the download state the same facts.</div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER · link block (skill §7.0.3) ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">npmrds home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-macro-guide.html" class="hover:text-slate-900">macro guide</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11.5px] text-slate-500">&copy; NYSDOT &middot; TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

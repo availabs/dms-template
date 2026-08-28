@@ -178,7 +178,7 @@
               <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Typography</h2>
               <p class="font-proxima text-[14px] text-[#37576B] mb-6">
                 Two-family system: <strong>Oswald</strong> (display — always uppercase) and <strong>Proxima Nova / Source Sans 3</strong> (prose).
-                14 named tokens; modifier axes (color, weight, italic, tabular-nums) are applied at the call site, not as separate tokens.
+                15 named tokens; modifier axes (color, weight, italic, tabular-nums) are applied at the call site, not as separate tokens.
               </p>
 
               <!-- Display family -->
@@ -232,6 +232,15 @@
                   <div class="type-meta"><span class="token-name">metaXS</span><span class="token-spec">Oswald 500 · 12px · 100% lh</span></div>
                   <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:12px">Page 1 of 12 · 428 Records</div>
                 </div>
+                <!-- EARNED 2026-08-27 (type audit): the field-label voice on every record
+                     and form page — 1,397 uses across pages/ with no token. Clears the
+                     earn-a-token rule against metaXS by 2px, and its 0.05em tracking is
+                     intrinsic (it is what keeps 10px Oswald legible), so it is baked in
+                     rather than applied as a call-site modifier. -->
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">metaXXS</span><span class="token-spec">Oswald 500 · 10px · 100% lh · 0.05em</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none tracking-[0.05em]" style="font-size:10px">Lead Agency · Cost Range · Time to Implement</div>
+                </div>
               </div>
 
               <!-- Prose family -->
@@ -255,6 +264,26 @@
                 </div>
               </div>
 
+              <!-- Folded variations — what was considered and rejected -->
+              <div class="mt-6 bg-white border border-[#E0EBF0] rounded-[8px] p-4">
+                <h4 class="font-display text-[11px] font-[500] text-[#6D96AE] uppercase tracking-[0.08em] mb-2">Folded variations (type audit, 2026-08-27)</h4>
+                <p class="font-proxima text-[13px] text-[#37576B] leading-[1.6]">
+                  Specs found in <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">pages/</code> that did NOT earn a token, and the token
+                  they fold into. Each fails the earn-a-token rule (&lt; 2px from its neighbour) or appears too rarely to defend:
+                  <strong>Proxima 13px → <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">proseSM</code></strong> (the single most-used
+                  prose size in the catalogue at 2,381 uses, but only 1px from 14px — the ladder keeps 2px steps rather than growing a
+                  near-duplicate);
+                  <strong>Proxima 11px and 10px → <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">proseXS</code></strong>;
+                  <strong>Proxima 15px → <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">prose</code></strong>;
+                  <strong>Oswald 11px → <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">metaXS</code></strong>.
+                  Only Oswald 10px cleared the rule, as <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">metaXXS</code> above.
+                  <br><br>
+                  <strong>Applied so far to:</strong> <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">pages/county-actions/action-view.html</code>
+                  and <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">action-edit.html</code>. The rest of the catalogue still carries the
+                  raw specs and is normalised as each page is next touched (the skill's audit cadence).
+                </p>
+              </div>
+
               <!-- Modifier-axis note -->
               <div class="mt-6 bg-[#F3F8F9] rounded-[8px] p-4">
                 <p class="font-proxima text-[13px] text-[#37576B] leading-[1.6]">
@@ -265,6 +294,12 @@
                   <code class="bg-white px-1 rounded text-[11px]">tabular-nums</code> (stat tables),
                   <code class="bg-white px-1 rounded text-[11px]">uppercase</code> on display/meta is always on — not a modifier.
                   H1 heading underline: decoration-4 decoration-[#EAAD43] underline-offset-8 — applied at call site on <code class="bg-white px-1 rounded text-[11px]">displaySM</code>.
+                  <br><br>
+                  <strong>One DMS exception —</strong> a live Card cell has a single <code class="bg-white px-1 rounded text-[11px]">valueFontStyle</code>
+                  slot and no way to add a class beside it, so the <em>weight</em> modifier can't be applied at the call site there. The theme
+                  therefore ships <code class="bg-white px-1 rounded text-[11px]">proseSemibold</code> / <code class="bg-white px-1 rounded text-[11px]">proseSMSemibold</code>
+                  as reachable variants of <code class="bg-white px-1 rounded text-[11px]">prose</code> / <code class="bg-white px-1 rounded text-[11px]">proseSM</code>.
+                  They are the same roles, not new ones — mockups keep expressing weight as a call-site class.
                 </p>
               </div>
             </div>
