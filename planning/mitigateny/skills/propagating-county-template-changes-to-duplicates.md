@@ -120,6 +120,14 @@ Recompute each target row's note from the target's own live state, keeping the s
 | `Deleted` | already off the page | `Fixed` |
 | `Unnecessary` | — | `Unnecessary` (a judgement about the component, not the pattern) |
 
+**And recompute again if the source row is retriaged after the rows are appended.** The notes in the
+tab are a snapshot of the source's triage at append time, not a live view of it. On 2026-08-28 the
+author changed T5-043 from `Fixed` to `Unnecessary` *after* the 918 duplicate rows were written; the
+three duplicate rows still said `Needs Tag` and would have put a tag on a component the author had
+just ruled out. Diff the source rows against the pre-append backup before a run — one
+`export_tab.py` of the backup `.xlsx` and a key-by-key compare is enough, and it is the only way to
+see an author edit that the row's own columns cannot show.
+
 Then check the arithmetic in the direction that is invariant. Per-note counts differ between patterns
 and that is fine; what should reconcile is the **number of components that ought to carry a tag**:
 
@@ -190,5 +198,35 @@ Verified after writing: **0 unexpected changes** to any pre-existing county_temp
 `Pattern ID`, `Status` and `Date fixed` moved, all intentionally), and the 186 ↔ 184 + 2 identity
 above closes.
 
-Nothing has been applied to the duplicates yet. That is the next step, and it is the ordinary fix loop
-run three times — one run folder per pattern, `--where "Pattern ID=<id>"` when freezing the rows.
+### Applying it — the non-hazard half, 2026-08-28
+
+The ordinary fix loop, run three times, one run folder per pattern; the rows were filtered out of
+`rows_all.csv` by `Pattern ID` rather than with `--where`, which amounts to the same freeze.
+
+| | Result |
+|---|---|
+| tag writes | **44** (suffolk 14, schenectady 15, delaware 15) — **44/44 PASS**, 0 unexpected leaves |
+| removals | **12** over 9 page writes, all `REMOVED` |
+| independent re-read | **90 of 90** rows correct (a second script that reads neither `baseline/` nor `applied.json`) |
+| held | T5-214 × 3 — see below |
+
+Three things this half taught that the inventory half could not:
+
+- **A source-side note can go stale between the append and the run** — see the recompute warning
+  above (T5-043).
+- **A half-fixed source row is worse than an unfixed one.** T5-214 was marked `Fixed` on
+  `county_template` and the component *was* tagged — with `B1-a`, where the report says `B2-a`. The
+  recompute rule for "carries a different tag" is *`Needs Tag`, and a human should look*; in practice
+  the useful move is to **hold** the row: set its note to something the tooling does not act on
+  (`Hold`, with the `Tags` column empty) so `apply.mjs` reports SKIPPED and `remove_from_page.mjs`
+  ignores it, and leave the workbook row `Open`. Guessing either value writes a wrong tag to three
+  live sites at once.
+- **The removal guard will refuse components the author has already deleted from the source.**
+  `remove_from_page.mjs` treats a `level` as evidence of authoring. Two of the four `Deleted` rows
+  per pattern (T5-247, T5-248) are untitled, contentless lexicals that carry `level` 1 and 2 — and
+  their `county_template` twins (1426501, 1426465) are already dereferenced, i.e. the author deleted
+  exactly that shape by hand. `--allow-nonempty` is right there, and the justification is the source
+  pattern's own state, not a judgement of your own. Dry-run first: the flag is per-run, so confirm
+  the other targets pass the guard unaided before you set it.
+
+**The hazard half is still outstanding** — 471 tag writes + 189 removals across the three patterns.

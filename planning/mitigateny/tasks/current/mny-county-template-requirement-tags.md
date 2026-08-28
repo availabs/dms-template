@@ -63,7 +63,24 @@ the instruction.
       hazard rows from the live site: **276/276 correct**. `remove_from_page.mjs` was written for the
       delete path (page-side dereference only, row left intact, refuses anything that looks authored)
       and `validate.mjs` made removal-aware so index shifts are asserted exactly rather than ignored.
-- [ ] **Two rows of Eric's own pass need a second look** (see Open items).
+- [x] **The non-hazard pages, all three duplicates — 2026-08-28**, runs
+      `2026-08-28-nonhazard-{suffolk,schenectady,delaware}` off the shared prep folder
+      `2026-08-28-nonhazard-dups`. **44 tag writes (14 / 15 / 15), 44/44 PASS, 0 unexpected leaf
+      changes; 12 removals over 9 page writes, 0 failures; `has_changes` true on all 21 pages
+      touched.** An independent re-read (`audit.mjs`, which reads neither the baseline nor
+      `applied.json`) found **90 of 90** duplicate non-hazard rows correct. Two rows needed a
+      recomputed note rather than a copied one: **T5-043** → `Unnecessary` (the author retriaged
+      the source row), **T5-214** → held, see Open items. The removals needed
+      `--allow-nonempty`: T5-247 / T5-248 are untitled contentless lexicals carrying a `level`,
+      the same two components the author had already deleted from `county_template` by hand.
+- [x] **Eric's two problem rows, checked live 2026-08-28.** T5-043 is resolved — he retriaged it
+      `Unnecessary`, and section 2380933 does sit in `draft_sections` of
+      `the_plan/jurisdictional_annexes` (the earlier "dead row" reading was wrong; see Open
+      items 1). T5-214 turned out **half-fixed**: 2011184 is now tagged, but `B1-a`, not the
+      `B2-a` the report asks for. Still open.
+- [x] **`county_template`'s own 32 non-hazard rows are now verified and closed** — all 32 were
+      re-read live: 17 `Fixed` carry exactly the requested tag, the 4 `Deleted` are off their
+      pages, the 10 `Unnecessary` are untagged and in place. Only T5-214 is left `Open`.
 - [x] **The 236 sections outside the tab: resolved, 2026-08-28.** Eric confirmed 219 are hidden from
       view and 16 are level-1 section-delimiter headings that build the left nav — **none of those will
       ever need tags**, and both classes are mechanically identifiable (`data.hideInView === true`;
@@ -94,13 +111,16 @@ for the method). 918 of 924 possible rows matched — tier A `trackingId` 874, t
 alignment 42, tier C page-structure 2; the 6 unresolved are two Graphs that do not exist in any
 duplicate. Tab went 308 → **1,226 rows** with a new `Pattern ID` column.
 
-Work outstanding per duplicate — **nothing has been applied to them yet**:
+Work per duplicate. The **non-hazard** column was applied 2026-08-28; the hazard column is what
+is left:
 
-| Pattern | Tag writes | Removals | Already correct | No action |
-|---|---|---|---|---|
-| suffolk_draft | 171 | 67 | 13 | 55 `Unnecessary` |
-| schenectady_draft | 172 | 67 | 12 | 55 |
-| delaware_draft | 172 | 67 | 12 | 55 |
+| Pattern | Tag writes | Removals | Already correct | No action | Non-hazard applied | Hazard tag writes left |
+|---|---|---|---|---|---|---|
+| suffolk_draft | 171 | 67 | 13 | 55 `Unnecessary` | 14 + 4 removals ✓ | 157 + 63 removals |
+| schenectady_draft | 172 | 67 | 12 | 55 | 15 + 4 removals ✓ | 157 + 63 removals |
+| delaware_draft | 172 | 67 | 12 | 55 | 15 + 4 removals ✓ | 157 + 63 removals |
+
+Plus one held tag write per pattern (T5-214) once the author picks `B1-a` or `B2-a`.
 
 Completeness check that closes: 186 components should carry a tag on county_template, 184 of those
 exist in each duplicate, and 186 − 184 = the 2 absent components.
@@ -109,24 +129,31 @@ exist in each duplicate, and 186 − 184 = the 2 absent components.
 
 The hazard pages of `county_template` are done. What is left of the whole task:
 
-1. **Apply the three duplicates** — 515 tag writes + 201 removals total, one run folder per pattern,
-   freezing rows with `--where "Pattern ID=<id>"`. This is the next step.
-2. The two rows of Eric's own pass (T5-043, T5-214) in Open items below.
-3. The **non-hazard** pages of county_template have only ever been triaged, not swept — the tab covers
-   26 pages and this sweep closed the 16 hazard ones. A `hideInView` / level-1-aware scan of the other
-   10 would say whether anything there is still untagged.
+1. **The hazard pages of the three duplicates** — 471 tag writes + 189 removals, the same loop the
+   non-hazard runs used, one run folder per pattern. This is the next step, and it is now the only
+   large piece left.
+2. **T5-214** — one decision, four tag writes (Open item 1 below).
+3. The **non-hazard** pages of county_template are swept and closed as of 2026-08-28. What has
+   *not* been done is a fresh `hideInView` / level-1-aware **scan** of those 10 pages to say whether
+   any section the original report never listed is still untagged — the equivalent of the NRI
+   discovery that added 60 rows on the hazard side.
 4. Publishing. Every change from this task is staged in drafts; nothing is on the public site.
 
 ## Open items
 
-1. **T5-043 — the tag landed on a dead row.** Section 2380933 now carries `tags: "H2"` but is in
-   neither `draft_sections` nor `sections` of page 1300807 (`the_plan/about_the_process`). Its live
-   draft twin by `trackingId` is **1515010** ("Overview", draft index 1), still `tags: null`. So the
-   fix has not taken effect and will never publish. Fix = tag 1515010 `H2`.
-   The report row also names the wrong page for it (`the_plan/jurisdictional_annexes`) — a V2 defect.
-2. **T5-214 — marked `Fixed`, but isn't.** Section 2011184 (`the_local_environment/built_environment`,
-   requirement `B2-a`) is a live draft section with `tags: null`. Every sibling row on that page took
-   its tag; this one didn't save.
+1. **T5-214 — the one row still open, and it needs a decision, not a write.** Section 2011184
+   (`the_local_environment/built_environment`) now carries `tags: "B1-a"`. The report row's
+   `Requirement` is **`B2-a`**, and every other tagged component on that page is `B2-a` (T5-207,
+   T5-211, T5-221, T5-222) or `B2-b` (T5-226, T5-227). So either the author meant `B1-a` and the
+   report's requirement is wrong for this row, or it was a mis-pick. Until that is settled the row
+   is `Open` on all four patterns and the three duplicate sections (2249632, 2305455, 2325049) are
+   deliberately untouched — `rows.csv` carries `Notes = Hold` for them so `apply.mjs` skips.
+   Whichever value wins, it is four one-attribute writes.
+2. **T5-043 — closed, and the earlier diagnosis was wrong.** The author retriaged it `Unnecessary`,
+   which settles it either way, but for the record: section 2380933 *is* in `draft_sections` of
+   `the_plan/jurisdictional_annexes` (verified 2026-08-28), so the report row named the right page
+   and the "tag landed on a dead row / fix the twin 1515010" reading in the 2026-08-27 note does not
+   hold. The lesson is the one in item 4 — placement must be read against the page the report names.
 3. **`Unnecessary` vs `Deleted` is not derivable from the row.** On `the_risk/natural_hazards`, two
    components of identical shape were triaged `Unnecessary` (2413407, 2413408 — left in place) and
    `Deleted` (2413432). That is why the hazard-page notes were propagated from flooding's triage by
