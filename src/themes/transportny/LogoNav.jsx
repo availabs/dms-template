@@ -1,13 +1,19 @@
 import React from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { ThemeContext, getComponentTheme } from '~/dms/packages/dms/src/ui/useTheme'
 import Icon from '~/dms/packages/dms/src/ui/components/Icon'
 
+// Each product is a `path` on the CURRENT origin (`/tsmo`, `/npmrds`,
+// `/freightatlas`). It used to be a `subdomain`, which cost the user their login
+// on every switch — the DMS token lives in origin-scoped localStorage, so each
+// subdomain was a separate session. `subdomain` is still honored as a fallback so
+// a theme that has not been migrated keeps working; see
+// planning/transportny/tasks/current/subdomain-to-path-consolidation.md.
 const defaultSites = [
-  { name: 'NPMRDS',       subdomain: 'npmrds',       icon: 'Pages' },
-  { name: 'Freight Atlas', subdomain: 'freightatlas', icon: 'Pages' },
-  { name: 'TSMO', subdomain: 'tsmo', icon: 'Pages' },
-   { name: 'Sandbox',         subdomain: 'sandbox',         icon: 'Pages' },
+  { name: 'NPMRDS',        path: '/npmrds',       subdomain: 'npmrds',        icon: 'Pages' },
+  { name: 'Freight Atlas', path: '/freightatlas', subdomain: 'freightatlas',  icon: 'Pages' },
+  { name: 'TSMO',          path: '/tsmo',         subdomain: 'tsmo',          icon: 'Pages' },
+  { name: 'Sandbox',                              subdomain: 'sandbox',       icon: 'Pages' },
 ]
 
 function getSiteHref(subdomain) {
@@ -24,6 +30,17 @@ function getSiteHref(subdomain) {
   return `${protocol}//${parts.join('.')}`
 }
 
+// An explicit `href` wins, then a same-origin `path`, then the legacy subdomain hop.
+const siteHref = (site) => site?.href || site?.path || getSiteHref(site?.subdomain)
+
+// Which product the viewer is currently inside. Path-mounted products are matched
+// on the pathname (prefix match, so /tsmo/congestion_v2 still highlights TSMO);
+// subdomain-only entries fall back to the host label.
+const isActiveSite = (site, pathname, currentSubdomain) =>
+  site?.path
+    ? pathname === site.path || pathname.startsWith(`${site.path}/`)
+    : Boolean(site?.subdomain) && site.subdomain === currentSubdomain
+
 export default function LogoNav(props) {
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef(null)
@@ -31,11 +48,12 @@ export default function LogoNav(props) {
   const logoTheme = getComponentTheme(fullTheme, 'logo', props.activeStyle)
   const navConfig = fullTheme?.logoNav || {}
   const sites = navConfig.sites || defaultSites
+  const { pathname } = useLocation()
   const hostParts = window.location.host.split('.')
   // Bare IPv4 host (e.g. 1.2.3.4) would otherwise misread its last octet as
   // a subdomain; real TLDs are never all-digits.
   const currentSubdomain = /^\d+$/.test(hostParts[hostParts.length - 1]) ? '' : hostParts[0]
-  const activeSite = sites.find(s => s.subdomain === currentSubdomain)
+  const activeSite = sites.find(s => isActiveSite(s, pathname, currentSubdomain))
   const title = activeSite?.name || logoTheme?.title || 'TransportNY'
 
   React.useEffect(() => {
@@ -94,11 +112,11 @@ export default function LogoNav(props) {
             // switch product
           </div>
           {sites.map((site, i) => {
-            const isActive = site.subdomain === currentSubdomain
+            const isActive = isActiveSite(site, pathname, currentSubdomain)
             return (
               <a
                 key={i}
-                href={site.href || getSiteHref(site.subdomain)}
+                href={siteHref(site)}
                 className={`
                   flex items-center gap-3 px-4 py-2.5
                   transition-colors cursor-pointer whitespace-nowrap
@@ -126,7 +144,7 @@ export default function LogoNav(props) {
             )
           })}
           <a
-            href={getSiteHref('www')}
+            href="/"
             onClick={() => setOpen(false)}
             className="
               flex items-center justify-between gap-3 px-4 py-2.5 mt-1
