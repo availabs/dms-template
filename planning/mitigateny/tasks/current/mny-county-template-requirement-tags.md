@@ -1,6 +1,6 @@
 # MNY County Template — 44 CFR 201.6 requirement tags on every section
 
-**Project:** MitigateNY · **Topic:** content · **Status:** IN PROGRESS · **Started:** 2026-08-27
+**Project:** MitigateNY · **Topic:** content · **Status:** PAUSED (awaiting all-clear) · **Started:** 2026-08-27 · **Paused:** 2026-08-28
 
 ## Objective
 
@@ -116,22 +116,75 @@ is left:
 
 | Pattern | Tag writes | Removals | Already correct | No action | Non-hazard applied | Hazard tag writes left |
 |---|---|---|---|---|---|---|
-| suffolk_draft | 171 | 67 | 13 | 55 `Unnecessary` | 14 + 4 removals ✓ | 157 + 63 removals |
-| schenectady_draft | 172 | 67 | 12 | 55 | 15 + 4 removals ✓ | 157 + 63 removals |
-| delaware_draft | 172 | 67 | 12 | 55 | 15 + 4 removals ✓ | 157 + 63 removals |
+| suffolk_draft | 171 | 67 | 13 | 55 `Unnecessary` | 14 + 4 removals ✓ | 155 + 63 removals |
+| schenectady_draft | 172 | 67 | 12 | 55 | 15 + 4 removals ✓ | 155 + 63 removals |
+| delaware_draft | 172 | 67 | 12 | 55 | 15 + 4 removals ✓ | 155 + 63 removals |
 
 Plus one held tag write per pattern (T5-214) once the author picks `B1-a` or `B2-a`.
 
 Completeness check that closes: 186 components should carry a tag on county_template, 184 of those
 exist in each duplicate, and 186 − 184 = the 2 absent components.
 
+## PAUSED 2026-08-28 — where this is leaving off
+
+**Other staff are editing the county templates.** Nothing further gets written until Eric gives the
+all-clear, and the resume is deliberately incremental: **one pattern at a time, starting with one or
+two pages**, to confirm accuracy and delivery before widening. Do not resume with a 155-row batch.
+
+### What is already applied — do not redo
+
+| | `county_template` 1300890 | suffolk 2249247 | schenectady 2304223 | delaware 2323808 |
+|---|---|---|---|---|
+| non-hazard pages (10) | ✓ 2026-08-27/28 | ✓ 2026-08-28 | ✓ 2026-08-28 | ✓ 2026-08-28 |
+| hazard pages (16) | ✓ 2026-08-28 | **outstanding** | **outstanding** | **outstanding** |
+| workbook rows Closed | 307 of 308 | 41 of 306 | 41 of 306 | 41 of 306 |
+
+The one row not closed anywhere is **T5-214** — a decision, not a write; Eric chose to leave it held
+on 2026-08-28. See Open items 1.
+
+### What is outstanding, counted off the tab
+
+Per duplicate, on the 16 hazard pages: **155 `Needs Tag` + 63 `Deleted`**, with 46 `Unnecessary`
+(deliberate non-writes) and 12 already `Fixed`. Across the three: **465 tag writes + 189 removals**.
+
+### Resuming: read this first
+
+1. **Every baseline in `scratchpad/mny-admin-status/fix-runs/2026-08-28-*/` is stale for this
+   purpose.** They were taken on 2026-08-28, before the other staff's edits. Re-baseline immediately
+   before each run — that is step 1 of the loop and it is not optional here.
+2. **Expect `live row drifted since baseline` refusals, and treat every one as information.** That
+   guard is the whole reason concurrent editing is survivable: it means someone changed the row
+   between the scan and the write. Re-baseline, look at what moved, and only then decide. **Never
+   force past it.**
+3. **A row's `Draft section ID` can go stale too.** If staff delete and re-add a component, the id in
+   the tab points at a row no author edits any more. `baseline.mjs` will say `ORPHAN` and
+   `page_scan.mjs --find-trk` will locate the replacement by `trackingId`. That is a re-match, not a
+   workaround — see the propagation skill's ladder.
+4. **Re-check the notes against the source before writing.** T5-043 is the precedent: the author
+   retriaged a source row *after* the duplicate rows were appended, so a copied note would have
+   tagged a component he had just ruled out. Diff the tab's source rows against the last committed
+   `.xlsx` backup.
+5. **`wind` shares nine sections with `lightning` and `tornado`** (task item below). Two tab rows,
+   one section: the first writes, the second is correctly `REFUSED` as drift. Don't chase it.
+
+### A good first proof run
+
+One page, one pattern, smallest blast radius — `suffolk_draft` (2249247) /
+`the_risk/natural_hazards/hurricane`: **9 `Needs Tag`, 3 `Unnecessary`, 4 `Deleted`, 0 already
+`Fixed`**, and it is one of the three hazard pages that shares no sections with another page. Freeze
+those 16 rows, run the full loop, audit, then widen to the rest of that pattern before touching the
+other two. `avalanche` (10 / 2 / 4) is the alternative if a page with no `Fixed` rows at all is
+wanted.
+
+---
+
 ## Remaining scope
 
 The hazard pages of `county_template` are done. What is left of the whole task:
 
-1. **The hazard pages of the three duplicates** — 471 tag writes + 189 removals, the same loop the
-   non-hazard runs used, one run folder per pattern. This is the next step, and it is now the only
-   large piece left.
+1. **The hazard pages of the three duplicates** — 465 tag writes + 189 removals, the same loop the
+   non-hazard runs used. **Resume one pattern at a time, one or two pages first** (see PAUSED above).
+   This is the only large piece left.
 2. **T5-214** — one decision, four tag writes (Open item 1 below).
 3. The **non-hazard** pages of county_template are swept and closed as of 2026-08-28. What has
    *not* been done is a fresh `hideInView` / level-1-aware **scan** of those 10 pages to say whether
