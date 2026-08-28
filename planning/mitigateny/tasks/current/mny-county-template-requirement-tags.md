@@ -163,8 +163,12 @@ The hazard pages of `county_template` are done. What is left of the whole task:
    reported live sections as `ORPHAN` — 8 of 13 drought rows would have been refused. `snapshot()` now
    takes the page the report names; `baseline.mjs --from-csv` supplies it from the `Page ID` column and
    flags `parent≠page`. Anything that reads placement must go through a run's baseline, not `parent`.
-5. **The sibling `county-template-qa-t5-requirements-v2.csv` is stale** — it predates even Eric's own
-   triage. The `.xlsx` is the working document; regenerate the CSV from it rather than reading it.
+5. **The sibling `county-template-qa-t5-requirements-v2.csv` is not stale — it is a different tab.**
+   Checked 2026-08-28: it mirrors the workbook's **`T5 fixes (draft IDs)`** tab exactly (763 rows,
+   same header, **0 differing cells**). Nobody has triaged or edited that tab, which is why the CSV
+   looked frozen in time. The working document is the **`Likely Needing Tags`** tab, which the CSV
+   has never held. So: don't regenerate the CSV expecting the triage to appear in it, and don't read
+   it as the work list — `export_tab.py … "Likely Needing Tags"` is the only faithful export.
 
 ## Verification standard
 

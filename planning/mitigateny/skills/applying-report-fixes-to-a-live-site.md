@@ -279,6 +279,16 @@ Once a person has triaged a report tab, the row's `Notes` is the instruction and
 | `Fixed` | already done, in the admin UI | nothing — re-reading it will show a `NO-OP` |
 | `Unnecessary` | no CFR element applies to this component; leave it untagged | **nothing** |
 | `Deleted` | the component should not be on the page | remove from `draft_sections` (below) |
+| `Hold` | *yours, not the author's* — the row needs a decision before any write is safe | **nothing**, and leave the workbook row `Open` |
+
+`Hold` is the escape hatch for a row you cannot act on without guessing. Set it in the run's
+`rows.csv` (never in the workbook's `Notes` — that column is the author's) with the computed value
+column empty: `apply.mjs` reports `SKIPPED`, `remove_from_page.mjs` ignores it because it only
+matches `Deleted`, and `validate.mjs` records it as `NOT WRITTEN`. The run stays complete and
+auditable with the undecided row visibly parked instead of quietly dropped from `rows.csv`. The case
+that produced it: a source row marked `Fixed` whose component really was tagged — with a *different*
+value than the report's `Requirement` (T5-214, `B1-a` where the report says `B2-a`). Either value
+was a coin flip across three live sites.
 
 Encode that split in step 0 rather than in your head: build **one** `rows.csv` holding every row of
 the page, and fill the computed value column **only** for the rows the write applies to. `apply.mjs`
@@ -457,6 +467,20 @@ A deletable empty component is **untitled, untagged and has no content** — ide
 `element-data` absent entirely. Check all three before removing anything, and check them against the
 live row, not the report's description of it.
 
+`remove_from_page.mjs` enforces exactly that, and it will therefore refuse an **untitled, contentless
+lexical that carries only a `level`** — the guard reads `level` as evidence of authoring. That shape
+is real and it is sometimes genuinely deletable: on the duplicates, T5-247 / T5-248 are untitled
+`level` 1 and 2 lexicals with no `element-data` at all, and their `county_template` twins (1426501,
+1426465) are already dereferenced because the author deleted that same shape by hand. That is when
+`--allow-nonempty` is right — **the justification has to be an external fact, like the source
+pattern's own state or the author saying so, never your own reading of the component.** Two working
+rules:
+
+- **Dry-run first.** The flag is per-run, not per-row, so it lifts the guard on every target. Confirm
+  from the dry run that the others pass unaided before you set it.
+- **Write down why** in the run's `NOTES.md`. The header calls the flag "a stated decision"; an
+  unexplained `--allow-nonempty` in shell history is not one.
+
 ---
 
 ## A report row can name a component that no longer exists
@@ -621,6 +645,42 @@ The final audit is worth writing for any sweep this size: re-read every row from
 assert the triage, rather than trusting the sum of per-run reports —
 `Needs Tag` → tagged with exactly the requested value **and** still on its page; `Deleted` → off the
 page **but its row still fetchable**; `Unnecessary` → still on the page and still untagged.
+
+---
+
+## Worked example — the same rows on three duplicate patterns (2026-08-28)
+
+The non-hazard half of the same sweep, applied to `suffolk_draft` / `schenectady_draft` /
+`delaware_draft` after
+[`propagating-county-template-changes-to-duplicates.md`](./propagating-county-template-changes-to-duplicates.md)
+put their rows in the tab. Runs `2026-08-28-nonhazard-{suffolk,schenectady,delaware}`, plus a shared
+prep folder `2026-08-28-nonhazard-dups`.
+
+| | Result |
+|---|---|
+| tag writes | **44** (14 / 15 / 15) — **44/44 PASS**, 0 unexpected leaves, every PASS moving exactly `tags` + `updated_at` |
+| removals | **12** over 9 page writes, all `REMOVED` |
+| `has_changes` | true on all 21 pages touched |
+| independent audit | **90 / 90** rows correct |
+| held | 1 row per pattern (T5-214) — see the `Hold` note above |
+
+Three things worth copying from its shape:
+
+- **One shared prep folder, three run folders.** All 122 non-hazard sections across all four patterns
+  were baselined once into `2026-08-28-nonhazard-dups/baseline_all/`, then copied per pattern. That
+  makes the source pattern's own state part of the same evidence set as the targets' — which is how
+  the T5-214 and T5-043 discrepancies were found *before* anything was written, rather than after.
+- **The hosted server drops connections on a long baseline.**
+  `Connection failed to https://dmsserver.availabs.org: fetch failed` four sections into 122, and
+  `baseline.mjs` restarts from zero. The run folder holds a `baseline_resume.mjs` — the same
+  `snapshot()` call and output shape, plus skip-ids-already-on-disk, six retries with a rising
+  backoff, and a fresh falcor client after a drop. Reach for it on anything over ~50 sections; it is
+  a candidate to fold into `baseline.mjs`.
+- **Write the workbook back the same way you write the site.** `update_workbook.py` in the prep
+  folder updates cells keyed on `(Fix ID, Pattern ID)`, then re-reads every cell and **refuses to
+  save** if anything outside the targeted set moved — the same "prove only the intended thing
+  changed" contract as `validate.mjs`. It stamped 238 cells across 122 rows with 0 unexpected
+  changes, and left a timestamped `.BACKUP-*.xlsx` beside the report.
 
 ---
 
