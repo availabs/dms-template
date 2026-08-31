@@ -355,6 +355,21 @@
                         <button class="px-3 pt-[9px] pb-[7px] border border-[#E0EBF0] bg-[#F3F8F9] text-[#C5D7E0] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Disabled</button>
                       </div>
                     </div>
+                    <!-- pillWhite (theme.button.styles[].name='pillWhite') — the table-chrome
+                         pill (dashboard CSV/Columns buttons): sentence case 13px/600, optional
+                         leading icon via the style's `icon` key (the lexical Button node's
+                         author-picked icon takes its classes from there) -->
+                    <div>
+                      <div class="state-label">Pill White (table chrome · <code style="font-size:11px">pillWhite</code> · optional icon)</div>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <button class="inline-flex items-center gap-1.5 px-3 py-[6px] bg-white border border-[#C5D7E0] text-[#37576B] font-proxima font-[600] text-[13px] rounded-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                          Download CSV
+                        </button>
+                        <button class="inline-flex items-center gap-1.5 px-3 py-[6px] bg-white border border-[#6D96AE] text-[#37576B] font-proxima font-[600] text-[13px] rounded-full">Hover</button>
+                        <button class="inline-flex items-center gap-1.5 px-3 py-[6px] bg-white border border-[#E0EBF0] text-[#C5D7E0] font-proxima font-[600] text-[13px] rounded-full cursor-not-allowed">Disabled</button>
+                      </div>
+                    </div>
                     <div>
                       <div class="state-label">Pagination Arrow Buttons</div>
                       <div class="flex items-center gap-1">
@@ -860,6 +875,104 @@
         </div>
 
         <!-- ============================================================
+             GRAPHS — AVL Graph brand defaults
+             The chart vocabulary had no spec page until now; it lived only
+             inside pages/home.html and pages/county-actions/*.html. LIVE THEME
+             CONTRACT: every value below ships in theme.js as
+             `avlGraph.styles[].chartDefaults`, which the graph_new component
+             merges UNDER a section's own `display` — so an author gets this
+             look with ZERO section configuration, and can still override any
+             single key per graph.
+             NOTE: element-type "Graph" and "AVL Graph" both resolve to the
+             same component, so legacy Graph sections read these defaults too.
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Graphs (AVL Graph)</h2>
+            <p class="font-proxima text-[14px] text-[#37576B] mb-6">Brand chart defaults. Blue is the primary family; amber is the sole warm accent, so a two-series chart lands on the highest-contrast on-brand pair.</p>
+
+            <div data-dms="section" data-name="graph-palette" class="mb-8">
+              <div class="component-group-title">Series palette — assigned to series in column order</div>
+              <div class="flex flex-wrap gap-3">
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#37576B"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">1 · Blue 700</span><span class="font-proxima text-[10px] text-[#6D96AE]">#37576B</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#EAAD43"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">2 · Yellow 700</span><span class="font-proxima text-[10px] text-[#6D96AE]">#EAAD43</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#6D96AE"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">3 · Blue 400</span><span class="font-proxima text-[10px] text-[#6D96AE]">#6D96AE</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#54B99B"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">4 · Green 700</span><span class="font-proxima text-[10px] text-[#6D96AE]">#54B99B</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#EA8954"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">5 · Orange 400</span><span class="font-proxima text-[10px] text-[#6D96AE]">#EA8954</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#C5D7E0"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">6 · Blue 200</span><span class="font-proxima text-[10px] text-[#6D96AE]">#C5D7E0</span></div>
+                <div class="flex flex-col gap-1"><div class="w-[72px] h-[40px] rounded-[6px]" style="background:#DD524C"></div><span class="font-proxima text-[11px] font-[700] text-[#37576B]">7 · Red 500</span><span class="font-proxima text-[10px] text-[#6D96AE]">#DD524C</span></div>
+              </div>
+              <p class="font-proxima text-[12px] text-[#6D96AE] mt-3">On the dark topo bands the palette flips to amber-first — <span class="font-[700] text-[#37576B]">#EAAD43 · #FFFFFF · #F1CA87 · #C5D7E0 · #6D96AE</span> — via the <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">dark</code> avlGraph style.</p>
+            </div>
+
+            <div data-dms="section" data-name="graph-bar-spacing" class="mb-8 pt-6 border-t border-[#E0EBF0]">
+              <div class="component-group-title">Bar spacing — <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">paddingInner: 0.3</code> (d3 band-scale inner padding)</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+                <div>
+                  <p class="font-proxima text-[12px] font-[700] text-[#37576B] mb-2">Correct — 0.3</p>
+                  <div class="flex items-end gap-[11px] h-[120px]">
+                    <div class="w-[28px] rounded-t-[3px]" style="height:100%;background:#37576B"></div>
+                    <div class="w-[28px] rounded-t-[3px]" style="height:42%;background:#37576B"></div>
+                    <div class="w-[28px] rounded-t-[3px]" style="height:78%;background:#37576B"></div>
+                    <div class="w-[28px] rounded-t-[3px]" style="height:55%;background:#37576B"></div>
+                  </div>
+                  <p class="font-proxima text-[11px] text-[#6D96AE] mt-2">Band step 39.6px → 27.7px bar + 11.9px gap.</p>
+                </div>
+                <div>
+                  <p class="font-proxima text-[12px] font-[700] text-[#6D96AE] mb-2">Library default — 0.0 (bars touch)</p>
+                  <div class="flex items-end gap-0 h-[120px]">
+                    <div class="w-[40px]" style="height:100%;background:#C5D7E0"></div>
+                    <div class="w-[40px]" style="height:42%;background:#C5D7E0"></div>
+                    <div class="w-[40px]" style="height:78%;background:#C5D7E0"></div>
+                    <div class="w-[40px]" style="height:55%;background:#C5D7E0"></div>
+                  </div>
+                  <p class="font-proxima text-[11px] text-[#6D96AE] mt-2">What every MNY chart rendered before the theme carried defaults.</p>
+                </div>
+              </div>
+              <p class="font-proxima text-[12px] text-[#37576B] mt-4">Bars are also <span class="font-[700]">solid</span> (<code class="bg-[#F3F8F9] px-1 rounded text-[11px]">barOpacity: 1</code>) — the component's 0.75 default reads washed out on white and mny-50 surfaces.</p>
+            </div>
+
+            <div data-dms="section" data-name="graph-axes" class="pt-6 border-t border-[#E0EBF0]">
+              <div class="component-group-title">Axis chrome — ticks speak Prose, axis titles speak Meta</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+                <div class="space-y-3">
+                  <div class="flex items-baseline gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Tick label</span>
+                    <span class="font-proxima text-[11px] font-[600] text-[#6D96AE]">1,284 · Flooding · 2025</span>
+                  </div>
+                  <div class="flex items-baseline gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Axis title</span>
+                    <span class="font-display text-[12px] font-[500] uppercase text-[#37576B]">Number of Actions</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Axis rule</span>
+                    <span class="flex-1 h-px" style="background:#E0EBF0"></span>
+                    <span class="font-proxima text-[10px] text-[#6D96AE]">#E0EBF0</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-[110px] shrink-0 font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-[#6D96AE]">Gridline</span>
+                    <span class="flex-1 h-px" style="background:rgba(45,62,76,0.12)"></span>
+                    <span class="font-proxima text-[10px] text-[#6D96AE]">12% ink</span>
+                  </div>
+                </div>
+                <div class="bg-[#F3F8F9] rounded-[8px] p-4">
+                  <p class="font-proxima text-[12px] text-[#37576B] leading-[1.6]">
+                    Tick font is a <span class="font-[700]">CSS stack</span>, not a Tailwind class — the axis renderers apply it inline.
+                    Y gridlines are on by default, X gridlines off. Legend is <span class="font-[700]">off</span> by default: these
+                    dashboards label rows and bars directly.
+                  </p>
+                  <p class="font-proxima text-[12px] text-[#37576B] leading-[1.6] mt-2">
+                    Known gap: gridline <span class="font-[700]">color</span> is hardcoded to the wrapper's ink, so only its opacity
+                    is themeable — and bars have no corner radius, so live bars are square where these mockups draw them rounded.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================================
              TABLE
              ============================================================ -->
         <div data-dms="group" data-name="content" class="w-full mb-6">
@@ -937,6 +1050,45 @@
               <div class="grid grid-cols-4 bg-white border-b border-[#E0EBF0]"><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Bloomingburg (Village)</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Proposed</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B] col-span-2">Comprehensive Plan</div></div>
               <div class="grid grid-cols-4 bg-white border-b border-[#E0EBF0]"><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Sullivan (County)</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">In-Progress</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B] col-span-2">County Road 164 Mitigation</div></div>
               <div class="grid grid-cols-4 bg-white"><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Sullivan (County)</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Proposed</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B] col-span-2">County Road 14 Culvert Upsizing</div></div>
+            </div>
+
+            <!-- mny-inventory table style (theme.table.styles[].name='mny-inventory', display.tableStyle:'mny-inventory') -->
+            <h3 class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase mb-1">Table style · <span class="text-[#EAAD43]">mny-inventory</span></h3>
+            <p class="font-proxima text-[13px] text-[#37576B] mb-3">The Actions Dashboard <strong>Action inventory</strong> table (county-actions/dashboard.html): fully-rounded bordered card, <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">mny-50</code> header band with <strong>11px Oswald tracking-wider</strong> headers over a 1px <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">mny-100</code> rule (no vertical dividers — the resizer strip is transparent until hovered; menu opener = <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">ArrowsVertical</code>), horizontal-only row rules in <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">mny-50</code>, roomy <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">px-4 py-4</code> cells at 13px (wider than the mockup's px-3/py-3 — live cells sit flush in fixed tracks and don't carry the mockup's chip line), <strong>whole-row hover</strong> (<code class="text-[12px] bg-[#F3F8F9] px-1 rounded">row:'group/row'</code> + <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">group-hover/row:</code> cell backgrounds — the mockup's <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">&lt;tr&gt;</code> hover), and an <strong>in-card pagination bar</strong> (square page buttons, dark active). Identity columns opt into the heavier weight with <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">valueFontStyle:'cellEmphasis'</code> — a key defined <em>inside</em> this style (TableCell resolves <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">valueFontStyle</code> against the merged table style). The open-out expander is the chevron pair (<code class="text-[12px] bg-[#F3F8F9] px-1 rounded">openOutIcon:'ChevronRight'</code> / <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">openOutIconOpen:'ChevronDown'</code> @16) in a dedicated 40px gutter (an empty calculated first column — the caret renders in the first visible column); the trailing 48px <strong>icon action column</strong> is an isLink column with <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">linkIcon:'ChevronRight'</code> + <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">valueFontStyle:'cellActionIcon'</code>. Inherits every other key from <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">styles[0]</code>; select per-section with <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">display.tableStyle:'mny-inventory'</code>. The named style also restyles the pagination (dataWrapper Pagination honors <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">display.tableStyle</code>). ⚠ Design column widths (160/flex/128/190/136/150 + 40/48 gutters) need the section group set <strong>full-width</strong> — the 'centered' band layout caps content at 1020px and the fixed columns would overflow into a scroll.</p>
+            <div class="rounded-[12px] border border-[#E0EBF0] overflow-hidden mb-8">
+              <div class="grid grid-cols-[1.1fr_1.6fr_1fr_1fr] bg-[#F3F8F9]">
+                <div class="font-display font-[500] py-3 px-4 text-[11px] uppercase tracking-wider text-[#37576B]">Jurisdiction</div>
+                <div class="font-display font-[500] py-3 px-4 text-[11px] uppercase tracking-wider text-[#37576B]">Action Name</div>
+                <div class="font-display font-[500] py-3 px-4 text-[11px] uppercase tracking-wider text-[#37576B]">Status</div>
+                <div class="font-display font-[500] py-3 px-4 text-[11px] uppercase tracking-wider text-[#37576B]">Cost Range</div>
+              </div>
+              <div class="grid grid-cols-[1.1fr_1.6fr_1fr_1fr] bg-white border-b border-[#F3F8F9]">
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[14px] font-[600] text-[#2D3E4C] flex items-center">Fallsburg (Town)</div>
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[14px] font-[600] text-[#2D3E4C] flex items-center">Maplewood Ave Flooding/Culvert Issues</div>
+                <div class="min-h-[52px] py-4 px-4 flex items-center"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#2D3E4C]"></span>Completed</span></div>
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[13px] text-[#37576B] flex items-center tabular-nums">$150k – $500k</div>
+              </div>
+              <div class="grid grid-cols-[1.1fr_1.6fr_1fr_1fr] bg-white border-b border-[#F3F8F9]">
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[14px] font-[600] text-[#2D3E4C] flex items-center">Delaware (Town)</div>
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[14px] font-[600] text-[#2D3E4C] flex items-center">Kohlertown Route 52, Culvert Issues</div>
+                <div class="min-h-[52px] py-4 px-4 flex items-center"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#54B99B]"></span>In-Progress</span></div>
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[13px] text-[#37576B] flex items-center tabular-nums">$50k – $150k</div>
+              </div>
+              <div class="grid grid-cols-[1.1fr_1.6fr_1fr_1fr] bg-white">
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[14px] font-[600] text-[#2D3E4C] flex items-center">Rockland (Town)</div>
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[14px] font-[600] text-[#2D3E4C] flex items-center">Acquire Generators for Critical Facilities</div>
+                <div class="min-h-[52px] py-4 px-4 flex items-center"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#6D96AE]"></span>Proposed</span></div>
+                <div class="min-h-[52px] py-4 px-4 font-proxima text-[13px] text-[#37576B] flex items-center tabular-nums">$150k – $500k</div>
+              </div>
+              <div class="flex items-center justify-between bg-[#F3F8F9] border-t border-[#E0EBF0] px-3 py-2.5">
+                <span class="font-proxima text-[12px] text-[#6D96AE]">Page 1 of 24 · Rows 1 to 20 of 474</span>
+                <div class="flex items-center gap-1">
+                  <span class="min-w-7 h-7 px-1.5 rounded-md flex items-center justify-center bg-[#2D3E4C] text-white font-proxima text-[12px] font-[700] tabular-nums">1</span>
+                  <span class="min-w-7 h-7 px-1.5 rounded-md flex items-center justify-center text-[#37576B] font-proxima text-[12px] font-[600] tabular-nums">2</span>
+                  <span class="min-w-7 h-7 px-1.5 rounded-md flex items-center justify-center text-[#37576B] font-proxima text-[12px] font-[600] tabular-nums">3</span>
+                  <span class="min-w-7 h-7 px-1.5 rounded-md flex items-center justify-center text-[#37576B] font-proxima text-[12px] font-[600]">next &gt;</span>
+                </div>
+              </div>
             </div>
 
             <!-- stacked_bar column type + theme.stackedBar palette -->
@@ -1055,6 +1207,77 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             RULES & DIVIDERS
+             Added 2026-08-27. Live-theme contract:
+               MNY_RULE           (src/themes/mny/theme.js) — the three inks
+               dataCard.cellBorderSides       — Card cell rules (default style)
+               dataCard.styles['tinted'|'framed'].cellBorderSides — other surfaces
+               lexical.styles[0].hr_base / hr_after   — the lexical <hr>
+               section `border: {width,color,bottom}` — a rule across a whole band
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Rules &amp; Dividers</h2>
+            <p class="font-proxima text-[14px] text-[#37576B] leading-[1.4] mb-5">
+              One weight — <strong>1px</strong>. Three inks, chosen by the surface the rule sits on, not by how important the
+              separation is. (The 2px/4px borders elsewhere in this system are <em>accents</em> — the amber heading underline,
+              the active tab — not rules.)
+            </p>
+
+            <div data-dms="section" data-name="rules" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              <div>
+                <div class="state-label">ruleSubtle · #F3F8F9 · mny-50</div>
+                <div class="border border-[#E0EBF0] rounded-[10px] p-4">
+                  <h3 class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase tracking-[0.02em] pb-2 border-b border-[#F3F8F9]">Cost &amp; benefit</h3>
+                  <p class="font-proxima text-[14px] text-[#37576B] leading-[1.4] mt-3">Inside a block: a heading underline, a row separator. The lightest step — it groups without dividing.</p>
+                </div>
+                <p class="font-proxima text-[12px] text-[#6D96AE] leading-[1.4] mt-2">797 uses across <code>pages/</code></p>
+              </div>
+
+              <div>
+                <div class="state-label">rule · #E0EBF0 · mny-100 — THE DEFAULT</div>
+                <div class="border border-[#E0EBF0] rounded-[10px] p-4">
+                  <p class="font-proxima text-[14px] text-[#37576B] leading-[1.4]">The problem</p>
+                  <div class="pt-3 mt-3 border-t border-[#E0EBF0]">
+                    <p class="font-proxima text-[14px] text-[#37576B] leading-[1.4]">The solution</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[12px] text-[#6D96AE] leading-[1.4] mt-2">Between blocks, and the hairline around a framed white card. 2,229 uses — the canonical rule, and what a lexical <code>&lt;hr&gt;</code> draws.</p>
+              </div>
+
+              <div>
+                <div class="state-label">ruleStrong · #C5D7E0 · mny-200</div>
+                <div class="border border-[#E0EBF0] rounded-[10px] p-4 bg-[#F3F8F9]">
+                  <p class="font-proxima text-[14px] text-[#37576B] leading-[1.4]">Planning mechanism</p>
+                  <div class="pt-3 mt-3 border-t border-[#C5D7E0]">
+                    <p class="font-proxima text-[14px] text-[#37576B] leading-[1.4]">Hazard</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[12px] text-[#6D96AE] leading-[1.4] mt-2">On the mny-50 tint, where a #E0EBF0 rule disappears. 1,736 uses. Also the border on inputs and control pills.</p>
+              </div>
+
+            </div>
+
+            <div class="mt-6 bg-[#F3F8F9] rounded-[8px] p-4">
+              <p class="font-proxima text-[13px] text-[#37576B] leading-[1.6]">
+                <strong>Picking one:</strong> ask what the rule sits ON, not what it separates.
+                White surface, separating two blocks → <code class="bg-white px-1 rounded text-[11px]">rule</code>.
+                White surface, underlining a heading inside a block → <code class="bg-white px-1 rounded text-[11px]">ruleSubtle</code>.
+                Tinted surface → <code class="bg-white px-1 rounded text-[11px]">ruleStrong</code>.
+                <br><br>
+                <strong>In a live Card</strong> this is automatic: a cell's <code class="bg-white px-1 rounded text-[11px]">cellBorderTop</code>
+                draws the base rule and <code class="bg-white px-1 rounded text-[11px]">cellBorderBelow</code> the subtle one, because a
+                top rule separates blocks and a bottom rule underlines a heading. A card on another surface picks the
+                <code class="bg-white px-1 rounded text-[11px]">tinted</code> or <code class="bg-white px-1 rounded text-[11px]">framed</code>
+                Card style. A rule that must span a whole band — the one under a page's identity header — is a
+                <em>section</em> border, not a cell border: per-cell borders break at every column gap.
+              </p>
             </div>
           </div>
         </div>

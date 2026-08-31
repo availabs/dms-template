@@ -33,6 +33,29 @@ export const surfaceFromHost = (host = "") => {
   return "";
 };
 
+// The products now live at PATHS on one origin, not on their own subdomains
+// (subdomain-to-path-consolidation.md) — so the surface has to come from the URL
+// path first, and only fall back to the host while the old hosts still resolve.
+// The SURFACE NAMES are unchanged on purpose: sitemgmt_pages/_tickets/_stories are
+// keyed `surface:slug`, so renaming one would orphan every existing row.
+const SURFACE_MOUNTS = [
+  { path: "/freightatlas", surface: "freightatlas2" },
+  { path: "/tsmo", surface: "tsmo2" },
+  { path: "/npmrds", surface: "npmrds2" },
+];
+
+// → { surface, slug }. `slug` is resolved RELATIVE to the product mount, so
+// /tsmo/home gives "home" (matching the old tsmo2.host/home) and the bare mount
+// root /tsmo gives "" — the same empty result the old "/" produced, rather than a
+// bogus page_key of `tsmo2:tsmo`.
+export const surfaceFromLocation = (host = "", pathname = "") => {
+  const p = String(pathname || "");
+  const mount = SURFACE_MOUNTS.find((m) => p === m.path || p.startsWith(`${m.path}/`));
+  return mount
+    ? { surface: mount.surface, slug: slugFromPathname(p.slice(mount.path.length)) }
+    : { surface: surfaceFromHost(host), slug: slugFromPathname(p) };
+};
+
 // last non-empty path segment: "/a/b/home" -> "home", "/" -> ""
 export const slugFromPathname = (pathname = "") =>
   String(pathname).split("/").filter(Boolean).pop() || "";
@@ -54,10 +77,12 @@ export const buildTicketRow = ({ title, severity, description, asOf, pathname, p
   // Phase 2 — page attribution (no user input)
   if (pathname != null) row.page_route = pathname;
   if (pageName) row.page_name = pageName;
-  const surface = surfaceFromHost(host);
+  // page_route above stays the VERBATIM pathname (where the reporter actually
+  // was); surface/slug are resolved against the product mount so page_key keeps
+  // its historical `tsmo2:home` shape on both the old host and the new path.
+  const { surface, slug } = surfaceFromLocation(host, pathname);
   if (surface) {
     row.surface = surface;
-    const slug = slugFromPathname(pathname);
     if (slug) row.page_key = `${surface}:${slug}`;
   }
   // Phase 3 — reporter (widget is logged-in-only, so present whenever it renders)

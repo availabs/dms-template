@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS Data Quality &amp; PM3 Measures · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities.
+     * Inlined rather than linked to
+     *   src/themes/transportny/TransportNY Design System/dms_design_system_v2/design-system/_shared.css
+     * because this report lives in references/ (a different tree) and must open
+     * standalone from the file system. Values copied verbatim from that file —
+     * do not diverge; re-copy if the design system changes. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    /* data bar — a plain div scale, no chart library */
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: right; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap;
+    }
+    table.tny th:first-child, table.tny td:first-child { text-align: left; }
+    table.tny td {
+      font-size: 13px; padding: 7px 8px; text-align: right;
+      border-bottom: 1px solid rgba(15,23,42,0.05);
+      font-variant-numeric: tabular-nums;
+    }
+    table.tny tr:last-child td { border-bottom: none; }
+    table.tny tr.total td { font-weight: 600; background: rgba(15,23,42,0.02); }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  NPMRDS DATA QUALITY & ITS EFFECT ON THE PM3 MEASURES
+  Deliverable 4 of planning/transportny/tasks/current/npmrds-data-quality-outliers-research.md
+
+  Every number labelled "measured" comes from a query recorded in analysis-plan.md, run
+  2026-08-13 against ClickHouse npmrds.s583_v982_NPMRDS_V6 (CY2025, 1,695,358,623 rows)
+  and Postgres pm3.s2103_v3625_pm3_v2 (source 2103 / view 3625, 52,127 TMCs).
+  Numbers labelled "published" are cited from research/ — see 00-index.md.
+
+  Design: TransportNY design system v2 tokens/utilities (inlined _shared.css subset above).
+  Document-style page rather than the app shell: it lives in references/, so the sidebar's
+  site-relative nav links would all be dead.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <!-- ── header ──────────────────────────────────────────────────────── -->
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-10 pb-9 border-b border-zinc-950/10">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// data quality assessment</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      How much of our reliability signal is real<span class="text-[#CA8A04]">?</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[760px]">
+      The PM3 measures we publish — LOTTR, TTTR, PHED, TED and percentile speeds — are computed from
+      probe-vehicle travel times that are, most of the time, based on <span class="text-[#0f1722] font-medium">four
+      vehicles or fewer</span>. This report quantifies how thin the data is, and shows that the thinner
+      it gets, the <span class="text-[#0f1722] font-medium">worse</span> a segment's reliability appears —
+      which means a large part of what we currently report as unreliability is a measurement artifact,
+      not congestion.
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white">CY 2025</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">1,695,358,623 probe records</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">52,127 TMCs</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">source 583 &rarr; 2103 / view 3625</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">measured 2026-08-13</span>
+    </div>
+  </header>
+
+  <!-- ── §01 headline ────────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Four numbers that reframe every reliability figure we publish.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[720px]">
+      Each is measured on our own 2025 data unless marked otherwise.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">88.1%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of probe records rest on 4 vehicles or fewer</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">
+          NPMRDS labels every record <span class="tny-mono">A</span> (1&ndash;4 probes),
+          <span class="tny-mono">B</span> (5&ndash;9) or <span class="tny-mono">C</span> (10+).
+          Only <span class="font-medium text-[#0f1722]">3.1%</span> of our records reach C.
+        </p>
+        <div class="mt-3 flex gap-0.5 h-2">
+          <div class="bar bar-bad" style="width:88.1%"></div><div class="bar" style="width:8.8%"></div><div class="bar bar-ok" style="width:3.1%"></div>
+        </div>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">3.4&times;</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">more likely to be called &ldquo;unreliable&rdquo; on thin data</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">
+          AM-peak LOTTR crosses the 1.50 threshold on <span class="font-medium text-[#0f1722]">38.2%</span> of
+          segments with 50&ndash;249 observations, but only <span class="font-medium text-[#0f1722]">11.1%</span>
+          of those with 2,000+. Same network, same year.
+        </p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">7.7&times;</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">more likely if the segment is very short</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">
+          <span class="font-medium text-[#0f1722]">56.0%</span> of segments under 0.1 mile are flagged
+          unreliable vs <span class="font-medium text-[#0f1722]">7.3%</span> of those over 1 mile — and
+          they are a third of our segments but 1.5% of our mileage.
+        </p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">59.6%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of records have no truck data at all</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">
+          And only <span class="font-medium text-[#0f1722]">0.13%</span> have 10+ trucks. Every
+          <span class="tny-mono">tttr_*</span> and <span class="tny-mono">*_truck</span> measure is built
+          on this stream.
+        </p>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-bone p-5 mt-5">
+      <div class="font-display font-medium text-[16px] text-[#0f1722]">The direction of the error is the point.</div>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        Sparse data does not make our measures noisy in a way that averages out. It makes segments look
+        <span class="font-medium text-[#0f1722]">less reliable than they are</span>, because LOTTR and TTTR
+        divide a high percentile (80th, 95th) by the median. With four probes in a 15-minute window, the
+        &ldquo;80th percentile&rdquo; is effectively the slowest vehicle observed — and the slowest of four
+        is a poor estimate that skews high. So the segments where we have the least information are
+        precisely the ones we most often report as failing.
+      </p>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        There is a second, smaller error running the other way: when a period has
+        <em>no</em> data at all, our code publishes LOTTR = <span class="tny-mono">1.00</span> — perfect
+        reliability. That affects only ~34&ndash;160 segments per period, so it is a correctness wart
+        rather than a headline, but it is the wrong default and it would matter a great deal more if we
+        ever reported monthly instead of annually.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §02 how thin ────────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How thin is the data, exactly?</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Two different questions. <span class="text-[#0f1722] font-medium">Density</span> asks how many
+      vehicles are behind one 5-minute record. <span class="text-[#0f1722] font-medium">Sample count</span>
+      asks how many 15-minute records feed one published percentile across the whole year. Both matter;
+      the second is what the statistics actually consume.
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
+      <div class="tny-card p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Probe density by vehicle stream</div>
+        <p class="font-proxima text-[11.5px] text-slate-500 mt-1">Share of all 1.70 billion CY2025 records. A = 1&ndash;4 vehicles, B = 5&ndash;9, C = 10+.</p>
+        <table class="tny mt-3">
+          <thead><tr><th>stream</th><th>A (1&ndash;4)</th><th>B (5&ndash;9)</th><th>C (10+)</th><th>absent</th></tr></thead>
+          <tbody>
+            <tr><td>All vehicles</td><td class="text-[#B45309] font-medium">88.09%</td><td>8.82%</td><td>3.09%</td><td>0%</td></tr>
+            <tr><td>Passenger</td><td>72.38%</td><td>9.07%</td><td>4.04%</td><td>14.52%</td></tr>
+            <tr><td>Freight trucks</td><td>38.60%</td><td>1.67%</td><td class="text-[#B45309] font-medium">0.13%</td><td class="text-[#B45309] font-medium">59.60%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-3">
+          Published comparison: Virginia measured 80.7&ndash;85.8% density A on 15-minute intervals
+          (<a class="tny-link" href="research/02-vtrc-2025-modeling-ttr-non-interstate-nhs.md">VTRC 2025</a>).
+          Ours is per 5-minute epoch, and finer bins mechanically hold fewer vehicles, so the two are not
+          directly comparable — but nothing here suggests our data is denser than theirs.
+        </p>
+      </div>
+
+      <div class="tny-card p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Observations feeding each published percentile</div>
+        <p class="font-proxima text-[11.5px] text-slate-500 mt-1">15-minute bins per TMC per reporting period, all of CY2025. &ldquo;Max possible&rdquo; is a fully-observed year.</p>
+        <table class="tny mt-3">
+          <thead><tr><th>period</th><th>max poss.</th><th>median</th><th>% compl.</th><th>&lt;250 obs</th></tr></thead>
+          <tbody>
+            <tr><td>AM peak (LOTTR)</td><td>4,176</td><td>2,860</td><td>68%</td><td>3,451 <span class="text-slate-400">(6.6%)</span></td></tr>
+            <tr><td>Midday (LOTTR)</td><td>6,264</td><td>4,835</td><td>77%</td><td>2,103 <span class="text-slate-400">(4.0%)</span></td></tr>
+            <tr><td>PM peak (LOTTR)</td><td>4,176</td><td>2,686</td><td>64%</td><td>3,738 <span class="text-slate-400">(7.2%)</span></td></tr>
+            <tr><td>Weekend (LOTTR)</td><td>5,824</td><td>2,887</td><td>50%</td><td>3,912 <span class="text-slate-400">(7.5%)</span></td></tr>
+            <tr><td>Overnight (TTTR)</td><td>14,600</td><td>2,378</td><td>16%</td><td>5,671 <span class="text-slate-400">(10.9%)</span></td></tr>
+            <tr class="total"><td>Overnight, trucks (TTTR)</td><td>14,600</td><td>515</td><td class="text-[#B45309]">4%</td><td class="text-[#B45309]">17,728 <span class="font-normal">(34.0%)</span></td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-3">
+          The last row is the one to remember: for overnight truck reliability, a
+          <span class="font-medium text-[#0f1722]">third of all segments</span> have fewer than 250
+          observations across an entire year, and the typical segment has 515 of a possible 14,600.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §03 the money chart ─────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Less data &rarr; worse apparent reliability. Measured, on our network.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[780px]">
+      If sparsity were harmless noise, the reliability distribution would look the same regardless of how
+      many observations a segment had. It does not. Sorting our 52,127 segments by how much data they
+      actually have produces a clean gradient in the published measure.
+    </p>
+
+    <div class="tny-card p-5 mt-6">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">AM-peak LOTTR by sample size</div>
+      <table class="tny mt-3">
+        <thead><tr><th>observations</th><th>segments</th><th>% of network</th><th>mean completeness</th><th>median LOTTR</th><th>mean LOTTR</th><th>flagged &ge; 1.50</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>&lt; 50</td><td>1,010</td><td>1.9%</td><td>0.5%</td><td>1.290</td><td>1.437</td><td>31.1%</td><td style="width:130px"><div class="bar bar-bad" style="width:41%"></div></td></tr>
+          <tr><td>50 &ndash; 249</td><td>2,475</td><td>4.7%</td><td>3.4%</td><td>1.370</td><td class="text-[#B45309] font-medium">1.489</td><td class="text-[#B45309] font-medium">38.2%</td><td><div class="bar bar-bad" style="width:50%"></div></td></tr>
+          <tr><td>250 &ndash; 499</td><td>2,277</td><td>4.4%</td><td>8.9%</td><td>1.370</td><td>1.477</td><td>37.7%</td><td><div class="bar bar-bad" style="width:49%"></div></td></tr>
+          <tr><td>500 &ndash; 999</td><td>4,082</td><td>7.8%</td><td>18.0%</td><td>1.330</td><td>1.450</td><td>35.0%</td><td><div class="bar bar-warn" style="width:46%"></div></td></tr>
+          <tr><td>1,000 &ndash; 1,999</td><td>8,353</td><td>16.0%</td><td>36.1%</td><td>1.290</td><td>1.378</td><td>27.5%</td><td><div class="bar bar-warn" style="width:36%"></div></td></tr>
+          <tr class="total"><td>2,000 +</td><td>33,930</td><td>65.1%</td><td>82.9%</td><td>1.220</td><td>1.265</td><td>11.1%</td><td><div class="bar bar-ok" style="width:15%"></div></td></tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-3">
+        Mean LOTTR falls from 1.489 to 1.265 and the unreliability rate falls from 38.2% to 11.1% purely
+        as a function of how much data we have. One honest wrinkle: the very sparsest band (&lt;50 obs)
+        dips <em>below</em> the 50&ndash;249 band. That is expected — with a dozen observations the 80th
+        percentile cannot reach far into the tail, and this band also contains the handful of no-data
+        segments that publish exactly 1.00. Sparsity distorts in both directions at the extreme; it is
+        the 50&ndash;1,000 range, covering <span class="font-medium text-[#0f1722]">8,834 segments</span>,
+        where the upward bias is cleanest.
+      </p>
+    </div>
+
+    <div class="tny-card p-5 mt-5" style="border-color:rgba(180,83,9,0.35)">
+      <div class="flex items-baseline gap-2">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Overnight truck TTTR — the same effect, four times larger</div>
+        <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#B45309]">worst case</span>
+      </div>
+      <table class="tny mt-3">
+        <thead><tr><th>observations</th><th>segments</th><th>% of network</th><th>mean completeness</th><th>median TTTR</th><th>flagged &ge; 1.50</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>&lt; 50</td><td>7,311</td><td>14.0%</td><td>0.1%</td><td class="text-[#B45309] font-medium">1.970</td><td class="text-[#B45309] font-medium">75.4%</td><td style="width:130px"><div class="bar bar-bad" style="width:97%"></div></td></tr>
+          <tr><td>50 &ndash; 249</td><td>10,931</td><td>21.0%</td><td>0.9%</td><td>1.990</td><td>77.5%</td><td><div class="bar bar-bad" style="width:100%"></div></td></tr>
+          <tr><td>250 &ndash; 499</td><td>7,715</td><td>14.8%</td><td>2.5%</td><td>1.900</td><td>75.7%</td><td><div class="bar bar-bad" style="width:98%"></div></td></tr>
+          <tr><td>500 &ndash; 999</td><td>8,427</td><td>16.2%</td><td>4.9%</td><td>1.900</td><td>75.8%</td><td><div class="bar bar-bad" style="width:98%"></div></td></tr>
+          <tr><td>1,000 &ndash; 1,999</td><td>7,194</td><td>13.8%</td><td>9.7%</td><td>1.840</td><td>71.9%</td><td><div class="bar bar-bad" style="width:93%"></div></td></tr>
+          <tr class="total"><td>2,000 +</td><td>10,549</td><td>20.2%</td><td>39.0%</td><td>1.380</td><td>41.5%</td><td><div class="bar bar-warn" style="width:54%"></div></td></tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-3">
+        Median TTTR drops from 1.97 to 1.38 across the range, and the flagged rate from 77.5% to 41.5%.
+        Note that <span class="font-medium text-[#0f1722]">only 20% of segments</span> reach the
+        best-supported band at all, and even those average just 39% completeness. This measure asks the
+        95th percentile of the sparsest stream we have, in the period with the fewest vehicles. It is the
+        least trustworthy number we publish, and we publish it for five time periods.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §04 segment length ──────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">A third of our segments carry 1.5% of the mileage — and most of the bad news.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[780px]">
+      TMC segments vary from a few hundred feet to many miles. On a very short segment the travel time is
+      a handful of seconds, so where a vehicle happened to catch the signal cycle dominates the
+      measurement. Virginia found 60% of NPMRDS-flagged unreliable segments were under a quarter mile.
+      In New York the effect is stronger.
+    </p>
+
+    <div class="tny-card p-5 mt-6">
+      <table class="tny">
+        <thead><tr><th>segment length</th><th>segments</th><th>% of segments</th><th>dir. miles</th><th>% of mileage</th><th>mean worst LOTTR</th><th>flagged &ge; 1.50</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>&lt; 0.1 mi</td><td>17,394</td><td class="text-[#B45309] font-medium">33.4%</td><td>652</td><td class="text-[#B45309] font-medium">1.5%</td><td>1.633</td><td class="text-[#B45309] font-medium">56.0%</td><td style="width:120px"><div class="bar bar-bad" style="width:100%"></div></td></tr>
+          <tr><td>0.1 &ndash; 0.25 mi</td><td>7,583</td><td>14.5%</td><td>1,258</td><td>2.9%</td><td>1.428</td><td>29.9%</td><td><div class="bar bar-bad" style="width:53%"></div></td></tr>
+          <tr><td>0.25 &ndash; 0.5 mi</td><td>6,786</td><td>13.0%</td><td>2,485</td><td>5.8%</td><td>1.359</td><td>18.6%</td><td><div class="bar bar-warn" style="width:33%"></div></td></tr>
+          <tr><td>0.5 &ndash; 1 mi</td><td>7,962</td><td>15.3%</td><td>5,740</td><td>13.4%</td><td>1.315</td><td>12.2%</td><td><div class="bar bar-warn" style="width:22%"></div></td></tr>
+          <tr class="total"><td>&ge; 1 mi</td><td>12,402</td><td>23.8%</td><td>32,711</td><td>76.3%</td><td>1.235</td><td>7.3%</td><td><div class="bar bar-ok" style="width:13%"></div></td></tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-3">
+        Perfectly monotonic in both directions: as segments get shorter, mean LOTTR rises and the flagged
+        rate rises. The sub-0.1-mile band alone holds <span class="font-medium text-[#0f1722]">17,394
+        segments</span> — a third of the network by count, 1.5% by mileage — and more than half of them
+        are reported as unreliable. Any statewide statistic computed per-segment rather than per-mile is
+        largely a statement about these segments.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §05 weighting ──────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">&ldquo;How much of the network is unreliable?&rdquo; has three defensible answers.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[780px]">
+      Because short segments are both over-represented in count and over-flagged, the headline number
+      depends heavily on a choice most readers never see being made.
+    </p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+      <div class="tny-card p-4">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">weighted by segment count</div>
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309] mt-2">29.1%</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">Every segment counts once, so a 300-foot ramp counts as much as a 10-mile rural corridor. Mean AM LOTTR 1.321.</p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">weighted by mileage</div>
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0F1722] mt-2">9.2%</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">Each mile of road counts once. Mean AM LOTTR 1.200.</p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">weighted by VMT</div>
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0F1722] mt-2">17.8%</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">Miles &times; directional AADT — closest to &ldquo;what travellers experience&rdquo;. Mean AM LOTTR 1.183.</p>
+      </div>
+    </div>
+    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-4 max-w-[780px]">
+      A <span class="font-medium text-[#0f1722]">3.2&times; spread</span> from the weighting choice alone.
+      VMT weighting sitting between the other two is informative: the flagged short segments are not
+      merely numerous, some of them do carry real traffic. But reporting the 29.1% figure without saying
+      it is segment-counted would substantially overstate the problem.
+    </p>
+  </section>
+
+  <!-- ── §06 outliers ───────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Outliers are rare, unfiltered, and land exactly where they do the most damage.</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
+      <div class="tny-card p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Physically impossible values, CY2025</div>
+        <table class="tny mt-3">
+          <thead><tr><th>check</th><th>records</th><th>share</th></tr></thead>
+          <tbody>
+            <tr><td>Travel time &le; 0</td><td>0</td><td>0%</td></tr>
+            <tr><td>Travel time &lt; 1 second</td><td>8,292,469</td><td>0.49%</td></tr>
+            <tr><td>Travel time &lt; 2 seconds</td><td>38,369,841</td><td>2.26%</td></tr>
+            <tr><td>Travel time &gt; 1 hour</td><td>148,308</td><td>0.01%</td></tr>
+            <tr class="total"><td>Range observed</td><td colspan="2" class="text-left">0.09 s &rarr; 20,445 s (5.7 hours)</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-3">
+          No TMC segment can be traversed in 0.09 seconds. Our only filter is
+          <span class="tny-mono">tt &gt; 0</span>, which these all pass. They are not discarded, not
+          capped, and — being extreme — they sit in the tail that LOTTR's 80th percentile and TTTR's 95th
+          percentile read from.
+        </p>
+      </div>
+      <div class="tny-card p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Internal contradiction: trucks &ldquo;faster&rdquo; than cars</div>
+        <table class="tny mt-3">
+          <thead><tr><th>comparison</th><th>records</th><th>share</th></tr></thead>
+          <tbody>
+            <tr><td>Both streams present</td><td>438,864,081</td><td>&mdash;</td></tr>
+            <tr><td>Trucks faster than passenger cars</td><td>158,789,462</td><td class="text-[#B45309] font-medium">36.2%</td></tr>
+            <tr><td>Trucks &gt;20% faster</td><td>55,215,461</td><td>12.6%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-3">
+          This is an assumption-light error signal that needs no ground truth: on the same segment in the
+          same 5 minutes, trucks are reported faster than cars in over a third of records. NCHRP found
+          25&ndash;35% in 2014
+          (<a class="tny-link" href="research/01-nchrp-854-appendix-c-probe-data-quality-control.md">NCHRP 854</a>);
+          we measure 36.2% in 2025, so this has not improved.
+        </p>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-tint p-5 mt-5">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">Prevalence is not leverage — and our pipeline skips the step everyone recommends</div>
+      <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-2">
+        A 0.49% contamination rate sounds ignorable, and for a <em>mean</em> it is — one group found
+        outliers had &ldquo;negligible effect on summary statistics&rdquo;. But that is a statement about
+        averages. For an 80th percentile computed from four observations, one impossible value can move
+        the answer entirely. The published work is unambiguous about the fix: convert travel time to
+        <span class="font-medium text-[#0f1722]">speed</span>, screen it (&lt;2 mph, &lt;5 mph, &gt;75 mph,
+        class-specific caps), <em>then</em> aggregate. We aggregate raw travel times in ClickHouse and
+        never form a speed at all outside the percentile-speed metric — so none of those screens can fire.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §07 limits ─────────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What this report does <span class="italic">not</span> establish.</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+      <div class="tny-card p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">We have no ground truth.</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          The sample-size gradient is strong evidence that sparse segments are biased, but it does not
+          prove the well-observed value is correct. Establishing true error needs a second source
+          (Bluetooth re-identification, floating-car runs, or a vendor comparison) that we do not hold.
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">Correlation, not decomposition.</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          Short segments have both fewer probes and more quantization error, and rural segments have both
+          fewer probes and genuinely different traffic. We have not separated &ldquo;sparsity bias&rdquo;
+          from &ldquo;short-segment measurement error&rdquo; from &ldquo;real rural variability&rdquo;. The
+          down-sampling experiments in the research plan are designed to do that.
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">PHED and TED are unexamined.</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          Eight of our eleven metrics are the PHED/TED family. They embed a 15th-percentile free-flow
+          threshold — itself a small-sample quantile — and multiply through AADT and vehicle occupancy.
+          No published work covers their sensitivity, and this report does not either.
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">A precision floor we cannot remove.</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          The federal rule requires LOTTR to hundredths. ClickHouse's parallel float averaging is
+          order-dependent, and we measured 13 values out of 4.95 million flipping by 0.01 between two
+          identical runs. Small, but it means bit-exact reproducibility is not currently achievable.
+        </p>
+      </div>
+    </div>
+    <div class="tny-card tny-card-ink p-5 mt-5">
+      <div class="font-display font-medium text-[15px]">One thing is not in doubt</div>
+      <p class="font-proxima text-[12.5px] leading-[1.65] mt-2 text-white/85">
+        Whatever the true values are, we currently publish every measure with
+        <span class="text-white font-medium">no indication of how much data is behind it</span> — a
+        segment with 4,176 observations and one with 12 look identical in the table, on the map, and in
+        any statewide roll-up. NPMRDS already tells us the answer in a column we load and ignore. Making
+        confidence visible changes no reported value and is the cheapest improvement available.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── footer ─────────────────────────────────────────────────────── -->
+  <footer class="py-9">
+    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-3">sources &amp; method</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 font-proxima text-[12px] leading-[1.6] text-slate-600">
+      <div>
+        <span class="font-medium text-[#0f1722]">Measured by us (CY2025).</span> Probe data:
+        <span class="tny-mono">npmrds.s583_v982_NPMRDS_V6</span>, 1,695,358,623 rows, source 583.
+        Measures: <span class="tny-mono">pm3.s2103_v3625_pm3_v2</span>, source 2103 / view 3625,
+        52,127 TMCs, published 2026-08-07. Every query is recorded in
+        <a class="tny-link" href="analysis-plan.md">analysis-plan.md</a>; full-year aggregations ran in
+        2&ndash;6 seconds each.
+      </div>
+      <div>
+        <span class="font-medium text-[#0f1722]">Literature.</span> Seven sources indexed in
+        <a class="tny-link" href="research/00-index.md">research/00-index.md</a>, synthesized in
+        <a class="tny-link" href="synthesis.md">synthesis.md</a>. Principal: VTRC 26-R23 (2025),
+        NCHRP 854 App. C, 23 CFR 490.509/.511, ODOT FHWA-OK-17-02 (2017).
+      </div>
+      <div class="md:col-span-2 pt-2 border-t border-zinc-950/05">
+        <span class="font-medium text-[#0f1722]">Sample-size definition.</span> &ldquo;Observations&rdquo;
+        means distinct 15-minute bins with a positive travel time for the relevant vehicle stream, within
+        the period's hours and days-of-week, across the full calendar year — i.e. exactly the vector
+        handed to <span class="tny-mono">quantile()</span> in
+        <span class="tny-mono">calcTtrMeasure.js</span>. Hour = <span class="tny-mono">intDiv(epoch,12)</span>,
+        15-minute bin = <span class="tny-mono">intDiv(epoch,3)</span>,
+        day-of-week = <span class="tny-mono">toDayOfWeek(date,2)</span> (verified Sunday=0, Saturday=6, so
+        the weekend period does capture both days).
+      </div>
+      <div class="md:col-span-2 pt-2">
+        <span class="font-medium text-[#0f1722]">Next.</span>
+        <a class="tny-link" href="measure-sensitivity-research-plan.md">measure-sensitivity-research-plan.md</a>
+        proposes the experiments that would turn these correlations into quantified error, and the
+        calculation changes worth testing.
+      </div>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

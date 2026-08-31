@@ -1,7 +1,19 @@
-# MitigateNY HMP transcription skills
+# MitigateNY site skills
 
-How-to guides for transcribing county Hazard Mitigation Plans into MitigateNY 2.0
-(app `mitigat-ny-prod`).
+How-to guides for MitigateNY 2.0 (app `mitigat-ny-prod`): transcribing county Hazard Mitigation
+Plans into it, and applying QA-report findings back to it.
+
+**The county-template fix family.** Three of the skills below are one workflow, read in this order —
+build or take a finding, apply it to `county_template`, then push it retroactively into the three
+county drafts duplicated off it:
+[`cataloguing-and-fixing-data-fetch-mode.md`](./cataloguing-and-fixing-data-fetch-mode.md) (build a
+component-setting finding from scratch) →
+[`applying-report-fixes-to-a-live-site.md`](./applying-report-fixes-to-a-live-site.md) (the
+freeze → baseline → apply → validate loop) →
+[`propagating-county-template-changes-to-duplicates.md`](./propagating-county-template-changes-to-duplicates.md)
+(the cross-pattern mapping). The first was written for `T6-001` (Data Fetch Mode) and the other two
+for `T5` (44 CFR requirement tags), but only the first is finding-specific: the loop and the mapping
+are the same for any per-component setting.
 
 > **Where these live and why.** They are committed here, alongside the MitigateNY project's task
 > docs, rather than in [`src/dms/skills/`](../../../src/dms/skills/README.md) — that directory is the
@@ -25,6 +37,9 @@ How-to guides for transcribing county Hazard Mitigation Plans into MitigateNY 2.
 | [`loading-annexes-into-jurisdictions-dataset.md`](./loading-annexes-into-jurisdictions-dataset.md) | MitigateNY **1.0-site** annexes → the Jurisdictions dataset columns; the write path in depth (Schenectady, Delaware). ⚠ its §4 read-path guidance is marked obsolete in-file — `dms dataset query` now reads split rows anonymously, lexical columns included. |
 | [`loading-a-plan-into-a-2.0-pattern.md`](./loading-a-plan-into-a-2.0-pattern.md) | Loading a transcribed plan's **narrative** into a 2.0 county pattern's Annotation slots (enumerate → inventory → crosswalk → fill → verify). Established on Schenectady, applied to Delaware. |
 | [`mny-1.0-scraper/README.md`](./mny-1.0-scraper/README.md) | The source is a live **MitigateNY 1.0** county site (`<county>.mitigateny.org`) that must be scraped to markdown first. |
+| [`applying-report-fixes-to-a-live-site.md`](./applying-report-fixes-to-a-live-site.md) | Turning a row from a QA report in `src/themes/mny/design/reports/` into a **verified edit on the live site** via the CLI: freeze the tab → baseline the section → apply → validate that nothing else moved. Read it before writing to any section a report names. Also: how an author's `Notes` triage (`Needs Tag` / `Unnecessary` / `Deleted`) drives a run, what an admin-UI delete really writes, and how to tell a mis-resolved id from a component that no longer exists. |
+| [`propagating-county-template-changes-to-duplicates.md`](./propagating-county-template-changes-to-duplicates.md) | Every `county_template` fix has to be applied retroactively to the county drafts (`suffolk_draft` 2249247, `schenectady_draft` 2304223, `delaware_draft` 2323808), whose section ids are all different. The mapping layer: the pattern registry, what duplication preserves (`trackingId` mostly, not always), the three-tier matching ladder, and why a source row's `Notes` must be recomputed against the target. Feeds the fix-loop skill above. |
+| [`cataloguing-and-fixing-data-fetch-mode.md`](./cataloguing-and-fixing-data-fetch-mode.md) | The finding has to be **built** before it can be fixed: inventorying a *component setting* pattern-wide. Where `Data Fetch Mode` actually lives (inside `element-data`, not beside `tags`), why an unset value is not the same as a broken one, how external vs internal is really determined (`isDms`, not the picker's label text), and the one thing the fix loop cannot do yet — a targeted nested-key write. Third in the county-template fix family. |
 
 ## The two-layer structure
 
@@ -81,6 +96,7 @@ and expect county-specific constants inside.
 | [`scripts/schenectady/`](./scripts/schenectady/) | The 1.0-site pipeline: `enumerate.mjs`/`build_inventory.mjs`/`fill_slot.mjs`, annex tooling (`annex_lib.mjs`, `gen_crosswalk_csv.mjs`, `write_annexes.mjs`), `lexical.mjs`, `fq.js` |
 | [`scripts/delaware/`](./scripts/delaware/) | The same pipeline, second application — the cleaner copy of several scripts |
 | [`scripts/nassau/`](./scripts/nassau/) | The Hagerty pipeline, in run order: `preflight.py` (spine + table-shape scan) → `inventory.py` (every file, with docx content probes) → `build_manifest.py` (folder → authoritative files) → `build_aliases.py` (→ geoid, asserts collision-free) → `reconcile_matrix.py` (attendance matrix vs annexes) → `schema_dump.py` / `preload_flags.py` / `verify_hoc.py` (live schema + insert-vs-update census) → **`annex_lib.py` + `extract_annexes.py` + `extract_maws.py` + `extract_baseplan.py`** (Phase 6) → `qa_assertions.py` (punch-list). Plus `extract_independent_plan.py` (labelled-prose parser for a standalone jurisdictional plan — shares none of the docx machinery), `align_independent_plan.py` (reshapes it into the annex envelope, asserting nothing altered or dropped) and `verify_group.py` (asserts one code path reads all 52 records). `annex_lib` adds `cell_lines()` and footnote-tolerant table classification on top of `scripts/suffolk/docx_outline2.py`. |
+| [`scripts/report_fixes/`](./scripts/report_fixes/) | **Not county-specific.** The report-fix loop's tooling: `export_tab.py` (freeze a report tab), `baseline.mjs`, `apply.mjs`, `remove_from_page.mjs`, `mark_page_changed.mjs`, `validate.mjs`, `rollback.mjs`, `page_scan.mjs`, `fix_lib.mjs`, the cross-pattern pair `scan_pattern.mjs` / `match_patterns.py`, and the T6 pair `scan_fetchmode.mjs` / `build_fetchmode_report.py` (inventory a pattern's data components and render the CSV/XLSX/HTML tracking report). Report-driven and constant-free — see the three skills above. |
 | [`mny-1.0-scraper/`](./mny-1.0-scraper/) | Puppeteer scraper for 1.0 county sites + its own `package.json` (`"type":"commonjs"`, deliberately overriding the repo root) |
 
 **Auth is the CLI's job, not these skills'.** No credentials appear anywhere in this tree, and none

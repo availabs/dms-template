@@ -1,0 +1,83 @@
+-- Validated routing queries, extracted from the conflation-repo dry runs (2026-08-03).
+-- See ROUTING_LOG.md in this folder for full narrative/results. These are the actual queries
+-- that were run and confirmed correct/working -- use as the starting point for the real backend
+-- implementation (see ../../planning/tasks/current/point-to-point-routing-plugin.md, Phase 1).
+--
+-- All queries below assume Postgres + the pgrouting extension (confirmed installed, v3.8.0) and
+-- a published conflation view's tables: <conflation_table>, <conflation_table>_nodes,
+-- <conflation_table>_edges, <conflation_table>_relations (e.g. temp.osm_conflation_1_2024_*).
+
+-- ============================================================================
+-- 1. Point snapping: raw lat/lon -> nearest graph node
+-- ============================================================================
+-- Confirmed: 41.8ms for 2 points against 5,080,761 nodes (2024), landing within 44m/11m of the
+-- requested coordinates. Works because <table>_nodes already has a GIST index on wkb_geometry
+-- (created by TheConflationator/loadConflation.mjs's generateNodesTable in the conflation repo).
+
+-- SELECT osm_id, lon, lat,
+--        ST_Distance(wkb_geometry::geography, ST_SetSRID(ST_MakePoint($lon,$lat),4326)::geography) AS dist_m
+-- FROM temp.osm_conflation_1_2024_nodes
+-- ORDER BY wkb_geometry <-> ST_SetSRID(ST_MakePoint($lon,$lat),4326)
+-- LIMIT 1;
+
+-- ============================================================================
+-- 2. Build the turn-restriction table pgRouting expects, from the persisted relations table
+-- ============================================================================
+-- Confirmed: 13,964 real restriction edge-pairs built in 8.9s against 2024's data.
+-- IMPORTANT LIMITATION: only handles single-node `via` relations (the common case). 1,540 of
+-- 2024's 21,018 relations have a multi-way `via` (a chain of ways) and are excluded here --
+-- see ROUTING_API_TASKS.md Task A3, not yet solved.
+
+-- CREATE TEMP TABLE full_restrictions AS
+-- WITH rel AS (
+--   SELECT osm_id,
+--     (SELECT (m->>'id')::bigint FROM jsonb_array_elements(members) m WHERE m->>'role'='from' LIMIT 1) AS from_way,
+--     (SELECT (m->>'id')::bigint FROM jsonb_array_elements(members) m WHERE m->>'role'='to' LIMIT 1) AS to_way,
+--     (SELECT (m->>'id')::bigint FROM jsonb_array_elements(members) m WHERE m->>'role'='via' AND m->>'type'='node' LIMIT 1) AS via_node,
+--     (SELECT count(*) FROM jsonb_array_elements(members) m WHERE m->>'role'='via') AS via_count
+--   FROM temp.osm_conflation_1_2024_relations
+--   WHERE resolved = true
+-- ),
+-- single_via AS (
+--   SELECT * FROM rel WHERE via_node IS NOT NULL AND via_count = 1
+-- )
+-- SELECT DISTINCT fe.ogc_fid AS from_edge, te.ogc_fid AS to_edge
+-- FROM single_via r
+-- JOIN temp.osm_conflation_1_2024_edges fe ON fe.osm = r.from_way AND fe.to_node = r.via_node
+-- JOIN temp.osm_conflation_1_2024_edges te ON te.osm = r.to_way AND te.from_node = r.via_node;
+
+-- ============================================================================
+-- 3. The actual turn-restriction-aware shortest path call: pgr_trsp
+-- ============================================================================
+-- Confirmed CORRECT (matches graphology's edge-expansion answer exactly on both a synthetic
+-- forced-restriction case and real data) and confirmed SCALABLE (62s for a real ~150mi query
+-- across the full 9,657,306-edge / 5,080,761-node 2024 network, all 13,964 restrictions active).
+--
+-- DO NOT use pgr_turnRestrictedPath instead -- confirmed BROKEN in this pgRouting install (3.8.0):
+-- on a synthetic case built to force a restriction to matter, it returned the banned path anyway
+-- with a corrupted Infinity mid-path cost instead of rerouting. pgr_trsp is the one that works.
+--
+-- Signature used (one-to-one): pgr_trsp(edges_sql, restrictions_sql, from_vid, to_vid, directed)
+-- edges_sql must return: id, source, target, cost, reverse_cost
+-- restrictions_sql must return: cost, path (a bigint[] of edge ids representing the banned sequence)
+
+-- SELECT * FROM pgr_trsp(
+--   'SELECT ogc_fid AS id, from_node AS source, to_node AS target,
+--           ST_Length(wkb_geometry::geography) AS cost, -1::float AS reverse_cost
+--    FROM temp.osm_conflation_1_2024_edges',
+--   'SELECT 1000000::float AS cost, ARRAY[from_edge, to_edge] AS path FROM full_restrictions',
+--   $source_node_id, $dest_node_id, true
+-- );
+-- Returns rows: seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost (last row's agg_cost
+-- is total route distance in meters; assemble `node`/`edge` sequence into a GeoJSON LineString by
+-- joining back to <table>_edges.wkb_geometry per edge, in seq order).
+
+-- ============================================================================
+-- Known gaps not yet solved (see ROUTING_API_TASKS.md for full task tracking)
+-- ============================================================================
+-- - Multi-way `via` restriction chains (query #2 only handles single-node via)
+-- - Attribute-based hard filters (access/hgv/maxweight/maxheight -- not captured in the source
+--   conflation pipeline at all yet, see the conflation repo's ROUTING_TASKS.md Task 2)
+-- - The nearest-edge/node snapping query above is NOT yet parameterized per-conflation-view in
+--   any real endpoint -- avail-falcor's existing (buggy) osm.routing.js hardcodes one global
+--   table instead of the resolved per-view table; don't repeat that bug in a new implementation.

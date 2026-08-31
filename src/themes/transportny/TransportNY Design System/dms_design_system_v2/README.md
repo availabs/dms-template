@@ -503,6 +503,16 @@ to the site's `index.css`. The fonts in `assets/fonts/` (Oswald +
 Source Sans 3) need to be served at `/themes/transportny/fonts/`
 (or wherever the `@font-face` URLs point).
 
+**Screenshots (new 2026-08-27).** `assets/screens/` holds captures of the
+running application, used by the two NPMRDS documentation pages. They are
+the first image assets in this design system. Before adding one, read
+[`assets/screens/README.md`](./assets/screens/README.md) — it carries the
+capture convention (real tool only; every figure names the state that
+produced it; annotate with CSS overlays, never baked into the PNG) and the
+auth/dev-server recipe, including the two traps that each cost a run:
+the token must be minted against the app's real API host, and URL
+parameters do not set macro-view state — drive the UI.
+
 **When you change a token:** update `theme/theme.js`, then mirror the
 new class string into any mockup HTML that demos the affected
 primitive (`grep` for the old string across `design-system/*.html`
