@@ -31,12 +31,24 @@
  * swallowing most of the network; edges that re-label every time the underlying data shifts,
  * making year-over-year comparison impossible). A fixed, round-number scale is more legible and
  * never moves — refinable later via Map's own existing color/legend settings UI, same "smart
- * default, editable after" contract as every other composed field in this file. The numbers below
- * are the same placeholder range route_map.py already ships (DEFAULT_SPEED_COLOR_RANGE + its
- * placeholder breaks), not independently re-derived.
+ * default, editable after" contract as every other composed field in this file.
+ *
+ * Round 80 (2026-08-27): this used to be an inline `CHOROPLETH_DEFAULTS` const AND `bin-method:
+ * 'quantile'` — meaning the "fixed" intent above was aspirational, not real: the live Map runtime
+ * (ComponentRegistry/map/index.jsx) still called the live `colorDomain` UDA endpoint on every
+ * render whenever bin-method isn't `'custom'`, silently overriding these defaults with a fresh
+ * per-render quantile computation (confirmed via live network capture). Both the values AND the
+ * "actually stay fixed" behavior now come from the shared `colorBreaks.json` (also read by
+ * `route_map.py`, so the converter and the live-authoring UI can never independently drift —
+ * same principle vocabulary.json already established for measure expressions) and `bin-method:
+ * 'custom'` (the Map runtime's own pre-existing escape hatch — already implemented, just unused
+ * by anything until now). Ryan's explicit direction: ship colorBreaks.json's existing
+ * placeholder-quality numbers now (same ones this file used inline before), not blocked on a real
+ * distribution analysis — see that file's own header for the tracked follow-up.
  */
 
 import { GRAPH_VOCAB, ensureSelfBoundSubscriber } from './composeMeasureConfig';
+import colorBreaks from './colorBreaks.json';
 import { choroplethPaint } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/utils';
 import { buildJoin } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 
@@ -72,81 +84,12 @@ export const MAP_MEASURE_OPTIONS = [
     { value: 'avgCo2Emissions_truck', label: 'Avg. CO2 Emissions (tonnes) — Truck' },
 ];
 
-// Fixed choropleth breaks/colors per measure — see this file's header for why these are authored
-// constants, not a live query. `maxValue` only affects the top bin's open-ended reading in the
-// legend (choroplethPaint's own `max_value` param), never clamps real data. Same numbers
-// route_map.py already ships as ITS OWN placeholder (pre-live-bake) values for these exact
-// measures — not independently re-derived, and not re-verified against a real distribution the
-// deliberate way MacroView's breaks.js was; a real future refinement, not blocking this ship.
-// travelTime/hoursOfDelay/avgHoursOfDelay all have `reverseColors: true` in vocabulary.json (low
-// value = good = green, high = bad = red) — baked directly into the color order below, not
-// computed from the flag at runtime, same as speed's own (non-reversed) order.
-const REVERSED_SPEED_RANGE = ['#ce141f', '#e1631a', '#ec962a', '#f3c048', '#f7e76e'];
-const CHOROPLETH_DEFAULTS = {
-    speed: {
-        colors: ['#f7e76e', '#f3c048', '#ec962a', '#e1631a', '#ce141f'],
-        breaks: [15, 30, 45, 60],
-        maxValue: 80,
-    },
-    travelTime: {
-        colors: REVERSED_SPEED_RANGE,
-        breaks: [3, 7, 15, 30],
-        maxValue: 45,
-    },
-    hoursOfDelay: {
-        colors: REVERSED_SPEED_RANGE,
-        breaks: [5, 20, 50, 100],
-        maxValue: 200,
-    },
-    // vocabulary.json's avgHoursOfDelay.expr (sum(hourly delay) / count(DISTINCT date)) is a
-    // resolution-INVARIANT per-day rate — the same expression every chart already uses regardless
-    // of bucket size — so these breaks are the "day" set (route_map.py separately authors a much
-    // smaller 5-minute-epoch-rate set for ITS OWN resolution-keyed Map expression, which this file
-    // deliberately does NOT use — see this file's header note on why).
-    avgHoursOfDelay: {
-        colors: REVERSED_SPEED_RANGE,
-        breaks: [0.1, 0.5, 1, 3],
-        maxValue: 5,
-    },
-    // gap #16 (report-authoring-ux-overhaul.md Tier 10, 2026-08-24): no Python precedent to port —
-    // route_map.py never built a CO2 choropleth (only REVERSE_COLORS_MEASURES lists co2Emissions/
-    // avgCo2Emissions as reverse-colored, confirming the polarity below, nothing else). Breaks
-    // authored from one real live data point (a low-traffic 0.2mi/single-TMC route, full calendar
-    // month): co2Emissions_passenger 2.98t, co2Emissions_truck 1.36t — same cumulative-sum shape as
-    // hoursOfDelay, scaled down roughly 10x for this measure's own units. Same "fixed, refinable
-    // later" contract as every other entry in this file — not independently re-verified against a
-    // real distribution of routes.
-    co2Emissions_passenger: {
-        colors: REVERSED_SPEED_RANGE,
-        breaks: [1, 5, 15, 30],
-        maxValue: 50,
-    },
-    co2Emissions_truck: {
-        colors: REVERSED_SPEED_RANGE,
-        breaks: [1, 5, 15, 30],
-        maxValue: 50,
-    },
-    // avgCo2Emissions_* is a per-epoch (5-minute-bucket) mean, NOT a per-day rate like
-    // avgHoursOfDelay (whose own vocabulary.json expr divides by count(DISTINCT date) internally —
-    // this measure's `fn:"avg"` just averages the raw per-epoch value as-is) — three orders of
-    // magnitude smaller. First guess (0.0005 floor) live-verified WRONG 2026-08-24: a real
-    // low-traffic single-TMC route's live tile value fell entirely below it (rendered as
-    // out-of-range grey, legend readout "0 - 0" after rounding) — its true value is ~0.0002-0.0004,
-    // confirmed by cross-checking Table's own summed co2Emissions_passenger (2.98t) against this
-    // route's ~8640 5-minute epochs for the month (2.98/8640 ≈ 0.00034, consistent with the
-    // out-of-range render). Breaks lowered accordingly; still a single-data-point placeholder, not
-    // verified across a real distribution.
-    avgCo2Emissions_passenger: {
-        colors: REVERSED_SPEED_RANGE,
-        breaks: [0.0001, 0.0003, 0.0006, 0.0015],
-        maxValue: 0.003,
-    },
-    avgCo2Emissions_truck: {
-        colors: REVERSED_SPEED_RANGE,
-        breaks: [0.0001, 0.0003, 0.0006, 0.0015],
-        maxValue: 0.003,
-    },
-};
+// Fixed choropleth breaks/colors per measure — see this file's header for the round-80 shared-file
+// migration and why these are authored constants, not a live query. `maxValue` only affects the
+// top bin's open-ended reading in the legend (choroplethPaint's own `max_value` param), never
+// clamps real data. Per-measure provenance (placeholder vs. real-distribution-derived) lives in
+// colorBreaks.json itself now, not here.
+const CHOROPLETH_DEFAULTS = colorBreaks.measures;
 
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Map had NO title auto-compose at all —
 // confirmed by reading this whole file, zero references to `display.title` anywhere in it, unlike
@@ -284,7 +227,14 @@ function buildChoroplethLayer({ measureKey, year, apiHost }) {
         'series-feature-column': 'tmc',
         'layer-type': 'choropleth',
         'data-column': 'value',
-        'num-bins': defaults.colors.length, 'bin-method': 'quantile',
+        'num-bins': defaults.colors.length,
+        // Round 80: 'custom' (not 'quantile') — the Map runtime's own existing
+        // escape hatch (ComponentRegistry/map/index.jsx) that skips the live
+        // colorDomain refetch entirely and trusts this layer's own baked
+        // paint/legend-data permanently. This is the one line that makes the
+        // "fixed breaks" intent above actually real at render time, not just
+        // at compose time — see this file's header comment.
+        'bin-method': 'custom',
         'color-range': defaults.colors,
         'legend-data': painted.legend,
         // The runtime materializes one visible clone per comparison_series variant
