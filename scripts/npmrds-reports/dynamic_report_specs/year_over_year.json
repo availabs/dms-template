@@ -1,6 +1,5 @@
 {
   "title": "Year Over Year",
-  "slug": "converted_reports/year_over_year",
   "dynamicReport": true,
   "description": "Compare year-over-year performance for a route or corridor across speed, travel time, and delay.",
   "tags": ["category:change_over_time", "difficulty:beginner"],

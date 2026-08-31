@@ -9,8 +9,8 @@ from .template_specs import MEASURE_EXPR
 from .db import dms, fetch_agency_tag, fetch_old_report, fetch_old_routes, flatten_route_comps, now_iso
 from .dates import report_is_pre_2017_only, resolve_relative_dates
 from .transforms import build_route_entry, group_route_comps, route_comp_display_name, route_comp_merge_key
-from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
-from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
+from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, load_graph_templates
+from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
 from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, resolve_tmc_array, template_framework_sections
@@ -225,31 +225,34 @@ def convert_report(old_id, dry_run=False, replace=False):
             continue  # outside the join's bucket — falls through to the
                       # generic "no template mapping" gap below, same as any
                       # other uncovered GRAPH_TEMPLATE_MAP combination
-        year = graph_max_year(info, comps_by_id)
-        bin_ = graph_reliability_bin(info, comps_by_id)
-        if year is None:
-            gaps.append({"kind": "info_box_year_undetermined", "graph": gid,
-                         "detail": "no assigned comp has a startDate/endDate "
-                                   "to period-match the pm3 join"})
-            info_box_gap_logged.add(gid)
-        elif year not in PM3_VIEW_BY_YEAR:
-            gaps.append({"kind": "info_box_year_outside_pm3_coverage", "graph": gid,
-                         "detail": f"max year {year} outside 1410's "
-                                   f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage"})
-            info_box_gap_logged.add(gid)
-        elif bin_ is None:
-            gaps.append({"kind": "info_box_bin_undetermined", "graph": gid,
-                         "detail": "assigned comp(s) don't land unambiguously on "
-                                   "exactly one of 1410's real bins (amp/midd/pmp/"
-                                   "we) — e.g. 0 or 2-3 peak flags true, a mixed "
-                                   "weekday+weekend selection, or a custom "
-                                   "startTime/endTime with no peak flag; no "
-                                   "precomputed value exists for any of those"})
-            info_box_gap_logged.add(gid)
-        else:
-            graph_templates = ensure_pm3_join_template(grain, year, bin_, graph_templates, dry_run)
-            info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
-            info_box_bin_year[gid] = (year, bin_)
+        # Round 85 (2026-08-31): INFO_BOX_BUCKET's `("speed", "travel_time_all")`
+        # is the OLD TOOL'S OWN measure key for plain average speed (mph) —
+        # confirmed directly against transportNY's real source
+        # (dataTypes.js's BASE_DATA_TYPES `{key:'speed', alias:'travelTime',
+        # ...}`, no `group`, no pm3/reliability connection whatsoever;
+        # LOTTR/TTTR/reliability appear nowhere in the report-builder's own
+        # vocabulary — only in unrelated old pages like pm3Map21/MacroView).
+        # Rounds 19/38/40/49/58 mapped this bucket to the pm3 LOTTR/TTTR/
+        # Freeflow reliability join instead, as a deliberate substitution:
+        # the old tool's *literal* LOTTR/TTTR measure keys (10 reports
+        # corpus-wide) all predate 1410's 2021+ coverage, so reliability was
+        # piggybacked onto the `speed` bucket to get a real, working demo
+        # instead of 0 corpus flips. That substitution never actually
+        # reproduced what a `speed` Info Box showed in the old tool, and
+        # gated 261 real instances (~95 reports) behind pm3 year/bin
+        # resolution for no correctness reason. Now dispatches to the real
+        # plain-speed measure instead (`SPEED_EXPR`/`ensure_info_box_speed_
+        # template`, already built+proven 2026-08-12 for the spec-driven
+        # report_build.mjs path) — no year/bin dependency at all, since the
+        # date window comes from the graph's own `_measurePick.routeWindows`
+        # at render time (same live mechanism every other measure uses),
+        # not a per-year Postgres view the way 1410 is provisioned. The
+        # reliability machinery (`ensure_pm3_join_template`/
+        # `graph_reliability_bin`) is intentionally left in place, unused
+        # here — it's the right building block for real literal LOTTR/TTTR
+        # support, a separate follow-on (see "Known functionality gaps").
+        graph_templates = ensure_info_box_speed_template(grain, graph_templates, dry_run)
+        info_box_tmpl_name[gid] = f"{grain}_info_box_speed"
 
     # Bar Graph Summary freeflow-byDateRange: same per-report/year pm3 join as
     # the Info Box reliability bucket above, but bin-independent — see

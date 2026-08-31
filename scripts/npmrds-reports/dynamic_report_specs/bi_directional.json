@@ -1,6 +1,5 @@
 {
   "title": "Bi-directional",
-  "slug": "converted_reports/bi_directional",
   "dynamicReport": true,
   "description": "This report is designed to look at the behavior of two directions of a bi-directional corridor. It is set up to show yearly averages for each year of the NPMRDS.",
   "tags": ["category:behavioral", "difficulty:intermediate"],

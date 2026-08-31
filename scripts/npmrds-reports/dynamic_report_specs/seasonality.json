@@ -1,6 +1,5 @@
 {
   "title": "Seasonality",
-  "slug": "converted_reports/seasonality",
   "dynamicReport": true,
   "description": "Speed and delay patterns across the four seasons, compared against the current year's average.",
   "tags": ["category:behavioral", "difficulty:intermediate"],

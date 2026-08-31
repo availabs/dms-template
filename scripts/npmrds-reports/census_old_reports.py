@@ -51,7 +51,7 @@ from convert_old_reports import (  # noqa: E402
     ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE, REPORTS_SNAP_TABLE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
     resolve_difference_pair, report_is_pre_2017_only,
-    aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
+    aadt_override_of, graph_max_year, psql_old, psql_new,
 )
 
 OUT_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/census")
@@ -85,21 +85,33 @@ BUILDABLE_TYPES = {"Route Line Graph", "Route Bar Graph", "TMC Grid Graph",
 # 2026-07-28: the paragraph below made the IDENTICAL stale-comment mistake
 # about Route/TMC Info Box that the Route Map paragraph above warns against.
 # Rounds 19/38/40/49/58 built FIVE measure buckets, not one: reliability
-# (INFO_BOX_BUCKET, the pm3 LOTTR/TTTR/freeflow join), travel time
-# (INFO_BOX_TRAVELTIME_BUCKETS), length (INFO_BOX_LENGTH_BUCKET), AADT
-# (INFO_BOX_AADT_BUCKET), and hours of delay (INFO_BOX_DELAY_BUCKET) — all
-# classified as "mapped" by the branches below (see the `grain = ...` checks),
-# never reaching bucket_of() at all. Real corpus proof: route_info_box_
+# (INFO_BOX_BUCKET, the pm3 LOTTR/TTTR/freeflow join — RECORRECTED below),
+# travel time (INFO_BOX_TRAVELTIME_BUCKETS), length (INFO_BOX_LENGTH_BUCKET),
+# AADT (INFO_BOX_AADT_BUCKET), and hours of delay (INFO_BOX_DELAY_BUCKET) —
+# all classified as "mapped" by the branches below (see the `grain = ...`
+# checks), never reaching bucket_of() at all. Real corpus proof: route_info_box_
 # traveltime/tmc_info_box_traveltime/tmc_info_box_length/tmc_info_box_aadt/
 # route_info_box_delay/tmc_info_box_delay templates all exist and produced
 # real converted pages (old-reports-conversion.md rounds 40/49). "Route Info
 # Box"/"TMC Info Box" stay in this set ONLY to classify the genuine residual:
 # a measure outside all 5 buckets (e.g. `percentile95-byDateRange`, seen in
-# the reliability composition class — no template built for it at all) or a
-# reliability-bucket instance where graph_max_year()/graph_reliability_bin()
-# can't resolve (year outside PM3_VIEW_BY_YEAR, or genuinely undetermined).
+# the reliability composition class — no template built for it at all).
 # Read the mapped branches below, not this comment, before concluding either
-# Info Box type has no shape for a given measure.]
+# Info Box type has no shape for a given measure.] [RECORRECTED 2026-08-31,
+# round 85: INFO_BOX_BUCKET was mislabeled "reliability" above — that was
+# rounds 19-58's own deliberate substitution (the old tool's literal
+# LOTTR/TTTR measure keys have 0 real corpus overlap with 1410's coverage, so
+# reliability was piggybacked onto the `speed` bucket instead of really
+# mapping what `speed` meant), not what the old tool's `speed` measure ever
+# showed. Confirmed directly against transportNY's dataTypes.js: `speed` is
+# plain average mph, no pm3/reliability connection at all. INFO_BOX_BUCKET
+# now maps to the real plain-speed template (`{grain}_info_box_speed`) with
+# NO year/bin gate — every instance in this bucket is mapped, unconditionally,
+# once `grain` is set; there is no more year/bin-undetermined residual for it.
+# The old reliability dispatch (`graph_max_year`/`graph_reliability_bin`/
+# `PM3_VIEW_BY_YEAR`) is untouched in `graph_templates.py`/
+# `info_box_templates.py` for reuse by a real literal-LOTTR/TTTR mapping,
+# not built yet — see old-reports-conversion.md's "Known functionality gaps".]
 NO_EQUIVALENT_TYPES = {
     "Route Map", "Route Info Box", "TMC Info Box",
 }
@@ -307,14 +319,15 @@ def analyze_report(old, old_route_facts=None):
         elif grain and (info["measure"], info["data_column"]) == INFO_BOX_DELAY_BUCKET:
             mapped.append((g, info, f"{grain}_info_box_delay"))
             continue
-        elif grain:
-            in_bucket = (info["measure"], info["data_column"]) == INFO_BOX_BUCKET
-            year = graph_max_year(info, comps_by_id) if in_bucket else None
-            bin_ = graph_reliability_bin(info, comps_by_id) if in_bucket else None
-            if in_bucket and year in PM3_VIEW_BY_YEAR and bin_ is not None:
-                mapped.append((g, info,
-                               f"{grain}_info_box_reliability_{year}_{bin_}"))
-                continue
+        elif grain and (info["measure"], info["data_column"]) == INFO_BOX_BUCKET:
+            # Round 85 (2026-08-31): INFO_BOX_BUCKET's `speed` is the old
+            # tool's own plain average-speed measure (confirmed against
+            # transportNY's real dataTypes.js), not reliability — mirrors
+            # convert_report.py's now-unconditional dispatch to the plain-
+            # speed template (no year/bin gate at all; see that file's own
+            # comment on this branch for the full story).
+            mapped.append((g, info, f"{grain}_info_box_speed"))
+            continue
         elif is_route_compare:
             if (info["measure"] in MEASURE_EXPR and key[1:] == ROUTE_COMPARE_BUCKET
                     and len(info["assigned"]) >= 2):
