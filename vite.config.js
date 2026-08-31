@@ -2,7 +2,6 @@ import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import wasm from 'vite-plugin-wasm'
 
 // Progress reporter — shows module count during long transforms
 function buildProgress() {
@@ -67,10 +66,8 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
       'xhr2',                // Node-only, resolved to browser entry (CJS)
       'falcor/lib/ModelRoot', // CJS deep import from falcorGraph.js
     ],
-    // wa-sqlite bundles .wasm files that Vite's pre-bundler can't handle
     exclude: [
-      '@journeyapps/wa-sqlite', // bundles .wasm files
-      'linkedom',               // Node-only SSR dep, not needed in browser
+      'linkedom', // Node-only SSR dep, not needed in browser
     ],
   },
   build: {
@@ -97,13 +94,7 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
       'colorbrewer',  // "type":"module" but main is UMD — Vite uses "module" field (ESM)
     ],
   },
-  // wa-sqlite Web Worker needs WASM + top-level-await support
-  worker: {
-    format: 'es',
-    plugins: () => [wasm()],
-  },
   plugins: [
-    wasm(),
     // SSR: skip React Compiler (memoization is pointless for one-shot renders).
     // Dev: skip React Compiler so referential-identity bugs surface during
     // development instead of being silently masked by auto-memoization.
