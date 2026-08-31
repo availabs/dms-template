@@ -4,6 +4,7 @@ import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/c
 import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
 import { getColorRange } from '../../../../dms/packages/dms/src/ui/components/graph_new/colorSchemeUnifier';
 import { defaultRouteDateRange } from './relativeDateResolution';
+import { parseTags } from '../RouteTagBrowserModal/tagCategories';
 
 // Same palette a graph's own default series colors come from
 // (ComponentRegistry/graph_new/config.jsx's `DefaultPalette`) — reused here so a route's
@@ -34,6 +35,7 @@ function roundToFiveMinutes(dateStr) {
 // produce a brand-new array every render, which would re-trigger effects that depend
 // on `routes` (the graph-publish effect in useGraphPublish) on every render.
 const EMPTY_ROUTES = [];
+const EMPTY_TAGS = [];
 
 // The report's routes live in exactly one row of a `reports_snap_2`-shaped dataset —
 // one row per report page, keyed by `report_id` = the page's own id. This is a
@@ -86,6 +88,7 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // consumer of `reportRow` benefits from not acting on stale cross-report state.
   const reportRow = rawReportRow?.forItemId === (item?.id ?? null) ? rawReportRow : null;
   const routes = reportRow?.routes || EMPTY_ROUTES;
+  const tags = reportRow?.tags || EMPTY_TAGS;
 
   // The report STORAGE binding — this section's normal sectionMenu "Dataset" pick.
   // The Report Page template pre-wires this to `reports_snap_2`, but nothing here
@@ -150,8 +153,15 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     if (!apiLoad || !forItemId || !externalSource?.columns) return;
     const udaConfig = buildUdaConfig({
       externalSource,
+      // `tags` is force-included the same way PickerModal/fetchCatalogRows.js does, for the
+      // identical reason (round 82, old-reports-conversion.md): `externalSource.columns` is a
+      // snapshot taken when this section's Dataset binding was last configured, which predates
+      // `tags` existing on the source for every report created before this round — trusting the
+      // stale snapshot would silently never fetch it. Dropping any stale/absent `tags` entry
+      // first, same as that file.
       columns: [
-        ...externalSource.columns.map(c => ({ ...c, show: true })),
+        ...externalSource.columns.filter(c => c.name !== 'tags').map(c => ({ ...c, show: true })),
+        { name: 'tags', type: 'multiselect', options: null, show: true },
         { name: 'id', systemCol: true, show: true, sort: 'desc' },
       ],
       filters: { op: "AND", groups: [{ col: "data->>'report_id'", op: "filter", value: String(forItemId) }] }
@@ -186,16 +196,16 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
           parsedRoutes = [];
         }
         reportRowIdRef.current = row.id;
-        setReportRow({ id: row.id, routes: parsedRoutes, forItemId });
+        setReportRow({ id: row.id, routes: parsedRoutes, tags: parseTags(row.tags), forItemId });
       } else {
         reportRowIdRef.current = null;
-        setReportRow({ id: null, routes: [], forItemId });
+        setReportRow({ id: null, routes: [], tags: [], forItemId });
       }
     } catch (e) {
       if (loadTargetIdRef.current !== forItemId) return;
       console.error('<ReportRouteList:loadReportRow>', e);
       reportRowIdRef.current = null;
-      setReportRow({ id: null, routes: [], forItemId });
+      setReportRow({ id: null, routes: [], tags: [], forItemId });
     }
   };
 
@@ -235,7 +245,26 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
     const nextId = currentId || res?.id;
     reportRowIdRef.current = nextId;
-    setReportRow({ id: nextId, routes: nextRoutes, forItemId: item.id });
+    // `tags` carried over from current state, not touched by this write — the underlying
+    // `dms.data.edit` update is a JSONB merge (confirmed: dms.controller.js's `setDataById` does
+    // `data = data || $1`, not a replace), so omitting `tags` from the payload above already left
+    // it untouched in the DB; this just keeps local state in sync with that same reality instead
+    // of dropping it from the UI until the next reload.
+    setReportRow({ id: nextId, routes: nextRoutes, tags, forItemId: item.id });
+  };
+
+  // Persist a tags mutation — same shape/guards as persistRoutes, `routes` carried over from
+  // current state for the identical reason (a JSONB-merge write, but local state is a full
+  // object so it must be re-supplied on every set).
+  const persistTags = async (nextTags) => {
+    if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
+    const currentId = reportRowIdRef.current;
+    const payload = { report_id: String(item.id), tags: JSON.stringify(nextTags) };
+    if (currentId) payload.id = currentId;
+    const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
+    const nextId = currentId || res?.id;
+    reportRowIdRef.current = nextId;
+    setReportRow({ id: nextId, routes, tags: nextTags, forItemId: item.id });
   };
 
   // Comparison-series graphs (see buildUdaConfig.js) use each route's `name` as the
@@ -400,10 +429,12 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   return {
     reportRow,
     routes,
+    tags,
     saving,
     error,
     setError,
     persistRoutes,
+    persistTags,
     addRoutes,
     removeRoute,
     reorderRoutes,

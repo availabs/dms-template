@@ -49,6 +49,16 @@ export const reportRouteListTheme = {
   dynamicToggleWrapper: 'flex items-center gap-2',
   dynamicToggleLabel: 'font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 flex-1',
 
+  // Round 82 (old-reports-conversion.md, "Round B") — report tags, same chip-input shape as
+  // routes' own tag editor (SaveRouteModal.jsx's TagsInputField) but themed through t.* tokens
+  // instead of inline Tailwind, per this package's own theming convention.
+  tagsEditorWrapper: 'pt-1.5 border-t border-zinc-950/06',
+  tagsEditorLabel: 'font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1',
+  tagsEditorChips: 'flex flex-wrap items-center gap-1.5',
+  tagsEditorChip: 'flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[11px] text-blue-800',
+  tagsEditorChipRemove: 'size-3 cursor-pointer text-blue-500 hover:text-blue-700',
+  tagsEditorInput: 'flex-1 min-w-[7rem] bg-transparent outline-none text-[11px] font-proxima placeholder:text-slate-400 py-0.5',
+
   searchOuterWrapper: 'px-3 py-2 border-b border-zinc-950/05 shrink-0',
   searchInnerBox: 'h-8 px-2 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15',
   searchIcon: 'size-3.5 text-slate-400 shrink-0',

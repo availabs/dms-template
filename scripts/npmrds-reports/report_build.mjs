@@ -1649,6 +1649,12 @@ if (updateCtx) {
     sidebar: pageTemplate.sidebar || 'left',
     ...(pageTemplate.sidebarHideInView !== undefined ? { sidebarHideInView: pageTemplate.sidebarHideInView } : {}),
     ...(pageTemplate.draft_section_groups ? { draft_section_groups: pageTemplate.draft_section_groups } : {}),
+    // Compact-sidenav override (`layout.options.sideNav.activeStyle: 1`) — the
+    // template carries this but it was never copied here, so any page this
+    // script creates (or a --replace-style recreate of an existing one) lost
+    // it even though the 2026-08-07 rollout had hand-patched it onto the
+    // original 16 template pages. See compact-sidenav-margin-bug.md.
+    ...(pageTemplate.theme ? { theme: pageTemplate.theme } : {}),
     // `dynamicReport: true` is the ONLY thing that turns a page into a Dynamic
     // Report — mirrors `toggleDynamicReport` (ReportRouteList.jsx) exactly: both
     // filters always register together, `baseDate` included even though it's only

@@ -39,8 +39,15 @@ export const NYSDOT_REGIONS = [
 
 // Agency/ownership axis, `admin2.folders` type='group' filtered to real agency/MPO codes —
 // NYSDOT's own internal divisions, NYSDOT itself, and MPO/external-partner codes. Excludes
-// consultant accounts, test folders, and generic buckets found in the same raw folder list
-// (e.g. "NYSDOT CONSULTANT", "NPMRDS New Users", "Test Folder") — those aren't an agency taxonomy.
+// test folders and generic buckets found in the same raw folder list (e.g. "Test Folder").
+// Shared verbatim with report tags (round 82, old-reports-conversion.md) — Ryan's call: routes
+// and reports use the SAME agency vocabulary, not two separate lists. The last 4 entries
+// (AVAIL/MHV/NYSDOT_CONSULTANT/NPMRDS_NEW_USERS) were added for that round: they're real
+// `admin2.folders` group folders with actual REPORT membership (347/870 reports across all 8
+// agency folders) that hadn't shown up in the original route-side taxonomy pass. The Python
+// converter (`scripts/npmrds-reports/convert_old_reports_lib/db.py`'s `fetch_agency_tag`) writes
+// `agency:<code>` tags using its own hardcoded copy of the old-folder-name → code mapping for
+// exactly these 8 — keep that dict's codes in sync with this list if either changes.
 export const AGENCY_CODES = [
   { code: 'NYSDOT', label: 'NYSDOT' },
   { code: 'WLD', label: 'WLD (Week-Long Deployment)' },
@@ -60,6 +67,10 @@ export const AGENCY_CODES = [
   { code: 'PDCTC', label: 'PDCTC' },
   { code: 'SMTC', label: 'SMTC' },
   { code: 'UCTC', label: 'UCTC' },
+  { code: 'AVAIL', label: 'AVAIL' },
+  { code: 'MHV', label: 'MHV' },
+  { code: 'NYSDOT_CONSULTANT', label: 'NYSDOT Consultant' },
+  { code: 'NPMRDS_NEW_USERS', label: 'NPMRDS New Users' },
 ];
 
 // Provenance flag, not a value-pair — a single folder, always shown.
@@ -97,4 +108,28 @@ TAG_LABEL_BY_VALUE.set(AUTO_GENERATED_TAG, 'Auto-generated');
 
 export function tagToLabel(tag) {
   return TAG_LABEL_BY_VALUE.get(tag) || tag;
+}
+
+// The reverse direction of tagToLabel, for free-form entry points (ReportTagsEditor.jsx,
+// SaveRouteModal.jsx's TagsInputField) that let an author type a tag rather than pick one from
+// the fixed-vocabulary browse tree. 2026-08-31 bug (old-reports-conversion.md, "Round 83"):
+// typing the bare code/label of a KNOWN category value (e.g. "AVAIL") committed the raw text
+// verbatim instead of the canonical prefixed value ("agency:AVAIL") the Tag Browser's
+// array_contains filter actually matches on — the tag then displayed correctly (tagToLabel falls
+// back to the raw string, which coincidentally read the same) but was permanently unfindable by
+// category. Case-insensitively matches typed text against every known value's code/label and
+// returns the canonical `prefix:value` form when found; falls through to the trimmed raw text
+// unchanged for genuine free-form tags (a project number, a scratch label) — those are not
+// supposed to resolve to anything, this only closes the gap for text that collides with a value
+// already in the fixed vocabulary.
+export function canonicalizeTag(rawText) {
+  const text = (rawText || '').trim();
+  if (!text) return text;
+  const q = text.toLowerCase();
+  for (const category of TAG_CATEGORIES) {
+    for (const v of category.values) {
+      if (v.value.toLowerCase() === q || v.label.toLowerCase() === q) return v.value;
+    }
+  }
+  return text;
 }

@@ -2,18 +2,19 @@
   "_provenance": "Round 80 (2026-08-27, old-reports-conversion.md) -- the single shared source of truth for NPMRDS's static color scales, read by both composeMapConfig.js/composeMeasureConfig.js (JS) and route_map.py (Python), mirroring vocabulary.json's cross-language pattern. Created to replace per-report/per-section DYNAMIC color scales (Route Map's live ClickHouse quantile bake, GridGraph/BarGraph's data-computed min/max) with FIXED, author-chosen breaks -- same design precedent as src/themes/transportny/components/macroview/breaks.js (see that file's own header for the full incident history this avoids: one color swallowing most of the network, a legend that re-labels every time the underlying data shifts). Ryan's explicit direction (2026-08-27): ship with the existing placeholder values (composeMapConfig.js's prior CHOROPLETH_DEFAULTS, route_map.py's matching Python constants) rather than block on a real distribution analysis -- 'ship with placeholder, then we can follow up with real breaks'. Every `measures` entry below is that same placeholder-quality data, NOT independently re-derived or re-verified against a real value distribution the deliberate way MacroView's own breaks.js was (see that file's header for the analysis MacroView got: real per-column distributions across 57 columns x 5 year views). This is a real, tracked follow-up, not a rounding error -- flagged per-measure below where the provenance is especially weak (single-data-point CO2 guesses).",
   "measures": {
     "speed": {
-      "colors": ["#f7e76e", "#f3c048", "#ec962a", "#e1631a", "#ce141f"],
+      "colors": ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"],
       "breaks": [15, 30, 45, 60],
       "maxValue": 80,
       "domain": [0, 80],
-      "_source": "route_map.py's original DEFAULT_SPEED_COLOR_RANGE + placeholder breaks -- round numbers, not independently re-derived from a real speed distribution."
+      "_source": "Round 82 (2026-08-31, user-reported): the original placeholder was a pure yellow-to-red warm ramp with no green at all, so a speed choropleth never read as 'green = fast' the way old-tool authors could configure per-report via color_range. Replaced with the standard ColorBrewer RdYlGn 5-class diverging ramp (red/orange/pale-yellow/light-green/dark-green), low-to-high bucket order matching speed's un-reversed application (speed is deliberately absent from REVERSE_COLORS_MEASURES) -- slow (<15mph) = red, fast (60-80mph) = green. Breaks/domain unchanged from the original placeholder (still not independently re-derived from a real speed distribution -- same follow-up flagged in the file header)."
     },
     "speedTruck": {
-      "colors": ["#f7e76e", "#f3c048", "#ec962a", "#e1631a", "#ce141f"],
+      "colors": ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"],
       "breaks": [15, 30, 45, 60],
       "maxValue": 80,
       "domain": [0, 80],
-      "_source": "No prior placeholder exists anywhere in the codebase (route_map.py never built a truck-speed choropleth). Reused verbatim from 'speed' on the assumption truck speeds occupy roughly the same highway-speed range -- an assumption, not verified against real truck-speed data, flagged distinctly from the other 'not independently re-derived' entries below."
+      "_source": "Same round-82 fix as 'speed' (identical ramp, since speedTruck is a verbatim clone of speed's placeholder with no independent truck-speed distribution behind it either -- see original note below, still applies to breaks/domain).",
+      "_source_orig": "No prior placeholder exists anywhere in the codebase (route_map.py never built a truck-speed choropleth). Reused verbatim from 'speed' on the assumption truck speeds occupy roughly the same highway-speed range -- an assumption, not verified against real truck-speed data, flagged distinctly from the other 'not independently re-derived' entries below."
     },
     "travelTime": {
       "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
