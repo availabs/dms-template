@@ -1328,9 +1328,25 @@ module.exports = {
   getOrLoadGraph, invalidateGraph, findRoute,
   selectClosureDensityCandidates, computeClosureDensityFromPoints,
   resolveDetourEndpoints,
+  // Exported for the standalone bridge-detour-process tool (2026-08-26,
+  // /home/sarang/Documents/avail/bridge-detour-process) - it needs to keep walking a failed
+  // direction's endpoint further out (past additional branches) when the initial one-hop-past-
+  // first-branch point hits a turn restriction, rather than duplicating this already-tested walk
+  // logic in a separate script. closureContext resolves the segment's own fromNode/toNode/
+  // excludedEdgeSet, the same inputs resolveDetourEndpoints itself passes to
+  // walkToFirstBranchSimple - needed so the standalone tool can call the walk again with a real
+  // (not reconstructed) blockedNode/excludedEdgeSet.
+  walkToFirstBranchSimple,
+  closureContext,
   // Exported for graphSearchWorker.js (worker_threads pool, densitySearchPool.js) - the worker
   // reconstructs a lightweight graph-like object from SharedArrayBuffers and calls this exact same
   // pure search function directly, so the parallelized path is provably the same algorithm as the
   // single-threaded one, not a reimplementation that could silently drift.
   bidirectionalDijkstra,
+  // Exported for the standalone bridge-detour-process tool's on-disk graph cache (2026-08-27,
+  // "load the graph in once for this process in a storage") - loadGraph's ~1min DB round-trip is
+  // fine once, but re-paid on every iteration while tuning the batch logic. The tool serializes
+  // the typed arrays straight to disk and, on a cache hit, rebuilds nodeGrid from the restored
+  // nodeLon/nodeLat itself rather than duplicating this class's spatial-bucketing logic.
+  NodeGrid,
 };

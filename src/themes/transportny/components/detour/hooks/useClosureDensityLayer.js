@@ -165,7 +165,12 @@ export const useClosureDensityLayer = (map, edgeFrequencies, maxCount) => {
 
   useEffect(() => {
     return () => {
-      if (!map) return;
+      // `.loaded()`, not just truthiness (2026-08-26 - "Cannot read properties of undefined
+      // (reading 'getLayer')"): by unmount time the underlying maplibre instance can already have
+      // been torn down (map.remove() called elsewhere) while `map` itself is still a truthy
+      // reference - maplibre's own getLayer() throws internally once its style is gone. Same guard
+      // AvlLayer's own cleanup already uses (avl-layer.jsx) for exactly this reason.
+      if (!map || !map.loaded()) return;
       popupRef.current?.remove();
       if (map.getLayer(DENSITY_LABEL_LAYER_ID)) map.removeLayer(DENSITY_LABEL_LAYER_ID);
       if (map.getLayer(DENSITY_LAYER_ID)) map.removeLayer(DENSITY_LAYER_ID);

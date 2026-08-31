@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>BIN 1048280 · NY421 over Bog River · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  BRIDGE DETOUR ROUTE — single-bridge detail page. Reached by clicking any row of the "Every
+  bridge, every direction" table on bridge-detour-report.html (§05) — the row link carries the
+  BIN as a query param (?bin=1048280) so a live version would read it via PageContext and bind
+  data sections to it (creating-interactive-pages.md pattern), rather than one hand-authored
+  page per bridge. This mockup is drawn for BIN 1048280 (NY421 over Bog River), the worst-impact
+  bridge in the batch, as the representative worked example.
+
+  Map card (2026-08-27, "show the map of all points and route") uses the same .tny-map +
+  decorative-SVG mockup convention as npmrds-macro.html's live map section — a real live page
+  binds this to an actual MapLibre Map section reading start_end_points + detour_routes filtered
+  by BIN, not hand-drawn paths.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="landing.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div><div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="npmrds-reports.html" class="hover:text-[#0f1722]">Reports</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="bridge-detour-report.html" class="hover:text-[#0f1722]">Bridge Detour Impact</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">BIN 1048280</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-8" data-dms-section="page-header">
+              <a href="bridge-detour-report.html#full-table" class="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] mb-4"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15.75 19.5-7.5-7.5 7.5-7.5"/></svg>back to full table</a>
+              <div class="flex items-end justify-between gap-8 flex-wrap">
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// bridge identification number</span>
+                    <span class="font-mono text-[13px] text-[#0f1722] tabular-nums">1048280</span>
+                  </div>
+                  <h1 class="font-display font-semibold text-[32px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">NY421 <span class="text-slate-400 normal-case font-normal text-[22px]">over</span> Bog River</h1>
+                  <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-slate-500">
+                    <span>Hamilton County</span><span class="text-slate-300">·</span>
+                    <span>condition <span class="text-[#0f1722]">fair</span></span><span class="text-slate-300">·</span>
+                    <span>AADT <span class="text-[#0f1722] tabular-nums">210</span></span>
+                  </div>
+                </div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[11px] uppercase tracking-[0.16em] text-[#991B1B]"><span class="size-1.5 rounded-full bg-[#EF4444]"></span>highest impact in batch · rank 1 of 246</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § MAP ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-10" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="route-map">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// map</span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">closure point, launch points, both detour routes</span>
+              </div>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="relative w-full h-[440px] tny-map overflow-hidden" data-dms-section="map">
+                  <!-- decorative --><svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full">
+                    <!-- background road network, muted -->
+                    <path d="M40 560 L260 520 L520 500 L780 460 L1040 380 L1160 300" stroke="#CBD5E1" stroke-width="3" fill="none"/>
+                    <path d="M520 500 L560 320 L600 120" stroke="#CBD5E1" stroke-width="2.5" fill="none"/>
+                    <path d="M260 520 L300 620 L360 680" stroke="#CBD5E1" stroke-width="2" fill="none"/>
+                    <!-- start -> end detour (amber), routed AROUND the closure -->
+                    <path d="M540 470 L610 540 L720 600 L860 610 L960 560 L1000 470 L950 400 L860 380 L760 400 L680 430 L590 450 L540 470" stroke="#F59E0B" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <!-- end -> start detour (violet) - drawn slightly offset to stay legible next to the amber one -->
+                    <path d="M950 400 L900 340 L800 320 L700 350 L620 400 L560 440 L540 470" stroke="#8B5CF6" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-dasharray="1 0"/>
+                    <!-- the closed segment itself -->
+                    <path d="M540 470 L950 400" stroke="#EF4444" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="2 10"/>
+                  </svg>
+                  <!-- Closure point -->
+                  <div class="absolute" style="left:44.5%; top:66%;">
+                    <span class="block size-4 rounded-full bg-[#EF4444] ring-4 ring-white shadow-lg"></span>
+                    <div class="absolute left-1/2 -translate-x-1/2 top-5 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.14em] bg-[#0F1722] text-white px-2 py-1 rounded-[4px] shadow">closure · BIN 1048280</div>
+                  </div>
+                  <!-- Start point -->
+                  <div class="absolute" style="left:44%; top:60%;">
+                    <span class="block size-3.5 rounded-full bg-[#10B981] ring-2 ring-white shadow"></span>
+                  </div>
+                  <div class="absolute font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-700 bg-white/90 px-1.5 py-0.5 rounded-[3px]" style="left:33%; top:56%;">start</div>
+                  <!-- End point -->
+                  <div class="absolute" style="left:79%; top:57%;">
+                    <span class="block size-3.5 rounded-full bg-[#3B82F6] ring-2 ring-white shadow"></span>
+                  </div>
+                  <div class="absolute font-mono text-[10px] uppercase tracking-[0.14em] text-blue-700 bg-white/90 px-1.5 py-0.5 rounded-[3px]" style="left:81%; top:53%;">end</div>
+
+                  <!-- legend -->
+                  <div class="absolute bottom-3 left-3 bg-white/95 border border-zinc-950/10 rounded-[6px] px-3 py-2 flex flex-col gap-1.5 shadow">
+                    <div class="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-slate-600"><span class="w-4 h-0.5 bg-[#EF4444]" style="border-top:2px dashed #EF4444;height:0"></span>closed segment</div>
+                    <div class="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-slate-600"><span class="w-4 h-[3px] bg-[#F59E0B] rounded-full"></span>start &rarr; end detour</div>
+                    <div class="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-slate-600"><span class="w-4 h-[3px] bg-[#8B5CF6] rounded-full"></span>end &rarr; start detour</div>
+                  </div>
+                </div>
+              </div>
+              <p class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mt-2">live version binds a Map section to start_end_points + detour_routes filtered by BIN=1048280 &middot; both direction lines and both launch points render together</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § DIRECTION CARDS ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05 py-10" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="directions">
+              <div class="flex items-center gap-2 mb-6">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// impact by direction</span>
+              </div>
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- start -> end -->
+                <div class="col-span-12 lg:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">
+                    <div class="px-6 pt-5 pb-4 border-b border-zinc-950/05 flex items-center justify-between">
+                      <div class="font-display font-medium text-[16px] text-[#0F1722]">Start &rarr; End</div>
+                      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.14em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>routable</span>
+                    </div>
+                    <div class="p-6">
+                      <div class="grid grid-cols-2 gap-4 mb-5">
+                        <div><div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mb-1">Direct</div><div class="font-display font-semibold text-[24px] tabular-nums text-[#0F1722]">0.12<span class="text-[13px] font-medium text-slate-500 ml-1">mi</span></div></div>
+                        <div><div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mb-1">Detour</div><div class="font-display font-semibold text-[24px] tabular-nums text-[#0F1722]">34.21<span class="text-[13px] font-medium text-slate-500 ml-1">mi</span></div></div>
+                      </div>
+                      <div class="rounded-[6px] bg-[#FEF2F2] border border-[#EF4444]/20 px-4 py-3 flex items-center justify-between mb-5">
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#991B1B]">Added distance / time</div>
+                        <div class="font-display font-semibold text-[18px] tabular-nums text-[#991B1B]">+34.09 mi <span class="text-[13px] font-medium">/ +47.2 min</span></div>
+                      </div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mb-2">Detour road segments (first 4 of 41)</div>
+                      <table class="w-full text-[12px]">
+                        <tbody class="font-proxima text-slate-700">
+                          <tr class="border-b border-zinc-950/05"><td class="py-1.5">NY421</td><td class="py-1.5 text-right font-mono text-slate-500">primary</td><td class="py-1.5 text-right font-mono tabular-nums">1.2 mi</td></tr>
+                          <tr class="border-b border-zinc-950/05"><td class="py-1.5">CR 24</td><td class="py-1.5 text-right font-mono text-slate-500">secondary</td><td class="py-1.5 text-right font-mono tabular-nums">8.6 mi</td></tr>
+                          <tr class="border-b border-zinc-950/05"><td class="py-1.5">Sabattis Rd</td><td class="py-1.5 text-right font-mono text-slate-500">tertiary</td><td class="py-1.5 text-right font-mono tabular-nums">14.3 mi</td></tr>
+                          <tr><td class="py-1.5">NY421</td><td class="py-1.5 text-right font-mono text-slate-500">primary</td><td class="py-1.5 text-right font-mono tabular-nums">10.1 mi</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- end -> start -->
+                <div class="col-span-12 lg:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">
+                    <div class="px-6 pt-5 pb-4 border-b border-zinc-950/05 flex items-center justify-between">
+                      <div class="font-display font-medium text-[16px] text-[#0F1722]">End &rarr; Start</div>
+                      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.14em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>routable</span>
+                    </div>
+                    <div class="p-6">
+                      <div class="grid grid-cols-2 gap-4 mb-5">
+                        <div><div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mb-1">Direct</div><div class="font-display font-semibold text-[24px] tabular-nums text-[#0F1722]">0.12<span class="text-[13px] font-medium text-slate-500 ml-1">mi</span></div></div>
+                        <div><div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mb-1">Detour</div><div class="font-display font-semibold text-[24px] tabular-nums text-[#0F1722]">33.87<span class="text-[13px] font-medium text-slate-500 ml-1">mi</span></div></div>
+                      </div>
+                      <div class="rounded-[6px] bg-[#FEF2F2] border border-[#EF4444]/20 px-4 py-3 flex items-center justify-between mb-5">
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#991B1B]">Added distance / time</div>
+                        <div class="font-display font-semibold text-[18px] tabular-nums text-[#991B1B]">+33.75 mi <span class="text-[13px] font-medium">/ +46.5 min</span></div>
+                      </div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mb-2">Detour road segments (first 4 of 39)</div>
+                      <table class="w-full text-[12px]">
+                        <tbody class="font-proxima text-slate-700">
+                          <tr class="border-b border-zinc-950/05"><td class="py-1.5">NY421</td><td class="py-1.5 text-right font-mono text-slate-500">primary</td><td class="py-1.5 text-right font-mono tabular-nums">9.8 mi</td></tr>
+                          <tr class="border-b border-zinc-950/05"><td class="py-1.5">Sabattis Rd</td><td class="py-1.5 text-right font-mono text-slate-500">tertiary</td><td class="py-1.5 text-right font-mono tabular-nums">14.1 mi</td></tr>
+                          <tr class="border-b border-zinc-950/05"><td class="py-1.5">CR 24</td><td class="py-1.5 text-right font-mono text-slate-500">secondary</td><td class="py-1.5 text-right font-mono tabular-nums">8.7 mi</td></tr>
+                          <tr><td class="py-1.5">NY421</td><td class="py-1.5 text-right font-mono text-slate-500">primary</td><td class="py-1.5 text-right font-mono tabular-nums">1.1 mi</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § LAUNCH POINTS ═════════ -->
+          <div class="w-full bg-[#ECEEF2]" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pb-12" data-dms-section="points">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// resolved launch points</span>
+              </div>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/10 bg-slate-50/60">
+                      <th class="px-4 py-2.5 font-normal">Role</th>
+                      <th class="px-4 py-2.5 font-normal">OSM node</th>
+                      <th class="px-4 py-2.5 font-normal">TMC</th>
+                      <th class="px-4 py-2.5 font-normal">RIS</th>
+                      <th class="px-4 py-2.5 font-normal">Highway class</th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-proxima text-[13px] text-slate-700">
+                    <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#10B981]"></span>Start</span></td><td class="px-4 py-2.5 font-mono">3046934832</td><td class="px-4 py-2.5 font-mono">120-04412</td><td class="px-4 py-2.5 font-mono">101422018-0</td><td class="px-4 py-2.5">primary</td></tr>
+                    <tr><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#3B82F6]"></span>End</td><td class="px-4 py-2.5 font-mono">3046934816</td><td class="px-4 py-2.5 font-mono">120-04409</td><td class="px-4 py-2.5 font-mono">101422011-0</td><td class="px-4 py-2.5">primary</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between flex-wrap gap-2">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="bridge-detour-report.html" class="hover:text-slate-900">bridge detour impact</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

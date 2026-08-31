@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Bridge Detour Impact · Report · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  BRIDGE DETOUR IMPACT — design page for the bridge-detour-process batch analysis output.
+  ════════════════════════════════════════════════════════════════════════════════════════
+  Built following designing-a-dms-design-system.md: DMS-shaped (Layout → LayoutGroup →
+  Section → Component), plain HTML + Tailwind CDN + this theme's _shared.css, laid out on the
+  same grid-cols-12 vocabulary as map-21.html (the closest structural sibling — KPI band,
+  workbench section, methodology band). Content is the bridge-detour-process report data
+  (258 candidate bridges, batch detour analysis) transcribed onto TransportNY's real
+  primitives instead of the earlier ad-hoc report.html draft.
+
+  Two content bands, switched by the "default" Tabs pattern (components.html · tabs · default
+  variant, amber underline): OUTPUT REPORT (the results) and APPROACH (the method). Plain
+  anchor + JS show/hide — no framework, matches the mockup-only constraint.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="landing.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="npmrds-reports.html" class="hover:text-[#0f1722]">Reports</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">Bridge Detour Impact</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// batch detour analysis</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">258 candidate bridges · statewide</span>
+              </div>
+              <div class="flex items-end justify-between gap-8 flex-wrap">
+                <div class="max-w-[760px]">
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Bridge closure detour impact<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[680px]">For every candidate bridge, the best legal detour route around a closure — in both directions of travel — computed using the same routing engine and turn-restriction logic as the live TransportNY detour tool.</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 min-w-0">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1 justify-end">
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>run completed</span>
+                    <span class="text-slate-300">·</span><span>2026-08-27</span>
+                    <span class="text-slate-300">·</span><span>conflation view <span class="text-[#0f1722] tabular-nums">3699</span></span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════
+     TAB 1 · OUTPUT REPORT
+     ═══════════════════════════════════════════════════════════════════════════════════════ -->
+<div data-tab-panel="output">
+
+          <!-- ═════════ NAV STRIP · full-width blue band, switches to the Approach & Method page ═════════ -->
+          <div class="w-full bg-[#1F3F8F]" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <a href="#" onclick="showTab('approach'); return false;" class="w-full h-12 flex items-center justify-between text-white font-display uppercase text-[13px] tracking-wide cursor-pointer hover:bg-white/5 transition-colors">
+                <span>Approach &amp; method</span>
+                <span class="text-[#FACC15] text-[16px]">→</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · KPI OVERVIEW ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="kpi-overview">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Route-ability overview</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What happens if each bridge closes?</h2>
+                </div>
+                <a class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1" href="#full-table">full data table <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-routable">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>84% of directions</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Directions with a legal detour</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">433<span class="text-[22px] font-medium tracking-normal text-slate-500 ml-0.5">/516</span></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">258 bridges &times; 2 directions each</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-both">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>71% of bridges</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Both directions clear</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">184</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">no turn-restriction issue either way</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-one">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#CA8A04]/30 bg-[#CA8A04]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#92660A]"><span class="size-1.5 rounded-full bg-[#CA8A04]"></span>25% of bridges</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">One direction only</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">65</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">turn restriction blocks the other way</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-none">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B]"><span class="size-1.5 rounded-full bg-[#EF4444]"></span>3% of bridges</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">No legal detour, either way</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">9</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">isolated by turn restrictions both sides</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · IMPACT DISTRIBUTION ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="impact-distribution">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">across all 433 routable directions</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How much worse is the detour?</h2>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-6" data-dms-section="dist-miles">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <div class="font-display font-medium text-[16px] text-[#0F1722] mb-4">Added distance (miles)</div>
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">0.80<span class="text-[15px] font-medium text-slate-500 ml-1">mi</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">Median</div>
+                      </div>
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">6.91<span class="text-[15px] font-medium text-slate-500 ml-1">mi</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">90th percentile</div>
+                      </div>
+                    </div>
+                    <div class="flex items-end gap-1.5 h-24">
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:88%"></div>
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:62%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:44%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:26%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:14%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:6%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:2%"></div>
+                    </div>
+                    <div class="flex justify-between font-mono text-[10px] text-slate-400 mt-1.5"><span>&lt;0.5</span><span>0.5–1</span><span>1–2</span><span>2–4</span><span>4–8</span><span>8–16</span><span>16+</span></div>
+                  </div>
+                </div>
+                <div class="col-span-12 lg:col-span-6" data-dms-section="dist-time">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <div class="font-display font-medium text-[16px] text-[#0F1722] mb-4">Added travel time (minutes)</div>
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">1.5<span class="text-[15px] font-medium text-slate-500 ml-1">min</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">Median</div>
+                      </div>
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">11.0<span class="text-[15px] font-medium text-slate-500 ml-1">min</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">90th percentile</div>
+                      </div>
+                    </div>
+                    <div class="flex items-end gap-1.5 h-24">
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:85%"></div>
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:58%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:40%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:24%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:13%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:6%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:2%"></div>
+                    </div>
+                    <div class="flex justify-between font-mono text-[10px] text-slate-400 mt-1.5"><span>&lt;1</span><span>1–2</span><span>2–4</span><span>4–8</span><span>8–15</span><span>15–25</span><span>25+</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="font-proxima text-[13px] leading-[1.65] text-slate-600 mt-5 max-w-[900px]">Most closures are minor — a median detour adds well under a mile and under two minutes, since most candidate bridges sit on short, well-connected local segments with a nearby parallel road. The distribution has a long tail: a small number of bridges are the only crossing for miles, and closing them forces a detour of 10–34 extra miles.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · HIGHEST-IMPACT CLOSURES ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="top-impact">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">worst of the two directions, ranked</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Highest-impact closures</h2>
+                </div>
+                <button class="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 17C3 17.93 3 18.4 3.1 18.78C3.38 19.81 4.19 20.62 5.22 20.9C5.6 21 6.07 21 7 21H17C17.93 21 18.4 21 18.78 20.9C19.81 20.62 20.62 19.81 20.9 18.78C21 18.4 21 17.93 21 17"/><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>csv</button>
+              </div>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/10 bg-slate-50/60">
+                      <th class="px-4 py-2.5 font-normal w-10">#</th>
+                      <th class="px-4 py-2.5 font-normal">BIN</th>
+                      <th class="px-4 py-2.5 font-normal">Road carried</th>
+                      <th class="px-4 py-2.5 font-normal">Feature crossed</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Direct</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Detour</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Added mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Added time</th>
+                      <th class="px-4 py-2.5 font-normal text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-proxima text-[13px] text-slate-700">
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1048280'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">01</td><td class="px-4 py-2.5 font-mono">1048280</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY421</td><td class="px-4 py-2.5 text-slate-500">Bog River</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.12 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">34.21 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+34.09</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+47.2 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1048280" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1050540'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">02</td><td class="px-4 py-2.5 font-mono">1050540</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY268</td><td class="px-4 py-2.5 text-slate-500">Cadosia Creek</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.13 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">27.90 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+27.77</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+34.9 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1050540" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1050570'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">03</td><td class="px-4 py-2.5 font-mono">1050570</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY268</td><td class="px-4 py-2.5 text-slate-500">Cadosia Creek</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.15 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">27.90 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+27.75</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+34.8 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1050570" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1050530'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">04</td><td class="px-4 py-2.5 font-mono">1050530</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY268</td><td class="px-4 py-2.5 text-slate-500">Cadosia Creek</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.17 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">27.89 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+27.72</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+34.8 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1050530" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1094020'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">05</td><td class="px-4 py-2.5 font-mono">1094020</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">CR 48</td><td class="px-4 py-2.5 text-slate-500">I-88</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.08 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">13.89 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+13.81</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+15.7 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1094020" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1018760'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">06</td><td class="px-4 py-2.5 font-mono">1018760</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY26</td><td class="px-4 py-2.5 text-slate-500">Otselic River</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.07 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.77 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.7</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+17.1 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1018760" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=4426250'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">07</td><td class="px-4 py-2.5 font-mono">4426250</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">Bardwell Mills Rd</td><td class="px-4 py-2.5 text-slate-500">Kayuta Lake</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.09 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.49 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.4</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+15.8 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=4426250" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1074990'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">08</td><td class="px-4 py-2.5 font-mono">1074990</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY143</td><td class="px-4 py-2.5 text-slate-500">Unknown stream</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.54 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.64 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.1</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+15.2 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1074990" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=4435010'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">09</td><td class="px-4 py-2.5 font-mono">4435010</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">Armitage Rd</td><td class="px-4 py-2.5 text-slate-500">Erie Canal</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.08 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">10.68 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+10.6</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+14.0 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=4435010" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1041340'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">10</td><td class="px-4 py-2.5 font-mono">1041340</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY292</td><td class="px-4 py-2.5 text-slate-500">Whaley Lake Stream</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.03 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">10.13 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+10.1</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+14.3 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1041340" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+              <p class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mt-3">full ranking of all 246 bridges in impact_ranking.csv · worst direction shown per bridge</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 05 · FULL DATA TABLE ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content" id="full-table">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="full-table">
+              <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">the complete underlying data · 516 rows</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Every bridge, every direction</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-9 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 pl-3 pr-2 min-w-[220px]">
+                    <svg class="size-3.5 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
+                    <input id="ft-search" type="text" placeholder="Search BIN, road, or crossing…" class="flex-1 text-[12.5px] font-proxima text-slate-700 placeholder:text-slate-400 outline-none bg-transparent"/>
+                  </div>
+                  <div class="inline-flex items-center gap-1 bg-white border border-zinc-950/10 rounded-[6px] p-0.5">
+                    <button data-status-btn="all" onclick="setStatus('all', this)" class="px-3 h-8 inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-white bg-[#1F3F8F] cursor-pointer rounded-[4px] font-medium">All <span class="font-mono text-[10px] opacity-80" id="cnt-all">516</span></button>
+                    <button data-status-btn="ok" onclick="setStatus('ok', this)" class="px-3 h-8 inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-600 hover:text-[#0F1722] cursor-pointer rounded-[4px]">Routable <span class="font-mono text-[10px] text-slate-400" id="cnt-ok">433</span></button>
+                    <button data-status-btn="no_route" onclick="setStatus('no_route', this)" class="px-3 h-8 inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-600 hover:text-[#0F1722] cursor-pointer rounded-[4px]">No route <span class="font-mono text-[10px] text-slate-400" id="cnt-no_route">83</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="overflow-auto max-h-[620px]">
+                <table class="w-full text-left" id="ft-table">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/10 bg-slate-50/60 sticky top-0">
+                      <th class="px-4 py-2.5 font-normal cursor-pointer" onclick="ftSort('bin')">Bridge ID</th>
+                      <th class="px-4 py-2.5 font-normal cursor-pointer" onclick="ftSort('carried')">Road carried</th>
+                      <th class="px-4 py-2.5 font-normal cursor-pointer" onclick="ftSort('crossed')">Feature crossed</th>
+                      <th class="px-4 py-2.5 font-normal">Direction</th>
+                      <th class="px-4 py-2.5 font-normal">Status</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('directMi')">Direct mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('detourMi')">Detour mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('dMi')">&Delta; mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('dMin')">&Delta; min</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('dPct')">&Delta; %</th>
+                      <th class="px-4 py-2.5 font-normal text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="ft-body" class="font-proxima text-[13px] text-slate-700"></tbody>
+                </table>
+                </div>
+              </div>
+              <p class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mt-3"><span id="ft-count">516</span> rows shown · click a column to sort · full technical detail in routes.json</p>
+            </div>
+          </div>
+
+</div><!-- /data-tab-panel=output -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════
+     TAB 2 · APPROACH & METHOD
+     ═══════════════════════════════════════════════════════════════════════════════════════ -->
+<div data-tab-panel="approach" class="hidden">
+
+          <!-- ═════════ NAV STRIP · full-width blue band, switches back to the Output Report page ═════════ -->
+          <div class="w-full bg-[#1F3F8F]" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <a href="#" onclick="showTab('output'); return false;" class="w-full h-12 flex items-center gap-3 text-white font-display uppercase text-[13px] tracking-wide cursor-pointer hover:bg-white/5 transition-colors">
+                <span class="text-[#FACC15] text-[16px]">←</span>
+                <span>Output report</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-8" data-dms-section="page-header">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// approach &amp; method</span>
+              </div>
+              <h1 class="font-display font-semibold text-[32px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">How the routing is computed<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[720px]">The method behind every number in the report — how a detour's start and end points are chosen, how the route itself is finalized, and how a "no legal detour" finding is confirmed rather than assumed.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · OVERVIEW ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="overview">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">How this analysis works</h2>
+              <div class="rounded-[8px] border border-[#37576B]/25 bg-[#37576B]/[0.04] p-6 flex gap-4 mb-6">
+                <svg class="size-6 text-[#37576B] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                <div>
+                  <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">The same routing engine behind the live detour tool</div>
+                  <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">Every route in this report is computed by the identical turn-restriction-aware routing engine that powers TransportNY's live detour map — the same road network, the same legal-movement rules, the same distance-and-time model. Nothing here is a simplified or approximate stand-in: this batch analysis simply runs that real engine once for every candidate bridge, in both directions of travel, and records what it finds.</p>
+                </div>
+              </div>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px]">For each bridge, the process has three parts: first, decide where a detour would realistically begin and end near the closure; second, run the real routing search twice — once with the bridge open, once with it closed — and compare the two; third, if the first attempt can't find a legal way through, systematically widen the search until it either finds one or proves there genuinely isn't one. The three sections below walk through each part.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 06 · PICKING LAUNCH POINTS ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="launch-points">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">Deciding where a detour starts and ends</h2>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px] mb-6">A detour isn't measured from the bridge itself — a driver approaching a closed bridge doesn't stop at the exact structure, they carry on to the nearest real decision point and choose a different way from there. So for every bridge, the analysis first locates the bridge on the road network, then walks outward from each side of the closure — along the same road, in the direction traffic would already be travelling — until it reaches the first genuine intersection: a point where a driver actually has more than one way to go. That intersection becomes the launch point for the detour search on that side.</p>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-2">Why not just start at the bridge?</div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">Starting the search exactly at the closed structure would force every route through whichever single road happens to touch the bridge, even when a driver would obviously peel off earlier at a nearby intersection. Walking out to the first real branch point produces a start and end that match how a detour is actually driven.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-2">A sensible limit on how far it looks</div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">The outward walk is capped — it won't wander for miles down an empty road looking for an intersection. If no branch point turns up within that distance, the search simply uses the furthest point it reached, and that becomes the starting point for the next stage instead.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 07 · FINALIZING THE ROUTE ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="route-finalization">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">Finalizing the route</h2>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px] mb-6">Once a start and end point are chosen, the routing engine is asked the same question twice for each direction of travel: what's the best legal route between these two points with the network as it normally is, and what's the best legal route with this one bridge removed? Every route respects the same rules a driver actually has to follow — posted turn restrictions, no illegal U-turns, no cutting through a movement that isn't allowed — because the search is exhaustive over the full legal road network, not a shortest-path shortcut that ignores those rules.</p>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-2">step 1</div>
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-1.5">Route with the bridge open</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600">The normal, everyday route between the two points — the baseline every detour is measured against.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-2">step 2</div>
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-1.5">Route with the bridge closed</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600">The same search, but with that one bridge removed from the network — the actual detour a driver would have to take.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-2">step 3</div>
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-1.5">Compare the two</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600">The difference in distance and travel time between the two routes is the reported detour impact — done for both directions of travel independently.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 08 · WIDENING THE SEARCH ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="expansion">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">When the first pair of points doesn't work</h2>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px] mb-6">Only one bridge is ever closed at a time, so somewhere along that road a legal route to the other side should generally exist — a closed bridge on an isolated dead-end is the exception, not the rule. Rather than reporting "no route" the moment the first attempt fails, the analysis treats that as a sign the starting points were too close to the closure, not as a final answer.</p>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg class="size-5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 5v6h6M5 12a7 7 0 1 0 2-4.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <div class="font-display font-medium text-[14.5px] text-[#0F1722]">The points move further apart, together</div>
+                    </div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">If either direction fails to find a legal route, the analysis pushes that side's starting point further out along the same road it was already following — continuing outward, never doubling back toward the closure — and tries again. Both directions of travel are re-tested together against the updated pair each time, so the two directions always share one coherent, mutually-reachable set of start and end points rather than drifting apart.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 lg:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg class="size-5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6M12 9v6" stroke-linecap="round"/><circle cx="12" cy="12" r="9"/></svg>
+                      <div class="font-display font-medium text-[14.5px] text-[#0F1722]">A bounded, repeatable process</div>
+                    </div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">This widen-and-retry cycle repeats up to several rounds. It stops as soon as both directions succeed against the same pair of points — that pair becomes the final answer for that bridge — or, if a side genuinely runs out of road to expand into, the process stops and the bridge is reported as having no legal detour, rather than forcing a route that doesn't reflect reality.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 09 · CONFIRMING NO-ROUTE CASES ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="diagnosis">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">Making sure "no legal detour" is a real finding</h2>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-4">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] mb-2">// verification</div>
+                  <div class="font-display font-medium text-[16px] leading-[1.25] text-[#0f1722]">A second, independent check for every closure with no legal detour.</div>
+                </div>
+                <div class="col-span-12 md:col-span-8 font-proxima text-[13px] leading-[1.65] text-slate-700">
+                  <p>A bridge that comes back with no legal detour could mean one of two very different things: the two sides of the closure are genuinely cut off from each other on the road network, or a legal route exists but every path to it happens to be blocked by a turn restriction along the way. Those call for different conclusions, so every no-route result is checked a second way — a plain connectivity check that ignores turn restrictions entirely and asks only "is there any path at all between these points, in either direction?" A closure where that check also fails is a true dead end. A closure where that check succeeds confirms the earlier result was correct for the right reason: a real, drivable route exists in the underlying road network, but every legal way to use it is blocked by a posted movement restriction at some intersection along the way — not a gap in the map data, and not an error in the search.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 10 · WHY IT'S BUILT THIS WAY ═════════ -->
+          <div class="w-full bg-white" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pb-12" data-dms-section="decisions">
+              <div class="bg-[#FAFBFC] border border-zinc-950/10 rounded-[8px] p-6 grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-3">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] mb-2">// 06 · decisions</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">Why it's built this way.</div>
+                </div>
+                <div class="col-span-12 md:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-5 font-proxima text-[13px] leading-[1.6] text-slate-700">
+                  <div>
+                    <div class="font-display font-medium text-[13.5px] text-[#0f1722] mb-1">One consistent identity per bridge</div>
+                    <p>Every bridge is tracked throughout by its own Bridge Identification Number, so results for a given bridge stay traceable and filterable everywhere the analysis references it — the report, the map, and the underlying data all agree on the same identity.</p>
+                  </div>
+                  <div>
+                    <div class="font-display font-medium text-[13.5px] text-[#0f1722] mb-1">Real routing, not an estimate</div>
+                    <p>Every distance and time figure comes from an actual computed route on the real road network, respecting real turn restrictions — never a straight-line estimate or a simplified stand-in for the true driving distance.</p>
+                  </div>
+                  <div>
+                    <div class="font-display font-medium text-[13.5px] text-[#0f1722] mb-1">"No legal detour" is reported honestly</div>
+                    <p>Bridges that remain unroutable after the search has been widened as far as it reasonably can go are reported plainly as having no legal detour, rather than the record being hidden or a route being forced that doesn't reflect what a driver could actually do.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+</div><!-- /data-tab-panel=approach -->
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between flex-wrap gap-2">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+<script>
+  function showTab(name) {
+    document.querySelectorAll('[data-tab-panel]').forEach(function(p){ p.classList.add('hidden'); });
+    document.querySelector('[data-tab-panel="' + name + '"]').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- Full data table: render, sort, filter, search (mockup-only, static data) ----------
+  var ftData = [
+    {bin:1003090,carried:"US6",crossed:"Tributary Indigot Creek",dir:"start_to_end",status:"ok",directMi:0.21,detourMi:2.40,dMi:2.19,dMin:3.28,dPct:1050},
+    {bin:1003090,carried:"US6",crossed:"Tributary Indigot Creek",dir:"end_to_start",status:"ok",directMi:0.21,detourMi:0.21,dMi:0,dMin:0,dPct:0},
+    {bin:1005020,carried:"Warren Rd",crossed:"NY 9",dir:"start_to_end",status:"no_route",directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1005020,carried:"Warren Rd",crossed:"NY 9",dir:"end_to_start",status:"ok",directMi:0.08,detourMi:0.08,dMi:0,dMin:0,dPct:0},
+    {bin:1005110,carried:"Bay St",crossed:"NY 9",dir:"start_to_end",status:"ok",directMi:0.05,detourMi:0.45,dMi:0.40,dMin:0.75,dPct:889},
+    {bin:1006210,carried:"Hawkes Ave",crossed:"NY 9A",dir:"start_to_end",status:"ok",directMi:0.42,detourMi:2.97,dMi:2.55,dMin:5.06,dPct:601},
+    {bin:1048280,carried:"NY421",crossed:"Bog River",dir:"start_to_end",status:"ok",directMi:0.12,detourMi:34.21,dMi:34.09,dMin:47.2,dPct:27743},
+    {bin:1050540,carried:"NY268",crossed:"Cadosia Creek",dir:"start_to_end",status:"ok",directMi:0.13,detourMi:27.90,dMi:27.77,dMin:34.9,dPct:21273},
+    {bin:1013710,carried:"Rapp Rd",crossed:"Route 17",dir:"start_to_end",status:"ok",directMi:0.31,detourMi:1.85,dMi:1.54,dMin:2.9,dPct:497},
+    {bin:4443820,carried:"Moore Rd",crossed:"I-390",dir:"start_to_end",status:"ok",directMi:0.19,detourMi:3.02,dMi:2.83,dMin:4.6,dPct:1489},
+    {bin:1094020,carried:"CR 48",crossed:"I-88",dir:"end_to_start",status:"ok",directMi:0.08,detourMi:13.89,dMi:13.81,dMin:15.7,dPct:16607}
+  ];
+  var ftState = { key: 'dMi', dir: 'desc', status: 'all', q: '' };
+  function fmt(v){ return (v===null||v===undefined) ? '—' : (typeof v==='number' ? v.toFixed(2) : v); }
+  function renderFt() {
+    var rows = ftData.filter(function(r){
+      if (ftState.status !== 'all' && r.status !== ftState.status) return false;
+      if (ftState.q) {
+        var hay = (String(r.bin) + ' ' + r.carried + ' ' + r.crossed).toLowerCase();
+        if (hay.indexOf(ftState.q) === -1) return false;
+      }
+      return true;
+    });
+    rows.sort(function(a,b){
+      var av=a[ftState.key], bv=b[ftState.key], dir = ftState.dir==='asc'?1:-1;
+      if (av===null||av===undefined) return 1;
+      if (bv===null||bv===undefined) return -1;
+      if (typeof av === 'string') return av.localeCompare(bv)*dir;
+      return (av-bv)*dir;
+    });
+    var body = document.getElementById('ft-body'), html='';
+    rows.forEach(function(r){
+      var pill = r.status==='ok'
+        ? '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.14em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>routable</span>'
+        : '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[10px] uppercase tracking-[0.14em] text-[#991B1B]"><span class="size-1.5 rounded-full bg-[#EF4444]"></span>no route</span>';
+      var dLabel = r.dir === 'start_to_end' ? 'start → end' : 'end → start';
+      var dCls = (r.dMi>5) ? 'text-[#991B1B] font-medium' : (r.dMi>1 ? 'text-[#92660A] font-medium' : '');
+      // 2026-08-27, "if user click it will redirect to the single route page from that" - the row
+      // itself is the click target (bridge-detour-route.html?bin=..., a live page would read the
+      // BIN via PageContext and bind its sections to it rather than one hand-authored page per
+      // bridge - see creating-interactive-pages.md).
+      html += '<tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href=\'bridge-detour-route.html?bin='+r.bin+'\'">'
+        + '<td class="px-4 py-2.5 font-mono">'+r.bin+'</td>'
+        + '<td class="px-4 py-2.5 font-medium text-[#0f1722]">'+r.carried+'</td>'
+        + '<td class="px-4 py-2.5 text-slate-500">'+r.crossed+'</td>'
+        + '<td class="px-4 py-2.5">'+dLabel+'</td>'
+        + '<td class="px-4 py-2.5">'+pill+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums">'+fmt(r.directMi)+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums">'+fmt(r.detourMi)+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums '+dCls+'">'+(r.dMi===null?'—':'+'+fmt(r.dMi))+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums '+dCls+'">'+(r.dMin===null?'—':'+'+fmt(r.dMin))+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums">'+(r.dPct===null?'—':'+'+r.dPct+'%')+'</td>'
+        + '<td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin='+r.bin+'" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]" onclick="event.stopPropagation()">View &rarr;</a></td>'
+        + '</tr>';
+    });
+    body.innerHTML = html;
+    document.getElementById('ft-count').textContent = rows.length;
+  }
+  function ftSort(key){
+    ftState.dir = (ftState.key===key && ftState.dir==='desc') ? 'asc' : 'desc';
+    ftState.key = key;
+    renderFt();
+  }
+  function setStatus(status, btn){
+    ftState.status = status;
+    document.querySelectorAll('[data-status-btn]').forEach(function(b){
+      b.classList.remove('text-white','bg-[#1F3F8F]','font-medium');
+      b.classList.add('text-slate-600');
+    });
+    btn.classList.remove('text-slate-600');
+    btn.classList.add('text-white','bg-[#1F3F8F]','font-medium');
+    renderFt();
+  }
+  document.getElementById('ft-search').addEventListener('input', function(e){
+    ftState.q = e.target.value.trim().toLowerCase();
+    renderFt();
+  });
+  renderFt();
+</script>
+
+</body>
+</html>
