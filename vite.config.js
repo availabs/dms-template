@@ -3,34 +3,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// The compiled entry stylesheet (all real theme colors/fonts/backgrounds)
-// is otherwise injected last in <head> by Vite's html plugin — after the
-// module script and modulepreload links — so the browser discovers and
-// fetches it last too. On a fresh/SSR load that means real content paints
-// unstyled first, then the theme snaps in once this file finally arrives
-// (a visible flash). Hoisting just this one <link> to the very top of
-// <head> gets it discovered and fetched first, without touching the
-// hand-authored font links/style blocks below it (index.html's Google
-// Fonts @import and the runtime Tailwind theme-editor block are a
-// deliberate different pattern — see ui/useTheme.js — and are untouched).
-function hoistEntryCss() {
-  const CSS_LINK_RE = /<link[^>]*href="\/assets\/[^"]+\.css"[^>]*>\n?/;
-  return {
-    name: 'hoist-entry-css',
-    transformIndexHtml: {
-      order: 'post',
-      handler(html) {
-        const match = html.match(CSS_LINK_RE);
-        if (!match) return html;
-        const tag = match[0].trim();
-        return html
-          .replace(CSS_LINK_RE, '')
-          .replace('<head>', `<head>\n    ${tag}`);
-      },
-    },
-  };
-}
-
 // Progress reporter — shows module count during long transforms
 function buildProgress() {
   let count = 0
@@ -140,7 +112,6 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
       },
     }),
     !isSsrBuild && tailwindcss(),
-    !isSsrBuild && hoistEntryCss(),
     buildProgress(),
   ].filter(Boolean),
 }))
