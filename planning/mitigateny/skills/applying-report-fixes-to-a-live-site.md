@@ -145,6 +145,14 @@ untouched, not re-serialised.
 | `live row drifted since baseline` | someone edited between your scan and your write — re-baseline and re-review, never force |
 | `NO-OP` | the attribute already holds the requested value (common after a partial earlier run) |
 
+> **`--set` reaches only the TOP LEVEL of `data`.** `parseSetPairs` does expand dot-notation into
+> nested keys, which makes `--set element.element-data.display.fetchMode=force` look like it would
+> work. It would **destroy the payload**: `element-data` is a JSON *string*, and lodash-merging an
+> object over a string does not do what you want. `--set element.element-data=<json>` is worse in a
+> quieter way — `parseSetPairs` `JSON.parse`s the value, so the attribute's **type** silently changes
+> from string to object. For anything inside `element-data`, use
+> **[`apply_element_data_key.mjs`](#2d-setting-a-key-inside-element-data)** instead.
+
 > **`--set` merges; it does not always replace.** lodash `merge` assigns scalars cleanly, but for an
 > **array-valued** attribute it merges *by index* — `["a","b"]` merged over `["x","y","z"]` leaves
 > `["a","b","z"]`, not `["a","b"]`. For any array attribute, send the whole object with
@@ -202,6 +210,39 @@ compares `String(live ?? '')`, so `""` reads as "no tag" and is written normally
 
 ---
 
+### 2d. Setting a key inside `element-data`
+
+Some settings are not top-level attributes of `data` at all. `Data Fetch Mode` lives at
+`data.element['element-data'].display.fetchMode` — inside the JSON string that also carries the
+lexical body, the Card config and the column list. `apply.mjs` cannot reach it (see the box above), so
+`apply_element_data_key.mjs` handles that case:
+
+```bash
+node apply_element_data_key.mjs $RUN --key display.fetchMode      --value-from "Target fetch mode" --dry-run
+node apply_element_data_key.mjs $RUN --key display.fetchMode --value-from "Target fetch mode"
+node validate.mjs $RUN --attr element.element-data.display.fetchMode
+```
+
+Same refusals as `apply.mjs` (no baseline, not a draft section, live drift, no-op), plus three that
+exist only because re-serialising a payload is involved:
+
+| Refusal | Why it matters |
+|---|---|
+| `element-data is not a JSON string` | absent, or already an object — a different problem, not this one |
+| `element-data is not stringify-canonical` | **the important one.** These payloads are `JSON.stringify` output, so `JSON.stringify(JSON.parse(s)) === s` holds byte-for-byte. If it does not, re-serialising would reformat the payload and *no leaf-level diff would ever show it* — so the row is refused rather than written |
+| `reverting the key does not reproduce the original payload` | strips the key back out and requires the result to equal the original exactly; catches a reordered key, a re-encoded escape, a number that round-tripped to a different literal |
+
+It writes the **full current `data` object** through `dms section update --data <file>` — a file
+because these payloads run past 30k characters, and the *full* object because that makes the CLI's
+replace-vs-merge semantics irrelevant: the object supplied is the row's current `data` with one key
+changed, so both land the same result. After writing it re-reads and asserts the stored string is
+byte-identical to the one it computed and that the attribute is still a string.
+
+Useful sanity signal: adding `fetchMode: 'force'` to a payload that lacks the key is **exactly +20
+characters** (`,"fetchMode":"force"`) every time. A different delta means something else moved.
+
+---
+
 ## 2c. Removals shift every later index — so validate knows about them
 
 Run removals **after** the tag writes and validate last. Taking a section out of `draft_sections`
@@ -219,6 +260,12 @@ of removals below it still fails.
 ---
 
 ## 3. Validate — assert *only* the requested change happened
+
+> **`--attr` takes a dotted path, so it can assert a nested leaf.** It is interpolated as
+> `data.<attr>`, and `fix_lib.diffLeaves` parses `element-data` before diffing — so
+> `--attr element.element-data.display.fetchMode` works unmodified. Passing the bare
+> `--attr element-data` fails with `data.element-data did not change`, which is confusing but
+> correct: it is looking for a top-level attribute of that name.
 
 ```bash
 node validate.mjs $RUN --attr tags
@@ -694,6 +741,7 @@ In [`scripts/report_fixes/`](./scripts/report_fixes/):
 | `baseline.mjs` | step 1 — full row + placement snapshot per section; refuses non-draft ids. Resolves placement against the report's `Page ID` (`--page-column`), not `data.parent` |
 | `page_scan.mjs` | live inventory of a page's draft sections (index / id / trackingId / type / title / tags / whether a lexical body is blank) + draft↔published trackingId correspondence, and `--find-trk` to place an orphan. The independent cross-check for a `positional` draft id, and the work-list for a delete sweep |
 | `apply.mjs` | step 2 — `--set-from "<attr>=<column>"`, drift-checked, `--dry-run` supported |
+| `apply_element_data_key.mjs` | step 2d — set ONE key inside `element['element-data']`; asserts the payload is stringify-canonical first and byte-minimal after, and refuses rather than reformatting |
 | `remove_from_page.mjs` | the delete half — dereferences a section from the page's `draft_sections` the way the UI does (row left intact), refusing anything that looks authored |
 | `mark_page_changed.mjs` | step 2b — set the owning page's `has_changes`, asserting nothing else on the page moved |
 | `validate.mjs` | step 3 — leaf diff vs baseline; PASS requires zero unexpected changes |

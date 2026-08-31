@@ -11,8 +11,8 @@ be built** before anything can be fixed. Its siblings:
 
 > **TL;DR** — `scan_fetchmode.mjs <patternId>` inventories every data component's stored fetch mode
 > and its source; `build_fetchmode_report.py` renders the CSV / XLSX / HTML tracking report with a
-> per-row recommended fix; then the ordinary fix loop applies it with
-> `--set-from "display.fetchMode=..."`.
+> per-row recommended fix; then `apply_element_data_key.mjs --key display.fetchMode` writes it and
+> `validate.mjs --attr element.element-data.display.fetchMode` proves nothing else moved.
 
 ```bash
 export DMS_HOST=https://dmsserver.availabs.org DMS_APP=mitigat-ny-prod DMS_TYPE=prod
@@ -122,6 +122,38 @@ This means a **stored `smart` on an internal source is still a fix**, not a pass
 not null" — 46 of `county_template`'s internal components were explicitly `smart` and all 46 need
 changing.
 
+### The rule is not the scope — `force` costs a query per mount
+
+Applied to every internal component, the rule produced **457 outstanding writes**. That is not a
+finish line to sprint at: `force` re-queries on **every mount**, so each component set to it is
+page-load cost, and a page carrying thirty of them pays thirty times. The owner narrowed it on
+2026-08-28 to the datasets an author actually edits and expects to see change — six of the ten
+internal sources, on the pages already under review. **63 writes.**
+
+`build_fetchmode_report.py` takes two **opt-in** filters, so an old command line still reproduces the
+old whole-pattern document:
+
+```bash
+--source-allow Actions_Revised,Hazards_of_Concern,Jurisdictions,Roles,Participation,Capabilities_Catalogue
+--page-allow-from ../../../../../src/themes/mny/design/reports/county-template-qa-t5-requirements-v2.xlsx
+--page-allow-sheet 'T5 fixes (draft IDs)'     # + --page-allow-column / --page-allow-value
+```
+
+Three things to get right when you narrow a catalog:
+
+- **Defer, don't drop.** An excluded component keeps its `Fix ID` and gains a `Scope reason`, in its
+  own XLSX sheet and an HTML appendix grouped by reason. "We chose not to fix this" and "we never
+  looked at it" must not read the same — the same principle §4 already applies to components with no
+  control at all. It also means widening the scope later is a rebuild, not a renumbering.
+- **Silence in an allow-list means out, not in.** The page allow-list here covers 42 of the pattern's
+  59 pages. Defaulting the unlisted 17 *in* would quietly re-admit exactly the pages the narrowing
+  excluded. Record it as a policy in the task file, because it is one — those pages were not assessed
+  and found irrelevant, they were not assessed.
+- **Narrowing does not un-write what is already written.** Eight components written before this
+  narrowing fall outside it. The owner's call was to leave them; the report says so in the machine-
+  owned `Recommended fix`, never in `Notes`, which is carried forward across rebuilds and belongs to
+  the owner.
+
 ---
 
 ## 4. Building the catalog
@@ -178,7 +210,7 @@ duplicate's matching row — same convention as the T5 tab, same reason (see the
 
 ---
 
-## 6. Applying it: one thing the fix loop cannot do yet
+## 6. Applying it: the nested-key write path
 
 `apply.mjs` drives `dms section update <id> --set <attr>=<value>`, which merges into the **top level**
 of `data`. `fetchMode` is not there — it is inside `element['element-data']`, which the CLI passes
@@ -196,20 +228,97 @@ The write path therefore needs a **targeted nested-key update**: parse `element-
 `element-data` before diffing (`fix_lib.diffLeaves`), so it can express that assertion today — the
 gap is on the apply side only.
 
-Until that exists, the honest options are: extend the fix-loop scripts with a nested-set flag, or
-have the owner make the change in the admin UI and use the scan as verification. **Decide that with
-the owner before writing anything** — a 445-write sweep is not the place to improvise a new write
-path.
+That script now exists: **`apply_element_data_key.mjs`**, alongside the rest of the loop. Nothing was
+added to `src/dms`.
+
+```bash
+node baseline.mjs $RUN/baseline --from-csv $RUN/rows.csv
+node apply_element_data_key.mjs $RUN --key display.fetchMode      --value-from "Target fetch mode" --dry-run
+node apply_element_data_key.mjs $RUN --key display.fetchMode --value-from "Target fetch mode"
+node mark_page_changed.mjs $RUN
+node validate.mjs $RUN --attr element.element-data.display.fetchMode
+```
+
+It carries every refusal `apply.mjs` has (no baseline, not a draft section, live drift, no-op) plus
+three of its own, and writes the **full current `data` object** through
+`dms section update --data <file>` — a file, not inline JSON, because these payloads run to 30k
+characters. Whether `dms data edit` replaces or merges is irrelevant for that shape: the object
+supplied *is* the row's current `data` with one key changed, so replace and merge land the same
+result.
+
+### What makes it provable rather than merely careful
+
+These payloads are `JSON.stringify` output, so **`JSON.stringify(JSON.parse(s)) === s` holds
+byte-for-byte**. The script asserts that canonicality *before* writing and **refuses the row if it
+fails**. That refusal is the whole safety story: without it, re-serialising could silently reformat
+30,000 characters and no leaf-level diff of the parsed form would ever reveal it. Then it strips the
+key back out of the new string and requires the result to equal the original exactly — which catches
+a reordered key, a re-encoded unicode escape, a number that round-tripped to a different literal.
+After the write it re-reads and asserts the stored string is byte-identical to the one it computed,
+and that the attribute is **still a string**.
+
+A useful sanity signal: setting `display.fetchMode` to `force` on a payload that lacks the key adds
+**exactly 20 characters** (`,"fetchMode":"force"`) every time. A different delta means something else
+moved.
+
+### `validate.mjs` needed no change
+
+Its `--attr` is interpolated as `data.<attr>`, so a **dotted path addresses a nested leaf directly**:
+
+```bash
+node validate.mjs $RUN --attr element.element-data.display.fetchMode
+```
+
+`fix_lib.diffLeaves` already parses `element-data` before diffing, so the leaf shows up as
+`data.element.element-data.display.fetchMode` and the PASS criterion — that leaf plus `updated_at`,
+nothing else — works unmodified. The loop always supported nested *assertions*; only the write side
+was missing. Passing the bare `--attr element-data` fails with `data.element-data did not change`,
+which is confusing but correct: it is looking for a top-level attribute of that name.
+
+---
+
+## 6b. The report is a snapshot of a moving pattern — pin the Fix IDs
+
+`Fix ID`s are assigned by enumeration order. That is fine for one build and dangerous for the second,
+because **other staff add and remove components between scans**. Measured on 2026-08-28: a rescan
+taken a couple of hours after the first found the pattern had grown from 58 pages / 497 data
+components to **59 / 519**, and rebuilding would have **renumbered 193 of 497 rows** — after the owner
+had already begun working from those ids.
+
+`build_fetchmode_report.py` therefore does three things on every rebuild:
+
+- **`--id-ledger <file>`** maps `"<patternId>:<sectionId>" → Fix ID` and is read before assigning and
+  rewritten after. Ids become append-only: a component keeps its id forever, and new components get
+  the next free number. **Always pass it.** The ledger for this report lives at
+  `scripts/report_fixes/ledgers/t6-fetchmode-ids.json`.
+- **Refuses to overwrite** if any `Fix ID` in the existing CSV now points at a different
+  `Draft section ID`, listing the remaps. `--no-carry` overrides, and should be a stated decision.
+- **Carries `Assigned to` and `Notes` forward** from the existing CSV, so a rebuild refreshes the
+  machine-derived columns without discarding triage.
+
+Two traps found while building this, both worth knowing before you seed a ledger from an existing
+report:
+
+- **Reserve ids from the report, not just from the ledger's values.** A component shared between two
+  pages occupies **two report rows but one ledger entry**, so seeding the reserve set from ledger
+  values alone frees those ids and hands them to newly-added components. That is exactly what
+  happened — 4 ids were re-minted on the first attempt (`county_template` shares four data components
+  between `lightning` and `wind`; see the T5 task's shared-section item).
+- **A shared component legitimately yields one Fix ID on two rows.** That is the truthful reading —
+  one component, one fix, listed under each page it appears on — so the builder *reports* the
+  duplicates rather than treating them as an error. The row is still uniquely addressable by
+  `(Fix ID, Pattern ID, Page)`, and the fix loop handles the pair the way it always has: the first
+  writes, the second is `REFUSED` as drift.
 
 ---
 
 ## 7. Order of work
 
 1. **Scan and report** `county_template` — done 2026-08-28.
-2. **Owner confirms the rule and the scope** — in particular the 61 `hideInView` components and the
-   23 components on prototype/duplicate pages (`crit_infra_form_prototype`, `ho_c_form_prototype`,
-   `actions_edit_list_dup`).
-3. **Agree the write path** (§6).
+2. **Owner confirms the rule *and separately* the scope.** Do not treat agreeing the rule as
+   agreeing to apply it everywhere — see §3. Here the narrowing arrived after the first page was
+   already written.
+3. ~~**Agree the write path** (§6).~~ Done — `apply_element_data_key.mjs`.
 4. **Apply to `county_template`**, a page or two first, then widen. Confirm in the browser that a
    Force component really re-queries — the setting is only worth writing if the behaviour changes.
 5. **Scan the three duplicates**, match with the propagation skill's ladder, recompute each row's
@@ -252,3 +361,77 @@ repairing 445 broken components. Saying so is what stops the number being read a
 Seven distinct external sources (`AVAIL - Fusion Events V2` alone accounts for 107 components) and
 ten internal ones (`LHMP_IA` 140, `Actions_Revised` 99). A per-source view is therefore a much
 shorter work-list than a per-component one, if the owner prefers to sweep by source.
+
+### First application — `the_local_environment/built_environment`, 2026-08-28
+
+Run `2026-08-28-t6-built-env`. Scope: the nine rows the owner named (`T6-C002`…`T6-C010`), restricted
+to **internally sourced** components, target `force`.
+
+**8 writes, 8/8 verified, 0 unexpected leaf changes** — every write moved exactly
+`data.element.element-data.display.fetchMode` and `updated_at`, every payload came out **+20
+characters**, and an independent audit re-derived the verdict from the live site at **9 of 9 correct**
+(including the held row confirmed untouched).
+
+Three things this run established that are now doctrine:
+
+- **A named row can contradict the rule it arrives with.** `T6-C009` (2011202, `Historic Buildings`)
+  is on that page and was in the owner's list, but its source is `BILD 2026 Simplified Draft V1
+  **[external]**` — so the rule makes it Smart, and the run's own scope excluded it. It was **held,
+  not written**: left in `rows.csv` with an empty value column so the run records a deliberate
+  non-write instead of a silent omission. Check every named row's class against the rule before
+  writing; do not let an enumeration override a policy.
+- **Prove a new write path on one row first.** `T6-C002` was applied and validated alone in a
+  `proof/` sub-run before the other seven. The main run then `REFUSED` it as drift — correctly, since
+  the drift was the proof write. Expect that, and read it as the guard working rather than a problem
+  to force past.
+- **Re-scan before rebuilding, and expect the pattern to have moved.** See §6b.
+
+### Second application — the three planning-process pages, 2026-08-28
+
+Run `2026-08-28-t6-plan-process`, and the first under the narrowed scope.
+`the_plan/about_the_process`, `the_plan/capabilities_assessment`,
+`the_plan/jurisdictional_annexes/select_jurisdiction`: **14 writes (10 SET, 4 CHANGE), 14/14 PASS, 0
+unexpected leaf changes**, 4 rows held as already correct, **independent audit 18 of 18**.
+
+Two things it added to doctrine:
+
+- **The `+20 chars` signature only applies to a SET.** `,"fetchMode":"force"` is what an *absent* key
+  costs. A `smart → force` change is **+0** — the two strings are the same length — which looks like
+  a missing write and is not. Read the delta against the *shape* of the change, not against a
+  constant.
+- **An audit that has only seen one shape of change will mis-report the first new one.** The
+  built-env `audit.mjs` flagged **8 of 18 WRONG** here, and all 8 were its own bugs: it hard-coded
+  that run's single shape, expecting a held row to read `null` (these were held *because already
+  `force`*) and proving minimality by **deleting** the key (correct for a SET; impossible for a
+  CHANGE, where the baseline *has* the key). Both now read the pre-run state from
+  `baseline/<id>.json` instead of assuming it: minimality means **restore the key exactly as the
+  baseline had it** — absent if absent, its old value if it had one — and require the payload back
+  byte-for-byte. Copy forward `fix-runs/2026-08-28-t6-plan-process/audit.mjs`, not the built-env one.
+
+  The failure was loud, which is the right direction — but a false alarm and a bad write cost the
+  same verification cycle to tell apart. When a run introduces a change *shape* the audit has never
+  seen, generalise it before running it, not after.
+
+- **Verify the run against the whole pattern, not just its own rows.** A rescan diffed against the
+  pre-run scan showed **exactly the 14 sections moved, none added, none removed**. The per-row proof
+  says each write was minimal; only a whole-pattern diff says the run did not touch anything it never
+  mentioned.
+
+### Third application — the 17 natural-hazards pages, 2026-08-28 (closes `county_template`)
+
+Run `2026-08-28-t6-natural-hazards`. 81 in-scope components, **49 writes (16 SET, 33 CHANGE), 49/49
+PASS, 0 unexpected leaf changes**, 32 held as already correct, **independent audit 81 of 81**, and a
+whole-pattern rescan whose moved set was **identical to the run's target set**. That leaves
+`county_template` at 99 in scope / 99 correct / 0 outstanding.
+
+The run added no new failure mode, which is itself the point: the corrected `audit.mjs` handled all
+three shapes (SET, CHANGE, held-because-already-correct) unchanged, because it derives the pre-run
+state from `baseline/<id>.json` instead of assuming the run's shape.
+
+One check to repeat every time, though:
+
+- **Dedupe the run's rows by section id before baselining.** A section shared between two pages
+  legitimately produces **two report rows and one `Fix ID`** (§6b). The loop keys on section, so the
+  second row would write, then hit the drift refusal its own first write caused. Here `81 rows / 81
+  distinct ids` came out clean only because every shared section on those pages is `LHMP_IA` and the
+  narrowing excluded it. That was luck. Assert the counts match before you baseline.
