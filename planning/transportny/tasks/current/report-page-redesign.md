@@ -12,7 +12,7 @@ current status and open items).
 | Gap | What | Status |
 |---|---|---|
 | 01 | Inline Measure/Comparison Mode quick-control pills in the AVL Graph card header, instead of only via the Settings drawer | **DONE**, fully live-verified 2026-07-22 |
-| 02 | Per-route identity color, consistent across every graph a route appears on | **Implemented and live-verified end-to-end** 2026-07-22; several testing-checklist items still open (below) |
+| 02 | Per-route identity color, consistent across every graph a route appears on | **Implemented and live-verified end-to-end** 2026-07-22; remaining testing-checklist items confirmed working by Ryan 2026-08-24 |
 | 03 | Visual/density polish of the graph cards (shadow, header casing, attribution divider, footer whitespace, legend precision) | **Settled** 2026-07-23 after a scope review — 3 of 5 atoms kept, 2 fully reverted (below) |
 
 Full implementation detail (code traces, file-change tables, live-verification walkthroughs, bugs
@@ -76,15 +76,16 @@ only series discriminator. This is now its own tracked fix in the `dms` submodul
 (`comparisonseries-stable-series-key.md`) — pre-existing, not caused by the color work, not
 duplicated in this file.
 
-**Open testing-checklist items** (not yet directly verified):
-- A fresh `addRoute` call gets a color distinct from existing routes on the same report (cycling
+**Testing-checklist items — Ryan confirmed 2026-08-24 this all works** (not re-verified item-by-item
+against this specific list; his own words: "I validated this, it works"):
+- [x] A fresh `addRoute` call gets a color distinct from existing routes on the same report (cycling
   palette, no immediate repeats)
-- The same route shows the identical color across two different graphs on the same report
-- Adding/removing/reordering routes on a graph doesn't shift other routes' colors
-- Bar/Pie/Treemap rendering (LineGraph is proven, same code path, but untested)
-- GridGraph/SunburstGraph regression check
-- Existing non-report AVL Graph sections are unaffected (library-side regression check)
-- `colors.scheme`/`colors.reverse` (Gap 02b, already-shipped before this task) still work unchanged
+- [x] The same route shows the identical color across two different graphs on the same report
+- [x] Adding/removing/reordering routes on a graph doesn't shift other routes' colors
+- [x] Bar/Pie/Treemap rendering (LineGraph is proven, same code path, but untested)
+- [x] GridGraph/SunburstGraph regression check
+- [x] Existing non-report AVL Graph sections are unaffected (library-side regression check)
+- [x] `colors.scheme`/`colors.reverse` (Gap 02b, already-shipped before this task) still work unchanged
   on a report graph after this change
 
 ## Gap 03 — Card visual/density polish

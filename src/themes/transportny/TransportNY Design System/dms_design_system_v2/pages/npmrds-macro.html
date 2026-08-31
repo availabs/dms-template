@@ -85,16 +85,19 @@
    7. § 01's live table STACKS below md instead of scrolling sideways: the live section is a
       lexical layout-container, which cannot be an overflow-x container the way this <table>
       is. Verified at 390px.
-   8. THE DOWNLOAD BUILDER has TWO scopes (current filters · statewide) and `json` is
-      DISABLED — the create-download endpoint takes one geography filter and the pipeline
-      emits CSV/GPKG only.
+   8. THE DOWNLOAD BUILDER has TWO scopes (current filters · statewide) and TWO formats
+      (csv · gpkg). `json` was removed on 2026-08-24 — ogr2ogr emits no plain JSON and pm3
+      declined a second writer, so a permanently disabled button was worse than none.
+      GeoJSON is refused by pm3's route as policy. The zip also carries PM3_README.txt, a
+      manifest built from the exported year (era, anchor window, what not to trend).
    9. § 02's TED/PHED card draws 6 controls; the live count is FOUR — `perMiles` (sum by)
       and `risAADT` (AADT source) are commented out in filters.js because the source has
       no per-mile or RIS-AADT columns.
   10. Control labels here are the ones that shipped ("Peak period", "Threshold", "Unit",
       "Percentile") — the plugin maps its internal filter names onto this copy.
-  11. The § 01 head's `methodology →` link has NO live counterpart yet (npmrds_sub has no
-      docs page), so it is not built. The footer links only the four routes that exist.
+  11. RESOLVED 2026-08-27 — the § 01 head's `methodology →` link now points at
+      `npmrds-measures.html`, the new Measures & Methodology page (mockup for the live rewrite of
+      npmrds_docs row 281670). It pointed at docs-overview.html as a stand-in.
   12. The hover popup is CORE (the shared map hover component reading the layer's
       `hover-columns`), not plugin code — the plugin can only choose the field list, and
       "click to pin" is core behaviour, not a plugin knob.
@@ -359,7 +362,7 @@
                   </div>
                   <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Measure reference.</h2>
                 </div>
-                <a href="docs-overview.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1"><!-- npmrds/p_m_3_measures -->methodology <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                <a href="npmrds-measures.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1"><!-- npmrds/p_m_3_measures 281670 -->methodology <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
               </div>
 
               <!-- BACKPORT 2026-08-12: the LIVE § 01 is one lexical section whose rows are
@@ -367,7 +370,7 @@
                    below `md` each measure STACKS into a block instead (verified at 390px). The
                    three amber "not yet computed" chips are the honest state of the measures the
                    pm3 runner has not produced yet; they are also absent from the measure select.
-                   The `methodology →` link above is NOT built: npmrds_sub has no docs page yet. -->
+                   The `methodology →` link above now resolves to npmrds-measures.html (2026-08-27). -->
               <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                   <table class="w-full min-w-[880px]">
@@ -636,10 +639,15 @@
                     <div class="col-span-12 md:col-span-6 space-y-2.5">
                       <div>
                         <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mb-1">Format</div>
-                        <div class="h-8 grid grid-cols-3 rounded-[6px] border border-zinc-950/10 overflow-hidden">
+                        <!-- BACKPORT 2026-08-24: csv · gpkg is the WHOLE list. The disabled `json`
+                             button was REMOVED rather than left greyed out — ogr2ogr has no plain-JSON
+                             driver, pm3 declined to grow a second writer for one, and a control that
+                             will never be enabled reads as "coming soon" forever. GeoJSON is refused
+                             by pm3's route as policy; ESRI Shapefile is accepted by the route but not
+                             drawn here until its output has been opened end to end. -->
+                        <div class="h-8 grid grid-cols-2 rounded-[6px] border border-zinc-950/10 overflow-hidden">
                           <button class="bg-[#37576B] text-white font-mono text-[10px] uppercase tracking-wider">csv</button>
                           <button class="bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider border-l border-zinc-950/10">gpkg</button>
-                          <!-- BACKPORT 2026-08-12: json is DISABLED live — the download pipeline emits CSV/GPKG only --><button class="bg-white text-slate-300 font-mono text-[10px] uppercase tracking-wider border-l border-zinc-950/10 cursor-not-allowed" title="JSON export is not produced by the download pipeline yet" disabled>json</button>
                         </div>
                       </div>
                       <div>

@@ -78,17 +78,48 @@ const filters = {
     // accessor: d => d.name,
     // valueAccessor: d => d.value
   },
+  // Threshold Speed — WHICH REFERENCE the delay measures are computed against.
+  //
+  // This was a boolean { Freeflow: true, Speed Limit: false } and the column builder emitted the
+  // literal token "freeflow". pm3 computes FOUR references, so two of them — including the one
+  // PROVENANCE.md section 9 names as the recommended default, and the one it marks REQUIRED for
+  // comparing across functional classes — were unreachable by construction rather than by omission.
+  // 84 of the view's columns could not be named by any UI state.
+  //
+  // `value` is now the TOKEN that getMeasure() splices into the column name, so adding a reference
+  // is a domain entry and nothing else. Empty string = no token = the posted-speed-limit family
+  // (`phed_*`, `ted_*`), which is how those column names are actually shaped.
+  //
+  // The order is deliberate: default first, then the two specialised readings, then the deprecated
+  // own-year one last. `help` is drawn by contextPanel — the guidance in sections 9 and 10 has to
+  // reach the person opening this dropdown, not only the person reading the docs.
   freeflow: {
     order: 1,
     name: "Threshold Speed",
     type: "select",
-    // accessor: d => d.name,
-    // valueAccessor: d => d.value,
     domain: [
-      { name: "Freeflow", value: true },
-      { name: "Speed Limit", value: false }
+      {
+        name: "Free-flow · fixed reference",
+        value: "freeflow_anchored",
+        help: "Recommended. 60% of the speed this segment achieves when uncongested, measured over a FIXED window (Jun 2023 – Jul 2024) so year-over-year change is real movement rather than the yardstick drifting.",
+      },
+      {
+        name: "Free-flow · unfloored",
+        value: "freeflow_relative",
+        help: "Required for comparing ACROSS functional classes. Same fixed reference, but without the 20 mph floor — with the floor in place an arterial figure is ~90% floored against a freeway's ~3%, so a floored comparison compares the floor, not congestion.",
+      },
+      {
+        name: "Posted speed limit",
+        value: "",
+        help: "The federal formula (23 CFR 490): 60% of the posted limit, floored at 20 mph. Measures degradation from a POLICY number, so on roads that cannot reach 60% of their posted limit it reports delay during normal operation.",
+      },
+      {
+        name: "Free-flow · own year (deprecated)",
+        value: "freeflow",
+        help: "Legacy. Its reference is drawn from the year being measured, and that reference tracks prevailing traffic at r = +0.998 — so it structurally cannot show multi-year deterioration. Retained only to bridge to the fixed reference. Do not start new analysis on it.",
+      },
     ],
-    value: false,
+    value: "freeflow_anchored",
     multi: false,
     searchable: false,
     active: false
@@ -171,6 +202,25 @@ const filters = {
     searchable: false,
     active: false
   },
+  // Coverage publishes TWO percentages on the same scale and they answer different questions, so the
+  // choice is explicit rather than implied. Bins is the sample a percentile measure's own input rests
+  // on; epochs is the raw 5-minute feed and is lower by construction, since a bin counts as present
+  // when any one of its three epochs did. Their ratio recovers probe depth.
+  coverageBasis: {
+    order: 4,
+    name: "Basis",
+    type: "select",
+    domain: [
+      { name: "Bins reporting", value: "bins",
+        help: "How much of a bin-based measure's own input arrived — the sample size its percentiles rest on." },
+      { name: "Epochs reporting", value: "epochs",
+        help: "How much of the raw 5-minute feed arrived. Lower than bins by construction." },
+    ],
+    value: "bins",
+    multi: false,
+    searchable: false,
+    active: false
+  },
   percentiles: {
     order: 6,
     name: "Percentile",
@@ -220,6 +270,44 @@ const filters = {
   }
 }
 
+/**
+ * Reconcile a PERSISTED filter set with the current one.
+ *
+ * `updateSubMeasures` is called with `pluginData.measureFilters` — filter state saved into a map
+ * section, possibly months ago — not with the `filters` export. So any filter key added since that
+ * section was saved is simply absent, and destructuring it yields undefined. That crashed
+ * (`Cannot set properties of undefined (setting 'active')`) the moment `coverageBasis` was added.
+ *
+ * It also migrates `freeflow`, which changed from a BOOLEAN to a reference token. That one would not
+ * have crashed — it would have been worse. A saved `true` reached the column builder as the token
+ * `"true"`, naming `phed_true_all_xdelay_phrs`, which does not exist: a blank map with no error. A
+ * saved `false` would have quietly become the posted-speed-limit family.
+ *
+ * The boolean maps to the OWN-YEAR token, not the recommended anchored one. `true` meant "Freeflow"
+ * when it was saved, and that is `*_freeflow_*`; silently upgrading someone's saved analysis to a
+ * different reference would change their numbers. It also has to be own-year for correctness on
+ * source 1410, whose views have no anchored columns at all.
+ *
+ * Static domains are refreshed for the two controls this change touched, since a persisted domain is
+ * a stale copy — a saved section would otherwise still render the old two-option Freeflow toggle.
+ * `peakSelector`'s domain is deliberately NOT refreshed: it is recomputed per measure below.
+ */
+const reconcileFilters = (incoming) => {
+  const out = cloneDeep(incoming || {});
+  for (const [key, def] of Object.entries(filters)) {
+    if (!out[key]) out[key] = cloneDeep(def);
+  }
+  const ff = out.freeflow;
+  if (ff) {
+    if (typeof ff.value === "boolean" || ff.value === "true" || ff.value === "false") {
+      ff.value = (ff.value === true || ff.value === "true") ? "freeflow" : "";
+    }
+    ff.domain = cloneDeep(filters.freeflow.domain);
+  }
+  if (out.coverageBasis) out.coverageBasis.domain = cloneDeep(filters.coverageBasis.domain);
+  return out;
+};
+
 const updateSubMeasures = (filters, falcor) => {
   const {
     // fetchData,
@@ -228,13 +316,14 @@ const updateSubMeasures = (filters, falcor) => {
     //risAADT,
     // perMiles,
     vehicleHours,
+    coverageBasis,
     attributes,
     percentiles,
     trafficType,
     fueltype,
     pollutant,
     measure
-  } = cloneDeep(filters);
+  } = reconcileFilters(filters);
 
   // const cache = falcor.getCache();
 
@@ -256,6 +345,7 @@ const updateSubMeasures = (filters, falcor) => {
 
   fueltype.active = false;
   pollutant.active = false;
+  coverageBasis.active = false;
   percentiles.value = null;
   switch (measure.value) {
     case "emissions":
@@ -332,6 +422,22 @@ const updateSubMeasures = (filters, falcor) => {
       // percentiles.active = true;
       peakSelector.value = AM_PEAK_KEY;
       break;
+    // R1's truck p80. Every tttr_p80 column is PEAK-SCOPED — pm3 publishes tttr_p80_amp_tttr_p80 and
+    // friends but no un-peaked form — so this case is mandatory, not cosmetic. Without it
+    // peakSelector.domain stayed empty, the fallback below reset the value to NO_PEAK_KEY, getMeasure
+    // omitted the bin segment, and the map asked for `tttr_p80_tttr_p80`: a column that does not
+    // exist, hence a blank map for every year with no error anywhere.
+    case "tttr_p80":
+      peakSelector.active = true;
+      peakSelector.domain = [
+        { name: "AM Peak", value: AM_PEAK_KEY },
+        { name: "Midday", value: MIDDAY_KEY },
+        { name: "PM Peak", value: PM_PEAK_KEY },
+        { name: "Weekend", value: WEEKEND_KEY },
+        { name: "Overnight", value: OVERNIGHT_KEY }
+      ]
+      peakSelector.value = AM_PEAK_KEY;
+      break;
     case "phed":
       peakSelector.active = true;
       peakSelector.domain = [
@@ -376,6 +482,26 @@ const updateSubMeasures = (filters, falcor) => {
       ]
       peakSelector.value = NO_PEAK_KEY;
     break;
+    case "coverage":
+      coverageBasis.active = true;
+      trafficType.active = true;
+      peakSelector.active = true;
+      peakSelector.domain = [
+        { name: "All periods", value: NO_PEAK_KEY },
+        { name: "AM Peak", value: AM_PEAK_KEY },
+        { name: "Midday", value: MIDDAY_KEY },
+        { name: "PM Peak", value: PM_PEAK_KEY },
+        // PHED's PM window (15-18) is a DIFFERENT window from PMP (16-19), and coverage publishes
+        // both rather than reporting one under the other's name. See PROVENANCE.md section 11.
+        { name: "PM Peak (delay window)", value: "alt_pmp" },
+        { name: "Weekend", value: WEEKEND_KEY },
+        // Trucks only: the all-vehicle stream has no overnight bin in pm3's COVERAGE_BINS, so
+        // offering it there would name a column that does not exist.
+        ...(trafficType.value === "truck"
+          ? [{ name: "Overnight", value: OVERNIGHT_KEY }]
+          : []),
+      ];
+      break;
     case "speed":
       // peakSelector.active = true;
       // peakSelector.domain = [
@@ -408,7 +534,10 @@ const updateSubMeasures = (filters, falcor) => {
   //   vehicleHours.value = true;
   // }
 
-  freeflow.value = false;
+  // Was `false` when this was a boolean. Now the DEFAULT TOKEN — the fixed-reference free-flow that
+  // PROVENANCE.md section 9 recommends. Resetting to "" here would silently default every delay map
+  // to the posted-speed-limit family instead.
+  freeflow.value = "freeflow_anchored";
   // perMiles.value = false;
   vehicleHours.value = PHRS;
   //risAADT.value = false;
@@ -423,6 +552,7 @@ const updateSubMeasures = (filters, falcor) => {
     //risAADT,
     // perMiles,
     vehicleHours,
+    coverageBasis,
     attributes,
     percentiles,
     trafficType,
@@ -435,7 +565,12 @@ const updateSubMeasures = (filters, falcor) => {
 
 //no side effects/mutations/effects/etc.
 //literally just tells you what your `data-column` is
-const getMeasure = (filters) => {
+const getMeasure = (rawFilters) => {
+  // Reconciled for the same reason updateSubMeasures is: comp.jsx and dataUpdate.jsx both call this
+  // with PERSISTED `measureFilters` on every render, which can predate `coverageBasis` and can still
+  // hold `freeflow` as a boolean. Without this a saved `true` would name `phed_true_*` — a blank map
+  // with no error — and it runs before updateSubMeasures has had a chance to write back.
+  const filters = reconcileFilters(rawFilters);
   const {
     measure,
     peakSelector,
@@ -446,6 +581,7 @@ const getMeasure = (filters) => {
     attributes,
     percentiles,
     trafficType,
+    coverageBasis,
     fueltype,
     pollutant
   } = filters;
@@ -463,7 +599,10 @@ const getMeasure = (filters) => {
       out = [
         measure.value, //phed, required
         (trafficType.value !== "all") && trafficType.value, //truck, optional
-        (freeflow.value && freeflow.value !== "false") && measure.value !== "freeflow" ? "freeflow" : null, //freeflow, optional
+        // The SELECTED reference token, not a hardcoded "freeflow". "" = posted speed limit, which is
+        // the un-suffixed column family. The measure.value guard stays: there is also a `freeflow`
+        // MEASURE (free-flow speed), and without it that would build `freeflow_freeflow_*`.
+        (measure.value !== "freeflow" && freeflow.value) || null, //threshold reference, optional
         (peakSelector.value !== NO_PEAK_KEY && vehicleHours.value !== HRS) && peakSelector.value, //amp, optional
         vehicleHours.active && vehicleHours.value,//phrs, required
       ].filter(Boolean).join("_")
@@ -472,7 +611,10 @@ const getMeasure = (filters) => {
       out = [
         measure.value, //ted, required
         (trafficType.value !== "all") && trafficType.value, //truck, optional
-        (freeflow.value && freeflow.value !== "false") && measure.value !== "freeflow" ? "freeflow" : null, //freeflow, optional
+        // The SELECTED reference token, not a hardcoded "freeflow". "" = posted speed limit, which is
+        // the un-suffixed column family. The measure.value guard stays: there is also a `freeflow`
+        // MEASURE (free-flow speed), and without it that would build `freeflow_freeflow_*`.
+        (measure.value !== "freeflow" && freeflow.value) || null, //threshold reference, optional
         (peakSelector.value !== NO_PEAK_KEY && vehicleHours.value !== HRS) && peakSelector.value, //amp, optional
         vehicleHours.active && vehicleHours.value,//phrs, required
       ].filter(Boolean).join("_")
@@ -493,11 +635,35 @@ const getMeasure = (filters) => {
         //percentiles.value
       ].filter(Boolean).join("_")
       break;
+    // Same shape as tttr — `tttr_p80_amp_tttr_p80`. The measure key appears twice because pm3 names
+    // the column `<metric>_<bin>_<metric>`.
+    case "tttr_p80":
+      out = [
+        measure.value,
+        (peakSelector.value !== NO_PEAK_KEY) && peakSelector.value,
+        measure.value,
+      ].filter(Boolean).join("_")
+      break;
+    // coverage_<stream>_<bin>_pct_<basis>_reporting. The bin is ALWAYS present, including "all" —
+    // unlike the measure families, where NO_PEAK_KEY means "omit the segment".
+    case "coverage":
+      out = [
+        "coverage",
+        trafficType.value === "truck" ? "freight_trucks" : "all_vehicles",
+        peakSelector.value,
+        "pct",
+        coverageBasis.value,
+        "reporting",
+      ].join("_")
+      break;
     case "speed":
       out = [
         measure.value,
         percentiles.value
       ].filter(Boolean).join("_")
+      // Pre-existing missing `break` — harmless while `default` is empty, but this is precisely the
+      // shape that breaks silently when a case is appended below it.
+      break;
     default:
       break;
   }

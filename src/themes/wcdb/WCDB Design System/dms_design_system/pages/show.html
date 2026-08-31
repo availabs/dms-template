@@ -591,28 +591,35 @@
               <section data-dms-section="card:footer">
                 <div class="wcdb-card-inv p-10">
                   <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
-                    <div>
-                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">Stay tuned</div>
-                      <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-3">
-                        Drop us your email.
-                      </h2>
-                      <p class="text-[15px] leading-[1.5] max-w-[440px] text-[#4a4a4a]">
-                        Once-a-month dispatch from the studio — new shows,
-                        upcoming events, the occasional pledge drive. No
-                        spam, no algorithms.
-                      </p>
+                  <!-- No mailing-list signup. It was drawn here through v0.3
+                       and is removed 2026-08-21: the station is not launching a
+                       newsletter, and a form with nowhere to post is worse than
+                       no form — it collects an address and drops it.
 
-                      <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-[520px]">
-                        <input type="email" placeholder="you@somewhere.edu"
-                               class="flex-1 px-4 py-3 rounded-full bg-transparent border border-[rgba(10,10,10,0.15)]
-                                      font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--inv-ink)]
-                                      placeholder:text-[#a0a0a0] focus:outline-none focus:border-[color:var(--inv-ink)]">
-                        <button class="px-6 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
-                                       font-[family-name:var(--font-sans)] text-[13px] font-medium">
-                          Subscribe
-                        </button>
-                      </form>
+                       That left the column without a subject, because the
+                       eyebrow, the headline and the paragraph were ALL the
+                       newsletter pitch. Rather than delete the column and let
+                       the link lists float, it now carries what a station
+                       footer should: who is broadcasting, from where, and the
+                       number to call. Every value here is on `station-info`,
+                       so nothing is invented.
+
+                       If a newsletter does launch, this is where it goes back —
+                       and it needs a destination decided first. -->
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">On air since 1977</div>
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-4">
+                      WCDB Albany 90.9FM
+                    </h2>
+                    <p class="text-[15px] leading-[1.5] max-w-[440px] text-[#4a4a4a]">
+                      Student-run radio from SUNY Albany, broadcasting from
+                      Campus Center 316, 1400 Washington Avenue, Albany NY 12222.
+                    </p>
+                    <div class="mt-6 flex flex-wrap items-baseline gap-x-8 gap-y-2 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[#4a4a4a]">
+                      <span>Request line <span class="text-[color:var(--inv-ink)]">(518) 442-4242</span></span>
+                      <a href="./station-info.html" class="text-[color:var(--inv-ink)] border-b border-[rgba(10,10,10,0.2)] hover:border-[color:var(--inv-ink)] pb-0.5 transition-colors">Station info &rarr;</a>
                     </div>
+                  </div>
 
                     <div class="grid grid-cols-2 gap-6">
                       <div>

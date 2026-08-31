@@ -185,7 +185,9 @@ export default function ReportRouteList() {
 
   const { mileageByRouteCompId } = useRouteMileage({ apiLoad, routes: effectiveRoutes });
 
-  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
+  // `effectiveRoutes` is already the resolveRouteDates()'d array (see its own definition just
+  // above) — gap #16's reliability year-resolution reuses it directly rather than re-resolving.
+  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate, allRoutes: effectiveRoutes });
 
   // Design push #2 (2026-08-06) removed the per-graph assignment CHIPS a route used to show
   // (see RouteRow.jsx) — that's still gone, graph assignment is a QuickControls-owned field on
@@ -331,8 +333,31 @@ export default function ReportRouteList() {
   // the new section's own `display._measurePick` by useAddGraphSection.js/applyMeasurePickToState)
   // instead of a separate post-create route-side write — a graph owns its own route assignment
   // now, RRL's `routes` storage row is never touched by adding a graph at all.
+  //
+  // report-authoring-ux-overhaul.md Tier 6A's own flagged-not-fixed gap: AddGraphModal's "When"
+  // step (`setWeekday`/`applyTodPreset`) only ever writes the dead scalar `pick.weekdays`/
+  // `pick.start`/`pick.end` — `useGraphPublish.js`'s `transformReportRoutes` stopped reading those
+  // the moment `routeWindows` shipped (2026-08-14), so a graph created with e.g. "AM Peak" selected
+  // in the modal silently published as unrestricted/all-day. Fixed here, at the one place a
+  // brand-new graph's routes and window both become known at once: build `routeWindows` the exact
+  // same shape QuickControls' own "When" pill writes (`applyWindowToAllRoutes`,
+  // QuickControls/index.jsx) — one `[{ weekdays, start, end }]` entry per assigned route.
+  // Map only, deliberately excluded: AddGraphModal hides its whole "When" step for a Map pick
+  // (`pick.graphType !== 'Map'` gate in AddGraphModal.jsx) — `pick.weekdays`/`start`/`end` at
+  // confirm time are therefore just whatever was left over from a PRIOR, unrelated shape/measure
+  // pick in this same modal session, never a choice the author actually made for this Map. Since
+  // routeWindows now generically restricts ANY self-bound section's query (Map's own choropleth
+  // join included — confirmed report-authoring-ux-overhaul.md Tier 5L/5M), silently carrying that
+  // stale window onto a brand-new Map would invisibly narrow its data with no "When" UI anywhere
+  // on Map's own creation step to reveal or fix it. QuickControls' own "When" pill (post-creation)
+  // IS offered for Map and is unaffected by this — an author can still restrict a Map's window
+  // there, just not at creation time via this modal.
   const handleConfirmAddGraph = async ({ pick, selectedRouteIds }) => {
-    await addGraphSection({ ...pick, routeIds: selectedRouteIds || [] });
+    const routeIds = selectedRouteIds || [];
+    const routeWindows = pick.graphType === 'Map'
+      ? undefined
+      : Object.fromEntries(routeIds.map((id) => [id, [{ weekdays: pick.weekdays, start: pick.start, end: pick.end }]]));
+    await addGraphSection({ ...pick, routeIds, ...(routeWindows ? { routeWindows } : {}) });
   };
 
   // A Dynamic Report with no (or a mismatched) `?routes=` still needs to show its
@@ -441,6 +466,11 @@ export default function ReportRouteList() {
                 open={isAddGraphModalOpen}
                 setOpen={setIsAddGraphModalOpen}
                 routes={routes}
+                // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
+                // already drives the checklist's own display and Dynamic-Report placeholder
+                // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
+                // `effectiveRoutes` instead, without changing what the checklist itself shows.
+                allRoutesResolved={effectiveRoutes}
                 onConfirm={handleConfirmAddGraph}
               />
             </div>

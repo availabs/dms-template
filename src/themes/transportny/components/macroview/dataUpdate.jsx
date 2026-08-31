@@ -3,6 +3,7 @@ import { filters, updateSubMeasures, getMeasure } from "./updateFilters"
 import { MEASURES } from "./measures";
 import {
   PM3_LAYER_KEY,
+  singleYearViewsNewestFirst,
 } from "./constants";
 
 const DataUpdate = (map, state, setState) => {
@@ -174,9 +175,13 @@ const DataUpdate = (map, state, setState) => {
   } else if (pm3LayerId && !viewId && allPluginViews?.length > 0) {
     console.log("fallback no view selected")
     console.log({pluginDataPath, allPluginViews, pm3LayerId})
-    //if no view is selected, but there is at least 1 element in views, select that 1 element
+    //if no view is selected, default to the MOST RECENT YEAR rather than to whatever order the
+    //author happened to select views in.
     setState((draft) => {
-      set(draft, `${pluginDataPath}['viewId']`, allPluginViews[0].value);
+      // Guarded: a source whose only views are multi-year yields an empty list here, and reaching
+      // for [0].value would throw inside a setState draft.
+      const newest = singleYearViewsNewestFirst(allPluginViews)[0];
+      if (newest) set(draft, `${pluginDataPath}['viewId']`, newest.value);
     });
   }
 };

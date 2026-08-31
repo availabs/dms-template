@@ -98,17 +98,85 @@ function erasForYear(year, stream = 'all_vehicles') {
  * coverage with 84.4% density-A, Jun–Dec at 36.1% and 90.7%, in a near 48/52 record split. A p15
  * pooled over that is a mixture of two regimes.
  *
- * E8 is used because it is a clean single era, 14 months long, and at 41.6% daytime coverage sits
- * close to the archive's long-run middle rather than at either extreme (the range is 28.0%–67.0%) —
- * so the anchor is not calibrated on an unusually good or bad period.
+ * **Anchor: E5 (2021-01 -> 2023-05).** Chosen on evidence 2026-08-21 after E8 turned out to be a no-op.
+ *
+ * The anchor must satisfy TWO conditions, and the first version satisfied only one:
+ *   (a) lie inside a single coverage era, so the percentile is not a mixture of regimes. H5's own
+ *       CY2023 window fails this -- it straddles the 2023-06 boundary (Jan-May 46.4% daytime coverage
+ *       and 84.4% density-A; Jun-Dec 36.1% and 90.7%, in a near 48/52 record split).
+ *   (b) be DISJOINT from the years being measured. E8 (2024-12 -> 2026-01) was picked for (a) and
+ *       violates (b): it contains 12 of the 12 months of CY2025, so its p15 was computed over
+ *       essentially the same data as the own-year p15 and moved delay +0.05%. An anchor that overlaps
+ *       the publish year is definitionally a no-op -- it measures a ruler against itself.
+ *
+ * Three candidates were measured on CY2025 delay, floor included, i.e. as actually published:
+ *
+ *   E5     2021-01 -> 2023-05   +1.72%   25.8% of TMCs up >5% vs 4.2% down   6.1x asymmetry
+ *   E6     2023-06 -> 2024-07   +1.18%   25.6% up vs 3.5% down              7.3x
+ *   CY2023 (H5's window)        +1.30%   26.7% up vs 3.3% down              8.2x
+ *
+ * E5 wins on principle rather than on margin, since all three are close: it is a clean single era, it
+ * is the longest window at 29 months (so the percentile is the most stable), and at 43.5% daytime
+ * coverage it is slightly BETTER observed than the target years rather than worse -- which keeps the
+ * coverage confound H5 flagged (RQ1) on the safe side. It also yields the largest effect, being the
+ * earliest, which is the direction that reveals deterioration rather than concealing it.
+ *
+ * NOTE ON MAGNITUDE. H5 reported +6.69% for a CY2023 anchor; reproduced here the same window gives
+ * +1.30%. Both are right for different formulas: **H5 explicitly omitted the 20 mph floor** (its
+ * method note says so), while the figures above include it because that is what the published variant
+ * does. RQ18 explains the whole gap -- 55.4% of delay is floored under BOTH references, so it cannot
+ * respond to a reference change at all. The unfloored `*_freeflow_relative` series (R13) is where the
+ * larger effect should reappear.
  *
  * Inclusive of both endpoints. Changing this changes every published delay figure, so treat it as a
  * versioned decision: republish, do not silently switch.
  */
+/**
+ * The fixed window the anchored free-flow reference is drawn from.
+ *
+ * Moved E5 -> E6 on 2026-08-23, when the publish scope grew from CY2025 alone to the full 2017-2025
+ * archive. E5 (2021-01..2023-05) overlapped THREE candidate publish years; E6 overlaps two, and they
+ * sit at the edge of the series rather than dead centre.
+ *
+ * WHY OVERLAP MATTERS AT ALL. The p15 is a low percentile of the same distribution as the median, so
+ * it moves with the traffic: H5 measured corr(p15 y/y ratio, p50 y/y ratio) = +0.998. With an
+ * own-year reference a road that slows 10% also gets a 10% slower threshold, so delay barely moves —
+ * the measure structurally cannot see multi-year deterioration, which is the defect R2 exists to fix.
+ * An anchor overlapping publish year Y computes Y's threshold partly FROM Y, so Y partially reverts
+ * to that behaviour. The damage is not to Y's level, it is that **Y is measured with a different
+ * ruler than its neighbours**: 2023 and 2024 will show damped growth against 2022 and 2025, which
+ * reads as "congestion growth paused then resumed". Inconsistency across the series, not a biased
+ * level. (E8 was the pathological case: it CONTAINED all of CY2025, making the anchored figure 0.04%
+ * from own-year — a total no-op.)
+ *
+ * WHY NOT AN EARLY WINDOW, which would have put the compromised years at the very start: only 66.1%
+ * of 2025's TMCs have any data in E1 (2017-01..2018-09). An E1 anchor would leave 17,656 segments of
+ * the modern network with no anchored delay at all. E6 covers 99.7%.
+ *
+ * WHY NOT E2/E7: 3 and 4 months, too short for a stable p15. WHY NOT E4: it is COVID — arguably the
+ * purest measure of what a road can achieve unimpeded, but a traffic anomaly rather than a facility
+ * property, so delay measured against it would be inflated network-wide.
+ *
+ * COST OF E6, recorded honestly: the reference travel time is divided by the PUBLISH-YEAR segment
+ * length, so geometry drift between the window and the year grows with their separation. 220 segments
+ * (1.0%) were already distorted at E5->2025, ~2-4 years apart; E6->2017 is 7 years apart and will be
+ * worse. It lands on the earliest years, which are the smallest, worst-observed and most caveated
+ * part of the archive — but it is the reason the length-consistency guard should be built.
+ */
 const FREEFLOW_REFERENCE_WINDOW = {
-  era: 'E8',
-  dates: ['2024-12-01', '2026-01-31'],
-  note: 'single clean era, 14 months, 41.6% daytime coverage ~ the archive long-run middle',
+  era: 'E6',
+  dates: ['2023-06-01', '2024-07-31'],
+  note: '14-month single era, covers 99.7% of the 2025 network, disjoint from every publish year except 2023 and 2024',
+  /**
+   * Publish years this window overlaps, and which therefore carry a PARTIALLY SELF-REFERENTIAL
+   * anchored figure — their threshold is computed partly from their own traffic, so their delay
+   * growth is damped relative to neighbouring years. Declared rather than derived so that moving the
+   * window is a deliberate act: the disjointness test recomputes this from `dates` and fails if the
+   * two disagree.
+   *
+   * Consumers reading a trend should treat these two years' anchored delta as a lower bound.
+   */
+  selfReferentialYears: [2023, 2024],
 };
 
 module.exports = { ALL_VEHICLE_ERAS, TRUCK_ERAS, erasForYear, FREEFLOW_REFERENCE_WINDOW };

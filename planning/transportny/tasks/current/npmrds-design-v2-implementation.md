@@ -2,6 +2,14 @@
 
 **Project:** TransportNY · **Topic:** themes
 
+**STALE / SUPERSEDED as of 2026-08-24 (Ryan's call).** Item 1 below ("Map graph-type support —
+genuinely blocked") describes a pre-Map-authoring-UI state that no longer exists: Map creation UI
+(`report-authoring-ux-overhaul.md` Tier 5C, 2026-08-20) and choropleth-by-measure (Tiers 5J/5K/10,
+2026-08-20/24 — now covering speed/travelTime/hoursOfDelay/avgHoursOfDelay/all 4 CO2 variants) have
+since fully shipped and live-verified there. Items 2-4 below were not independently re-checked this
+pass — read `report-authoring-ux-overhaul.md` first for current NPMRDS report-authoring UI state
+before trusting anything below.
+
 **Status, corrected 2026-08-18** (the line below was stale for 12 days — see
 `reports-docs-consolidation.md`): **the report canvas work is DONE.** Rail-width mechanism, the new
 `ReportPageHeader` component, RRL's first restructure pass (Phase 3, all 7 sub-items except Map),

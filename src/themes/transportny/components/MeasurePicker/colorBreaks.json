@@ -1,0 +1,74 @@
+{
+  "_provenance": "Round 80 (2026-08-27, old-reports-conversion.md) -- the single shared source of truth for NPMRDS's static color scales, read by both composeMapConfig.js/composeMeasureConfig.js (JS) and route_map.py (Python), mirroring vocabulary.json's cross-language pattern. Created to replace per-report/per-section DYNAMIC color scales (Route Map's live ClickHouse quantile bake, GridGraph/BarGraph's data-computed min/max) with FIXED, author-chosen breaks -- same design precedent as src/themes/transportny/components/macroview/breaks.js (see that file's own header for the full incident history this avoids: one color swallowing most of the network, a legend that re-labels every time the underlying data shifts). Ryan's explicit direction (2026-08-27): ship with the existing placeholder values (composeMapConfig.js's prior CHOROPLETH_DEFAULTS, route_map.py's matching Python constants) rather than block on a real distribution analysis -- 'ship with placeholder, then we can follow up with real breaks'. Every `measures` entry below is that same placeholder-quality data, NOT independently re-derived or re-verified against a real value distribution the deliberate way MacroView's own breaks.js was (see that file's header for the analysis MacroView got: real per-column distributions across 57 columns x 5 year views). This is a real, tracked follow-up, not a rounding error -- flagged per-measure below where the provenance is especially weak (single-data-point CO2 guesses).",
+  "measures": {
+    "speed": {
+      "colors": ["#f7e76e", "#f3c048", "#ec962a", "#e1631a", "#ce141f"],
+      "breaks": [15, 30, 45, 60],
+      "maxValue": 80,
+      "domain": [0, 80],
+      "_source": "route_map.py's original DEFAULT_SPEED_COLOR_RANGE + placeholder breaks -- round numbers, not independently re-derived from a real speed distribution."
+    },
+    "speedTruck": {
+      "colors": ["#f7e76e", "#f3c048", "#ec962a", "#e1631a", "#ce141f"],
+      "breaks": [15, 30, 45, 60],
+      "maxValue": 80,
+      "domain": [0, 80],
+      "_source": "No prior placeholder exists anywhere in the codebase (route_map.py never built a truck-speed choropleth). Reused verbatim from 'speed' on the assumption truck speeds occupy roughly the same highway-speed range -- an assumption, not verified against real truck-speed data, flagged distinctly from the other 'not independently re-derived' entries below."
+    },
+    "travelTime": {
+      "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
+      "breaks": [3, 7, 15, 30],
+      "maxValue": 45,
+      "domain": [0, 45],
+      "_source": "route_map.py's original placeholder (reversed speed ramp: low/good travel time = green). Not independently re-derived."
+    },
+    "hoursOfDelay": {
+      "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
+      "breaks": [5, 20, 50, 100],
+      "maxValue": 200,
+      "domain": [0, 200],
+      "_source": "route_map.py's original placeholder. Not independently re-derived."
+    },
+    "avgHoursOfDelay": {
+      "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
+      "breaks": [0.1, 0.5, 1, 3],
+      "maxValue": 5,
+      "domain": [0, 5],
+      "_source": "route_map.py's original placeholder, the resolution-invariant 'day'-grain rate (vocabulary.json's avgHoursOfDelay.expr is resolution-invariant, same expr every chart uses regardless of bucket size). Not independently re-derived. Route Map's own 5-minute-epoch-rate variant (a genuinely different, much smaller-magnitude expression -- see expressions.py's ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION) stays a Python-only constant in route_map.py, since composeMapConfig.js/composeMeasureConfig.js have no resolution-keyed Route Map equivalent today -- a pre-existing JS/Python divergence, not something this round's static-breaks change fixes."
+    },
+    "co2Emissions_passenger": {
+      "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
+      "breaks": [1, 5, 15, 30],
+      "maxValue": 50,
+      "domain": [0, 50],
+      "_source": "Authored from ONE real live data point (a low-traffic 0.2mi single-TMC route, full calendar month: co2Emissions_passenger 2.98t) -- not a real distribution across routes. Weakest provenance in this table alongside the other CO2 entries; a strong candidate for the real-breaks follow-up."
+    },
+    "co2Emissions_truck": {
+      "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
+      "breaks": [1, 5, 15, 30],
+      "maxValue": 50,
+      "domain": [0, 50],
+      "_source": "Same single-data-point provenance as co2Emissions_passenger (that route's truck value: 1.36t)."
+    },
+    "avgCo2Emissions_passenger": {
+      "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
+      "breaks": [0.0001, 0.0003, 0.0006, 0.0015],
+      "maxValue": 0.003,
+      "domain": [0, 0.003],
+      "_source": "Single-data-point provenance; the original 0.0005 floor guess was live-verified WRONG once (2026-08-24 -- a real low-traffic route's value fell entirely below it, rendering out-of-range grey) and lowered. Still not verified across a real distribution."
+    },
+    "avgCo2Emissions_truck": {
+      "colors": ["#ce141f", "#e1631a", "#ec962a", "#f3c048", "#f7e76e"],
+      "breaks": [0.0001, 0.0003, 0.0006, 0.0015],
+      "maxValue": 0.003,
+      "domain": [0, 0.003],
+      "_source": "Same single-data-point provenance as avgCo2Emissions_passenger."
+    }
+  },
+  "reliability": {
+    "_note": "Reused VERBATIM from src/themes/transportny/components/macroview/breaks.js -- these are literally the same PM3 (source 1410) columns MacroView already covers (lottr_*_lottr / tttr_*_tttr / speed_pctl_85, matching composeReliabilityColumns' own column aliases in composeMeasureConfig.js), unlike the `measures` entries above, which have no MacroView equivalent at all. NOT YET WIRED to anything -- Info Box's reliability bucket (composeReliabilityColumns) is a plain Table with no color-scale concept (Spreadsheet cells don't render a color gradient), and no chart currently renders a reliability measure. Included here for coverage, ready for whenever a reliability color scale gets built (a Map choropleth or a future colored Table cell).",
+    "lottr": { "edges": [1.1, 1.2, 1.3, 1.5, 1.75, 2.1], "floor": 1, "format": ",.2f", "label": "policy-anchored" },
+    "tttr": { "edges": [1.25, 1.5, 1.75, 2, 2.5, 3.5], "floor": 1, "format": ",.2f", "label": "target-anchored" },
+    "freeflow": { "edges": [10, 20, 30, 40, 50, 60], "floor": 0, "format": ",.0f", "label": "10 mph steps" }
+  }
+}

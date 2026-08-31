@@ -21,6 +21,21 @@
 // which no downstream project can resolve — it broke transportNY's build on first sync. Keep it a
 // sibling; do not move it back out of the synced tree.
 import vocab from './vocabulary.json';
+// Round 80 (2026-08-27, old-reports-conversion.md): the same shared static-breaks table
+// composeMapConfig.js's Route Map choropleth reads — see that file's header comment and
+// colorBreaks.json's own `_provenance` for the full "why static, why shared" rationale. Used below
+// to give GridGraph/BarGraph's rdylgn magnitude scale a fixed [min,max] domain instead of computing
+// one from whatever's currently loaded, the same "very similar charts, different color scales"
+// problem Ryan flagged for Route Map applying equally here.
+import colorBreaks from './colorBreaks.json';
+// report-authoring-ux-overhaul.md Tier 6A (2026-08-20): the same time-of-day/day-of-week helpers
+// QuickControls'/AddGraphModal's own "When" pill already use, reused here (not re-derived) so the
+// auto-title's phrasing of a window never drifts from what the pill itself shows for it.
+import { PEAK_PRESETS, timeOfDayToken, summarizeWeekdays, isDayOn, WEEKDAY_KEYS, WEEKEND_KEYS } from '../ReportRouteList/utils';
+// Gap #16 (2026-08-21): reliability measures (LOTTR/TTTR/Freeflow) need each assigned route's
+// REAL resolved date range (a derived route's raw stored startDate/endDate are blank — see that
+// file's own header comment) to pick the correct year-matched pgFederated join.
+import { resolveRouteDates } from '../ReportRouteList/relativeDateResolution';
 
 export const GRAPH_VOCAB = vocab;
 
@@ -61,6 +76,9 @@ export const MEASURE_CATEGORIES = [
     { label: 'Travel time', measures: ['travelTime'] },
     { label: 'Delay', measures: ['hoursOfDelay', 'avgHoursOfDelay'] },
     { label: 'Emissions', measures: ['co2Emissions_passenger', 'avgCo2Emissions_passenger', 'co2Emissions_truck', 'avgCo2Emissions_truck'] },
+    // gap #16 (report-authoring-ux-overhaul.md, 2026-08-24): info_box_templates.py's static
+    // (no year/bin dependency) length/aadt Info Box measures, ported to vocabulary.json.
+    { label: 'Route attributes', measures: ['length', 'aadt'] },
 ];
 
 const RESOLUTION_LABELS = {
@@ -89,6 +107,41 @@ export const COMPARISON_MODE_OPTIONS = [
     { value: 'plain', label: 'Plain' },
     { value: 'difference', label: 'Difference' },
 ];
+
+// The exact shape ReportRouteList's own $self-binding recipe uses — confirmed
+// live against a Report Page template's pre-wired starter graph (section
+// 2195009): `display._functions.subscribers` carries a `comparison_series`
+// entry with paramKey "$self" (the reserved sentinel usePageFilterSync
+// resolves to this graph's own stable identity — see ReportRouteList's
+// README, "Publishing routes to graphs"), and `comparisonSeries.enabled`
+// must be on (the master switch) for ReportRouteList's assigned routes to
+// render as series at all.
+const REPORT_SUBSCRIBER_ARGS = { labelKey: 'label', valueKey: 'filters' };
+
+// Report-authoring-ux-overhaul.md Tier 5C (2026-08-20): the ONLY piece of the report-wiring block
+// this picker owns that's genuinely element-type-agnostic — `findSelfBoundGraphs`
+// (useGraphPublish.js) reads this same subscriber shape off ANY section type, Map included, to
+// decide whether to publish routes to it. Lives here (not MeasurePicker/index.js, where it was
+// first extracted) specifically so composeMapConfig.js can import it too without a circular
+// dependency (index.js -> composeMapConfig.js -> index.js) — this file is a leaf every other
+// MeasurePicker module already depends on, never the reverse.
+// `state.comparisonSeries.*` is NOT part of this — that's the chart/table "categorize column"
+// master switch, meaningless for Map (its runtime never reads `state.comparisonSeries` at all; see
+// useComparisonSeriesLayers.js), so it stays in MeasurePicker/index.js, chart/table-only.
+export function ensureSelfBoundSubscriber(state) {
+    if (!state.display) state.display = {};
+    if (!state.display._functions) state.display._functions = { providers: [], subscribers: [] };
+    if (!state.display._functions.subscribers) state.display._functions.subscribers = [];
+    const subscribers = state.display._functions.subscribers;
+    const existingSubscriber = subscribers.find(s => s.functionId === 'comparison_series');
+    if (existingSubscriber) {
+        existingSubscriber.enabled = true;
+        existingSubscriber.paramKey = '$self';
+        existingSubscriber.args = { ...existingSubscriber.args, ...REPORT_SUBSCRIBER_ARGS };
+    } else {
+        subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
+    }
+}
 
 // Author-empowerment: no cartesian-product gating here. Unlike TEMPLATE_SPECS
 // (which only has the combos old reports actually needed), this picker
@@ -124,6 +177,12 @@ export const DEFAULT_PICK = {
     // default; AddGraphModal seeds it from the current single `measure` the moment the author
     // switches the shape card to Table (see that file), so the multi-select never opens blank.
     measures: [],
+    // Gap #16 (report-authoring-ux-overhaul.md, 2026-08-21): Table only. Appends one "% vs Main"
+    // delta column per measure — see buildRouteCompareDeltaColumn below.
+    routeCompare: false,
+    // Gap #16 (2026-08-21): Table only. Appends LOTTR/TTTR/Freeflow columns from source 1410's
+    // year-matched pgFederated join — see composeReliabilityColumns below.
+    includeReliability: false,
 };
 
 // Tags every column this picker generates as metadata (documents provenance
@@ -198,6 +257,39 @@ function buildGridBreakdownColumn(externalSourceColumns) {
     return { ...(src || { name: 'tmc', type: 'string', source_id: 583 }), show: true, target: 'yAxis', group: true, sort: 'asc', origin: MEASURE_PICKER_COLUMN_ORIGIN };
 }
 
+// Table's per-TMC row dimension (round 79, old-reports-conversion.md — Info
+// Box's `grain: 'tmc'` shape). Same tmc-column lookup as
+// buildGridBreakdownColumn above, but targeted "categorize" (Table's own
+// row-grouping convention, per `info_box_templates.py`'s `tmc_col`) rather
+// than GridGraph's "yAxis" — two different shapes' own conventions, not
+// interchangeable, hence the separate small function rather than a shared
+// one with a target param.
+function buildTmcCategorizeColumn(externalSourceColumns) {
+    const src = (externalSourceColumns || []).find(c => c.name === 'tmc' && c.source_id === 583)
+        || (externalSourceColumns || []).find(c => c.name === 'tmc');
+    return { ...(src || { name: 'tmc', type: 'string', source_id: 583 }), show: true, target: 'categorize', group: true, origin: MEASURE_PICKER_COLUMN_ORIGIN };
+}
+
+// Info Box's TMC-grain shape needs a genuinely different SQL form for
+// length/aadt specifically, not just a different grouping column. Their
+// route-grain vocab.json expr is a self-aggregating map-combinator (`fn:
+// "exempt"`) — correct grouped by route/__series, but ClickHouse rejects
+// wrapping an already-self-aggregating expression in an outer `fn: "avg"`
+// (a nested aggregate, `ILLEGAL_AGGREGATION`, live-caught in the Python
+// converter 2026-07-14 — see info_box_templates.py's own comment). Every
+// TMC-grain CH group is already scoped to one TMC, so the plain per-tmc
+// join-column read (`avg`'d, since one route can carry >1 raw row per tmc)
+// is the correct form instead. Ported verbatim from
+// convert_old_reports_lib/vocab.py's LENGTH_TMC_EXPR/AADT_TMC_EXPR. speed/
+// travelTime/hoursOfDelay all degrade correctly to their route-grain
+// self-aggregating form at TMC grain (round 35/42's own proof, reused by
+// info_box_templates.py's own comments too), so only these two measures
+// need an override.
+const TMC_GRAIN_MEASURE_OVERRIDE = {
+    length: { expr: 'table1.miles as length', fn: 'avg' },
+    aadt: { expr: 'table1.aadt as aadt', fn: 'avg' },
+};
+
 // "Summary" (one bar per route, no time bucket) reuses every measure's
 // existing `expr`/`fn` verbatim EXCEPT avgHoursOfDelay — confirmed by reading
 // convert_old_reports_lib/expressions.py: SPEED_SUMMARY_EXPR/TRAVEL_TIME_EXPR/
@@ -214,8 +306,45 @@ function buildGridBreakdownColumn(externalSourceColumns) {
 // section before this resolution existed. Guarded here (not silently wrong)
 // rather than gated from the picker entirely, matching this file's own
 // "any combo is offered" author-empowerment stance for every OTHER combo.
-function isUnsupportedSummaryMeasure(resolutionKey, measureKey) {
-    return resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
+// Round 77 (2026-08-27, old-reports-conversion.md): ported from
+// convert_old_reports_lib/expressions.py's `_avg_delay_summary_expr` so the
+// Python converter's 3 `tmc_avg_delay_summary_bar_graph_*` templates could
+// move onto this same bridge-composed path (see BRIDGE_GRAPH_SPECS' own
+// comment) instead of staying hand-built Python forever. Same two-level fold
+// as the Python original: per-(tmc, bucket) delay sum ÷ per-(tmc, bucket)
+// distinct-date count, then a plain mean across buckets — `bucketExpr` is
+// the one thing that varies per grain (epoch/date/day-of-week), so ONE
+// parameterized expression covers all three, exactly like the Python
+// version. Reuses `vocab.measures.hoursOfDelay.expr` (stripping its own
+// trailing " as hours_of_delay" alias) rather than a second hardcoded copy
+// of the delay formula, so the two can never independently drift.
+const SUMMARY_DELAY_BUCKET_EXPR = {
+    '5-minutes': 'ds.epoch',
+    day: 'ds.date',
+    weekday: 'toDayOfWeek(ds.date)',
+};
+
+function avgDelaySummaryExpr(bucketExpr) {
+    const key = `concat(ds.tmc, '|', toString(${bucketExpr}))`;
+    const delayExpr = vocab.measures.hoursOfDelay.expr;
+    const inner = delayExpr.slice(0, delayExpr.lastIndexOf(' as '));
+    return `arrayAvg(arrayMap((s, d) -> s / d, `
+        + `mapValues(sumMap(map(${key}, coalesce(${inner}, 0)))), `
+        + `mapValues(uniqExactMap(map(${key}, ds.date))))) `
+        + `as avg_hours_of_delay`;
+}
+
+// `summaryDelayGrainKey` is NOT a live-authoring-UI field — the Resolution
+// picker only ever sends 'summary' here, with no secondary grain dimension,
+// so this stays unsupported (returns true = "nothing to apply", same as
+// before this round) for every live Measure Picker / QuickControls call.
+// Only the Python converter's bridge requests (compose_bridge.mjs, forwarded
+// from BRIDGE_GRAPH_SPECS' own `summaryDelayGrainKey`) ever pass one, for
+// the 3 old-report buckets that need it (round-36 corpus survey: 63x5-min,
+// 12xday, 1xweekday).
+function isUnsupportedSummaryMeasure(resolutionKey, measureKey, summaryDelayGrainKey) {
+    if (resolutionKey !== 'summary' || measureKey !== 'avgHoursOfDelay') return false;
+    return !SUMMARY_DELAY_BUCKET_EXPR[summaryDelayGrainKey];
 }
 
 // Positional: first join key -> table1, second -> table2 (see vocabulary README's "joins"
@@ -279,21 +408,26 @@ function buildDiffColors(measure, graphType) {
  * block below); omit when unknown, which keeps the existing categorical
  * default (BC).
  */
-export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors, seriesCount }) {
+export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors, seriesCount, summaryDelayGrainKey }) {
     const measure = vocab.measures[measureKey];
     if (!measure) return null;
     // See isUnsupportedSummaryMeasure's own comment — avgHoursOfDelay's summary value is
-    // bucket-grain-dependent and this picker has no equivalent of expressions.py's
-    // per-grain `_avg_delay_summary_expr`. Returning null here (rather than composing a
+    // bucket-grain-dependent; composing it needs a `summaryDelayGrainKey` telling us WHICH
+    // grain's fold to use (only the Python converter's bridge requests ever supply one — see
+    // that function's own comment). Returning null here (rather than composing a
     // confidently-wrong number) reuses the exact same "nothing to apply" contract an
     // unknown measureKey already gets — callers already skip downstream bookkeeping
     // when this happens.
-    if (isUnsupportedSummaryMeasure(resolutionKey, measureKey)) return null;
+    if (isUnsupportedSummaryMeasure(resolutionKey, measureKey, summaryDelayGrainKey)) return null;
+    const isAvgDelaySummary = resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
+    const yAxisMeasure = isAvgDelaySummary
+        ? { ...measure, expr: avgDelaySummaryExpr(SUMMARY_DELAY_BUCKET_EXPR[summaryDelayGrainKey]) }
+        : measure;
 
     // GridGraph's value column targets "color" (per-cell heat), every other
     // graph type targets "yAxis" — same rule TEMPLATE_SPECS' own entries use.
     const yAxisTarget = graphType === 'GridGraph' ? 'color' : 'yAxis';
-    const yAxisColumn = buildMeasureYAxisColumn(measure, yAxisTarget);
+    const yAxisColumn = buildMeasureYAxisColumn(yAxisMeasure, yAxisTarget);
     const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
     const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
     const join = buildJoin(measure);
@@ -380,9 +514,20 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // "good" (see its use in buildDiffColors) — reuse it here to orient
         // the same red(bad)-yellow-green(good) scale for a raw (non-diff)
         // magnitude value.
+        // `domainMin`/`domainMax`: a static fixed domain from the shared
+        // colorBreaks.json when this measure has one — GridGraph.jsx/
+        // BarGraph.jsx (round 80) check these first and skip their own
+        // data-computed range entirely when present. Same two-flat-key shape
+        // as the existing `yAxis.domainMin`/`domainMax` fixed-axis override.
+        // Measures with no entry (length/aadt/reliability aren't offered here
+        // at all) silently keep today's per-section dynamic range — same
+        // "compose nothing extra" contract every other optional field in this
+        // file already follows.
+        const staticBreaks = colorBreaks.measures[measureKey];
         displayPatch.colors = {
             type: 'scheme', scheme: 'rdylgn', reverse: measure.reverseColors,
             ...(graphType === 'BarGraph' ? { byValue: true } : {}),
+            ...(staticBreaks ? { domainMin: staticBreaks.domain[0], domainMax: staticBreaks.domain[1] } : {}),
         };
     } else {
         displayPatch.colors = defaultColors || null;
@@ -468,6 +613,160 @@ const TABLE_MEASURE_FORMAT_FN = {
 };
 const DEFAULT_TABLE_MEASURE_FORMAT_FN = 'decimal_2';
 
+// Gap #16 (report-authoring-ux-overhaul.md, 2026-08-21): ports
+// scripts/npmrds-reports/convert_old_reports_lib/route_compare_template.py's
+// `ensure_route_compare_template` delta-column composition into the live authoring path, so an
+// author can get the same per-row "% vs Main" column those Python-built Route Compare sections
+// already carry, without going through the converter. `__ANCHOR__(<expr>)` (dms-server's
+// uda/utils.js `substituteAnchorMarkers`) resolves live, per request, to whichever route is first
+// in the page's comparisonSeries arm order — same "first-assigned route is Main" convention the
+// existing Difference comparison mode already uses for its own anchor.
+//
+// `measure.reverseColors` already encodes exactly what the Python side's separate
+// GOOD_DIRECTION_BY_MEASURE dict hand-maintains (reverseColors: true == higher-is-worse == a
+// negative delta is the good direction) — confirmed measure-by-measure against vocab.py's dict —
+// so this reuses it rather than hand-maintaining a second copy of the same fact.
+function buildRouteCompareDeltaColumn(key, measure, tableHasJoin) {
+    const overrideExpr = tableHasJoin ? QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN[key] : undefined;
+    const exprWithAlias = overrideExpr || measure.expr;
+    const aliasIdx = exprWithAlias.lastIndexOf(' as ');
+    const rawExpr = aliasIdx === -1 ? exprWithAlias : exprWithAlias.slice(0, aliasIdx);
+    const alias = `${aliasIdx === -1 ? key : exprWithAlias.slice(aliasIdx + 4)}_delta`;
+    const anchor = `__ANCHOR__(${rawExpr})`;
+    return {
+        // target: 'delta' — not a real axis, but MUST be one of MeasurePicker/index.js's
+        // MANAGED_TARGETS or this column is invisible to that file's "replace this picker's own
+        // columns on re-pick" filter (which keys on `target`) and orphans pile up across re-picks
+        // instead of being cleaned up — found live 2026-08-21 toggling a measure off/on with
+        // Route Compare already on: the stale delta pair survived every subsequent re-pick.
+        type: 'delta', display: 'calculated', show: true, target: 'delta',
+        deltaGoodDirection: measure.reverseColors ? 'down' : 'up',
+        // fn: "exempt" — same reason route_compare_template.py's identical delta_col sets it:
+        // without it, getData.js's groupNoFnCondition heuristic marks the section invalidState and
+        // the row-data fetch never fires at all.
+        fn: 'exempt',
+        // round(...) avoids a ~1e-14 floating-point residual on the anchor's own row (its
+        // expression is evaluated twice — once inline, once inside __ANCHOR__'s subquery — and
+        // ClickHouse's two evaluations aren't bit-identical), which DeltaView's exact `n === 0`
+        // check would otherwise render as a random-sign colored arrow instead of a neutral "no
+        // change" on the anchor's own row.
+        name: `round((${rawExpr} - ${anchor}) / ${anchor} * 100, 2) as ${alias}`,
+        customName: '% vs Main',
+    };
+}
+
+// ── Reliability (LOTTR/TTTR/Freeflow) — source 1410's pgFederated join (gap #16, 2026-08-21) ──
+// Ports scripts/npmrds-reports/convert_old_reports_lib/info_box_templates.py's
+// `ensure_pm3_join_template` into the live authoring path. Unlike Route Compare, this is NOT a
+// dms-core capability gap — `pgFederated` (a live Postgres table joined into a ClickHouse query
+// via ClickHouse's own `postgresql()` table function) is already a fully generic, tested
+// dms-server join type (`uda/utils.js`'s `buildJoin`, `buildUdaConfig.js`'s client-side
+// counterpart) — nothing NPMRDS-specific about the mechanism itself. The gap was purely that this
+// project's own `vocabulary.json`/composer never had an entry describing it.
+//
+// Two real constraints carried over verbatim from the Python converter, both explicit product
+// decisions (vocab.py's own comments) — never approximated:
+// 1. Source 1410 publishes one Postgres view PER YEAR — the join must target whichever view
+//    matches the report's own route dates, never a different year's ("never substitute a
+//    different year's data", round 17). `PM3_VIEW_BY_YEAR` below is copied from vocab.py's own
+//    dict; only years actually confirmed to carry the full 121-column schema are included (a 2017
+//    view exists but is missing every speed_pctl_* column — see vocab.py's own note).
+// 2. LOTTR/TTTR are precomputed against exactly 4 FHWA time bins (AM Peak/Midday/PM Peak/
+//    Weekend) — a graph whose "When" window doesn't land unambiguously on one of those four
+//    (a custom window, "All Day", or a mixed weekday+weekend mask) has no real bin to read, and
+//    never curve-fits to the "closest" one (vocab.py's `comp_reliability_bin`, ported verbatim
+//    below as `reliabilityBinForWindow`). Freeflow (`speed_pctl_85`) has no bin dimension at all —
+//    it rides along on the same join regardless of which bin resolves.
+export const PM3_VIEW_BY_YEAR = {
+    2018: 3563, 2019: 3559, 2020: 3555,
+    2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425,
+};
+const RELIABILITY_BIN_BY_PEAK_LABEL = { 'AM Peak': 'amp', 'Midday': 'midd', 'PM Peak': 'pmp' };
+export const RELIABILITY_BIN_LABELS = { amp: 'AM Peak', midd: 'Midday', pmp: 'PM Peak', we: 'Weekend' };
+
+// Ported from vocab.py's `comp_reliability_bin` — same two-shape-only rule, same weekday-key
+// names as ReportRouteList's own WEEKDAY_KEYS/WEEKEND_KEYS (Design Push #2 moved this window onto
+// the graph, but the day-name vocabulary itself didn't change).
+function reliabilityBinForWindow(window) {
+    const weekdays = window?.weekdays || {};
+    const hasWeekday = WEEKDAY_KEYS.some((k) => isDayOn(weekdays, k));
+    const hasWeekend = WEEKEND_KEYS.some((k) => isDayOn(weekdays, k));
+    if (hasWeekend && !hasWeekday) return 'we';
+    if (hasWeekend && hasWeekday) return null;
+    if (!window?.start || !window?.end) return null;
+    const preset = PEAK_PRESETS.find((p) => p.startTime === window.start && p.endTime === window.end);
+    return preset ? (RELIABILITY_BIN_BY_PEAK_LABEL[preset.label] || null) : null;
+}
+
+// Ported from vocab.py's `graph_reliability_bin` — the single bin every assigned route's own
+// window agrees on, or null if undetermined/mixed (never guesses when routes disagree). Exported
+// so QuickControls/AddGraphModal can call it directly for disabled-state gating/messaging, the
+// same "UI checks the identical gate compose uses" pattern routeCompare's Summary-only gate above
+// already established.
+export function resolveReliabilityBin(routeIds, routeWindows) {
+    if (!routeIds?.length) return null;
+    const bins = new Set(routeIds.map((id) => reliabilityBinForWindow(routeWindows?.[id]?.[0])));
+    return bins.size === 1 ? [...bins][0] : null;
+}
+
+// Ported from vocab.py's `graph_max_year` — latest calendar year touched by any assigned route's
+// REAL (resolved) date range. `allRoutes` must be the report's full routes array (not just the
+// assigned subset, and not the route-catalog projection) — `resolveRouteDates` needs every
+// route's `derivedFromRoute` sibling in scope to fill in a derived route's blank stored dates.
+export function resolveReliabilityYear(routeIds, allRoutes) {
+    if (!routeIds?.length || !allRoutes?.length) return null;
+    const resolved = resolveRouteDates(allRoutes);
+    const byId = new Map(resolved.map((r) => [r.route_comp_id, r]));
+    const years = new Set();
+    routeIds.forEach((id) => {
+        const r = byId.get(id);
+        [r?.startDate, r?.endDate].forEach((d) => {
+            if (!d) return;
+            const y = new Date(d).getFullYear();
+            if (!Number.isNaN(y)) years.add(y);
+        });
+    });
+    return years.size ? Math.max(...years) : null;
+}
+
+// Round 79 (old-reports-conversion.md): split out of composeReliabilityColumns
+// so a caller that already knows its own (bin, year) — the Python converter's
+// bridge, minting a static per-(grain,year,bin) Info Box template with no
+// live route data to derive them from, the same way `ensure_pm3_join_template`
+// takes `year`/`bin_` as plain params — can build the column/join shape
+// directly, without needing routeIds/routeWindows/allRoutes at all.
+// `composeReliabilityColumns` (below) is the live-authoring-path wrapper that
+// derives bin/year from a graph's actual assigned routes first.
+function buildReliabilityColumns(bin, year) {
+    const viewId = year != null ? PM3_VIEW_BY_YEAR[year] : null;
+    if (!bin || !viewId) return null;
+
+    const joinSource = {
+        pgFederated: { pgEnv: 'npmrds2', table: `s1410_v${viewId}_pm_3`, schema: 'gis_datasets' },
+        joinColumns: [{ dsColumn: 'tmc', joinSourceColumn: 'tmc' }],
+        mergeStrategy: 'join', type: 'left',
+    };
+    const binLabel = RELIABILITY_BIN_LABELS[bin];
+    const columns = [
+        { type: 'calculated', show: true, target: 'yAxis', fn: 'avg', formatFn: 'decimal_2',
+          name: `pm3.lottr_${bin}_lottr as lottr_${bin}`, customName: `LOTTR (${binLabel})`,
+          origin: MEASURE_PICKER_COLUMN_ORIGIN },
+        { type: 'calculated', show: true, target: 'yAxis', fn: 'avg', formatFn: 'decimal_2',
+          name: `pm3.tttr_${bin}_tttr as tttr_${bin}`, customName: `TTTR (${binLabel})`,
+          origin: MEASURE_PICKER_COLUMN_ORIGIN },
+        { type: 'calculated', show: true, target: 'yAxis', fn: 'avg', formatFn: 'decimal_2',
+          name: 'pm3.speed_pctl_85 as freeflow', customName: 'Freeflow Speed (85th %ile)',
+          origin: MEASURE_PICKER_COLUMN_ORIGIN },
+    ];
+    return { columns, joinSource, bin, year };
+}
+
+function composeReliabilityColumns({ routeIds, routeWindows, allRoutes }) {
+    const bin = resolveReliabilityBin(routeIds, routeWindows);
+    const year = resolveReliabilityYear(routeIds, allRoutes);
+    return buildReliabilityColumns(bin, year);
+}
+
 /**
  * Compose the full section-state patch for a Table with N measures — one yAxis-target column
  * per measure, sharing a single xAxis (resolution) column and a single, unioned `join`. Table has
@@ -486,29 +785,95 @@ const DEFAULT_TABLE_MEASURE_FORMAT_FN = 'decimal_2';
  * safe (see `QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN` above) — so the join is resolved once, up front,
  * and both the column-building and the returned `join` itself read from that one value.
  *
- * Returns null if no measureKey in `measureKeys` is recognized (mirrors composeMeasureConfig's
- * own "unknown measure -> nothing to apply" contract).
+ * `routeCompare` (optional, default false) appends a `buildRouteCompareDeltaColumn` right after
+ * each measure's own value column — deliberately not a template-level concept (nothing else about
+ * a Route Compare table differs from an ordinary Summary table), just an extra column an author
+ * can turn on for any Table.
+ *
+ * `routeCompare` only ever takes effect at `resolutionKey === 'summary'` — found live 2026-08-21:
+ * `__ANCHOR__(<expr>)` (dms-server's `substituteAnchorMarkers`) substitutes to a scalar subquery
+ * over the anchor arm's ENTIRE row set, with no GROUP BY of its own, regardless of what the outer
+ * query groups by. At Summary resolution that's correct — every row is already one whole-range
+ * aggregate per route, so the delta is a genuine route-vs-route comparison, exactly what the old
+ * Route Compare Component always was (`ensure_route_compare_template` never time-buckets). At any
+ * time-bucketed resolution (Hour/Day/Weekday/Month), the outer query groups per bucket while the
+ * anchor subquery still collapses the whole range, so the delta becomes "this bucket vs the
+ * anchor's OVERALL average" — on a single-route table that degenerates into "this hour vs this
+ * same route's own average," which is not a route comparison at all. Silently ignored rather than
+ * gated with an error, matching `isUnsupportedSummaryMeasure`'s own "nothing to apply" precedent
+ * just above.
+ *
+ * `includeReliability` (optional, default false) appends LOTTR/TTTR/Freeflow columns from source
+ * 1410's year-matched pgFederated join (`composeReliabilityColumns` above) — same "silently
+ * ignored when it can't apply cleanly" contract as `routeCompare`, gated the same way (Summary
+ * resolution only — 1410's PM3 data has no time-of-day dimension beyond its own 4 precomputed
+ * bins, so a hurly/daily/monthly bucket would just repeat the identical value in every row) PLUS
+ * only when the graph's own routes/window/year actually resolve a real bin+view
+ * (`resolveReliabilityBin`/`resolveReliabilityYear`). `routeIds`/`routeWindows`/`allRoutes` are
+ * only needed when `includeReliability` is set — every existing caller that never uses this flag
+ * is unaffected by their absence. A Table may have reliability ON with zero other measures picked
+ * (Info Box's own real shape had no "other measure" concept at all), so the early-return below no
+ * longer requires `measures.length` alone.
+ *
+ * Returns null if no measureKey in `measureKeys` is recognized AND reliability doesn't apply
+ * either (mirrors composeMeasureConfig's own "unknown measure -> nothing to apply" contract).
+ *
+ * `grain` (optional, default 'route' — round 79, old-reports-conversion.md): Info Box's other real
+ * axis, alongside measure selection — 'route' groups by the comparisonSeries `__series`
+ * discriminator (one row per route, the live Table checkbox's own only prior shape), 'tmc' groups
+ * by a real per-TMC categorize column instead (`buildTmcCategorizeColumn`) — mirrors
+ * info_box_templates.py's identical route-vs-tmc split on every one of its own builders. `length`/
+ * `aadt` need a different SQL form at TMC grain too, not just a different grouping column — see
+ * `TMC_GRAIN_MEASURE_OVERRIDE`'s own comment.
+ *
+ * `reliabilityBin`/`reliabilityYear` (optional — round 79): a caller that already knows its own
+ * bin/year (the Python converter's bridge, minting a static per-(grain,year,bin) template with no
+ * live route data to derive them from) can pass them directly instead of `routeIds`/`routeWindows`/
+ * `allRoutes`; the live-authoring path (which has real route data but not a pre-resolved bin/year)
+ * keeps using those three as before. Only meaningful together with `includeReliability`.
  */
-export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externalSourceColumns }) {
+export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externalSourceColumns, routeCompare, includeReliability, routeIds, routeWindows, allRoutes, grain = 'route', reliabilityBin, reliabilityYear }) {
     const measures = (measureKeys || [])
         .map((k) => ({ key: k, measure: vocab.measures[k] }))
         .filter((entry) => entry.measure);
-    if (!measures.length) return null;
 
+    const reliability = (includeReliability && resolutionKey === 'summary')
+        ? (reliabilityBin != null || reliabilityYear != null
+            ? buildReliabilityColumns(reliabilityBin, reliabilityYear)
+            : composeReliabilityColumns({ routeIds, routeWindows, allRoutes }))
+        : null;
+    if (!measures.length && !reliability) return null;
+
+    const applyRouteCompare = routeCompare && resolutionKey === 'summary';
     const unionJoinKeys = [...new Set(measures.flatMap(({ measure }) => measure.requiresJoin || []))];
     const tableHasJoin = unionJoinKeys.length > 0;
 
-    const yAxisColumns = measures.map(({ key, measure }) => {
-        const overrideExpr = tableHasJoin ? QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN[key] : undefined;
-        const column = buildMeasureYAxisColumn(overrideExpr ? { ...measure, expr: overrideExpr } : measure);
+    const valueColumns = measures.flatMap(({ key, measure }) => {
+        const tmcOverride = grain === 'tmc' ? TMC_GRAIN_MEASURE_OVERRIDE[key] : null;
+        const overrideExpr = tmcOverride ? tmcOverride.expr
+            : (tableHasJoin ? QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN[key] : undefined);
+        const effectiveMeasure = (overrideExpr || tmcOverride)
+            ? { ...measure, ...(overrideExpr ? { expr: overrideExpr } : {}), ...(tmcOverride ? { fn: tmcOverride.fn } : {}) }
+            : measure;
+        const column = buildMeasureYAxisColumn(effectiveMeasure);
         column.formatFn = TABLE_MEASURE_FORMAT_FN[key] || DEFAULT_TABLE_MEASURE_FORMAT_FN;
-        return column;
+        return applyRouteCompare ? [column, buildRouteCompareDeltaColumn(key, measure, tableHasJoin)] : [column];
     });
-    const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
+    const groupColumn = grain === 'tmc'
+        ? buildTmcCategorizeColumn(externalSourceColumns)
+        : buildXAxisColumn(resolutionKey, externalSourceColumns);
+
+    // Measure-required joins are keyed `table1`/`table2`/... positionally (buildJoinFromKeys) —
+    // the reliability join keeps its literal `pm3` alias instead, since composeReliabilityColumns'
+    // own column SQL hardcodes `pm3.<column>` references that must match whatever key names it.
+    const measureJoin = buildJoinFromKeys(unionJoinKeys);
+    const join = reliability
+        ? { sources: { ...(measureJoin?.sources || {}), pm3: reliability.joinSource } }
+        : measureJoin;
 
     return {
-        columns: [...yAxisColumns, xAxisColumn].filter(Boolean),
-        join: buildJoinFromKeys(unionJoinKeys),
+        columns: [...valueColumns, ...(reliability?.columns || []), groupColumn].filter(Boolean),
+        join,
         comparisonSeriesCombine: null,
         displayPatch: { graphType: 'Table', fetchMode: 'force' },
     };
@@ -524,13 +889,46 @@ export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externa
  * Different => the author typed something of their own => never touched again. Ryan's explicit
  * call, 2026-08-20: no new field, keep the mechanism obvious at the call site instead.
  */
+// report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Ryan's own report — Peak Selector/DoW
+// picks on the "When" pill didn't move the title, only Measure did. `composeAutoTitle` already
+// receives the full resolved pick (routeWindows/routeIds included, see applyMeasurePickToState's
+// call site) — it simply never read them. This reads the SAME "first assigned route's own window"
+// convention QuickControls' own When pill already uses to compute ITS displayed token
+// (`pick.routeWindows?.[routeIds[0]]?.[0]`, QuickControls/index.jsx) so the title's phrasing can
+// never drift from what the pill shows for the same state. Renders nothing (same as before this
+// fix) whenever the window is unrestricted (all day, every day) — an unrestricted graph's title
+// looks exactly as it did before this change.
+function windowTitleFragment(pick) {
+    const routeIds = pick.routeIds || [];
+    const window = pick.routeWindows?.[routeIds[0]]?.[0];
+    if (!window) return '';
+    const parts = [];
+    if (window.start && window.end) {
+        const preset = PEAK_PRESETS.find((p) => p.startTime === window.start && p.endTime === window.end);
+        parts.push(preset ? preset.label : timeOfDayToken(window.start, window.end));
+    }
+    const daysSummary = summarizeWeekdays(window.weekdays);
+    if (daysSummary) parts.push(daysSummary);
+    return parts.join(', ');
+}
+
 export function composeAutoTitle(pick) {
     if (!pick) return '';
-    if (pick.graphType === 'Table') {
-        const labels = (pick.measures || []).map((k) => vocab.measures[k]?.label).filter(Boolean);
-        return labels.join(', ');
-    }
-    return vocab.measures[pick.measure]?.label || '';
+    // Reliability's own bin (not year — composeAutoTitle only ever receives `pick`, no route date
+    // data) is enough to know whether it actually composed; only needed for the Table branch.
+    const reliabilityBin = (pick.graphType === 'Table' && pick.includeReliability && pick.resolution === 'summary')
+        ? resolveReliabilityBin(pick.routeIds, pick.routeWindows)
+        : null;
+    const measureLabel = pick.graphType === 'Table'
+        ? [...(pick.measures || []).map((k) => vocab.measures[k]?.label), reliabilityBin ? `Reliability (${RELIABILITY_BIN_LABELS[reliabilityBin]})` : null].filter(Boolean).join(', ')
+        : (vocab.measures[pick.measure]?.label || '');
+    if (!measureLabel) return '';
+    // Mirrors route_compare_template.py's own f"Route Compare, {title}" naming convention. Gated
+    // the same as composeTableMeasuresConfig's own routeCompare check — the title shouldn't claim
+    // "Route Compare" when the resolution means no delta column actually got composed.
+    const prefix = (pick.graphType === 'Table' && pick.routeCompare && pick.resolution === 'summary') ? 'Route Compare, ' : '';
+    const when = windowTitleFragment(pick);
+    return when ? `${prefix}${measureLabel} — ${when}` : `${prefix}${measureLabel}`;
 }
 
 // `priorPick` is whatever `state.display._measurePick` held BEFORE this apply (undefined on a

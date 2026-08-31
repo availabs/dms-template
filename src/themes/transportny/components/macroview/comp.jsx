@@ -74,6 +74,10 @@ const INITIAL_MODAL_STATE = {
   uniqueFileNameBase: "",
   fileType: "GPKG",
   downloadContextId: "",
+  // The server's refusal, shown in the builder. pm3's create-download route validates the
+  // column set, the format and the geography filter and answers 400 with a reason; without
+  // somewhere to put it, a rejected request looked exactly like a request that worked.
+  error: "",
 };
 
 //creates a unique identifier regardless of how many columns the user selects
@@ -448,11 +452,16 @@ const Comp = ({ state, setState, map }) => {
     setModalState((cur) => ({
       ...cur,
       open: true,
+      error: "",
       columns: cur.columns.length ? cur.columns : ["tmc", "county", measure].filter(Boolean),
     }));
 
+  // ALWAYS an object. `metadata.download` is absent until the first download of a view has been
+  // built — which is every pm3 view of source 2135 — and the polling effect below indexes this
+  // unguarded (`!viewDownloads[downloadFileName]`), so an undefined here threw a TypeError inside
+  // the effect on the very first download and took the whole plugin down.
   const viewDownloads = useMemo(() => {
-    return get(view, ['metadata',  'download'])
+    return get(view, ['metadata',  'download']) || {}
   }, [view]);
 
   const fileNameBase = useMemo(() => {
@@ -518,12 +527,21 @@ const Comp = ({ state, setState, map }) => {
                     geographyFilter: scope === "statewide" ? [] : geography,
                     measure,
                   },
+                  // THE CACHE KEY, and the only client change the server fix needed. The panel
+                  // already hashes (version + sorted columns + geography + format) and polls
+                  // `metadata.download[<that hash>]`; the old endpoint filed the result under
+                  // the fileType instead, so the poll could never resolve. Sending the hash
+                  // lets the server file it where the client is already looking.
+                  uniqueFileNameBase: modalState.uniqueFileNameBase,
                   fileTypes:[modalState.fileType]
               };
 
               setModalState({...modalState, loading: true});
+              // pm3's OWN route, not `gis-dataset/create-download`. The generic one drops
+              // `downloadProps` entirely — every export came back statewide — and knows nothing
+              // about pm3's published relation being a VIEW. See data-types/pm3/download.js.
               const res = await fetch(
-                `${DAMA_HOST}/dama-admin/${pgEnv}/gis-dataset/create-download`,
+                `${DAMA_HOST}/dama-admin/${pgEnv}/pm3/create-download`,
                 {
                   method: "POST",
                   body: JSON.stringify(createData),
@@ -533,13 +551,18 @@ const Comp = ({ state, setState, map }) => {
                 }
               );
 
-              await res.json();
+              const body = await res.json().catch(() => ({}));
+              // A refused request must NOT start the poll: `metadata.download[hash]` will never
+              // appear, so the panel would sit on "Sending request…" until the page is reloaded.
+              if (!res.ok) {
+                throw new Error(body?.error || `create-download failed (${res.status})`);
+              }
 
               setDownloadFileName(modalState.uniqueFileNameBase);
               setModalState(INITIAL_MODAL_STATE);
           } catch (err) {
               console.log(err)
-              setModalState({...modalState, loading: false, open: true});
+              setModalState({...modalState, loading: false, open: true, error: err?.message || "download request failed"});
           }
       }
 
@@ -1607,6 +1630,10 @@ const Comp = ({ state, setState, map }) => {
         rowCount={filteredCount}
         fmtCount={fmtCount}
         onOpenDownload={openBuilder}
+        // `polling` is exactly "the server is building the file": set when a download has been
+        // requested but `view.metadata.download[hash]` has not appeared yet, cleared the moment it
+        // does (and the browser download fires) or if the request never produced a name.
+        downloading={polling}
       />
       <DownloadBuilder
         open={modalState.open}
@@ -1626,6 +1653,7 @@ const Comp = ({ state, setState, map }) => {
         fmtCount={fmtCount}
         loading={modalState.loading}
         existingUrl={existingDownloadUrl}
+        error={modalState.error}
         onSubmit={createDownload}
       />
     </>

@@ -160,7 +160,11 @@ describe('createDamaView call shape', () => {
     // new-runner task_id has no data_manager.etl_contexts row, so the view
     // INSERT fails the FK. The task id belongs in metadata instead.
     const src = readFileSync(new URL('../worker.js', import.meta.url), 'utf8');
-    const call = src.slice(src.indexOf('deps.createDamaView('), src.indexOf('}, pgEnv);'));
+    // Anchored FROM the call site: worker.js has a second createDamaView (the all_years union view),
+    // so an unanchored indexOf for the closing brace could slice an empty string and quietly turn
+    // both assertions below into no-ops.
+    const start = src.indexOf('deps.createDamaView(');
+    const call = src.slice(start, src.indexOf('}, pgEnv);', start));
     expect(call).not.toMatch(/^\s*etl_context_id:/m);
     expect(call).toMatch(/task_id: task\.task_id/);
   });

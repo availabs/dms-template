@@ -255,6 +255,10 @@ export const macroviewTheme = {
   dockPill:
     "h-9 px-3 rounded-lg border border-zinc-950/10 bg-white/95 shadow-sm flex items-center gap-2 text-[12px] font-medium text-zinc-700 hover:border-zinc-950/20 pointer-events-auto cursor-pointer",
   dockPillIcon: "size-4 text-zinc-500",
+  // Same box as dockPillIcon so swapping the glyph cannot reflow the pill mid-request. `animate-spin`
+  // follows the precedent in ui/components/map/avl-map.jsx.
+  dockPillSpinner: "size-4 text-zinc-500 animate-spin",
+  dockPillBusy: "text-zinc-500",
   dockPillCount: "tabular-nums text-zinc-500",
 
   // ── download builder ─────────────────────────────────────────────────────────
@@ -288,7 +292,10 @@ export const macroviewTheme = {
   scopeCountActive: "font-mono text-[10px] tabular-nums text-slate-500",
   scopeNote: "mt-2 font-proxima text-[11.5px] leading-[1.45] text-slate-500 capitalize",
 
-  formatSeg: "h-8 grid grid-cols-3 rounded-[6px] border border-zinc-950/10 overflow-hidden",
+  // TWO columns, not three: the disabled `json` button was removed on 2026-08-24 (ogr2ogr has no
+  // plain-JSON driver and pm3 will not be growing one), and a 3-column grid holding two buttons
+  // leaves a third of the segmented control as empty bordered white space.
+  formatSeg: "h-8 grid grid-cols-2 rounded-[6px] border border-zinc-950/10 overflow-hidden",
   formatBtnFirst: "bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider cursor-pointer",
   formatBtn:
     "bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider border-l border-zinc-950/10 cursor-pointer",

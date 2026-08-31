@@ -62,6 +62,25 @@ export function defaultAnchorDate() {
   return formatDateOnly(d);
 }
 
+// A freshly-added route's default date range (2026-08-20, Ryan's call: "across the whole report
+// we should require a date filter... when a user adds a route, use a default date range" —
+// every route added without one today silently produces an UNBOUNDED (all-history) query on any
+// Graph/Table/Map self-bound to it; see useReportRow.js's addRoutes, the one place this gets
+// applied). "The most recent full month of data" — anchored off `defaultAnchorDate`'s own
+// publish-lag-adjusted "today", not literal wall-clock today, for the exact reason that constant
+// exists: NPMRDS's ClickHouse table has a hard ~15-21 day publish cliff, and a calendar month
+// computed from literal "today" could easily be a month with zero real rows. Always steps back
+// one full calendar month from the (lag-adjusted) anchor's own month — the anchor's own current
+// month is never guaranteed complete (missing at least however many days remain in it), so the
+// prior month is the latest one that's always safely whole.
+export function defaultRouteDateRange() {
+  const anchor = new Date();
+  anchor.setDate(anchor.getDate() - NPMRDS_DATA_LAG_DAYS);
+  const priorMonthStart = shiftSpans(startOfSpan(anchor, 'month'), 'month', -1);
+  const priorMonthEnd = endOfSpan(priorMonthStart, 'month');
+  return { startDate: formatDateOnly(priorMonthStart), endDate: formatDateOnly(priorMonthEnd) };
+}
+
 function parseDateOnly(dateStr) {
   const [y, m, d] = (dateStr || '').split('T')[0].split('-').map(Number);
   if (!y || !m || !d) return null;
@@ -104,6 +123,29 @@ function shiftSpans(d, span, n) {
     return new Date(Math.floor(total / 12), ((total % 12) + 12) % 12, 1);
   }
   return new Date(d.getFullYear() + n, 0, 1); // year
+}
+
+// report-authoring-ux-overhaul.md Tier 6C (2026-08-20): Ryan's own flagged idea — when deriving a
+// route's dates via "Same period, aligned" (the `snap`/`isof` formula shape above), default the
+// Span picker (day/week/month/year) to whatever span the BASE route's own [startDate, endDate]
+// actually spans, so re-picking the base route doesn't leave a stale span selected against it.
+// Deliberately a SINGLE-anchor check (does `startOfSpan(start, span)` land exactly on `start`, AND
+// does one whole `span` period from THAT SAME point land exactly on `end`) rather than the
+// `isof` resolution branch's own two-anchor shape (which independently snaps `start`'s period and
+// `end`'s period) — a two-anchor check would also call a Jan-1-to-Feb-28 base range an exact
+// "month" match (re-resolving `startDate=>monthof` against it really would reproduce that exact
+// range), which isn't what "the base is exactly one calendar month" means. Returns null when no
+// span matches exactly (e.g. a 37-day range) — the caller leaves the span picker exactly as it was
+// in that case, no closest-match guessing (Ryan's explicit call).
+const SPAN_KEYS = ['day', 'week', 'month', 'year'];
+export function inferExactSpan(startDate, endDate) {
+    const start = parseDateOnly(startDate);
+    const end = parseDateOnly(endDate);
+    if (!start || !end) return null;
+    return SPAN_KEYS.find((span) => {
+        const spanStart = startOfSpan(start, span);
+        return spanStart.getTime() === start.getTime() && endOfSpan(spanStart, span).getTime() === end.getTime();
+    }) || null;
 }
 
 // Special form (`yearof`/`monthof`/`weekof`/`dayof`): start/end snap

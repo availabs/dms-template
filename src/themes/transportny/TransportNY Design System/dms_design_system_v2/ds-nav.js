@@ -28,10 +28,17 @@
     // disk but was never registered here; it is now.
     // 2026-08-19: two pages added — `npmrds-route-creation` (the tool that MAKES a route, which
     // four pages consumed and none documented) and `npmrds-tmc` (the leaf: one segment, in full).
+    // 2026-08-27: the documentation pair — `npmrds-macro-guide` (how to drive the macro view) and
+    // `npmrds-measures` (what every measure means and the choices behind it). They are the mockups
+    // for the live rewrites of npmrds_docs rows 280612 and 281670, and they are the first pages in
+    // this design system to carry screenshots (../assets/screens/).
     { key: 'npmrds', label: 'NPMRDS', landing: 'npmrds-home.html', dir: 'pages', pages: [
       { f: 'npmrds-home.html', t: 'home' }, { f: 'npmrds-macro.html', t: 'macro view' },
+      { f: 'npmrds-macro-guide.html', t: 'macro view · guide' },
+      { f: 'npmrds-measures.html', t: 'measures & methodology' },
       { f: 'npmrds-tmc.html', t: 'segment · tmc' },
       { f: 'npmrds-reports.html', t: 'reports' }, { f: 'npmrds-report.html', t: 'report' },
+      { f: 'npmrds-picker-modals.html', t: 'picker modals (proposal)' },
       { f: 'npmrds-route-creation.html', t: 'route creation' },
       { f: 'route-comparison.html', t: 'route comparison' },
       { f: 'map-21.html', t: 'map-21 · per-year' }, { f: 'map-21-system-performance.html', t: 'map-21 · system performance' },

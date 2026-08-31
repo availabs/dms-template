@@ -19,6 +19,8 @@ const require = createRequire(import.meta.url);
 const worker = require('../worker.js');
 const { META_COLUMNS } = require('../helpers.js');
 const { PERCENTILES } = require('../speedPercentilesCalculator.js');
+const { toMetricDbRow } = require('../helpers.js');
+const { omitPrefixColumns } = require('../lib/helpers.js');
 
 const { PM3_SOURCE_COLUMNS, buildPm3SourceColumns, buildMetricConfigs, metricColumnDescriptors } = worker;
 const names = new Set(PM3_SOURCE_COLUMNS.map((c) => c.name));
@@ -35,7 +37,9 @@ describe('PM3_SOURCE_COLUMNS', () => {
       expect(c.display_name, JSON.stringify(c)).toBeTruthy();
       // BOOLEAN joined the set with R9's era-boundary flags — the only non-numeric,
       // non-text published column type in pm3.
-      expect(['NUMERIC', 'TEXT', 'GEOMETRY', 'BOOLEAN']).toContain(c.type);
+      // INTEGER joined the set with ogc_fid, which must be declared so uda can resolve the view's
+      // index column — a view has no PRIMARY KEY for resolvePrimaryKey to find.
+      expect(['NUMERIC', 'TEXT', 'GEOMETRY', 'BOOLEAN', 'INTEGER']).toContain(c.type);
     }
   });
 
@@ -71,7 +75,20 @@ describe('PM3_SOURCE_COLUMNS', () => {
 
   it('names the PHED PM-peak columns pmp, not alt_pmp (calcPhed relabels the bin)', () => {
     expect(names).toContain('phed_pmp_all_xdelay_phrs');
-    expect([...names].filter((n) => n.includes('alt_pmp'))).toEqual([]);
+    // Scoped to the MEASURE columns. The `coverage` metric deliberately publishes pmp and alt_pmp
+    // separately, because they are genuinely different windows (PMP 16-19, ALT_PMP 15-18) with
+    // different denominators, and reporting one under the other's name would misstate it.
+    //
+    // ⚠ That exposes a PRE-EXISTING ambiguity in the measure columns, not one coverage introduced:
+    // `lottr_pmp_*` is the PMP window (16-19) while `phed_pmp_*` is ALT_PMP (15-18). Two different
+    // hour ranges published under the same bin label, distinguished only by measure prefix. Anyone
+    // joining a LOTTR PM-peak figure to a PHED PM-peak figure is comparing different windows.
+    // Left as-is here because renaming a published column is breaking; recorded in PROVENANCE.md.
+    const measureCols = [...names].filter((n) => !n.startsWith('coverage_'));
+    expect(measureCols.filter((n) => n.includes('alt_pmp'))).toEqual([]);
+    // coverage names both, honestly
+    expect(names).toContain('coverage_all_vehicles_pmp_pct_bins_reporting');
+    expect(names).toContain('coverage_all_vehicles_alt_pmp_pct_bins_reporting');
   });
 
   it('covers every column the macroview getMeasure() can construct', () => {
@@ -123,8 +140,8 @@ describe('R3 — PHED threshold diagnostics are published', () => {
   const PHED_METRICS = Object.keys(cfgs).filter((m) => cfgs[m].kind === 'phed');
 
   it('every phed/ted variant publishes threshold_speed and threshold_travel_time_sec', () => {
-    // 8 original + R2's 4 anchored variants published alongside them.
-    expect(PHED_METRICS.length).toBe(12);
+    // 8 original + R2's 4 anchored + R13's 4 unfloored (relative) variants.
+    expect(PHED_METRICS.length).toBe(16);
     for (const m of PHED_METRICS) {
       const names = metricColumnDescriptors(m, cfgs[m]).map((c) => c.name);
       expect(names).toContain(`${m}_threshold_speed`);
@@ -151,4 +168,50 @@ describe('R3 — PHED threshold diagnostics are published', () => {
       expect(ff.find((c) => c.name === n).type).toBe('NUMERIC');
     }
   });
+});
+
+// ── Registry-wide invariant: what a calculator writes must be a declared column ──────────────
+// Added after task 7132 was abandoned 18 minutes into a 5-hour publish: coverageCalculator returned
+// keys already prefixed `coverage_`, the row writer prefixed with the metric name again, and the
+// INSERT targeted `coverage_coverage_*` while the bulk ALTER had created `coverage_*`. Nothing landed
+// and every unit test passed, because no test compared the two sides.
+//
+// This closes the class, not the instance: for every metric, run its calculator against a stub and
+// assert each key it produces maps to a column metadata.columns actually declares.
+describe('every calculator key maps to a declared column', () => {
+  const cfgs = buildMetricConfigs({ chMetaTableName: 'npmrds_meta.t' });
+  const declared = new Set(buildPm3SourceColumns(cfgs).map((c) => c.name));
+
+  // Rich enough to satisfy calcPhed's metadata gate and to give every calculator rows to work with.
+  const META = {
+    tmc: 'x', miles: 1.0, avg_speedlimit: 55, directionalaadt: 5000, directionalaadttruck: 300,
+    avg_vehicle_occupancy: 1.7, avgvehicleoccupancytruck: 10.7, functionalclass: 'FREEWAY',
+    congestion_level: 'NO2LOW_CONGESTION', directionality: 'AM_PEAK', nhs_pct: 100, nhs: '0', year: 2025,
+  };
+  const ROWS = [
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 28, tt: 100, n_epochs: 3, avg_speed_all_vehicles: 55 },
+    { tmc: 'x', date: '2025-03-03', month: 3, dow: 1, timeBinNum: 29, tt: 400, n_epochs: 2, avg_speed_all_vehicles: 40 },
+  ];
+  const chDb = { query: async () => ({ json: async () => ({ rows: ROWS.length, data: ROWS }) }) };
+
+  // Mirrors the worker's write path: toMetricDbRow lowercases and drops objects, then
+  // generateUpdateColumnsSql prefixes every non-omitted key with the metric name.
+  const writtenColumns = (metricName, result) =>
+    Object.keys(toMetricDbRow(result))
+      .filter((k) => !omitPrefixColumns.includes(k))
+      .map((k) => `${metricName}_${k}`);
+
+  for (const [metricName, cfg] of Object.entries(cfgs)) {
+    it(`${metricName}: every written column is declared`, async () => {
+      const result = await cfg.calculator({
+        db: null, chDb, pgEnv: 'x', curTmcId: 'x', year: 2025, dataTableName: 't',
+        tmcMeta: META, metricName, binnedDataCache: new Map(), freeflowP15Cache: new Map(), ...cfg,
+      });
+      expect(result, `${metricName} produced no result`).toBeTruthy();
+      const undeclared = writtenColumns(metricName, result).filter((c) => !declared.has(c));
+      // If this fails the publish would silently write nothing for those columns — the ALTER creates
+      // the declared name while the INSERT targets a different one.
+      expect(undeclared).toEqual([]);
+    });
+  }
 });

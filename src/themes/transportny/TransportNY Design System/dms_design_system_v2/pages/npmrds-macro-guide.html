@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Macro View &middot; how to use &middot; NPMRDS &middot; TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  npmrds-macro-guide.html · NPMRDS DOCS — Macro View, how to use it.
+  Layout `app` · NPMRDS SideNav, Docs active. Task-ordered, screenshot-led; sticky right-rail TOC.
+  Companion to npmrds-measures.html (what the numbers mean); this page is how to drive the tool.
+
+  MOCKUP FOR the live rewrite of `npmrds/regional_analysis` row **280612** on pattern **1411813**.
+  That live page IS the macro-tool documentation today — 7 sections, ~22 screenshots — but it
+  documents the LEGACY tool. Its IA is good and is inherited here: navigate the map -> the panels ->
+  bottlenecks -> download -> a worked example. See
+  planning/transportny/tasks/current/npmrds-macro-docs-pages.md.
+
+  SCREENSHOTS ARE REAL. Captured 2026-08-27 from the running tool (npmrdsv5/dev2, CY2025) on a
+  throwaway dev server, not mocked. Every figure names the state that produced it so it is
+  reproducible and self-invalidating: paste the state, see whether the tool still looks like that,
+  re-capture if not. Files live in ../assets/screens/ — a NEW asset class for this design system,
+  which had no image assets before. All paths are relative; the live build swaps them for the
+  lexical image nodes the docs pattern already serves from /img/npmrdsv5/.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ════════ SIDENAV · NPMRDS (Docs active) ════════ -->
+<aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="npmrds-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ PAGE HEADER ═════════ -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-12" data-dms-section="page-header">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4"><a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a><span class="text-slate-300 px-1">/</span><a href="docs-overview.html" class="hover:text-[#0f1722]">Documentation</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Macro View</span></nav>
+              <div class="flex items-center gap-3 mb-2"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// how to use the tool</span><span class="h-px w-10 bg-[#CA8A04]/50"></span></div>
+              <h1 class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">Macro View<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[15px] leading-[1.65] text-slate-700 mt-3 max-w-[760px]">One map, every segment in the state, one measure at a time. The macro view is where an analysis starts: rank a region, see where a measure is worst, and export exactly what the map is drawing. This page walks the whole tool, in the order you would actually use it.</p>
+              <div class="mt-4 flex items-center gap-2 flex-wrap">
+                <span class="h-7 inline-flex items-center gap-2 rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>52,127 segments &middot; PM3 year 2025</span>
+                <span class="h-7 inline-flex items-center rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600">screenshots captured 2026-08-27</span>
+                <a href="npmrds-measures.html" class="h-7 inline-flex items-center rounded-full border border-[#1F3F8F]/30 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:bg-slate-50">what the measures mean &rarr;</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ CONTENT + TOC ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- MAIN -->
+              <div class="col-span-12 lg:col-span-8 space-y-10">
+
+                <!-- 01 · What it is for -->
+                <section id="what-for" data-dms-section="what-for">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What the macro view is for</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mb-4">It answers <strong>&ldquo;where is this measure worst, across a whole region?&rdquo;</strong> &mdash; and it is the fastest way to export a measure for every segment in a geography. It is a starting point, not a finishing one: once you know <em>which</em> segments matter, the other tools go deeper.</p>
+                  <figure class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden my-4" data-dms-section="figure:macro-01-overview">
+                    <!-- captured 2026-08-27 · http://npmrds.localhost:5231/macro · default state -->
+                    <img src="../assets/screens/macro-01-overview.png" alt="The macro view showing LOTTR for the AM peak across New York State, with the control panel on the left and the measure reference panel on the right." class="w-full h-auto block"/>
+                    <figcaption class="px-4 py-2.5 border-t border-zinc-950/10 bg-slate-50/60 font-proxima text-[12px] text-slate-600 leading-[1.5]">The default view: LOTTR, AM peak, statewide, PM3 year 2025. Left panel drives the query; right panel explains the measure and summarises the distribution; the bar at the bottom exports it. <span class="font-mono text-[10.5px] text-slate-500">macro view &middot; default state &middot; captured 2026-08-27</span></figcaption>
+                  </figure>
+
+                  <div class="overflow-x-auto rounded-[8px] border border-zinc-950/10 bg-white shadow-sm">
+                    <table class="w-full min-w-[620px] text-left">
+                      <thead><tr class="border-b border-zinc-950/10 bg-slate-50/60">
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">if you want to&hellip;</th>
+                        <th class="px-4 py-2.5 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">use</th>
+                      </tr></thead>
+                      <tbody class="font-proxima text-[12.5px] text-slate-700">
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5">Rank or compare every segment in a region</td><td class="px-4 py-2.5"><strong class="text-[#0F1722]">Macro view</strong> &mdash; you are in the right place</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5">Study one corridor over time, in detail</td><td class="px-4 py-2.5"><a href="npmrds-reports.html" class="text-[#1F3F8F] hover:underline">Reports</a> &mdash; build a route, then chart it</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5">Compare two or more routes side by side</td><td class="px-4 py-2.5"><a href="route-comparison.html" class="text-[#1F3F8F] hover:underline">Route comparison</a></td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5">Look at one segment in full</td><td class="px-4 py-2.5"><a href="npmrds-tmc.html" class="text-[#1F3F8F] hover:underline">Segment &middot; TMC</a></td></tr>
+                        <tr><td class="px-4 py-2.5">Report a figure to FHWA</td><td class="px-4 py-2.5"><a href="map-21.html" class="text-[#1F3F8F] hover:underline">MAP-21 pages</a> &mdash; <strong>not</strong> this tool</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <!-- 02 · The control model -->
+                <section id="controls" data-dms-section="controls">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The control model &mdash; the one thing to understand</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mb-1"><strong>Pick the measure first. The controls below it then change.</strong> Every measure declares which reference controls apply to it, so the panel is never showing you a control that does nothing.</p>
+                  <p class="font-proxima text-[13px] text-slate-600 leading-[1.6] mb-3">The panel tells you how many are in play &mdash; note the count under the measure select.</p>
+                  <figure class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden my-4" data-dms-section="figure:macro-02-measure-menu">
+                    <!-- captured 2026-08-27 · http://npmrds.localhost:5231/macro · measure menu open -->
+                    <img src="../assets/screens/macro-02-measure-menu.png" alt="The measure menu open, showing seven measures in four groups: reliability, congestion, speed, and data quality." class="w-full h-auto block"/>
+                    <figcaption class="px-4 py-2.5 border-t border-zinc-950/10 bg-slate-50/60 font-proxima text-[12px] text-slate-600 leading-[1.5]">The measure menu, grouped. LOTTR is selected, and the panel underneath reads <strong>1 CONTROL</strong> &mdash; just peak period. <span class="font-mono text-[10.5px] text-slate-500">macro view &middot; measure menu open &middot; captured 2026-08-27</span></figcaption>
+                  </figure>
+                  <figure class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden my-4" data-dms-section="figure:macro-03-phed-controls">
+                    <!-- captured 2026-08-27 · http://npmrds.localhost:5231/macro · measure = PHED -->
+                    <img src="../assets/screens/macro-03-phed-controls.png" alt="PHED selected in the macro view. The control panel now shows four controls: threshold, unit, traffic type and peak period. The map is coloured orange and red along urban corridors." class="w-full h-auto block"/>
+                    <figcaption class="px-4 py-2.5 border-t border-zinc-950/10 bg-slate-50/60 font-proxima text-[12px] text-slate-600 leading-[1.5]">Switch to PHED and the same panel reads <strong>4 CONTROLS</strong> &mdash; threshold, unit, traffic type, peak period. The map recolours, and the right panel now reports <strong>21,209 of 52,127 segments</strong> with <strong>30,918 no data &middot; not coloured</strong>: delay simply does not exist for most of the network. <span class="font-mono text-[10.5px] text-slate-500">macro view &middot; measure = PHED &middot; captured 2026-08-27</span></figcaption>
+                  </figure>
+
+                  <div class="rounded-[8px] border-l-[3px] border-l-[#37576B] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">Why so many segments go grey on PHED</div>
+                    <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Delay needs traffic volume and a speed reference, and a large share of the network has neither. Those segments are <strong>not coloured rather than coloured zero</strong> &mdash; an absent measure and a measure of zero are different claims, and the map keeps them different. Check the &ldquo;no data&rdquo; count in the right panel before reading a delay map as coverage of the whole state.</p>
+                  </div>
+                </section>
+
+                <!-- 03 · Geography and year -->
+                <section id="geo-year" data-dms-section="geo-year">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Geography and year</h2></div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">Geography</div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Type into <strong>add a region, county or MPO</strong> to filter. Leave it empty and you get the whole state &mdash; which is the right choice when you want the statewide distribution behind the legend. Adding a geography narrows the map, the distribution summary, the worst-segments ranking, and the download all at once.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">Year</div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The year list is the set of <strong>published PM3 years</strong>, not a free date range &mdash; each is a complete annual computation. <em>Compare years</em> sits next to <em>Single year</em> in the View control.</p>
+                      <p class="font-proxima text-[12px] text-amber-800 leading-[1.5] mt-2"><strong>Before comparing years</strong>, read the two traps in the measures page &mdash; coverage and AADT vintage both move across years for reasons that have nothing to do with traffic. <a href="npmrds-measures.html#multi-year" class="text-[#1F3F8F] hover:underline">See &sect;&nbsp;05 there &rarr;</a></p>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 04 · Reading the map -->
+                <section id="reading" data-dms-section="reading">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Reading the map and the right-hand panel</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mb-3">The right panel is the measure&rsquo;s own explainer &mdash; the same definition text this documentation uses &mdash; plus the legend and the distribution of values actually on screen.</p>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm divide-y divide-zinc-950/05">
+                    <div class="p-4 grid md:grid-cols-[150px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Legend</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Seven fixed bins. For LOTTR the breaks are <strong>policy-anchored</strong> &mdash; pinned to the 1.50 reliability threshold rather than to the data &mdash; so the colours mean the same thing in every geography and every year. For delay the bins are <strong>log decades</strong>, because delay spans orders of magnitude.</div></div>
+                    <div class="p-4 grid md:grid-cols-[150px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Value distribution</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">A histogram of what is currently on the map, with the threshold marked. This is the fastest check that a filter did what you meant.</div></div>
+                    <div class="p-4 grid md:grid-cols-[150px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Summary figures</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Median, 80th percentile, and the share past the threshold &mdash; for the current filter, not the state, unless the filter is empty.</div></div>
+                    <div class="p-4 grid md:grid-cols-[150px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">No data</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Counted and stated explicitly, and drawn uncoloured. <strong>Grey is not zero.</strong></div></div>
+                    <div class="p-4 grid md:grid-cols-[150px_1fr] gap-x-4 gap-y-1"><div class="font-display font-medium text-[13.5px] text-[#0F1722]">Get to a segment</div><div class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Search a TMC code or county to jump straight to it.</div></div>
+                  </div>
+                </section>
+
+                <!-- 05 · Coverage first -->
+                <section id="coverage-first" data-dms-section="coverage-first">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Check coverage before you trust a pattern</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mb-1">Coverage is a measure in the menu like any other, and it is the one worth looking at <strong>first</strong> when something surprising shows up. A region that looks unusually unreliable may simply have less data behind it.</p>
+                  <figure class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden my-4" data-dms-section="figure:macro-04-coverage">
+                    <!-- captured 2026-08-27 · http://npmrds.localhost:5231/macro · measure = coverage -->
+                    <img src="../assets/screens/macro-04-coverage.png" alt="The macro view with the Coverage measure selected, showing data completeness across the state." class="w-full h-auto block"/>
+                    <figcaption class="px-4 py-2.5 border-t border-zinc-950/10 bg-slate-50/60 font-proxima text-[12px] text-slate-600 leading-[1.5]">Coverage &middot; data completeness, mapped the same way as any other measure. Thin data <em>inflates</em> the reliability ratios and <em>deflates</em> the delay measures &mdash; opposite directions from the same cause. <span class="font-mono text-[10.5px] text-slate-500">macro view &middot; measure = coverage &middot; captured 2026-08-27</span></figcaption>
+                  </figure>
+
+                </section>
+
+                <!-- 06 · Worst segments -->
+                <section id="worst" data-dms-section="worst">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Worst segments &mdash; ranking bottlenecks</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mb-1"><strong>Worst 25 segments</strong> in the right panel ranks the current measure over the <em>current filter</em> &mdash; the label says <span class="font-mono text-[11.5px]">in current filter</span> for exactly that reason. Set your geography first, or you will rank the whole state.</p>
+                  <figure class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden my-4" data-dms-section="figure:macro-05-worst-segments">
+                    <!-- captured 2026-08-27 · http://npmrds.localhost:5231/macro · worst 25 segments open -->
+                    <img src="../assets/screens/macro-05-worst-segments.png" alt="The worst-segments ranking panel open in the macro view, listing the highest-value segments for the current measure and filter." class="w-full h-auto block"/>
+                    <figcaption class="px-4 py-2.5 border-t border-zinc-950/10 bg-slate-50/60 font-proxima text-[12px] text-slate-600 leading-[1.5]">The ranking is a view of the same query, not a separate one &mdash; change the measure, period or geography and the list follows. <span class="font-mono text-[10.5px] text-slate-500">macro view &middot; worst 25 segments open &middot; captured 2026-08-27</span></figcaption>
+                  </figure>
+
+                  <div class="rounded-[8px] border-l-[3px] border-l-amber-500 border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">Two cautions before you act on a ranking</div>
+                    <ul class="space-y-1.5 font-proxima text-[12.5px] text-slate-700 leading-[1.5]">
+                      <li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>Short segments dominate reliability rankings.</strong> 24.3% of segments are under 0.05&nbsp;mi and are flagged unreliable 7.7&times; more often than long ones. A top-25 by LOTTR can be mostly a list of very short segments.</span></li>
+                      <li class="flex gap-2"><span class="text-amber-700 shrink-0">&bull;</span><span><strong>Delay rankings favour high-volume roads by construction</strong>, since delay is multiplied by traffic. That is usually what you want &mdash; but it is not the same question as &ldquo;where is traffic slowest&rdquo;.</span></li>
+                    </ul>
+                  </div>
+                </section>
+
+                <!-- 07 · Downloading -->
+                <section id="download" data-dms-section="download">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Downloading the data</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mb-1">The download button carries a row count so you know the size before you ask for it. <strong>What you get is exactly what the map is drawing</strong> &mdash; same filters, same year, same bins.</p>
+                  <figure class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden my-4" data-dms-section="figure:macro-06-download-builder">
+                    <!-- captured 2026-08-27 · http://npmrds.localhost:5231/macro · download builder open -->
+                    <img src="../assets/screens/macro-06-download-builder.png" alt="The download builder modal, showing scope, format, include-geometry, and the list of columns that will be exported." class="w-full h-auto block"/>
+                    <figcaption class="px-4 py-2.5 border-t border-zinc-950/10 bg-slate-50/60 font-proxima text-[12px] text-slate-600 leading-[1.5]">Choose <strong>scope</strong> (current filters or the whole year), <strong>format</strong> (CSV or GPKG), and whether to include geometry. <em>Columns you&rsquo;ll get</em> lists them explicitly before you commit, and you can add metadata or extra measure columns. <span class="font-mono text-[10.5px] text-slate-500">macro view &middot; download builder open &middot; captured 2026-08-27</span></figcaption>
+                  </figure>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display font-medium text-[14px] text-[#0F1722] mb-1.5">CSV or GPKG?</div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">CSV for spreadsheets and analysis. <strong>GPKG</strong> when you want geometry for GIS &mdash; it carries the segment shapes, so no join to a network layer is needed.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display font-medium text-[14px] text-[#0F1722] mb-1.5">The package explains itself</div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Every download ships method notes covering precision, the delay floor, coverage, and the AADT-vintage caveat &mdash; <strong>the same facts this documentation states</strong>. If a year range straddles the 2021&ndash;22 AADT revision, the package says so.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 08 · Sharing -->
+                <section id="sharing" data-dms-section="sharing">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Sharing a view</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-700 leading-[1.65] mb-3">The URL <strong>is</strong> the state. Copy it from the address bar and whoever opens it sees what you saw. Two rules govern it, and both are deliberate:</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display font-medium text-[14px] text-[#0F1722] mb-1.5">Only what you changed is written</div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">A fresh macro view leaves the URL clean. Parameters appear only as you move away from the defaults, so a shared link is a readable description of your choices rather than a wall of state.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display font-medium text-[14px] text-[#0F1722] mb-1.5">Unknown values degrade, they do not break</div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Every value in a link is checked against the live vocabulary and quietly dropped if it no longer resolves. An old link whose measure or year has since retired still opens &mdash; it falls back to the default rather than erroring.</p>
+                    </div>
+                  </div>
+                  <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55] mt-3">Because of the second rule, a shared link is <strong>not</strong> a permanent citation. If a figure matters, download it &mdash; the export is fixed, the link is live.</p>
+                </section>
+
+              </div>
+
+              <!-- TOC (sticky) -->
+              <aside class="col-span-12 lg:col-span-4" data-dms-section="toc">
+                <div class="sticky top-4 space-y-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                    <a href="#what-for" class="tny-toc-item active">What it is for</a>
+                    <a href="#controls" class="tny-toc-item">The control model</a>
+                    <a href="#geo-year" class="tny-toc-item">Geography and year</a>
+                    <a href="#reading" class="tny-toc-item">Reading the map</a>
+                    <a href="#coverage-first" class="tny-toc-item">Check coverage first</a>
+                    <a href="#worst" class="tny-toc-item">Worst segments</a>
+                    <a href="#download" class="tny-toc-item">Downloading</a>
+                    <a href="#sharing" class="tny-toc-item">Sharing a view</a>
+                  </div>
+                  <div class="rounded-[8px] border border-[#1F3F8F]/20 bg-white shadow-sm p-5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">what the numbers mean</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">This page drives the tool. The other one explains it.</div>
+                    <div class="mt-3 space-y-2">
+                      <a href="npmrds-measures.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Book --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>Measures &amp; methodology</a>
+                      <a href="npmrds-measures.html#which-delay" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Gauge --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>Which delay measure?</a>
+                      <a href="npmrds-macro.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Map --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 4 6 2 6-2v14l-6 2-6-2-6 2V6Z"/><path d="M9 4v14M15 6v14"/></svg>Open the macro view</a>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[11.5px] text-slate-500">Screenshots on this page were captured from the running tool on 2026-08-27. If the interface has moved on, the captions name the state to re-shoot.</div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER · link block (skill §7.0.3) ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">npmrds home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-measures.html" class="hover:text-slate-900">measures</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11.5px] text-slate-500">&copy; NYSDOT &middot; TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

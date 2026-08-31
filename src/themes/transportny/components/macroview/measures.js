@@ -27,6 +27,9 @@ export const MEASURE_GROUPS = [
   { key: "congestion", label: "congestion" },
   { key: "speed", label: "speed" },
   { key: "network", label: "environment · network" },
+  // Coverage describes the input, not the network — its own group so it cannot be mistaken for a
+  // traffic measure sitting alongside LOTTR and TTTR.
+  { key: "quality", label: "data quality" },
 ];
 
 export const MEASURES = {
@@ -99,6 +102,34 @@ export const MEASURES = {
     beyondLabel: "Above target",
     thresholdNoun: "target",
     beyondThreshold: "above",
+    referenceControls: ["peak period"],
+    available: true,
+  },
+  // R1 — a truck p80/p50 alongside the federally-required p95/p50. Added because TTTR's p95 costs
+  // 2.4-4.9x the sample of a p80 for the same confidence (H1b's measured down-sampling curves), and
+  // truck coverage is thin: 22.7% of bins in 2025 and only 8.0% in 2020. So on a large part of the
+  // network the p95 is the noisier statistic, and this is the one that can actually be read.
+  //
+  // NOT a federal measure and must not be presented as one — TTTR's p95/p50 is what 23 CFR 490
+  // requires. This is the diagnostic sibling.
+  tttr_p80: {
+    key: "tttr_p80",
+    abbr: "TTTR₈₀",
+    name: "Truck Travel Time Reliability (p80)",
+    subtitle: "Truck Travel Time Reliability, 80th percentile",
+    selectLabel: "TTTR₈₀ · Truck reliability (p80)",
+    menuLabel: "TTTR₈₀ · truck reliability, p80",
+    menuUnit: "ratio",
+    group: "reliability",
+    answers: "How unreliable truck travel is, measured at a percentile the sample can support.",
+    definition:
+      "The same ratio as TTTR but taken at the 80th percentile instead of the 95th. Reads lower than TTTR by construction; its value is that it needs a far smaller sample for the same confidence, which matters because truck coverage is thin.",
+    computation: "p80(TT) ÷ p50(TT), trucks",
+    equation: "TTTR₈₀ = p80(TT) / p50(TT)",
+    unit: "ratio",
+    unitShort: "ratio",
+    // Deliberately NO threshold/reliableWhen: there is no federal or state target at p80, and
+    // inventing one would imply a compliance reading this measure cannot carry.
     referenceControls: ["peak period"],
     available: true,
   },
@@ -198,6 +229,35 @@ export const MEASURES = {
     referenceControls: ["pollutant", "fuel type", "aadt source", "peak period"],
     available: false,
   },
+  // Data coverage as a first-class measure. It describes the INPUT rather than the network, which is
+  // why it sits in its own group: every other measure here is a property of traffic, this one is a
+  // property of how much of the feed arrived.
+  //
+  // It exists because coverage is not stationary and confounds every other measure on this map. Nine
+  // coverage eras 2017-2026; all-vehicle bins run 36.3%-51.5% across the published years and truck
+  // bins 8.0%-23.5%. Thinning the probes behind a bin INFLATES the reliability ratios while removing
+  // reporting bins DEFLATES the delay measures — opposite directions from the same cause — so a
+  // year-over-year read of anything else on this map should be checked against this first.
+  coverage: {
+    key: "coverage",
+    abbr: "Coverage",
+    name: "Data coverage",
+    subtitle: "how much of the feed arrived",
+    selectLabel: "Coverage · data completeness",
+    menuLabel: "Coverage · data completeness",
+    menuUnit: "%",
+    group: "quality",
+    answers: "How much of the underlying data actually arrived for this segment.",
+    definition:
+      "Two percentages on the same 0-100 scale. Bins reporting is how much of a bin-based measure's own input arrived — the sample size its percentiles rest on. Epochs reporting is how much of the raw 5-minute feed arrived, and is lower by construction, since a bin counts as present when any one of its three epochs did.",
+    computation: "bins present ÷ bins possible · epochs present ÷ epochs possible",
+    equation: "coverage = present / possible",
+    unit: "percent",
+    unitShort: "percent",
+    unitHint: "· bins or epochs",
+    referenceControls: ["stream", "peak period"],
+    available: true,
+  },
   attributes: {
     key: "attributes",
     abbr: "Attributes",
@@ -223,11 +283,13 @@ export const MEASURES = {
 export const MEASURE_ORDER = [
   "lottr",
   "tttr",
+  "tttr_p80",
   "ted",
   "phed",
   "speed",
   "freeflow",
   "emissions",
+  "coverage",
   "attributes",
 ];
 

@@ -358,14 +358,25 @@ const liveRail = () => [
 const footer = () => ({
   kind: 'lexical', size: '12', bg: 'inverted',
   radius: { tl: true, tr: true, bl: true, br: true },
-  padding: { top: '8', bottom: '8', left: '8', right: '8' },
+  // NO left/right padding. Section padding sits outside the card surface, so
+  // `left/right: '8'` made the footer 32px narrower per side than every card
+  // above it — visibly misaligned. The inset the contents need is INSIDE the
+  // card, and comes from `.wcdb-inv`'s own padding in tokens.css (the marker
+  // class the `inverted` background carries).
+  padding: { top: '4', bottom: '4' },
   data: lexical(
     lcontainer(
       'w-full !mt-0 grid-cols-1 md:grid-cols-[1.4fr_0.5fr_0.5fr] gap-10',
       litem(
-        styled('footEyebrow', text('Stay tuned')),
-        styled('footHeadline', text('Drop us your email.')),
-        styled('footBody', text('Once-a-month dispatch from the studio — new shows, upcoming events, the occasional pledge drive. No spam, no algorithms.')),
+        // NOT a mailing-list pitch. The newsletter is not launching, and this
+        // column previously read "Drop us your email." with no form under it —
+        // an invitation the page could not accept. It now carries what a station
+        // footer should: who is broadcasting, from where, and the number to
+        // call. Every value is the same one `station_info` prints.
+        styled('footEyebrow', text('On air since 1977')),
+        styled('footHeadline', text('WCDB Albany 90.9FM')),
+        styled('footBody', text('Student-run radio from SUNY Albany, broadcasting from Campus Center 316, 1400 Washington Avenue, Albany NY 12222.')),
+        styled('footMeta', text('Request line (518) 442-4242')),
       ),
       litem(
         styled('footListHead', text('Listen')),
@@ -403,6 +414,22 @@ const pageHead = (eyebrow, title, lede) =>
 
 const SCHEDULE_TRACKS = '80px minmax(0,1fr) 150px 130px';
 const SPIN_TRACKS = '58px 44px minmax(0,1fr) 150px';
+
+/* The nine departments the migration settled on, with the glyph each carries in
+ * the schedule design's department row. The icon names are registry names — an
+ * unregistered one renders nothing, so they are checked against
+ * `src/themes/wcdb/icons.jsx`, not invented. */
+const DEPARTMENTS = [
+  { name: 'Hip-Hop/R&B', icon: 'Microphone' },
+  { name: 'World',       icon: 'Globe' },
+  { name: 'Rock',        icon: 'Pick' },
+  { name: 'Metal',       icon: 'Bolt' },
+  { name: 'Jazz',        icon: 'Note' },
+  { name: 'Electronic',  icon: 'Waveform' },
+  { name: 'News',        icon: 'Newspaper' },
+  { name: 'Sports',      icon: 'Trophy' },
+  { name: 'Specialty',   icon: 'Star' },
+];
 
 /* The schedule's seven day groups, in the dataset's own order: **0 = Monday …
  * 6 = Sunday** (`wcdb-migrate/transform.mjs`, chosen to match the admin week
@@ -460,7 +487,21 @@ const pages = [
           // the box wrapping the icon.
           { name: 'shows.icon', normalName: 'icon', show: true, hideHeader: true, formatFn: 'icon', hideIconLabel: true, iconClassName: 'size-[16px]', valueFontStyle: 'glyphDisc', cellRowSpan: 2 },
           { name: `to_char(NULLIF(ds."start",'')::time, 'FMHH12 am') as start_label`, normalName: 'start_label', origin: 'calculated-column', show: true, hideHeader: true, valueFontStyle: 'stripTime', cellRowSpan: 2 },
-          { name: 'shows.name', normalName: 'name', show: true, hideHeader: true, valueFontStyle: 'stripTitle', isLink: true, location: '/show', searchParams: 'show_id' },
+          { name: 'shows.name', normalName: 'name', show: true, hideHeader: true, valueFontStyle: 'stripTitle', isLink: true,
+            // The link has to arrive as `/show?show_id=<id>` or the show page's
+            // `show_id` page variable never gets set and the page renders empty.
+            //
+            // Two things were wrong before. `searchParams` is a MODE, not a
+            // param name — Card.jsx only accepts `'id' | 'value' | 'rawValue'`
+            // and resolves anything else to an empty string, so
+            // `searchParams: 'show_id'` silently produced a bare `/show`. And
+            // the param NAME comes from `location`, because the URL is built as
+            // `location + searchParams`.
+            //
+            // `searchParamsCol` is the knob for "display one field, link by
+            // another": this cell shows the show's NAME but must link by its
+            // id, so `'value'` would have sent `?show_id=Caribbean Music Show`.
+            location: '/show?show_id=', searchParamsCol: 'show_id' },
           // The right-hand column is a STATUS in the design — `Live` on the row
           // that is on air, a countdown on the ones still to come — not the
           // department, which the design does not put on this row at all.
@@ -633,7 +674,10 @@ const pages = [
     // single list reacts to it. (It was briefly dead while the page was seven
     // stacked day sections, and an unconsumed variable is not free: it
     // serialises into the URL, so links arrived as `/schedule?day=`.)
-    filters: [{ id: 'wcdb-pub-day', searchKey: 'day', values: '', useSearchParams: true }],
+    filters: [
+      { id: 'wcdb-pub-day', searchKey: 'day', values: '', useSearchParams: true },
+      { id: 'wcdb-pub-dept', searchKey: 'department', values: '', useSearchParams: true },
+    ],
     sections: [
       { kind: 'lexical', data: pageHead('On air', 'The week.', 'Every show on 90.9, in the order it airs. 69 airings across seven days.') },
       // ── The design's "Filter by day" card ────────────────────────────
@@ -643,24 +687,80 @@ const pages = [
       // page was missing, and it replaces seven stacked day lists with one
       // list the reader steers.
       {
-        kind: 'lexical', ...fusedTop, padding: { top: '6', bottom: '2' },
+        // `bottom: '0'` — a section's padding is applied OUTSIDE its card
+        // surface, so any bottom padding here is a GAP in the fused card, not
+        // breathing room inside it. This was `'2'` and showed as an 8px break
+        // between the label and the tiles below it.
+        kind: 'lexical', ...fusedTop, padding: { top: '6', bottom: '0' },
         data: lexical(styled('caption', text('Filter by day'))),
       },
       {
-        kind: 'Card', ...fusedEnd, padding: { top: '0', bottom: '5' },
+        // The WEEK, as the design's tiles: day name at display-italic 22px with
+        // its show count under it, on the card-soft tone. `pillStyle: 'dayTile'`
+        // selects that shape from `theme.filterPill.styles[]` — the same
+        // primitive as the admin's segmented control, wearing a different style.
+        kind: 'Card', ...fusedMid,
         data: dataSection({
           source: SOURCES.schedule,
           columns: [
-            dayPill({ label: 'All week', paramValue: '', alias: 'all_days', expr: 'count(*)', activeWhenUnset: true }),
+            dayPill({ label: 'All week', paramValue: '', alias: 'all_days', expr: 'count(*)', activeWhenUnset: true, pillStyle: 'dayTile' }),
             ...WEEKDAYS.map(({ day, label }) => dayPill({
               label, paramValue: String(day), alias: `day_${day}`,
-              expr: `count(*) FILTER (WHERE ds.day = ${day})`,
+              // `day`, NOT `ds.day`: this section has no join, so there is no
+              // `ds` alias to qualify with and the aggregate came back empty —
+              // which the pill renders as no count at all rather than an error.
+              expr: `count(*) FILTER (WHERE day = ${day})`, pillStyle: 'dayTile',
             })),
           ],
           display: {
             pageSize: 1, fetchMode: 'smart',
-            cellsGridSize: 8, cellsGridGap: 8, cellsPadding: 0,
-            cardsPadding: 0, cardBorder: false, cardStyle: 'plain',
+            // 4-up: eight tiles this size on one row would be unreadable, and
+            // the design wraps them the same way at this width.
+            cellsGridSize: 4, cellsGridGap: 8, cellsRowGap: 8, cellsPadding: 0,
+            cardsPadding: '0 24px', cardBorder: false, cardStyle: 'plain',
+          },
+        }),
+      },
+      {
+        // Same 8px break here. (`top: '5'` was also a silent no-op — the
+        // padding scale is 0/2/4/6/8 only, and an unmapped value emits no
+        // class at all.)
+        kind: 'lexical', ...fusedMid, padding: { top: '0', bottom: '0' },
+        data: lexical(styled('caption', text('Filter by department'))),
+      },
+      {
+        // The DEPARTMENTS — the design's second axis, in the same card. Each
+        // pill carries its department's glyph, which is also the glyph on every
+        // row of the list below, so the filter and the data name the same thing
+        // the same way. `pillStyle: 'solid'` fills the active pill instead of
+        // tinting it: the design's note is that a choice should not read as a
+        // hover, and with one of ten selected the filled state is rare.
+        kind: 'Card', ...fusedEnd, padding: { top: '0', bottom: '5' },
+        data: dataSection({
+          source: SOURCES.schedule, join: showsJoin,
+          columns: [
+            dayPill({
+              label: 'All', paramValue: '', alias: 'all_depts', expr: 'count(*)',
+              activeWhenUnset: true, paramKey: 'department', pillStyle: 'solid',
+            }),
+            ...DEPARTMENTS.map(({ name, icon }, i) => dayPill({
+              label: name, paramValue: name, alias: `dept_${i}`,
+              // `shows.department` under the join — a bare `department` is
+              // ambiguous here, and `ds.department` does not exist on schedule.
+              expr: `count(*) FILTER (WHERE shows.department = '${name.replace(/'/g, "''")}')`,
+              paramKey: 'department', pillStyle: 'solid', pillIcon: icon,
+            })),
+          ],
+          display: {
+            pageSize: 1, fetchMode: 'smart',
+            // FIVE max-content tracks, not ten: each pill keeps its own width,
+            // and ten on one line overflowed the card (the section clips, so
+            // `Electronic` onward simply vanished). Two rows of five wraps the
+            // way the design's `flex-wrap` does at this width.
+            cellsGridSize: 5,
+            cellsTracksTemplate: 'repeat(5, max-content)',
+            cellsGridGap: 8, cellsRowGap: 8, cellsPadding: 0,
+            cardsPadding: '0 24px', cardBorder: false, cardStyle: 'plain',
           },
         }),
       },
@@ -681,14 +781,31 @@ const pages = [
             normalName: 'when_label', origin: 'calculated-column', show: true, hideHeader: true,
             valueFontStyle: 'stripTime', cellRowSpan: 2,
           },
-          { name: 'shows.name', normalName: 'name', show: true, hideHeader: true, valueFontStyle: 'stripTitle', isLink: true, location: '/show', searchParams: 'show_id' },
+          { name: 'shows.name', normalName: 'name', show: true, hideHeader: true, valueFontStyle: 'stripTitle', isLink: true,
+            // The link has to arrive as `/show?show_id=<id>` or the show page's
+            // `show_id` page variable never gets set and the page renders empty.
+            //
+            // Two things were wrong before. `searchParams` is a MODE, not a
+            // param name — Card.jsx only accepts `'id' | 'value' | 'rawValue'`
+            // and resolves anything else to an empty string, so
+            // `searchParams: 'show_id'` silently produced a bare `/show`. And
+            // the param NAME comes from `location`, because the URL is built as
+            // `location + searchParams`.
+            //
+            // `searchParamsCol` is the knob for "display one field, link by
+            // another": this cell shows the show's NAME but must link by its
+            // id, so `'value'` would have sent `?show_id=Caribbean Music Show`.
+            location: '/show?show_id=', searchParamsCol: 'show_id' },
           { name: 'shows.department', normalName: 'department', show: true, hideHeader: true, valueFontStyle: 'stripStatus', justify: 'right', cellRowSpan: 2 },
           { name: "nullif(concat('w/ ', djs.on_air_name), 'w/ ') as sched_host", normalName: 'sched_host', origin: 'calculated-column', show: true, hideHeader: true, valueFontStyle: 'stripHost' },
           { name: 'show_id', show: true, selectOnly: true },
           { name: 'day', show: true, selectOnly: true, sort: 'asc' },
           { name: `ds."start"`, normalName: 'start_sort', show: true, selectOnly: true, sort: 'asc' },
         ],
-        filters: [{ col: 'day', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'day' }],
+        filters: [
+          { col: 'day', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'day' },
+          { col: 'shows.department', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'department' },
+        ],
         display: {
           pageSize: 100, usePagination: false, fetchMode: 'smart',
           cellsRowGap: 2, cardsPadding: '14px 24px',
@@ -985,7 +1102,7 @@ const pages = [
 // A `function`, not a `const` arrow — it is called while the `pages` array
 // above is being built, and only declarations are hoisted. (Same trap as
 // `trackCount` below.)
-function dayPill({ label, paramValue, alias, expr, activeWhenUnset }) {
+function dayPill({ label, paramValue, alias, expr, activeWhenUnset, paramKey = 'day', pillStyle, pillIcon }) {
   return {
     name: `${expr} as ${alias}`,
     normalName: alias,
@@ -994,8 +1111,10 @@ function dayPill({ label, paramValue, alias, expr, activeWhenUnset }) {
     show: true,
     hideHeader: true,
     pillLabel: label,
-    paramKey: 'day',
+    paramKey,
     paramValue,
+    ...(pillStyle ? { pillStyle } : {}),
+    ...(pillIcon ? { pillIcon } : {}),
     ...(activeWhenUnset ? { activeWhenUnset: true } : {}),
   };
 }

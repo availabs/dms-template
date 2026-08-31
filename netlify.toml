@@ -18,6 +18,51 @@
       X-Content-Type-Options = "nosniff"
       Referrer-Policy = "strict-origin-when-cross-origin"
 
+  ## ── Retired product subdomains (devtny.org) ────────────────────────────────
+  ## The three products moved off their own subdomains onto paths on www so that
+  ## switching between them keeps the user's session (the DMS token lives in
+  ## origin-scoped localStorage, so every subdomain was a separate login). See
+  ## planning/transportny/tasks/current/subdomain-to-path-consolidation.md.
+  ##
+  ## These match the BARE HOST ONLY — the case a typed URL or a bookmark of the
+  ## product home hits — so they can be a real 301 with no bundle load. Deep links
+  ## are handled by the data-driven backstop in the app itself
+  ## (dms/src/utils/retiredSubdomain.js, driven by each pattern's
+  ## `retired_subdomains`), which knows the live route table and therefore keeps
+  ## the shared patterns where they are: a blanket `/*` rule here would rewrite
+  ## tsmo2.devtny.org/auth/login to /tsmo/auth/login and lock people out of the
+  ## login screen. Adding per-path rules would mean ~50 blocks that silently drift
+  ## from the pattern table; the backstop cannot drift.
+  ##
+  ## Host rules only fire on hostnames attached to this Netlify site. These target
+  ## the DEV site (37adb33e, devtny.org); prod (transportny.org) deploys from the
+  ## transportNY repo and needs the equivalent block in ITS netlify.toml.
+  [[redirects]]
+    from = "https://tsmo2.devtny.org/"
+    to = "https://www.devtny.org/tsmo"
+    status = 301
+    force = true
+  [[redirects]]
+    from = "https://tsmo.devtny.org/"
+    to = "https://www.devtny.org/tsmo"
+    status = 301
+    force = true
+  [[redirects]]
+    from = "https://freightatlas2.devtny.org/"
+    to = "https://www.devtny.org/freightatlas"
+    status = 301
+    force = true
+  [[redirects]]
+    from = "https://freightatlas.devtny.org/"
+    to = "https://www.devtny.org/freightatlas"
+    status = 301
+    force = true
+  [[redirects]]
+    from = "https://npmrds.devtny.org/"
+    to = "https://www.devtny.org/npmrds"
+    status = 301
+    force = true
+
   ## Uncomment to use this redirect for Single Page Applications like create-react-app.
   ## Not needed for static site generators.
   [[redirects]]

@@ -6,8 +6,8 @@ export const addGraphModalTheme = {
   sectionLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5',
 
   routeChecklist: 'space-y-1 max-h-56 overflow-y-auto',
-  routeItem: 'w-full flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 text-left',
-  routeItemSelected: 'w-full flex items-center gap-2 p-1.5 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 text-left',
+  routeItem: 'w-full flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 text-left disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-50',
+  routeItemSelected: 'w-full flex items-center gap-2 p-1.5 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 text-left disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-50',
   routeCheckbox: 'shrink-0',
   routeColorSwatch: 'w-2.5 h-2.5 rounded-full shrink-0 border border-black/10',
   routeName: 'text-sm text-slate-700 truncate flex-1 min-w-0',

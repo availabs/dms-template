@@ -27,6 +27,7 @@ import {
     composeTableMeasuresConfig,
     composeAutoTitle,
     isTitleDirty,
+    ensureSelfBoundSubscriber,
     GRAPH_TYPE_OPTIONS,
     MEASURE_OPTIONS,
     RESOLUTION_OPTIONS,
@@ -34,6 +35,7 @@ import {
     DEFAULT_PICK,
     BASE_SOURCE,
 } from './composeMeasureConfig';
+import { applyMapMeasureToState } from './composeMapConfig';
 import { selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 
@@ -47,18 +49,10 @@ import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages
 // the first time the picker ran on it. "categorize" (the comparison-series
 // discriminator, or any author-added grouping dimension) is deliberately
 // excluded — never owned by this picker, see the comment above
-// MEASURE_PICKER_COLUMN_ORIGIN.
-const MANAGED_TARGETS = ['xAxis', 'yAxis', 'color'];
-
-// The exact shape ReportRouteList's own $self-binding recipe uses — confirmed
-// live against a Report Page template's pre-wired starter graph (section
-// 2195009): `display._functions.subscribers` carries a `comparison_series`
-// entry with paramKey "$self" (the reserved sentinel usePageFilterSync
-// resolves to this graph's own stable identity — see ReportRouteList's
-// README, "Publishing routes to graphs"), and `comparisonSeries.enabled`
-// must be on (the master switch) for ReportRouteList's assigned routes to
-// render as series at all.
-const REPORT_SUBSCRIBER_ARGS = { labelKey: 'label', valueKey: 'filters' };
+// MEASURE_PICKER_COLUMN_ORIGIN. "delta" added 2026-08-21 for Table's own Route Compare "% vs
+// Main" column (composeMeasureConfig.js's buildRouteCompareDeltaColumn) — same reasoning, a
+// picker-owned column that must be fully replaced (not left as an orphan) on every re-pick.
+const MANAGED_TARGETS = ['xAxis', 'yAxis', 'color', 'delta'];
 
 function selectItem({ id, name, options, value, onPick }) {
     const current = options.find(o => o.value === value);
@@ -96,7 +90,7 @@ export function isReportPage(siblingSections = []) {
 // (already merged with DEFAULT_PICK/any partial), not a partial. Returns whether composeMeasureConfig
 // actually produced something (an unknown measureKey composes nothing, and callers should skip
 // downstream bookkeeping — e.g. the reconcile call — in that case).
-export function applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors } = {}) {
+export function applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors, allRoutes } = {}) {
     // Captured before anything below overwrites `state.display._measurePick` — this is the pick
     // whatever's currently in `state.display.title.title` was actually generated FROM (or
     // undefined on a brand-new section). Tier 5B's title auto-population (near the bottom of this
@@ -119,6 +113,19 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
             measureKeys: pick.measures,
             resolutionKey: pick.resolution,
             externalSourceColumns,
+            routeCompare: pick.routeCompare,
+            includeReliability: pick.includeReliability,
+            routeIds: pick.routeIds,
+            routeWindows: pick.routeWindows,
+            allRoutes,
+            // Round 79: converter-only fields, see composeTableMeasuresConfig's
+            // own comment — `grain` defaults to 'route' when absent, so the
+            // live Table checkbox's own behavior is byte-unchanged; only
+            // compose_bridge.mjs's forwarded BRIDGE_GRAPH_SPECS request for
+            // Info Box ever sets these.
+            grain: pick.grain,
+            reliabilityBin: pick.reliabilityBin,
+            reliabilityYear: pick.reliabilityYear,
         })
         : composeMeasureConfig({
             graphType: pick.graphType,
@@ -139,6 +146,11 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
             // recomposes with the real count). Stripped back out of `pick` below
             // before it's persisted — it's a compose-time hint, not stored state.
             seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
+            // Round 77 (old-reports-conversion.md): converter-only field, see
+            // composeMeasureConfig's own comment — never set by any live-UI
+            // caller, only by compose_bridge.mjs's forwarded BRIDGE_GRAPH_SPECS
+            // request for the 3 avgHoursOfDelay-summary buckets.
+            summaryDelayGrainKey: pick.summaryDelayGrainKey,
         });
     if (!composed) return false;
 
@@ -202,17 +214,7 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
     state.comparisonSeries.seriesKey = state.comparisonSeries.seriesKey || '__series';
     state.comparisonSeries.seriesLabel = state.comparisonSeries.seriesLabel || 'Routes';
 
-    if (!state.display._functions) state.display._functions = { providers: [], subscribers: [] };
-    if (!state.display._functions.subscribers) state.display._functions.subscribers = [];
-    const subscribers = state.display._functions.subscribers;
-    const existingSubscriber = subscribers.find(s => s.functionId === 'comparison_series');
-    if (existingSubscriber) {
-        existingSubscriber.enabled = true;
-        existingSubscriber.paramKey = '$self';
-        existingSubscriber.args = { ...existingSubscriber.args, ...REPORT_SUBSCRIBER_ARGS };
-    } else {
-        subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
-    }
+    ensureSelfBoundSubscriber(state);
 
     // Tier 5B: populate/refresh the title, UNLESS the author has already typed their own (see
     // `isTitleDirty`'s own doc comment for the no-new-field mechanism). Obvious at this call
@@ -257,16 +259,14 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 // QuickControls' "When" pill writes on a Map card the exact way it did before this list was fixed.
 const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds', 'routeWindows'];
 
-export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
-    // Map has no compose path at all: composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment
-    // documents graph-shaped output (columns/join/display.graphType/comparisonSeries.combine) as
-    // "nonsensical" for Map, which renders from `symbologies`, not from any of that. Short-circuit
-    // to a plain field-level merge onto `_measurePick` instead of running the AVL-Graph compose
-    // pipeline. Gated on `currentComponent?.type` (the ComponentRegistry's own reliable identity)
-    // rather than `state.display.graphType` / `_measurePick.graphType` — neither field exists on a
-    // Map section's stored state (confirmed live 2026-08-07: a Map's `_measurePick` only ever
-    // carries weekdays/start/end/routeIds, per section_builders.py's write), so a graphType-based
-    // check would silently misfire and fall through to the AVL-Graph path below. See
+export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allRoutes }, partial) {
+    // Map has no AVL-Graph-shaped compose path (columns/join/display.graphType/
+    // comparisonSeries.combine, per composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment) —
+    // short-circuits to its own, much smaller, symbologies-shaped update instead of the AVL-Graph
+    // compose pipeline below. Gated on `currentComponent?.type` (the ComponentRegistry's own
+    // reliable identity) rather than `state.display.graphType` / `_measurePick.graphType` —
+    // neither field exists on a Map section's stored state, so a graphType-based check would
+    // silently misfire and fall through to the AVL-Graph path below. See
     // dynamic-report-nongraph-section-binding.md item 9.
     if (currentComponent?.type === 'Map') {
         const existing = state?.display?._measurePick || {};
@@ -275,9 +275,20 @@ export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
             if (key in partial) nextPick[key] = partial[key];
             else if (!(key in nextPick)) nextPick[key] = DEFAULT_PICK[key];
         }
+        // Measure (Tier 5I, 2026-08-20): the one Map pick that DOES recompose something — picking
+        // a measure rebuilds the picker's own managed symbology layer (plain geometry, or a
+        // choropleth colored by that measure), same "smart default generator, full replace on
+        // every apply" contract every other field in this file already has. Remembered on
+        // `_measurePick` (default 'none') so QuickControls/the modal show the right selection when
+        // reopened — never merged from DEFAULT_PICK's AVL-Graph-shaped 'measure' default
+        // ('travelTime'), which is meaningless for Map.
+        const priorMeasureKey = existing.measure || 'none';
+        const measureKey = 'measure' in partial ? partial.measure : (existing.measure || 'none');
+        nextPick.measure = measureKey;
         dwAPI.setState(draft => {
             if (!draft.display) draft.display = {};
             draft.display._measurePick = nextPick;
+            if ('measure' in partial) applyMapMeasureToState(draft, { measureKey, apiHost, priorMeasureKey });
         });
         return;
     }
@@ -296,9 +307,23 @@ export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
             // source (see below), there's no other candidate it could be.
             externalSourceColumns: hasDataset ? state.externalSource.columns : BASE_SOURCE.sourceInfo.columns,
             defaultColors: currentComponent?.defaultState?.display?.colors,
+            allRoutes,
         });
     });
     if (!applied) return;
+    // Round 79: Info Box's `grain: 'tmc'` shape (composeTableMeasuresConfig)
+    // deliberately has NO `__series` column — its categorize column IS `tmc`
+    // instead (`info_box_templates.py`'s own proven shape, live since round
+    // 19 — comparisonSeries stays enabled via the self-bound subscriber for
+    // route-based FILTERING, it just doesn't need a route-identity column
+    // when rows are keyed by TMC, not by route). reconcileComparisonSeriesColumnOnState
+    // below has no awareness of `grain` — it's a generic, cross-platform
+    // invariant ("comparisonSeries enabled + has variants => always have a
+    // `__series` categorize column") — so it would otherwise ADD a spurious
+    // second categorize column here, colliding with the `tmc` one. Skipped
+    // only for this one converter-only pick shape; every other caller
+    // (`grain` unset/`'route'`) is unaffected.
+    if (nextPick.grain === 'tmc') return;
     // Separate imperative call, same two-call pattern the built-in
     // Comparison Series "Enabled" toggle already uses elsewhere in
     // sectionMenu.jsx — adds the synthetic `__series` categorize column

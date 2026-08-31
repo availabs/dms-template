@@ -32,7 +32,17 @@ find yourself editing Layer 1 for a consultant-specific reason, you've put somet
 layer.
 
 Existing profiles:
-- [`profiles/tetratech.md`](./profiles/tetratech.md) — Tetra Tech / FEMA-style. Suffolk (2026), Nassau.
+- [`profiles/tetratech.md`](./profiles/tetratech.md) — Tetra Tech / FEMA-style, survey-shaped. Suffolk (2026).
+- [`profiles/hagerty.md`](./profiles/hagerty.md) — Hagerty Consulting, brief-and-prose-bearing. Nassau (2020).
+- [`profiles/independent-jurisdictional-plan.md`](./profiles/independent-jurisdictional-plan.md) —
+  **a document-class profile, not a consultant one.** A jurisdiction that wrote its own standalone
+  plan instead of an annex (Freeport, inside Nassau).
+
+**Layer 2 now holds two kinds of file, and they behave differently.** A *consultant* profile predicts
+the next instance, because a firm is consistent. A *document-class* profile cannot — an independent
+plan has no shared author, so two of them may share nothing but the FEMA requirements they were both
+written against. Read a consultant profile for the spine; read a document-class profile for the triage
+checklist and the traps.
 
 ---
 
@@ -48,9 +58,14 @@ Three questions, in order. The answers determine whether the rest of the work is
 - **Survey-shaped** — a structured instrument of filled-in tables (Tetra Tech). Maps mostly onto the
   **flat** datasets: Capabilities, Actions, Roles, Hazards of Concern. The Jurisdictions lexical
   columns are a *minority* target.
+- **Brief / mixed** — a short document with a thin data spine plus a handful of genuinely authored
+  paragraphs (Hagerty). Still mostly flat-dataset work, but a few Jurisdictions lexical columns fill
+  cleanly, and the *volume* of extractable content per jurisdiction is an order of magnitude smaller.
+  Don't mistake brevity for "easy": the missing content is what costs you (see question 4).
 
 Getting this wrong is the expensive mistake. On Suffolk, only **15 of 109** field mappings landed in
 Jurisdictions; assuming the Schenectady playbook transferred would have missed ~86% of the annex.
+On Nassau it was **7 of 173**.
 
 **2. Was any of it already delivered in another format?**
 
@@ -63,10 +78,54 @@ sitting in the annexes.
 Verify by counting: pick one jurisdiction, count the source records in the document, count the rows
 in the workbook, and confirm they match.
 
+And check the negative case explicitly: **Hagerty shipped no workbook for Nassau**, so all 234
+proposed actions, 284 prior/completed actions and 143 worksheets are ours to extract. "No workbook"
+is an answer, not a reason to keep looking.
+
 **3. Does the plan's hazard taxonomy match MNY's?**
 
 It usually doesn't. Resolve this before touching Hazards of Concern or Actions — it is a
 data-modelling decision with an owner in the loop, not something to settle mid-extraction.
+
+Two shapes seen so far. Suffolk's taxonomy *over*-ran MNY's — five hazards with no MNY equivalent,
+needing `Hazard = Other` + `Hazard Name, If Other`. Nassau's *under*-ran it and closed cleanly —
+11 source hazards expanding to 14 of MNY's 17 named types, with the base plan naming the other three
+as deliberately not profiled, so no `Other` rows at all. Check which case you're in before designing
+the HOC load; they need different row math and different insert-vs-update logic.
+
+**4. Is every jurisdiction's content actually in the consultant's instrument?**
+
+One folder in a 52-folder corpus can hold something else entirely. Nassau's
+`51_Village of Freeport_Jurisdictional Annex.pdf` — filed among 51 real annexes, named like one — is
+the Village's own **standalone 177-page hazard mitigation plan**, with a table of contents, its own
+numbered chapters, its own hazard taxonomy and a Plan Adoption chapter. None of the consultant's
+spine headings appear in it.
+
+**The pre-flight already answers this if you look**: the file whose heading set matches nothing is the
+one. Two cheap structural tells that a document is standalone rather than an annex — it has a **table
+of contents**, and it has its own **plan-adoption / maintenance** chapter. An annex has neither; it
+inherits both from the county.
+
+Route it to [`profiles/independent-jurisdictional-plan.md`](./profiles/independent-jurisdictional-plan.md)
+and give it its own `pipeline` value in the manifest so it never enters the annex batch. **The method
+and the MNY target side transfer completely; the parser does not** — budget a fresh one (~150 lines
+for Freeport), not a pipeline rewrite.
+
+**5. Which *required* MNY fields have no source in this plan at all?**
+
+Do this before promising a load, not after. A field can be marked required in the workbook and simply
+not exist in the consultant's content model — and that is a decision for the owner, not something to
+paper over.
+
+Nassau is the cautionary case here. `Hazards of Concern.general_vulnerability` and
+`Capabilities.Mitigation Connection` are both required, both federally motivated, and both have
+**zero** Hagerty source: hazard vulnerability is a category checklist and capabilities are Yes/No plus
+a citation. On Suffolk the same two columns were the *richest* content in the annex. Same target
+schema, same subject matter, opposite outcome.
+
+The temptation is to synthesize plausible prose from the structured fields. Don't, unless the owner
+asks for it explicitly and it is labelled as derived — content that reads as authored but isn't is
+worse than an empty required field, because nobody downstream can tell.
 
 ---
 
@@ -222,6 +281,29 @@ Recurring decisions:
 
   Sub-hazards with no MNY type at all (e.g. expansive soils) are dropped — record that, don't
   silently lose it.
+
+  **`hazard_of_concern` is three-valued but only two are used.** Confirmed on Nassau (owner,
+  2026-08-21) as the standing rule for every county:
+
+  | Case | `hazard_of_concern` |
+  |---|---|
+  | Source assessed the hazard | `Yes` |
+  | Source explicitly recorded **no impact** | `No` |
+  | Source is silent on an MNY hazard | `No` — a confirmed omission |
+
+  The reasoning behind the third row is DHSES's, not ours: they track *confirmed* omissions
+  statewide, so a hazard the plan chose not to profile is information, and `Not Reported` throws it
+  away. **Every MNY hazard should resolve to `Yes` or `No`; leaving one `Not Reported` means the
+  mapping is incomplete, not that the plan was silent.**
+
+  *(History, so nobody re-reads a stale draft: a narrower Nassau variant — silence ⇒ `Not Reported` —
+  was briefly adopted on 2026-08-21 and reverted the same day to the rule above.)*
+
+  Where silence is the source, find the plan's **own** sentence explaining the omission and quote it
+  verbatim into `reason_for_exclusion`. It is usually one shared county-wide rationale sitting
+  immediately above the not-profiled list, not a per-hazard justification — and it is easy to grab the
+  wrong table. On Nassau the correct source is the paragraph above base-plan Table 11; Table 10, which
+  looks right, is *"Reason for **Identification**"* for the hazards that **were** profiled.
 - **Structured content with no column.** Per-hazard capacity ratings, per-criterion prioritization
   scores, three-level hazard rankings where the schema stores a boolean. Per the author-empowerment
   principle, prefer **adding a column** over flattening structured content into prose.
@@ -229,9 +311,296 @@ Recurring decisions:
   is a per-county call. Delaware aggregated per-hazard narratives into `lhmp_risk_overview` under H3
   headings — that was a decision for Delaware, not a precedent to apply silently.
 
+### Inferring Action Type — the standing rule (owner, 2026-08-21)
+
+`Primary` / `Secondary` / `Tertiary Action Type` are federally required (C4) and **no consultant
+states them**. The owner's ruling is that they may be **inferred from the action's Name and
+Description of the Solution**, using a deterministic tier-and-guardrail algorithm rather than
+per-action judgement. This is consultant-invariant — apply it to every plan.
+
+Tiers are in [`action-type-tiers.csv`](./action-type-tiers.csv). Eight tiers, lowest score wins:
+structural flood/coastal works (1) → property protection (2) → nature-based (3) → power (4) →
+codes/policy (5) → planning, studies, scoping, programs (6) → education and preparedness (7) →
+`Other` (8).
+
+**Two vocabularies, and they are not the same set.** The live Actions source (`1029065`) carries:
+
+- **16 boolean `action_type_*` columns** feeding the calculated `Action Type` multiselect. This set
+  includes `coastal_protection` and `dam_rehabilitation_removal`.
+- **`primary_/secondary_/tertiary_action_type`** — three `select` columns sharing **17** options.
+  These do **not** include Coastal Protection or Dam Rehabilitation/Removal.
+
+So **set both**: the booleans carry the truthful, specific type losslessly; the three selects carry
+the ranked top three from the 17-option vocabulary. The tier table records the two substitutions this
+forces — Coastal Protection ⇒ `Infrastructure Projects`, and Dam Rehabilitation/Removal ⇒
+`Large Flood Control - Dams, Levees, Floodwalls; Safe Rooms` — and requires the corresponding boolean
+to be set alongside. **Log every substitution** rather than letting it look like a direct read.
+
+There is also a third place for it: `action_type_specific_if_applicable` (*"Action Type - Specific (if
+applicable)"*, text) exists live and is exactly the right home for the verbatim type a select can't
+express. Write it there too, and the substitution stops being lossy.
+
+### `Included in Last HMP` is always TRUE (owner, 2026-08-21)
+
+Authoritative and consultant-invariant: **any action drawn from a plan we are transcribing was, by
+definition, in that plan.** Set `Included in Last HMP = TRUE` on every action row — prior-cycle,
+completed and current-cycle proposed alike. Do not try to derive it.
+
+The trap this closes: a consultant field that *looks* like it should drive this column. Hagerty's
+prior-action tables carry `Carried Forward to <year> Plan` (Yes/No), which is tempting and **wrong** —
+it answers whether the action continues *into* the next plan, not whether it was in the last one.
+Mapping it here makes every not-carried-forward action read as absent from a plan it demonstrably
+appears in. Keep such a field verbatim under the shoehorn-or-register rule and leave this column
+constant.
+
+### When two parts of the plan disagree, the more detailed answer wins (owner, 2026-08-21)
+
+Consultant instruments contain internal contradictions, and the resolution rule is uniform: **prefer
+the answer carrying more information.** A checkbox is cheap to mis-tick; a paragraph with a citation
+and a date is not.
+
+The consequence for capability tables is specific and worth stating as code, because it inverts the
+obvious reading of a Yes/No column:
+
+```
+No  AND detail cell empty        => create no row        (a genuine absence)
+No  AND detail cell non-empty    => CREATE the row       (a mis-ticked checkbox)
+Yes                              => create the row
+```
+
+Two live examples from one annex. Glen Cove's Table 3 answers `No` for *NFIP Flood Damage Prevention
+Ordinance* while its NFIP section cites *"Chapter 154, City Code, L.L. No. 6-2009"* with an amendment
+date — so the capability is created. Its Table 4 answers `No` for *Personnel trained in construction
+practices* while filling in *"Director of Building Department"* — likewise.
+
+**Keep asserting the contradiction and log every override.** The rule tells you which value to load;
+it does not make the disagreement uninteresting. A jurisdiction whose checkboxes and prose disagree
+repeatedly is a jurisdiction whose annex needs a human read.
+
+### County-level Hazards of Concern comes from the base plan, not an annex (owner, 2026-08-21)
+
+Expect this every time. A county's own annex chapter is written to a different instrument than its
+jurisdictions' — sometimes it simply omits the per-hazard table (Nassau) and sometimes it swaps in a
+ranking-validation instrument (Suffolk). Either way the **county row's HOC content comes from the base
+plan / Volume I**, and it is usually *richer* than anything in an annex.
+
+On Nassau the base plan carries a `9x2` profile box per hazard — *Rank · Potential Impact · Cascade
+Effects · Frequency · Onset · Hazard Duration · Recovery Time · Impact* — plus a full ranked hazard
+table. That `Impact` cell is real authored prose, so the county's `general_vulnerability` is a genuine
+transcription while its jurisdictions' is a derived sentence. Don't let a single builder assume one
+source for both.
+
+### Five more standing rules (owner, 2026-08-21)
+
+All consultant-invariant.
+
+**`Roles.role` is a SINGLE select, and a role is the row entity.** The live source (`1473295`) has
+`role` as `select`, not `multiselect` — the workbook is wrong. So **a person holding two roles becomes
+two Roles rows**, identical except for `role`.
+
+In practice this multiplier is close to 1, and it is worth knowing *why* before you size a load on it:
+the live vocabulary has **52 options**, not the 19 the workbook lists, and they are specific enough
+that most job titles resolve to exactly one — *Mayor* → `Community Chief Executive Officer - Mayor`,
+*Superintendent* → `Highway Superintendent`, *Village Clerk* → `Fiscal Staff`. **So the row count is
+driven by how many PEOPLE the plan documents, not by the roles.** On Nassau that is ~239 distinct
+people (190 in the plan-wide roster + 102 annex contacts, only 49 of whom overlap) ⇒ ~239 rows.
+
+The 52-option vocabulary carries its own defects, so normalise before matching: *Emergency Management
+Personnel* appears **twice**, *Staekholder - Landowner* is a typo, and there are 6
+`Community Chief Executive Officer - …` and 15 `Stakeholder - …` variants.
+
+**Never populate `likelihood` unless the plan states a probability.** MNY's `likelihood` is a
+percentage band (*Minimum / Low / Medium / High / Maximum*, each with a range). Plans state qualitative
+frequency instead — Nassau's per-hazard boxes say *"A Frequent Event"*. Mapping a phrase onto a band is
+invention, so keep the phrase verbatim in `other_comments` and leave `likelihood` empty. This has now
+been the answer on two counties; treat it as the default rather than re-deciding.
+
+**A meeting with more than one date becomes more than one Participation row.** Two shapes, and they
+are not the same thing:
+
+- *"February 19 and 20, 2020"* — genuinely two events. Two dated rows.
+- *"June 25, 2020 – July 16, 2020"* — a window containing many individual sessions the plan never
+  enumerates. Two rows marking the bounds, **labelled so nobody reads them as two meetings.**
+
+Never average a range to a midpoint or silently take the start date.
+
+**Dedupe people toward the source with contact details.** Consultant plans carry the same person in
+two places — a per-jurisdiction contact table and a plan-wide roster. Prefer the row that has email
+and phone (usually the jurisdiction table), then enrich from the roster. Key on
+`(jurisdiction geoid, normalised name)`. Expect organisation-name variants on both sides; normalise
+before comparing (Nassau has *FEMA* / *Federal Emergency Management Agency (FEMA)*, *NYS DHSES* / *New
+York State Department of Homeland Security and Emergency Services*, and a stray plural *Villages of
+Woodsburgh*).
+
+**Leave `Action Point of Contact` empty when the plan names none.** Substituting the jurisdiction's
+general contact looks helpful and is a fabrication — the field means *the contact for this action*.
+
+### The plan-wide roster is where required-stakeholder evidence lives
+
+FEMA A2-a wants proof that federal, state, neighbouring-jurisdiction, regional, academic/private and
+nonprofit representatives were given an opportunity to participate. **Per-jurisdiction contact tables
+never show this** — they list municipal staff. The plan-wide roster does, in its non-municipal rows.
+
+On Nassau, 20 of 190 roster people belong to 13 non-municipal organisations — FEMA, NYS DHSES, NYSDEC,
+NYC Emergency Management, Suffolk County, the Long Island Regional Planning Council, the NYS Floodplain
+& Stormwater Managers Association, the county Soil & Water Conservation District, the Village Officials
+Association, and the consultant itself. Those rows are the source for both `Required Stakeholder?` and
+every `Role` value that isn't *Government - Staff or Technical*. Don't write either off as a gap before
+reading the roster.
+### Determine the authoritative file per folder before extracting anything
+
+Do **not** glob, and do not trust filenames or mtimes. Commit a manifest —
+`folder → annex file + worksheet files + reason` — and treat it as the input to extraction.
+
+What the Nassau corpus taught, in the order it bites:
+
+- **Every mtime can be identical.** All 52 folders were delivered the same day, so modification time
+  carries no revision information at all.
+- **Tell a revision from a different document by content, not name.** Two candidates with the same
+  heading count and the same table-shape signature but different character counts are the same
+  document, later revision — take the longer. Different structure means a different document, and that
+  needs a human.
+- **Look inside subfolders.** Both of Garden City's worksheets live in `archive/` only; a top-level
+  scan reports zero worksheets for that jurisdiction and silently drops them.
+- **Worksheet naming is not regular.** `^MAW\d+` misses `MAW_3 NEW Williston Park.docx` — an
+  underscore after the prefix — and classifies it as an annex candidate instead. Use `^MAW[\d_]` and
+  reconcile the strict count against a loose `maw` substring count. On Nassau: 141 strict, 142 loose.
+- **A worksheet may not be a worksheet file at all.** Garden City's fourth is a one-page PDF named
+  after its project (`VGC_4 Cedar Valley Sanitary Lift Station.pdf`).
+- **A file named like an annex may not be one.** Nassau's `51_Village of Freeport_Jurisdictional
+  Annex.pdf` is the Village's own standalone 177-page hazard mitigation plan — seven chapters, its own
+  hazard taxonomy, none of the consultant's spine headings. **Probe structure, not the filename**, and
+  route anything that fails the spine check to its own crosswalk instead of the shared parser.
+### Project numbers are unique only WITHIN a jurisdiction — join on (geoid, number)
+
+Never join a worksheet, workbook row or supplementary document to an action on the project number
+alone. On Nassau, **`VMP_1` and `VMP_2` each appear in two different annexes** — Massapequa Park and
+Munsey Park — because *Munsey Park*, *Muttontown* and *Massapequa Park* all abbreviate to `VMP`. 285
+distinct numbers cover 287 actions.
+
+Two consequences, and the second is the dangerous one:
+
+- **Join on `(geoid, project_number)`.** A global join would have silently attached one
+  jurisdiction's worksheet detail to another's action — no error, no mismatch warning, just wrong
+  content under the wrong municipality.
+- **Key any correction table on the folder too.** Muttontown's worksheets were numbered `VMP_*`
+  against an annex using `VMTT_*`. Correcting `VMP_1 → VMTT_1` keyed on the *number* would have
+  rewritten Massapequa Park's and Munsey Park's genuine actions. Key it on
+  `(folder, wrong_number)`.
+
+**Verify a renumbering three ways before applying it.** For Muttontown: `Responsible Organization`
+read *"Village of Muttontown"* on both worksheets, the project names matched the annex, and the
+problem narratives matched near-verbatim. Name agreement alone would not have been enough, because
+neighbouring villages copy each other's boilerplate.
+
+### The workbook is ILLUSTRATIVE ONLY — the live source is the schema
+
+**Standing rule (owner, 2026-08-21):** the MNY workbook *may contain errors and inconsistencies*.
+Always prefer the live source. Concretely:
+
+| Situation | What it means |
+|---|---|
+| Column in the workbook, **absent** from the live source | almost certainly **deprecated** — not a target, and **not a gap** |
+| Column in the live source, absent from the workbook | a real column; use it |
+| Type disagreement | the live type wins |
+| Workbook says **Multi-Select** | an **unresolved relic**. Treat as single-valued unless proven otherwise |
+| `geoid_juris` / `geoid_county` | **never multi-valued**, whatever either source declares |
+
+This demotes the workbook from "the target schema" to "a readable illustration of roughly what the
+datasets hold". Use it to orient; never to decide. And **stop recording workbook-only columns as
+gaps** — an earlier draft of the Nassau crosswalk logged several, which inflated the gap list with
+columns nobody intends to keep.
+
+Three of the "no column exists" findings on Nassau evaporated on contact with the live sources. Each
+was a column that exists in the database and is **missing from the workbook tab** we were mapping
+against:
+
+| Field with "no home" | Actually exists as |
+|---|---|
+| POC street address | `Roles.address_optional` — *"Address(optional)"* |
+| The specific action type a select can't express | `Actions.action_type_specific_if_applicable` |
+| `Hazard Name, If Other` (found on Suffolk) | Hazards of Concern data tab, col 7 — absent from its *dictionary* tab |
+
+It runs the other way too — the Capabilities *dictionary* describes ~110 columns and the data tab has
+86, in both directions. So: the workbook is a **mapping aid, not the schema**. Before writing
+`gap-no-target` on any row, read the live source's attribute list. `dms raw get <source-id>` and parse
+`config.attributes` — it works anonymously, needs no token, and takes seconds:
+
+```bash
+dms raw get 1029065 | jq -r '.data.config | fromjson | .attributes[] | "\(.name)\t\(.type)\t\(.display_name)"'
+```
+
+Also **grep display names for retirement markers** before building on a column. The live sources use
+at least three: `(dep)`, `(Deprecated)` and `(Delete)`. On Nassau,
+`Actions.alternative_action_1`/`_evaluation` are `(dep)`, `Capabilities.dam_rehabilitation_removal` is
+`(Deprecated)`, and **~35 of Capabilities_Catalogue's 136 columns are `(Delete)`-prefixed** — including
+all four FEMA category columns an earlier crosswalk draft mapped onto. They still accept writes, so
+nothing errors; the content just lands somewhere destined for deletion.
+
+### Verify a view before you trust it, and always name it explicitly
+
+A source can carry more than one view, and they are not necessarily versions of the same thing. Nassau's
+Hazards of Concern source had two: the real statewide grid (27,791 rows, display-label hazards, real
+geoid arrays) and a 119-row **test view erroneously marked current** whose shape differed in four ways
+— internal hazard codes, geoid arrays stored as *strings*, a `likelihood` value outside its own declared
+options, and `county` formatted `"Chemung (County)"` instead of `"Chemung"`. `dataset dump` with no
+`--view` picked the test one, which held **zero** rows for the county being loaded.
+
+*(That view has since been deleted by the owner, so the specific trap is gone — but the lesson isn't:
+count the rows and eyeball one record before believing a view.)*
+
+**A zero-row result is a read to distrust, not a fact.** Two separate silent zeros happened on Nassau
+in one session: the wrong view, and a payload-key mistake — `dataset dump` returns `{"items": [...]}`,
+and code looking for `rows`/`data`/`results` gets an empty list with no error. Before concluding "no
+data exists", print one raw record.
+
+Guardrails, applied after scoring and before assigning outputs:
+
+| # | Rule |
+|---|---|
+| 5.1 | **Structural dominance** — if any Tier-1 type is selected, Primary must come from Tier 1 |
+| 5.2 | **Max jump limit** — no type may move up more than 2 positions relative to its tier |
+| 5.3 | **Planning ceiling** — if any Tier 1–3 type exists, Planning / Studies / Scoping / Programs cannot be Primary |
+| 5.4 | **Policy ceiling** — if any Tier 1–3 type exists, Codes/Policy cannot be Primary unless it has Boost = −2 and no Tier 1 exists |
+| 5.5 | **Outreach lock** — Education and Preparedness can never be Primary unless they are the only selected types |
+| 5.6 | **Other is last** — `Other` is always lowest priority |
+
+Ties break on: more specific over general → more permanent over temporary → original column order.
+
+> **The spec as given has no boost step.** Guardrails 5.2 and 5.4 both reference a score adjustment
+> ("move up", "Boost = −2") that was never defined, so `Final Score = Tier Score` and both clauses are
+> **inert**: 5.2 can never trigger, and 5.4 collapses into "Codes/Policy cannot be Primary when a
+> Tier 1–3 type exists" — the same shape as 5.3. That is a coherent, conservative reading and it
+> produces deterministic output, so implement it that way. Flag it if a boost rule ever arrives,
+> because defining one would activate two dormant guardrails at once.
+
 ---
 
 ## Phase 3b — Build the jurisdiction alias table first
+
+**Cover every jurisdiction in the plan, not just the ones with annexes.** A jurisdiction that took
+part in the planning process and then withdrew before adoption has no annex — so no Actions,
+Capabilities or Hazards of Concern — but it still has **Roles and Participation** content, and that is
+real recorded engagement. Nassau: 70 jurisdictions in the attendance matrix = **52 Adopting** (exactly
+the 52 annex folders, 1:1) **+ 18 Withdrawn** villages, 14 of which have documented meeting attendance
+and 34 named people in the roster. None was a CDP.
+
+So the alias table wants a row per *plan* jurisdiction, carrying `has_annex`, `adoption_status` and an
+`in_scope_for` column, not a row per annex folder. And **adoption status stops being decorative the
+moment non-adopting jurisdictions are in scope** — without it, 18 villages read as plan participants.
+
+**Key the alias builder on the RESOLVED name, not the folder name.** Two bugs in one run of the
+Nassau builder, both caught only by assertions:
+
+- The `seen` set was keyed on the annex folder's spelling, so *Rockville Cent**er*** never matched the
+  matrix's *Rockville Cent**re*** and the jurisdiction was emitted twice — once as an annex row and
+  once as a "no annex" row, with the same geoid.
+- The second pass *assumed* every leftover matrix row was a non-participant, which mislabelled that
+  duplicate as `Withdrawn` when its real status was `Adopting`.
+
+Both are the same mistake: trusting a derived key and an assumed category instead of asserting.
+`assert` that geoids are unique, that every jurisdiction appears in the attendance matrix, and that the
+leftovers all carry the status you think they do. The collision assertion is what surfaced this.
 
 **Resolve jurisdiction identity from one explicit table, never from parsed names.** Build it before
 extracting anything; it is the cheapest guard against the worst failure mode — content filed under
@@ -323,6 +692,148 @@ next person doesn't relitigate them.
 
 Note `pyxlsb` is **read-only** — writing means emitting `.xlsx` or driving Excel. Check for `~$`
 lock files before writing anywhere near a workbook someone has open.
+
+### Phase 5a — Reconcile against what is already in the system BEFORE loading anything
+
+**Standing requirement (owner, 2026-08-24). Never load a flat dataset without first checking
+whether the rows are already there.** A county is rarely a blank slate: Nassau already held
+**189 Actions rows across 38 of its 70 jurisdictions** before a single row of its 2020 plan was
+loaded. Inserting blind would have built a parallel duplicate set for over half the county.
+
+A matched row carries the existing row's **id** and becomes an **UPDATE**; everything else stays
+an INSERT. Payload rows get `_op` (`insert`/`update`) and `_existing_id`, and the review surface
+must show both — which existing record a row will overwrite is the most consequential thing a
+reviewer can check.
+
+#### Scope a county by GEOID. Never by the `county` name column
+
+**`county` is expected to be deprecated** (owner, 2026-08-24), and it is a human-readable name —
+the same thing this skill already tells you not to join on, because names drift ("Suffolk County"
+vs "Suffolk (County)"). Scope every reconciliation query on the **geoid** columns.
+
+This matters more here than for an ordinary join. If the scoping query breaks, it does not error
+— it returns **0 rows**, which reads as *"this county has no existing rows"*, which is precisely
+the wrong answer that causes a duplicate load. A name column that may vanish is not a safe thing
+to hang that on.
+
+Pick the strategy from the geoid columns, in this order:
+
+1. **`geoid_juris` declared `select`** → one small filtered query per jurisdiction
+2. **`geoid_county` declared `select`** → one filtered query for the county
+3. **neither is filterable** → **full fetch, match geoid client-side.** Size it first.
+
+#### ⚠ Why the declared type decides: the `--filter` trap
+
+`--filter` is compiled from the column's **declared** type. **A filter on any column declared
+`multiselect` returns 0 rows regardless of what is stored.** Measured across the five MNY forms
+datasets, 2026-08-24:
+
+| Dataset | `geoid_juris` | `geoid_county` / `county_geoid` | Strategy |
+|---|---|---|---|
+| Actions | `select` | `multiselect` | per-jurisdiction |
+| Capabilities | `select` | `select` | per-jurisdiction |
+| Hazards of Concern | `multiselect` | `select` | by county geoid |
+| Roles | `multiselect` | `multiselect` | **full fetch** (516 statewide) |
+| Participation | `multiselect` | `multiselect` | **full fetch** (324 statewide) |
+
+**Roles and Participation have no filterable geoid column at all.** That absence is exactly what
+tempts you toward the county-name filter — it works, so it looks fine. Take the full fetch
+instead: both are tiny. **If a dataset in that position were large, that is a real problem to
+raise, not to paper over with a name filter** — so size it and refuse loudly above a threshold.
+
+This also supersedes the narrower rule from the Suffolk load ("the filter fails on array-valued
+columns"). Actions stores `county` as a **bare string** and still cannot be filtered on it, so
+*"is the stored value an array?"* is the wrong question. Read the declared type.
+
+**Verify every zero.** Re-run the same query shape against a county known to hold data. A real
+zero reproduces as non-zero there; a broken filter returns 0 for both. Nassau's Roles and
+Participation zeros were only trustworthy once Suffolk returned non-zero for the same shape.
+Build this into the fetch tool as a `--verify` flag so it cannot be skipped.
+
+**Cross-check the strategy against a known number where one exists.** Fetching Hazards of
+Concern on `geoid_county` returned exactly **1,190 rows across 70/70 jurisdictions**, matching
+the independently-cached seeded grid — which validates the whole approach rather than just that
+one query. Look for an opportunity like this in every county; it is the cheapest real assurance
+available.
+
+**Filter on `id` and text columns freely** — both are declared plainly and work. `action_name=…`
+returning exactly 1 row is a useful smoke test that the query machinery is alive at all before
+you conclude anything from a zero.
+
+#### On a matched row, the uploaded fields overwrite the existing fields
+
+**Standing rule (owner, 2026-08-24). No per-column exceptions.** The transcribed plan is the
+authority on every field it carries. `dataset update --data` shallow-merges at the top level, so
+columns you do not send survive untouched — which is what makes a plain overwrite safe.
+
+**A shorter value is not evidence of a mistake.** Removing detail is frequently a deliberate
+editorial choice by the plan's authors, and the transcription pipeline is not entitled to
+second-guess it. Do not build append rules, do-not-overwrite-the-name rules, or
+skip-the-trivial-diff rules; they substitute the transcriber's judgement for the plan's.
+
+Two things to do anyway, because they are cheap and they are not second-guessing:
+
+- **Check the curation fields specifically.** Workflow state (`county_priority`,
+  `mitigation_action_readiness`, `application_readiness`, `project_maturity`, `dhses_comments`,
+  `fema_comments`, grant-submission) is *not* plan content and is not yours to overwrite. On
+  Nassau all six were empty on all 131 matched rows, so the question never arose — but confirm
+  it rather than assuming, because a county mid-review would have them populated.
+- **Classify the diffs for sampling, not for gating.** Tag each overwrite (adds detail /
+  normalised into a select vocabulary / same digits reformatted / case-only / shorter) so a
+  reviewer can sample a thousand changes without reading a thousand rows. Nassau's 982 broke down
+  to ~50% additive-or-normalisation and 78 shortenings, of which 5 were prose. That is a useful
+  map. It is not a veto.
+
+#### Pick the match mode from the field, not by habit
+
+| Mode | Use for | Why |
+|---|---|---|
+| **Jaccard** on token sets | Actions, Capabilities | Identity lives in free text and gets reworded between cycles |
+| **Exact normalised key** | Roles `(name, role)`, Participation `(meeting_name, date)`, HOC `(geoid, hazard)` | A natural key exists |
+
+**Do not run Jaccard on short structured fields.** "Ann Smith" vs "Ann Jones" scores 0.33 on a
+two-token set, and any threshold low enough to catch real spelling variants would also merge
+different people. Normalise case and punctuation, then require an exact match.
+
+#### The discriminator guard — what makes Jaccard matching safe
+
+Jaccard rates these **above** a 0.85 name-only threshold, and they are **different facilities**:
+
+| Score | | |
+|---|---|---|
+| 0.925 | Well **1** generator | Well **4** Generator |
+| 0.886 | Generator Installation – **East** End Fire House | … **West** End Fire House |
+| 0.867 | Generator Replacement – **Headquarters** Fire House | … **Southside** Fire House |
+
+Mitigation corpora are full of these: one village had **eight** near-identically-named fire-house
+generator projects. Two bugs compounded it — a tokeniser dropping tokens of ≤2 characters made
+`1` and `4` vanish, so *"Well 1 generator"* and *"Well 4 Generator"* became the **same token
+set**. A greedy one-to-one assignment did reject them, but only because the correct pair happened
+to claim the slot first. **That is ordering luck, not correctness.**
+
+**The rule: whatever tells two names apart must match.** If the symmetric difference of the two
+name token sets contains a number or a compass direction, refuse the pair outright regardless of
+score. On Nassau this refused 148 pairs — with **0 refusals where the two names were identical**,
+which is the check that proves the guard is not over-eager. Always measure that.
+
+#### Four more practices worth copying
+
+- **Assign strictly one-to-one, greedily by descending score.** Two payload rows carrying the
+  same `_existing_id` would update one record twice and silently lose one. Assert it: Nassau
+  ended with 131 distinct ids, none claimed twice.
+- **Report below the threshold.** A similarity cut-off is a judgement call, so write every
+  candidate pair from a low floor upward into a review CSV, marked applied / refused /
+  below-threshold. Near-misses are exactly what a reviewer needs to see. Apply nothing below the
+  threshold.
+- **Sanity-check both extremes of the applied set.** On Nassau the *lowest*-scoring applied
+  matches turned out to have **identical names**, scoring low only because the existing
+  descriptions were shorter — which is what the name-only rule is for. Checking only the top
+  would have missed that the rule was carrying the work.
+- **Self-test a code path that had nothing to match.** Nassau had 0 existing Roles and
+  Participation rows, so those runs exercised the key path against nothing and proved nothing.
+  Feed the payload back in as the "existing" set: every row must match itself exactly once. That
+  also surfaces empty keys and within-jurisdiction key collisions, both of which silently
+  guarantee a duplicate insert later.
 
 ### The Jurisdictions write path (proven twice)
 
@@ -703,6 +1214,20 @@ appears.
       high-population columns you have no mapping for, declared-vs-stored types, checkbox and geoid
       storage, select vocabularies, and any second population inside the dataset
 - [ ] **Cross-table key sets asserted equal** before mapping; join keys normalised; unmapped keys fail loudly
+- [ ] **Existing rows fetched and reconciled BEFORE any load** — matched rows carry `_existing_id`
+      and become UPDATEs, not duplicate inserts
+- [ ] **County scoped by GEOID, never by the `county` name column** (it is expected to be
+      deprecated, and a broken scoping query returns 0 rather than erroring)
+- [ ] **Filter column chosen from the DECLARED type** — anything declared `multiselect` returns 0
+      rows whatever the content; where no geoid column is filterable, full-fetch and size it first
+- [ ] **Every zero verified** against a county known to hold data; a real zero reproduces as
+      non-zero there, a broken filter returns 0 for both
+- [ ] **Match mode picked from the field** — Jaccard for free-text identity, exact normalised key
+      where a natural key exists; never Jaccard on short structured fields like a person's name
+- [ ] **Discriminator guard on** — refuse a pair whose names are told apart by a number or a
+      compass direction, and assert **0 refusals where the names are identical**
+- [ ] **Match assignment asserted strictly one-to-one**; sub-threshold near-misses reported, not applied
+- [ ] **Both extremes of the applied match set eyeballed**, not just the top scores
 - [ ] **Insert path proven with one throwaway row** (create → fill → query → delete) before the batch
 - [ ] **Created ids recorded before each fill**; double-insert guard verified to actually fire
 - [ ] Update-in-place targets backed up; non-default content refused; no-collateral-change asserted
