@@ -9,7 +9,7 @@ from .template_specs import MEASURE_EXPR
 from .db import dms, fetch_old_template, flatten_route_comps, now_iso
 from .dates import resolve_relative_dates
 from .transforms import build_slot_entry, generic_comp_label, group_route_comps, merged_group_date_label, route_comp_merge_key, route_settings_gaps
-from .graph_templates import ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
+from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
@@ -58,19 +58,18 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
     drift between the two is an accepted, deliberate cost of that choice.
 
     Route Map sections ARE converted (2026-08-03, added after the initial
-    244-only pass) — but deliberately WITHOUT the per-report choropleth
-    color-break bake (`route_map_value_ctx=None` below): that bake
-    (bake_route_map_choropleth_paint/bake_route_map_delay_paint) computes
-    quantile breaks over the report's actual routes' real values, which
-    can't exist for an unfilled slot. Read `ensure_route_map_speed_template`'s
-    own docstring: the shared per-year template it mints already carries a
-    real, working PLACEHOLDER color range (a generic quantile scale over
-    typical speed/delay values) precisely so every real conversion has
-    something correct to render before its own per-report bake customizes
-    it — skipping the bake for a Dynamic Report isn't a degraded fallback,
-    it's the actually-correct behavior: there's no single "this report's
-    routes" to bake against when a different real route may fill the slot
-    on every view.
+    244-only pass). Round 80 (2026-08-27): the per-report choropleth
+    color-break bake this paragraph used to describe skipping
+    (`route_map_value_ctx=None`, `bake_route_map_choropleth_paint`/
+    `bake_route_map_delay_paint`) has been retired entirely, for every
+    caller, not just this one — every `route_map_*_template` now carries
+    PERMANENT static breaks from the shared `colorBreaks.json` (same table
+    the live-authoring Map/GridGraph/BarGraph read), so there's no per-report
+    bake left to skip. This was already the right call for a Dynamic Report
+    slot specifically (there's no single "this report's routes" to bake
+    against when a different real route may fill the slot on every view) —
+    now it's simply how every Route Map conversion works, template slot or
+    real report alike.
 
     Route Difference Graph / TMC Difference Grid ARE also converted
     (2026-08-03) — `resolve_difference_pair` is called with `old_routes={}`
@@ -172,6 +171,7 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
                                       i["data_column"]))
               for _, i in analyzed if i["type"] not in INFO_BOX_GRAIN} - {None}
     graph_templates = ensure_graph_templates(needed, graph_templates, dry_run)
+    graph_templates = ensure_bridge_graph_templates(needed, graph_templates, dry_run)
 
     info_box_tmpl_name = {}
     info_box_bin_year = {}
@@ -436,15 +436,6 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
                                      aadt_override=None,
-                                     # Deliberately None, not a gap: this graph
-                                     # type's per-report choropleth bake needs
-                                     # real per-route data that doesn't exist
-                                     # for an unfilled slot — the shared
-                                     # per-year template's own built-in
-                                     # placeholder color range is the correct
-                                     # render, not a degraded one. See
-                                     # convert_template()'s docstring.
-                                     route_map_value_ctx=None,
                                      diff_invert=route_diff_invert.get(g.get("id"), False),
                                      comps_by_id=comps_by_id))
 

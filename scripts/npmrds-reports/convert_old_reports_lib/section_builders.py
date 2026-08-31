@@ -7,7 +7,7 @@ from .template_specs import MEASURE_EXPR
 from .db import dms, now_iso, old_falcor_get
 from .info_box_templates import build_route_info_box_section_state_multi, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import build_route_compare_section_state_multi, ensure_route_compare_template
-from .route_map import GEOMETRY_TILE_VIEWS, REVERSE_COLORS_MEASURES, ROUTE_MAP_MEASURES, ROUTE_MAP_VALUE_EXPR, apply_route_map_paint, bake_route_map_choropleth_paint, bake_route_map_delay_paint, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template, pooled_route_map_values
+from .route_map import GEOMETRY_TILE_VIEWS, REVERSE_COLORS_MEASURES, ROUTE_MAP_MEASURES, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
 
 def build_route_map_section_state(measure, year, templates, dry_run,
                                   resolution=None, tmcs=None,
@@ -19,22 +19,22 @@ def build_route_map_section_state(measure, year, templates, dry_run,
     Spreadsheet sections. This is the single entrypoint it shells out to (see
     `--route-map-section` in main() below) so a spec-built report's Map section
     reuses the exact same tested template-minting (`ensure_route_map_*_template`)
-    and per-report choropleth-baking (`pooled_route_map_values`/
-    `apply_route_map_paint`) machinery `convert_report` already uses for old-
-    report conversion, rather than a second implementation in JS that could
-    drift from it. Mirrors `convert_report`'s `route_map_tmpl_name` pre-pass
-    dispatch exactly (same year-clamping, same ensure_* dispatch by measure) —
-    see that pre-pass, a few hundred lines below, for the reference this
-    intentionally shadows.
+    machinery `convert_report` already uses for old-report conversion, rather
+    than a second implementation in JS that could drift from it. Mirrors
+    `convert_report`'s `route_map_tmpl_name` pre-pass dispatch exactly (same
+    year-clamping, same ensure_* dispatch by measure) — see that pre-pass, a
+    few hundred lines below, for the reference this intentionally shadows.
 
-    Returns (element_type, state, gap) — `gap` is a short human-readable string
-    (or None) explaining why the choropleth was left at the template's
-    placeholder paint, e.g. no tmcs/dates given, or a real query returning no
-    values. A placeholder-painted Map section still renders real geometry and
-    real tiles; it just isn't colored by this report's own data yet. Callers
-    decide what to do with `gap` (report_build.mjs prints it as a warning, does
-    not fail the build — matches this task's standing "guess and flag, don't
-    block" rule)."""
+    Round 80 (2026-08-27): no per-report choropleth bake anymore — every
+    route_map_*_template already carries PERMANENT static breaks from the
+    shared colorBreaks.json, so this now just mints/fetches the template and
+    returns its state as-is. `tmcs`/`start_date`/`end_date`/`color_range`
+    kept as accepted-but-unused params purely so callers (the CLI, and
+    report_build.mjs's `--route-map-section` invocation) don't need updating;
+    always returns gap=None now (nothing left that can go unbaked).
+
+    Returns (element_type, state, gap) for compatibility with existing
+    callers — gap is always None now."""
     if measure not in ROUTE_MAP_MEASURES:
         raise ValueError(f"unknown Route Map measure {measure!r} — known: {ROUTE_MAP_MEASURES}")
     if measure == "avgHoursOfDelay" and resolution not in ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION:
@@ -64,26 +64,7 @@ def build_route_map_section_state(measure, year, templates, dry_run,
     tmpl = templates[tmpl_name]
     state = json.loads(tmpl["data"]["stateJson"])
     element_type = tmpl["data"].get("elementType", "Map")
-
-    gap = None
-    if measure != "none":
-        # The "none" (geometry-only) template's layer carries no `join` key at
-        # all -- baking is a structural no-op for it, same as build_graph_section_data
-        # already special-cases (is_map and route_map_value_ctx checks).
-        if tmcs and start_date and end_date:
-            values = pooled_route_map_values(measure, tmcs, start_date, end_date,
-                                             resolution=resolution)
-            applied = apply_route_map_paint(
-                state, values, color_range, measure,
-                max_round_digits=1 if measure in ROUTE_MAP_VALUE_EXPR else 3)
-            if not applied:
-                gap = (f"pooled CH query over {len(tmcs)} tmc(s), {start_date}.."
-                      f"{end_date} returned no values — choropleth left unbaked "
-                      f"(template placeholder default renders)")
-        else:
-            gap = ("no tmcs/date range given — choropleth left unbaked "
-                  "(template placeholder default renders)")
-    return element_type, state, gap
+    return element_type, state, None
 
 
 # The measure buckets convert_report's real classifier maps for Route/TMC
@@ -631,8 +612,7 @@ def analyze_graph(g, comps_by_id, gaps):
 
 def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
                              color_range=None, aadt_override=None,
-                             route_map_value_ctx=None, diff_invert=False,
-                             comps_by_id=None):
+                             diff_invert=False, comps_by_id=None):
     # Old `layout.w` (react-grid-layout, 12-col) maps directly onto the
     # section's own `size` field (colspan) — confirmed the npmrds_sub pattern
     # (row 2100394) has `theme.selectedTheme: "transportnyv2"`, whose
@@ -705,26 +685,15 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         if tmpl_colors.get("byValueSymmetric"):
             colors_cfg["byValueSymmetric"] = True
         state.setdefault("display", {})["colors"] = colors_cfg
-    # Route-Map choropleth bake (M2 speed / M3 travelTime): only the templates
-    # whose series-template layer actually carries a `join` (single-source
-    # CH_TMC_IDENT_TABLE joins per ROUTE_MAP_VALUE_EXPR, or the two-source
-    # META_JOIN+AADT_DIST_JOIN pair for avgHoursOfDelay) need this — the
-    # geometry-only "none" template has no `join` key at all, so this is a
-    # no-op for it without needing a separate measure check here.
-    if is_map and route_map_value_ctx is not None:
-        sym_id = next(iter(state.get("symbologies") or {}), None)
-        layer = (state["symbologies"][sym_id]["symbology"]["layers"]
-                 [state["symbologies"][sym_id]["symbology"]["activeLayer"]]
-                ) if sym_id else None
-        if layer and layer.get("join"):
-            if info["measure"] in ROUTE_MAP_VALUE_EXPR:
-                bake_route_map_choropleth_paint(state, info, route_map_value_ctx,
-                                                color_range, gaps, old_graph,
-                                                info["measure"])
-            elif info["measure"] in ("hoursOfDelay", "avgHoursOfDelay"):
-                bake_route_map_delay_paint(state, info, route_map_value_ctx,
-                                           color_range, gaps, old_graph,
-                                           info["measure"], info["resolution"])
+    # Round 80 (2026-08-27, old-reports-conversion.md): Route Map choropleth
+    # coloring used to be baked per-report here (a live ClickHouse quantile
+    # query over this graph's assigned TMCs/dates, per bake_route_map_
+    # choropleth_paint/bake_route_map_delay_paint) — retired outright, not
+    # replaced. Every route_map_*_template now embeds PERMANENT static breaks
+    # from the shared colorBreaks.json (same table composeMapConfig.js/
+    # composeMeasureConfig.js read), so there is nothing left to bake — the
+    # cloned template's own paint is already correct as-is. `is_map` above is
+    # kept (still used by the color_range-wiring skip just above this comment).
     # overrides.aadt → substitute the AADT term(s) inside the cloned calculated
     # column expression(s) (see AADT_OVERRIDE_SUBS above for the old-tool
     # semantics each replacement reproduces). Zero matches on a template that

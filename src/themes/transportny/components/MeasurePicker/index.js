@@ -118,6 +118,14 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
             routeIds: pick.routeIds,
             routeWindows: pick.routeWindows,
             allRoutes,
+            // Round 79: converter-only fields, see composeTableMeasuresConfig's
+            // own comment — `grain` defaults to 'route' when absent, so the
+            // live Table checkbox's own behavior is byte-unchanged; only
+            // compose_bridge.mjs's forwarded BRIDGE_GRAPH_SPECS request for
+            // Info Box ever sets these.
+            grain: pick.grain,
+            reliabilityBin: pick.reliabilityBin,
+            reliabilityYear: pick.reliabilityYear,
         })
         : composeMeasureConfig({
             graphType: pick.graphType,
@@ -138,6 +146,11 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
             // recomposes with the real count). Stripped back out of `pick` below
             // before it's persisted — it's a compose-time hint, not stored state.
             seriesCount: pick.seriesCount ?? (pick.routeIds?.length || undefined),
+            // Round 77 (old-reports-conversion.md): converter-only field, see
+            // composeMeasureConfig's own comment — never set by any live-UI
+            // caller, only by compose_bridge.mjs's forwarded BRIDGE_GRAPH_SPECS
+            // request for the 3 avgHoursOfDelay-summary buckets.
+            summaryDelayGrainKey: pick.summaryDelayGrainKey,
         });
     if (!composed) return false;
 
@@ -298,6 +311,19 @@ export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allR
         });
     });
     if (!applied) return;
+    // Round 79: Info Box's `grain: 'tmc'` shape (composeTableMeasuresConfig)
+    // deliberately has NO `__series` column — its categorize column IS `tmc`
+    // instead (`info_box_templates.py`'s own proven shape, live since round
+    // 19 — comparisonSeries stays enabled via the self-bound subscriber for
+    // route-based FILTERING, it just doesn't need a route-identity column
+    // when rows are keyed by TMC, not by route). reconcileComparisonSeriesColumnOnState
+    // below has no awareness of `grain` — it's a generic, cross-platform
+    // invariant ("comparisonSeries enabled + has variants => always have a
+    // `__series` categorize column") — so it would otherwise ADD a spurious
+    // second categorize column here, colliding with the `tmc` one. Skipped
+    // only for this one converter-only pick shape; every other caller
+    // (`grain` unset/`'route'`) is unaffected.
+    if (nextPick.grain === 'tmc') return;
     // Separate imperative call, same two-call pattern the built-in
     // Comparison Series "Enabled" toggle already uses elsewhere in
     // sectionMenu.jsx — adds the synthetic `__series` categorize column
