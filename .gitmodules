@@ -2,4 +2,3 @@
 [submodule "src/dms"]
 	path = src/dms
 	url = git@github.com:availabs/dms.git
-	branch = local-first-sync-updates
