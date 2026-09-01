@@ -78,6 +78,11 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
         manualChunks: (id) => {
           if (id.includes('maplibre-gl')) {
             return 'maplibre';
+          } else if (id.includes('exceljs') || id.includes('jszip')) {
+            // Only reachable via dynamic import() in dataWrapper's triggerDownload —
+            // kept out of the 'vendor' bucket so it stays a lazily-loaded chunk
+            // instead of being force-merged into the eagerly-loaded vendor bundle.
+            return 'excel-export';
           } else if (id.includes('node_modules')) {
             return 'vendor';
           }
