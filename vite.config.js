@@ -83,6 +83,12 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
             // kept out of the 'vendor' bucket so it stays a lazily-loaded chunk
             // instead of being force-merged into the eagerly-loaded vendor bundle.
             return 'excel-export';
+          } else if (id.includes('@carbon/icons-react') || id.includes('lucide-react')) {
+            // Only reachable via dynamic import() through src/themes' lazy theme
+            // loader (mny_admin -> @carbon/icons-react, tessera -> lucide-react) —
+            // must not be swept into 'vendor', or every site would still
+            // eagerly download both icon libraries regardless of its theme.
+            return undefined;
           } else if (id.includes('node_modules')) {
             return 'vendor';
           }
