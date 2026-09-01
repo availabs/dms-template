@@ -1,5 +1,10 @@
+import { NETWORK_COLOR } from "./constants";
+
+// Network grey, from npmrds-route-creation.html (routes-reports-users-mesh.md, Workstream E) -
+// dataUpdate.jsx's `case` expression overrides this per-feature once a route/hover exists;
+// this is the base color a shapefile layer with no plugin state at all falls back to.
 export const npmrdsPaint = {
-  'line-color': '#ccc',
+  'line-color': NETWORK_COLOR,
   'line-width': [
     "interpolate",
     ["linear"],

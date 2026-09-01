@@ -17,6 +17,16 @@ const DEFAULT_CREATION_MODE = CREATION_MODES.TMC_CLICKS;
 // (RouteCreationLayer.jsx COLORS: green -> yellow -> red by sequence position).
 const MARKER_GRADIENT_COLORS = ["#1a9641", "#ffffbf", "#d7191c"];
 
+// Brand paint, from npmrds-route-creation.html (routes-reports-users-mesh.md, Workstream E).
+// Replaces the old #FF0000-on-#CCCCCC pair, which collided with the LOTTR "bad value" red -
+// a selected segment is not a bad segment. Kept here (not just inline in paint.js/dataUpdate.jsx)
+// since both a Mapbox style expression AND routecreation.theme.js's Tailwind arbitrary-value
+// classNames need the same three hex values - a Tailwind class string can't import a JS
+// constant, so keep the two in sync by eye/comment if either ever changes.
+const NETWORK_COLOR = "#C4CBD4";
+const ROUTE_COLOR = "#1F3F8F";
+const HIGHLIGHT_COLOR = "#CA8A04";
+
 // Placeholder until Phase 3's year selector lands (routecreation-marker-placement-autorouting.md).
 // NOT 2026 - directly tested 2026-07-23 against routing2.availabs.org and it returns {err:{}}
 // for real points. Only 2020-2022 actually resolved in that test; 2016, 2018, 2023-2026 all
@@ -38,4 +48,7 @@ export {
   DEFAULT_CREATION_MODE,
   MARKER_GRADIENT_COLORS,
   DEFAULT_ROUTING_YEAR,
+  NETWORK_COLOR,
+  ROUTE_COLOR,
+  HIGHLIGHT_COLOR,
 }

@@ -13,10 +13,12 @@ silently reverted to "all days, all hours" again since a 2026-08-14 rendering-co
 unrelated crash bug (13/870 corpus reports, a corrupted old-tool relativeDate placeholder) was
 fixed 2026-08-26 (round 73) — see that file for both. D
 (auth) is intentionally minimal, touched only via A4. E (Route Creation Plugin redesign) explicitly
-last, not started. **2026-09-01 (later): "Choose a report" orphaned-row bug** (stale
+last, not started at kickoff. **2026-09-01 (later): "Choose a report" orphaned-row bug** (stale
 `reports_snap_2` rows with no live page) — cleanup done + a durable picker-side filter shipped
 (see Progress log); the `deletePage` cascade hook that would close the hole at its source is an
-open follow-on, not started.
+open follow-on, not started. **E picked up and mostly BUILT same day** (design-artifact refresh,
+then the theme/component implementation for 5 of its 6 scoped items — see Workstream E below), once
+A/B/C/D's own work had already landed.
 · **Started:** 2026-08-25
 
 ## Objective
@@ -379,7 +381,7 @@ migration, it falls straight out of the allow-list rule as written.
 live-caught corrections, and what was explicitly left out (server-side enforcement,
 backfilling `user:`/`agency:` tags onto pre-existing content, a live routes-side check).
 
-## Workstream E — Route Creation Plugin redesign (last, not started)
+## Workstream E — Route Creation Plugin redesign (design pass + implementation BUILT 2026-09-01; freshness panel not started)
 
 Design source: `src/themes/transportny/TransportNY Design System/dms_design_system_v2/pages/
 npmrds-route-creation.html` — an interactive mockup (Alex) transcribed from both the legacy tool and
@@ -388,9 +390,130 @@ paint-color collision with the LOTTR "bad value" red — see the file's own head
 Treat as final per Decisions above. Explicitly sequenced last; mentioned early only so A1's modal
 mockup can borrow its visual language.
 
+**2026-09-01: design-artifact refresh, no theme/component build yet.** Ryan asked for the same
+design-process treatment Map21/MacroView already got, pointed at `routecreation.plugin.jsx` as the
+functionality to match. Grounding confirmed Map21/MacroView's own path: Alex built their rich
+`macroview.theme.js`/panel components directly (git history: `2ecd3cb` bare functional port,
+`af05609`/`1ec53e3`/`8878dc2` progressively adding the polish now live at `/macro`) — Route
+Creation never got that second pass; it's still the bare functional port (`comp.jsx`, no
+`routecreation.theme.js` at all), confirmed live via browser (`/route_creation` renders plain
+white Tailwind-default panels, no card chrome, plus the full labelled sidebar instead of the
+compact icon rail every polished page uses). Ryan confirmed re-using Alex's existing mockup rather
+than drafting a new one ("start with his mockup... I forgot/didn't know it already existed").
+
+Re-verified the mockup against the live plugin source (`comp.jsx`, `RouteEditor.jsx`,
+`SaveRouteModal.jsx`, `paint.js`, `dataUpdate.jsx`, `constants.js`, both hooks) before changing
+anything: all 8 originally-listed gaps (paint collision, missing row↔map highlight, missing route-
+identity panel, missing mode hint, pinned routing year, marker/`points` non-persistence, no
+folder/dates, client-direct routing call) are CONFIRMED still real, nothing fixed since the mockup
+was drawn. Updated the mockup in place for the one thing that DID change since: `SaveRouteModal`'s
+Tags field shipped a real validated `TagsEditor` (Workstream D, same day) — replaced the mockup's
+"free text, no vocabulary yet" Tags panel with the real chip/suggestion/rejection UX, added a
+"Tag validation · suggestion chips" row to § 04's built/specified/deferred table, and noted the
+tags-specific new-route-vs-existing-route difference (committed chips vs. suggestion chips). Also
+added a new § 04 row for the compact-sidenav gap found live (amber "gap · easy fix", not blocked —
+looks like the same missing per-page `sideNav.activeStyle` override `old-reports-conversion.md`
+round 81 already fixed once for report pages). Live-verified the edited mockup renders correctly
+(`python3 -m http.server` from `dms_design_system_v2/`, per `designing-a-dms-design-system.md`'s
+own convention — `file://` blocks the mockup's CSS/fonts) — 0 console errors, both edited sections
+(Tags chips, § 04 table) render with the same visual language as the rest of the page.
+
+**Superseded by the same-day build below**: the paragraph above originally called the theme/
+component build (a `routecreation.theme.js` + updated `RouteEditor.jsx`/`paint.js`/`dataUpdate.jsx`
+translating this mockup into the live plugin, the way Alex's `af05609`/etc. commits did for
+MacroView) "the real remaining size of Workstream E, still not started" — that's no longer current;
+see the entry immediately below for what got built the same day.
+
+**2026-09-01: implementation scoped, then BUILT + live-verified same day (items 0-4 + the theme
+refactor; item 5 freshness panel not started).** Full file-by-file plan, build record, and live-
+verification detail written into
+[`route-creation-tool.md`](./route-creation-tool.md#implementation-plan--themecomponent-build-scoped-2026-09-01-items-0-4--theme-refactor-built--live-verified-2026-09-01-item-5-freshness-panel-not-started)
+rather than duplicated here, since that file is this arc's designated "current status" doc.
+Summary: compact sidenav fixed (page-config only, re-confirmed against two known-good pages before
+applying, not assumed); brand paint (blue route/amber highlight/grey network) + a new two-way row-
+map hover highlight wired through the plugin's existing state mechanism (new
+`useMapHoverHandler.js`); two new panels (route identity, docked mode-hint pill — copy taken
+verbatim from the old tool's `RouteCreationInfoBox.jsx`); a new `routecreation.theme.js` following
+`macroview.theme.js`'s precedent, with `RouteEditor.jsx` fully refolded onto it. Live-verified via
+claude-in-chrome: real TMC click-to-add, row hover-highlight, mode toggle (clears selection,
+updates copy), and marker-mode drop all work; zero console errors. The freshness panel (item 5) is
+the one deferred piece — its data-source question is still open. This does NOT reopen the
+network-vintage selector, waypoint persistence, or the server-side routing proxy, all still
+explicitly out of scope.
+
 ---
 
 ## Progress log
+
+- **2026-09-01 (later still, homepage buttons fixed)**: Ryan asked for the `/converted_reports`
+  homepage's "New Route" button and "Build a route" empty-state button to point at the
+  route-creation page just fixed above (`/route_creation`) — both were dead-ended at an in-page
+  `#routes` anchor instead. Found 2 distinct button occurrences (a Card cell's `location` field on
+  the "New Route" button, id `2214127` published / `2214768` draft; a lexical `button` node's
+  `path` field on the "Build a route" empty-state button, id `2214144` published / `2214787`
+  draft — draft/published are disjoint component rows per the standing platform fact, all 4
+  patched). Fixed via `dms raw update <id> --data <file>`: fetched each row's full `data`,
+  string-replaced `#routes` → `/route_creation` inside the one JSON-string `element-data` field
+  only, wrote the complete object back (full-replacement semantics, not a partial merge, so the
+  whole row had to be supplied — verified via re-query that every other field was byte-identical
+  before/after). Live-verified: clicking "New Route" now lands on `/route_creation` (URL bar
+  confirmed). Noted for the record: Ryan flagged 2+ other Claude sessions were concurrently active
+  on this same dev environment while this was in progress — re-checked all 4 patched rows via a
+  fresh read-only query afterward to rule out a collision; all 4 still correct, no clobber
+  detected.
+
+- **2026-09-01 (later still, real bug found + fixed — NOT a Workstream D regression)**: Ryan
+  reported the post-save URL read `?undefined=2216261` instead of `?route_id=2216261` after saving
+  a real new route on `/route_creation`. Root-caused before touching anything (Ryan's own first
+  guess — "almost certainly in the plugin, it used to work correctly" — checked, not assumed):
+  `comp.jsx`'s `addItem`/`routeIdFilterValue` logic derives the URL param's key by looking up an
+  entry in `pageFilters` matching `searchKey === PAGE_FILTER_KEY` ('route_id') and reading THAT
+  entry's own `searchKey` back out — a roundabout way of re-deriving a constant already in hand,
+  and a landmine if no such entry exists: `.find()` returns `undefined`, spreads into `{}`, and
+  `routeFilter.searchKey` is `undefined`. Confirmed via `git log`/`git show` across all 4 commits
+  ever touching this file (`2ecd3cb` 2026-07-29 port through today) that this exact code is
+  byte-identical since the very first port commit — genuinely not a regression, code-wise. The
+  real cause: DMS's generic page-variable registry (`getPageVariableRegistry`/
+  `updatePageStateFiltersOnSearchParamChange`, `pages/_utils/index.js`) only syncs a URL param
+  to/from `pageState.filters` for searchKeys the PAGE ITSELF has authored with `useSearchParams:
+  true` — and the `/route_creation` page Ryan stood up for me (id `2216258`) had a completely
+  empty `filters` array (confirmed via direct read-only DB query before touching anything). This
+  meant the READ side (`?route_id=X` loading an existing route into edit mode) was equally broken
+  beforehand, not just the write side — nobody had hit it because the write side always failed
+  first, on the very first real save.
+
+  **Fixed** with a one-line, additive page-config change (no code change — `comp.jsx`/
+  `SaveRouteModal.jsx` remain untouched from the port): `dms page update 2216258 --data
+  '{"filters": [{"id": "route-creation-route-id", "searchKey": "route_id", "useSearchParams":
+  true, "values": ""}]}'` — matches the canonical page-filter shape (`page-pattern-guide.md`'s
+  "Page Filters" section) and the same proven-safe `--data`-is-a-shallow-top-level-merge pattern
+  `traversing-report-pages.md` already documents (verified via a read-only re-query: title/slug/
+  published/section counts all unchanged, only `filters` added).
+
+  **Live-verified both directions** using Ryan's own real leftover test route (`route_id=2216261`,
+  named `test_tag_route`, still holding the `You`/`AVAIL` tags it was created with from the
+  earlier routes-side Workstream D verification): navigating to `?route_id=2216261` now correctly
+  loads the route's 3 real TMCs and shows "Update Route" (previously would have failed to resolve
+  `routeIdFilterValue` at all); clicking Update now produces `?route_id=2216261` in the address bar
+  (previously `?undefined=2216261`, Ryan's exact reported symptom). Zero console errors both times.
+
+- **2026-09-01 (later still, routes-side live-verified)**: Ryan supplied the route-creation
+  page's real URL (`http://npmrds.localhost:5173/route_creation` — "I kinda had to recreate it"),
+  plus two gotchas for future reference: it accepts a `route_id` URL param to edit an existing
+  route, and after saving a brand-new route the tool stays pointed at that route (any further save
+  updates it, doesn't create a new one) — already covered by `SaveRouteModal`'s own "You are
+  updating an existing route" warning text. Map-click precision was hard in automation as expected
+  (a real device-pixel-ratio mismatch confirmed via JS: the MapLibre canvas's actual size,
+  1376x1174, doesn't match the screenshot's displayed 1512x789) — Ryan clicked 3 real TMCs
+  directly rather than have me keep guessing pixel coordinates. Opening "Save Route" on that
+  brand-new route confirmed the auto-tag-at-creation design works exactly as intended: the tag
+  editor showed `You`/`NYSDOT`/`AVAIL` already committed (not just suggested) — this test account
+  turns out to be in both AVAIL and NYSDOT groups, both handled correctly. This is the same
+  "auto-commit on a brand-new item, suggest-to-re-add on an already-existing one" behavior already
+  proven on the reports side (a pre-existing report only showed suggestion chips because its row
+  already existed with the seeding effect never re-firing) — confirms the two are actually
+  consistent, not two different behaviors. Zero console errors. Cancelled out without saving (no
+  real route created). Workstream D is now live-verified on both routes and reports.
 
 - **2026-09-01 (later still, BUILT + live-verified)**: Workstream D implemented end-to-end
   from the locked design, per Ryan's go-ahead. Files: `RouteTagBrowserModal/tagCategories.js`
