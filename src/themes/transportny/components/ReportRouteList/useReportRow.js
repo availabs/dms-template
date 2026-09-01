@@ -4,7 +4,7 @@ import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/c
 import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
 import { getColorRange } from '../../../../dms/packages/dms/src/ui/components/graph_new/colorSchemeUnifier';
 import { defaultRouteDateRange } from './relativeDateResolution';
-import { parseTags } from '../RouteTagBrowserModal/tagCategories';
+import { parseTags, defaultTagsForUser } from '../RouteTagBrowserModal/tagCategories';
 
 // Same palette a graph's own default series colors come from
 // (ComponentRegistry/graph_new/config.jsx's `DefaultPalette`) — reused here so a route's
@@ -57,7 +57,7 @@ const EMPTY_TAGS = [];
 // `addRoute` takes the new route data as an argument rather than reading it from a
 // closure — the "pending route to add" state belongs to the add-flow UI, not to
 // this row-storage concern.
-export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit }) {
+export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit, user }) {
   const [rawReportRow, setReportRow] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -181,13 +181,23 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
       // (`{$type:'atom', value:null}`) — unwrap it the same way `getData.js`'s
       // `cleanValue` does.
       const rawRow = data?.[0];
-      const row = rawRow
+      const extracted = rawRow
         ? udaConfig.columnsToFetch.reduce((acc, col) => {
             const v = rawRow[col.reqName];
             acc[col.name] = (v && typeof v === 'object' && '$type' in v) ? v.value : v;
             return acc;
           }, {})
         : null;
+      // A UDA query with ZERO matching rows still returns one placeholder entry at
+      // `data[0]` — every attribute a bare `{$type:'atom'}` with no `value` key, which
+      // unwraps to `undefined` for every field including `id` — rather than an empty
+      // array. `rawRow` alone is truthy in both this case and a real match, so it can't
+      // tell them apart (confirmed live 2026-09-01: a report with zero `reports_snap_2`
+      // rows still produced a truthy `extracted` object, every field `undefined`, which
+      // fell into the "found" branch below with `row.id === undefined` instead of the
+      // real "not found" `id: null` state the rest of this file expects). `id` is the one
+      // column every genuine row always has — an id-less extraction means no row.
+      const row = extracted && extracted.id != null ? extracted : null;
       if (row) {
         let parsedRoutes = [];
         try {
@@ -230,6 +240,22 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // one, same as dataWrapper's own `addItem` elsewhere), updating it on every
   // mutation after. This is a genuine DMS data row (split-table, schema-free), not a
   // page attribute and not this section's own `element-data`.
+  // `name`/`page_path` mirrored onto every write below (2026-09-01 fix): the
+  // `reports_snap_2` catalog row is what `ReportPickerModal`'s "Choose a report" search
+  // actually reads (`useReportSearch.js`'s unconditional `name notempty` + `page_path
+  // notempty` base filter), but until this fix NOTHING ever wrote either field for a
+  // live-authored report — `persistRoutes`/`persistTags` only ever sent `{report_id,
+  // routes}`/`{report_id, tags}`. Confirmed live: 968 `reports_snap_2` rows in the dev DB,
+  // the vast majority blank on both fields (most point at pages long since superseded/
+  // deleted — pre-existing DB churn, not this bug — but 6 pointed at real live pages,
+  // e.g. "Page 19"/"Page 22"/"Page 25", each invisible in the picker under every facet).
+  // Re-sending both on every persist (not just once at create) is deliberate self-healing:
+  // it also keeps the catalog in sync if the page is ever retitled/re-slugged, with no
+  // separate rename-sync path needed. Cheap: the underlying `dms.data.edit` write is a
+  // JSONB merge, not a replace (see the pre-existing `tags`-carryover comment below).
+  const catalogName = item?.title || '';
+  const catalogPagePath = item?.url_slug ? `/${item.url_slug}` : '';
+
   const persistRoutes = async (nextRoutes) => {
     // `isEdit` here is ReportRouteList.jsx's `canMutate` — simply `editPageMode`,
     // the page open at /edit/... (report-authoring-ux-overhaul.md item 3, 2026-08-19:
@@ -240,7 +266,7 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     // write ever fires outside page-edit-mode.
     if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
     const currentId = reportRowIdRef.current;
-    const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };
+    const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes), name: catalogName, page_path: catalogPagePath };
     if (currentId) payload.id = currentId;
     const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
     const nextId = currentId || res?.id;
@@ -259,13 +285,45 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   const persistTags = async (nextTags) => {
     if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
     const currentId = reportRowIdRef.current;
-    const payload = { report_id: String(item.id), tags: JSON.stringify(nextTags) };
+    const payload = { report_id: String(item.id), tags: JSON.stringify(nextTags), name: catalogName, page_path: catalogPagePath };
     if (currentId) payload.id = currentId;
     const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
     const nextId = currentId || res?.id;
     reportRowIdRef.current = nextId;
     setReportRow({ id: nextId, routes, tags: nextTags, forItemId: item.id });
   };
+
+  // Ensures a report gets its `reports_snap_2` catalog row the moment its edit page is
+  // opened, rather than waiting for the first route add. Without this, a report published
+  // with zero routes (e.g. straight off "Create Report") has NO catalog row at all and is
+  // invisible in "Choose a report" under every facet, not just "Mine" — confirmed live
+  // 2026-09-01 on a freshly created, published report with zero `reports_snap_2` rows for
+  // it anywhere in the DB. `ensuringForRef` blocks a second concurrent fire for the same
+  // report while the first `persistRoutes` create is still in flight (component-instance
+  // scoped, so a same-report re-render can't double-create, but two independent mounts
+  // racing — e.g. dev double-effects — could still both slip through; acceptable, same
+  // "no server sequence" caveat `add-item-create-defaults.md` already documents for
+  // create-time collisions).
+  // Also seeds default tags (routes-reports-users-mesh.md, Workstream D, 2026-09-01) the moment
+  // this row is FIRST created — `reportRow.id === null` here means no row exists yet, so `tags`
+  // is necessarily still `[]`, there's nothing to clobber. `defaultTagsForUser` returns `[]` for a
+  // missing/incomplete `user` (harmless — same as the pre-existing "no tags yet" state).
+  // `persistTags` runs after `persistRoutes` resolves rather than in parallel: `persistTags`'s
+  // guard reads `reportRowIdRef.current` as the row id to update, which `persistRoutes` only sets
+  // (via `reportRowIdRef.current = nextId`) at the tail of its own async call — running them
+  // concurrently would race persistTags against a still-null id ref.
+  const ensuringForRef = useRef(null);
+  useEffect(() => {
+    if (!isEdit || !reportRow || reportRow.id !== null) return;
+    if (ensuringForRef.current === reportRow.forItemId) return;
+    ensuringForRef.current = reportRow.forItemId;
+    persistRoutes(reportRow.routes)
+      .then(() => persistTags(defaultTagsForUser(user)))
+      .catch((e) => console.error('<ReportRouteList:ensureCatalogRow>', e))
+      .finally(() => {
+        if (ensuringForRef.current === reportRow.forItemId) ensuringForRef.current = null;
+      });
+  }, [isEdit, reportRow]);
 
   // Comparison-series graphs (see buildUdaConfig.js) use each route's `name` as the
   // ONLY series discriminator (both the server's SQL alias and the client's

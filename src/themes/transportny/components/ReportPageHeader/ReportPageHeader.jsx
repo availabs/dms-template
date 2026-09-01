@@ -6,16 +6,25 @@ import { publish } from '../../../../dms/packages/dms/src/patterns/page/pages/ed
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
 import { resolvedRouteLabel } from '../ReportRouteList/relativeDateResolution';
+import { useReportTags } from './useReportTags';
+import TagsEditor from '../TagsEditor/TagsEditor';
 
 // The report canvas's page-header card (npmrds-report.html): kicker+meta → h1+purpose
 // → action stack → freshness footline. h1 and the published/draft pill read the page's
 // own `title`/`published` fields directly (real page data, not duplicated into this
 // section's state); everything else (kicker label, meta line, purpose, freshness, the
-// optional Data link) is this component's own authored state, edited inline in place —
-// same two-gate convention as ReportRouteList (editPageMode AND this section's own pencil).
-export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
-  const { item, editPageMode, pageState, apiUpdate } = useContext(PageContext) || {};
-  const { user } = useContext(CMSContext) || {};
+// tag editor, the optional Data link) is this component's own authored state, edited
+// inline in place, gated on `editPageMode` ALONE — same "no extra click" convention
+// ReportRouteList already uses (2026-09-01 correction, Workstream D: an author on
+// /edit/... shouldn't have to separately click this section into its own edit mode
+// before any of its fields become editable, same reasoning RRL's own comment gives).
+export default function ReportPageHeader() {
+  const { item, editPageMode, pageState, apiLoad, apiUpdate } = useContext(PageContext) || {};
+  const { user, app } = useContext(CMSContext) || {};
+  // Inline tag editor next to Done (routes-reports-users-mesh.md, Workstream D) — reads/writes
+  // the SAME `reports_snap_2` row ReportRouteList/useReportRow.js owns `routes` on, via its own
+  // small hook (see useReportTags.js for why this is a separate fetch, not shared state).
+  const { tags: reportTags, persistTags: persistReportTags } = useReportTags({ apiLoad, apiUpdate, app, itemId: item?.id });
   const { state, setState } = useContext(ComponentContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Icon } = UI || {};
@@ -53,7 +62,7 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
     return Array.from(byKey.values());
   }, [routeCatalog]);
 
-  const canEdit = Boolean(editPageMode) && Boolean(sectionEditorOpen);
+  const canEdit = Boolean(editPageMode);
   const d = state?.display || {};
 
   const set = (key, value) => setState?.(draft => {
@@ -165,6 +174,11 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
               </Button>
             ) : null}
           </div>
+          {canEdit ? (
+            <div className={t.tagsRow}>
+              <TagsEditor tags={reportTags} onChange={persistReportTags} user={user} Icon={Icon} theme={t} inline />
+            </div>
+          ) : null}
           {canEdit ? (
             <div className={t.dataHrefRow}>
               <span className={t.inlineFieldLabel}>Data link</span>

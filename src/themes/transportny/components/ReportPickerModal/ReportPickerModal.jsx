@@ -6,9 +6,9 @@ import { reportPickerModalTheme } from './ReportPickerModal.theme';
 import { useReportSearch } from './useReportSearch';
 import { buildReportCatalogSource } from './reportCatalogSource';
 import { reportScore, isMine, looksIncomplete, isRebuilt } from './reportScore';
-import { rankByScore } from '../PickerModal/pickerScoring';
+import { rankByScore, isAvailUser, buildVisibilityAllowListFilterGroup } from '../PickerModal/pickerScoring';
 import { PickerSearchInput, PickerFacetChips, PickerCountBar } from '../PickerModal/PickerModalParts';
-import { TAG_CATEGORIES, parseTags, tagToLabel } from '../RouteTagBrowserModal/tagCategories';
+import { TAG_CATEGORIES, DYNAMIC_REPORT_TEMPLATE_TAG, parseTags, tagToLabel } from '../RouteTagBrowserModal/tagCategories';
 
 // "Choose a report" — net new (npmrds-picker-modals.html, 2026-08-25). A superset of the
 // /reports homepage's AVAIL-curated Card grid (converted_reports/reports, page 2208581): the
@@ -45,7 +45,7 @@ import { TAG_CATEGORIES, parseTags, tagToLabel } from '../RouteTagBrowserModal/t
 export default function ReportPickerModal({ open, setOpen }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon, Modal, Pill } = UI || {};
-  const { user, app } = useContext(CMSContext) || {};
+  const { user, app, falcor } = useContext(CMSContext) || {};
   const { apiLoad } = useContext(PageContext) || {};
   const navigate = useNavigate();
   const currentUserId = user?.id;
@@ -60,6 +60,10 @@ export default function ReportPickerModal({ open, setOpen }) {
   const [withinSearchTerm, setWithinSearchTerm] = useState('');
   const [otherTagTerm, setOtherTagTerm] = useState('');
   const [facets, setFacets] = useState({ mine: false, hideIncomplete: false });
+  // Default picker visibility (routes-reports-users-mesh.md, Workstream D item 5): an allow-list
+  // applied server-side unless toggled off. Defaults to OFF (already showing everyone's) for an
+  // AVAIL user, ON (restricted) for everyone else — see isAvailUser.
+  const [showEverything, setShowEverything] = useState(() => isAvailUser(user));
 
   useEffect(() => {
     if (!open) return;
@@ -71,6 +75,7 @@ export default function ReportPickerModal({ open, setOpen }) {
     setWithinSearchTerm('');
     setOtherTagTerm('');
     setFacets({ mine: false, hideIncomplete: false });
+    setShowEverything(isAvailUser(user));
   }, [open]);
 
   const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
@@ -83,11 +88,17 @@ export default function ReportPickerModal({ open, setOpen }) {
   const extraFilterGroups = useMemo(() => {
     const groups = [];
     if (facets.mine && currentUserId) groups.push({ col: 'created_by', op: 'filter', value: [String(currentUserId)] });
+    if (!showEverything) {
+      const allowList = buildVisibilityAllowListFilterGroup(user, DYNAMIC_REPORT_TEMPLATE_TAG);
+      if (allowList) groups.push(allowList);
+    }
     return groups;
-  }, [facets.mine, currentUserId]);
+  }, [facets.mine, currentUserId, showEverything, user]);
 
   const { results, loading, error } = useReportSearch({
     apiLoad,
+    falcor,
+    app,
     reportSourceInfo,
     enabled: open && view !== 'category',
     searchTerm,
@@ -118,11 +129,17 @@ export default function ReportPickerModal({ open, setOpen }) {
     [rankedResults, facets.hideIncomplete]
   );
 
-  const toggleFacet = (key) => setFacets((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggleFacet = (key) => {
+    if (key === 'showEverything') { setShowEverything((v) => !v); return; }
+    setFacets((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
   const clearFacets = () => setFacets({ mine: false, hideIncomplete: false });
   const facetChips = [
     { key: 'mine', label: 'Mine', active: facets.mine },
     { key: 'hideIncomplete', label: 'Hide incomplete-looking', active: facets.hideIncomplete },
+    // Kept OUT of clearFacets/facets — a "widen the default" switch, not a manual narrowing facet
+    // (routes-reports-users-mesh.md, Workstream D).
+    { key: 'showEverything', label: "Show everyone's", active: showEverything },
   ];
 
   const openReport = (row) => {

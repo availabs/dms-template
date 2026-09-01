@@ -26,7 +26,15 @@ export function buildReportCatalogSource(app) {
       { name: 'report_id', display_name: 'report_id', options: null, required: false, source_id: 2177438, type: 'text' },
       { name: 'name', display_name: 'name', options: null, required: false, source_id: 2177438, type: 'text' },
       { name: 'description', display_name: 'description', options: null, required: false, source_id: 2177438, type: 'text' },
-      { name: 'created_by', display_name: 'created_by', options: null, required: false, source_id: 2177438, type: 'text' },
+      // systemCol (2026-09-01 fix): this is DMS's own audit column (auto-stamped from the
+      // auth token on every write, `dms.controller.js`'s `createData`) — NOT a hand-maintained
+      // JSON field. Declaring it as a plain `data->>'created_by'` text column (the original
+      // shape here) meant "Mine" filtered on a key nothing ever wrote (converted reports stash
+      // the OLD tool's creator under an inert `_old_created_by` instead; live authoring never
+      // wrote it at all) — confirmed live: it could never match ANY report. `systemCol: true`
+      // (same convention as `useReportRow.js`'s/`fetchCatalogRows.js`'s own `id` declarations)
+      // makes `buildUdaConfig.js` resolve this to the bare, always-populated `created_by` column.
+      { name: 'created_by', display_name: 'created_by', options: null, required: false, source_id: 2177438, systemCol: true },
       { name: 'created_at', display_name: 'created_at', options: null, required: false, source_id: 2177438, type: 'text' },
       { name: 'updated_at', display_name: 'updated_at', options: null, required: false, source_id: 2177438, type: 'text' },
       { name: 'graph_count', display_name: 'graph_count', options: null, required: false, source_id: 2177438, type: 'number' },
