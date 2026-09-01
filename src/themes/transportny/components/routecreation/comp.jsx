@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { get, set } from "lodash-es";
 import mapboxgl from "maplibre-gl";
@@ -21,6 +21,7 @@ import {
   DEFAULT_CREATION_MODE,
   DEFAULT_ROUTING_YEAR,
 } from "./constants";
+import { defaultTagsForUser } from "../RouteTagBrowserModal/tagCategories";
 import { useMapTmcHandler } from "./hooks/useMapTmcHandler";
 import { useMapMarkerHandler } from "./hooks/useMapMarkerHandler";
 import { useRouteData } from "./hooks/useRouteData";
@@ -45,6 +46,10 @@ const Comp = ({ state, setState, map }) => {
   const { apiUpdate, pageState: { app, filters: pageFilters } } = pContext;
   const ctx = mctx?.falcor ? mctx : cctx;
   const { falcor, pgEnv } = ctx;
+  // Always from CMSContext directly (not `ctx`, which prefers MapEditorContext when embedded in
+  // the map editor and may not carry `user`) — the real, server-verified `{id, groups}` used to
+  // default a brand-new route's tags (routes-reports-users-mesh.md, Workstream D).
+  const { user } = cctx || {};
 
   const INTERNAL_DATASETS_KEY = `${app}+datasets`;
 
@@ -240,6 +245,25 @@ const Comp = ({ state, setState, map }) => {
     }
   }, [routeIdFilterValue]);
 
+  // Default a brand-new route's tags to the author's own user tag + their real login-group
+  // tags (routes-reports-users-mesh.md, Workstream D) — mirrors ReportRouteList/useReportRow.js's
+  // report-side auto-tagging. Only fires in "new route" mode (no `routeIdFilterValue` — editing
+  // an existing route loads its REAL tags via the effect above instead) and only once per new-route
+  // session (`seededDefaultTagsRef`), so removing every default tag afterward sticks rather than
+  // snapping back on the next render. Waits for `user` to resolve rather than seeding an empty
+  // default; the guard resets whenever `routeIdFilterValue` becomes truthy so a later "start a
+  // fresh route" (id clears again) reseeds correctly.
+  const seededDefaultTagsRef = useRef(false);
+  useEffect(() => {
+    if (routeIdFilterValue) {
+      seededDefaultTagsRef.current = false;
+      return;
+    }
+    if (seededDefaultTagsRef.current || !user?.id) return;
+    seededDefaultTagsRef.current = true;
+    setModalState((prev) => (prev.tags?.length ? prev : { ...prev, tags: defaultTagsForUser(user) }));
+  }, [routeIdFilterValue, user]);
+
   return (
     <>
       <RouteEditor
@@ -279,6 +303,7 @@ const Comp = ({ state, setState, map }) => {
         modalState={modalState}
         setRouteMeta={(meta) => setModalState({ ...modalState, ...meta })}
         addItem={addItem}
+        user={user}
       />
     </>
   );

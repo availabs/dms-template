@@ -27,6 +27,22 @@ export const reportPageHeaderTheme = {
   actionIcon: "size-4 text-[#37576B]",
   actionLabel: "font-display uppercase text-[12.5px] tracking-wide",
   dataHrefRow: "flex items-center gap-2",
+  // Inline tag editor next to Done (2026-09-01, Workstream D) — right-aligned, wraps under the
+  // action buttons naturally rather than a hard width cap (which clipped/misaligned against the
+  // narrower dataHrefRow beneath it — caught live).
+  tagsRow: "w-full flex justify-end",
+  // TagsEditor theme override, matched to this header's own vocabulary instead of the shared
+  // component's generic blue-chip default (which visibly clashed with this design system — caught
+  // live 2026-09-01): label reuses inlineFieldLabel's look, chips reuse routePill's look, the
+  // free-text input reuses inlineInput's dashed-underline look.
+  tagsEditorWrapperInline: "flex items-center flex-wrap gap-1.5",
+  tagsEditorLabel: "font-mono text-[9px] uppercase tracking-[0.16em] text-slate-400 mr-1",
+  tagsEditorChips: "flex flex-wrap items-center gap-1.5 justify-end",
+  tagsEditorChip: "inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-50 font-mono text-[10.5px] text-slate-700",
+  tagsEditorChipRemove: "size-3 cursor-pointer text-slate-400 hover:text-[#1F3F8F]",
+  tagsEditorSuggestionChip: "inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-dashed border-slate-300 font-mono text-[10.5px] text-slate-400 hover:border-[#1F3F8F] hover:text-[#1F3F8F] cursor-pointer",
+  tagsEditorInput: "bg-transparent border-b border-dashed border-slate-300 focus:border-[#1F3F8F] focus:outline-none text-[10.5px] font-mono placeholder:text-slate-400 py-0.5 min-w-[6rem]",
+  tagsEditorError: "font-mono text-[10px] text-red-600 w-full text-right mt-1",
 
   // ── freshness footline ──
   freshnessWrapper: "mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1",

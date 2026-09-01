@@ -1,3 +1,5 @@
+import { makeUserTag, groupNameToAgencyTag } from '../RouteTagBrowserModal/tagCategories';
+
 // Shared "compute a prominence score per row, sort desc" primitives behind BOTH picker
 // modals (RouteTagBrowserModal's route picker, ReportPickerModal's report picker) — see
 // planning/transportny/tasks/current/... for the design record. The two domains weigh
@@ -49,6 +51,41 @@ export function recencyScore(dateStr, cap = 15) {
 // Deliberately narrow (whole-word test/testing/delete/bug/saving) — a false positive hides a
 // real report from the default view, so this stays conservative rather than clever.
 export const LOOKS_INCOMPLETE_RE = /\btest(ing)?\b|\bdelete\b|\bbug\b|\bsaving\b/i;
+
+// AVAIL runs this system operationally and needs to see its own day-to-day authoring by
+// default — the visibility allow-list below would otherwise hide most of it even from AVAIL
+// itself (routes-reports-users-mesh.md, Workstream D item 5). Case-insensitive match against the
+// viewer's real, server-verified login groups (CMSContext's `user.groups`).
+export function isAvailUser(user) {
+  return Boolean((user?.groups || []).some((g) => String(g).toLowerCase() === 'avail'));
+}
+
+// The server-side OR-group implementing the default picker visibility rule
+// (routes-reports-users-mesh.md, Workstream D items 5-6): an ALLOW-list, not a hide-list — a row
+// is shown only when the viewer created it, OR its tags contain the viewer's own user:/agency:
+// tags, OR its tags contain the domain's "always shown, curated" marker (`curatedTag` —
+// AUTO_GENERATED_TAG for routes, DYNAMIC_REPORT_TEMPLATE_TAG for reports). Composed entirely from
+// existing generic filter primitives (`filter` on a systemCol, `filter`/array_contains on a
+// multiselect column, OR-nested groups) — no new UDA capability needed. Pushed server-side (as one
+// more `extraFilterGroups` entry) rather than applied as a client-side post-filter, so it narrows
+// the candidate pool itself instead of trimming an already-LIMIT-truncated fetch down to
+// (possibly) nothing. Returns `null` for a signed-out/incomplete user — callers should treat that
+// as "add no restriction," not an empty OR (which would match zero rows).
+export function buildVisibilityAllowListFilterGroup(user, curatedTag) {
+  if (!user?.id) return null;
+  const tagValues = [
+    makeUserTag(user.id),
+    ...(user.groups || []).filter((g) => String(g).toLowerCase() !== 'public').map(groupNameToAgencyTag),
+  ];
+  if (curatedTag) tagValues.push(curatedTag);
+  return {
+    op: 'OR',
+    groups: [
+      { col: 'created_by', op: 'filter', value: [String(user.id)] },
+      { col: 'tags', op: 'filter', value: tagValues },
+    ],
+  };
+}
 
 // Sort a COPY of `rows` by `scoreFn(row)` descending — the one shared "rank by score" step;
 // never mutates the input (callers may still hold a reference to the unsorted fetch result).

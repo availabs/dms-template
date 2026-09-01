@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
 import { useCatalogFetch } from '../PickerModal/useCatalogFetch';
+import { checkIdsExist } from '../../../../dms/packages/dms/src/api';
 
 const DEFAULT_LIMIT = 60; // an unscoped candidate pool for the client-side score+sort, same
 // rationale as RouteTagBrowserModal's DEFAULT_LIMIT — big enough that prominence ranking has a
@@ -21,7 +23,7 @@ const DEBOUNCE_MS = 250;
 // default to falsy, so every existing caller (the plain flat search view) is unaffected. Thin
 // wrapper over the shared `useCatalogFetch` (PickerModal/useCatalogFetch.js) — same mechanics as
 // RouteTagBrowserModal's useTagBrowser.js.
-export function useReportSearch({ apiLoad, reportSourceInfo, enabled, searchTerm, tagValue, tagLikeTerm, extraFilterGroups }) {
+export function useReportSearch({ apiLoad, falcor, app, reportSourceInfo, enabled, searchTerm, tagValue, tagLikeTerm, extraFilterGroups }) {
   const term = (searchTerm || '').trim();
   const isSearch = term.length >= SEARCH_MIN_CHARS;
 
@@ -58,11 +60,50 @@ export function useReportSearch({ apiLoad, reportSourceInfo, enabled, searchTerm
     return { filterGroups, sort, limit, debounce: isSearch ? DEBOUNCE_MS : 0 };
   };
 
-  return useCatalogFetch({
+  const { results: catalogResults, loading: catalogLoading, error: catalogError } = useCatalogFetch({
     apiLoad,
     sourceInfo: reportSourceInfo,
     enabled,
     buildQuery,
     deps: [searchTerm, tagValue, tagLikeTerm, JSON.stringify(extraFilterGroups || [])],
   });
+
+  // Band-aid safety net (routes-reports-users-mesh.md, 2026-09-01): `reports_snap_2` catalog rows
+  // can outlive the page they point at — the generic "Delete Page" admin action doesn't (yet)
+  // cascade to this dataset, and past --replace reconversions/dev-DB resets have left similar
+  // debris. Rather than trust the catalog alone, batch-check (one extra request per search, not
+  // per-row — see checkIdsExist's own comment) which of THIS search's `report_id`s still resolve
+  // to a live page, and drop any that don't. Catches an orphan regardless of how it was created —
+  // durable even if the `deletePage` cascade hook (tracked separately, not yet built) has a gap.
+  const [liveResults, setLiveResults] = useState([]);
+  const [checking, setChecking] = useState(false);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    if (catalogLoading) return; // wait for the underlying catalog fetch to settle first
+    const requestId = ++requestIdRef.current;
+    const reportIds = [...new Set(catalogResults.map((r) => r.report_id).filter(Boolean))];
+    if (!reportIds.length) {
+      setLiveResults(catalogResults);
+      setChecking(false);
+      return;
+    }
+    setChecking(true);
+    checkIdsExist(falcor, app, reportIds)
+      .then((existingIds) => {
+        if (requestIdRef.current !== requestId) return; // superseded by a newer search
+        setLiveResults(catalogResults.filter((r) => existingIds.has(String(r.report_id))));
+      })
+      .catch((e) => {
+        if (requestIdRef.current !== requestId) return;
+        console.error('<useReportSearch:liveFilter>', e);
+        setLiveResults(catalogResults); // fail open — a transient error shouldn't hide everything
+      })
+      .finally(() => {
+        if (requestIdRef.current === requestId) setChecking(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogResults, catalogLoading, falcor, app]);
+
+  return { results: liveResults, loading: catalogLoading || checking, error: catalogError };
 }
