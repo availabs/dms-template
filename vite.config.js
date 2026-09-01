@@ -92,14 +92,6 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
     noExternal: [
       '@availabs/avl-falcor',
       'colorbrewer',  // "type":"module" but main is UMD — Vite uses "module" field (ESM)
-      // @observablehq/plot re-exports the full 'd3' meta-package (which itself
-      // re-exports every d3-* submodule). Left external, Rollup/Rolldown's SSR
-      // build mis-merges those re-exported symbols into a single bogus
-      // `from "d3-array"` import (e.g. curveBasis, actually from d3-shape,
-      // ends up attributed to d3-array) — a hard crash on SSR boot. Bundling
-      // this whole family instead avoids that external-merge path.
-      '@observablehq/plot',
-      /^d3(-.*)?$/,
     ],
   },
   plugins: [
