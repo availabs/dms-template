@@ -1,6 +1,5 @@
 {
   "title": "Monthly Speed Comparisons",
-  "slug": "converted_reports/monthly_speed_comparisons",
   "dynamicReport": true,
   "description": "For route performance comparing the latest full year to all-time, and analyzing the performance by month for the latest year.",
   "tags": ["category:change_over_time"],

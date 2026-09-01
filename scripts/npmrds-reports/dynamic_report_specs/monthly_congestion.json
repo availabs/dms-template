@@ -1,6 +1,5 @@
 {
   "title": "Monthly Congestion",
-  "slug": "converted_reports/monthly_congestion",
   "dynamicReport": true,
   "description": "Monthly hours-of-delay breakdown for a route or corridor across the current year, plus a year-over-year speed comparison.",
   "tags": ["category:change_over_time", "difficulty:beginner"],

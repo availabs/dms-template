@@ -94,6 +94,40 @@ def fetch_old_routes(route_ids):
     return {str(r["id"]): r for r in rows}
 
 
+# Round 82 (old-reports-conversion.md, "Round B"): old-folder-name -> agency tag CODE, for the
+# 8 real `admin2.folders` type='group' folders that actually have report/template membership
+# (verified via a direct count query, not assumed — every other group folder has 0 reports AND
+# 0 templates). Codes must match `AGENCY_CODES` in
+# src/themes/transportny/components/RouteTagBrowserModal/tagCategories.js (routes and reports
+# share one agency vocabulary, Ryan's explicit call) — keep both lists in sync if either changes.
+AGENCY_FOLDER_NAME_TO_CODE = {
+    "NYSDOT": "NYSDOT",
+    "AVAIL": "AVAIL",
+    "MHV": "MHV",
+    "NYSDOT CONSULTANT": "NYSDOT_CONSULTANT",
+    "OCTC": "OCTC",
+    "CDTC": "CDTC",
+    "NPMRDS New Users": "NPMRDS_NEW_USERS",
+    "GBNRTC": "GBNRTC",
+}
+
+
+def fetch_agency_tag(old_id, stuff_type):
+    """Looks up which (if any) real agency `group` folder an old report/template belongs to
+    (`admin2.stuff_in_folders`), and returns the matching `agency:<code>` tag string — or None
+    if it's in no folder, a non-`group` folder (the ~88%-noise personal `user` folders), or a
+    `group` folder outside the 8 known real ones (e.g. a NYSDOT sub-agency division, or a test
+    folder). `stuff_type` is 'report' (admin2.reports) or 'template' (admin2.templates) — the
+    same stuff_in_folders table tracks both, confirmed by a direct DISTINCT stuff_type query."""
+    out = psql_old(
+        f"SELECT f.name FROM admin2.stuff_in_folders sif "
+        f"JOIN admin2.folders f ON f.id = sif.folder_id "
+        f"WHERE sif.stuff_type = '{stuff_type}' AND sif.stuff_id = {int(old_id)} "
+        f"AND f.type = 'group'")
+    code = AGENCY_FOLDER_NAME_TO_CODE.get(out.strip()) if out else None
+    return f"agency:{code}" if code else None
+
+
 def flatten_route_comps(route_comps, gaps):
     """Old route_comps may contain type:'group' entries wrapping nested comps.
     Flatten them (only 13 group comps exist across all old reports); the group

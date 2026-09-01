@@ -12,6 +12,7 @@ import { useRouteMileage } from './useRouteMileage';
 import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from './relativeDateResolution';
 import { formatDateShort } from './utils';
 import RouteRow from './RouteRow';
+import ReportTagsEditor from './ReportTagsEditor';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
@@ -87,10 +88,12 @@ export default function ReportRouteList() {
   const {
     reportRow,
     routes,
+    tags,
     saving,
     error,
     setError,
     persistRoutes,
+    persistTags,
     addRoutes,
     removeRoute,
     reorderRoutes,
@@ -492,6 +495,7 @@ export default function ReportRouteList() {
                     Routes are picked by whoever opens the report (via a link), instead of being
                     fixed here — use this for a reusable report template.
                   </div>
+                  <ReportTagsEditor tags={tags} onChange={persistTags} theme={t} Icon={Icon} />
                 </div>
               )}
             </div>

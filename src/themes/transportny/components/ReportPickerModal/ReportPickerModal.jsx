@@ -8,17 +8,37 @@ import { buildReportCatalogSource } from './reportCatalogSource';
 import { reportScore, isMine, looksIncomplete, isRebuilt } from './reportScore';
 import { rankByScore } from '../PickerModal/pickerScoring';
 import { PickerSearchInput, PickerFacetChips, PickerCountBar } from '../PickerModal/PickerModalParts';
+import { TAG_CATEGORIES, parseTags, tagToLabel } from '../RouteTagBrowserModal/tagCategories';
 
 // "Choose a report" — net new (npmrds-picker-modals.html, 2026-08-25). A superset of the
 // /reports homepage's AVAIL-curated Card grid (converted_reports/reports, page 2208581): the
 // homepage stays exactly what it is (a curated showcase — do not change what it shows, per
-// Ryan's explicit correction this session); this modal searches EVERYTHING the current user is
-// auth'd for, drawn from the same `reports_snap_2` catalog. Same interaction model as the route
-// picker (RouteTagBrowserModal): prominence-weighted default sort, a working "mine" facet, and
-// badges instead of a separate browse tree — see reportScore.js/PickerModal/ for the shared
+// Ryan's explicit correction this session); this modal searches everything the current user is
+// auth'd for THAT HAS A REAL DMS PAGE, drawn from the same `reports_snap_2` catalog. Same
+// interaction model as the route picker (RouteTagBrowserModal): prominence-weighted default
+// sort, a working "mine" facet, and badges — see reportScore.js/PickerModal/ for the shared
 // scoring shape and chrome. Unlike the route picker, choosing a report NAVIGATES to it (there is
 // nothing to "confirm" — a report is opened, not added to a collection), so this modal has no
 // multi-select state at all.
+//
+// 2026-08-31 user correction (old-reports-conversion.md, "Round 83"): this modal originally also
+// surfaced legacy `admin2.reports` catalog rows that were never rebuilt into a real page (shown
+// disabled/greyed, "Legacy — not yet rebuilt") as part of being a genuine "search everything"
+// superset. Ryan explicitly rejected that: legacy rows are unopenable noise, not a useful browse
+// surface, and a converter bug (same round, see the task doc) was ALSO making every real
+// converted report indistinguishable from one of these — both problems compounding to make a
+// just-converted, just-tagged report invisible/unopenable in its own picker. `useReportSearch.js`
+// now filters `page_path notempty` unconditionally, so only rebuilt reports ever reach this
+// component — `isRebuilt`/the "Legacy" Pill branch below is now a defensive no-op, not a live
+// path, kept in case a future row somehow slips through with no page_path.
+//
+// Round 82 (old-reports-conversion.md, "Round B", 2026-08-31) added the category→value tag
+// drill-down — mirrors RouteTagBrowserModal's `view: root/category/value/other` state machine
+// directly, reusing the SAME shared `TAG_CATEGORIES` vocabulary (Ryan's explicit call: routes and
+// reports use one agency/county/region taxonomy, not two). Only the converter currently
+// auto-populates `agency:` tags (the other two axes have no real report signal yet — see the task
+// doc's nesting-finding writeup — but stay in the browse tree since it's the same shared list an
+// author could still hand-tag a report with a county/region value).
 //
 // Client-side only, same v1 scope call as the route picker's "mine" facet: the CMSContext user
 // id drives ranking/filtering with no server-side check that it matches the real auth token.
@@ -31,14 +51,32 @@ export default function ReportPickerModal({ open, setOpen }) {
   const currentUserId = user?.id;
   const t = { ...reportPickerModalTheme, ...getComponentTheme(themeFromContext, 'reportPickerModal') };
 
-  const [searchTerm, setSearchTerm] = useState('');
+  // view: 'root' | 'category' | 'value' | 'other' — same shape as RouteTagBrowserModal.jsx.
+  const [view, setView] = useState('root');
+  const [activeCategoryKey, setActiveCategoryKey] = useState(null);
+  const [activeValue, setActiveValue] = useState(null); // { value, label }
+  const [categoryFilterTerm, setCategoryFilterTerm] = useState(''); // client-side, narrows the fixed value list
+  const [rootSearchTerm, setRootSearchTerm] = useState('');
+  const [withinSearchTerm, setWithinSearchTerm] = useState('');
+  const [otherTagTerm, setOtherTagTerm] = useState('');
   const [facets, setFacets] = useState({ mine: false, hideIncomplete: false });
 
   useEffect(() => {
     if (!open) return;
-    setSearchTerm('');
+    setView('root');
+    setActiveCategoryKey(null);
+    setActiveValue(null);
+    setCategoryFilterTerm('');
+    setRootSearchTerm('');
+    setWithinSearchTerm('');
+    setOtherTagTerm('');
     setFacets({ mine: false, hideIncomplete: false });
   }, [open]);
+
+  const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
+  const searchTerm = view === 'root' ? rootSearchTerm : (view === 'value' ? withinSearchTerm : '');
+  const tagValue = view === 'value' ? activeValue?.value : null;
+  const tagLikeTerm = view === 'other' ? otherTagTerm.trim() : null;
 
   const reportSourceInfo = useMemo(() => buildReportCatalogSource(app), [app]);
 
@@ -51,10 +89,24 @@ export default function ReportPickerModal({ open, setOpen }) {
   const { results, loading, error } = useReportSearch({
     apiLoad,
     reportSourceInfo,
-    enabled: open,
+    enabled: open && view !== 'category',
     searchTerm,
+    tagValue,
+    tagLikeTerm: tagLikeTerm || null,
     extraFilterGroups,
   });
+
+  const visibleCategoryValues = useMemo(() => {
+    if (!activeCategory) return [];
+    const q = categoryFilterTerm.trim().toLowerCase();
+    if (!q) return activeCategory.values;
+    return activeCategory.values.filter((v) => v.label.toLowerCase().includes(q));
+  }, [activeCategory, categoryFilterTerm]);
+
+  const goRoot = () => { setView('root'); setActiveCategoryKey(null); setActiveValue(null); setCategoryFilterTerm(''); };
+  const goCategory = (key) => { setView('category'); setActiveCategoryKey(key); setActiveValue(null); setCategoryFilterTerm(''); };
+  const goValue = (v) => { setView('value'); setActiveValue(v); setWithinSearchTerm(''); };
+  const goOther = () => { setView('other'); setOtherTagTerm(''); };
 
   const rankedResults = useMemo(() => {
     const withIds = results.filter((r) => r.report_id != null || r.id != null);
@@ -90,6 +142,7 @@ export default function ReportPickerModal({ open, setOpen }) {
   const renderReportRow = (r) => {
     const key = r.report_id ?? r.id;
     const clickable = Boolean(r.page_path);
+    const tags = parseTags(r.tags);
     return (
       <button
         key={key}
@@ -109,32 +162,113 @@ export default function ReportPickerModal({ open, setOpen }) {
           ) : (
             <span className={t.reportDescriptionEmpty}>Nothing was written down — matched on the title alone.</span>
           )}
+          {tags.length > 0 && (
+            <span className={t.reportTagChips}>
+              {tags.map((tag) => <span key={tag} className={t.reportTagChip}>{tagToLabel(tag)}</span>)}
+            </span>
+          )}
         </span>
       </button>
     );
   };
+
+  const renderReportList = () => {
+    if (loading) return <div className={t.loading}>Loading…</div>;
+    if (error) return <div className={t.error}>{error}</div>;
+    if (!visibleResults.length) return <div className={t.empty}>No reports found.</div>;
+    return <div className={t.reportList}>{visibleResults.map(renderReportRow)}</div>;
+  };
+
+  const breadcrumb = (
+    <div className={t.breadcrumb}>
+      <span className={view === 'root' ? t.breadcrumbStepCurrent : t.breadcrumbStep} onClick={goRoot}>All Reports</span>
+      {activeCategory ? (
+        <>
+          <span className={t.breadcrumbSep}>/</span>
+          <span className={view === 'category' ? t.breadcrumbStepCurrent : t.breadcrumbStep} onClick={() => goCategory(activeCategory.key)}>
+            {activeCategory.label}
+          </span>
+        </>
+      ) : null}
+      {view === 'other' ? (
+        <>
+          <span className={t.breadcrumbSep}>/</span>
+          <span className={t.breadcrumbStepCurrent}>Other tags</span>
+        </>
+      ) : null}
+      {view === 'value' && activeValue ? (
+        <>
+          <span className={t.breadcrumbSep}>/</span>
+          <span className={t.breadcrumbStepCurrent}>{activeValue.label}</span>
+        </>
+      ) : null}
+    </div>
+  );
+
+  const showFacetsAndCount = view === 'root' || view === 'value' || (view === 'other' && tagLikeTerm);
 
   return (
     <Modal open={open} setOpen={setOpen} activeStyle="wide">
       <div className={t.wrapper}>
         <div className={t.header}>Choose a report</div>
         <p className={t.headerSub}>Searches everything you're authorized for — a superset of the curated /reports homepage.</p>
+        {breadcrumb}
 
-        <PickerSearchInput t={t} Input={Input} Icon={Icon} value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search by name or description…" autoFocus />
+        {view === 'root' ? (
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={rootSearchTerm}
+            onChange={(e) => setRootSearchTerm(e.target.value)} placeholder="Search by name or description…" autoFocus />
+        ) : null}
+        {view === 'category' ? (
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={categoryFilterTerm}
+            onChange={(e) => setCategoryFilterTerm(e.target.value)} placeholder={`Filter ${activeCategory?.label.toLowerCase()}…`} />
+        ) : null}
+        {view === 'value' ? (
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={withinSearchTerm}
+            onChange={(e) => setWithinSearchTerm(e.target.value)} placeholder="Search within this tag…" />
+        ) : null}
+        {view === 'other' ? (
+          <PickerSearchInput t={t} Input={Input} Icon={Icon} value={otherTagTerm}
+            onChange={(e) => setOtherTagTerm(e.target.value)} placeholder="Type a tag (e.g. a project number)…" />
+        ) : null}
 
-        <PickerFacetChips t={t} Pill={Pill} facets={facetChips} onToggle={toggleFacet} onClearAll={clearFacets} />
-        {!loading && !error ? (
+        {showFacetsAndCount ? (
+          <PickerFacetChips t={t} Pill={Pill} facets={facetChips} onToggle={toggleFacet} onClearAll={clearFacets} />
+        ) : null}
+        {showFacetsAndCount && !loading && !error ? (
           <PickerCountBar t={t} countLabel={`${visibleResults.length} report${visibleResults.length === 1 ? '' : 's'}`} />
         ) : null}
 
         <div className={t.body}>
-          {loading ? <div className={t.loading}>Loading…</div> : null}
-          {error ? <div className={t.error}>{error}</div> : null}
-          {!loading && !error && !visibleResults.length ? <div className={t.empty}>No reports match.</div> : null}
-          {!loading && !error && visibleResults.length ? (
-            <div className={t.reportList}>{visibleResults.map(renderReportRow)}</div>
+          {view === 'root' ? (
+            <>
+              <div className={t.sectionLabel}>Browse by tag</div>
+              <div className={t.categoryPillRow}>
+                {TAG_CATEGORIES.map((c) => (
+                  <button key={c.key} type="button" className={t.categoryPill} onClick={() => goCategory(c.key)}>
+                    {c.label}
+                    <span className={t.categoryPillHint}>{c.values.length}</span>
+                  </button>
+                ))}
+              </div>
+              <div className={t.categoryLinkRow}>
+                <button type="button" className={t.categoryLink} onClick={goOther}>Other tags</button>
+              </div>
+              {renderReportList()}
+            </>
           ) : null}
+
+          {view === 'category' ? (
+            <div className={t.valueList}>
+              {visibleCategoryValues.map((v) => (
+                <button key={v.value} type="button" className={t.valueItem} onClick={() => goValue(v)}>
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {view === 'value' ? renderReportList() : null}
+          {view === 'other' ? (otherTagTerm.trim() ? renderReportList() : <div className={t.empty}>Type a tag to search.</div>) : null}
         </div>
 
         <div className={t.footer}>

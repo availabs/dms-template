@@ -1,6 +1,5 @@
 {
   "title": "Weekly Average",
-  "slug": "converted_reports/weekly_average",
   "dynamicReport": true,
   "description": "Compares a route's current-year weekday-vs-weekend speed pattern against the same route one and two years ago.",
   "tags": ["category:behavioral", "difficulty:beginner"],

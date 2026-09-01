@@ -1,6 +1,5 @@
 {
   "title": "Annual Average Study",
-  "slug": "converted_reports/annual_average_study",
   "dynamicReport": true,
   "description": "This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.",
   "tags": ["category:floating_car"],

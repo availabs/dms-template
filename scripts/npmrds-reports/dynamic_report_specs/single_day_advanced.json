@@ -1,6 +1,5 @@
 {
   "title": "Single Day (Advanced)",
-  "slug": "converted_reports/single_day_advanced",
   "dynamicReport": true,
   "description": "Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.",
   "tags": ["category:events", "difficulty:advanced"],

@@ -1,6 +1,5 @@
 {
   "title": "Golden Corpus - Line Graph",
-  "slug": "converted_reports/golden_corpus_linegraph",
   "description": "Golden-corpus representative page for LineGraph (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.",
   "graphs": [
     {

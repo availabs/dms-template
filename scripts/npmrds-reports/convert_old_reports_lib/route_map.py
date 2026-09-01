@@ -85,6 +85,10 @@ def ensure_route_map_none_template(year, templates, dry_run):
         # the template renders nothing itself (hidden) — keep it out of the
         # legend; materialized layers clear this key (useComparisonSeriesLayers)
         "legend-orientation": "none",
+        # Round C (2026-08-31): TMC-only hover — no joined measure column on
+        # this template (see route_map_hover_columns's own docstring).
+        "hover": "hover",
+        "hover-columns": route_map_hover_columns(),
         "view_id": view_id, "source_id": 582,
         "sources": [{"id": src_id, "source": {
             "type": "vector", "tiles": [tiles_url], "format": "pbf"}}],
@@ -187,6 +191,27 @@ def choropleth_paint(column, colors, breaks, show_other="#ccc", max_value=None,
             legend.append({"color": paint[fi + 1], "label": label})
     return {"paint": ["case", ["==", ["get", column], None], show_other, paint],
             "legend": legend}
+
+
+def route_map_hover_columns(value_label=None, value_format=" "):
+    """Hover-popup field list for a Route Map layer (`layer['hover-columns']`,
+    read by the map runtime's HoverComp — packages/dms/src/patterns/page/
+    components/sections/components/ComponentRegistry/map/SymbologyViewLayer.jsx).
+    Round 82 finding 6 / Round C: hover popups are an existing, working, generic
+    Map capability (gated by `layer['hover']`/`layer['hover-columns']`, normally
+    authored via the Map Editor's Popover tab) that route_map.py had simply
+    never populated — not a missing platform feature. `tmc`/`value` are the
+    SAME property names every Route Map layer already carries on its rendered
+    tile feature (geometry tiles: `cols=tmc`; choropleth `join.tileColumns`:
+    `["value"]`, server-baked via the tile's `join=` param), so the popup reads
+    off the feature already sitting under the cursor — no extra join fetch.
+    `value_label` is omitted for route_map_none (no joined measure column)."""
+    columns = [{"column_name": "tmc", "display_name": "TMC", "formatFn": " ",
+                "justify": "left"}]
+    if value_label:
+        columns.append({"column_name": "value", "display_name": value_label,
+                         "formatFn": value_format, "justify": "right"})
+    return columns
 
 
 _CH_JOIN_AS_SPLIT_RE = re.compile(r"\s+as\s+", re.IGNORECASE)
@@ -313,6 +338,9 @@ def ensure_route_map_speed_template(year, templates, dry_run):
         # itself must stay suppressed or it renders an extra, un-labeled
         # duplicate of the same legend (round 51, user-reported).
         "legend-orientation": "none",
+        # Round C (2026-08-31): see route_map_hover_columns's docstring.
+        "hover": "hover",
+        "hover-columns": route_map_hover_columns("Speed (mph)", "decimal_2"),
         "view_id": view_id, "source_id": 582,
         "join": {
             "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
@@ -443,6 +471,10 @@ def ensure_route_map_traveltime_template(year, templates, dry_run):
         # itself must stay suppressed or it renders an extra, un-labeled
         # duplicate of the same legend (round 51, user-reported).
         "legend-orientation": "none",
+        # Round C (2026-08-31): see route_map_hover_columns's docstring.
+        # `minutes_clock` matches round 35's route-traversal-MINUTES unit.
+        "hover": "hover",
+        "hover-columns": route_map_hover_columns("Travel Time", "minutes_clock"),
         "view_id": view_id, "source_id": 582,
         "join": {
             "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
@@ -620,6 +652,9 @@ def ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_r
         # itself must stay suppressed or it renders an extra, un-labeled
         # duplicate of the same legend (round 51, user-reported).
         "legend-orientation": "none",
+        # Round C (2026-08-31): see route_map_hover_columns's docstring.
+        "hover": "hover",
+        "hover-columns": route_map_hover_columns("Avg. Hours of Delay", "decimal_2"),
         "view_id": view_id, "source_id": 582,
         "join": {
             "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
@@ -739,6 +774,9 @@ def ensure_route_map_hoursofdelay_template(year, templates, dry_run):
         # itself must stay suppressed or it renders an extra, un-labeled
         # duplicate of the same legend (round 51, user-reported).
         "legend-orientation": "none",
+        # Round C (2026-08-31): see route_map_hover_columns's docstring.
+        "hover": "hover",
+        "hover-columns": route_map_hover_columns("Hours of Delay", "decimal_2"),
         "view_id": view_id, "source_id": 582,
         "join": {
             "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",

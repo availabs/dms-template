@@ -91,6 +91,40 @@ export const MAP_MEASURE_OPTIONS = [
 // colorBreaks.json itself now, not here.
 const CHOROPLETH_DEFAULTS = colorBreaks.measures;
 
+// Hover-value formatFn per measure (shared `formatFunctions` registry — dataWrapper/utils/
+// utils.jsx), mirroring route_map.py's `route_map_hover_columns` for the 4 measures Python also
+// builds. The 4 CO2 variants have no Python precedent and no registry entry suited to their
+// sub-0.01 magnitudes — `decimal_2` would round every real value to "0.00" (see colorBreaks.json's
+// own note on those measures' domains) — so they fall through to raw passthrough (`' '`) below
+// instead of a formatter that would actively lie.
+const HOVER_VALUE_FORMAT = {
+    speed: 'decimal_2',
+    travelTime: 'minutes_clock',
+    hoursOfDelay: 'decimal_2',
+    avgHoursOfDelay: 'decimal_2',
+};
+
+// Hover-popup field list for a Route Map layer (`layer['hover-columns']`, read by the map
+// runtime's HoverComp — ComponentRegistry/map/SymbologyViewLayer.jsx). `tmc`/`value` are the SAME
+// property names every Route Map layer already carries on its rendered tile feature (geometry
+// tiles: `cols=tmc`; choropleth `join.tileColumns`: `['value']`, server-baked into the tile via
+// the tile URL's `join=` param) — the popup reads off the feature already under the cursor, no
+// extra join fetch. Mirrors route_map.py's `route_map_hover_columns` so the live "Add Graph" /
+// QuickControls authoring path and the old-report-conversion path behave identically.
+function routeMapHoverColumns(measureKey) {
+    const columns = [{ column_name: 'tmc', display_name: 'TMC', formatFn: ' ', justify: 'left' }];
+    if (measureKey && measureKey !== 'none') {
+        const measure = GRAPH_VOCAB.measures[measureKey];
+        columns.push({
+            column_name: 'value',
+            display_name: measure?.label || measureKey,
+            formatFn: HOVER_VALUE_FORMAT[measureKey] || ' ',
+            justify: 'right',
+        });
+    }
+    return columns;
+}
+
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Map had NO title auto-compose at all —
 // confirmed by reading this whole file, zero references to `display.title` anywhere in it, unlike
 // composeMeasureConfig.js's `composeAutoTitle`. This is Map's own equivalent, deliberately not a
@@ -172,6 +206,9 @@ function buildRouteGeometryLayer(year) {
         // The template itself renders nothing (hidden sub-layers below) — keep it out of the
         // legend; materialized per-route clones clear this key (useComparisonSeriesLayers.js).
         'legend-orientation': 'none',
+        // TMC-only hover — no joined measure column on this layer (see routeMapHoverColumns).
+        hover: 'hover',
+        'hover-columns': routeMapHoverColumns(),
         view_id: viewId, source_id: 582,
         sources: [{ id: srcId, source: { type: 'vector', tiles: [tilesUrl], format: 'pbf' } }],
         layers: [
@@ -241,6 +278,9 @@ function buildChoroplethLayer({ measureKey, year, apiHost }) {
         // (useComparisonSeriesLayers.js); the template layer itself must stay suppressed or it
         // renders an extra, un-labeled duplicate legend row.
         'legend-orientation': 'none',
+        // See routeMapHoverColumns's own comment.
+        hover: 'hover',
+        'hover-columns': routeMapHoverColumns(measureKey),
         view_id: viewId, source_id: 582,
         join: {
             enabled: true, featureKeyColumn: 'tmc', joinColumn: 'tmc',
