@@ -78,7 +78,9 @@ async function readRows(env, viewId, cols) {
   return rows;
 }
 function listPages(pattern) {
-  const out = cli("page", "list", "--pattern", pattern);
+  // `--limit 1000`: the CLI defaults to 50 rows and npmrds_sub crossed 50 live pages on 2026-09-02,
+  // which would have turned every enrolled slug past the cut into an ALLOWLIST MISS.
+  const out = cli("page", "list", "--pattern", pattern, "--limit", "1000");
   const line = out.split("\n").find((l) => l.trim().startsWith("{") || l.trim().startsWith("["));
   return (line ? (JSON.parse(line).items || JSON.parse(line)) : []) || [];
 }
@@ -266,6 +268,13 @@ const KEY_FILE_OVERRIDE = {
   // "npmrds:converted_reports/reports" (page 2208581) was destroyed 2026-09-02 (v0.1 landing
   // page, see rename-converted-reports-url-to-reports.md) — this override already resolved
   // nothing (its slug was absent from include_slugs below), so nothing to repoint it to.
+  // The REPORTS OVERVIEW — the `npmrds_sub` nav's Reports item, page 2188366 (slug
+  // `converted_reports`), enrolled 2026-09-02 (npmrds-reports-page-rev3.md, Phase 5). Its CHILD
+  // 2208581 `converted_reports/reports` (the AVAIL-curated template grid — one "Templates" band)
+  // used to hold this mapping; it is a different surface with no mockup of its own, so it is
+  // neither mapped nor enrolled (decision D4 in that task file) — two pages must never claim
+  // one mockup, or the Design page lies about one of them.
+  "npmrds:converted_reports": "npmrds-reports.html",
   // the live page moved /about → /about_the_plan (ticket #107); the mockup kept its old name
   "freightatlas2:about_the_plan": "freight-atlas-about.html",
   "freightatlas2:maps_gallery": "freight-atlas-gallery.html",

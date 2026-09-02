@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS · All Reports · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  NPMRDS CATEGORY · ALL REPORTS — the report library as a filtered table
+  ════════════════════════════════════════════════════════════════════
+  Net new, 2026-09-02, on a direct ask: "the npmrds reports list — basically what the reports
+  modal does, but lists out all reports based on tag filters into a table, largely modelled after
+  ReportPickerModal, just not in a modal, out on the page."
+
+  So this page IS `ReportPickerModal.jsx` (src/themes/transportny/components/ReportPickerModal/),
+  un-modaled: same catalog, same facets, same tag vocabulary, same prominence sort, same row
+  content — re-laid-out as a persistent filter rail + a paginated table instead of a 4xl overlay
+  with a 46vh scroll box. Copy is taken verbatim from that component wherever it says anything
+  ("Browse by tag", "Other tags", "All Reports", "Mine", "Hide incomplete-looking",
+  "Show everyone's", "No reports found.", "Nothing was written down — matched on the title
+  alone.", "sorted: yours → rebuilt → described → recency"), per the design-system's copy rule.
+
+  ═══ WHY A PAGE AND NOT JUST THE MODAL ═══════════════════════════════════════════════════
+  The modal states its own cost in npmrds-reports.html's header: "What the modal costs, stated
+  plainly: PAGINATION. A finder shows the top matches and links out; it does not walk 869 rows
+  three at a time." That is exactly what this page adds, and the only thing it adds as new
+  capability: an ordinary paginated DMS table (`usePagination`, author `pageSize`) over the same
+  source. Everything else here is the modal's own behaviour, given room:
+    · The tag drill-down that was a root → category → value STATE MACHINE (one view at a time,
+      because a 4xl overlay has no room for two) becomes a persistent rail: the categories, the
+      value list and the results are all on screen at once, and picking a value narrows the table
+      instead of replacing the view.
+    · The facet chips and the breadcrumb are unchanged in shape and copy — the breadcrumb still
+      reads All Reports / <Category> / <Value>, because that is still what it describes.
+    · A row's content is the modal's row, transposed into columns: name + badges + description in
+      the first cell, then tags, counts, updated. Nothing is added to a row that the modal's
+      `renderReportRow` doesn't already draw.
+
+  ═══ THE VIEW TOGGLE — ONE LIBRARY, TWO VIEWS ═══════════════════════════════════════════
+  `Templates | All reports` is the same markup on both report pages, in the same pixel column
+  (x=517 at 1600, measured), with only the active side flipped — a switch, not a link out. To get
+  that alignment this page's header adopted npmrds-reports.html's exact geometry: title at size 2,
+  controls at size 10. The size-3 title and its subline ("Everything you're authorized for — a
+  superset of the curated /reports page") went with it; the count bar and the rail already say what
+  the subline said, and at size 2 it wrapped four lines deep.
+  The row is now exactly: toggle · search · New report · New route — the same four controls in the
+  same order on both pages. The catalog-total pill that sat between the search and New report is
+  gone (asked for, 2026-09-02); the count bar above the table already states the total. The
+  matching removal on the templates page took its FRESHNESS pill, which is a cross-page contract
+  item — see that file's header note for the declared break.
+  Text-only segments, deliberately: the icon registry has `Grid` but no list/rows glyph, and either
+  inventing one or putting an icon on one side and nothing on the other would read worse than two
+  words. In DMS it is a Card with two static link cells, the current one carrying the active named
+  style — no new primitive, and it belongs to the `header` group on both pages so it cannot drift.
+
+  ═══ REAL DATA — QUERIED LIVE TODAY ═════════════════════════════════════════════════════
+  Every row in the table is a REAL row of `reports_snap_2` (source 2177438 / view 2177440 — the
+  same catalog `reportCatalogSource.js` declares and the /reports homepage's Card grid binds),
+  pulled 2026-09-02 with:
+      dms dataset query 2177438 --view 2177440 --limit 400 --order updated_at:desc
+  MEASURED, not illustrative — the whole current dev catalog, 26 rows, no sampling:
+    · 26 of 26 have a `page_path` (all rebuilt — see the "Legacy" note below).
+    · 17 have a description; 9 do not, and render the modal's own no-description line.
+    · 19 carry at least one tag; 7 are untagged. 12 distinct tag values in the whole library.
+    · 16 were built from a dynamic-report spec (`_built_from_spec`); 6 are conversions of legacy
+      `admin2.reports` rows (they keep `_converted_from_old_report_id` + the old row's
+      `_old_updated_at`, which is why a 2019 date shows under a 2026-08-31 conversion); 4 are the
+      report_probe golden-corpus fixtures, deliberately kept live.
+    · 1 name trips the live `LOOKS_INCOMPLETE_RE` heuristic ("NYC Test") — so the "Hide
+      incomplete-looking" chip removes exactly one row, which is the honest demo of it.
+  TAG COUNTS shown in the rail are computed in the page from those same rows (see the findings
+  table — a library-wide histogram is NOT expressible today).
+  THE UPDATED COLUMN is the one compromise: `updated_at` is a DMS system column and the CLI's
+  dataset reader returns only `id` + `data`, so the dates here are the real timestamps carried
+  INSIDE each row — `_specRevisions[0].at` for a spec-built report, `_converted_at` for a
+  conversion — and the four rows that carry neither show "—" rather than a filled-in guess. The
+  live table binds the real `updated_at`, which is also what the default sort's recency term uses.
+
+  ═══ THE SIGNED-IN VIEWER (drives Mine + the visibility switch) ══════════════════════════
+  The demo viewer is id 175 — the id this pattern's own `authPermissions` grants "*", and the id
+  one real row carries as a `user:175` tag. "Mine" resolves against it. Following
+  `routes-reports-users-mesh.md`'s convention (a `user:<id>` tag mirrors the immutable
+  `created_by` column as a visible, removable tag), the facet here filters on that tag; the live
+  component filters `created_by` server-side and would give the same answer for these rows.
+
+  ═══ EXPRESSIBILITY — how this ships in DMS ═════════════════════════════════════════════
+  Nothing on this page needs a new primitive except where the findings table says so.
+    · THE TABLE is an ordinary table-mode section over the `reports_snap_2` externalSource, with
+      `usePagination: true` and an author `pageSize` (25 here). Columns: name, tags, counts_label,
+      updated_at, page_path (the link target, via `searchParamsCol`-style linking).
+    · THE FACETS are URL-bound page-variable toggles, exactly as patterns.html documents for
+      npmrds-reports.html: an empty filter leaf drops out of the query, so "no chip" is "no
+      constraint", and the chips read their state back off the URL — which is what makes a
+      filtered list shareable in an email. `notempty` on `description` is the "described" gap
+      filter; `filter` on `tags` is array_contains.
+    · THE VALUE LIST is the same fixed vocabulary the live modal browses, embedded here verbatim
+      from `tagCategories.js` (62 counties · 11 NYSDOT regions · 30 agency/MPO codes) rather than
+      re-typed, so the tree cannot drift from the component.
+    · THE DEFAULT VISIBILITY ALLOW-LIST is `buildVisibilityAllowListFilterGroup` — one OR group
+      of existing leaves, pushed server-side. See the findings table for what it does to this
+      library TODAY.
+
+  ═══ FINDINGS THIS PAGE SURFACED (real, measured, none of them drawn around) ═════════════
+  | # | What | Evidence | Smallest fix |
+  |---|------|----------|--------------|
+  | 1 | `tagToLabel` renders EVERY `user:` tag as "You" — it never compares the id to the viewer. In a modal that only ever showed your own rows near the top that read fine; in a table of everyone's reports it labels other people's rows "You". | `tagCategories.js`'s `tagToLabel`: `if (isUserTag(tag)) return 'You'`. This library has `user:175` (1 row) and `user:993` (3 rows) — a viewer signed in as 175 sees "You" on all four. | Pass the viewer id in and compare (this page does: 175 → "You", 993 → the raw tag). Additive, BC. |
+  | 2 | The two tag axes the real data actually uses — `category:` (12 rows) and `difficulty:` (8 rows) — are NOT in `TAG_CATEGORIES`, so the live picker renders them as raw storage strings ("category:change_over_time") and cannot browse them at all. Only `agency:` of the three declared axes has any report data; `county:`/`region:` have ZERO rows. | Measured over all 26 rows: agency 2 values / 11 rows, category 5 / 12, difficulty 3 / 8, user 2 / 4, county 0, region 0. | Two more `TAG_CATEGORIES` entries with the five category and three difficulty values. Additive, BC, and it makes the rail's real axes browsable instead of "Other tags" free-text. |
+  | 3 | A library-wide TAG HISTOGRAM (what the rail wants: every tag with its count) is not expressible — the UDA engine has no groupBy-unnest path for a multiselect column, which is the same limitation that made `tagCategories.js` hardcode its vocabularies in the first place. | `tagCategories.js` header comment, verbatim: "the UDA query engine has no groupBy-unnest path for multiselect columns". | Counts in this rail are computed client-side over the rows on screen and are LABELLED as such. A real one needs the unnest capability; until then the honest rail shows the vocabulary, not counts. |
+  | 4 | With the default visibility allow-list ON (its live default for any viewer NOT in the AVAIL group — `isAvailUser`), this library shows 5 of 26 rows, and every one of the 16 dynamic report templates disappears — because the `dynamic_report_template` curated marker has never been backfilled. `tagCategories.js` says the backfill is needed; it has not run. | Rows tagged `agency:NYSDOT` or `user:175`: 5. Rows carrying `dynamic_report_template`: 0. | Run the backfill (it is a one-time tag write over the spec-built rows). Until then the switch is the only way to see the templates, which is why this page ships it ON — stated beside the switch, not hidden. |
+  | 5 | Viewer-changeable SORT is still not a DMS capability (`sort` is an author-time column property; the table header only renders the direction icon). Already escalated on npmrds-reports.html § 01; repeated here because this page's sort pill exercises it. | npmrds-reports.html's own Escalations row: "Viewer-changeable sort … Drawn as author-fixed ordering. Escalated." | Unchanged ask. In DMS today this ships as ONE author-fixed order — the prominence sort — and the pill goes away. |
+
+  ⚠ DEVIATION FROM THE DESIGN-SYSTEM RULES, ON PURPOSE. Skill §8 allows "no vanilla JS beyond one
+  optional open/closed-state toggle per page". This page ships a filter/sort/paginate loop (~200
+  lines, self-contained at the foot) for the same reason npmrds-reports.html's dialog and
+  npmrds-picker-modals.html's two dialogs do: a filter surface that can be exercised is a better
+  spec than four drawn snapshots, and every state a snapshot would have drawn is reachable here on
+  real rows. The DMS build inherits NONE of this JS — it inherits a table section, a Filter, and
+  URL-bound page variables, per the expressibility notes above. The prominence sort is a direct
+  port of `reportScore.js` (yours +30 · rebuilt +25 · described +20 · recency ≤15 · scratch-name
+  −20) so the default order matches the live component's exactly.
+
+  SECTION NESTING: no `data-dms-section` wraps another section. The rail and the table are two
+  sibling sections (sizes 3 + 9) in ONE band grid — per `feedback_rail_column_layout_in_pages_theme`
+  that split belongs to the band, and `items-stretch` on the grid is what lets the rail be sticky.
+
+  ⚠ SIDENAV DIVERGENCE, DELIBERATE: this page's SideNav has FOUR items (Home · Macro View ·
+  Reports · MAP-21 PM3) because Route comparison was removed from the live `npmrds_sub` pattern
+  nav on 2026-09-02. The other five NPMRDS mockups still draw it and are now stale in that one
+  respect — a one-line edit each, not attempted here.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ═════════ SIDENAV · Reports active · FOUR items (see the divergence note) ═════════ -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="npmrds-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` · TWO sections ═════════
+               Same two-section header shape npmrds-reports.html revision 9 established (title at
+               size 2 + everything else at size 10, one line) so the two report surfaces read as
+               one product. The difference: the wide section here is a REAL search input, not a
+               modal trigger — on a page there is nothing to open. -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5 grid grid-cols-12 gap-4 items-center">
+
+              <!-- ── SECTION · page header (size 2) ── same shape and same span as
+                   npmrds-reports.html's, so the two report surfaces share one header geometry and
+                   the view toggle below lands on the same pixel column on both. -->
+              <div class="col-span-12 lg:col-span-2" data-dms-section="page-header">
+                <h1 class="font-display font-semibold text-[26px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">All reports<span class="text-[#CA8A04]">.</span></h1>
+              </div>
+
+              <!-- ── SECTION · the search control (size 10) ── the modal's `PickerSearchInput`,
+                   verbatim placeholder. A `Filter` with `operation:'like'` +
+                   `searchParamKey:'search'` over an OR group of name/description leaves. -->
+              <div class="col-span-12 lg:col-span-10" data-dms-section="search">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <!-- ── VIEW TOGGLE · the SAME control on both report surfaces ──
+                       Two views of ONE library: the template shelf (npmrds-reports.html) and the
+                       full filtered list (npmrds-reports-list.html). Identical shape, identical
+                       position, first thing in the controls row on both pages — only the active
+                       side flips, so crossing between them reads as throwing a switch rather than
+                       following a link out. Text-only on purpose: the registry has `Grid` but no
+                       list/rows glyph, and inventing one (or icon on one side, none on the other)
+                       would be worse than two words. In DMS this is a Card with two static link
+                       cells, the current one carrying the active named style — no new primitive.
+                       Active here: All reports. -->
+                  <div class="h-10 shrink-0 inline-flex items-stretch rounded-[6px] border border-zinc-950/15 bg-white overflow-hidden" role="group" aria-label="Reports view">
+                    <a href="npmrds-reports.html" class="px-3.5 inline-flex items-center text-slate-500 hover:text-[#0f1722] hover:bg-slate-50 font-display uppercase text-[12px] tracking-wide transition-colors">Templates</a>
+                    <span aria-current="page" class="px-3.5 inline-flex items-center bg-[#37576B] text-white font-display uppercase text-[12px] tracking-wide">All reports</span>
+                  </div>
+                  <div class="flex-1 min-w-[260px] h-10 flex items-center gap-2.5 rounded-[6px] border border-zinc-950/15 bg-white focus-within:border-[#37576B] focus-within:ring-2 focus-within:ring-[#37576B]/15 px-3.5 transition-colors">
+                    <!-- icon: Search --><svg class="size-4 text-[#37576B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+                    <input id="q" type="text" autocomplete="off" placeholder="Search by name or description…" class="flex-1 min-w-0 bg-transparent border-0 outline-none font-proxima text-[13.5px] text-[#0f1722] placeholder:text-slate-400"/>
+                    <button type="button" id="qClear" class="hidden size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100" aria-label="Clear"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <a href="npmrds-report.html" class="tny-press h-10 px-3.5 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[12px] tracking-wide">New report</span></a>
+                    <a href="npmrds-route-creation.html" class="h-10 px-3.5 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Road --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg><span class="font-display uppercase text-[12px] tracking-wide">New route</span></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · THE LIST · LayoutGroup `content` ═════════
+               ONE band, TWO sibling sections: the filter rail (size 3) and the table (size 9).
+               `items-stretch` is required, not cosmetic — without it the grid's default stretch
+               is lost once a child sets its own height, and the sticky rail stops sticking
+               (npmrds-category-design-set.md's own finding). -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content" id="list">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6 items-stretch">
+
+              <!-- ── SECTION · filter rail (size 3) ── the modal's facet chips + tag drill-down,
+                   flattened from a one-view-at-a-time state machine into a standing rail. -->
+              <div class="col-span-12 lg:col-span-3" data-dms-section="filters">
+                <div class="lg:sticky lg:top-6 flex flex-col gap-4">
+
+                  <!-- facets -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                      <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">narrow by</span>
+                      <button type="button" data-clear="facets" class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">clear all</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2" id="facetChips"></div>
+                    <p class="font-proxima text-[11px] leading-[1.5] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05">
+                      <span class="tny-mono">Show everyone's</span> ships ON here because listing the library is this page's whole job. The live component defaults it OFF for a viewer outside the AVAIL group — and with it off <strong id="allowCount">5</strong> of 26 rows survive, because the <span class="tny-mono">dynamic_report_template</span> marker was never backfilled. Turn it off and see.
+                    </p>
+                  </div>
+
+                  <!-- browse by tag -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2.5">Browse by tag</div>
+                    <div class="flex flex-wrap gap-2" id="catPills"></div>
+                    <div id="catPanel" class="hidden mt-3 pt-3 border-t border-zinc-950/05"></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05">
+                      <button type="button" data-view="other" class="font-proxima text-[12.5px] text-[#1F3F8F] hover:underline">Other tags</button>
+                      <div id="otherPanel" class="hidden mt-2"></div>
+                    </div>
+                  </div>
+
+                  <!-- measured histogram -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">Tags in this library</div>
+                    <p class="font-proxima text-[11px] leading-[1.45] text-slate-500 mt-1 mb-2.5">Counted over the rows on screen — a library-wide histogram needs a groupBy-unnest the query engine doesn't have (finding 3).</p>
+                    <div class="flex flex-col gap-1" id="tagHistogram"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · the table (size 9) ── -->
+              <div class="col-span-12 lg:col-span-9" data-dms-section="reports-table">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden flex flex-col">
+
+                  <!-- breadcrumb + active filters · the modal's own breadcrumb, same copy -->
+                  <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
+                    <div class="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em]" id="breadcrumb"></div>
+                    <div class="mt-2.5 flex flex-wrap items-center gap-2" id="activeChips"></div>
+                  </div>
+
+                  <!-- count bar + sort -->
+                  <div class="px-5 py-2.5 bg-[#FAFBFC] border-b border-zinc-950/05 flex items-center justify-between gap-4 flex-wrap">
+                    <span id="countBar" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums"></span>
+                    <span class="h-7 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 pl-2.5 pr-1.5">
+                      <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">sort</span>
+                      <select id="sort" class="bg-transparent border-0 outline-none font-proxima text-[12.5px] text-[#0F1722] pr-1">
+                        <option value="best">Best match</option>
+                        <option value="updated">Recently updated</option>
+                        <option value="name">Name (A–Z)</option>
+                      </select>
+                    </span>
+                  </div>
+
+                  <!-- the table -->
+                  <div class="overflow-x-auto">
+                    <!-- `table-fixed` + a colgroup, not auto layout: the description cell would
+                         otherwise take its natural width and push Updated and the open link out
+                         of the section (the rail leaves this column ~890px at 1600). Report takes
+                         the remainder; `min-w` keeps the narrow-screen scroll honest. -->
+                    <table class="w-full min-w-[720px] table-fixed text-left border-collapse">
+                      <colgroup><col/><col class="w-[21%]"/><col class="w-[146px]"/><col class="w-[122px]"/><col class="w-[74px]"/></colgroup>
+                      <thead>
+                        <tr class="bg-slate-50 border-b border-zinc-950/05 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                          <th class="py-2 pl-5 pr-3 font-medium">Report</th>
+                          <th class="py-2 px-3 font-medium">Tags</th>
+                          <th class="py-2 px-3 font-medium whitespace-nowrap">Routes · graphs</th>
+                          <th class="py-2 px-3 font-medium">Updated</th>
+                          <th class="py-2 pl-3 pr-5 font-medium"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="rows" class="divide-y divide-zinc-950/05"></tbody>
+                    </table>
+                  </div>
+                  <div id="empty" class="hidden px-5 py-10 text-center font-proxima text-[13px] text-slate-400">No reports found.</div>
+
+                  <!-- pagination · the thing the modal cannot do -->
+                  <div class="px-5 py-3 border-t border-zinc-950/05 bg-[#FAFBFC] flex items-center justify-between gap-4 flex-wrap">
+                    <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">sorted: yours → rebuilt → described → recency</span>
+                    <div class="flex items-center gap-2">
+                      <span id="pageLabel" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums"></span>
+                      <button type="button" data-page="prev" class="h-7 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white hover:border-[#37576B] disabled:opacity-40 disabled:hover:border-zinc-950/15" aria-label="Previous page"><!-- icon: ChevronLeft --><svg class="size-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15.75 19.5 8.25 12l7.5-7.5"/></svg></button>
+                      <button type="button" data-page="next" class="h-7 px-2 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white hover:border-[#37576B] disabled:opacity-40 disabled:hover:border-zinc-950/15" aria-label="Next page"><!-- icon: ChevronRight --><svg class="size-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">templates</a>
+                <a href="npmrds-report.html" class="hover:text-slate-900">report</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════ THE LIBRARY · 26 REAL `reports_snap_2` rows, queried 2026-09-02 ═════════
+     dms dataset query 2177438 --view 2177440 --limit 400 --order updated_at:desc
+     Verbatim from that query — names, descriptions, tags, graph counts, page paths, spec files
+     and legacy ids are all as stored. `updated` is the row's own `_specRevisions[0].at` or
+     `_converted_at` (see the header note on why not the system `updated_at`); `legacy` is
+     `_old_updated_at`, the last time the pre-conversion `admin2.reports` row was touched. -->
+<script id="reportRows" type="application/json">[
+  {"id":2216785,"reportId":2216784,"name":"Page 19","desc":"","tags":["user:175","agency:NYSDOT","agency:AVAIL"],"graphs":null,"counts":"","path":"/converted_reports/page_19","updated":null,"legacy":null,"oldId":null,"spec":null},
+  {"id":2216732,"reportId":2216709,"name":"Year Over Year","desc":"Compare year-over-year performance for a route or corridor across speed, travel time, and delay.","tags":["category:change_over_time","difficulty:beginner"],"graphs":9,"counts":"4 routes · 9 graphs","path":"/converted_reports/year_over_year","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"year_over_year.json"},
+  {"id":2216708,"reportId":2216679,"name":"This Month vs. Last Month vs. Last Year","desc":"This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes.","tags":["category:change_over_time","difficulty:advanced"],"graphs":12,"counts":"4 routes · 12 graphs","path":"/converted_reports/this_month_vs_last_month_vs_last_year","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"this_month_vs_last_month_vs_last_year.json"},
+  {"id":2216678,"reportId":2216661,"name":"Single Day (Advanced)","desc":"Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.","tags":["category:events","difficulty:advanced"],"graphs":6,"counts":"7 routes · 6 graphs","path":"/converted_reports/single_day_advanced","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"single_day_advanced.json"},
+  {"id":2216660,"reportId":2216641,"name":"Monthly Speed Comparisons","desc":"For route performance comparing the latest full year to all-time, and analyzing the performance by month for the latest year.","tags":["category:change_over_time"],"graphs":7,"counts":"2 routes · 7 graphs","path":"/converted_reports/monthly_speed_comparisons","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"monthly_speed_comparisons.json"},
+  {"id":2216640,"reportId":2216631,"name":"Weekly Average","desc":"Compares a route's current-year weekday-vs-weekend speed pattern against the same route one and two years ago.","tags":["category:behavioral","difficulty:beginner"],"graphs":2,"counts":"3 routes · 2 graphs","path":"/converted_reports/weekly_average","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"weekly_average.json"},
+  {"id":2216630,"reportId":2216599,"name":"Snapshot","desc":"The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.","tags":["category:behavioral"],"graphs":13,"counts":"2 routes · 13 graphs","path":"/converted_reports/snapshot","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"snapshot.json"},
+  {"id":2216598,"reportId":2216575,"name":"Single Route","desc":"This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion.","tags":["category:before_after","difficulty:beginner"],"graphs":9,"counts":"3 routes · 9 graphs","path":"/converted_reports/single_route","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"single_route.json"},
+  {"id":2216574,"reportId":2216541,"name":"Bi-directional","desc":"This report is designed to look at the behavior of two directions of a bi-directional corridor. It is set up to show yearly averages for each year of the NPMRDS.","tags":["category:behavioral","difficulty:intermediate"],"graphs":14,"counts":"8 routes · 14 graphs","path":"/converted_reports/bi_directional","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"bi_directional.json"},
+  {"id":2216540,"reportId":2216519,"name":"Annual Average Study","desc":"This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.","tags":["category:floating_car"],"graphs":8,"counts":"4 routes · 8 graphs","path":"/converted_reports/annual_average_study","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"annual_average_study.json"},
+  {"id":2216503,"reportId":2216468,"name":"Seasonality","desc":"Speed and delay patterns across the four seasons, compared against the current year's average.","tags":["category:behavioral","difficulty:intermediate"],"graphs":15,"counts":"6 routes · 15 graphs","path":"/converted_reports/seasonality","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"seasonality.json"},
+  {"id":2216467,"reportId":2216436,"name":"Monthly Congestion","desc":"Monthly hours-of-delay breakdown for a route or corridor across the current year, plus a year-over-year speed comparison.","tags":["category:change_over_time","difficulty:beginner"],"graphs":13,"counts":"14 routes · 13 graphs","path":"/converted_reports/monthly_congestion","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"monthly_congestion.json"},
+  {"id":2216435,"reportId":2216414,"name":"One Week Study","desc":"This template provides speed information for a route or corridor across a single week — the synthetic drive-through, at percentile speeds.","tags":["category:floating_car"],"graphs":8,"counts":"8 routes · 8 graphs","path":"/converted_reports/one_week_study","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"one_week_study.json"},
+  {"id":2216413,"reportId":2216406,"name":"Golden Corpus - Grid Graph","desc":"Golden-corpus representative page for GridGraph (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.","tags":[],"graphs":1,"counts":"2 routes · 1 graphs","path":"/converted_reports/golden_corpus_grid_graph","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"golden-corpus-gridgraph.json"},
+  {"id":2216405,"reportId":2216398,"name":"Golden Corpus - Bar Graph","desc":"Golden-corpus representative page for BarGraph (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.","tags":[],"graphs":1,"counts":"2 routes · 1 graphs","path":"/converted_reports/golden_corpus_bar_graph","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"golden-corpus-bargraph.json"},
+  {"id":2216397,"reportId":2216390,"name":"Golden Corpus - Line Graph","desc":"Golden-corpus representative page for LineGraph (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.","tags":[],"graphs":1,"counts":"2 routes · 1 graphs","path":"/converted_reports/golden_corpus_line_graph","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"golden-corpus-linegraph.json"},
+  {"id":2216389,"reportId":2216382,"name":"Golden Corpus - Route Map","desc":"Golden-corpus representative page for Map/Route Map (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.","tags":[],"graphs":1,"counts":"2 routes · 1 graphs","path":"/converted_reports/golden_corpus_route_map","updated":"2026-09-02","legacy":null,"oldId":null,"spec":"golden-corpus-routemap.json"},
+  {"id":2216347,"reportId":2216346,"name":"Page 19","desc":"","tags":["user:993","agency:NYSDOT","agency:AVAIL"],"graphs":null,"counts":"","path":"/converted_reports/page_19","updated":null,"legacy":null,"oldId":null,"spec":null},
+  {"id":2216339,"reportId":2216338,"name":"Page 18","desc":"","tags":["user:993","agency:NYSDOT","agency:AVAIL"],"graphs":null,"counts":"","path":"/converted_reports/page_18","updated":null,"legacy":null,"oldId":null,"spec":null},
+  {"id":2216256,"reportId":2180280,"name":"Report Demo","desc":"","tags":["user:993","agency:NYSDOT","agency:AVAIL"],"graphs":null,"counts":"","path":"/report_demo","updated":null,"legacy":null,"oldId":null,"spec":null},
+  {"id":2216067,"reportId":2215993,"name":"NYC Test","desc":"","tags":["agency:NYSDOT"],"graphs":null,"counts":"","path":"/converted_reports/nyc_test","updated":"2026-08-31","legacy":"2025-11-07","oldId":1064,"spec":null},
+  {"id":2216140,"reportId":2216129,"name":"I-87 Exit 4 NB Ramp","desc":"","tags":[],"graphs":null,"counts":"","path":"/converted_reports/i_87_exit_4_nb_ramp","updated":"2026-08-31","legacy":"2019-07-15","oldId":182,"spec":null},
+  {"id":2216127,"reportId":2216102,"name":"Madison Ave Road Diet Westbound - Created on 6-14-19","desc":"","tags":["agency:AVAIL"],"graphs":null,"counts":"","path":"/converted_reports/madison_ave_road_diet_westbound_created_on_6_14_19","updated":"2026-08-31","legacy":"2019-07-15","oldId":317,"spec":null},
+  {"id":2216086,"reportId":2216069,"name":"NITTEC 150","desc":"","tags":[],"graphs":null,"counts":"","path":"/converted_reports/nittec_150","updated":"2026-08-31","legacy":"2023-01-04","oldId":971,"spec":null},
+  {"id":2216068,"reportId":2216011,"name":"787 NB 5-12-2026","desc":"","tags":["agency:AVAIL"],"graphs":null,"counts":"","path":"/converted_reports/787_nb_5_12_2026","updated":"2026-08-31","legacy":"2026-05-12","oldId":1066,"spec":null},
+  {"id":2216065,"reportId":2215951,"name":"R5 HELP Route Analysis","desc":"R5 HELP route analysis","tags":[],"graphs":null,"counts":"","path":"/converted_reports/r_5_help_route_analysis","updated":"2026-08-31","legacy":"2022-02-28","oldId":787,"spec":null}
+]</script>
+
+<script>
+/* All-reports list — a direct port of ReportPickerModal's behaviour to a page.
+ *
+ * Mockup scaffolding only (declared deviation, see the header). Three things are ports, not
+ * inventions, and are kept faithful on purpose so this page cannot drift from the component:
+ *   1. score()      — reportScore.js: yours +30 · rebuilt +25 · described +20 · recency <=15 ·
+ *                     scratch-looking name -20, recency = max(0, 15 - log2(1 + daysAgo)).
+ *   2. the vocabulary — NY_COUNTIES / NYSDOT_REGIONS / AGENCY_CODES are pasted verbatim out of
+ *                     tagCategories.js by the build script that wrote this page.
+ *   3. LOOKS_INCOMPLETE_RE — pickerScoring.js, character for character.
+ * The one deliberate DIVERGENCE from the live code is tagToLabel: it takes the viewer id, so
+ * `user:993` reads as itself rather than as "You" (finding 1).
+ */
+(function () {
+  var ME = '175';                 // the demo signed-in id (this pattern's authPermissions "*")
+  var MY_GROUPS = ['NYSDOT'];     // the SideNav's own group line
+  var CURATED_TAG = 'dynamic_report_template';
+  var PAGE_SIZE = 25;
+
+  var DATA = JSON.parse(document.getElementById('reportRows').textContent);
+  var LOOKS_INCOMPLETE_RE = /\btest(ing)?\b|\bdelete\b|\bbug\b|\bsaving\b/i;
+
+  var NY_COUNTIES = [
+    'Albany', 'Allegany', 'Bronx', 'Broome', 'Cattaraugus', 'Cayuga', 'Chautauqua', 'Chemung',
+  'Chenango', 'Clinton', 'Columbia', 'Cortland', 'Delaware', 'Dutchess', 'Erie', 'Essex',
+  'Franklin', 'Fulton', 'Genesee', 'Greene', 'Hamilton', 'Herkimer', 'Jefferson', 'Kings',
+  'Lewis', 'Livingston', 'Madison', 'Monroe', 'Montgomery', 'Nassau', 'New York', 'Niagara',
+  'Oneida', 'Onondaga', 'Ontario', 'Orange', 'Orleans', 'Oswego', 'Otsego', 'Putnam',
+  'Queens', 'Rensselaer', 'Richmond', 'Rockland', 'St. Lawrence', 'Saratoga', 'Schenectady',
+  'Schoharie', 'Schuyler', 'Seneca', 'Steuben', 'Suffolk', 'Sullivan', 'Tioga', 'Tompkins',
+  'Ulster', 'Warren', 'Washington', 'Wayne', 'Westchester', 'Wyoming', 'Yates'
+  ];
+
+  var NYSDOT_REGIONS = [
+    { number: 1, label: 'Region 1 - Capital District' },
+  { number: 2, label: 'Region 2 - Mohawk Valley' },
+  { number: 3, label: 'Region 3 - Central New York' },
+  { number: 4, label: 'Region 4 - Genesee Valley' },
+  { number: 5, label: 'Region 5 - Western New York' },
+  { number: 6, label: 'Region 6 - Southern Tier/Central New York' },
+  { number: 7, label: 'Region 7 - North Country' },
+  { number: 8, label: 'Region 8 - Hudson Valley' },
+  { number: 9, label: 'Region 9 - Southern Tier' },
+  { number: 10, label: 'Region 10 - Long Island' },
+  { number: 11, label: 'Region 11 - New York City' }
+  ];
+
+  var AGENCY_CODES = [
+    { code: 'NYSDOT', label: 'NYSDOT' },
+  { code: 'WLD', label: 'WLD (Week-Long Deployment)' },
+  { code: 'SDD', label: 'SDD (Single-Day Deployment)' },
+  { code: 'TDD', label: 'TDD (Two-Day Deployment)' },
+  { code: 'MDD', label: 'MDD (Multiple-Day Deployment)' },
+  { code: 'AGFTC', label: 'AGFTC' },
+  { code: 'BMTS', label: 'BMTS' },
+  { code: 'CDTC', label: 'CDTC' },
+  { code: 'GBNRTC', label: 'GBNRTC' },
+  { code: 'GTC', label: 'GTC' },
+  { code: 'HOCTS', label: 'HOCTS' },
+  { code: 'ITCTC', label: 'ITCTC' },
+  { code: 'NYMTC', label: 'NYMTC' },
+  { code: 'NYSAMPO', label: 'NYSAMPO' },
+  { code: 'OCTC', label: 'OCTC' },
+  { code: 'PDCTC', label: 'PDCTC' },
+  { code: 'SMTC', label: 'SMTC' },
+  { code: 'UCTC', label: 'UCTC' },
+  { code: 'AVAIL', label: 'AVAIL' },
+  { code: 'MHV', label: 'MHV' },
+  { code: 'NYSDOT_CONSULTANT', label: 'NYSDOT Consultant' },
+  { code: 'NPMRDS_NEW_USERS', label: 'NPMRDS New Users' },
+  { code: 'ECTC', label: 'ECTC' }, 
+  { code: 'MPOS', label: 'MPOs' }, 
+  { code: 'MTA', label: 'MTA' }, 
+  { code: 'NPMRDS_PM3_NEW_USERS', label: 'NPMRDS_PM3 New Users' }, 
+  { code: 'NPMRDS_PUBLIC', label: 'NPMRDS Public' }, 
+  { code: 'NPMRDSV5_PUBLIC', label: 'npmrdsv5 Public' }, 
+  { code: 'NYSDOT_ADMIN', label: 'NYSDOT Admin' }, 
+  { code: 'TRAFFIC_MANAGEMENT_GROUP', label: 'Traffic Management Group' }
+  ];
+
+  var TAG_CATEGORIES = [
+    { key: 'county', label: 'County', prefix: 'county:', values: NY_COUNTIES.map(function (n) { return { value: 'county:' + n, label: n }; }) },
+    { key: 'region', label: 'Region', prefix: 'region:', values: NYSDOT_REGIONS.map(function (r) { return { value: 'region:' + r.number, label: r.label }; }) },
+    { key: 'agency', label: 'Agency', prefix: 'agency:', values: AGENCY_CODES.map(function (a) { return { value: 'agency:' + a.code, label: a.label }; }) },
+  ];
+  var LABEL = {};
+  TAG_CATEGORIES.forEach(function (c) { c.values.forEach(function (v) { LABEL[v.value] = v.label; }); });
+  LABEL['auto_generated'] = 'Auto-generated';
+  LABEL['dynamic_report_template'] = 'Dynamic Report template';
+
+  function titleCase(s) { return s.replace(/_/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); }); }
+  // Divergence from the live tagToLabel, on purpose — finding 1.
+  function tagToLabel(tag) {
+    if (tag.indexOf('user:') === 0) return tag.slice(5) === ME ? 'You' : tag;
+    if (LABEL[tag]) return LABEL[tag];
+    if (tag.indexOf('category:') === 0 || tag.indexOf('difficulty:') === 0) return titleCase(tag.split(':')[1]);
+    return tag;
+  }
+  function tagAxis(tag) { var i = tag.indexOf(':'); return i === -1 ? 'other' : tag.slice(0, i); }
+
+  var AXIS_CHIP = {
+    county:     'border-[#37576B]/25 bg-[#37576B]/8 text-[#2b4557]',
+    region:     'border-[#37576B]/25 bg-[#37576B]/8 text-[#2b4557]',
+    agency:     'border-[#1F3F8F]/25 bg-[#1F3F8F]/8 text-[#1F3F8F]',
+    category:   'border-[#CA8A04]/30 bg-[#CA8A04]/8 text-[#8a5f03]',
+    difficulty: 'border-zinc-950/15 bg-slate-50 text-slate-600',
+    user:       'border-[#94C24E]/40 bg-[#94C24E]/10 text-[#4a6b1f]',
+    other:      'border-zinc-950/15 bg-slate-50 text-slate-600'
+  };
+
+  var state = { q: '', sort: 'best', page: 1, cat: null, catFilter: '', tag: null, otherTerm: '',
+                facets: { mine: false, hideIncomplete: false, showEverything: true } };
+
+  /* ── the ports ─────────────────────────────────────────────────────────────── */
+  function isMine(r) { return r.tags.indexOf('user:' + ME) !== -1; }
+  function looksIncomplete(r) { return LOOKS_INCOMPLETE_RE.test(r.name || ''); }
+  function isRebuilt(r) { return Boolean(r.path); }
+  function daysAgo(d) { if (!d) return null; var t = Date.parse(d); return isNaN(t) ? null : Math.max(0, (Date.now() - t) / 86400000); }
+  function score(r) {
+    var s = 0;
+    if (isMine(r)) s += 30;
+    if (isRebuilt(r)) s += 25;
+    if (r.desc) s += 20;
+    var age = daysAgo(r.updated);
+    if (age !== null) s += Math.max(0, 15 - Math.log2(1 + age));
+    if (looksIncomplete(r)) s -= 20;
+    return s;
+  }
+  // buildVisibilityAllowListFilterGroup, client-side: created_by OR my tags OR the curated marker.
+  function allowed(r) {
+    if (isMine(r)) return true;
+    if (r.tags.indexOf(CURATED_TAG) !== -1) return true;
+    for (var i = 0; i < MY_GROUPS.length; i++) if (r.tags.indexOf('agency:' + MY_GROUPS[i].toUpperCase()) !== -1) return true;
+    return false;
+  }
+
+  /* ── filtering ─────────────────────────────────────────────────────────────── */
+  function hits(r, q) {
+    if (!q) return true;
+    var n = q.toLowerCase();
+    return (r.name || '').toLowerCase().indexOf(n) !== -1 || (r.desc || '').toLowerCase().indexOf(n) !== -1;
+  }
+  function visible() {
+    var out = DATA.filter(function (r) {
+      if (!hits(r, state.q)) return false;
+      if (state.tag && r.tags.indexOf(state.tag) === -1) return false;
+      if (state.otherTerm) {
+        var t = state.otherTerm.toLowerCase();
+        if (!r.tags.some(function (x) { return x.toLowerCase().indexOf(t) !== -1; })) return false;
+      }
+      if (state.facets.mine && !isMine(r)) return false;
+      if (state.facets.hideIncomplete && looksIncomplete(r)) return false;
+      if (!state.facets.showEverything && !allowed(r)) return false;
+      return true;
+    });
+    if (state.sort === 'name') out.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    else if (state.sort === 'updated') out.sort(function (a, b) { return String(b.updated || '').localeCompare(String(a.updated || '')); });
+    else out.sort(function (a, b) { return score(b) - score(a); });
+    return out;
+  }
+
+  /* ── rendering ─────────────────────────────────────────────────────────────── */
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function chip(tag) {
+    return '<button type="button" data-tag="' + esc(tag) + '" title="' + esc(tag) + '" class="inline-flex items-center h-[19px] px-1.5 rounded-[3px] border font-mono text-[9.5px] uppercase tracking-[0.14em] ' + AXIS_CHIP[tagAxis(tag)] + '">' + esc(tagToLabel(tag)) + '</button>';
+  }
+  function pill(text, cls) {
+    return '<span class="inline-flex items-center px-2 py-0.5 rounded-[4px] border font-mono text-[9.5px] uppercase tracking-[0.16em] ' + cls + '">' + esc(text) + '</span>';
+  }
+  function badges(r) {
+    var out = '';
+    if (isMine(r)) out += pill('Mine', 'border-[#1F3F8F]/30 bg-[#1F3F8F]/8 text-[#1F3F8F]');
+    out += isRebuilt(r)
+      ? pill('Rebuilt', 'border-[#10B981]/30 bg-[#10B981]/10 text-[#065F46]')
+      : pill('Legacy — not yet rebuilt', 'border-zinc-950/15 bg-slate-50 text-slate-500');
+    if (looksIncomplete(r)) out += pill('Possible draft', 'border-[#CA8A04]/30 bg-[#CA8A04]/8 text-[#8a5f03]');
+    return out;
+  }
+  function row(r) {
+    var desc = r.desc
+      ? '<p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 line-clamp-2">' + esc(r.desc) + '</p>'
+      : '<p class="font-proxima text-[12px] leading-[1.5] text-slate-400 mt-1">Nothing was written down — matched on the title alone.</p>';
+    var tags = r.tags.length
+      ? '<div class="flex flex-wrap gap-1">' + r.tags.map(chip).join('') + '</div>'
+      : '<span class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400">untagged</span>';
+    var upd = r.updated
+      ? '<div class="font-mono text-[11.5px] tabular-nums text-slate-600">' + esc(r.updated) + '</div>'
+      : '<div class="font-mono text-[11.5px] text-slate-300">—</div>';
+    if (r.legacy) upd += '<div class="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-400 mt-0.5" title="last touched in the old tool before conversion">legacy ' + esc(r.legacy) + '</div>';
+    return '<tr class="hover:bg-slate-50/70">'
+      + '<td class="py-3 pl-5 pr-3 align-top">'
+        + '<div class="flex items-center gap-2 flex-wrap min-w-0"><a href="npmrds-report.html" class="font-display font-medium text-[15px] leading-[1.25] text-[#0F1722] hover:text-[#1F3F8F]">' + esc(r.name) + '</a>' + badges(r) + '</div>'
+        + desc
+        + '<div class="font-mono text-[9px] tabular-nums text-slate-400 mt-1 truncate" title="' + esc(r.path) + '">' + esc(r.path || 'no page path') + (r.oldId ? ' · from old #' + esc(r.oldId) : '') + (r.spec ? ' · ' + esc(r.spec) : '') + '</div>'
+      + '</td>'
+      + '<td class="py-3 px-3 align-top">' + tags + '</td>'
+      + '<td class="py-3 px-3 align-top whitespace-nowrap font-mono text-[11px] tabular-nums text-slate-600">' + esc(r.counts || '—') + '</td>'
+      + '<td class="py-3 px-3 align-top whitespace-nowrap">' + upd + '</td>'
+      + '<td class="py-3 pl-3 pr-5 align-top text-right"><a href="npmrds-report.html" class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1F3F8F] hover:underline whitespace-nowrap">open →</a></td>'
+      + '</tr>';
+  }
+
+  function renderFacets() {
+    var f = [
+      { key: 'mine', label: 'Mine', on: state.facets.mine },
+      { key: 'hideIncomplete', label: 'Hide incomplete-looking', on: state.facets.hideIncomplete },
+      { key: 'showEverything', label: "Show everyone's", on: state.facets.showEverything }
+    ];
+    document.getElementById('facetChips').innerHTML = f.map(function (x) {
+      var cls = x.on
+        ? 'border-[#37576B] bg-[#37576B] text-white'
+        : 'border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B]';
+      return '<button type="button" data-facet="' + x.key + '" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border font-mono text-[10px] uppercase tracking-[0.14em] ' + cls + '">' + esc(x.label) + '</button>';
+    }).join('');
+    document.getElementById('allowCount').textContent = DATA.filter(allowed).length;
+  }
+
+  function tagCounts() {
+    var c = {};
+    DATA.forEach(function (r) { r.tags.forEach(function (t) { c[t] = (c[t] || 0) + 1; }); });
+    return Object.keys(c).map(function (t) { return { tag: t, n: c[t] }; })
+      .sort(function (a, b) { return b.n - a.n || a.tag.localeCompare(b.tag); });
+  }
+  function renderHistogram() {
+    var counts = tagCounts(), max = counts.length ? counts[0].n : 1;
+    document.getElementById('tagHistogram').innerHTML = counts.map(function (x) {
+      var active = state.tag === x.tag;
+      return '<button type="button" data-tag="' + esc(x.tag) + '" class="group flex items-center gap-2 text-left">'
+        + '<span class="font-proxima text-[12px] ' + (active ? 'text-[#1F3F8F] font-semibold' : 'text-slate-600 group-hover:text-[#0f1722]') + ' flex-1 min-w-0 truncate" title="' + esc(x.tag) + '">' + esc(tagToLabel(x.tag)) + '</span>'
+        + '<span class="h-1.5 rounded-full ' + (active ? 'bg-[#1F3F8F]' : 'bg-[#37576B]/30') + '" style="width:' + Math.round((x.n / max) * 42) + 'px"></span>'
+        + '<span class="font-mono text-[10px] tabular-nums text-slate-400 w-4 text-right">' + x.n + '</span>'
+        + '</button>';
+    }).join('');
+  }
+
+  function renderCatPills() {
+    document.getElementById('catPills').innerHTML = TAG_CATEGORIES.map(function (c) {
+      var on = state.cat === c.key;
+      var cls = on ? 'border-[#37576B] bg-[#37576B]/8 text-[#2b4557]' : 'border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B]';
+      var have = DATA.filter(function (r) { return r.tags.some(function (t) { return t.indexOf(c.prefix) === 0; }); }).length;
+      return '<button type="button" data-cat="' + c.key + '" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border font-proxima text-[12px] ' + cls + '">'
+        + esc(c.label) + '<span class="font-mono text-[9.5px] tabular-nums ' + (have ? 'text-[#1F3F8F]' : 'text-slate-400') + '">' + c.values.length + '</span></button>';
+    }).join('');
+
+    var panel = document.getElementById('catPanel');
+    if (!state.cat) { panel.className = 'hidden'; panel.innerHTML = ''; return; }
+    var cat = TAG_CATEGORIES.filter(function (c) { return c.key === state.cat; })[0];
+    var counts = {};
+    DATA.forEach(function (r) { r.tags.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; }); });
+    var q = state.catFilter.trim().toLowerCase();
+    var values = cat.values.filter(function (v) { return !q || v.label.toLowerCase().indexOf(q) !== -1; });
+    var withRows = cat.values.filter(function (v) { return counts[v.value]; }).length;
+    panel.className = 'mt-3 pt-3 border-t border-zinc-950/05';
+    panel.innerHTML = '<div class="h-8 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white px-2.5 mb-2">'
+      + '<!-- icon: Search --><svg class="size-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>'
+      + '<input id="catFilter" type="text" value="' + esc(state.catFilter) + '" placeholder="Filter ' + esc(cat.label.toLowerCase()) + '…" class="flex-1 min-w-0 bg-transparent border-0 outline-none font-proxima text-[12px] text-[#0f1722] placeholder:text-slate-400"/></div>'
+      + '<div class="font-mono text-[9px] uppercase tracking-[0.16em] ' + (withRows ? 'text-slate-400' : 'text-[#8a5f03]') + ' mb-1.5">'
+      + (withRows ? withRows + ' of ' + cat.values.length + ' values carry a report' : '0 of ' + cat.values.length + ' values carry a report — nothing is tagged on this axis yet')
+      + '</div>'
+      + '<div class="max-h-[220px] overflow-y-auto -mx-1 px-1 flex flex-col">' + values.map(function (v) {
+          var n = counts[v.value] || 0;
+          var active = state.tag === v.value;
+          return '<button type="button" data-tag="' + esc(v.value) + '" class="flex items-center gap-2 py-1 text-left ' + (n ? '' : 'opacity-45') + '">'
+            + '<span class="font-proxima text-[12px] ' + (active ? 'text-[#1F3F8F] font-semibold' : 'text-slate-600 hover:text-[#0f1722]') + ' flex-1 min-w-0 truncate">' + esc(v.label) + '</span>'
+            + '<span class="font-mono text-[10px] tabular-nums ' + (n ? 'text-slate-500' : 'text-slate-300') + '">' + n + '</span></button>';
+        }).join('') + '</div>';
+  }
+
+  function renderOther() {
+    var panel = document.getElementById('otherPanel');
+    if (!state.otherOpen) { panel.className = 'hidden'; return; }
+    panel.className = 'mt-2';
+    panel.innerHTML = '<div class="h-8 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white px-2.5">'
+      + '<input id="otherInput" type="text" value="' + esc(state.otherTerm) + '" placeholder="Type a tag (e.g. a project number)…" class="flex-1 min-w-0 bg-transparent border-0 outline-none font-proxima text-[12px] text-[#0f1722] placeholder:text-slate-400"/></div>'
+      + (state.otherTerm ? '' : '<p class="font-proxima text-[11px] text-slate-400 mt-1.5">Type a tag to search.</p>');
+  }
+
+  function renderBreadcrumb() {
+    var parts = ['<button type="button" data-clear="all" class="' + (state.cat || state.tag ? 'text-slate-500 hover:text-[#0f1722]' : 'text-[#0f1722]') + '">All Reports</button>'];
+    if (state.cat) {
+      var cat = TAG_CATEGORIES.filter(function (c) { return c.key === state.cat; })[0];
+      parts.push('<span class="text-slate-300">/</span><button type="button" data-cat="' + cat.key + '" class="' + (state.tag ? 'text-slate-500 hover:text-[#0f1722]' : 'text-[#0f1722]') + '">' + esc(cat.label) + '</button>');
+    }
+    if (state.tag) parts.push('<span class="text-slate-300">/</span><span class="text-[#0f1722]">' + esc(tagToLabel(state.tag)) + '</span>');
+    if (state.otherTerm) parts.push('<span class="text-slate-300">/</span><span class="text-[#0f1722]">Other tags · ' + esc(state.otherTerm) + '</span>');
+    document.getElementById('breadcrumb').innerHTML = parts.join('');
+
+    var chips = [];
+    if (state.q) chips.push({ k: 'q', t: 'search: ' + state.q });
+    if (state.tag) chips.push({ k: 'tag', t: tagToLabel(state.tag) });
+    if (state.otherTerm) chips.push({ k: 'other', t: 'tag like: ' + state.otherTerm });
+    if (state.facets.mine) chips.push({ k: 'mine', t: 'Mine' });
+    if (state.facets.hideIncomplete) chips.push({ k: 'hideIncomplete', t: 'Hide incomplete-looking' });
+    if (!state.facets.showEverything) chips.push({ k: 'showEverything', t: "only what I'm allowed by default" });
+    document.getElementById('activeChips').innerHTML = chips.length
+      ? chips.map(function (c) {
+          return '<span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-[4px] border border-[#37576B]/30 bg-[#37576B]/8 font-mono text-[9.5px] uppercase tracking-[0.14em] text-[#2b4557]">' + esc(c.t)
+            + '<button type="button" data-drop="' + c.k + '" class="size-4 flex items-center justify-center text-[#37576B]/70 hover:text-[#37576B]" aria-label="Remove"><!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg></button></span>';
+        }).join('') + '<button type="button" data-clear="all" class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] ml-1">clear all</button>'
+      : '<span class="font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-400">no filters — the whole library, prominence-sorted</span>';
+  }
+
+  function render() {
+    var m = visible();
+    var pages = Math.max(1, Math.ceil(m.length / PAGE_SIZE));
+    if (state.page > pages) state.page = pages;
+    var from = (state.page - 1) * PAGE_SIZE;
+    var slice = m.slice(from, from + PAGE_SIZE);
+
+    document.getElementById('rows').innerHTML = slice.map(row).join('');
+    document.getElementById('empty').className = m.length ? 'hidden' : 'px-5 py-10 text-center font-proxima text-[13px] text-slate-400';
+    document.getElementById('countBar').textContent = m.length + ' report' + (m.length === 1 ? '' : 's')
+      + (m.length !== DATA.length ? ' · ' + DATA.length + ' in the catalog' : '');
+    document.getElementById('pageLabel').textContent = m.length
+      ? (from + 1) + '–' + Math.min(from + PAGE_SIZE, m.length) + ' of ' + m.length
+      : '0 of 0';
+    document.querySelector('[data-page="prev"]').disabled = state.page <= 1;
+    document.querySelector('[data-page="next"]').disabled = state.page >= pages;
+    document.getElementById('qClear').className = state.q
+      ? 'size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+      : 'hidden';
+
+    renderFacets(); renderCatPills(); renderOther(); renderHistogram(); renderBreadcrumb();
+  }
+
+  /* ── wiring ────────────────────────────────────────────────────────────────── */
+  var qEl = document.getElementById('q');
+  qEl.addEventListener('input', function () { state.q = qEl.value; state.page = 1; render(); });
+  document.getElementById('sort').addEventListener('change', function (e) { state.sort = e.target.value; state.page = 1; render(); });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'catFilter') { state.catFilter = e.target.value; renderCatPills(); document.getElementById('catFilter').focus(); }
+    if (e.target.id === 'otherInput') { state.otherTerm = e.target.value; state.page = 1; render(); document.getElementById('otherInput').focus(); }
+  });
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-facet],[data-cat],[data-tag],[data-clear],[data-drop],[data-page],[data-view],#qClear');
+    if (!t) return;
+    if (t.id === 'qClear') { state.q = ''; qEl.value = ''; }
+    else if (t.hasAttribute('data-facet')) { var k = t.getAttribute('data-facet'); state.facets[k] = !state.facets[k]; }
+    else if (t.hasAttribute('data-cat')) { var c = t.getAttribute('data-cat'); state.cat = state.cat === c ? null : c; state.catFilter = ''; state.tag = null; }
+    else if (t.hasAttribute('data-tag')) {
+      var tag = t.getAttribute('data-tag');
+      state.tag = state.tag === tag ? null : tag;
+      if (state.tag) { var ax = tagAxis(state.tag); state.cat = TAG_CATEGORIES.some(function (x) { return x.key === ax; }) ? ax : state.cat; }
+    }
+    else if (t.hasAttribute('data-view')) { state.otherOpen = !state.otherOpen; if (!state.otherOpen) state.otherTerm = ''; }
+    else if (t.hasAttribute('data-drop')) {
+      var d = t.getAttribute('data-drop');
+      if (d === 'q') { state.q = ''; qEl.value = ''; }
+      else if (d === 'tag') state.tag = null;
+      else if (d === 'other') { state.otherTerm = ''; }
+      else if (d === 'showEverything') state.facets.showEverything = true;
+      else state.facets[d] = false;
+    }
+    else if (t.hasAttribute('data-clear')) {
+      if (t.getAttribute('data-clear') === 'facets') state.facets = { mine: false, hideIncomplete: false, showEverything: true };
+      else { state.q = ''; qEl.value = ''; state.cat = null; state.tag = null; state.catFilter = ''; state.otherTerm = ''; state.otherOpen = false;
+             state.facets = { mine: false, hideIncomplete: false, showEverything: true }; }
+    }
+    else if (t.hasAttribute('data-page')) { state.page += (t.getAttribute('data-page') === 'next' ? 1 : -1); render(); return; }
+    state.page = 1;
+    render();
+  });
+
+  render();
+})();
+</script>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

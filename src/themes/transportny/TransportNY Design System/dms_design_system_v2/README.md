@@ -344,11 +344,18 @@ dms_design_system_v2/
     │                                Comparison · MAP-21), each opened by its own doorway card and
     │                                carrying that product's stats or links-into-views; sticky
     │                                in-page nav + documentation card in a `sidebar` rail
-    ├── npmrds-reports.html        · report library · TEMPLATE SHELF first (12 cards in 5 typed
-    │                                sections, each card with a layout-derived preview tile),
-    │                                search in a modal section group —
-    │                                the dialog on this page WORKS (57 real rows, live filter, URL-
-    │                                bound query); § 04 drives the real component's states
+    ├── npmrds-reports.html        · report library · THE TEMPLATE SHELF and nothing below it
+    │                                (12 cards in 5 typed sections, each card with a layout-derived
+    │                                preview tile); search lives in a modal section group and the
+    │                                dialog on this page WORKS (57 real rows, live filter, URL-bound
+    │                                query), opened from the header. Rev 3 (2026-09-02) removed
+    │                                § 02 your-reports, § 03 worked-examples and § 04's state
+    │                                drivers; the dialog itself stayed
+    ├── npmrds-reports-list.html   · ALL REPORTS — the same library as a filtered, paginated table:
+    │                                ReportPickerModal un-modaled (standing tag rail + facets +
+    │                                prominence sort) over 26 REAL `reports_snap_2` rows. The page
+    │                                pays back the one thing the modal costs, pagination; its header
+    │                                logs five measured findings about the live tag vocabulary
     ├── npmrds-macro.html          · full-page map workbench (controls left, measure context right)
     ├── npmrds-report.html         · the individual report canvas (compact SideNav + flush
     │                                content-sidebar route rail + graph-card grid) — the one
