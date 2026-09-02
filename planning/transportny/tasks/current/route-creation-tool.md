@@ -46,6 +46,25 @@ target — this file does not track whether transportNY's copies still match.
 - **A stale-sidebar-mileage bug in `useRouteData.js`** (cleared TMCs left the old mileage list
   showing) was found and fixed 2026-07-24 in transportNY, before the port — confirmed present in
   dms-template's ported copy today (the `else { setTmcData([]) }` branch exists).
+- **The map wasn't full-width like `/macro`, FIXED 2026-09-01 — two separate causes, both needed:**
+  1. `routecreation.plugin.jsx` never set `fullWidthOverlay: true` (the opt-in `macroview.plugin.jsx`
+     already used, consumed by `ComponentRegistry/map/index.jsx` → `AvlMap`'s `floatMapActions`).
+     Without it, core's map-actions column reserved ~176px, so `RouteEditor`'s `editorWrapper`
+     (pinned `right-2`, its own absolute positioning) stopped short of the map's real right edge.
+     Code fix, added the same flag routecreation.plugin.jsx uses now.
+  2. **The bigger one, initially missed**: the `/route_creation` PAGE's own `section_groups` /
+     `draft_section_groups[0].theme` was `"content"` — a `themev2.js` `layoutGroup` band whose
+     `wrapper2` hardcodes `max-w-[1480px] pl-12 pr-8`, capping the ENTIRE band (map included) well
+     short of the viewport on any screen wider than ~1560px. `/macro`'s page uses `theme: "workbench"`
+     (`w-full h-screen overflow-hidden`, no max-width) + `full_width: "show"`. This is DATA on the
+     page row, not code — fixed via `dms page update 2216258 --pattern npmrds_sub --data
+     '{"section_groups":[...theme:"workbench",full_width:"show"...],"draft_section_groups":[...]}'`
+     (both published and draft, kept in sync; `name`/`position` left as `"default"`/`"content"` since
+     sections reference the group by `name`). A same-session first attempt (this task file's earlier
+     wording) claimed victory off item 1 alone and was WRONG — item 2 is what actually caused the
+     dead space the user saw on a real wide monitor; item 1's effect is only visible once item 2 no
+     longer masks it. Both live-verified together at `/route_creation` (innerWidth 1836 → canvas
+     width 1748, matching `/macro`'s ratio; no more `max-w-[1480px]` ancestor in the DOM chain).
 
 ## Open items worth flagging before picking this arc back up
 
