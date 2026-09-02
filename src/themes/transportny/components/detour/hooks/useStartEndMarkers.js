@@ -49,7 +49,8 @@ export const useStartEndMarkers = (map, start, end) => {
 
   useEffect(() => {
     return () => {
-      if (!map) return;
+      // `.loaded()`, not just truthiness - see useEdgeLayer.js's cleanup for why.
+      if (!map || !map.loaded()) return;
       if (map.getLayer(START_END_LAYER_ID)) map.removeLayer(START_END_LAYER_ID);
       if (map.getSource(START_END_SOURCE_ID)) map.removeSource(START_END_SOURCE_ID);
     };

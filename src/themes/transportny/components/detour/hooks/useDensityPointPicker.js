@@ -9,11 +9,18 @@ export const useDensityPointPicker = (map, isActive, onPick) => {
   useEffect(() => {
     if (!map || !isActive) return;
     const canvas = map.getCanvas();
+    // Guard against querying before the candidate-points layer exists (2026-08-31 fix) - `isActive`
+    // can go true (density mode + "show candidate points" + "pick point pair" all on) before
+    // useDensityCandidatesLayer.js has actually added DENSITY_CANDIDATES_LAYER_ID (it only adds the
+    // layer once `density.startPoints`/`endPoints` resolve) - querying a layer that isn't in the
+    // style throws on every mousemove, spamming the console instead of failing quietly.
     const onMouseMove = (e) => {
+      if (!map.getLayer(DENSITY_CANDIDATES_LAYER_ID)) return;
       const features = map.queryRenderedFeatures(e.point, { layers: [DENSITY_CANDIDATES_LAYER_ID] });
       canvas.style.cursor = features.length ? "pointer" : "";
     };
     const onClick = (e) => {
+      if (!map.getLayer(DENSITY_CANDIDATES_LAYER_ID)) return;
       const features = map.queryRenderedFeatures(e.point, { layers: [DENSITY_CANDIDATES_LAYER_ID] });
       if (!features.length) return;
       const feature = features[0];

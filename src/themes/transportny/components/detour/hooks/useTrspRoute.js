@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { resolveTrspRoute } from "./resolveTrspRoute";
+import { chooseAlgorithm } from "./haversineMiles";
 
 // Detour plugin's own copy of the route-fetch lifecycle - own state, not shared with
 // ../../routing/hooks/useTrspRoute.js.
@@ -32,16 +33,18 @@ export const useTrspRoute = (conflationViewId, pgEnv) => {
   // (e.g. a one-way restriction makes only one direction routable) while the other does. Losing
   // the working direction because the other failed would hide exactly the asymmetry this feature
   // exists to surface. Used for both the closed (excluded) and open (baseline) fetches below.
-  const fetchBothDirections = (start, end, excludedEdgeIds) =>
-    Promise.allSettled([
-      resolveTrspRoute(start, end, conflationViewId, pgEnv, excludedEdgeIds),
-      resolveTrspRoute(end, start, conflationViewId, pgEnv, excludedEdgeIds),
+  const fetchBothDirections = (start, end, excludedEdgeIds) => {
+    const algorithm = chooseAlgorithm(start, end);
+    return Promise.allSettled([
+      resolveTrspRoute(start, end, conflationViewId, pgEnv, excludedEdgeIds, algorithm),
+      resolveTrspRoute(end, start, conflationViewId, pgEnv, excludedEdgeIds, algorithm),
     ]).then(([AtoBResult, BtoAResult]) => ({
       AtoB: AtoBResult.status === "fulfilled" ? AtoBResult.value : null,
       BtoA: BtoAResult.status === "fulfilled" ? BtoAResult.value : null,
       AtoBError: AtoBResult.status === "rejected" ? AtoBResult.reason?.message : null,
       BtoAError: BtoAResult.status === "rejected" ? BtoAResult.reason?.message : null,
     }));
+  };
 
   const getRoute = useCallback((start, end, excludedEdgeIds) => {
     const requestId = ++requestIdRef.current;

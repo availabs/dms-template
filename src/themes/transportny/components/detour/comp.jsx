@@ -13,7 +13,7 @@ import { useDensityCandidatesLayer } from "./hooks/useDensityCandidatesLayer";
 import { useDensityPointPicker } from "./hooks/useDensityPointPicker";
 import { usePickedPairRoute } from "./hooks/usePickedPairRoute";
 import { resolveDetourEndpoints } from "./hooks/resolveDetourEndpoints";
-import { DEFAULT_CONFLATION_VIEW_ID } from "./constants";
+import { DEFAULT_CONFLATION_VIEW_ID, EDGES_LAYER_KEY } from "./constants";
 import { DetourDetailsPanel } from "./components/DetourDetailsPanel";
 import { ClosureDensityPanel } from "./components/ClosureDensityPanel";
 
@@ -78,10 +78,16 @@ const Comp = ({ state, setState, map }) => {
   const hasResult = isDensityMode
     ? Boolean(density) || Boolean(densityError)
     : Boolean(routes) || Boolean(error);
+  // Base network layer (2026-08-31): author-selected via internalPanel.jsx instead of the plugin
+  // fetching its own data - see the task file's "Base layer" section. `edgesLayerId` is the
+  // maplibre layer id of an already-added, already-tiled DMS layer (source 2097 "Temp OSM
+  // Conflation Edges" or equivalent - must be the `_edges` table, not the main conflation table).
+  const edgesLayerId = get(state, `${pluginDataPath}['active-layers'][${EDGES_LAYER_KEY}]`);
+
   // Once a result (or a failed attempt) is showing, the pickable network hides and further
   // segment clicks are ignored until "Clear detour"/"Clear analysis" - see useEdgeLayer's isActive
   // contract.
-  const { selectedSegment, clearSegment } = useEdgeLayer(map, DEFAULT_CONFLATION_VIEW_ID, pgEnv, !hasResult);
+  const { selectedSegment, clearSegment } = useEdgeLayer(map, edgesLayerId, !hasResult);
 
   const [startEnd, setStartEnd] = React.useState(null); // { start: {lon,lat}, end: {lon,lat} } | null
   const [resolving, setResolving] = React.useState(false);

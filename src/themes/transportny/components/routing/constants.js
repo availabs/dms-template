@@ -10,6 +10,12 @@
 // 5,308,351 nodes, 218,934 near Albany. This id WILL go stale again on the next reprocess; no
 // mechanism yet survives that automatically - re-verify node count + Albany coverage before
 // trusting a future replacement id.
+//
+// 2026-09-01: a "no hardcoded view id, resolve by source+version server-side" refactor was tried
+// and then explicitly reverted by the user ("api taking a lot of time" after switching to 2025
+// data - reverted back to the known-good 2024 view/id below rather than debug 2025 performance
+// mid-session). If a future 2025 migration is attempted again, see git history around this date
+// for the resolveConflationTables approach that was reverted.
 const DEFAULT_CONFLATION_VIEW_ID = 3699;
 
 // Two independently-computed route variants (shortest-by-distance, fastest-by-time), each its

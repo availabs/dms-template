@@ -399,6 +399,94 @@ wrong.
       conflation repo's `routing/ROUTING_API_TASKS.md` Task C1 if a systemic issue turns up (that's
       where the broader validation task is tracked).
 
+### Proposal: author-selected base layer for `conflation_view_id` - ON HOLD (2026-09-01)
+
+Raised while working the sibling `detour` plugin's own version of this same problem (see
+`planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md`'s "Base layer:
+author-selected DMS layer" and "conflation_view_id must be dynamic" sections). `routing` has the
+identical underlying issue, arguably worse here: `constants.js`'s own comment already documents it
+- `DEFAULT_CONFLATION_VIEW_ID = 3699` **"WILL go stale again on the next reprocess; no mechanism
+yet survives that automatically"** - historically required a manual code edit + redeploy every
+time the conflation pipeline reprocesses.
+
+**Real difference from `detour`'s version of this fix, flagged by the user before starting**:
+`routing`'s conflation views are genuinely **year-versioned data, not just an arbitrary
+identifier** - nodes/edges differ year to year as the real road network changes (new roads, closed
+roads, reclassifications). So which view an author picks isn't just "the current vs. a stale
+pointer" the way `detour`'s wrong-layer risk was - **picking a different YEAR is a legitimate,
+meaningful choice with real different results**, not just a correctness bug to guard against. Any
+implementation needs to surface this clearly to the author (e.g., which year is currently
+selected, so results are interpretable), not just silently swap the id the way `detour`'s fix
+could.
+
+**Proposed shape (not yet built, explicitly on hold - "hold it here this proposal task"):**
+- **UI**: `internalPanel.jsx` (currently empty, `() => []`) gets the same "Base network layer"
+  `select` control `detour`'s `internalPanel.jsx` already has - author picks a conflation layer
+  from `state.symbology.layers`. Real difference from `detour`: `routing`'s points are free-form
+  map clicks, not clicks ON the picked layer's features - so this picker's only job is sourcing
+  `conflation_view_id` (i.e. which year), not click-identity. The layer doesn't strictly need to be
+  the `_edges` table specifically for routing to work, though picking the same one `detour` uses
+  keeps things simple/consistent to reason about.
+- **`comp.jsx`**: derive `conflationViewId` from the picked layer's `view_id` (same
+  `symbologyLayerPath` pattern as `detour`'s fix), pass it into `useTrspRoute` instead of the
+  `DEFAULT_CONFLATION_VIEW_ID` constant. Gate "Get route" on it being resolved.
+- **`constants.js`**: `DEFAULT_CONFLATION_VIEW_ID` becomes dead once this lands.
+- **Server**: no changes needed - confirmed (same finding as `detour`'s version of this fix)
+  `getOrLoadGraph(db, pgEnv, conflationViewId)` already handles arbitrary/dynamic view_ids
+  correctly, lazy-loading + caching per view_id on first use.
+
+### Follow-on architecture question: multi-year RAM caching + restart (2026-09-01)
+
+Raised by the user immediately after the proposal above: previously only ONE hardcoded
+`conflation_view_id` was ever loaded into `graphCache` (a plain in-memory `Map()`,
+`data-types/routing/memoryGraph.js:39`) for the whole server's lifetime - once authors can pick
+ANY year, multiple distinct graphs can end up resident in RAM simultaneously, with no eviction
+(`invalidateGraph(pgEnv, conflationViewId)` already exists but nothing calls it automatically
+today), and the existing `WARM_LOAD_CONFLATION_VIEW_ID` boot-time pre-warm (`data-types/routing/
+index.js:318`) only makes sense for one hardcoded default, not an open set of valid years.
+
+**Best single recommendation (not implemented, held with the rest of this proposal):**
+
+1. **RAM: wrap `graphCache` with a small LRU cap, built on the eviction primitive that already
+   exists.** This codebase's own earlier estimate puts one year's graph at ~200-400MB (see the
+   "Memory estimate" note elsewhere in this file) - not the multi-GB scale of the separate
+   conflation-MATCHER's own graphs. A small cap (e.g. keep the 4-5 most-recently-used years
+   resident, evict the least-recently-used via the already-existing `invalidateGraph` when a new
+   year is requested past that cap) bounds memory to roughly 1-2GB worst case regardless of how
+   many distinct years get touched over the server's lifetime - standard, well-understood pattern,
+   no new primitive needed, just wiring the eviction call.
+2. **Restart: REVISED after user pushback - keep pre-warming, generalize the single hardcoded ID
+   into a small configurable list, don't drop it.** First draft of this recommendation proposed
+   going fully lazy on restart (no pre-warm at all) - user correctly pushed back: the existing
+   ~80-90s cold first-load is real and is exactly why the warm-load mechanism was built in the
+   first place; a real user hitting that wait is a real problem, not an acceptable tradeoff.
+   Corrected approach: `WARM_LOAD_CONFLATION_VIEW_ID` (single hardcoded id) becomes
+   `WARM_LOAD_CONFLATION_VIEW_IDS` (a short, explicitly-maintained LIST of "whichever years are
+   currently primary/most-used"), all pre-warmed on boot the same way as today, just for more than
+   one year at once. Combined with the LRU cache above: any year in the warm list is instantly
+   ready (no cold wait for years people actually use); any year NOT in the list still lazy-loads on
+   its own first request (same accepted ~80-90s cost, but now only for genuinely uncommon/rare
+   picks, not the common case); the LRU cap still bounds total memory regardless of how many extra
+   years get touched beyond the warm set. Real, not-eliminated tradeoff: the list still needs
+   manual maintenance (same burden as today's single constant, just spread across a few entries
+   instead of one) - not a fully-automatic solution, a generalized version of the existing one.
+
+**Not started. Resume only when explicitly asked.**
+
+### DECIDED (2026-09-01): dynamic `conflation_view_id` proposal DECLINED for `routing`
+
+User's final call, after working through this proposal and the sibling RAM/restart discussion:
+**`routing` stays hardcoded, no layer-picker, no dynamic derivation.** 2025 conflation data does
+not exist yet ("we do not have the 2025 data but will plan to set the 2025 data graph hardcoded
+for the routing") - once it does, `DEFAULT_CONFLATION_VIEW_ID` in `constants.js` just gets updated
+to 2025's correct view_id as a plain value swap, same mechanism this constant has always used
+(see the "View swap #1/#2/#3" history earlier in this file) - not the author-picked-layer
+architecture this whole section explored. That architecture (and the paired RAM/LRU-cache,
+restart/warm-list discussion above) is now fully superseded for `routing` - not just on hold,
+actually decided against. See `detour-avoid-segment-routing-plugin.md`'s matching note for the
+parallel decision there (different shape - `detour` keeps its layer-picker UI, just not for
+choosing the computation year).
+
 ### Multi-way `via` restriction gap, measured for this specific view (2026-08-12)
 Queried `temp.osm_conflation_1_2023_relations` (the actual `_relations` table behind
 `s=2095/v=3608`) directly: of 14,928 `resolved=true` relations, **13,446 are single-node-`via`**
@@ -1288,3 +1376,17 @@ Albany, Utica, Syracuse, Rochester, NYC, the Adirondacks, and a west-to-east sta
    before implementation starts.
 4. **Auth model** for the new endpoint — `avail-falcor`'s existing `pgRouterRouting/` routes have
    no visible per-route auth beyond a global JWT check; is that sufficient here?
+
+## 2025 conflation data: hardcoded conflation_view_id removed, then REVERTED same day (2026-09-01)
+
+Full detail lives in the sibling task file's own entry:
+[detour-avoid-segment-routing-plugin.md § "2025 conflation data"](./detour-avoid-segment-routing-plugin.md)
+(including the "REVERTED - back to 2024" follow-up entry right after it). Short version for this
+plugin: a refactor removed `DEFAULT_CONFLATION_VIEW_ID = 3699` from
+`src/themes/transportny/components/routing/constants.js` and moved conflation-version resolution
+entirely server-side. After a server restart, live testing against real 2025 data showed
+candidate points/routes not rendering and every request "taking a lot of time" (not just the
+expected first-request cold load) - the user asked to revert all of it rather than debug mid-
+session. **`DEFAULT_CONFLATION_VIEW_ID = 3699` is back** in this plugin's `constants.js`, and
+`comp.jsx`/`hooks/useTrspRoute.js`/`hooks/resolveTrspRoute.js` all pass it through again exactly
+as before. Current state: back to the known-good, previously-live-tested 2024 configuration.

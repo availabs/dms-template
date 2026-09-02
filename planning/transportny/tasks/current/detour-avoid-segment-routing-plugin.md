@@ -253,6 +253,711 @@ between the two travel directions), not the cost-objective axis.
   suspenders, still in place); the `runWhenStyleReady` fix above is the more likely actual root
   cause, since the reset handler's logic was correct both times it was checked by reading the code.
 
+## Base layer: author-selected DMS layer instead of bespoke bbox-fetch (2026-08-31, PLANNED)
+
+**Problem**: the pickable network (`useEdgeLayer.js`) currently owns its own data pipeline —
+bbox-chunked `GET /edges` fetches on activation + every `moveend`, entirely outside DMS's normal
+source/view/symbology mechanism. This is slow on first render (N parallel Postgres round-trips
+gate first paint) and bypasses the access-control boundary the normal Layer Manager path enforces
+(a plugin querying a hardcoded table directly, vs. an author-added, permission-scoped layer).
+
+**Decision**: follow the DMS convention instead — the author picks the base network layer through
+MapEditor's normal Layer Manager (like any other layer), and `detour` consumes that
+already-tiled, already-authorized layer via `map.queryRenderedFeatures` instead of fetching its
+own GeoJSON. Both of detour's modes (single-trip + closure-density) share `useEdgeLayer.js`'s
+segment-picking unchanged after this — only the base layer's origin changes, not how either mode
+consumes `selectedSegment` afterward. `routing` (the sibling plugin) is explicitly OUT of scope
+for this change — `detour` only, per direct instruction.
+
+**Precedent, not invented**: `routecreation` already does exactly this — see
+`routecreation/internalPanel.jsx` (author-facing layer `select` built from
+`Object.keys(state.symbology.layers)`) and `routecreation.plugin.jsx`'s `mapRegister` (resolves
+the chosen layer id, force-sets `data-column` so a needed column survives into tile properties)
+and `hooks/useMapTmcHandler.js` (`map.queryRenderedFeatures(e.point, { layers: [shapefileLayerId] })`).
+
+**Column check, done live via read-only SQL against `npmrds2`/`neptune.availabs.org:5758`
+(2026-08-31, using creds already in
+`src/dms/packages/dms-server/src/db/configs/npmrds2.config.json`)** — this corrects a wrong
+assumption from earlier in this task file:
+- View 3699 ("Temp OSM Conflation v2", source 2125) — the one this file's own "line-offset"
+  investigation above checked for tile symbology — is **NOT** the right table. It's
+  `temp.osm_conflation_1_2024`, the TMC/RIS-enriched match table, a **different physical table**
+  with its own separate `ogc_fid` sequence and **no `highway` column**. Using it as the base layer
+  would make clicked `ogc_fid`s meaningless to `excluded_edge_ids`/`resolveDetourEndpoints`.
+- **Correct source: 2097 ("Temp OSM Conflation Edges")** — `temp.osm_conflation_1_2024_edges` for
+  2024 (view 3701), `temp.osm_conflation_1_2023_edges` for 2023 (view 3704) — the exact table
+  `data-types/routing/memoryGraph.js` and this plugin's backend already operate on
+  (`ogc_fid`/`osm`/`tmc`/`ris`/`highway`/`reversed`/`from_node`/`to_node`/`wkb_geometry`).
+  **Already has real DAMA tile symbology registered**
+  (`https://graph.availabs.org/dama-admin/npmrds2/tiles/3701/{z}/{x}/{y}/t.pbf`) — an author can
+  already add it as a normal layer via the Layer Manager today, no new backend/tiling work needed.
+
+**Simplification found while planning (2026-08-31)**: grepped every consumer of `selectedSegment`
+across `comp.jsx`/hooks/components — **`.fromNode`/`.toNode`/`.highway`/`.osm` are set today but
+never actually read anywhere**; only `.ogcFid` and `.geometry` are consumed (endpoint
+resolution moved fully server-side back on 2026-08-25, per `resolveVerifiedEndpoints`/
+`resolveDetourEndpoints`). PostGIS's `ST_AsMVT` always keeps `ogc_fid`/geometry regardless of
+`data-column`/`filter`/`filter-group` config — so **no column-forcing trick on the author's layer
+is needed at all**, unlike `routecreation`'s `tmc` case. This removes the one part of the plan
+that risked mutating the author's own filter/symbology config as a side effect.
+
+**Plan**:
+1. `constants.js` — add `EDGES_LAYER_KEY` (a plugin-data key, mirrors `SHAPEFILE_LAYER_KEY`) and
+   `BLANK_OPTION`; remove now-dead `EDGES_SOURCE_ID`/`EDGES_LAYER_ID` (the plugin no longer owns
+   this source/layer).
+2. `internalPanel.jsx` — takes `{ state }` (currently ignores it), adds a `select` control listing
+   `Object.keys(state.symbology.layers)` (mirrors `routecreation/internalPanel.jsx` exactly),
+   writing to `pluginData.detour['active-layers'][EDGES_LAYER_KEY]`.
+3. `detour.plugin.jsx` — no `mapRegister` column-forcing needed (see simplification above); its
+   `cleanup` restores the author layer's visibility to `'visible'` (in case it was hidden by
+   `isActive` toggling) and drops the `EDGES_SOURCE_ID`/`EDGES_LAYER_ID` teardown lines.
+4. `useEdgeLayer.js` — rewritten, not patched: delete `resolveEdgesInBbox` import,
+   `splitBboxIntoChunks`, `EDGE_CHUNK_SIZE_DEG`/`MAX_EDGE_CHUNKS`, `refreshEdges`, the `moveend`
+   fetch loop, and all `addSource`/`addLayer`/`removeLayer`/`removeSource` calls for the base
+   network (not owned by the plugin anymore). New signature `useEdgeLayer(map, edgesLayerId,
+   isActive)`. Hover/click `queryRenderedFeatures` scope to `edgesLayerId` instead of
+   `EDGES_LAYER_ID`. `isActive` toggling now does `map.setLayoutProperty(edgesLayerId,
+   'visibility', isActive ? 'visible' : 'none')` instead of adding/removing a plugin-owned
+   source. `selectedSegment` drops the dead `osm`/`fromNode`/`toNode`/`highway` fields, keeps only
+   `{ ogcFid, geometry }`.
+5. Delete `hooks/resolveEdgesInBbox.js` entirely (only consumer removed in step 4).
+6. `comp.jsx` — resolves `edgesLayerId` from `pluginData.detour['active-layers'][EDGES_LAYER_KEY]`
+   (same `pluginDataPath` already computed there) and passes it to
+   `useEdgeLayer(map, edgesLayerId, !hasResult)` instead of `(map, DEFAULT_CONFLATION_VIEW_ID,
+   pgEnv, !hasResult)`.
+
+**Live-tested 2026-08-31** — added source 2097/view 3701 ("Temp OSM Conflation Edges 2024") as a
+normal layer, picked it in detour's new internalPanel control. Base layer rendered (fast, no bbox
+fetch) and hover worked (amber preview), but two real bugs found:
+
+1. **MapEditor's generic per-layer hover/click "info popup"** (`state.symbology.layers[layerKey].hover`,
+   read by the shared `HoverComp`/`pinHoverComp` in `SymbologyViewLayer.jsx`/`avl-map.jsx` -
+   hardcoded truthy on every layer at creation, no author-facing toggle) popped up a card showing
+   the layer's name ("Temp OSM Conflation Edges 2024") right at the cursor on hover, and a global
+   click handler pins it (the X/up/down-arrow card in the screenshot). Confirmed via research this
+   is NOT something detour added - it's unconditional shared MapEditor behavior for every added
+   layer, with `layer.props.hover` as the only structural gate and no existing escape hatch
+   anywhere in this codebase.
+2. **Click wasn't selecting a segment** - hover/`queryRenderedFeatures`/layer-id matching all
+   confirmed correct (research ruled out an id mismatch and ruled out the popup's click handler
+   explicitly blocking propagation), but the popup card rendering directly at the click point was
+   the most likely real cause - a DOM element sitting over the map canvas at the exact click
+   location can eat the click before it reaches maplibre's canvas listeners, matching this
+   project's own prior `pointer-events-auto` bug class (see `RouteDetailsPanel` fix earlier in
+   this file).
+
+**Fixed, staying entirely inside `detour`'s own files (explicit instruction: "do not change
+anythingn in map stuff just make edit for this detoru plugin")** - `detour.plugin.jsx`'s
+`mapRegister` now force-sets `hover: false` on the author-selected base layer (same class of
+mutation `../routecreation.plugin.jsx`'s `mapRegister` already does via its `data-column` force-set
+- editing the CHOSEN layer's own config field, not any shared map component). `cleanup` restores
+`hover: "hover"` (its original default) alongside the existing visibility restore, so the layer
+behaves normally again once the plugin unmounts/the author picks a different base layer.
+
+**REVERTED same day, after deep architecture trace** - the `hover: false` fix was wrong. Traced
+the real mechanism end-to-end (per user request: "understand the architecture... once we selected
+the rest flow has to be same" before patching further):
+
+- `mapRegister(map, state, setState)` fires **exactly once**, on `PluginLayer`'s mount
+  (`PluginLayer.jsx:52-58`, empty-deps `useEffect`) - never re-fires when the author changes the
+  base-layer selection afterward. Only `dataUpdate` gets that signal. So even a correct mutation
+  placed here can only ever apply to whatever `edgesLayerId` was resolvable at that single mount
+  moment.
+- `state.symbology.layers[layerKey].hover` DOES genuinely reach the running `HoverComp` (traced
+  through `MapEditor/index.jsx`'s `layerProps` useMemo -&gt; `avl-map.jsx:713`'s `l.props = get(...)`
+  -&gt; `SymbologyViewLayer.jsx:794`'s `if(!layer.props.hover) return`) - no stale-snapshot issue.
+  But **`hover` only gates `HoverComp`'s own inner content div** - nothing else.
+- The actual popup/pin-marker/X-close-button chrome is produced by a SEPARATE, hardcoded pipeline
+  that never checks `props.hover`: `avl-layer.jsx:225-226`'s mousemove hover detection
+  (`if (!maplibreMap || !isActive || !onHover) return` - `onHover` is `ViewLayer.onHover`, a
+  class-level constant with `isPinnable: this.isPinnable || true`, always truthy for every
+  `ViewLayer`, no per-layer opt-out) sets `state.hoverData.hovering = true`; `avl-map.jsx:848-861`
+  attaches a single global `click` listener whenever ANY active layer is pinnable (always); on
+  click, `pinHoverComp` (`avl-map.jsx:770-776`) unconditionally creates a `maplibregl.Marker` and
+  dispatches `pin-hover-comp`, pinned iff `hovering` was true; `HoverComponent.jsx:53-88`'s
+  `PinnedHoverComponent` unconditionally renders the X `RemoveButton` regardless of whether
+  `children` (i.e. `HoverComp`'s content) is empty. So `hover: false` blanked the popup's content
+  but left the marker+pin-wrapper+X-button fully intact - confirmed live-tested as "even worse"
+  (an empty pin instead of no pin).
+- Separately, the "Layer is controlled by Plugin... To enable this panel, remove the plugin, or
+  link it to a different layer" message the user also saw in the Layer Editor is UNRELATED to the
+  hover mutation - traced to `LayerEditor/index.jsx:62-70`'s `isActiveLayerPlugin` check
+  (`stateUtils.jsx:38-44,106`: true whenever the layer open in Layer Manager appears in ANY
+  plugin's `pluginData[...]['active-layers']`). This is a pre-existing, arguably-correct side
+  effect of the base-layer-selection feature itself (Base layer plan above) - it started the
+  moment the author picked the layer via internalPanel.jsx, not because of the hover patch. Not a
+  bug to fix, just a fact to know about (the Style/Legend/Popup/Filter/Join tabs for a
+  plugin-claimed layer are intentionally locked while claimed).
+- The pink Legend-tab highlight visible in the same screenshot was investigated as an alternative
+  hypothesis (does Legend-item-selection drive the popup?) - **not supported by any code found**
+  in `avl-map.jsx`/`avl-layer.jsx`/`SymbologyViewLayer.jsx`; the popup+marker are fully explained
+  by the click-anywhere-while-hovering pin mechanism above, independent of the Legend tab.
+
+**`mapRegister`/`setState` on `hover` is reverted back to a no-op.** `cleanup`'s visibility-restore
+stays (that part was correct and unaffected by this finding).
+
+**Real options going forward, not yet decided/built** (see conversation - user has not yet chosen
+one, explicit instruction remains "do not change anything in map stuff"):
+1. A small, additive, opt-in change to `avl-layer.jsx`'s `onHover` gate or `avl-map.jsx`'s
+   `isPinnable` computation (e.g. reading a new `layer.props['suppress-hover']` flag) - would
+   actually work, but is a change to shared map/library code, currently out of bounds per explicit
+   instruction.
+2. A plugin-side DOM/event-capture workaround (e.g. a capture-phase listener on
+   `map.getCanvas()` calling `stopImmediatePropagation()`) - flagged as genuinely risky: it would
+   very likely also block `useEdgeLayer.js`'s OWN `map.on('click', ...)` handler, since that goes
+   through the exact same maplibre-internal dispatch the generic pin listener does - not a clean
+   fix, not attempted.
+3. Live with the popup/pin appearing as a known cosmetic side effect for now (confirm click
+   selection itself isn't actually blocked - the architecture trace found no evidence propagation
+   is stopped anywhere in the existing pin mechanism, so `useEdgeLayer`'s own click handler should
+   still fire and select correctly despite the visual clutter) - needs a real live click-test to
+   confirm this, not yet done since the hover-mutation attempt intervened first.
+
+**Root cause found + fixed, 2026-08-31 - the actual bug, unrelated to the popup investigation
+above.** Added a temporary debug log in `useEdgeLayer.js`'s `onClick` and had the user click live:
+console showed `foundFeature: true` but `ogcFid: undefined` on every click - the click handler WAS
+firing and WAS finding a feature via `queryRenderedFeatures`, it just could never read `ogc_fid`
+off it. Cause: **`ogc_fid` comes back as the vector tile's FEATURE ID (`feature.id`), not a
+`properties` key** - `useEdgeLayer.js` was reading `feature.properties.ogc_fid` (matching the old
+plugin-owned-GeoJSON code, where the plugin controlled the property shape itself), but PostGIS's
+`ST_AsMVT` keeps `ogc_fid` specifically as the MVT feature id when the tile is built, not inside
+`properties`. `../routecreation` never surfaced this because it only ever reads a real property
+(`tmc`, via its `data-column` trick) - it has no reason to read `ogc_fid` at all. This also
+explains why hover appeared to "work" the whole time: `renderHover`/`nearestFeatureToPoint` only
+ever needed `feature.geometry`, never `ogc_fid` - so the hover path never exercised the broken
+line.
+
+**Fix**: `useEdgeLayer.js`'s click handler now reads `const ogcFid = feature.id;` instead of
+`feature.properties.ogc_fid`. One-line fix, entirely inside `detour`'s own file, no map/shared
+code touched - resolves the actual reported bug ("just hovering, not selecting"). Debug log
+removed.
+
+**The popup/pin-marker cosmetic issue (options 1-3 above) is still open and separate** - this fix
+only addresses click-to-select; the generic hover/pin popup chrome still appears as described
+above and remains unresolved pending a decision on options 1-3.
+
+**Live-verified 2026-08-31** - click-to-select works now (confirmed live: single-trip AND density
+mode both ran real analyses end-to-end, e.g. a 100/100-pair closure-density heatmap with candidate
+points, matching the pre-refactor behavior).
+
+**Follow-on bug found + fixed same day**: after a result renders ("Get detour"/"Analyze coverage"),
+the pickable base network layer stayed visible instead of hiding (`isActive` correctly flips to
+`false`, but the one-shot `setLayoutProperty(edgesLayerId, "visibility", "none")` call in
+`useEdgeLayer.js` wasn't sticking). Root cause: the author-selected layer's OWN rendering pipeline
+(outside detour's control) re-syncs on any symbology state change - including the frequent,
+unrelated state updates this plugin itself fires while showing a result (density progress,
+candidate-point updates) - and each re-sync can reassert the layer's own default visibility,
+silently undoing the one-shot call. **Fix, staying inside `useEdgeLayer.js` only**: the visibility
+effect now also re-subscribes to the map's `'styledata'` event and reapplies the intended
+visibility on every fire (not just once), so this plugin's intent keeps winning without touching
+any shared layer/map code.
+
+**Still visible live-tested, 2026-08-31**: the `'styledata'`-reassert fix above was NOT enough -
+confirmed live, the base network layer stayed fully visible through density mode's "Points found -
+computing routes..." intermediate phase (the point where `density` first becomes truthy and
+`hasResult`/`isActive` should already have flipped). Whatever is reasserting the layer's own
+default visibility fights harder/more often than a single map-event listener can reliably win
+against event-ordering-wise.
+
+**Fix #2, same file, more robust**: replaced the single `'styledata'` listener with a 300ms
+`setInterval` that reapplies the intended visibility repeatedly while `!isActive` (cleared
+immediately once `isActive` is true again or the effect tears down). This sidesteps needing to
+know exactly what/when the other side reasserts - polling converges within one tick regardless.
+Still entirely inside `useEdgeLayer.js`, no shared/map code touched.
+
+**Live-verified 2026-08-31 - CONFIRMED FIXED.** Added temporary per-call debug logging
+(`edgesLayerId`/`isActive`/`exists`/`before`/`after`) to get hard evidence rather than iterate
+blind a third time; user re-tested with logging in place and separately confirmed via screenshot -
+the base network layer now hides completely once a result renders (both single-trip and density
+mode), leaving only the result (route line, candidate points, node markers) on the plain basemap.
+Debug logging removed after confirmation. The 300ms interval-poll approach is the one that
+actually works - both the one-shot apply and the `'styledata'`-listener-only version (both tried
+first) did not.
+
+Net history of this sub-bug, for future reference: one-shot `setLayoutProperty` (didn't stick) ->
+`'styledata'` listener reassert (still lost the fight) -> 300ms `setInterval` reassert while
+`!isActive` (works). All three attempts stayed entirely inside `useEdgeLayer.js`, no shared
+map/layer code touched, per explicit instruction throughout this arc.
+
+## Live DMS page Map component - checked, deferred (2026-08-31)
+
+User asked whether this base-layer approach (author picks a layer, plugin auto-hides it - no
+manual "eye" toggle exists for a page viewer, confirmed: `settings/controls.jsx`'s `setLayerPanel`
+is an AUTHOR-side edit-mode control only) will actually work once `detour` is placed in a real
+published DMS page's Map section, not just tested inside MapEditor.
+
+**Checked, good news - no extra work needed for the automation itself.** `patterns/page/.../
+ComponentRegistry/map/index.jsx:15` imports `PluginLayer` directly from
+`mapeditor/MapEditor/components/PluginLayer` - the SAME component, not a fork - which is what
+calls `plugin.mapRegister(map, state, setState)`/`plugin.cleanup(...)` and renders
+`plugin.comp({state, setState, map})`. So `detour`'s own automated visibility logic
+(`useEdgeLayer.js`'s `isActive`-driven interval) runs through the identical plugin lifecycle on a
+live page as in MapEditor - nothing page-specific to build for the automation itself.
+
+**What's still genuinely uncertain**: `SymbologyViewLayer.jsx` (the component rendering the
+author-selected BASE layer itself - the thing our interval-poll fights against) IS a separately
+forked file on the page side (`patterns/page/.../ComponentRegistry/map/SymbologyViewLayer.jsx` vs.
+`patterns/mapeditor/MapEditor/components/SymbologyViewLayer.jsx` - diffed at 1,663 lines
+different). The interval-poll doesn't care about the internals of what it's fighting, so it should
+still work, but this has only been live-verified against MapEditor's copy so far.
+
+**Decided 2026-08-31: focus stays on MapEditor for now** - live-page verification (publishing a
+real page with a Map section + `detour`, confirming the same hide-on-result behavior there) is
+explicitly deferred, not scheduled yet.
+
+## False alarm: "layer still visible after result" - resolved, not a real bug (2026-08-31)
+
+After the interval-poll fix was confirmed working (grey/pink "Temp OSM Conflation Edges" styling
+genuinely disappeared in one test), a LATER test on a different map/symbology ("test osm detour")
+appeared to show the same bug again - grey/white streets stayed visible through a completed
+"Analyze coverage" result. Investigated properly instead of re-patching blind:
+
+- **Layers tab showed only one DMS layer** ("Temp OSM Conflation Edges 2024") - no second
+  basemap-style entry, but that alone didn't prove the grey streets belonged to it.
+- **Decisive test**: switched `detour`'s "Base network layer" dropdown to blank/none entirely.
+  The grey streets did not change AT ALL - proving they have nothing to do with that layer
+  selection, and are the map's own base style/basemap streets (baked into the map style itself,
+  never registered as a DMS/DAMA layer, never shown in the Layers panel, not something any plugin
+  can control).
+- **Real explanation surfaced once the layer was unclaimed and its actual Style panel was
+  visible**: "Temp OSM Conflation Edges" on this particular test map had its own author-configured
+  **Opacity: 0%** - set independently of any of this task's code, meaning the actual target layer
+  has been invisible by its own paint config this whole time, unrelated to the `visibility`
+  layout property `useEdgeLayer.js` toggles. Confirmed with the user directly ("opacity was 0
+  only").
+- **Revised, 2026-08-31 - it WAS a real bug after all, found by re-reading the Style-panel
+  screenshot more carefully.** The panel showed TWO separate paint properties, not one: `Fill:
+  Opacity 0%` (the main line, correctly invisible) AND `Casing: #7d7d7d / 2px / -1.5px` (a
+  separate outline sub-layer, full opacity, mid-grey - an exact match for the "grey streets" seen
+  throughout this investigation). This connects to a fact the earlier architecture-trace research
+  pass already surfaced but wasn't applied here: **every line-type DMS layer renders as TWO
+  maplibre layers sharing one symbology config** - the unsuffixed id (fill) and `${id}_case`
+  (casing), confirmed via `LayerManager/utils.jsx`'s `getLineLayer`. `useEdgeLayer.js`'s
+  visibility toggle only ever set `visibility` on `edgesLayerId` itself - never on
+  `${edgesLayerId}_case` - so the casing sub-layer stayed visible regardless of `isActive`,
+  regardless of the interval-poll fix, regardless of the base-layer dropdown (clearing the
+  dropdown just stops the plugin from touching ANY layer id, which trivially left the untouched
+  casing exactly as visible as before - that test wasn't actually informative, in hindsight).
+- **Fixed**: `applyVisibility` in `useEdgeLayer.js` now sets `visibility` on both `edgesLayerId`
+  AND `${edgesLayerId}_case` (each guarded by its own `map.getLayer(...)` existence check, so a
+  layer type without a casing sub-layer doesn't error). Still entirely inside `useEdgeLayer.js`,
+  same 300ms interval-poll mechanism from the earlier fix, just now targeting both real rendered
+  layers instead of one.
+- **User pushed back that the casing/opacity Style-panel edit wasn't the root cause** (it was their
+  own manual test edit, not evidence of a code bug) - added temporary debug logging in both
+  `comp.jsx` (`isActive`/`hasResult`/`edgesLayerId` chain) and `useEdgeLayer.js` (`applyVisibility`
+  - what it believes vs. what it actually set/reads back on each real layer id) to get hard
+  evidence instead of continuing to guess from screenshots.
+- **CONFIRMED WORKING, 2026-08-31 (user's own words: "it's working now")** - both temporary debug
+  logs removed after confirmation. The `_case` sub-layer fix combined with the 300ms interval-poll
+  mechanism (from the earlier fix) is the final, correct implementation - base layer genuinely
+  hides on result and restores on clear, in both single-trip and density modes.
+
+## Separate bug found via console spam, fixed same session (2026-08-31)
+
+User pasted live console output while testing the above - unrelated to the base-layer work, but a
+real, pre-existing bug: `hooks/useDensityPointPicker.js`'s `onMouseMove`/`onClick` called
+`map.queryRenderedFeatures(..., { layers: [DENSITY_CANDIDATES_LAYER_ID] })` unconditionally,
+without checking the layer exists first (unlike `useEdgeLayer.js`'s `queryNearbyEdge`, which
+already guards this). Race: `isActive` (density mode + "show candidate points" + "pick point pair
+(beta)" all on) can go true before `useDensityCandidatesLayer.js` has actually added
+`DENSITY_CANDIDATES_LAYER_ID` (only added once `density.startPoints`/`endPoints` resolve) -
+querying a not-yet-added layer throws on every single mousemove, which is what flooded the
+console (`[Violation] 'mousemove' handler took 180ms` alongside it, from the repeated throw/catch
+overhead).
+
+**Fixed**: both handlers now `if (!map.getLayer(DENSITY_CANDIDATES_LAYER_ID)) return;` before
+querying, same guard pattern already used elsewhere in this plugin. Lint clean.
+
+## Live DMS page Map component - first real test, crash found + fixed (2026-08-31)
+
+User tried `detour` in an actual published page's Map section (not just MapEditor) for the first
+time - console showed a cascade of `TypeError: Cannot read properties of undefined (reading
+'getLayer')` at `ds.getLayer` (maplibre-gl internal), thrown during React's cleanup/unmount phase
+across FIVE separate files: `useDensityCandidatesLayer.js:55`, `detour.plugin.jsx:57`,
+`useEdgeLayer.js:184`, `useRouteLayer.js:64`, `useStartEndMarkers.js:53` - each caught by
+`RenderErrorBoundary`, tearing down and remounting `<Comp>` repeatedly.
+
+**Root cause**: on this page's Map component, the underlying maplibre `map` instance can be
+destroyed (`.remove()`'d, internal `style` set to undefined) BEFORE React runs this plugin's own
+cleanup effects - a lifecycle-ordering difference from MapEditor, where this never surfaced.
+`map.getLayer(...)` then throws INSIDE maplibre itself, even though `map` is still a defined
+object reference - so the `if (!map) return` guard already present at every one of these sites
+doesn't catch it (it only checks the reference, not whether the map is still functionally alive).
+
+**Not a new problem to solve from scratch** - this exact race was already hit and fixed once
+before in this same plugin: `useClosureDensityLayer.js`'s cleanup (2026-08-26) already uses
+`if (!map || !map.loaded()) return;` instead of a plain truthiness check, with a comment citing
+`AvlLayer`'s own cleanup using the same guard. `.loaded()` (a real MapLibre API checking internal
+state, not touching `.style`) survives being called on an already-torn-down map without throwing.
+
+**Fixed**: applied the identical `.loaded()` guard to the other five cleanup sites that were still
+using a plain `if (!map) return` - `useEdgeLayer.js`, `useRouteLayer.js`,
+`useStartEndMarkers.js`, `useDensityCandidatesLayer.js`, `detour.plugin.jsx`. Lint clean. Not yet
+live-verified on the page that surfaced this - needs a fresh test to confirm the crash/remount
+loop is gone.
+
+**Also note**: this is now the SECOND finding specific to the live-page Map-component context
+(the first was the forked `SymbologyViewLayer.jsx` question, still deferred/unverified) - the
+"focus stays on MapEditor for now" decision above has effectively been superseded by the user
+actually testing on a live page; treat both contexts as in scope going forward, not just MapEditor.
+
+## Base-layer column validation - no author-facing guardrail existed, built one (2026-08-31)
+
+User raised a real, previously-unaddressed gap: nothing validates that the layer an author picks
+in `internalPanel.jsx`'s "Base network layer" select is actually a conflation `_edges` table.
+Traced the risk precisely:
+
+- **`DEFAULT_CONFLATION_VIEW_ID` (constants.js, hardcoded `3699`) drives ALL backend routing calls**
+  (`useTrspRoute`, `useClosureDensity`, `usePickedPairRoute`, `resolveVerifiedEndpoints`) -
+  completely independent of whatever layer the author actually picks for click-identity. The two
+  settings can silently diverge.
+- **Failure mode 1 (visible)**: picked layer has no per-feature ids at all - `feature.id` (ogc_fid,
+  per the earlier click-selection fix) comes back `undefined`, clicking does nothing.
+- **Failure mode 2 (dangerous, silent)**: picked layer DOES have integer feature ids, but for a
+  different table/year (e.g. 2023 `_edges` instead of 2024). Since `ogc_fid` is an independent
+  auto-increment sequence per physical table, a number meaningful in the picked layer can
+  coincidentally also exist in the graph `DEFAULT_CONFLATION_VIEW_ID` actually computes against -
+  pointing at a completely different, unrelated road segment. The backend would return a real,
+  plausible-looking route/exclusion for the WRONG segment with no error at all.
+
+**Built**: `internalPanel.jsx` now fetches the picked layer's real source metadata and validates
+its declared columns before treating it as valid, surfacing a red warning message directly under
+the "Base network layer" picker if the layer is missing `ogc_fid`/`from_node`/`to_node`/`highway`.
+
+- Confirmed via research (not guessed) that MapEditor's own `LayerEditor/*` components already use
+  exactly this pattern in 8+ places to read a source's declared `metadata.columns` -
+  `falcor.get(["uda", pgEnv, "sources", "byId", sourceId, "metadata"])` then read
+  `falcorCache[...]"metadata"."value"."columns"` (with a fallback to `...value` directly for older
+  sources that store the array there instead) - reused verbatim, no new backend route needed.
+- `sourceId` comes for free off the picked layer itself - `state.symbology.layers[layerKey].source_id`
+  is already set at layer-creation time (`SourceSelector/index.jsx`), no extra lookup required.
+- `internalPanel.jsx` already runs `React.useContext`/hooks directly inside the plain function
+  (confirmed established precedent - `../routecreation/internalPanel.jsx` already does this, since
+  `InternalPluginPanel` calls `plugin.internalPanel({state, setState})` synchronously during its
+  own render, so hooks called here attach to `InternalPluginPanel`'s fiber correctly as long as
+  they're called unconditionally every render - matched that existing pattern exactly, not new
+  ground).
+- The warning renders via the control BLOCK's `label` field, confirmed (by reading
+  `PluginControlWrappers.jsx`'s `SimpleControlWrapper`) to render as plain `{label}` JSX children -
+  so `label` can be a real element (a small stacked div: the normal "Base network layer" text plus
+  a conditional red warning line below it) instead of only a plain string. No new control type or
+  shared-code change needed.
+
+**Still open (this task file's own `DEFAULT_CONFLATION_VIEW_ID` gap is NOT yet closed)**: this
+column-validation warning only protects the CLICK-IDENTITY side (what `useEdgeLayer.js` reads). It
+does NOT yet fix the deeper architectural issue - the backend routing calls still use the separate
+hardcoded `DEFAULT_CONFLATION_VIEW_ID` constant, not the picked layer's own `view_id`. An author
+could still pick a layer that PASSES this column check (e.g. a real `_edges` table, just for the
+WRONG YEAR) and still get the "coincidental wrong segment" failure mode, since the warning doesn't
+know which specific conflation view the backend graph is loaded from. The real fix - deriving
+`conflation_view_id` from the picked layer's own `view_id` instead of the separate constant - was
+proposed in conversation but not yet built; flagged as the next real step, not done in this pass.
+
+**Not yet live-verified** - needs a real MapEditor test: pick the correct "Temp OSM Conflation
+Edges" layer (should show no warning once the falcor fetch resolves), then pick a deliberately
+wrong layer (should show the red missing-columns warning).
+
+## Performance: distance-based algorithm choice for "Get detour" (2026-08-31)
+
+User asked what could make this faster via code. Traced the real request pattern: one "Get detour"
+press fires 4 backend requests (AtoB/BtoA x closed/open), each computing shortest+fastest
+server-side - 8 full graph searches per press, all landing on the same single-threaded Node
+process. Two real levers identified:
+
+1. **`worker_threads` for true parallelism** - the task history repeatedly flags this as the real
+   fix for "N searches queued on one thread," repeatedly deferred as "a bigger lift." Touches
+   shared `data-types/routing/` code (used by both `routing` and `detour`) - out of detour-only
+   scope without explicit sign-off, not built this pass.
+2. **Algorithm choice** - `resolveTrspRoute.js` never sent an `algorithm` param, always defaulting
+   to the server's plain Dijkstra, even though `bidirectional` is already built and available.
+   User: "choose algorithm wisely... because it will impact more here" (a bad default is felt 8x
+   per press here vs. once for a single-search plugin) - not a blanket switch.
+
+**Built**: `hooks/haversineMiles.js` (new) - straight-line distance + `chooseAlgorithm(start, end)`,
+reusing the EXACT threshold already validated in `point-to-point-routing-plugin.md`'s 20-pair
+benchmark for the sibling `routing` plugin (not a new guess): bidirectional was consistently
+SLOWER under ~3mi, only a real (if noisy, modest) win past ~80mi. `routing` itself kept this
+manual per an explicit prior user preference ("keep it dijkstra only") - that decision was specific
+to `routing`, not binding here. Wired into `resolveTrspRoute.js` (new optional `algorithm` param,
+passed through verbatim) and both call sites that hit it: `useTrspRoute.js` (the main "Get detour"
+flow) and `usePickedPairRoute.js` (the beta pair-picker, for consistency). Single source of truth
+for the threshold - both call sites import `chooseAlgorithm` rather than duplicating it.
+
+**Not yet live-verified** - needs a real long-distance closure test (>80mi apart) to confirm the
+backend actually receives/honors `algorithm: "bidirectional"` and responds faster, and a short
+closure to confirm normal (<80mi) requests are unaffected (still plain `dijkstra`, matching
+today's behavior exactly).
+
+## `conflation_view_id` dynamic-from-picked-layer - attempted, REVERTED, plan-first now (2026-08-31)
+
+Attempted implementing the fix flagged earlier (derive `conflation_view_id` from the picked
+layer's own `view_id` in `comp.jsx`, replacing the hardcoded `DEFAULT_CONFLATION_VIEW_ID` constant
+everywhere) - user said "no... stop and revert first give me plan then if i say then start".
+**Fully reverted** - `comp.jsx` is back to the pre-existing baseline (hardcoded
+`DEFAULT_CONFLATION_VIEW_ID` for all four backend calls, no button gating added). Lint-clean,
+confirmed only pre-existing unrelated noise remains.
+
+Confirmed while investigating (still true, not undone by the revert): the SERVER side already
+supports this dynamically with zero code changes - `getOrLoadGraph(db, pgEnv, conflationViewId)`
+is called fresh per-request and lazily loads+caches whatever view_id it's given
+(`data-types/routing/memoryGraph.js:368-376`, `graphCache` keyed by `` `${pgEnv}:${conflationViewId}` ``).
+The gap is entirely client-side (`detour` always sends the same hardcoded constant).
+
+**Plan to be written up and approved before any further implementation** - see conversation for
+the plan; do not re-attempt this change until explicitly told to start.
+
+## Start/end point-picking: bearing-drift bug, live-observed + fixed (2026-08-31)
+
+Separate topic, requested next ("let's improve the start and end points picking process"). Two
+candidate gaps were identified by reading `walkToFirstBranchSimple`/`walkToFirstBranchDensity`
+(server-side, `data-types/routing/memoryGraph.js` - NOT used by `../../routing`, this is
+detour-exclusive logic that happens to live in the shared backend file, so touching it doesn't
+cross into `routing`'s territory):
+1. Bearing-only road continuation (no highway-class matching) - theoretical, not yet observed live.
+2. Pure-topology branch detection (any 2+-connection node counts, including driveways) - theoretical.
+
+**User provided live screenshot evidence of a THIRD, different, confirmed real bug** - the walked
+path visibly bent/deflected at a real intersection (osm `5593248`, `highway: residential` - a real
+road, not a driveway, ruling out gap 2 as the cause here) instead of continuing straight through
+it. Root cause, confirmed by reading the code: the "pick straightest-continuing edge" comparison
+used `incomingBearing` - the bearing of the hop JUST taken, **reset every single iteration** - not
+the road's actual original direction. This is locally-greedy: small per-hop bearing drift (normal
+on any real street, which rarely lies EXACTLY straight node-to-node) compounds over multiple hops,
+and at a junction the walk could pick whichever candidate is straightest relative to the last hop
+rather than relative to where the road actually started - visually a bend/turn with no real reason.
+
+**Fixed in both `walkToFirstBranchSimple` and `walkToFirstBranchDensity`** (kept as two synced
+copies per their existing 2026-08-26 "make search for both separate" convention): renamed
+`incomingBearing` -> `referenceBearing`, captured ONCE on the first real hop
+(`if (referenceBearing === null) referenceBearing = bearingDeg(...)`) and never updated again -
+every subsequent hop's straightness comparison is against that fixed original direction, not the
+constantly-drifting previous-hop bearing. The walk still genuinely stops at a real branch once
+nothing continues that original direction closely enough - only the COMPARISON reference changed,
+not the branch-detection/stop logic itself.
+
+**Server-side change - needs a server restart to take effect** (unlike everything else fixed this
+session, which was all client-side `src/themes/...` and hot-reloads). `node --check` confirms
+syntax is valid; `npx eslint` on this file shows only 3 pre-existing, unrelated errors (this
+subtree is CommonJS per `data-types/package.json`'s override, and the root eslint config doesn't
+recognize `require`/`module` as globals here - none on the lines touched).
+
+**Not yet live-verified** - needs a server restart + a fresh test on the exact same segment (near
+osm `5593248`) to confirm the path no longer bends there, plus a regression check on a few other
+segments (including a genuinely curving real road, to make sure the fixed-reference-bearing
+approach doesn't now fail to track a real gradual curve - a theoretical tradeoff of this fix worth
+confirming isn't a problem in practice).
+
+Gaps 1 and 2 above remain theoretical/unconfirmed and untouched - not addressed in this pass,
+only the concrete bug the user actually observed live.
+
+## Closure-density candidate selection: 10-10 shortfall + wrong-side picks (2026-09-01)
+
+Live screenshot (a real published DMS page, `sandbox2/page_13`, not just MapEditor) showed a
+segment near Rouses Point (Lake Champlain, NY/Canada border - a genuinely sparse rural network)
+producing only ~3-4 end candidates instead of the required 10. Two separate real issues, both in
+`selectClosureDensityCandidates`/`farthestToNearestNodes` (`data-types/routing/memoryGraph.js`) -
+server-side, needs a restart, NOT yet live-verified after these fixes:
+
+1. **10-10 shortfall**: the count-is-a-hard-requirement gap-relaxation logic (already built earlier
+   - see the file's own extensive inline history) was still bounded by a hard
+   `MAX_CANDIDATE_DISTANCE_M` distance cap (8mi, reduced from 20mi on 2026-08-25 for a real,
+   measured perf reason). In a sparse area, 10 valid candidates may genuinely not exist within
+   8mi - no amount of gap-relaxation manufactures more points than the search radius reaches.
+   **Fixed**: raised to 15mi - a middle ground, not a full revert to 20mi, explicitly to be
+   tested live before treating as final (user: "let's test first for this detour and then will
+   make rule if it's a good progress/upgrade").
+2. **Wrong-side picks**: user flagged directly - candidates must never end up on the geometric
+   "opposite side" of the closure from their own seed (a U-turn back onto the correct side is
+   fine; ending up past the closure on the other side is not). The EXISTING corridor-block
+   (`blockedNodes` in `farthestToNearestNodes`) only prevents crossing through the specific nodes
+   the OTHER side's seed-walk visited - it does nothing to stop a genuinely different road
+   (a parallel street, a loop, a bypass) from reaching the wrong side without ever touching those
+   blocked nodes. **Fixed**: added `sideOfSegment` - a real geometric side-of-line test (the closed
+   segment's own bearing + a perpendicular through its midpoint, local equirectangular
+   approximation), applied as a post-filter on each side's raw candidate pool (same-road and
+   "other" sub-groups filtered separately so `sameRoadCount` stays accurate). Evaluated on the
+   candidate's FINAL position, not the path taken to reach it - so a U-turn that ends up back on
+   the correct side still passes, matching the user's exact framing.
+
+**Explicitly experimental, not yet a finalized rule** - user's own words: test first, decide if
+it's a real upgrade after seeing it live. `node --check` passes, lint shows only the same 3
+pre-existing CommonJS-global errors (unrelated). Needs: a server restart, then a live retest on
+the same Rouses Point segment (and a regular/dense-network segment, to confirm the geometric
+filter doesn't over-reject in a normal case) before either side of this change is treated as
+settled.
+
+**LIVE-TESTED AND REVERTED, same day.** Result was worse, not better: "Analyzed 10 of 100 possible
+routes (10 had no route)" - every single candidate pair failed to find a route at all - and the
+user reported it "taking a lot of time" (a real perf regression too, likely from the widened 15mi
+search radius). User: "this is even worst taking a lot of time and then this, so revert last."
+
+**Fully reverted, both parts** - `MAX_CANDIDATE_DISTANCE_M` back to `8 * MILE_M`, `sideOfSegment`/
+`filterBySide` removed entirely (not left disabled/commented - deleted, matching this codebase's
+"delete what's genuinely unused" convention). Confirmed via `grep` that no trace remains, `node
+--check` passes, lint shows only the same 3 pre-existing errors. Back to the exact state this file
+was in after the earlier bearing-drift point-picking fix (that fix is untouched by this revert -
+only the 10-10/side-filter experiment from this section was undone).
+
+**Open question for next time, not yet diagnosed**: WHY did raising the distance cap + adding the
+side filter make things worse rather than better - "10 had no route" is a different failure mode
+than "too few candidates found" (the original complaint). Possible causes not yet investigated:
+the side filter may have been too strict and excluded valid candidates outright (leaving too few
+to even attempt), the wider 15mi radius may have pushed candidates past where a real route exists
+at all in this specific sparse area, or something else. Needs real diagnosis (add logging, inspect
+an actual failing case) before attempting a fix again, not another blind parameter change.
+
+**Diagnostic logging added, 2026-09-01** ("yeah but again i want 10-10 must and check why it's not
+coming") - a `console.log` right before `selectClosureDensityCandidates`'s return, capturing the
+count at every pipeline stage: raw pool size per side, same-road count, `candidatesRejected`,
+valid count per side/group, final picked count, gap actually used. Lets a real shortfall be traced
+to its actual cause (sparse raw pool vs. over-strict >50% validation vs. gap-relaxation itself
+failing) instead of guessing at another parameter change. TEMP - remove once root-caused. Needs a
+server restart to take effect, then a live "Analyze coverage" run on the same Rouses Point segment,
+server log output pasted back for diagnosis before any further code change.
+
+**Live-tested a DIFFERENT segment (not Rouses Point) same day - worked well**: "Analyzed 100 of
+100 possible routes," a real distribution shown, candidate points spread across both sides. Not
+the sparse-network failure case, but confirms the pipeline works correctly in a normal area.
+
+**No-U-turn constraint added, 2026-09-01** ("keep things of the u turn, so in that direction do
+not u turn, keep that and will check what is the result there" - explicitly another experimental
+variant to test, not yet a finalized rule). `farthestToNearestNodes`'s Dijkstra expansion is
+undirected by design (comment: "candidate picking only needs how far is this node, not a turn-
+restriction-correct path") - meaning it could always immediately double back the way it came.
+**Fixed**: added a `predecessorNode` typed array tracking which node each node was actually
+reached FROM (alongside the existing `reachedVia` edge tracking), and the relaxation loop now
+skips any edge leading straight back to that predecessor - a cheap O(1) per-relaxation check,
+deliberately NOT using the existing `findReverseEdge` helper (an O(degree) adjacency scan) since
+this runs inside the hot per-edge Dijkstra loop across a potentially large search radius. This
+does NOT prevent all backtracking (a candidate can still loop around via a different path and
+approach from a direction that feels like a U-turn geometrically) - it specifically prevents the
+one cheap, common case: immediately reversing onto the same edge just traveled. `node --check`
+passes, lint shows only the same 3 pre-existing errors.
+
+**LIVE-TESTED AND REVERTED, same day.** Result: "Analyzed 100 of 100 possible routes (100 had no
+route)" - every single pair failed, worse than the baseline. User's own diagnosis, precise and
+useful: "it is not doing the u turn but the gap between the nodes is too less which is not useful
+at all" - the no-U-turn constraint itself worked correctly, but forcing the search to never
+backtrack pushed it into taking long, winding detours around any obstacle instead of the direct
+nearby path, collapsing real network distance between consecutive candidates down to nearly
+nothing (defeating `MIN_GAP_M`'s whole purpose) even though `dist[n]` (used for gap enforcement)
+kept growing along that longer forced path - so the candidates were both too close together AND
+routing-invalid. **Reverted, confirmed clean** - `predecessorNode`/`cameFrom` fully removed (no
+trace via `grep`), `node --check` passes, lint shows only the same 3 pre-existing errors.
+`farthestToNearestNodes` is back to its original unrestricted (U-turns allowed) form. The
+diagnostic logging from the prior fix is still in place and untouched.
+
+**Running tally of this candidate-selection area today**: distance-cap raise + side filter (tried,
+reverted), no-U-turn constraint (tried, reverted) - two real, informative negative results, not
+wasted effort. Current baseline is the original 8mi-cap, U-turn-allowed, no-side-filter version
+plus the still-active diagnostic logging. Next attempt should use the diagnostic log's actual
+numbers (once captured from a real "Analyze coverage" run) rather than another blind structural
+change - two structural changes in a row have now both made results worse, which is itself useful
+signal that the ORIGINAL algorithm's shortfall is likely a genuinely sparse-network case (not a
+fixable algorithm flaw) rather than something more aggressive expansion/constraints can solve.
+
+## DMS theme compliance - started with `routing`, `detour` on hold (2026-09-01)
+
+User asked whether `routing`/`detour` follow DMS theming rules. Checked directly: neither does -
+both only use `ThemeContext` to pull `{ UI }` component references, never `getComponentTheme` for
+styling; every visual class is raw hardcoded Tailwind (`routing/RouteDetailsPanel.jsx`: 31,
+`detour/DetourDetailsPanel.jsx`: 39, `detour/ClosureDensityPanel.jsx`: 32,
+`detour/RouteComparisonBarChart.jsx`: 11, `detour/internalPanel.jsx`: 2). This matches this
+project's own documented, established MapEditor-pattern precedent (raw Tailwind by convention,
+deliberate, previously deferred as a separate compliance task) - not a `routing`/`detour`-specific
+gap.
+
+**Full site-wide-registerable compliance would require new core `src/dms/` library code** - traced
+`getPatternTheme()`'s actual mechanism: `src/dms/packages/dms/src/ui/defaultTheme.js` manually
+imports each pattern's own `defaultTheme.js` (page/datasets/auth/admin all do this); there is no
+`patterns/mapeditor/defaultTheme.js` entry at all. Proposed creating one + one import line in the
+core file - **user declined this piece explicitly** ("no revert that mapeditor default theme
+thing" - nothing had actually been written yet, so nothing to literally revert).
+
+**Decided approach instead**: local `.theme.js` sibling files per component (the DMS package's own
+documented naming convention - `Foo.jsx` + `Foo.theme.{js,jsx}`), read via the standard
+local-default-spread + `getComponentTheme` pattern, but NOT registered into any site-wide merge
+pipeline. Since nothing registers these theme keys into `ThemeContext`, `getComponentTheme` always
+returns `{}` and every component falls back to its local default - **zero visual change**, but
+every className now lives in one named, discoverable file instead of scattered inline. Honest
+tradeoff, stated to the user: a site author can't override these plugins' look through the normal
+theme-admin UI this way, only by editing the `.theme.js` file directly - accepted as the cost of
+not touching core `src/dms/` code.
+
+**`routing` DONE**: `components/RouteDetailsPanel.theme.js` (new) exports `routeDetailsPanelTheme`
+- every one of the 31 raw classNames moved into it, keyed semantically (`panel`, `title`,
+`stepText`, `variantButton`, `statRow`, `segmentRow`, `getRouteButton`, etc.).
+`RouteDetailsPanel.jsx` now imports `getComponentTheme` alongside the existing `ThemeContext`
+import, builds `const t = { ...routeDetailsPanelTheme, ...getComponentTheme(themeFromContext,
+"routeDetailsPanel") }`, and every JSX `className="..."` replaced with `className={t.<key>}`.
+Confirmed zero raw `className="` strings remain (`grep` clean). Lint clean (only the same
+pre-existing `prop-types` noise, no new errors).
+
+**`detour` RESUMED AND DONE, 2026-09-01** ("yeah i want this too, these boxes too" - pointing at a
+live screenshot of the detour panels). All 4 files converted:
+- `internalPanel.theme.js` (new) - the base-layer-status warning text (2 classNames).
+- `DetourDetailsPanel.theme.js` (new) - the main panel + its co-located `ImpactBlock` sub-component
+  (39 classNames), plus `ROUTE_COLOR`/`ROUTE_SECONDARY_COLOR` folded in as `t.colors`.
+- `ClosureDensityPanel.theme.js` (new) - both stacked panels (results + comparison), 32 classNames.
+  Incidentally fixed a pre-existing unused-var lint warning (`(hex, i) =>` → `(hex) =>`) while
+  rewriting the file.
+- `RouteComparisonBarChart.theme.js` (new) - 11 classNames, plus `ROUTE_COLOR` folded in as
+  `t.colors.primary`. This file had no `ThemeContext` import at all before - added it.
+
+**`routing`'s dynamic colors also folded in** (user: "and it's all themable right?" → "yeha i want
+this too"): `ROUTE_VARIANT_COLORS` moved into `RouteDetailsPanel.theme.js` as `t.colors`, the two
+`style={{...}}` blocks that read it directly now read `t.colors.primary`/`t.colors.secondary`
+instead - single source of truth, `constants.js` still holds the raw hex values, the theme file
+just re-exports them alongside the classNames.
+
+**Verified across both plugins together**: `grep -rn 'className="' detour/ routing/` returns
+nothing - zero raw Tailwind strings remain anywhere in either plugin. Full lint pass shows only
+pre-existing, unrelated `no-unused-vars` warnings in the two `comp.jsx` files (predates this
+session) - no new errors introduced by the theme conversion across all 7 converted files (2 in
+`routing`, 5 in `detour` counting `internalPanel.jsx`).
+
+**Not yet live-verified** - needs a quick MapEditor check that both plugins' panels render
+visually identically to before (expected, since every theme value is byte-identical to what was
+inline - this was a pure refactor, no visual changes intended).
+
+## DECIDED (2026-09-01): dynamic `conflation_view_id` proposal DECLINED for `detour` too - different shape than `routing`
+
+Same underlying decision as `point-to-point-routing-plugin.md`'s matching note, but shaped
+differently here since `detour` already has the layer-picker UI built (unlike `routing`, which
+never got one):
+
+- **The base-layer picker (`internalPanel.jsx`'s "Base network layer" select) STAYS** - author can
+  pick any conflation-layer year for click-identity/rendering purposes. This part is NOT being
+  removed or restricted to 2025-only.
+- **But `conflation_view_id` sent to the backend (`/trsp-memory` etc.) does NOT derive from
+  whichever layer the author picked.** It stays hardcoded (same single-constant approach as
+  `routing`), and will be set to 2025's correct view_id once that data exists (does not exist yet
+  as of this note). The earlier "derive conflation_view_id from the picked layer's own view_id"
+  proposal (see the "conflation_view_id must be dynamic" section, still further up this file) is
+  DECLINED, not just on hold.
+
+**Real residual risk, stated plainly and acknowledged by the user, not silently accepted**: if an
+author picks a NON-2025 layer as the base network layer, its `ogc_fid` values get read off that
+layer's own tiles (via `feature.id`, see the click-identity fix earlier in this file) and sent to
+a backend that is ALWAYS computing against the 2025 graph. Since `ogc_fid` is an independent
+auto-increment sequence per physical table, an id meaningful in the picked (non-2025) layer could
+coincidentally also exist in the 2025 graph, pointing at a completely different, unrelated
+segment - a real "silently wrong route, no error at all" failure mode. The column-validation
+warning already built (`internalPanel.jsx`, checks `ogc_fid`/`from_node`/`to_node`/`highway`
+columns exist) does NOT catch this - it only validates the picked layer LOOKS like a conflation
+edges table, not that it's specifically the 2025 vintage. User's explicit call: this residual risk
+is acceptable ("that is not the problem here at all") - not revisited unless it becomes a real
+issue in practice.
+
+**Net effect: no further code changes needed for this decision** - the layer-picker UI already
+built stays exactly as-is; only the (not-yet-built) "derive view_id from picked layer" work is
+what's being declined, and that was never implemented (stayed at the proposal/discussion stage
+throughout). The one real future action item, for both `routing` and `detour`: update the
+hardcoded conflation_view_id constant to 2025's correct value once 2025 data is published - a
+plain value swap in each plugin's `constants.js`, same mechanism already used for every prior
+year's swap (see `point-to-point-routing-plugin.md`'s "View swap #1/#2/#3" history).
+
 ## Testing Checklist
 
 - [ ] Clicking a segment immediately (no prior point-picking) computes a route between its two
@@ -1325,3 +2030,83 @@ pre-existing/unrelated, confirmed via `git log`/`git diff` predating this sessio
 Point selection now works correctly but can be slow per-request (CPU-bound Dijkstra search on the
 Node event loop). Broken out into its own task file so it doesn't get lost in this one's history:
 [Closure-density point-selection performance](./closure-density-performance.md).
+
+### 2025 conflation data: removed all hardcoded conflation_view_id, server resolves by source+version (2026-09-01)
+
+The whole system moved from 2024 conflation data (view_id 3699) to 2025. Investigation (read-only
+SQL, per the user's standing "never update delete or anything - always use SELECT" constraint)
+found 2025's edges/nodes/relations tables don't share a single view_id's naming convention the way
+2023/2024 did - each of the three followed a different table-naming pattern, so no one hardcoded
+id could resolve all three tables. The user added the missing 2025 relations table themselves
+(not by me).
+
+User's final instruction, superseding an earlier "leave it as-is" retraction: **"no all will be
+2025 verion so what you have to do is no hard coaded view id s here you have to find the source
+and then version in it of 2025 so no hard coaded for all theree here."** Then simplified further:
+**"just remove the version sendign from the frontend this must be shifted to backend only... only
+frontend do not know anythng here it just know the server where to call and backend will manage it
+all."** And: **"and cehck all must be same i mean all 3"** - routing's default, detour's default,
+and the warm-load constant all had to reference ONE shared source of truth, not three
+independently drifting hardcoded values.
+
+**Backend (`data-types/routing/memoryGraph.js`, `data-types/routing/index.js`)**:
+- Added `MAIN_CONFLATION_SOURCE_ID = 2125`, `NODES_SOURCE_ID = 2096`, `EDGES_SOURCE_ID = 2097`,
+  `RELATIONS_SOURCE_ID = 2098`, `CURRENT_CONFLATION_VERSION = "2025"` - the single source of
+  truth, exported for `index.js`'s warm-load log line.
+- `resolveConflationTables(db)` now takes NO params (previously took a `conflationViewId` and
+  derived `version` from `data_manager.views`) - resolves all four tables by `source_id` +
+  `CURRENT_CONFLATION_VERSION` directly.
+- `loadGraph`, `getOrLoadGraph`, `invalidateGraph` all dropped their `conflationViewId` params;
+  cache key is now `` `${pgEnv}:${CURRENT_CONFLATION_VERSION}` ``.
+- `index.js`: removed `WARM_LOAD_CONFLATION_VIEW_ID` entirely; every route handler
+  (`/trsp`, `/trsp-memory`, `/nodes`, `/edges`, `/trsp-memory-detour-endpoints`,
+  `/trsp-memory-density-points`, `/trsp-memory-density`) stopped reading `conflation_view_id`
+  from the request body/query.
+
+**Frontend (`src/themes/transportny/components/routing/`, `.../detour/`)**: removed
+`DEFAULT_CONFLATION_VIEW_ID` from both plugins' `constants.js`, and stripped the
+`conflationViewId`/`conflation_view_id` param from every hook and fetch boundary that used to pass
+it through (`comp.jsx`, `hooks/useTrspRoute.js`, `hooks/resolveTrspRoute.js`, and detour's
+`hooks/useClosureDensity.js`, `hooks/resolveClosureDensity.js`, `hooks/usePickedPairRoute.js`,
+`hooks/resolveDetourEndpoints.js`, `hooks/resolveNodesInBbox.js` - the last one dead code, fixed
+anyway for consistency since it shares the same API contract). The frontend now sends only
+`{source, destination, ...}` - no version/view knowledge at all, per "frontend do not know
+anythng here."
+
+**Not yet done**: backend changes require a server restart and have NOT been live-tested against
+real 2025 data yet - this was interrupted before that step. Verify (post-restart): warm-load log
+line resolves all four 2025 tables successfully, a real point-to-point route and a real detour
+both return results, and closure-density mode still finds candidates, before considering this
+closed.
+
+### REVERTED - back to 2024 (view_id 3699) hardcoding (2026-09-01, same day)
+
+After a server restart, live testing against real 2025 data showed candidate points and route
+lines not rendering on the map, then the user reported the API "taking a lot of time" on every
+request (not just the expected first-request cold-load). Rather than debug 2025-data performance
+mid-session, the user said: **"revert back to the 2024 version i mean revert all code that you
+u[pdated] to make it 2025 version."**
+
+Reverted, file by file, back to the pre-refactor state (hardcoded `conflation_view_id`/
+`DEFAULT_CONFLATION_VIEW_ID = 3699` everywhere, threaded from frontend constants through every
+hook/fetch boundary to the backend, `resolveConflationTables(db, view_id)` back to its original
+by-view_id + table-name-suffix form, `getDataTable(db, view_id)` restored, `getOrLoadGraph`/
+`invalidateGraph`/`loadGraph` all take `conflationViewId` again, `WARM_LOAD_CONFLATION_VIEW_ID =
+3699` restored in `data-types/routing/index.js`, every route handler back to requiring
+`conflation_view_id` in its body/query). Confirmed via `node --check` (backend) and `npx eslint`
+(frontend, no parsing errors, no `conflation` findings) that the revert is complete and clean.
+Only unrelated work from earlier in this same session (theming conversions, the base-network-layer
+picker, etc.) was left in place - this revert touched exclusively the files changed by the 2025
+refactor above.
+
+**Status: back to the known-good, previously-live-tested 2024 view_id 3699 configuration.** The
+2025 data-source naming-convention problem (three different table-naming schemes across the main/
+nodes/edges/relations sources) documented above is real and still unsolved if a 2025 migration is
+attempted again - but any future attempt should investigate the "taking a lot of time" / invisible-
+layers symptom BEFORE re-landing this refactor, since neither was root-caused before the revert
+(candidates: 2025 dataset genuinely larger -> slower per-request search; the reinstated 30s Express
+timeout on density routes, see "Timeout removed entirely for both density routes" above; or the
+candidate/route coordinates landing far outside the zoomed-in test viewport, never actually
+confirmed either way).
+
+Backend requires a restart to pick this revert up (same as any `data-types/routing/` change).

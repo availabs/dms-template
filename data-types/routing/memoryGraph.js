@@ -51,10 +51,29 @@ const findEdgeIndexByOgcFid = (edgeOgcFid, targetOgcFid) => {
   return -1;
 };
 
+// Resolves a DAMA view's physical data_table by view_id, then derives its nodes/edges/relations
+// companion tables by suffix - valid for 2023/2024 conflation runs, which all publish under one
+// shared `temp.osm_conflation_1_{year}` prefix. (2026-09-01: a source_id+version-based resolution
+// was tried for a 2025 migration and then reverted per the user - see git history around this
+// date if that migration is attempted again; 2025's tables don't share this same prefix
+// convention, which is exactly why that attempt needed a different approach.)
 const getDataTable = async (db, view_id) => {
-  const { rows } = await db.query(`SELECT data_table FROM data_manager.views WHERE view_id = $1;`, [view_id]);
+  const { rows } = await db.query(
+    `SELECT data_table FROM data_manager.views WHERE view_id = $1;`,
+    [view_id]
+  );
   if (!rows.length) throw new Error(`No view found for view_id ${view_id}`);
   return rows[0].data_table;
+};
+
+const resolveConflationTables = async (db, view_id) => {
+  const conflationTable = await getDataTable(db, view_id);
+  return {
+    conflationTable,
+    nodesTable: `${conflationTable}_nodes`,
+    edgesTable: `${conflationTable}_edges`,
+    relationsTable: `${conflationTable}_relations`,
+  };
 };
 
 // Simple uniform grid spatial index over node coordinates, for nearest-node snapping without a
@@ -174,10 +193,7 @@ class MinHeap {
 }
 
 const loadGraph = async (db, conflationViewId) => {
-  const conflationTable = await getDataTable(db, conflationViewId);
-  const nodesTable = `${conflationTable}_nodes`;
-  const edgesTable = `${conflationTable}_edges`;
-  const relationsTable = `${conflationTable}_relations`;
+  const { conflationTable, nodesTable, edgesTable, relationsTable } = await resolveConflationTables(db, conflationViewId);
 
   console.log(`[memoryGraph] loading nodes from ${nodesTable}...`);
   const { rows: nodeRows } = await db.query(`SELECT osm_id, lon, lat FROM ${nodesTable};`);
@@ -813,7 +829,17 @@ const walkToFirstBranchSimple = (graph, startNode, blockedNode, excludedEdgeSet)
   let current = startNode;
   let prevNode = -1;
   let prevEdge = -1;
-  let incomingBearing = null; // direction just travelled TO `current`, null on the very first hop
+  // FIXED reference bearing, captured once on the first real hop and never updated after
+  // (2026-08-31 fix - "see the deflection from the direction... pick point on that direction only
+  // when any road join"). Previously this compared each hop against the bearing of the hop JUST
+  // taken (reset every iteration), which is locally-greedy: on a real street grid, small per-hop
+  // bearing drift compounds, and at a junction the walk could pick whatever's straightest relative
+  // to the last hop rather than the road's actual original direction - live-confirmed via a visible
+  // bend in the walked path at a real intersection (osm 5593248) that had no business turning there.
+  // Comparing every hop against the ORIGINAL direction instead keeps the walk locked onto the road
+  // it started on; it still genuinely stops/deflects at a real junction once nothing continues that
+  // original direction closely enough, per the branch-stop logic below.
+  let referenceBearing = null;
   let travelledM = 0;
   const path = [startNode];
 
@@ -839,18 +865,19 @@ const walkToFirstBranchSimple = (graph, startNode, blockedNode, excludedEdgeSet)
 
     const isBranch = candidates.length > 1; // pure topology, matches comp.jsx's hasIncomingBranch
 
-    // Pick the STRAIGHTEST-continuing edge, not just the first one adjacency happens to list -
-    // no incoming bearing yet on the very first hop, so candidates[0] there is fine (just leaving
-    // the closed segment's own endpoint, before any branch could have been seen).
-    const next = incomingBearing === null || candidates.length === 1
+    // Pick the STRAIGHTEST-continuing edge relative to the FIXED reference bearing, not just the
+    // first one adjacency happens to list - no reference bearing yet on the very first hop, so
+    // candidates[0] there is fine (just leaving the closed segment's own endpoint, before any
+    // branch could have been seen, and this hop also SETS the reference for every hop after it).
+    const next = referenceBearing === null || candidates.length === 1
       ? candidates[0]
       : candidates.reduce((best, c) => {
-          const diff = bearingDiff(incomingBearing, bearingDeg(graph, current, c.node));
+          const diff = bearingDiff(referenceBearing, bearingDeg(graph, current, c.node));
           return diff < best._diff ? { ...c, _diff: diff } : best;
-        }, { ...candidates[0], _diff: bearingDiff(incomingBearing, bearingDeg(graph, current, candidates[0].node)) });
+        }, { ...candidates[0], _diff: bearingDiff(referenceBearing, bearingDeg(graph, current, candidates[0].node)) });
     prevNode = current;
     prevEdge = next.edge;
-    incomingBearing = bearingDeg(graph, current, next.node);
+    if (referenceBearing === null) referenceBearing = bearingDeg(graph, current, next.node);
     current = next.node;
     travelledM += next.lengthM;
     path.push(current);
@@ -865,7 +892,9 @@ const walkToFirstBranchDensity = (graph, startNode, blockedNode, excludedEdgeSet
   let current = startNode;
   let prevNode = -1;
   let prevEdge = -1;
-  let incomingBearing = null; // direction just travelled TO `current`, null on the very first hop
+  // FIXED reference bearing, not updated per hop - same 2026-08-31 fix as walkToFirstBranchSimple
+  // above (see its comment for the full reasoning/live-observed bug).
+  let referenceBearing = null;
   let travelledM = 0;
   const path = [startNode];
 
@@ -891,18 +920,17 @@ const walkToFirstBranchDensity = (graph, startNode, blockedNode, excludedEdgeSet
 
     const isBranch = candidates.length > 1; // pure topology, matches comp.jsx's hasIncomingBranch
 
-    // Pick the STRAIGHTEST-continuing edge, not just the first one adjacency happens to list -
-    // no incoming bearing yet on the very first hop, so candidates[0] there is fine (just leaving
-    // the closed segment's own endpoint, before any branch could have been seen).
-    const next = incomingBearing === null || candidates.length === 1
+    // Pick the STRAIGHTEST-continuing edge relative to the FIXED reference bearing - see
+    // walkToFirstBranchSimple above for the full reasoning.
+    const next = referenceBearing === null || candidates.length === 1
       ? candidates[0]
       : candidates.reduce((best, c) => {
-          const diff = bearingDiff(incomingBearing, bearingDeg(graph, current, c.node));
+          const diff = bearingDiff(referenceBearing, bearingDeg(graph, current, c.node));
           return diff < best._diff ? { ...c, _diff: diff } : best;
-        }, { ...candidates[0], _diff: bearingDiff(incomingBearing, bearingDeg(graph, current, candidates[0].node)) });
+        }, { ...candidates[0], _diff: bearingDiff(referenceBearing, bearingDeg(graph, current, candidates[0].node)) });
     prevNode = current;
     prevEdge = next.edge;
-    incomingBearing = bearingDeg(graph, current, next.node);
+    if (referenceBearing === null) referenceBearing = bearingDeg(graph, current, next.node);
     current = next.node;
     travelledM += next.lengthM;
     path.push(current);
@@ -1208,6 +1236,23 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   const { picked: startCandidates, gapUsedM: startGapUsedM } = selectPreferSameRoad(startSameValid, startOtherValid);
   const { picked: endCandidates, gapUsedM: endGapUsedM } = selectPreferSameRoad(endSameValid, endOtherValid);
 
+  // TEMP DIAGNOSTIC (2026-09-01, remove once the 10-10 shortfall is actually root-caused) - "i
+  // want 10-10 must and check why it's not coming": logs the count at EVERY stage of the pipeline
+  // so a real shortfall can be traced to its actual cause (raw pool too small = genuinely sparse
+  // network vs. validation rejecting too many = the >50% majority rule being too strict vs. the
+  // gap-relaxation itself failing to reach numCandidates despite enough valid points) instead of
+  // guessing and changing another parameter blind, per the last attempt's revert.
+  console.log("[closure-density candidates] diagnostic", {
+    ogcFid, numCandidates,
+    rawStartPoolSize: rawStartPool.length, rawEndPoolSize: rawEndPool.length,
+    startSameRoadCount, endSameRoadCount,
+    candidatesRejected,
+    startSameValidCount: startSameValid.length, startOtherValidCount: startOtherValid.length,
+    endSameValidCount: endSameValid.length, endOtherValidCount: endOtherValid.length,
+    startPickedCount: startCandidates.length, endPickedCount: endCandidates.length,
+    startGapUsedM, endGapUsedM,
+  });
+
   // osm ids (not internal indices - those aren't a stable public identifier across requests) so
   // the frontend can hand them straight back to computeClosureDensityFromPoints below.
   const toPoint = (c) => ({ osm_id: String(graph.nodeOsmId[c.node]), lon: graph.nodeLon[c.node], lat: graph.nodeLat[c.node] });
@@ -1328,6 +1373,7 @@ module.exports = {
   getOrLoadGraph, invalidateGraph, findRoute,
   selectClosureDensityCandidates, computeClosureDensityFromPoints,
   resolveDetourEndpoints,
+  resolveConflationTables,
   // Exported for the standalone bridge-detour-process tool (2026-08-26,
   // /home/sarang/Documents/avail/bridge-detour-process) - it needs to keep walking a failed
   // direction's endpoint further out (past additional branches) when the initial one-hop-past-

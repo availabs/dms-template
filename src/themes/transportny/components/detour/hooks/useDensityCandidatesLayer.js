@@ -51,7 +51,8 @@ export const useDensityCandidatesLayer = (map, startPoints, endPoints, visible) 
 
   useEffect(() => {
     return () => {
-      if (!map) return;
+      // `.loaded()`, not just truthiness - see useEdgeLayer.js's cleanup for why.
+      if (!map || !map.loaded()) return;
       if (map.getLayer(DENSITY_CANDIDATES_LAYER_ID)) map.removeLayer(DENSITY_CANDIDATES_LAYER_ID);
       if (map.getSource(DENSITY_CANDIDATES_SOURCE_ID)) map.removeSource(DENSITY_CANDIDATES_SOURCE_ID);
     };

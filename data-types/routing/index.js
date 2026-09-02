@@ -53,15 +53,6 @@ const speedMphSql = (conflationTable, edgesAlias) => `COALESCE(
   (${HIGHWAY_SPEED_MPH_SQL.replaceAll("highway", `${edgesAlias}.highway`)})
 )`;
 
-const getDataTable = async (db, view_id) => {
-  const { rows } = await db.query(
-    `SELECT data_table FROM data_manager.views WHERE view_id = $1;`,
-    [view_id]
-  );
-  if (!rows.length) throw new Error(`No view found for view_id ${view_id}`);
-  return rows[0].data_table;
-};
-
 const snapToNearestNode = async (db, nodesTable, { lon, lat }) => {
   const { rows } = await db.query(
     `SELECT osm_id
@@ -193,10 +184,7 @@ const runTrspVariant = async (db, { conflationTable, edgesTable, costSql, restri
 // is its own independent, fully turn-restriction-aware pgr_trsp call - not true k-shortest-path
 // alternates (see the task file's Phase 7 for why that's a separate, harder problem).
 const computeTrspRoutes = async (db, pgEnv, { conflation_view_id, source, destination, source_node_id, dest_node_id }) => {
-  const conflationTable = await getDataTable(db, conflation_view_id);
-  const nodesTable = `${conflationTable}_nodes`;
-  const edgesTable = `${conflationTable}_edges`;
-  const relationsTable = `${conflationTable}_relations`;
+  const { conflationTable, nodesTable, edgesTable, relationsTable } = await memoryGraph.resolveConflationTables(db, conflation_view_id);
 
   // Caller already picked exact nodes (the node-picker UX) -> skip the snap query entirely.
   // Otherwise fall back to snapping raw lon/lat (the original free-form-click UX).
@@ -324,10 +312,10 @@ module.exports = {
       (async () => {
         try {
           const db = helpers.getDb(WARM_LOAD_PG_ENV);
-          console.log(`[routing] warm-load starting for conflation_view_id=${WARM_LOAD_CONFLATION_VIEW_ID}...`);
+          console.log(`[routing] warm-load starting for conflation_view_id ${WARM_LOAD_CONFLATION_VIEW_ID}...`);
           const t0 = Date.now();
           await memoryGraph.getOrLoadGraph(db, WARM_LOAD_PG_ENV, WARM_LOAD_CONFLATION_VIEW_ID);
-          console.log(`[routing] warm-load done in ${Date.now() - t0}ms - /trsp-memory (routing + detour) is warm for view ${WARM_LOAD_CONFLATION_VIEW_ID}`);
+          console.log(`[routing] warm-load done in ${Date.now() - t0}ms - /trsp-memory (routing + detour) is warm`);
         } catch (err) {
           console.error("[routing] warm-load failed (harmless - the first real request will load it lazily instead):", err.message);
         }
@@ -342,7 +330,7 @@ module.exports = {
         if (!conflation_view_id || (!hasNodeIds && (!source || !destination))) {
           return res.status(400).json({
             ok: false,
-            error: "conflation_view_id is required, plus either {source_node_id, dest_node_id} or {source, destination}",
+            error: "conflation_view_id and either {source_node_id, dest_node_id} or {source, destination} are required",
           });
         }
 
@@ -360,8 +348,9 @@ module.exports = {
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory
     // Phase 11 Stage A: same {shortest, fastest} contract as /trsp, computed via an in-memory
     // typed-array graph instead of per-request SQL. NEW, ADDITIVE route - /trsp above is
-    // completely untouched. First request for a given conflation_view_id pays a one-time graph
-    // load cost (logged); every request after that reuses the cached in-memory graph.
+    // completely untouched. First request per conflation_view_id after a server restart pays a
+    // one-time graph load cost (logged); every request after that reuses the cached in-memory
+    // graph for that view.
     //
     // Optional body field `algorithm`: "dijkstra" (default, unchanged) or "bidirectional" - a
     // second exact search that grows from both source and destination at once, meant to cut the
@@ -422,8 +411,8 @@ module.exports = {
         }
 
         const db = helpers.getDb(req.params.pgEnv);
-        const conflationTable = await getDataTable(db, conflation_view_id);
-        const nodes = await getNodesInBbox(db, `${conflationTable}_nodes`, bboxParts);
+        const { nodesTable } = await memoryGraph.resolveConflationTables(db, conflation_view_id);
+        const nodes = await getNodesInBbox(db, nodesTable, bboxParts);
         res.json({ ok: true, result: { nodes } });
       } catch (err) {
         console.error("[routing/nodes] failed:", err);
@@ -444,8 +433,8 @@ module.exports = {
         }
 
         const db = helpers.getDb(req.params.pgEnv);
-        const conflationTable = await getDataTable(db, conflation_view_id);
-        const edges = await getEdgesInBbox(db, `${conflationTable}_edges`, bboxParts);
+        const { edgesTable } = await memoryGraph.resolveConflationTables(db, conflation_view_id);
+        const edges = await getEdgesInBbox(db, edgesTable, bboxParts);
         res.json({ ok: true, result: { edges } });
       } catch (err) {
         console.error("[routing/edges] failed:", err);
@@ -473,7 +462,7 @@ module.exports = {
         const t1 = Date.now();
         const result = memoryGraph.resolveDetourEndpoints(graph, ogc_fid);
         const searchMs = Date.now() - t1;
-        console.log("[routing/trsp-memory-detour-endpoints]", { conflation_view_id, ogc_fid, loadMs, searchMs });
+        console.log("[routing/trsp-memory-detour-endpoints]", { ogc_fid, loadMs, searchMs });
 
         res.json({ ok: true, result: { ...result, timing: { loadMs, searchMs } } });
       } catch (err) {
@@ -503,7 +492,7 @@ module.exports = {
         const result = await memoryGraph.selectClosureDensityCandidates(graph, ogc_fid, num_candidates || 10, cost_objective || "distance");
         const searchMs = Date.now() - t1;
         console.log("[routing/trsp-memory-density-points]", {
-          conflation_view_id, ogc_fid,
+          ogc_fid,
           startPoints: result.startPoints.length, endPoints: result.endPoints.length,
           candidatesRejected: result.candidatesRejected,
           // Real achieved gap (meters), after any relaxation - see selectClosureDensityCandidates.
@@ -540,7 +529,7 @@ module.exports = {
         const result = await memoryGraph.computeClosureDensityFromPoints(db, graph, ogc_fid, start_node_ids, end_node_ids, cost_objective || "distance");
         const searchMs = Date.now() - t1;
         console.log("[routing/trsp-memory-density]", {
-          conflation_view_id, ogc_fid,
+          ogc_fid,
           totalPairsComputed: result.totalPairsComputed, totalPairsFailed: result.totalPairsFailed,
           loadMs, searchMs,
         });

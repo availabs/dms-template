@@ -9,7 +9,8 @@
 // POINTS_* here, unlike ../routing/constants.js.
 //
 // Same conflation-view caveat as ../routing/constants.js - re-verify before trusting a future
-// replacement id.
+// replacement id. (2026-09-01: a server-side no-hardcode refactor was tried and reverted per the
+// user - back to the known-good 2024 view/id below; see ../routing/constants.js's note.)
 const DEFAULT_CONFLATION_VIEW_ID = 3699;
 
 // The resulting detour route line.
@@ -26,10 +27,14 @@ const ROUTE_SECONDARY_SOURCE_ID = "detour-route-line-secondary";
 const ROUTE_SECONDARY_LAYER_ID = "detour-route-line-secondary";
 const ROUTE_SECONDARY_COLOR = "#6b93b0";
 
-// Viewport-scoped conflation edges, clickable as soon as the plugin is active (no gating on
-// point-picking, since there is none).
-const EDGES_SOURCE_ID = "detour-edge-picker";
-const EDGES_LAYER_ID = "detour-edge-picker";
+// Base network layer, author-selected via internalPanel.jsx (2026-08-31 - replaces the plugin's
+// own bbox-fetched layer, see the task file's "Base layer: author-selected DMS layer" section).
+// The plugin no longer owns a source/layer for the pickable network - EDGES_LAYER_KEY is the
+// plugin-data key the chosen symbology layerKey is stored under, mirroring
+// ../routecreation/constants.js's SHAPEFILE_LAYER_KEY.
+const EDGES_LAYER_KEY = "conflation_edges";
+const BLANK_OPTION = { value: "", name: "" };
+
 const SELECTED_SEGMENT_SOURCE_ID = "detour-selected-segment";
 const SELECTED_SEGMENT_LAYER_ID = "detour-selected-segment";
 
@@ -127,8 +132,8 @@ export {
   ROUTE_SECONDARY_SOURCE_ID,
   ROUTE_SECONDARY_LAYER_ID,
   ROUTE_SECONDARY_COLOR,
-  EDGES_SOURCE_ID,
-  EDGES_LAYER_ID,
+  EDGES_LAYER_KEY,
+  BLANK_OPTION,
   SELECTED_SEGMENT_SOURCE_ID,
   SELECTED_SEGMENT_LAYER_ID,
   HOVER_SEGMENT_SOURCE_ID,

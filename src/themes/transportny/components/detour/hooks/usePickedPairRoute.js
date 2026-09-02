@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { resolveTrspRoute } from "./resolveTrspRoute";
+import { chooseAlgorithm } from "./haversineMiles";
 
 // Testing-only (2026-08-21): once both a start and end candidate point are picked (via
 // useDensityPointPicker), fetches the actual route between them - reuses the existing single-trip
@@ -33,7 +34,8 @@ export const usePickedPairRoute = (conflationViewId, pgEnv, excludedOgcFid) => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    resolveTrspRoute(pickedStart, pickedEnd, conflationViewId, pgEnv, [excludedOgcFid])
+    const algorithm = chooseAlgorithm(pickedStart, pickedEnd);
+    resolveTrspRoute(pickedStart, pickedEnd, conflationViewId, pgEnv, [excludedOgcFid], algorithm)
       .then((routes) => {
         if (cancelled) return;
         setRoute(routes);
