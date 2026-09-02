@@ -786,3 +786,43 @@ explicitly out of scope.
   agent against `old-reports-conversion.md` (verification + classification pass, no bulk conversion
   run yet — that's a separate go/no-go once the classification lands). Workstream A (the modal
   mockups) is next.
+- **2026-09-02: header title edit + mount-prefix redirect fix, BUILT + live-verified**. Ryan asked
+  for the report canvas HEADER's own h1 (`ReportPageHeader.jsx`) to be directly editable in edit
+  mode — same mechanism as the Bottom toolbar's Filter icon → Page Name field, not a parallel one:
+  title, `url_slug`, and the `reports_snap_2` catalog row's `name`/`page_path` should all change
+  together, exactly as they do via that existing path.
+  - **Mechanism**: the h1 becomes a real `<input>` when `editPageMode` (draft state + commit on
+    blur/Enter, not per-keystroke — `updateTitle` both writes the page row AND navigates). Calls
+    the literal core `updateTitle()` (`editFunctions.jsx`) — same function the Page Name field
+    calls — so title/url_slug behavior is identical by construction, not reimplemented.
+  - **`reports_snap_2` sync**: `updateTitle` has no idea the catalog row exists (it's a
+    transportny-theme concern, not core dms). `useReportTags.js` renamed to
+    `useReportCatalogRow.js` and extended with a `syncTitle(name, pagePath)` function alongside
+    the existing `persistTags` — writes just `name`/`page_path` (JSONB merge, `tags` untouched) to
+    the SAME row `useReportRow.js`'s `persistRoutes`/`persistTags` already self-heal on every
+    route/tag edit. Without this, a rename-only session (no route/tag touch afterward) left the
+    catalog stale indefinitely — now it's synced the moment the title commits. The new page_path is
+    computed via the same pure `getUrlSlug()` `updateTitle` itself calls internally (recomputed
+    with the identical `newItem` shape, not read back off `item.url_slug` post-navigate, which is
+    still stale until the redirect's re-fetch lands — no race).
+  - **Real bug found and fixed along the way, not pre-existing-and-ignored**: `updateTitle`'s own
+    post-rename redirect (`/edit/${url_slug}`) never routed through `resolveMountPath`, unlike its
+    sibling `newPage()` in the same file — on the `www.localhost:5173/npmrds` mount this dropped
+    the `/npmrds` prefix and fell through to a DIFFERENT pattern's page (TransportNY's root
+    landing page), not a 404. Ryan flagged it live as "very common issue." Fixed at the source
+    (`updateTitle` gained optional `mountBaseUrl`/`siteRootPaths` params, both callers —
+    `settingsPane.jsx` and `ReportPageHeader.jsx` — now pass `MountContext` through), so this also
+    fixes the pre-existing Page Name field, not just the new header editor. Full writeup:
+    `src/dms/planning/tasks/current/mount-aware-links-and-retired-subdomains.md`'s new Follow-up
+    section.
+  - **Live-verified** on a scratch report (`converted_reports/page_20`, deleted after) on the
+    now-current `www.localhost:5173/npmrds` mount (the `npmrds.localhost` subdomain was retired the
+    same day, see `traversing-dms-pages.md`'s updated subdomain gotcha): renamed via the header
+    twice and via the Page Name field once, cross-checking both paths — `dms page show` confirmed
+    `title`/`url_slug` correct after each; `dms dataset query reports_snap_2` confirmed the catalog
+    row's `name`/`page_path` updated after every HEADER rename (one row throughout, no duplicates,
+    `tags`/`routes` untouched) and correctly stayed on the OLD value after the Page Name field
+    rename (that path was intentionally left unchanged — it still only self-heals on the next
+    route/tag edit, same as before this session).
+  - **Also fixed**: `scripts/npmrds-reports/report_probe.mjs` and `pick_test_report.py`'s default
+    dev host (both hardcoded the retired `npmrds.localhost:5173` subdomain).

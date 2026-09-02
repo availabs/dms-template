@@ -35,7 +35,7 @@ import dbq
 
 PAGE_TYPE = "npmrds_sub|page"
 CONVERTED_PARENT_SLUG = "converted_reports"
-DEV_HOST = "http://npmrds.localhost:5173"
+DEV_HOST = "http://www.localhost:5173/npmrds"  # npmrds_sub's subdomain mount was retired 2026-09-02
 
 
 def _rows(sql):

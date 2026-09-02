@@ -8,7 +8,11 @@ For pages at `stage=Implemented` (and re-assessment during T4 verification). Two
 From the page row (`qa_state.mjs state --page <key>`): `url` is protocol-relative against the
 DEPLOYED dev domain (e.g. `//tsmo2.devtny.org/home` — cr_sync hardcodes `devtny.org` because the
 stored link must work off-box). Assessment runs against the LOCAL dev server: take the url's
-subdomain and re-suffix it, `http://<subdomain>.localhost:5173`. Draft pages are assessed at
+subdomain and re-suffix it, `http://<subdomain>.localhost:5173` — **unless that pattern has since
+moved to path-mount routing** (confirm with `dms pattern show <pattern-name>`: a `subdomain:"www"`
++ non-`/` `base_url` means the origin is `http://www.localhost:5173/<base_url>` instead, e.g.
+npmrds_sub moved off the `npmrds` subdomain to `www:/npmrds` 2026-09-02 — see
+`traversing-dms-pages.md`'s subdomain gotcha). Draft pages are assessed at
 `http://<origin-host>/edit/<slug>`; published pages also at the view URL. Mint a storageState
 FOR THAT ORIGIN (tokens are per-origin):
 
