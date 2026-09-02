@@ -20,7 +20,7 @@ import { chooseAlgorithm } from "./haversineMiles";
 // it from the shared plugin state (`state.symbology.pluginData.detour.direction`), the same store
 // backing this plugin's internalPanel.jsx controls (2026-08-19 follow-up: "use this window to put
 // the button for the last both direction stuff"). Keeping one source of truth for that selection.
-export const useTrspRoute = (conflationViewId, pgEnv) => {
+export const useTrspRoute = (pgEnv) => {
   const [routes, setRoutes] = useState(null);
   const [baselineRoutes, setBaselineRoutes] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState("shortest"); // "shortest" | "fastest"
@@ -36,8 +36,8 @@ export const useTrspRoute = (conflationViewId, pgEnv) => {
   const fetchBothDirections = (start, end, excludedEdgeIds) => {
     const algorithm = chooseAlgorithm(start, end);
     return Promise.allSettled([
-      resolveTrspRoute(start, end, conflationViewId, pgEnv, excludedEdgeIds, algorithm),
-      resolveTrspRoute(end, start, conflationViewId, pgEnv, excludedEdgeIds, algorithm),
+      resolveTrspRoute(start, end, pgEnv, excludedEdgeIds, algorithm),
+      resolveTrspRoute(end, start, pgEnv, excludedEdgeIds, algorithm),
     ]).then(([AtoBResult, BtoAResult]) => ({
       AtoB: AtoBResult.status === "fulfilled" ? AtoBResult.value : null,
       BtoA: BtoAResult.status === "fulfilled" ? BtoAResult.value : null,
@@ -68,7 +68,7 @@ export const useTrspRoute = (conflationViewId, pgEnv) => {
       setLoading(false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conflationViewId, pgEnv]);
+  }, [pgEnv]);
 
   const reset = useCallback(() => {
     requestIdRef.current++;

@@ -13,7 +13,8 @@ import { useDensityCandidatesLayer } from "./hooks/useDensityCandidatesLayer";
 import { useDensityPointPicker } from "./hooks/useDensityPointPicker";
 import { usePickedPairRoute } from "./hooks/usePickedPairRoute";
 import { resolveDetourEndpoints } from "./hooks/resolveDetourEndpoints";
-import { DEFAULT_CONFLATION_VIEW_ID, EDGES_LAYER_KEY } from "./constants";
+import { resolveEdgeAtPoint } from "./hooks/resolveEdgeAtPoint";
+import { EDGES_LAYER_KEY } from "./constants";
 import { DetourDetailsPanel } from "./components/DetourDetailsPanel";
 import { ClosureDensityPanel } from "./components/ClosureDensityPanel";
 
@@ -25,10 +26,28 @@ import { ClosureDensityPanel } from "./components/ClosureDensityPanel";
 // detour" even ran the real route search. Same walk-to-first-branch rule either way (pure
 // topology - a node with more than one viable next edge is a real branch, take exactly one more
 // hop past it and stop that direction), just one fast in-memory call now instead of many.
-const resolveVerifiedEndpoints = async (segment, conflationViewId, pgEnv) => {
-  const result = await resolveDetourEndpoints(segment.ogcFid, conflationViewId, pgEnv);
+//
+// Takes a resolved ogc_fid (see resolveEdgeAtPoint's own comment for why this can no longer be
+// the raw picked-layer feature id), not a segment object.
+const resolveVerifiedEndpoints = async (ogcFid, pgEnv) => {
+  const result = await resolveDetourEndpoints(ogcFid, pgEnv);
   if (!result?.start || !result?.end) return null; // genuinely isolated end, no candidate at all
   return { start: result.start, end: result.end };
+};
+
+// Returns the clicked segment's own first/last coordinates (2026-09-02 - "take the start and end
+// lat long and find which segment is disconnected in 2025"). Two real endpoints let the backend
+// validate actual network topology (a real edge connecting two snapped nodes), not just proximity
+// to one point.
+const endpointsOf = (geometry) => {
+  if (!geometry) return null;
+  const coords = geometry.type === "LineString" ? geometry.coordinates
+    : geometry.type === "MultiLineString" ? geometry.coordinates[0]
+    : null;
+  if (!coords?.length) return null;
+  const [startLon, startLat] = coords[0];
+  const [endLon, endLat] = coords[coords.length - 1];
+  return { start: { lon: startLon, lat: startLat }, end: { lon: endLon, lat: endLat } };
 };
 
 // Detour/avoid-segment plugin - answers "what happens to any trip through this segment if it's
@@ -69,11 +88,11 @@ const Comp = ({ state, setState, map }) => {
   const {
     routes, baselineRoutes, selectedVariant, setSelectedVariant,
     loading, error, getRoute, reset: resetRoute,
-  } = useTrspRoute(DEFAULT_CONFLATION_VIEW_ID, pgEnv);
+  } = useTrspRoute(pgEnv);
 
   const {
     density, loading: densityLoading, phase: densityPhase, error: densityError, analyze, reset: resetDensity,
-  } = useClosureDensity(DEFAULT_CONFLATION_VIEW_ID, pgEnv);
+  } = useClosureDensity(pgEnv);
 
   const hasResult = isDensityMode
     ? Boolean(density) || Boolean(densityError)
@@ -88,6 +107,51 @@ const Comp = ({ state, setState, map }) => {
   // segment clicks are ignored until "Clear detour"/"Clear analysis" - see useEdgeLayer's isActive
   // contract.
   const { selectedSegment, clearSegment } = useEdgeLayer(map, edgesLayerId, !hasResult);
+
+  // Segment-identity fix (2026-09-02, "the layer showing here is 2024 and the backend using data
+  // is of 2025... ogc_fid... is not consistant across the years it just the int PK"): the base
+  // network layer (`edgesLayerId` above) is author-selected and can be ANY year's tiled layer,
+  // but every /trsp-memory-* backend call routes against ONE hardcoded conflation table set. The
+  // raw `selectedSegment.ogcFid` (that layer's own feature id) is therefore NOT a safe identifier
+  // into the backend's table - it silently matched an unrelated segment, which is why candidate
+  // points were landing "way too far ahead" of the segment actually clicked. `resolvedOgcFid` is
+  // the backend's OWN ogc_fid for whatever real-world segment the author clicked, snapped
+  // server-side from the clicked geometry's start/end coordinates (resolveEdgeAtPoint.js) - this
+  // is the only ogc_fid ever passed to resolveDetourEndpoints/analyze/getRoute/usePickedPairRoute
+  // below.
+  const [resolvedOgcFid, setResolvedOgcFid] = React.useState(null);
+  const [segmentResolveError, setSegmentResolveError] = React.useState(null);
+  React.useEffect(() => {
+    if (!selectedSegment) {
+      setResolvedOgcFid(null);
+      setSegmentResolveError(null);
+      return;
+    }
+    const endpoints = endpointsOf(selectedSegment.geometry);
+    if (!endpoints) {
+      setResolvedOgcFid(null);
+      setSegmentResolveError("Could not read this segment's geometry.");
+      return;
+    }
+    let cancelled = false;
+    setResolvedOgcFid(null);
+    setSegmentResolveError(null);
+    resolveEdgeAtPoint(endpoints, pgEnv).then(({ ogc_fid, exactMatch }) => {
+      if (cancelled) return;
+      setResolvedOgcFid(ogc_fid);
+      // No real edge connects the two snapped nodes in the live table - the clicked segment
+      // doesn't exist in this shape in the current routing data (a real, name-the-cause
+      // condition per the user's own framing - "find which segment is disconnected in 2025" -
+      // not something to silently paper over with a best-effort nearest-edge guess).
+      if (!exactMatch) {
+        setSegmentResolveError("This segment doesn't match a connected road in the current routing data - results may be inaccurate.");
+      }
+    }).catch((err) => {
+      if (cancelled) return;
+      setSegmentResolveError(err.message || "Failed to resolve this segment against the current routing data.");
+    });
+    return () => { cancelled = true; };
+  }, [selectedSegment, pgEnv]);
 
   const [startEnd, setStartEnd] = React.useState(null); // { start: {lon,lat}, end: {lon,lat} } | null
   const [resolving, setResolving] = React.useState(false);
@@ -122,7 +186,7 @@ const Comp = ({ state, setState, map }) => {
   const {
     pickedStart, pickedEnd, route: pickedRoute, loading: pickedRouteLoading,
     error: pickedRouteError, pick: pickCandidatePoint, clear: clearPickedPair,
-  } = usePickedPairRoute(DEFAULT_CONFLATION_VIEW_ID, pgEnv, selectedSegment?.ogcFid);
+  } = usePickedPairRoute(pgEnv, resolvedOgcFid);
   const pickerActive = isDensityMode && showCandidatePoints && pickPairTesting;
   useDensityPointPicker(map, pickerActive, pickCandidatePoint);
   // A picked pair belongs to the segment it was picked under - clear it whenever the selected
@@ -131,7 +195,7 @@ const Comp = ({ state, setState, map }) => {
   React.useEffect(() => {
     clearPickedPair();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSegment?.ogcFid]);
+  }, [selectedSegment]);
 
   // Single-trip mode: its own route (primaryFeature/secondaryFeatures). Density mode: the
   // heatmap has its own layer instead, EXCEPT when the testing pair-picker has a route to show -
@@ -160,6 +224,46 @@ const Comp = ({ state, setState, map }) => {
     isDensityMode && showCandidatePoints,
   );
 
+  // Auto-zoom to whatever result just came in (2026-09-02 - "the points are not visible and
+  // routes too" reported with no console/server errors and confirmed-correct backend data:
+  // nothing anywhere ever moved the map to the result, so a result several miles from wherever
+  // the map happened to be panned/zoomed when the segment was picked would render correctly but
+  // simply be off-screen). Fits to the closure-density heatmap's edge geometries (falls back to
+  // candidate points if the tally hasn't finished yet) in density mode, or the primary/secondary
+  // route features in single-trip mode - whichever is the actual visual result for the current
+  // mode.
+  React.useEffect(() => {
+    if (!map) return;
+    const coords = [];
+    const collectFromGeometry = (geometry) => {
+      if (!geometry) return;
+      if (geometry.type === "LineString") coords.push(...geometry.coordinates);
+      else if (geometry.type === "MultiLineString") geometry.coordinates.forEach((line) => coords.push(...line));
+    };
+
+    if (isDensityMode) {
+      if (density?.edgeFrequencies?.length) {
+        density.edgeFrequencies.forEach((e) => collectFromGeometry(e.geometry));
+      } else {
+        (density?.startPoints || []).forEach((p) => coords.push([p.lon, p.lat]));
+        (density?.endPoints || []).forEach((p) => coords.push([p.lon, p.lat]));
+      }
+    } else {
+      collectFromGeometry(primaryFeature?.geometry);
+      secondaryFeatures.forEach((f) => collectFromGeometry(f?.geometry));
+    }
+
+    if (!coords.length) return;
+    let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
+    for (const [lon, lat] of coords) {
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }
+    map.fitBounds([[minLon, minLat], [maxLon, maxLat]], { padding: 80, maxZoom: 16, duration: 500 });
+  }, [map, isDensityMode, density?.edgeFrequencies, density?.startPoints, density?.endPoints, primaryFeature, secondaryFeatures]);
+
   // Switching modes clears whichever result the OTHER mode was showing, so no stale layer/panel
   // content survives the toggle (single <-> density).
   React.useEffect(() => {
@@ -184,11 +288,12 @@ const Comp = ({ state, setState, map }) => {
       setResolveError(null);
       return;
     }
+    if (!resolvedOgcFid) return; // still waiting on the segment-identity resolve above
 
     let cancelled = false;
     setResolving(true);
     setResolveError(null);
-    resolveVerifiedEndpoints(selectedSegment, DEFAULT_CONFLATION_VIEW_ID, pgEnv).then((result) => {
+    resolveVerifiedEndpoints(resolvedOgcFid, pgEnv).then((result) => {
       if (cancelled) return;
       setResolving(false);
       if (result) {
@@ -208,16 +313,16 @@ const Comp = ({ state, setState, map }) => {
 
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSegment?.ogcFid]);
+  }, [selectedSegment, resolvedOgcFid]);
 
   const handleGetDetour = () => {
-    if (!startEnd || !selectedSegment) return;
-    getRoute(startEnd.start, startEnd.end, [selectedSegment.ogcFid]);
+    if (!startEnd || !resolvedOgcFid) return;
+    getRoute(startEnd.start, startEnd.end, [resolvedOgcFid]);
   };
 
   const handleAnalyze = () => {
-    if (!selectedSegment) return;
-    analyze(selectedSegment.ogcFid);
+    if (!resolvedOgcFid) return;
+    analyze(resolvedOgcFid);
   };
 
   const handleReset = () => {
@@ -234,11 +339,11 @@ const Comp = ({ state, setState, map }) => {
     return (
       <ClosureDensityPanel
         selectedSegment={selectedSegment}
-        canAnalyze={Boolean(selectedSegment) && !hasResult}
+        canAnalyze={Boolean(resolvedOgcFid) && !hasResult}
         loading={densityLoading}
         phase={densityPhase}
         error={densityError}
-        resolveError={null}
+        resolveError={segmentResolveError}
         density={density}
         onAnalyze={handleAnalyze}
         onReset={handleReset}
@@ -256,10 +361,10 @@ const Comp = ({ state, setState, map }) => {
   return (
     <DetourDetailsPanel
       selectedSegment={selectedSegment}
-      canGetDetour={Boolean(startEnd) && !hasResult}
+      canGetDetour={Boolean(startEnd) && Boolean(resolvedOgcFid) && !hasResult}
       loading={loading || resolving}
       error={error}
-      resolveError={resolveError}
+      resolveError={resolveError || segmentResolveError}
       routes={routes}
       baselineRoutes={baselineRoutes}
       selectedVariant={selectedVariant}

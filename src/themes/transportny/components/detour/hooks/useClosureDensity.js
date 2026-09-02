@@ -9,7 +9,7 @@ import { DENSITY_NUM_CANDIDATES } from "../constants";
 // useClosureDensityLayer, ClosureDensityPanel) don't need to know which step is done - after step
 // 1 it's `{ startPoints, endPoints, candidatesRejected }`, after step 2 it also has
 // `{ edgeFrequencies, maxCount, totalPairsComputed, totalPairsFailed }`.
-export const useClosureDensity = (conflationViewId, pgEnv) => {
+export const useClosureDensity = (pgEnv) => {
   const [density, setDensity] = useState(null);
   const [loading, setLoading] = useState(false);
   // Two-phase status (2026-08-21: "let route mapping in process" - candidate points can already
@@ -27,7 +27,7 @@ export const useClosureDensity = (conflationViewId, pgEnv) => {
     setError(null);
     setDensity(null);
 
-    resolveClosureDensityPoints(ogcFid, conflationViewId, pgEnv, DENSITY_NUM_CANDIDATES)
+    resolveClosureDensityPoints(ogcFid, pgEnv, DENSITY_NUM_CANDIDATES)
       .then((pointsResult) => {
         if (requestIdRef.current !== requestId) return;
         setDensity(pointsResult); // candidate markers can render now, before the tally finishes
@@ -37,7 +37,7 @@ export const useClosureDensity = (conflationViewId, pgEnv) => {
         if (!startNodeIds.length || !endNodeIds.length) {
           throw new Error("No valid candidate points found for this segment.");
         }
-        return resolveClosureDensityRoutes(ogcFid, conflationViewId, pgEnv, startNodeIds, endNodeIds).then((tallyResult) => {
+        return resolveClosureDensityRoutes(ogcFid, pgEnv, startNodeIds, endNodeIds).then((tallyResult) => {
           if (requestIdRef.current !== requestId) return;
           setDensity((prev) => ({ ...prev, ...tallyResult }));
           setPhase(null);
@@ -51,7 +51,7 @@ export const useClosureDensity = (conflationViewId, pgEnv) => {
         setPhase(null);
         setLoading(false);
       });
-  }, [conflationViewId, pgEnv]);
+  }, [pgEnv]);
 
   const reset = useCallback(() => {
     requestIdRef.current++;

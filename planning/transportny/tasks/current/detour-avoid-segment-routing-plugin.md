@@ -2110,3 +2110,265 @@ candidate/route coordinates landing far outside the zoomed-in test viewport, nev
 confirmed either way).
 
 Backend requires a restart to pick this revert up (same as any `data-types/routing/` change).
+
+### 2025 conflation data, take 2: hardcoded table names + start/end-endpoint segment resolution (2026-09-02)
+
+Same day, redone per explicit correction: **"manage this along the backend only can take the hard
+code version or table names we are not going to use the db to find the table name it will take
+few sec and this process is not for that."** `data-types/routing/memoryGraph.js`'s
+`resolveConflationTables()` is now a plain synchronous function returning four hardcoded string
+literals (`CONFLATION_TABLE`/`NODES_TABLE`/`EDGES_TABLE`/`RELATIONS_TABLE`) - no DB query at all.
+Confirmed live, read-only, against `data_manager.views` for source_id/version pairs
+(2125/2096/2097/2098 x version='2025'):
+
+| source_id | role | data_table |
+|---|---|---|
+| 2125 | main | `temp.s2125_v3772_osm_conflation_2025` |
+| 2096 | nodes | `temp.s2096_v3773_osm_conflation_nodes_2025` |
+| 2097 | edges | `temp.s2097_v3774_osm_conflation_edges_2025` |
+| 2098 | relations | `temp.osm_conflation_1_2025_relations` |
+
+Confirmed columns and real row counts (5,416,201 nodes / 10,042,759 edges / 16,643 resolved
+relations) match. `loadGraph`/`getOrLoadGraph`/`invalidateGraph` cache key is just `pgEnv` now.
+Frontend `DEFAULT_CONFLATION_VIEW_ID` removed from both plugins' `constants.js` again; every hook
+that passed it stopped sending it.
+
+**Segment-identity resolution** (same "ogc_fid isn't stable across conflation years" bug as
+before, since the base network layer is author-selected to any year): `resolveEdgeBetweenPoints(db,
+edgesTable, nodesTable, {start, end})` in `data-types/routing/index.js` - snaps the clicked
+segment's own START/END coordinates (`comp.jsx`'s `endpointsOf`, the segment's real first/last
+LineString coordinates) to nodes via `snapToNearestNode`, looks for a direct edge connecting them
+(`exactMatch: true`), and falls back to nearest-by-distance against the segment's midpoint
+(`exactMatch: false`) when no such edge exists. New route `POST /trsp-memory-resolve-edge` exposes
+this; new frontend fetch boundary `resolveEdgeAtPoint.js`. `comp.jsx` resolves `resolvedOgcFid`
+via a `useEffect` on `selectedSegment` and passes it (not the raw picked-layer `ogc_fid`) to every
+downstream call (`resolveDetourEndpoints`, `analyze`, `getRoute`'s `excluded_edge_ids`,
+`usePickedPairRoute`); `segmentResolveError` surfaces a warning when `exactMatch` is false instead
+of silently guessing.
+
+**A multi-edge-chain version was attempted and explicitly reverted same day.** User's next report:
+"still overlap... allow user to pick segment and you for that year pick the lat and long of that
+selected segment here and then understand the segment for 2025 may be 2 segment comes unders that
+lat long break those 2 or take those 2 as a single" - confirmed via a follow-up choice ("treat all
+matched 2025 edges as one closed set") to build a graph-path-search version that resolved a picked
+segment to a whole CHAIN of edges (new `resolveEdgeChainBetweenPoints` in `memoryGraph.js`,
+`closureContext` generalized to arrays, the `densitySearchPool.js`/`graphSearchWorker.js` worker
+protocol changed from a fixed edge pair to an array). While testing that version live, the user hit
+a stuck "Finding nearby candidate points…" state with no "Analyze coverage" button ever appearing,
+said **"lol" / "revert this"**, then clarified after an over-correction (a full revert to the last
+commit, `99f02b1`, discarding the 2025-hardcoded-tables work too) with **"noo i mean keep the last
+[c]hange i said rever[t] last to last change only"** - i.e. keep the hardcoded-2025-tables +
+single-edge start/end resolution, drop only the multi-edge chain redesign. That is the state
+documented in this section and currently in the working tree.
+
+**Also confirmed by the user mid-thread, worth remembering going forward: "i told you clearly that
+this is only a backend task front must have to behave as before i mean user actions"** - future
+work in this area must keep the frontend's user-facing behavior (buttons, panels, click flow)
+exactly as before; only the backend's data-source resolution should change.
+
+Verified via `node --check` (all touched backend files) and `npx eslint` (frontend - no new
+errors, no leftover `conflation_view_id`/multi-edge-chain references confirmed via grep).
+**Not yet live-tested** - needs a backend restart to pick up the current `/trsp-memory-resolve-edge`
+contract and hardcoded table names.
+
+### Closure-density candidate search: directional bias to reduce U-turn candidates (2026-09-02, PENDING LIVE VERIFICATION)
+
+Live testing on the 2025 layer (candidates now correctly resolving, no more year mismatch) surfaced
+a separate, real problem: candidate points clustering right at/behind the closed segment - a visible
+U-turn in the candidate search's own exploration. User's diagnosis and requested fix, verbatim:
+**"it took u turn i told you to not take u turn rather expand the route in that dir... you can take
+one node in u turn route and stop and expand more on the same direction if found the nodes in that
+dir can pick those and it dead end then only expand other ways there."**
+
+**Important history**: a hard no-U-turn rule (`predecessorNode` tracking, fully blocking the reverse
+edge in `farthestToNearestNodes`) was already tried once and reverted - "it is not doing the u turn
+but the gap between the nodes is too less which is not useful at all." Confirmed with the user
+before implementing again which approach to use this time (asked directly, since a repeat of the
+same failure mode was a real risk): **chose a SOFT directional-bias penalty over a hard block.**
+
+**Implementation** (`data-types/routing/memoryGraph.js`'s `farthestToNearestNodes`, used by
+`selectClosureDensityCandidates` for the closure-density candidate search):
+- The search's Dijkstra now tracks TWO values per node: `dist[]` (real, unpenalized cumulative
+  network distance - unchanged, still what `MIN_GAP_M` spacing enforcement reads) and a separate
+  `priority[]` (direction-penalized cumulative cost, used ONLY as the heap key that controls
+  exploration/settling order).
+- `directionPenalty(inBearing, outBearing)`: an edge continuing roughly the same bearing as the
+  edge that just reached this node costs its real length (penalty = 1x); an edge reversing back
+  the way it came costs up to `DIRECTION_PENALTY_MAX` (4x) its real length, linearly interpolated
+  by the bearing difference (0deg = straight = 1x, 180deg = full reversal = 4x). The first hop out
+  of the seed has no prior bearing to compare against, so it's unpenalized (1x), same as before.
+- Backward/branching directions are never excluded - they're still fully reachable, just explored
+  and settled LATER, which in practice means only once the straight-ahead direction has nothing
+  cheaper left to offer (i.e. dead-ended or exhausted within budget). This is the soft version of
+  "take one node in u turn route and stop... if it dead end then only expand other ways."
+  Directly addresses why the hard-block version failed: a full block forced the search into
+  whatever's next-nearest by any means, producing tight clustering; a soft penalty still allows
+  the straight direction ample room to be exhausted before backward nodes compete for candidate
+  slots, without ever making backward nodes literally unreachable.
+- `reached` (the search's output list) is explicitly re-sorted by real `dist` before being handed
+  back to the caller, since the pop order is now by `priority` (direction-biased), not real
+  distance - preserves the existing "nearest-first, real-distance-ordered" contract that
+  `MIN_GAP_M` spacing enforcement and the same-road/other split both depend on. Only WHICH nodes
+  get discovered/pass the `maxDistanceM` cap changes; the final ordering contract is unchanged.
+- The search-radius cap (`maxDistanceM`, still `MAX_CANDIDATE_DISTANCE_M` = 8mi) is still enforced
+  in real distance (`dist[nodeIdx] > maxDistanceM` skips a node from the candidate list), not the
+  inflated priority scale - the priority-scale early-break (`priorityBreakM = maxDistanceM *
+  DIRECTION_PENALTY_MAX`) is a generous safety bound only, so real-distance-valid nodes reached via
+  a penalized path are never cut off prematurely.
+
+Verified via `node --check` and `npx eslint` (only a pre-existing, unrelated `edgeSource` unused-var
+finding elsewhere in the file, confirmed via `git stash` diff - not introduced by this change).
+
+**PENDING LIVE VERIFICATION per explicit user instruction ("make sure we will check the result and
+if its good then only will use this")** - this has NOT been tested against a real closure yet.
+Needs: backend restart, then a live closure-density run on a segment that previously showed the
+U-turn clustering artifact, checking (a) candidates no longer bunch immediately behind the closed
+segment, (b) the 10/10 count and real spacing (`MIN_GAP_M`) requirements from
+`documentation/closure-density-point-selection.md` still hold, (c) no new regression in analysis
+timing. If the result isn't good, this whole section's change should be reverted rather than kept
+half-working - same discipline as the two prior candidate-selection attempts in this file.
+
+### Follow-up, same day: real-junction detection by OSM way identity (also PENDING LIVE VERIFICATION)
+
+First live test of the directional-bias change above surfaced a genuine, more serious problem:
+**"Analyzed 100 of 100 possible routes (100 had no route)"** on a highway interchange (South Mall
+Arterial ramps) - every single candidate pair failed to find a route. Asked the user whether to
+revert the directional-bias change first before investigating further; their answer identified the
+real root cause directly: **"the routing is working the issue is all points are there is not
+reachable because it is in a opposit one way direction... expand first start and end point until
+any junction of road so that we can traverse in the tree/roads."**
+
+Root cause: `walkToFirstBranchSimple`/`walkToFirstBranchDensity` (used to derive both the simple-
+mode detour endpoints and the closure-density seed points) stopped at the FIRST node offering more
+than one next-edge option, **pure topology (edge count)** - on a highway interchange, this is
+almost every node, since a ramp forking into "continue" vs. "exit" is technically 2+ candidates
+even though both are the SAME physical one-way ramp, not a real cross-connected road. The walk was
+stopping at these fake forks far too early, seeding candidates onto one-way-isolated ramp geometry
+that structurally can't route back to the opposite side - explaining both the earlier U-turn
+clustering AND this new 100%-no-route failure.
+
+**Fix**: added `edgeOsm` (the OSM way id per edge, same "ground truth for is this the same road"
+column `getEdgesInBbox` already selects per-request - now loaded into the in-memory graph once at
+graph-load time instead) to `loadGraph`'s edges query and the graph object. `isBranch` in BOTH walk
+functions (confirmed in scope by the user: **"i thisnk this is also used in a simple detour too...
+if junction is there just take the next node in that dir not junction dir but the expansion dir"**
+- i.e. keep the existing straightest-continuation pick for WHICH node to walk to, only change WHEN
+the walk is allowed to stop) now requires that at least one candidate edge belongs to a genuinely
+DIFFERENT OSM way than the one just traveled - a real joining road, not a lane/ramp fork within the
+same way. Falls back to the old any-fork rule when `osm` data is missing (`-1`) on the just-
+traveled edge, so this degrades safely rather than never stopping.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings as before this change,
+confirmed unrelated via `git stash` diff - no new errors).
+
+**PENDING LIVE VERIFICATION, same discipline as above** - backend restart needed (graph reload
+required to pick up `edgeOsm`), then re-test the SAME interchange closure that produced "100 had no
+route": candidates should now sit past a real cross-street, not on isolated ramp geometry, and
+route-finding between them should succeed for at least most pairs. If it doesn't, this needs
+further investigation before being trusted - not kept half-working.
+
+### REVERTED - the OSM-way real-junction fix, same day
+
+Live test with both today's changes (direction-bias search + OSM-way branch detection) still
+showed a bad result: **"Analyzed 100 of 100 possible routes (46 had no route)"**, average detour
++39.30mi/+3265s, with candidate points spread wildly asymmetric (green/start candidates strung out
+~40mi north, red/end candidates clustered tightly together) - visibly still wrong, not just
+"improved but imperfect." User's explicit verdict: **"still the start and end points are not valid
+here."**
+
+Asked whether to revert both changes back to the plain-topology baseline given the two-changes-in-
+one-session risk (debugging compounded, unproven changes at once); user confirmed reverting both,
+then immediately corrected to **"i mean just revert h[t]e last"** - keep the direction-bias search
+change (still itself unverified, but not implicated by this specific new failure mode), revert only
+the OSM-way real-junction fix.
+
+**Reverted**: `edgeOsm` removed from `loadGraph`'s edges query/typed-array/graph object; both
+`walkToFirstBranchSimple` and `walkToFirstBranchDensity`'s `isBranch` back to plain
+`candidates.length > 1` (pure topology, pre-2026-09-02 state). The direction-bias search change
+(`DIRECTION_PENALTY_MAX`/`directionPenalty` in `farthestToNearestNodes`) is UNCHANGED/kept from the
+earlier entry in this file. Verified via `node --check` and `npx eslint` (same 3 pre-existing,
+unrelated findings, no new errors) and `grep` (confirmed zero remaining `edgeOsm`/`currentOsm`
+references).
+
+**Current state**: direction-bias search kept (still pending its own live verification - never
+cleanly confirmed working on its own, since the OSM-way fix landed in the same session before a
+clean isolated test could happen), OSM-way real-junction detection fully reverted. The underlying
+"walk stops at fake one-way ramp forks" problem this was meant to fix is UNRESOLVED and will
+recur on interchange-heavy closures until revisited - flagged here rather than silently dropped.
+
+### Direction-bias search ALSO reverted, same day - back to the fully plain-topology baseline
+
+A clean isolated test of the direction-bias-only state (2025 layer, confirmed exact match) still
+came back bad: "Analyzed 100 of 100 possible routes (20 had no route)," avg +30.26mi/+2525s -
+user's verdict: **"still see the point picker is not following the rules."** Asked whether this
+was a stale/segment-mismatch artifact; user confirmed **"layer is 2025 yeah same result because
+the points that you pick is same and not that good"** - a clean, valid test showing the direction-
+bias search itself was the problem (every test today with it active had come back with large
+30-40mi average detours, vs. sane small-scale results in tests earlier in the session before any
+of today's changes).
+
+**Reverted**: `DIRECTION_PENALTY_MAX`/`directionPenalty`/the priority-vs-real-distance split in
+`farthestToNearestNodes` - back to the plain, single-real-distance Dijkstra flood, byte-identical
+to commit `99f02b1`'s version (confirmed via `diff` against that commit). This closes out EVERY
+candidate-picking experiment tried on 2026-09-02 - direction bias, OSM-way real-junction detection
+- all reverted. The plain pre-2026-09-02 topology-based rules (documented in
+`documentation/closure-density-point-selection.md`, unchanged all day) are what's live.
+
+**Confirmed working** on the next live test (2025 layer, real interchange-free residential road):
+100/100 routes found, avg +0.32mi/+41sec - sane, small-scale, real. User: **"this looks good for
+me for now."** Two genuine, still-open problems were separately diagnosed and left UNFIXED
+(deliberately, not forgotten) rather than patched with another unproven change:
+- Interchange/one-way-ramp fake-branch stopping (the walk problem the reverted OSM-way fix
+  targeted).
+- Trivially-local candidates on small dead-end-heavy networks (a user-observed case: "i know this
+  is total 3-4 mile road and here it has to be min 15-20 mile" - the search settles for nearby
+  dead-end streets instead of being forced out to the arterial network). A blanket radius raise
+  (`MAX_CANDIDATE_DISTANCE_M` 8mi->15mi) was already tried once (2026-08-25 era) and reverted for
+  being slower without being better - an adaptive approach wasn't attempted.
+
+Both are documented in `documentation/detour-plugin-pipeline.md`'s "Known limitations" section and
+the new skill `planning/transportny/skills/detour-and-routing-plugins.md`.
+
+### Documentation written (2026-09-02, once the baseline was confirmed good)
+
+- `documentation/detour-plugin-pipeline.md` - full pipeline + "Known limitations."
+- `documentation/mapeditor-authoring-guide.md` - general "how to create a map" UI guide (two
+  entry points, adding a layer, adding a plugin as author/developer, the `state.symbology` vs
+  `state.symbologies` gotcha).
+- `planning/transportny/skills/` (new folder, mirrors `planning/mitigateny/skills/`) -
+  `README.md` + `detour-and-routing-plugins.md`, the plugin-specific skill covering attachment,
+  methodology, and - per explicit follow-up instruction - an IMPORTANT callout that only the 2025
+  base network layer should ever be used, plus a worked example documenting the actual live test
+  map's real layer/source/table setup (`localhost:5173/mapeditor/edit/2216051`, source_id 2097,
+  `temp.s2097_v3774_osm_conflation_edges_2025`).
+
+### Conflation table resolution refined again, same day: source_id+version, resolved ONCE and cached (not hardcoded literals, not per-request)
+
+Final correction to the backend's table-resolution approach, per explicit instruction: **"do not
+hardcode table name just hardcode th[e] view_id... keep sourrce and find version so first
+understan[d] that in backend and make sure it will not impact on the speed of response."** The
+hardcoded-literal-table-name approach (earlier same day) has a real staleness problem identical to
+the old per-plugin `DEFAULT_CONFLATION_VIEW_ID`'s history (3608->3689->3692->3699 across
+reprocesses) - a literal table name string breaks the moment the conflation pipeline reprocesses
+and mints a new physical table.
+
+**Fix**: `resolveConflationTables` in `data-types/routing/memoryGraph.js` resolves by
+`source_id` (permanent, hardcoded: 2125/2096/2097/2098) + `CURRENT_CONFLATION_VERSION` ("2025",
+hardcoded) via `data_manager.views`, same as the FIRST 2025 migration attempt earlier this
+session - but this time the resolution is wrapped in a **module-level memoized promise**
+(`cachedTablesPromise`): the actual DB query runs exactly ONCE per server process lifetime,
+whichever caller happens to trigger it first (in practice, the warm-load, ~20s after boot - "the
+memory store on restart"). Every call after that - including every real per-request call site
+(`/nodes`, `/edges`, `/trsp-memory-resolve-edge`, `computeTrspRoutes`) - returns the cached result
+synchronously with zero DB cost, so real user traffic never pays for this resolution at all. A
+failed resolution clears the cache so the next caller can retry rather than caching a permanent
+failure.
+
+All 5 call sites (`loadGraph` + 4 in `index.js`) updated to `await` the now-async
+`resolveConflationTables(db)`. `CURRENT_CONFLATION_VERSION` exported for the warm-load log line.
+Verified via `node --check` and `npx eslint` (same pre-existing findings only, no new errors) and
+`grep` (confirmed zero remaining hardcoded literal table-name strings).
+
+**Not yet live-tested** - needs a backend restart to confirm the warm-load resolves all four
+tables correctly and that a real request afterward is fast (no DB round trip beyond the one-time
+warm-load cost).

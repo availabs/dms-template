@@ -5,7 +5,7 @@ import { resolveTrspRoute } from "./resolveTrspRoute";
 // Route" button (not automatically on point selection - see comp.jsx). `selectedVariant` is
 // which one is currently "primary" (bold on the map, shown first in the panel) - the user can
 // swap it by clicking either card, same as picking between Google Maps' route options.
-export const useTrspRoute = (conflationViewId, pgEnv) => {
+export const useTrspRoute = (pgEnv) => {
   const [routes, setRoutes] = useState(null); // { shortest, fastest } | null
   const [selectedVariant, setSelectedVariant] = useState("shortest");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export const useTrspRoute = (conflationViewId, pgEnv) => {
     setLoading(true);
     setError(null);
 
-    resolveTrspRoute(source, destination, conflationViewId, pgEnv)
+    resolveTrspRoute(source, destination, pgEnv)
       .then((r) => {
         if (requestIdRef.current !== requestId) return;
         setRoutes(r);
@@ -32,7 +32,7 @@ export const useTrspRoute = (conflationViewId, pgEnv) => {
         setRoutes(null);
         setLoading(false);
       });
-  }, [conflationViewId, pgEnv]);
+  }, [pgEnv]);
 
   const reset = useCallback(() => {
     requestIdRef.current++; // invalidate any in-flight request

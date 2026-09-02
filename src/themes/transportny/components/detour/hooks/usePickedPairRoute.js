@@ -7,7 +7,7 @@ import { chooseAlgorithm } from "./haversineMiles";
 // resolver (resolveTrspRoute) with the closed segment excluded, same as single-trip mode's own
 // route computation. Lets someone spot-check an individual OD pair from the density analysis
 // rather than only seeing the aggregated heatmap.
-export const usePickedPairRoute = (conflationViewId, pgEnv, excludedOgcFid) => {
+export const usePickedPairRoute = (pgEnv, excludedOgcFid) => {
   const [pickedStart, setPickedStart] = useState(null);
   const [pickedEnd, setPickedEnd] = useState(null);
   const [route, setRoute] = useState(null);
@@ -35,7 +35,7 @@ export const usePickedPairRoute = (conflationViewId, pgEnv, excludedOgcFid) => {
     setLoading(true);
     setError(null);
     const algorithm = chooseAlgorithm(pickedStart, pickedEnd);
-    resolveTrspRoute(pickedStart, pickedEnd, conflationViewId, pgEnv, [excludedOgcFid], algorithm)
+    resolveTrspRoute(pickedStart, pickedEnd, pgEnv, [excludedOgcFid], algorithm)
       .then((routes) => {
         if (cancelled) return;
         setRoute(routes);
@@ -48,7 +48,7 @@ export const usePickedPairRoute = (conflationViewId, pgEnv, excludedOgcFid) => {
         setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [pickedStart, pickedEnd, conflationViewId, pgEnv, excludedOgcFid]);
+  }, [pickedStart, pickedEnd, pgEnv, excludedOgcFid]);
 
   return { pickedStart, pickedEnd, route, loading, error, pick, clear };
 };

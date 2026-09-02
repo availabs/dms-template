@@ -5,15 +5,15 @@
 // selectClosureDensityCandidates's own seeding.
 //
 // Contract: POST {API_HOST}/dama-admin/{pgEnv}/routing/trsp-memory-detour-endpoints
-//   body { conflation_view_id, ogc_fid }
+//   body { ogc_fid }
 //   -> { ok, result: { start: {lon,lat,osm_id}, end: {lon,lat,osm_id}, timing } } | { ok: false, error }
 const API_HOST = import.meta.env.VITE_API_HOST || "https://dmsserver.availabs.org";
 
-export async function resolveDetourEndpoints(ogcFid, conflationViewId, pgEnv) {
+export async function resolveDetourEndpoints(ogcFid, pgEnv) {
   const res = await fetch(`${API_HOST}/dama-admin/${pgEnv}/routing/trsp-memory-detour-endpoints`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ conflation_view_id: conflationViewId, ogc_fid: ogcFid }),
+    body: JSON.stringify({ ogc_fid: ogcFid }),
   });
   const { ok, result, error } = await res.json();
   if (!ok) throw new Error(error || "Failed to resolve detour endpoints");

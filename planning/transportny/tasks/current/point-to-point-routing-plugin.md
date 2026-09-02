@@ -1389,4 +1389,10 @@ candidate points/routes not rendering and every request "taking a lot of time" (
 expected first-request cold load) - the user asked to revert all of it rather than debug mid-
 session. **`DEFAULT_CONFLATION_VIEW_ID = 3699` is back** in this plugin's `constants.js`, and
 `comp.jsx`/`hooks/useTrspRoute.js`/`hooks/resolveTrspRoute.js` all pass it through again exactly
-as before. Current state: back to the known-good, previously-live-tested 2024 configuration.
+as before. Current state (as of the revert): back to the known-good, previously-live-tested 2024
+configuration.
+
+**Superseded same day** - see the sibling file's [§ "2025 conflation data, take
+2"](./detour-avoid-segment-routing-plugin.md). `DEFAULT_CONFLATION_VIEW_ID` is removed again from
+this plugin's `constants.js`; the backend now resolves 2025 tables via hardcoded literals (no DB
+lookup) instead. Not yet live-tested against a server restart.

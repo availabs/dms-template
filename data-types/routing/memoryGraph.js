@@ -35,7 +35,8 @@ const HIGHWAY_SPEED_MPH = {
 };
 const DEFAULT_SPEED_MPH = 45.0;
 
-// module-level singleton cache: "pgEnv:viewId" -> Promise<Graph>
+// module-level singleton cache: pgEnv -> Promise<Graph> (one hardcoded 2025 table set, see
+// resolveConflationTables - no per-version key needed anymore)
 const graphCache = new Map();
 
 // edgeOgcFid is loaded ORDER BY ogc_fid, so it's sorted ascending - binary search stands in for
@@ -51,29 +52,57 @@ const findEdgeIndexByOgcFid = (edgeOgcFid, targetOgcFid) => {
   return -1;
 };
 
-// Resolves a DAMA view's physical data_table by view_id, then derives its nodes/edges/relations
-// companion tables by suffix - valid for 2023/2024 conflation runs, which all publish under one
-// shared `temp.osm_conflation_1_{year}` prefix. (2026-09-01: a source_id+version-based resolution
-// was tried for a 2025 migration and then reverted per the user - see git history around this
-// date if that migration is attempted again; 2025's tables don't share this same prefix
-// convention, which is exactly why that attempt needed a different approach.)
-const getDataTable = async (db, view_id) => {
+// Conflation source ids + target version (2026-09-02, refined per explicit user instruction: "do
+// not hardcode table name just hardcode th[e] view_id... keep sourrce and find version... make
+// sure it will not impact on the speed of response"). SOURCE ids are PERMANENT - they never
+// change across a conflation reprocess, only which VIEW under each source is "current" does
+// (a fresh reprocess mints a brand-new view_id AND a brand-new physical table name). Hardcoding
+// the literal table name (the 2026-09-02-earlier-same-day approach) broke this: it goes stale the
+// moment the pipeline reprocesses, exactly like the old per-plugin `DEFAULT_CONFLATION_VIEW_ID`
+// did across 3608->3689->3692->3699. Hardcoding source_id + a target version string instead and
+// resolving the CURRENT view/table for that pair survives a reprocess automatically, as long as
+// the reprocess re-publishes under the SAME version string.
+const MAIN_CONFLATION_SOURCE_ID = 2125;
+const NODES_SOURCE_ID = 2096;
+const EDGES_SOURCE_ID = 2097;
+const RELATIONS_SOURCE_ID = 2098;
+const CURRENT_CONFLATION_VERSION = "2025";
+
+const findViewTableBySourceAndVersion = async (db, sourceId, version) => {
   const { rows } = await db.query(
-    `SELECT data_table FROM data_manager.views WHERE view_id = $1;`,
-    [view_id]
+    `SELECT data_table FROM data_manager.views WHERE source_id = $1 AND version = $2;`,
+    [sourceId, version]
   );
-  if (!rows.length) throw new Error(`No view found for view_id ${view_id}`);
+  if (!rows.length) throw new Error(`No view found for source_id ${sourceId}, version "${version}"`);
   return rows[0].data_table;
 };
 
-const resolveConflationTables = async (db, view_id) => {
-  const conflationTable = await getDataTable(db, view_id);
-  return {
-    conflationTable,
-    nodesTable: `${conflationTable}_nodes`,
-    edgesTable: `${conflationTable}_edges`,
-    relationsTable: `${conflationTable}_relations`,
-  };
+// Resolved ONCE per server process and cached forever after (module-level memoized promise) -
+// this is the piece that keeps the "no hardcoded table name" fix from costing anything at
+// request time. Every caller (loadGraph, and every per-request route below that still calls this
+// directly) shares the SAME resolution: the first caller pays the four-query DB round trip
+// (fast in practice - four indexed lookups against `data_manager.views`, not the "few sec" cost
+// the user was originally right to reject for a PER-REQUEST cost); every caller after that,
+// including every real user request for the rest of the process's uptime, gets the cached result
+// synchronously with zero DB cost. In practice the FIRST caller is the warm-load
+// (`data-types/routing/index.js`, ~20s after boot) - "the memory store on restart" - so real user
+// traffic essentially never pays this cost at all, only the warm-load does, once, at startup.
+let cachedTablesPromise = null;
+const resolveConflationTables = (db) => {
+  if (!cachedTablesPromise) {
+    cachedTablesPromise = Promise.all([
+      findViewTableBySourceAndVersion(db, MAIN_CONFLATION_SOURCE_ID, CURRENT_CONFLATION_VERSION),
+      findViewTableBySourceAndVersion(db, NODES_SOURCE_ID, CURRENT_CONFLATION_VERSION),
+      findViewTableBySourceAndVersion(db, EDGES_SOURCE_ID, CURRENT_CONFLATION_VERSION),
+      findViewTableBySourceAndVersion(db, RELATIONS_SOURCE_ID, CURRENT_CONFLATION_VERSION),
+    ]).then(([conflationTable, nodesTable, edgesTable, relationsTable]) => ({
+      conflationTable, nodesTable, edgesTable, relationsTable,
+    })).catch((err) => {
+      cachedTablesPromise = null; // don't cache a failed resolution - let the next caller retry
+      throw err;
+    });
+  }
+  return cachedTablesPromise;
 };
 
 // Simple uniform grid spatial index over node coordinates, for nearest-node snapping without a
@@ -192,8 +221,8 @@ class MinHeap {
   peek() { return this.size === 0 ? Infinity : this.dist[0]; }
 }
 
-const loadGraph = async (db, conflationViewId) => {
-  const { conflationTable, nodesTable, edgesTable, relationsTable } = await resolveConflationTables(db, conflationViewId);
+const loadGraph = async (db) => {
+  const { conflationTable, nodesTable, edgesTable, relationsTable } = await resolveConflationTables(db);
 
   console.log(`[memoryGraph] loading nodes from ${nodesTable}...`);
   const { rows: nodeRows } = await db.query(`SELECT osm_id, lon, lat FROM ${nodesTable};`);
@@ -381,10 +410,12 @@ const loadGraph = async (db, conflationViewId) => {
   };
 };
 
-const getOrLoadGraph = (db, pgEnv, conflationViewId) => {
-  const key = `${pgEnv}:${conflationViewId}`;
+// Cache key is just pgEnv now - one hardcoded 2025 table set (see resolveConflationTables above),
+// so there is only ever one graph "version" live per env.
+const getOrLoadGraph = (db, pgEnv) => {
+  const key = pgEnv;
   if (!graphCache.has(key)) {
-    graphCache.set(key, loadGraph(db, conflationViewId).catch((err) => {
+    graphCache.set(key, loadGraph(db).catch((err) => {
       graphCache.delete(key); // don't cache a failed load
       throw err;
     }));
@@ -392,8 +423,8 @@ const getOrLoadGraph = (db, pgEnv, conflationViewId) => {
   return graphCache.get(key);
 };
 
-const invalidateGraph = (pgEnv, conflationViewId) => {
-  graphCache.delete(`${pgEnv}:${conflationViewId}`);
+const invalidateGraph = (pgEnv) => {
+  graphCache.delete(pgEnv);
 };
 
 // Edge-expansion Dijkstra: search state is "arrived via edge E" (dist/prev/settled sized by
@@ -1374,6 +1405,9 @@ module.exports = {
   selectClosureDensityCandidates, computeClosureDensityFromPoints,
   resolveDetourEndpoints,
   resolveConflationTables,
+  // Exported for index.js's warm-load log line only - the single hardcoded target version every
+  // resolveConflationTables() call resolves against (see that constant's own comment above).
+  CURRENT_CONFLATION_VERSION,
   // Exported for the standalone bridge-detour-process tool (2026-08-26,
   // /home/sarang/Documents/avail/bridge-detour-process) - it needs to keep walking a failed
   // direction's endpoint further out (past additional branches) when the initial one-hop-past-

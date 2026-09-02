@@ -8,10 +8,10 @@
 // trip through this corridor if it's closed," not "a route for one traveler"). So there is no
 // POINTS_* here, unlike ../routing/constants.js.
 //
-// Same conflation-view caveat as ../routing/constants.js - re-verify before trusting a future
-// replacement id. (2026-09-01: a server-side no-hardcode refactor was tried and reverted per the
-// user - back to the known-good 2024 view/id below; see ../routing/constants.js's note.)
-const DEFAULT_CONFLATION_VIEW_ID = 3699;
+// 2026-09-02: conflation table resolution moved to a single hardcoded set of 2025 table names,
+// managed entirely server-side (data-types/routing/memoryGraph.js) - no `data_manager.views` DB
+// lookup at request/load time, per explicit user instruction. This plugin no longer knows or
+// sends a view id at all; see ../routing/constants.js for the sibling plugin's identical note.
 
 // The resulting detour route line.
 const ROUTE_SOURCE_ID = "detour-route-line";
@@ -124,7 +124,6 @@ const DENSITY_CANDIDATES_SOURCE_ID = "detour-density-candidates";
 const DENSITY_CANDIDATES_LAYER_ID = "detour-density-candidates";
 
 export {
-  DEFAULT_CONFLATION_VIEW_ID,
   ROUTE_SOURCE_ID,
   ROUTE_LAYER_ID,
   ROUTE_GLOW_LAYER_ID,

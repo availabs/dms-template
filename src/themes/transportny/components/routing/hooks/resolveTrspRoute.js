@@ -6,7 +6,9 @@
 // avail-falcor sibling repo, which only holds the reference implementation this was ported from).
 //
 // Contract: POST {API_HOST}/dama-admin/{pgEnv}/routing/trsp
-//   body { conflation_view_id, source: {lon,lat}, destination: {lon,lat} }
+//   body { source: {lon,lat}, destination: {lon,lat} }
+//   (conflation table is a hardcoded server-side constant, 2026-09-02 - see
+//   data-types/routing/memoryGraph.js)
 //   -> { ok, result: { routes: { shortest: {feature,segments}, fastest: {feature,segments} } } }
 //      | { ok: false, error }
 //
@@ -30,11 +32,11 @@
 // optimizes a road-class-speed-weighted time estimate - both independently turn-restriction-aware.
 const API_HOST = import.meta.env.VITE_API_HOST || "https://dmsserver.availabs.org";
 
-export async function resolveTrspRoute(source, destination, conflation_view_id, pgEnv) {
+export async function resolveTrspRoute(source, destination, pgEnv) {
   const res = await fetch(`${API_HOST}/dama-admin/${pgEnv}/routing/trsp-memory`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ conflation_view_id, source, destination }),
+    body: JSON.stringify({ source, destination }),
   });
   const { ok, result, error } = await res.json();
   if (!ok) throw new Error(error || "Routing request failed");
