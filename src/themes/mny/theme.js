@@ -591,7 +591,7 @@ const theme = {
     logoWrapper: "",
     logoAltImg: "",
     imgWrapper: "h-12 pl-3 pr-2 flex items-center",
-    img: "https://mitigateny.org/themes/mny/mnyLogo.svg",
+    img: "/themes/mny/mnyLogo.svg",
     titleWrapper: "",
     title: "",
     linkPath: "/",
