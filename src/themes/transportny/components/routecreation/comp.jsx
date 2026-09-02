@@ -277,6 +277,8 @@ const Comp = ({ state, setState, map }) => {
       <RouteIdentityPanel
         name={modalState.name}
         tags={modalState.tags}
+        onTagsChange={(tags) => setModalState((prev) => ({ ...prev, tags }))}
+        user={user}
         tmcCount={tmc_array?.length || 0}
         totalMiles={totalMiles}
         routeId={routeIdFilterValue}
@@ -306,20 +308,8 @@ const Comp = ({ state, setState, map }) => {
       />
       <ModeHintPill creationMode={creationMode} />
       <SaveRouteModal
+        open={modalState.open}
         isEditingRoute={Boolean(routeIdFilterValue)}
-        modalStyle={{
-          display: modalState.open ? "block" : "none",
-          position: "fixed",
-          top: "10%",
-          left: "25vw",
-          width: "50vw",
-          height: "60vh",
-          padding: "20px",
-          borderRadius: "5px",
-          boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)",
-          zIndex: 1001,
-          opacity: ".9",
-        }}
         setModalOpen={(val) => setModalState((prev) => ({ ...prev, open: val }))}
         modalState={modalState}
         setRouteMeta={(meta) => setModalState({ ...modalState, ...meta })}

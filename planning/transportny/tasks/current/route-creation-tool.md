@@ -322,6 +322,59 @@ new `components/RouteIdentityPanel.jsx`, new `components/ModeHintPill.jsx`, new
 `hooks/useMapHoverHandler.js`, new `routecreation.theme.js` — all under
 `src/themes/transportny/components/routecreation/`.
 
+### 2026-09-02 — Panel 1 tag stylization + Save modal redesign, live-verified
+
+Two gaps Ryan flagged after the 2026-09-01 pass: Panel 1's tags rendered as raw `user:993`/
+`agency:NYSDOT` strings (no `user:`/`agency:` visual distinction), and the Save/Update dialog
+was still the original hand-rolled `SaveRouteModal.jsx` (inline `style={modalStyle}`, no
+backdrop, no close-on-escape/click-outside) — never picked up as a numbered item in the
+2026-09-01 plan even though `npmrds-route-creation.html` § 02 ("the modal, drawn") fully
+specifies it.
+
+- **`TagsEditor` (shared component)** gained a `user:`-vs-everything-else chip distinction: a
+  `user:` tag now renders as a small dot + "You" in a quiet slate chip, everything else
+  (`agency:`/`county:`/free-text) keeps the existing blue institutional chip. New theme keys
+  (`tagsEditorChipUser`/`tagsEditorChipUserDot`/`tagsEditorChipRemoveUser`) live in
+  `TagsEditor.theme.js`'s shared defaults, so `ReportPageHeader` and `SaveRouteModal` pick up
+  the distinction automatically, not just routecreation.
+- **`RouteIdentityPanel.jsx`**'s tag row is now the real `TagsEditor` (live add/remove, wired to
+  the same `modalState.tags` the Save dialog edits) instead of a read-only `<span>` list —
+  matches how `ReportPageHeader` already uses the shared editor. Sized via new
+  `tagsEditor*` keys in `routecreation.theme.js` to match the panel's existing 10px/h-5 chip
+  density.
+- **`SaveRouteModal.jsx`** rebuilt from scratch to match the mockup's § 02 dialog design, using
+  the SAME backdrop+wrapper mechanism macroview's `DownloadBuilder` (`downloadBuilder.jsx`)
+  already uses for a floating map-plugin modal (`useModalOverlay` for Escape/body-scroll-lock,
+  backdrop click-to-close) — styled to the mockup's own white-header/blue-icon skin, not
+  macroview's dark/yellow one. Also fixed a latent bug in the old modal: Description was an
+  `<input type="textarea">` (invalid, behaved as single-line) — now a real `<textarea>`, matching
+  what the mockup always drew. Same three fields as before (name/description/tags); no new fields.
+- **Live bug found and fixed while verifying**: `RouteIdentityPanel.jsx`'s "All routes" link was
+  a hardcoded `href="/converted_reports#routes"`, never resolved against the current mount's
+  `baseUrl` — clicking it from `/npmrds/route_creation` dropped the `/npmrds` prefix entirely
+  (landed on the site root's homepage). Fixed via `resolveMountPath` + `useNavigate`, the same
+  pattern `ReportPickerModal`/`CreateReportButton` already use for this exact class of bug (see
+  `mount-aware-absolute-links.md`). Caught live, not by inspection — the mount-prefixed URL
+  convention (`www.localhost:5173/<mount>/...`) is the current one; a subdomain-style URL
+  (`npmrds.localhost:5173/...`) also resolves but is the old form.
+- **Live-verified** (claude-in-chrome, `npm run dev`, authenticated): added a TMC via search
+  (`104+11381`), confirmed the identity panel's tag row shows the distinct "You" chip alongside
+  plain `NYSDOT`/`AVAIL` chips; typed a free-text tag in the panel and watched it appear live in
+  the Save modal's own tag editor (and vice versa — same state, two editors); opened/closed the
+  Save modal via button, Escape, and backdrop click; confirmed the "All routes" link now lands on
+  `/npmrds/converted_reports#routes`. Zero console errors.
+- Two more fixes made from live feedback mid-session: the Save modal's Tags field briefly had a
+  duplicate "Tags" header (the modal's own field-label div stacked on top of `TagsEditor`'s own
+  built-in label) — fixed by dropping the modal's separate label and re-theming `TagsEditor`'s
+  own label to match Name/Description's style instead. And a stray "design-artifact" explanatory
+  paragraph under the modal's Tags field (lifted near-verbatim from the mockup's own reviewer-facing
+  prose) was removed — not real end-user copy.
+
+**Files touched this round**: `TagsEditor.jsx`/`TagsEditor.theme.js` (shared), `comp.jsx`,
+`components/RouteIdentityPanel.jsx`, `components/SaveRouteModal.jsx` (full rewrite),
+`routecreation.theme.js` — all under `src/themes/transportny/components/routecreation/` except
+the `TagsEditor` pair, which is a sibling shared component.
+
 ## Cross-references
 
 - `research/route-creation/findings.md` — full investigative trail
