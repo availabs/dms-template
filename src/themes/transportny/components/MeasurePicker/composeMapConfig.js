@@ -45,12 +45,27 @@
  * by anything until now). Ryan's explicit direction: ship colorBreaks.json's existing
  * placeholder-quality numbers now (same ones this file used inline before), not blocked on a real
  * distribution analysis — see that file's own header for the tracked follow-up.
+ *
+ * Semi-reverted 2026-09-02 (Ryan): same walk-back as composeMeasureConfig.js's
+ * `APPLY_STATIC_BREAKS_TO_CHARTS` (see that file's comment) — Ryan reverted maps too, off the same
+ * "every chart/map gets its own dynamic scale, not colorBreaks.json's placeholder numbers"
+ * decision, but wants it just as easy to flip back. `APPLY_STATIC_BREAKS_TO_MAP` below is that
+ * switch: false sends `bin-method: 'quantile'` (pre-round-80 behavior — the live Map runtime
+ * recomputes breaks from real data on every render, colorBreaks.json's `breaks`/`maxValue` for
+ * this measure go unused, only `colors` still comes from here); true restores round 80's
+ * `bin-method: 'custom'` (fixed breaks, no live recompute — see the round-80 paragraph above).
+ * colorBreaks.json/choroplethPaint/route_map.py are untouched either way; route_map.py (the
+ * Python-side converter, not this live-authoring path) has its own matching
+ * `APPLY_STATIC_BREAKS_TO_MAP` flag in convert_old_reports_lib/config.py — flip both together or a
+ * re-converted page's map won't match a freshly-authored one.
  */
 
 import { GRAPH_VOCAB, ensureSelfBoundSubscriber } from './composeMeasureConfig';
 import colorBreaks from './colorBreaks.json';
 import { choroplethPaint } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/utils';
 import { buildJoin } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
+
+const APPLY_STATIC_BREAKS_TO_MAP = false;
 
 // Per-year TMC geometry tile views (DAMA source 582, npmrds2 pgEnv) — same mapping
 // route_map.py's GEOMETRY_TILE_VIEWS uses. The year filter is baked into each view's tile URL, so
@@ -270,8 +285,10 @@ function buildChoroplethLayer({ measureKey, year, apiHost }) {
         // colorDomain refetch entirely and trusts this layer's own baked
         // paint/legend-data permanently. This is the one line that makes the
         // "fixed breaks" intent above actually real at render time, not just
-        // at compose time — see this file's header comment.
-        'bin-method': 'custom',
+        // at compose time — see this file's header comment. Semi-reverted
+        // 2026-09-02: gated on APPLY_STATIC_BREAKS_TO_MAP (see header) —
+        // 'quantile' is the pre-round-80 dynamic-scale default.
+        'bin-method': APPLY_STATIC_BREAKS_TO_MAP ? 'custom' : 'quantile',
         'color-range': defaults.colors,
         'legend-data': painted.legend,
         // The runtime materializes one visible clone per comparison_series variant
