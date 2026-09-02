@@ -111,6 +111,10 @@ CONVERTED_PARENT_TITLE = "Converted Reports"
 NEW_DB_CONFIG = os.path.join(
     REPO, "src/dms/packages/dms-server/src/db/configs/dms-mercury-3.config.json")
 OLD_DB_CONFIG = "/home/ryan/code/avail-falcor/db_service/npmrds.config.json"
+# Same Postgres host:port as NEW_DB_CONFIG, different `database` (avail_auth vs dms3) — see
+# fetch_auth_agency_tags() in db.py.
+AUTH_DB_CONFIG = os.path.join(
+    REPO, "src/dms/packages/dms-server/src/db/configs/availauth.config.json")
 
 GAPS_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/gaps")
 

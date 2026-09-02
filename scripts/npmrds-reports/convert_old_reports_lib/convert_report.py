@@ -6,7 +6,7 @@ from .config import COMPONENT_TYPE, GAPS_DIR, PATTERN, REPORTS_SNAP_TYPE
 from .vocab import BAR_SUMMARY_PM3_BUCKET, COLOR_RANGE_GRAPH_TYPES, DIFFERENCE_GRAPH_TYPES, GRAPH_TEMPLATE_MAP, INFO_BOX_AADT_BUCKET, INFO_BOX_BUCKET, INFO_BOX_DELAY_BUCKET, INFO_BOX_GRAIN, INFO_BOX_LENGTH_BUCKET, INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS, ROUTE_COMPARE_BUCKET
 from .expressions import ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, aadt_override_of
 from .template_specs import MEASURE_EXPR
-from .db import dms, fetch_agency_tag, fetch_old_report, fetch_old_routes, flatten_route_comps, now_iso
+from .db import dms, fetch_agency_tag, fetch_auth_agency_tags, fetch_old_report, fetch_old_routes, fetch_user_tag, flatten_route_comps, now_iso
 from .dates import report_is_pre_2017_only, resolve_relative_dates
 from .transforms import build_route_entry, group_route_comps, route_comp_display_name, route_comp_merge_key
 from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, load_graph_templates
@@ -659,11 +659,17 @@ def convert_report(old_id, dry_run=False, replace=False):
           f"{[r['id'] for r in published_refs]})")
 
     # -- reports_snap_2 row
+    # Tag precedence (Ryan, 2026-09-02): the curated agency-folder tag wins when the report is in
+    # a real agency/group folder; only derive agency tag(s) from the creator's own auth-group
+    # membership when it isn't. The user tag is unconditional either way.
     agency_tag = fetch_agency_tag(old_id, "report")
+    user_tag = fetch_user_tag(old.get("created_by"))
+    agency_tags = [agency_tag] if agency_tag else fetch_auth_agency_tags(old.get("created_by"))
+    tags = [t for t in (*agency_tags, user_tag) if t]
     snap = {
         "report_id": str(page_id),
         "routes": json.dumps(route_entries),
-        "tags": json.dumps([agency_tag] if agency_tag else []),
+        "tags": json.dumps(tags),
         "name": old.get("name") or "",
         "description": old.get("description") or "",
         # ReportPickerModal's isRebuilt()/badge logic (and, as of the same round, its
