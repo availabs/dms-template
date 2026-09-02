@@ -4,6 +4,7 @@ import {
   canonicalizeTag,
   defaultTagsForUser,
   isTagAllowedForUser,
+  isUserTag,
 } from '../RouteTagBrowserModal/tagCategories';
 import { tagsEditorTheme } from './TagsEditor.theme';
 
@@ -55,14 +56,24 @@ export default function TagsEditor({ tags, onChange, user, theme, Icon, inline =
       {!inline ? <div className={t.tagsEditorLabel}>Tags</div> : null}
       <div className={t.tagsEditorChips}>
         {inline ? <span className={t.tagsEditorLabel}>Tags</span> : null}
-        {list.map((tag) => (
-          <span key={tag} className={t.tagsEditorChip}>
-            {tagToLabel(tag)}
-            <button type="button" onClick={() => removeTag(tag)}>
-              {Icon ? <Icon icon="XMark" className={t.tagsEditorChipRemove} /> : <span className={t.tagsEditorChipRemove}>&times;</span>}
-            </button>
-          </span>
-        ))}
+        {list.map((tag) => {
+          // A `user:` tag reads as "who owns this," not a category, so it gets its own quieter
+          // chip (a small dot + "You") instead of the same institutional chip every agency:/
+          // county:/free-text tag shares — the ask this closes is "tell user apart from agency at
+          // a glance," not just tagToLabel's text simplification (routes-reports-users-mesh.md).
+          const userTag = isUserTag(tag);
+          const chipClass = userTag ? t.tagsEditorChipUser : t.tagsEditorChip;
+          const removeClass = userTag ? t.tagsEditorChipRemoveUser : t.tagsEditorChipRemove;
+          return (
+            <span key={tag} className={chipClass}>
+              {userTag ? <span className={t.tagsEditorChipUserDot} /> : null}
+              {tagToLabel(tag)}
+              <button type="button" onClick={() => removeTag(tag)}>
+                {Icon ? <Icon icon="XMark" className={removeClass} /> : <span className={removeClass}>&times;</span>}
+              </button>
+            </span>
+          );
+        })}
         {suggestions.map((tag) => (
           <button key={tag} type="button" className={t.tagsEditorSuggestionChip} onClick={() => addSuggestion(tag)}>
             + {tagToLabel(tag)}
