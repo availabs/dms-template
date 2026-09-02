@@ -28,6 +28,17 @@ and move to a `Deferred` bucket carrying the reason, because "we chose not to
 fix this" and "we never looked at it" must not look the same - the same
 principle already applied to components with no control at all.
 
+TWO CONFIG SHAPES (2026-09-01). The scan this report is built from used to
+select components on `element-data.externalSource`, which is the v2 (canonical)
+key. Components still stored in the v1 shape keep their source snapshot under
+`sourceInfo`, so they were invisible to it - 584 of 1,125 on pattern 1300890 -
+and the sweep it drove reported "0 outstanding" over a little under half its
+target. `scan_fetchmode.mjs` now selects on `externalSource || sourceInfo` and
+emits `configShape` per component; this report carries it as a column, tiles it,
+and states which shapes a count covers. `display.fetchMode` is read identically
+in both shapes (migrateToV2 carries `display` through untouched), so the rule,
+the target values and the write path are unchanged - only the census was wrong.
+
 Scope: only Card / Spreadsheet / Graph carry a `Data Fetch Mode` control
 (Card.config.jsx, spreadsheet/config.jsx, graph/config.jsx,
 graph_new/config.jsx). Filter and Header bind a source but expose no such
@@ -163,6 +174,7 @@ for f in args.scan:
         'pageCount': d.get('pageCount'), 'pagesScanned': d.get('pagesScanned'),
         'skippedNoSource': d.get('skippedNoSource'),
         'elementTypeCensus': d.get('elementTypeCensus') or {},
+        'configShapeCensus': d.get('configShapeCensus') or {},
     })
     comps.extend(d['components'])
 
@@ -222,6 +234,7 @@ rows, extras, deferred = [], [], []
 n_in = n_out = 0
 for c in comps:
     kind = c['elementType']
+    shape = c.get('configShape') or '(unknown)'
     cls = c['sourceClass']
     stored = c['storedFetchMode']
     resolved = c['resolvedFetchMode']
@@ -238,6 +251,8 @@ for c in comps:
         'Draft section ID': c['sectionId'],
         'Tracking ID': c['trackingId'] or '',
         'Component kind': kind,
+        'Config shape': shape,
+        'Source snapshot key': c.get('sourceKey') or '',
         'Draft index': c['draftIndex'],
         'Hidden from view': 'TRUE' if c['hideInView'] else '',
         'Source name': c['sourceName'] or '',
@@ -323,6 +338,13 @@ for c in comps:
             'Section Settings > Data Fetch Mode: set %s (%s source). Currently %s.'
             % (MODE_LABEL[want], cls, was)
         )
+        if shape == 'v1':
+            rec['Recommended fix'] += (
+                ' Stored in the v1 config shape (source snapshot under sourceInfo), which is why'
+                ' this component never appeared in the catalog before 2026-09-01. The setting'
+                ' itself is unaffected: migrateToV2 carries display through unchanged, so'
+                ' display.fetchMode is read and written exactly as on a v2 component.'
+            )
         rec['Fix needed'] = 'Yes - set' if stored is None else 'Yes - change'
         if c['hideInView']:
             rec['Notes'] = ('Hidden from view (data.hideInView), so it never renders and the '
@@ -532,6 +554,98 @@ parts.append("""
 </header>
 """ % E(args.parent_finding))
 
+
+# ── the v1 blind spot ───────────────────────────────────────────────────────
+# Stated at the top, above the rule, because it changes what every count below
+# means. The quote is the finding as it was raised in
+# county-template-qa-draft.html (Tier 1, finding 1); the numbers beside it are
+# recomputed from this build's scan, not copied from it.
+shape_all = collections.Counter(r['Config shape'] for r in allrows)
+shape_in = collections.Counter(r['Config shape'] for r in rows)
+shape_writes = collections.Counter(r['Config shape'] for r in rows if r['Fix needed'].startswith('Yes'))
+shape_ok = collections.Counter(r['Config shape'] for r in rows if r['Fix needed'] == 'No')
+shape_nc = collections.Counter(r['Config shape'] for r in extras)
+shapes_seen = [k for k in ('v1', 'v2', 'v0', '(unknown)') if shape_all.get(k)]
+
+
+def shape_badge(sh):
+    return ('<span class="inline-block whitespace-nowrap px-1.5 py-[1px] rounded border '
+            'text-[10px] font-semibold tracking-wide %s">%s</span>'
+            % ('bg-rose-50 text-rose-900 border-rose-200' if sh == 'v1'
+               else 'bg-slate-100 text-slate-600 border-slate-300', E(sh)))
+
+
+parts.append("""
+<section class="mb-8 bg-white border-2 border-mny-red rounded-lg p-5">
+  <div class="text-[11px] font-semibold tracking-[.18em] text-mny-red uppercase">Rebuilt 2026-09-01 &middot; scope correction</div>
+  <h2 class="text-2xl font-semibold mt-1 mb-3">Half the data components were never in this catalog</h2>
+  <blockquote class="border-l-4 border-mny-y700 bg-mny-y50 pl-4 pr-3 py-3 text-[13.5px] text-mny-900 max-w-4xl">
+    &ldquo;Friday&rsquo;s task closed with &lsquo;99 in scope, 99 correct, 0 outstanding&rsquo;. That number
+    reproduces exactly &mdash; and it is complete only over components stored in the
+    <strong>v2</strong> config shape. Components still stored in <strong>v1</strong> were invisible to
+    the scanner, because it selects rows that bind an <code>externalSource</code>, and a v1 row keeps
+    its snapshot under <code>sourceInfo</code> instead.&rdquo;
+    <footer class="text-[12px] text-mny-700 mt-2">&mdash; <code>county-template-qa-draft.html</code>,
+    Tier&nbsp;1 finding&nbsp;1, 31&nbsp;Aug&nbsp;2026</footer>
+  </blockquote>
+  <p class="text-[13px] text-mny-700 mt-4 max-w-4xl">Confirmed and corrected. The template runs two
+  generations of <code>element-data</code> at once and <code>migrateToV2.js:203-226</code> is the
+  authority on which is which: <strong>v2</strong> stores its source under
+  <code>externalSource</code>, <strong>v1</strong> under <code>sourceInfo</code> (with
+  <code>dataRequest.filterGroups</code> for filters), and <code>dataWrapper/index.jsx:220</code>
+  migrates either one at mount &mdash; so both render, and neither is broken. What broke was the
+  <em>census</em>: <code>scan_fetchmode.mjs</code> selected on <code>externalSource</code> alone, so
+  every v1 component fell out of the catalog before any rule was applied, and a sweep that had
+  genuinely finished its rows reported completeness over a target it could not see all of.</p>
+  <div class="grid md:grid-cols-2 gap-4 mt-4">
+    <div>
+      <table class="text-[13px] w-full">
+        <thead class="text-left text-mny-400 text-[11px] uppercase tracking-wider">
+          <tr><th class="py-1 pr-3">This build</th><th class="py-1 pr-3 num">Components</th>
+              <th class="py-1">Config shape</th></tr></thead>
+        <tbody>
+        <tr class="border-t border-mny-100"><td class="py-1.5 pr-3">Data components in the pattern</td>
+          <td class="py-1.5 pr-3 num font-semibold">%d</td><td class="py-1.5">%s</td></tr>
+        <tr class="border-t border-mny-100"><td class="py-1.5 pr-3">In scope, after the narrowing</td>
+          <td class="py-1.5 pr-3 num font-semibold">%d</td><td class="py-1.5">%s</td></tr>
+        <tr class="border-t border-mny-100"><td class="py-1.5 pr-3">Already correct &mdash; the sweep&rsquo;s result</td>
+          <td class="py-1.5 pr-3 num font-semibold">%d</td><td class="py-1.5">%s</td></tr>
+        <tr class="border-t border-mny-100"><td class="py-1.5 pr-3">Writes still outstanding</td>
+          <td class="py-1.5 pr-3 num font-semibold text-mny-redk">%d</td><td class="py-1.5">%s</td></tr>
+        <tr class="border-t border-mny-100"><td class="py-1.5 pr-3">Bind a source, no control (Filter, MNY Header/Footer)</td>
+          <td class="py-1.5 pr-3 num">%d</td><td class="py-1.5">%s</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="text-[13px] text-mny-700 space-y-2">
+      <p><strong>The split is near-total, and that is the tell.</strong> Every component the sweep
+      found already correct is v2; the outstanding writes are almost entirely v1. Authoring history
+      does not explain it &mdash; the draft QA checked <code>created_at</code> and the unset
+      components span the same June&nbsp;2025&ndash;August&nbsp;2026 range as the ones that were
+      fixed. They were not missed because they are new; they were missed because the scanner could
+      not see them.</p>
+      <p><strong>Nothing about the rule or the write path changes.</strong>
+      <code>migrateV1ToV2</code> copies <code>display</code> across verbatim (stripping only
+      <code>filteredLength</code>, <code>invalidState</code>, <code>hideSection</code>), so a v1
+      component honours a stored <code>fetchMode</code> exactly as a v2 one does, and
+      <code>apply_element_data_key.mjs</code> sets <code>display.fetchMode</code> without caring
+      which shape the row is in.</p>
+      <p><strong>Any count that does not say which shapes it covered is not yet a count.</strong>
+      Every table in this report now carries a <code>Config shape</code> column for that reason, and
+      the same assumption should be checked in the other scripts in
+      <code>scripts/report_fixes/</code>.</p>
+    </div>
+  </div>
+</section>
+""" % (len(allrows), ' &middot; '.join('%s&nbsp;%d' % (shape_badge(k), shape_all[k]) for k in shapes_seen),
+       len(rows), ' &middot; '.join('%s&nbsp;%d' % (shape_badge(k), shape_in[k]) for k in shapes_seen if shape_in.get(k)),
+       shape_ok.total() if hasattr(shape_ok, 'total') else sum(shape_ok.values()),
+       ' &middot; '.join('%s&nbsp;%d' % (shape_badge(k), shape_ok[k]) for k in shapes_seen if shape_ok.get(k)) or '&mdash;',
+       sum(shape_writes.values()),
+       ' &middot; '.join('%s&nbsp;%d' % (shape_badge(k), shape_writes[k]) for k in shapes_seen if shape_writes.get(k)) or '&mdash;',
+       len(extras),
+       ' &middot; '.join('%s&nbsp;%d' % (shape_badge(k), shape_nc[k]) for k in shapes_seen if shape_nc.get(k)) or '&mdash;'))
+
 # the rule + the scope it is applied within
 scope_bits = []
 if source_allow:
@@ -608,13 +722,19 @@ for s in summary:
       <div class="text-[11px] uppercase tracking-wider text-mny-400 mt-1">%s</div>
     </div>
 """ % (tone, val, label))
+    p_rows = [r for r in rows if r['Pattern ID'] == s['pattern']]
+    p_shape = collections.Counter(r['Config shape'] for r in p_rows)
+    p_shape_w = collections.Counter(r['Config shape'] for r in p_rows if r['Fix needed'].startswith('Yes'))
     parts.append("""  </div>
   <p class="text-[13px] text-mny-700 mt-3">Of the %d writes: <strong>%d</strong> set a mode where
   none is stored, <strong>%d</strong> change one that is stored to a different value. By kind:
-  %s.</p>
+  %s. By config shape: %s in scope, of which the outstanding writes are %s.</p>
 </section>
 """ % (s['writes'], s['set'], s['change'],
-       ', '.join('%d %s' % (v, k) for k, v in sorted(s['kinds'].items(), key=lambda kv: -kv[1]))))
+       ', '.join('%d %s' % (v, k) for k, v in sorted(s['kinds'].items(), key=lambda kv: -kv[1])),
+       ' &middot; '.join('%s&nbsp;%d' % (shape_badge(k), v) for k, v in sorted(p_shape.items())),
+       (' &middot; '.join('%s&nbsp;%d' % (shape_badge(k), v) for k, v in sorted(p_shape_w.items()))
+        or 'none')))
 
 # filter bar
 parts.append("""
@@ -629,6 +749,10 @@ parts.append("""
     <label class="flex flex-col"><span class="text-[11px] uppercase tracking-wider text-mny-400">Kind</span>
       <select id="kind" class="border border-mny-200 rounded px-2 py-1.5 text-sm">
         <option value="">all</option><option>Card</option><option>Spreadsheet</option><option>Graph</option></select></label>
+    <label class="flex flex-col"><span class="text-[11px] uppercase tracking-wider text-mny-400">Config shape</span>
+      <select id="shape" class="border border-mny-200 rounded px-2 py-1.5 text-sm">
+        <option value="">all</option><option value="v1">v1 (sourceInfo)</option>
+        <option value="v2">v2 (externalSource)</option></select></label>
     <label class="flex flex-col"><span class="text-[11px] uppercase tracking-wider text-mny-400">Fix</span>
       <select id="fix" class="border border-mny-200 rounded px-2 py-1.5 text-sm">
         <option value="">all</option><option value="Yes - set">set</option>
@@ -651,6 +775,7 @@ parts.append("""
     <th class="px-2.5 py-2 font-semibold">Section title</th>
     <th class="px-2.5 py-2 font-semibold">Draft&nbsp;ID</th>
     <th class="px-2.5 py-2 font-semibold">Kind</th>
+    <th class="px-2.5 py-2 font-semibold" title="v2 stores its source under externalSource; v1 under sourceInfo">Shape</th>
     <th class="px-2.5 py-2 font-semibold">Data source</th>
     <th class="px-2.5 py-2 font-semibold">Class</th>
     <th class="px-2.5 py-2 font-semibold">Stored</th>
@@ -670,7 +795,7 @@ for r in rows:
         url = r['Page URL']
         link = ('<a class="underline decoration-mny-200 hover:decoration-mny-700" href="%s" '
                 'target="_blank" rel="noreferrer">%s</a>' % (E(url), E(last_page))) if url else E(last_page)
-        parts.append('<tr class="bg-mny-50 border-y border-mny-200"><td colspan="11" '
+        parts.append('<tr class="bg-mny-50 border-y border-mny-200"><td colspan="12" '
                      'class="px-2.5 py-1.5 font-semibold text-mny-700">%s '
                      '<span class="text-mny-400 font-normal num">&middot; %d component%s '
                      '&middot; page %s</span></td></tr>\n'
@@ -678,12 +803,13 @@ for r in rows:
     hidden = r['Hidden from view'] == 'TRUE'
     parts.append(
         '<tr class="border-b border-mny-100 align-top" data-cls="%s" data-kind="%s" data-fix="%s" '
-        'data-hidden="%s" data-q="%s">'
+        'data-hidden="%s" data-shape="%s" data-q="%s">'
         '<td class="px-2.5 py-1.5 num text-mny-400 whitespace-nowrap">%s</td>'
         '<td class="px-2.5 py-1.5 num text-mny-400">%s</td>'
         '<td class="px-2.5 py-1.5">%s%s</td>'
         '<td class="px-2.5 py-1.5 num whitespace-nowrap"><code>%s</code></td>'
         '<td class="px-2.5 py-1.5 whitespace-nowrap">%s</td>'
+        '<td class="px-2.5 py-1.5">%s</td>'
         '<td class="px-2.5 py-1.5"><code>%s</code></td>'
         '<td class="px-2.5 py-1.5">%s</td>'
         '<td class="px-2.5 py-1.5">%s</td>'
@@ -692,12 +818,14 @@ for r in rows:
         '<td class="px-2.5 py-1.5">%s</td>'
         '</tr>\n' % (
             E(r['Source class']), E(r['Component kind'].split(':')[0]), E(r['Fix needed']),
-            'y' if hidden else 'n',
-            E((r['Page'] + ' ' + r['Section title'] + ' ' + r['Source name'] + ' ' + r['Draft section ID']).lower()),
+            'y' if hidden else 'n', E(r['Config shape']),
+            E((r['Page'] + ' ' + r['Section title'] + ' ' + r['Source name'] + ' '
+               + r['Draft section ID'] + ' ' + r['Config shape']).lower()),
             E(r['Fix ID']), E(str(r['Draft index'])),
             E(r['Section title']),
             ' <span class="text-[10px] uppercase tracking-wider text-slate-400">hidden</span>' if hidden else '',
             E(r['Draft section ID']), E(r['Component kind']),
+            shape_badge(r['Config shape']),
             E(r['Source label (as shown in picker)']),
             badge(r['Source class'], 'ext' if r['Source class'] == 'external' else 'int'),
             mode_cell(r['Stored fetch mode']), mode_cell(r['Resolved behaviour']),
@@ -755,7 +883,9 @@ if extras:
   visible rather than implicit. Only <code>Card.config.jsx</code>,
   <code>spreadsheet/config.jsx</code>, <code>graph/config.jsx</code> and
   <code>graph_new/config.jsx</code> register a <code>Data Fetch Mode</code> select;
-  <code>FilterComponent.config.js</code> and <code>header.config.js</code> do not. So these
+  <code>FilterComponent.config.js</code> and <code>header.config.js</code> do not, and neither do
+  the theme-registered <code>Header: MNY Data</code> and <code>Footer: MNY Footer</code>
+  (<code>ComponentRegistry/index.jsx:37-38</code>). So these
   components resolve purely through the implicit fallback and <strong>cannot be fixed by an
   author</strong> &mdash; making them settable is a library change, not a content one.</p>
   <div class="bg-white border border-mny-200 rounded-lg overflow-x-auto">
@@ -784,22 +914,29 @@ parts.append('<section class="mb-8 bg-white border border-mny-200 rounded-lg p-5
 for s in scans:
     parts.append('<tr class="border-b border-mny-100"><td class="py-1.5 pr-4 whitespace-nowrap">'
                  '<code>%s</code></td><td class="py-1.5">pattern <strong>%s</strong> &middot; '
-                 '%s of %s pages &middot; scanned %s &middot; %s sections carried no '
-                 '<code>externalSource</code> and are not data components</td></tr>\n'
+                 '%s of %s pages &middot; scanned %s &middot; %s sections bound no data source '
+                 '(neither <code>externalSource</code> nor <code>sourceInfo</code>) and are not data '
+                 'components &middot; config shapes: %s</td></tr>\n'
                  % (E(s['file']), E(str(s['patternId'])), E(str(s['pagesScanned'])),
-                    E(str(s['pageCount'])), E(str(s['scannedAt'])), E(str(s['skippedNoSource']))))
+                    E(str(s['pageCount'])), E(str(s['scannedAt'])), E(str(s['skippedNoSource'])),
+                    E(', '.join('%s %d' % (k, v) for k, v in sorted((s['configShapeCensus'] or {}).items()))
+                      or 'not recorded (scan predates 2026-09-01)')))
 parts.append('</tbody></table>'
              '<p class="text-[13px] text-mny-700 mt-3">Scanned with '
              '<code>planning/mitigateny/skills/scripts/report_fixes/scan_fetchmode.mjs</code> over '
              'every page of the pattern\'s <code>draft_sections</code>, and rendered by '
              '<code>build_fetchmode_report.py</code> in the same folder. Draft sections only &mdash; '
-             'never published ids; see the report-fix skill for why.</p></section>')
+             'never published ids; see the report-fix skill for why.</p>'
+             '<p class="text-[13px] text-mny-700 mt-2">A scan whose <code>config shapes</code> above '
+             'reads <em>not recorded</em> was taken with the pre-2026-09-01 scanner and covers v2 '
+             'components only &mdash; rescan before trusting any count derived from it.</p></section>')
 
 parts.append("""
 <script>
 (function(){
   const q=document.getElementById('q'), cls=document.getElementById('cls'),
         kind=document.getElementById('kind'), fix=document.getElementById('fix'),
+        shape=document.getElementById('shape'),
         vis=document.getElementById('vis'), count=document.getElementById('count'),
         rows=[...document.querySelectorAll('#tbl tbody tr[data-q]')],
         heads=[...document.querySelectorAll('#tbl tbody tr:not([data-q])')];
@@ -811,6 +948,7 @@ parts.append("""
         && (!cls.value || r.dataset.cls===cls.value)
         && (!kind.value || r.dataset.kind===kind.value)
         && (!fix.value || r.dataset.fix===fix.value)
+        && (!shape.value || r.dataset.shape===shape.value)
         && (!vis.checked || r.dataset.hidden==='n');
       r.style.display = ok ? '' : 'none';
       if(ok) n++;
@@ -824,7 +962,7 @@ parts.append("""
     }
     count.textContent = n;
   }
-  [q,cls,kind,fix,vis].forEach(el=>el.addEventListener('input',apply));
+  [q,cls,kind,fix,shape,vis].forEach(el=>el.addEventListener('input',apply));
   apply();
 })();
 </script>

@@ -11,6 +11,13 @@ import { npmrdsPaint } from "./paint";
 export const RoutecreationPlugin = {
     id: "routecreation",
     type: "plugin",
+    // This plugin renders its OWN floating panels pinned to the map's edges (comp.jsx →
+    // RouteIdentityPanel top-left, RouteEditor's editorWrapper top-right, ModeHintPill
+    // bottom-center), so it asks core for the full-width overlay: without this the
+    // map-actions column reserves ~176px and editorWrapper (pinned `right-2`) stops short
+    // of the map's right edge. Same precedent as macroview.plugin.jsx — read by
+    // ComponentRegistry/map/index.jsx → AvlMap's `floatMapActions` (opt-in, default off).
+    fullWidthOverlay: true,
     mapRegister: (map, state, setState) => {
       let pluginDataPath = '';
       let symbologyLayerPath = "";

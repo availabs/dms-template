@@ -36,6 +36,24 @@
     research/route-creation/findings.md (the investigative trail). Where the two implementations
     disagree, the NEW one wins and the difference is written on the page (§ 04).
 
+  ── REVISION 1 (2026-09-01) ───────────────────────────────────────────────────
+  Re-verified against the live plugin source (comp.jsx, RouteEditor.jsx, SaveRouteModal.jsx,
+  paint.js, dataUpdate.jsx, constants.js, both hooks) before touching anything, per Ryan's ask to
+  put Route Creation through the same design pass Map21/MacroView already had. All eight items
+  below (paint collision, missing highlight, missing identity panel, missing mode hint, pinned
+  year, marker non-persistence, no folder/dates, client-direct routing call) are CONFIRMED still
+  real — nothing on any of those fronts has changed in the live plugin since this page was drawn.
+  ONE thing DID change, and this revision updates it in place: § 02's Tags field previously drew
+  free-text chips ("no fixed vocabulary yet"). `routes-reports-users-mesh.md`'s Workstream D
+  shipped a real, validated `TagsEditor` for routes since then — `agency:`/`user:` vocabulary,
+  one-click suggestion chips for the viewer's own login groups, inline rejection of a group the
+  viewer isn't in, auto-committed tags on a brand-new route. Updated below and in § 04's table.
+  ONE NEW gap surfaced doing this pass, added to § 04: the live `/route_creation` page renders the
+  full labelled sidebar, not the compact 64px icon rail every other shipped NPMRDS page (this
+  drawing included) uses — confirmed live via browser. Looks like the same missing per-page
+  `sideNav.activeStyle` override `old-reports-conversion.md` round 81 already fixed once for
+  report pages, not a new capability to design.
+
   STRUCTURE — the workbench shape, same as npmrds-macro.html / freight-atlas-map.html:
     · Layout `app`, compact 64px icon SideNav. Reports is the active item: a route is a child
       of Reports (contract item 1's item set is `Reports → All reports · Your reports · Routes`),
@@ -440,7 +458,7 @@
                   <span class="h-px w-10 bg-[#CA8A04]/50"></span>
                   <h2 class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722]">Saving — three fields, one row</h2>
                 </div>
-                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 max-w-[860px]">The save dialog is deliberately short. The old tool asked for a folder and a start/end date and time; this one asks for a name, a description and tags, because a route is a <em>geometry</em> — the report that uses it owns the time window, and one route feeding two reports with two different windows is the normal case, not the exception.</p>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 max-w-[860px]">The save dialog is deliberately short. The old tool asked for a folder and a start/end date and time; this one asks for a name, a description and tags, because a route is a <em>geometry</em> — the report that uses it owns the time window, and one route feeding two reports with two different windows is the normal case, not the exception. Tags aren't free text either: they're validated against the same <span class="tny-mono">agency:</span>/<span class="tny-mono">user:</span> vocabulary Reports uses, with one-click suggestions for the viewer's own login groups.</p>
               </div>
 
               <!-- ── the modal, drawn ── -->
@@ -473,14 +491,21 @@
                         </div>
                         <div>
                           <div class="font-proxima text-[13px] font-medium text-slate-700 mb-1">Tags</div>
-                          <!-- free-form chips: there is no tag vocabulary yet, so entry is
-                               type-and-commit (Enter or comma), backspace removes the last. -->
+                          <!-- REAL component as of 2026-09-01 (routes-reports-users-mesh.md, Workstream D) —
+                               the shared TagsEditor, not free text. Solid chips are whatever this route
+                               already carries; the DASHED chips are one-click suggestions for the viewer's
+                               OWN user:/agency: tags not yet on THIS row — this route predates
+                               auto-tag-at-creation, so they never auto-committed the way a brand-new
+                               route's now do (see the new-route note below). Typing an agency: value the
+                               viewer isn't a member of is rejected inline, not silently accepted. -->
                           <div class="min-h-9 px-2 py-1.5 rounded-[6px] border border-zinc-950/15 bg-white flex flex-wrap items-center gap-1.5">
-                            <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-800 text-[12px]">Capital District <!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg></span>
-                            <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-800 text-[12px]">corridor study <!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg></span>
+                            <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-[12px]">Capital District <!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg></span>
+                            <span class="h-6 pl-2 pr-1 inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-[12px]">corridor study <!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg></span>
+                            <button class="h-6 pl-2 pr-2 inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 text-slate-500 text-[12px]">+ You</button>
+                            <button class="h-6 pl-2 pr-2 inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 text-slate-500 text-[12px]">+ AVAIL</button>
                             <span class="font-proxima text-[13px] text-slate-400">Add a tag…</span>
                           </div>
-                          <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1">Free text — no fixed vocabulary yet. Tags are how routes are found again on <a href="npmrds-reports.html#routes" class="tny-link">Reports</a>.</p>
+                          <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1">Validated against the same <span class="tny-mono">agency:</span>/<span class="tny-mono">user:</span> vocabulary Reports uses — typing an agency you're not a member of is rejected inline, not silently saved. Tags are how routes are found again on <a href="npmrds-reports.html#routes" class="tny-link">Reports</a>.</p>
                         </div>
                       </div>
                       <div class="mt-5 pt-4 border-t border-zinc-950/05 flex items-center gap-2 justify-end">
@@ -488,7 +513,7 @@
                         <button class="tny-press h-9 px-4 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e] font-display uppercase text-[12.5px] tracking-wide">Update</button>
                       </div>
                     </div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-500 mt-3"><strong>New-route state</strong> differs in three places only: the title reads <em>Save new route</em>, the red overwrite line is absent, and the confirm button reads <em>Save</em>. Nothing else moves — same fields, same order.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-500 mt-3"><strong>New-route state</strong> differs in three places only: the title reads <em>Save new route</em>, the red overwrite line is absent, and the confirm button reads <em>Save</em>. Nothing else moves — same fields, same order. One exception, tags-specific: a brand-new route seeds its <em>own</em> user/agency tags already <strong>committed</strong> (solid chips, not dashed suggestions) — the suggestion state drawn above is what an <em>already-existing</em> route shows, because it predates auto-tagging and the seed effect only ever fires once, at creation.</p>
                   </div>
                 </div>
               </div>
@@ -652,9 +677,11 @@
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">TMC click · toggle · search-to-add</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>built</span></td><td class="px-4 py-2.5">Shipped and live-verified. The empty-<span class="tny-mono">properties</span> bug that made selection impossible is fixed by the plugin's own <span class="tny-mono">data-column:'tmc'</span>.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Marker placement · auto-routing</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>built</span></td><td class="px-4 py-2.5">Drop, drag, re-resolve, gradient by sequence. Untested since the port into dms-template.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Save · update · overwrite labelling</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>built</span></td><td class="px-4 py-2.5">Name · description · tags → one <span class="tny-mono">routes_data</span> row. The save path is also untested since the port.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Tag validation · suggestion chips</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>built</span></td><td class="px-4 py-2.5">Shipped 2026-09-01, after this page was first drawn — replaces free-text tags with the shared <span class="tny-mono">TagsEditor</span>: validated against real <span class="tny-mono">agency:</span>/<span class="tny-mono">user:</span> vocabulary, one-click suggestion chips for the viewer's own login groups, auto-committed on a brand-new route. See § 02.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Brand paint · blue route, amber highlight</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>specified</span></td><td class="px-4 py-2.5">Replaces <span class="tny-mono">#FF0000</span> on <span class="tny-mono">#CCCCCC</span>. One <span class="tny-mono">match</span> expression in <span class="tny-mono">dataUpdate.jsx</span>; the width and offset ramps are untouched.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Row ↔ segment highlight</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>specified</span></td><td class="px-4 py-2.5">The old tool had it both ways; the port has neither. Needs a hovered-TMC value the panel and the paint expression both read.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Route identity on the canvas · mode hint</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>specified</span></td><td class="px-4 py-2.5">Panel 1 and the docked pill. Both read state the component already holds.</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Compact icon-only sidenav</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>gap · easy fix</span></td><td class="px-4 py-2.5">Confirmed live 2026-09-01: <span class="tny-mono">/route_creation</span> still renders the full labelled sidebar, not the 64px icon rail every other shipped NPMRDS page (this drawing included) uses. Looks like the same missing per-page <span class="tny-mono">theme.layout.options.sideNav.activeStyle</span> override <span class="tny-mono">old-reports-conversion.md</span> round 81 already fixed once for report pages — likely a one-field page-config fix, not a component change.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Network-vintage selector</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>blocked</span></td><td class="px-4 py-2.5">Phase 3. Blocked on re-verifying which years the routing service matches — a direct test found only 2020–2022 working near Albany.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Waypoint (<span class="tny-mono">points</span>) persistence</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>open</span></td><td class="px-4 py-2.5">A marker route reopens as a flat TMC list. Known design limitation, not a bug to file.</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-medium text-[#0F1722]">Routing behind a server proxy</td><td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700"><span class="size-1.5 rounded-full bg-amber-500"></span>not started</span></td><td class="px-4 py-2.5">Phase 1, and the next real blocker. The client-direct call is deliberate and swappable — one function.</td></tr>

@@ -34,6 +34,35 @@
  * label and the derived class are emitted so a report can show what an author
  * actually sees without inferring it.
  *
+ * ── TWO CONFIG SHAPES (fixed 2026-09-01) ───────────────────────────────────
+ *
+ * The template runs two generations of element-data at once, and the first
+ * version of this script only saw one of them. `migrateToV2.js:203-226` is the
+ * authority on which is which:
+ *
+ *   v2  state.externalSource                  canonical
+ *   v1  state.sourceInfo || state.dataRequest  legacy; sourceInfo -> externalSource
+ *   v0  state.attributes[] || state.format     pre-2024; v0 -> v1 -> v2
+ *
+ * `dataWrapper/index.jsx:220` runs migrateToV2 on mount, so all three render,
+ * and `display` (hence `display.fetchMode`) is carried through unchanged —
+ * `migrateV1ToV2` strips only RUNTIME_DISPLAY_FIELDS (`filteredLength`,
+ * `invalidState`, `hideSection`). So a v1 row honours a stored fetchMode
+ * exactly as a v2 row does; it just stores its source snapshot elsewhere.
+ *
+ * Selecting on `externalSource` alone therefore silently excluded every v1
+ * component from the T6 catalog — 458 of 820 on pattern 1300890 — and the
+ * sweep it drove reported "0 outstanding" over half its target. This script
+ * now selects on `externalSource || sourceInfo`, prefers `externalSource` when
+ * a row somehow has both (`getData.js:226` resolves it the same way), and
+ * emits `configShape` on every record so a count can always say which shapes
+ * it covered.
+ *
+ * NB `patterns/admin/.../pagesEditor.utils.js:142` carries a comment claiming
+ * the opposite — "sourceInfo is canonical in live data; externalSource is the
+ * v1/legacy field". That comment is backwards; its `sourceInfo || externalSource`
+ * fallback still reads both, so nothing downstream of it is wrong.
+ *
  * usage:
  *   node scan_fetchmode.mjs <patternId> <out.json> [--slugs <slugs.json>]
  *                           [--limit 300] [--kinds Card,Spreadsheet,Graph]
@@ -117,7 +146,9 @@ const out = {
   kindsFilter: kinds,
   components: [],
   elementTypeCensus: {},
+  configShapeCensus: {},
   skippedNoSource: 0,
+  skippedNoSourceDataShaped: 0,
 };
 
 for (const p of sel) {
@@ -148,12 +179,35 @@ for (const p of sel) {
 
     const ed = deepParse(el['element-data']);
     const edObj = (ed && typeof ed === 'object' && !Array.isArray(ed)) ? ed : {};
-    const es = edObj.externalSource || null;
+
+    // Both config generations bind a source, under different keys. See the
+    // header note: migrateToV2 decides the shape in exactly this order, and
+    // getData.js:226 prefers externalSource when a row carries both.
+    const esV2 = (edObj.externalSource && typeof edObj.externalSource === 'object') ? edObj.externalSource : null;
+    const esV1 = (edObj.sourceInfo && typeof edObj.sourceInfo === 'object') ? edObj.sourceInfo : null;
+    const es = esV2 || esV1;
+    const sourceKey = esV2 ? (esV1 ? 'externalSource+sourceInfo' : 'externalSource') : (esV1 ? 'sourceInfo' : null);
+    const configShape = esV2 ? 'v2'
+      : (esV1 || edObj.dataRequest) ? 'v1'
+      : (Array.isArray(edObj.attributes) || edObj.format) ? 'v0'
+      : null;
     const display = edObj.display || {};
 
     // A data component is one that binds a source. Kinds filter is applied on
-    // top of that, never instead of it.
-    if (!es) { out.skippedNoSource++; return; }
+    // top of that, never instead of it. A row that is data-SHAPED (v1/v0
+    // markers) but binds no source is counted separately — it is not a
+    // component with an unset fetch mode, but it is not "not a data component"
+    // either, and collapsing the two is how the v1 blind spot stayed hidden.
+    if (!es) {
+      out.skippedNoSource++;
+      if (configShape) {
+        out.skippedNoSourceDataShaped++;
+        out.configShapeCensus[`${configShape} (no source)`] =
+          (out.configShapeCensus[`${configShape} (no source)`] || 0) + 1;
+      }
+      return;
+    }
+    out.configShapeCensus[configShape] = (out.configShapeCensus[configShape] || 0) + 1;
     if (kinds && !kinds.some((k) => String(et).toLowerCase().startsWith(k.toLowerCase()))) return;
 
     const stored = (display.fetchMode === undefined || display.fetchMode === null || display.fetchMode === '')
@@ -178,6 +232,10 @@ for (const p of sel) {
       trackingId: d.trackingId ?? null,
       title: d.title ?? null,
       elementType: et,
+      configShape,
+      sourceKey,
+      hasDataRequest: !!edObj.dataRequest,
+      hasTopLevelFilters: !!edObj.filters,
       hideInView: d.hideInView === true,
       tags: d.tags ?? null,
       storedFetchMode: stored,
@@ -210,4 +268,10 @@ console.log('  by element type   ', JSON.stringify(tally('elementType')));
 console.log('  stored fetch mode ', JSON.stringify(tally('storedFetchMode')));
 console.log('  resolved behaviour', JSON.stringify(tally('resolvedFetchMode')));
 console.log('  source class      ', JSON.stringify(tally('sourceClass')));
-console.log(`  sections with no externalSource (not data components): ${out.skippedNoSource}`);
+console.log('  config shape      ', JSON.stringify(tally('configShape')));
+console.log('  stored x shape    ', JSON.stringify(out.components.reduce((a, x) => {
+  const k = `${x.configShape}/${x.storedFetchMode ?? 'not set'}`;
+  a[k] = (a[k] || 0) + 1; return a;
+}, {})));
+console.log(`  sections binding no source (not data components): ${out.skippedNoSource}`
+  + ` (of which data-shaped: ${out.skippedNoSourceDataShaped})`);

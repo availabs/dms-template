@@ -77,6 +77,17 @@ COLOR_BREAKS_PATH = os.path.join(
 with open(COLOR_BREAKS_PATH) as _f:
     COLOR_BREAKS = json.load(_f)["measures"]
 
+# Semi-reverted 2026-09-02 (Ryan): mirrors composeMapConfig.js's
+# `APPLY_STATIC_BREAKS_TO_MAP` (see that file's header comment) — Ryan walked back round 80's
+# fixed choropleth breaks for maps too, same "own dynamic scale per report" call as the chart
+# revert, kept just as easy to flip back. False = route_map.py mints `bin-method: "quantile"`
+# (pre-round-80: the live Map runtime recomputes breaks from real data on every render;
+# COLOR_BREAKS' `breaks`/`maxValue` for a measure go unused, only `colors` still comes from here).
+# True = round 80's `bin-method: "custom"` (fixed breaks baked at conversion time). Flip alongside
+# composeMapConfig.js's flag, not independently — a report converted with one setting and
+# re-authored live under the other gets a mismatched map.
+APPLY_STATIC_BREAKS_TO_MAP = False
+
 # ── New-system constants (npmrdsv5/dev2 dev site) ──────────────────────────
 DMS_ENV = {
     "DMS_HOST": os.environ.get("DMS_HOST", "http://localhost:3001"),

@@ -1086,6 +1086,10 @@ try {
     // Start from the component's own defaultState (which already includes the
     // `data: []` that BarGraph crashes without — see the converter's note).
     const state = structuredClone(avlGraph.defaultState);
+    // NPMRDS's own per-graph-type default legend position — seeded once, here, at composition
+    // time, same seed point + reasoning as useAddGraphSection.js's own call (see
+    // composeMeasureConfig.js's DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE doc comment).
+    cmc.applyDefaultLegendPosition(state, g.graphType);
     const dwAPI = {
       setState: (fn) => fn(state),
       reconcileComparisonSeriesColumn: () => reconcileComparisonSeriesColumn(state),
