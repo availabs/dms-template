@@ -63,8 +63,30 @@ target — this file does not track whether transportNY's copies still match.
      sections reference the group by `name`). A same-session first attempt (this task file's earlier
      wording) claimed victory off item 1 alone and was WRONG — item 2 is what actually caused the
      dead space the user saw on a real wide monitor; item 1's effect is only visible once item 2 no
-     longer masks it. Both live-verified together at `/route_creation` (innerWidth 1836 → canvas
-     width 1748, matching `/macro`'s ratio; no more `max-w-[1480px]` ancestor in the DOM chain).
+     longer masks it.
+  3. **A third, smaller gap survived items 1-2**: a thin band at the very TOP of the viewport. Cause
+     was the Map SECTION's own row data (component ids `2216260` published / `2216259` draft),
+     diffed field-by-field against `/macro`'s section (id `2214621`) via `dms raw get`. Two things
+     differed: (a) `element.element-data.height` was `"full"` (`ComponentRegistry/map/index.jsx`'s
+     `HEIGHT_OPTIONS.full = 'calc(95vh)'` — a deliberate 5vh reserve for a normal embedded map)
+     vs macro's `"screen"` (`100vh`; the code comment there literally says "pair with the `workbench`
+     sectionGroup style + a p-0 section" — i.e. this task's items 2+3 are a documented pair, not two
+     independent fixes); (b) the section's own top-level `padding` was unset (falls back to the
+     `pages.sectionArray` theme's `sectionPadding`/`defaultPaddingStep: "3"` → `pt-3 pr-3 pb-3 pl-3`
+     gutter) vs macro's explicit `padding: "p-0"`. Also matched macro's top-level `height: "hero"`
+     and `size: "12"` for exact parity (present on macro, absent on route_creation; `height:"hero"`
+     resolves through `section.jsx`'s `resolveSectionHeightStyles` to an invalid CSS `height` value
+     that the browser drops, but it also sets `display:flex; flexDirection:column` on the section
+     wrapper as a side effect, which macro carries too). Fixed via `dms raw update 2216260` and
+     `2216259` with `--set padding=p-0 --set height=hero --set size=12 --set
+     element.element-data.height=screen` (nested `--set` is safe here — no arrays involved, unlike
+     the `section_groups` array in item 2, which needed `--data` instead per this repo's
+     `dms raw update` array-field caveat). `parent`/`group`/`trackingId`/`initialBounds` were left
+     untouched (page-identity fields; must not be copied from macro's row).
+  All three verified together at `/route_creation`: canvas `getBoundingClientRect()` now reports
+  `top: 0`, `left: <sidenav width>`, `width/height` = viewport minus sidenav exactly — a pixel-exact
+  match to `/macro`, confirmed at a real wide-monitor width (innerWidth 2476) where the original
+  gaps were visible and a plain resize-to-1600 repro had missed them.
 
 ## Open items worth flagging before picking this arc back up
 

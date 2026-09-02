@@ -1,7 +1,9 @@
 # Graph legend position — template default + QuickControls pill
 
-**Project:** TransportNY · **Topic:** themes · **Status: SCOPED, not yet implemented** — awaiting
-Ryan's go-ahead. · **Started:** 2026-09-01
+**Project:** TransportNY · **Topic:** themes · **Status: BUILT, not yet live-verified** — code
+written 2026-09-01 per Ryan's go-ahead; live verification deliberately held (Ryan had another
+Claude session active on the same dev environment) — pick this up first next session. ·
+**Started:** 2026-09-01
 
 ## Objective
 
@@ -90,9 +92,12 @@ Set the NPMRDS default once, at the point a graph section is first minted, and l
   If it turns out to start from the base template row, then fixing that one row's `display.legend.
   position` (via the `template_specs.py` edit above) may already be sufficient — verify, don't
   assume, before writing code.
-- **Open question for Ryan**: what should `<NPMRDS_DEFAULT>` actually be? "Top" vs "Bottom" reads
-  differently depending on chart type/height — worth picking per your actual reports, not
-  guessing. (This doc uses `<NPMRDS_DEFAULT>` as a placeholder throughout.)
+- **Decided 2026-09-01 (Ryan)**: `"bottom"` for every chart type for now (BarGraph/LineGraph;
+  GridGraph's own corner vocabulary has no plain "bottom", so it gets `"bottom-right"` as the
+  closest analog — see the map's own doc comment). Ryan explicitly flagged this may change, AND
+  explicitly asked for **per-graph-type** defaults (e.g. bottom for Line, right for Bar) to be a
+  real, easy-to-edit capability going forward, not just a single global constant — see
+  `DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE` below, one map entry per graph type.
 
 ## Part 2: new QuickControls "Legend" pill
 
@@ -127,22 +132,76 @@ Follows the exact shape of the existing pills in `QuickControlsRow`
   the Settings drawer's Graph Type control is. Not worth fixing as part of this task (would be a
   `dms`-library change, and per this project's constraint, existing behavior elsewhere).
 
-## Files likely touched (implementation, not yet started)
+## Implementation — DONE 2026-09-01 (code only, live-verification pending)
 
-- `src/themes/transportny/components/ReportRouteList/useAddGraphSection.js` — seed the NPMRDS
-  default at creation.
-- `scripts/npmrds-reports/convert_old_reports_lib/template_specs.py` — same default for the 2
-  still-hand-built template categories.
-- `scripts/npmrds-reports/convert_old_reports_lib/compose_bridge.py` — trace/confirm whether the
-  bridge path needs its own seed point, or inherits the JS-side fix for free.
-- `src/themes/transportny/components/QuickControls/index.jsx` +
-  `QuickControls.theme.js` — the new pill.
+**Bridge trace, resolved** (this doc's own "needs a short trace at implementation time" item):
+`compose_bridge.py`'s subprocess runs `compose_bridge.mjs` (a Node/Vite-SSR script, NOT
+`useAddGraphSection.js`) — a genuinely separate 3rd seed point, `const state =
+structuredClone(componentCfg.defaultState)`. `report_build.mjs` turned out to be a 4th,
+independent seed point (`const state = structuredClone(avlGraph.defaultState)`, its own
+`spec.graphs.map()`) — not caught in the original scoping pass, found while implementing. Both
+needed their own call, same as `useAddGraphSection.js`.
 
-## Testing checklist (once built)
+**Single source of truth** — `composeMeasureConfig.js` (already the shared module all 4 paths
+either import or `ssrLoadModule`) gained:
+- `DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE` — `{ BarGraph: 'bottom', LineGraph: 'bottom', GridGraph:
+  'bottom-right' }`. One line per graph type, per Ryan's explicit ask — change one line to give
+  Bar a different default than Line, no other file needs touching.
+- `applyDefaultLegendPosition(state, graphType)` — looks up the map (falls back to `'bottom'`),
+  no-ops for `'Table'` or a state with no `display`. Called once, only at real section-creation
+  time, by all 4 seed points below. Deliberately NOT called by `composeMeasureConfig()` itself —
+  see the map's own doc comment for why (would fight the QuickControls pill below).
+- `LEGEND_POSITION_OPTIONS` (right/left/top/bottom) + `LEGEND_POSITION_OPTIONS_GRID` (right/left/
+  top-right/top-left/bottom-right/bottom-left) + `legendPositionOptionsFor(graphType)` — the same
+  split `ComponentRegistry/graph_new/config.jsx`'s Settings-drawer `legend`/`legendForGridGraph`
+  groups already use, reused (not re-derived) by the QuickControls pill below.
+
+**4 seed-point call sites**, each one line:
+- `useAddGraphSection.js` — `applyDefaultLegendPosition(state, pick.graphType)` right after
+  `state.externalSource = ...`, before `applyMeasurePickToState`.
+- `report_build.mjs` — `cmc.applyDefaultLegendPosition(state, g.graphType)` right after its own
+  `structuredClone(avlGraph.defaultState)` (it already had `cmc` = the ssrLoadModule'd
+  `composeMeasureConfig.js` handle, from its own pre-existing code).
+- `compose_bridge.mjs` — added a new `ssrLoadModule('.../composeMeasureConfig.js')` call (`cmc`,
+  matching `report_build.mjs`'s own naming) + `cmc.applyDefaultLegendPosition(state, req.graphType)`
+  right after its own `structuredClone(componentCfg.defaultState)`.
+- `template_specs.py` — the 2 still-hand-built categories (base LineGraph template + 5 per-TMC
+  BarGraph entries) got `"display": {"legend": {"position": _DEFAULT_LEGEND_POSITION[graphType]}}`
+  added directly, via a small local `_DEFAULT_LEGEND_POSITION` dict with an explicit "kept in sync
+  BY HAND with composeMeasureConfig.js" comment (Python can't import the JS map — this is the one
+  place the 2-systems drift risk this project already knows about, per `graph_templates.py`'s own
+  header comment, still applies and has to be watched by hand).
+
+**QuickControls "Legend" pill** — `QuickControls/index.jsx`, no theme file changes needed (reused
+existing `t.pill`/`t.pillOn`/`t.popSection`/`t.popPillRow` tokens the Width pill already
+established). Gated the same as Mode (`graphType !== 'Map' && graphType !== 'Table'`), placed in
+the left-aligned layout group next to Width (not the right-aligned data-pill cluster/overflow
+system), writes `state.display.legend.position` directly via the same `updateAttribute('element',
+...)` + live-`dwAPI.setState` mirror shape `applyPick` uses — deliberately bypassing
+`applyMeasurePick`/`composeMeasureConfig` entirely, per this doc's own design note. Option set
+comes from `legendPositionOptionsFor(graphType)`, so GridGraph automatically gets the 6-way corner
+set and every other chart type gets the 4-way set.
+
+**Local sanity checks run** (syntax/parse only — no dev server, no DB, deliberately held per
+Ryan's "another Claude is using the dev environment right now" instruction): `node --check` on
+`composeMeasureConfig.js`/`useAddGraphSection.js`/`compose_bridge.mjs`/`report_build.mjs`, `python3
+-m py_compile` on `template_specs.py`, and an `esbuild.transformSync` JSX parse of
+`QuickControls/index.jsx` — all clean. **None of this is live verification.**
+
+## Files touched
+
+- `src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js`
+- `src/themes/transportny/components/ReportRouteList/useAddGraphSection.js`
+- `scripts/npmrds-reports/report_build.mjs`
+- `scripts/npmrds-reports/compose_bridge.mjs`
+- `scripts/npmrds-reports/convert_old_reports_lib/template_specs.py`
+- `src/themes/transportny/components/QuickControls/index.jsx`
+
+## Testing checklist — NOT YET RUN (dev environment was in use by another session)
 
 - [ ] `node scripts/npmrds-reports/probe_corpus.mjs` before/after (standing convention for any
   RRL/report touch, per `report-authoring-ux-overhaul.md`'s testing-requirements section).
-- [ ] A brand-new graph created via AddGraphModal renders with the new default position.
+- [ ] A brand-new graph created via AddGraphModal renders with the new default (bottom) position.
 - [ ] A brand-new old-report conversion (Python converter) renders with the new default position,
   for both a bridge-composed template and one of the 2 hand-built categories.
 - [ ] The new QuickControls pill changes an existing graph's legend position, live, without
@@ -153,3 +212,5 @@ Follows the exact shape of the existing pills in `QuickControlsRow`
 - [ ] GridGraph's pill offers the 6-way corner set, every other chart type offers the 4-way set.
 - [ ] Update `src/dms/skills/authoring-graphs.md` / `traversing-report-pages.md` if live
   verification surfaces anything they don't already say (standing project convention).
+- [ ] Use a dedicated scratch report for the live click-through, per this project's standing
+  convention — never a page Ryan might have open.
