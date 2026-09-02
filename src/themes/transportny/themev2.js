@@ -71,6 +71,7 @@ const textSettings = {
       "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
       "kicker", "cardTitle", "cardTitleSM", "labelSM", "labelMD", "btnPrimary", "btnOutline", "toggleOn", "toggleOff",
+      "viewTabOn", "viewTabOff", "btnOutlineLG",
       "statNum", "statXL", "statLG", "statMD", "buttonRow", "kickerXS",
     ],
   },
@@ -208,6 +209,22 @@ const textSettings = {
     btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
     // Secondary/outline action link-as-button — quiet neighbor to btnPrimary ("All tickets").
     btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+    // ── The Reports header's 40px CONTROLS ROW (npmrds-reports.html revision 3, 2026-09-02).
+    // Three ADDITIVE tokens; nothing existing moves (btnOutline stays h-9 for the control
+    // room's "All tickets", toggleOn/Off stay the CR detail pages' 28px mono chips).
+    // viewTabOn / viewTabOff — the `Templates | All reports` VIEW TOGGLE: two abutting static
+    // Card cells in a gap-0 cells grid (max-content tracks) read as ONE segmented control —
+    // the filled cell is the current surface, the white one the other. Oswald 12px uppercase
+    // on h-10, #37576B fill; the outer corners carry the 6px radius, the left cell owns the
+    // seam (`border-l-0` on the right one), so the pair shares a single hairline. `w-fit`
+    // because a Card value div is a column-flex item and would otherwise stretch. Same
+    // `px!`/`py-0!` trick as btnPrimary to beat the injected value-cell paddings.
+    viewTabOn:  `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-[#37576B] text-white! no-underline! rounded-l-[6px]`,
+    viewTabOff: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-l-0 border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-r-[6px] transition-colors`,
+    // btnOutlineLG — the header's "New route": btnOutline's shape at the controls row's h-10,
+    // ink text, hover border in the Reports field colour (mockup: `h-10 px-3.5 rounded-[6px]
+    // bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]`).
+    btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
@@ -1404,6 +1421,13 @@ const dataCard = {
       displayMDCaps: `${F_DISP} font-semibold text-[26px]! leading-[1.05] tracking-tight uppercase ${INK}`,
       btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
       btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+      // Parity with textSettings — the Reports header's controls-row tokens (see there). A Card
+      // cell resolves valueFontStyle HERE, and these three exist FOR Card cells (the view
+      // toggle's two static cells and the "New route" link cell), so this mirror is the one
+      // that renders; the textSettings copy keeps the Lexical picker and the dropdown in sync.
+      viewTabOn:  `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-[#37576B] text-white! no-underline! rounded-l-[6px]`,
+      viewTabOff: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-l-0 border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-r-[6px] transition-colors`,
+      btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
       // ── Unit suffix in a list row (npmrds-home § 01: `ratio` / `veh-hr` / `tons/yr`).
       // ADDITIVE, not a change to metaXS: the design draws this run at `text-[9px]`
       // where metaXS is 9.5px, and metaXS is shared by as-of badges and card meta all

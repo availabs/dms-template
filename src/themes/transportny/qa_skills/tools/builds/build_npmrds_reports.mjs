@@ -2,9 +2,16 @@
 // Build the NPMRDS REPORTS page — pattern `npmrds_sub` (2100394), slug
 // `converted_reports` (page 2188366), on npmrdsv5 / dev2 — from the converged mockup
 //   src/themes/transportny/TransportNY Design System/dms_design_system_v2/pages/npmrds-reports.html
-//   (REVISION 2, 2026-07-31 — templates first, one card per template in five typed
-//    groups, a preview plate, search in a modal)
-// Task: planning/transportny/tasks/current/npmrds-reports-page-build.md
+//   (REVISION 3, 2026-09-02 — the page is the templates band and nothing below it: a
+//    header row of title · view toggle · search bar · New report · New route, § 01
+//    templates, and the footer. § 02 "Your reports", § 03 "Worked examples", § 04 "The
+//    finder", the § 01 route CTA, the header's freshness card AND the find-a-report
+//    modal section group are gone — the last at the owner's request the same day, once
+//    the header's search bar (ReportPickerModal) had made the section-group dialog
+//    unreachable.)
+// Task: planning/transportny/tasks/current/npmrds-reports-page-rev3.md
+//   (revision 2's build, its P6/P7 measurements and its escalations:
+//    planning/transportny/tasks/current/npmrds-reports-page-build.md)
 //
 // Run from the dms-template root with DMS_AUTH_TOKEN set:
 //   export DMS_AUTH_TOKEN=$(node src/dms/packages/dms/cli/bin/mint-token.mjs \
@@ -18,6 +25,9 @@
 //  · find-or-create the page BY SLUG, then address everything BY PAGE ID;
 //  · a RUNTIME PARITY GUARD refuses to wipe when the live draft section count
 //    differs from SECTIONS.length — override with ALLOW_SECTION_COUNT_CHANGE=1;
+//    ⚠ a matching COUNT is not parity — diff CONTENT first (re-export with
+//    ../page_to_build.mjs and compare; see the task file's "drift capture" note for
+//    the 2026-09-02 case, where live had 30 == 30 and 27 sections differed);
 //  · the wipe is `draft_sections -> []` via `page update --data` (a full replace,
 //    never `--set`, which deep-merges arrays and accumulates stale refs), plus a
 //    best-effort `section delete` per orphaned row;
@@ -28,49 +38,59 @@
 //    the pattern forever. Check the wipe line: `(N deleted, 0 orphaned)` is healthy.
 //  · sections are created in order, so draft_sections order == render order.
 //
-// PAGE-LEVEL WRITES THAT ARE NOT DRAFT/PUBLISH SPLIT (they go live immediately —
-// harmless here only because 2188366 has never been published):
+// PAGE-LEVEL WRITES THAT ARE NOT DRAFT/PUBLISH SPLIT (they go live immediately; both
+// are re-written to the values the page already carries, so a re-run is a no-op):
 //  · `sidebar` — set to "" (the design has no rail; the page shipped `left`).
-//  · `filters` — the page-variable registry the search modal needs
-//    (creating-interactive-pages.md step 0). Without it the Filter control's value
-//    never reaches the URL and no section reacts.
+//  · `filters` — the page-variable registry for `search` (creating-interactive-pages.md
+//    step 0). Still load-bearing with no Filter section left on the page: the header's
+//    ChooseReportButton reads `?search=` off pageState.filters, so a shared
+//    `?search=bridge` link still arrives with the query reported on the closed trigger.
 //
 // LAYOUT (the mockup's bands → DMS primitives)
-//  · 7 bands: header / §01 templates / §02 your reports / §03 worked examples /
-//    §04 the finder / footer / the find-a-report MODAL group.
-//  · The mockup's three narrow template groups (before-after 3 · floating-car 6 ·
-//    events 3) each draw their sub-head INSIDE the group box. A Card's static cells
-//    repeat per record, so a shared group head is not a cell. They are built as
-//    SIBLING sections instead: three heads on one row (3+6+3) over three Cards on
-//    the next (3+6+3) — the columns line up, nothing nests, and contract item 10
-//    still holds.
+//  · 3 bands: header / §01 templates / footer.
+//  · Header: title (2) · view toggle Card (2) · ChooseReportButton search bar (4) ·
+//    CreateReportButton (2) · New route Card (2) = 12. The HEADER block below carries
+//    the measured width budget.
+//  · § 01 is revision 2's, unchanged except for the dropped route CTA: the mockup's
+//    three narrow template groups (before-after 3 · floating-car 6 · events 3) each
+//    draw their sub-head INSIDE the group box. A Card's static cells repeat per record,
+//    so a shared group head is not a cell. They are built as SIBLING sections instead:
+//    three heads on one row (3+6+3) over three Cards on the next (3+6+3) — the columns
+//    line up, nothing nests, and contract item 10 still holds.
 //  · The two wide groups (change-over-time 4 cards · behavioral 4 cards) are a
 //    full-width lexical head over ONE Card at `cardsGridSize: 4`.
 //  · So the shelf is FIVE Cards — the same five that 2208581 already binds — each
 //    filtered on `tags`, re-housed in the designed layout. Twelve template cards.
 //
 // DATA (all figures are bound; see the task doc's data contract)
-//  · templates + search — DMS-internal `reports_snap_2` 2177438 / view 2177440,
-//    `env: npmrdsv5+reports_snap_2`, `srcEnv: npmrdsv5+datasets`, isDms. The five
-//    category filters are lifted VERBATIM from 2208581's five Cards.
-//  · saved routes — DMS-internal `Routes Data` 2107426 / 2107427. The catalogue is
-//    ~2x duplicated on route_id, so the calc is `count(distinct data->>'route_id')`.
-//    An isDms calc column must contain NO COMMAS (reference_dms_calc_column_no_commas).
-//  · freshness — ClickHouse NPMRDS prod 583 / view 982; max(date) is a partition
-//    metadata read, not a scan.
+//  · templates — DMS-internal `reports_snap_2` 2177438 / view
+//    2177440, `env: npmrdsv5+reports_snap_2`, `srcEnv: npmrdsv5+datasets`, isDms. The
+//    five category filters are lifted VERBATIM from 2208581's five Cards.
+//  · the search bar's "search N" and "N matches" — bound by the ChooseReportButton
+//    component itself (components/ChooseReportButton/useReportCatalogCount.js, a UDA
+//    length request on the same source with the picker's own filter tree). The mockup's
+//    literal 869 is the legacy admin2.reports library and is NOT typed anywhere here.
+//  · No ClickHouse binding remains on this page — the freshness card went with rev 3.
 //
-// NOT BUILT / DEVIATIONS — every one is logged in the task doc's Escalations table:
-//  1. The preview plate. The stored `thumbnail`s are 50x50px; the layout-derived
-//     shape needs a new column type. The cards keep the design's 1/4-width tile
-//     column and render patterns.html §14's "no preview" tile, so a plate cell is a
-//     one-column swap later.
-//  2. § 03's four worked examples. Pages 2194949 / 2192364 / 2192451 / 2191095 no
-//     longer exist in npmrds_sub (verified 2026-08-19). The band keeps its head and
-//     states the gap rather than shipping four dead links.
-//  3. The whole-card anchor. A Card's link affordance is per-cell; the card's link
+// NOT BUILT / DEVIATIONS — every one is logged in the task doc's notes:
+//  1. The preview plate (carried from revision 2). The stored `thumbnail`s are 50x50px;
+//     the layout-derived shape needs a new column type. The cards keep the design's
+//     1/4-width tile column and render patterns.html §14's "no preview" tile, so a
+//     plate cell is a one-column swap later.
+//  2. The whole-card anchor. A Card's link affordance is per-cell; the card's link
 //     is its `page_path` cell.
-//  4. The § 01 routes CTA's "New route" button — the mockup draws it with no href
-//     and no standalone route-builder page exists.
+//  3. The mockup's header row WRAPS below ~1300. A band grid cannot, so the search bar
+//     (the row's flexible member) narrows and truncates its prompt instead
+//     (ChooseReportButton.theme.js, `min-w-0`).
+//  4. New route draws no Road icon — a link cell cannot be a lexical cell — and the
+//     action pair ends short of the band's right edge (right-aligning would need the
+//     GLOBAL createReportButton.wrapper key; rev-2 P7 note).
+//  5. "All reports" is INERT until the list page is built (decision D2).
+//  6. (RESOLVED 2026-09-02) The find-a-report MODAL GROUP that revision 2 built — a
+//     Filter + result Card + foot Card behind `isModal`/`modalParamKey: 'find'` — is
+//     removed at the owner's request: nothing on the page published its action param
+//     once the header's search bar opened ReportPickerModal instead, and in /edit it
+//     rendered inline as three dead sections under the footer.
 // ─────────────────────────────────────────────────────────────────────────────
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -88,6 +108,10 @@ const CLI = "src/dms/packages/dms/cli/bin/dms.js";
 const PATTERN = "npmrds_sub";
 const SLUG = "converted_reports";
 const TITLE = "Converted Reports";
+// The page this builder owns. Pinned (feedback_stale_builders_check_before_rerun: a find-or-create
+// on a truncated `page list` minted a duplicate congestion page once) — the slug lookup below must
+// resolve to THIS id or the run refuses; it never creates a second "converted_reports".
+const PAGE_ID = "2188366";
 
 const cli = (...a) => execFileSync("node", [CLI, ...a], { env: ENV, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
 const lastJson = s => JSON.parse(s.split("\n").filter(l => l.trim().startsWith("{") || l.trim().startsWith("[")).pop());
@@ -108,7 +132,6 @@ const text = (t, format = 0, style = "") => ({ type: "text", version: 1, detail:
 const para = (...children) => ({ type: "paragraph", version: 1, direction: "ltr", format: "", indent: 0, textFormat: 0, textStyle: "", children });
 const styled = (styleKey, ...children) => ({ type: "styled-paragraph", version: 1, direction: "ltr", format: "", indent: 0, textFormat: 0, textStyle: "", styleKey, children });
 const button = (linkText, path_, style = "plain") => ({ type: "button", version: 1, linkText, path: path_, style, keepSearchParams: false });
-const icon = (iconName, styleKey) => (styleKey ? { type: "icon", version: 1, iconName, styleKey } : { type: "icon", version: 1, iconName });
 const litem = (...children) => ({ type: "layout-item", version: 1, children });
 // ONE container, whose items hold only leaf styled()/para() nodes. Nesting a
 // container inside an item makes Lexical mangle it at render time
@@ -117,11 +140,6 @@ const layout = (templateColumns, items) => ({ type: "layout-container", version:
 const lexical = (...nodes) => JSON.stringify({
   bgColor: "rgba(0,0,0,0)", isCard: "", showToolbar: false,
   text: { root: { type: "root", version: 1, direction: "ltr", format: "", indent: 0, children: nodes } },
-});
-// A BARE lexical document — the shape a lexical CARD CELL's staticValue must have
-// (LexicalView's parseValue tests `JSON.parse(value)?.root`).
-const lexDoc = (...nodes) => JSON.stringify({
-  root: { type: "root", version: 1, direction: "ltr", format: "", indent: 0, children: nodes },
 });
 
 function assertFlat(elementData, where) {
@@ -134,12 +152,14 @@ function assertFlat(elementData, where) {
   return elementData;
 }
 
-// ── live link targets (every one verified against `dms page list` 2026-08-19) ──
+// ── live link targets (verified against `dms page list --pattern npmrds_sub` 2026-08-19;
+//    routeCreation added and re-verified 2026-09-02 — page 2216258 "Route Creation", published) ──
 const L = {
   home: "/home",
   macro: "/macro",
   reports: "/converted_reports",
   reportIndex: "/converted_reports/reports",
+  routeCreation: "/route_creation",
   comparison: "/route_comparison",
   map21: "/map_21",
   docOverview: "/docs/npmrds/overview",
@@ -180,30 +200,6 @@ const REPORTS = {
   env: "npmrdsv5+reports_snap_2", srcEnv: "npmrdsv5+datasets",
   isDms: true, baseUrl: "/forms", type: "reports_snap_2", columns: RS_COLS,
 };
-// DMS-internal `Routes Data` — the saved-route catalogue (~2x duplicated on route_id).
-const ROUTES = {
-  name: "Routes Data", source_id: 2107426, view_id: 2107427, isDms: true,
-  app: "npmrdsv5", type: "routes_data",
-  env: "npmrdsv5+routes_data", srcEnv: "npmrdsv5+datasets_env",
-  columns: [
-    { name: "route_id", display_name: "route_id", type: "text" },
-    { name: "name", display_name: "name", type: "text" },
-    { name: "created_at", display_name: "created_at", type: "text" },
-  ],
-};
-// ClickHouse NPMRDS production — the freshness signal (contract item 4).
-const CH_NPMRDS = {
-  name: "NPMRDS", source_id: 583, view_id: 982, view_name: "NPMRDS_V6",
-  type: "npmrds", env: "npmrds2", srcEnv: "npmrds2", isDms: false, baseUrl: "/datasources",
-  columns: [
-    { desc: null, name: "tmc", type: "STRING", display_name: "tmc" },
-    { desc: null, name: "date", type: "STRING", display_name: "date" },
-    { desc: null, name: "epoch", type: "INTEGER", display_name: "epoch" },
-    { desc: null, name: "travel_time_all_vehicles", type: "NUMBER", display_name: "travel_time_all_vehicles" },
-    { desc: null, name: "state", type: "STRING", display_name: "state" },
-  ],
-};
-
 // ── Card / cell helpers ──────────────────────────────────────────────────────
 const card = (externalSource, columns, display, filters = { op: "AND", groups: [] }) => JSON.stringify({
   externalSource, columns, filters,
@@ -220,50 +216,23 @@ const stat = (name, staticValue, valueFontStyle, extra = {}) =>
   ({ name, origin: "static", staticValue, valueFontStyle, show: true, hideHeader: true, justify: "left", cellPadding: 0, ...extra });
 const calc = (name, extra = {}) =>
   ({ name, origin: "calculated-column", type: "calculated", fn: "exempt", formatFn: " ", show: true, justify: "left", ...extra });
-// A ROW-LEVEL calc — deliberately NO `fn`. getData's invalid-state guard counts ANY
-// truthy `fn`, and "some visible columns have fn, some don't" kills the fetch
-// (perma-loading). `fn` undefined generates the identical `expr as alias` SQL for a
-// non-aggregate calc.
-const rowCalc = (name, extra = {}) =>
-  ({ name, origin: "calculated-column", type: "calculated", formatFn: " ", show: true, justify: "left", ...extra });
-// `origin:'static'` + `type:'lexical'` — the read-only richtext cell, for chrome
-// that needs mixed runs (an icon AND a text run on one line).
-const lexCell = (name, nodes, extra = {}) =>
-  ({ name, origin: "static", type: "lexical", staticValue: lexDoc(...nodes),
-     show: true, hideHeader: true, justify: "left", ...extra });
+// A `selectOnly` aggregate that makes an ALL-STATIC card's request legitimate and renders
+// no cell: a card whose columns are every one `origin:'static'` still fires a query, with
+// an EMPTY attribute list, and the server errors (card-layout.md "An all-static card still
+// fires a query — seed it"; build_npmrds_home.mjs uses the same idiom).
+const SEED = name => calc(`count(1) as ${name}`, { selectOnly: true, hideHeader: true });
 // A bound column cell.
 const col = (name, valueFontStyle, extra = {}) =>
   ({ name, display_name: name, key: name, type: "text", formatFn: " ",
      show: true, hideHeader: true, justify: "left", valueFontStyle, ...extra });
 
 // ── the SEARCH page variable ─────────────────────────────────────────────────
-// One OR group of `like` leaves, one per searchable column, all sharing
-// `searchParamKey: 'search'` (full-text-search-filter.md). An empty box drops the
-// leaves entirely, so the finder shows the most-recently-updated rows until a
-// query is typed — which is the design's own default state.
+// The key the page registers in PAGE_FILTERS below and the header's ChooseReportButton
+// reads (full-text-search-filter.md). Revision 2's `like` OR-group builders and the
+// `notempty` facet notes lived here; they went with the modal group (see the task file's
+// predecessor for the measured gotchas — a `usePageFilters` unary leaf defaults ON, and a
+// `notempty` Filter column renders as a number input).
 const SEARCH_KEY = "search";
-const searchOr = () => ({ op: "OR", groups: [
-  { col: "name", op: "like", value: "", usePageFilters: true, searchParamKey: SEARCH_KEY },
-  { col: "description", op: "like", value: "", usePageFilters: true, searchParamKey: SEARCH_KEY },
-]});
-// ⚠ THE `rebuilt` / `described` FACETS ARE NOT BUILT — measured 2026-08-19, twice.
-// The design calls them "genuinely expressible" as unary `notempty` gap-filter leaves
-// (reference_dms_gap_filters_url_toggles), and the predicate is; the CONTROL and its
-// default-off state are not:
-//   (a) `applyPageFilters` (buildUdaConfig.js:475) early-returns when the page-variable
-//       map is EMPTY. A `usePageFilters` unary leaf is disabled by that pass and by
-//       nothing else — so with no resolved page variables the leaf is emitted
-//       ENABLED. Measured: the finder's count read **19** (rows carrying both a
-//       page_path and a description) instead of the library's 1,645, i.e. a facet
-//       nobody switched on had silently narrowed every finder section.
-//   (b) A `notempty` column in a `Filter` section renders as a NUMBER INPUT
-//       ("Please enter a number…"), not the needs-value toggle the chip wants.
-// Both are logged in the task doc's Escalations with the smallest BC fix.
-// A STATIC `notempty` leaf (no `usePageFilters`) is always emitted, so it is safe —
-// it is only the page-variable-driven form that mis-defaults (see above). 71 of the
-// snapshot's 1,645 rows have no `name` at all; a report with no name cannot be found
-// by name, and 6 of them sorted to the top of the default list as blank cards.
-const finderFilters = () => ({ op: "AND", groups: [{ col: "name", op: "notempty" }, searchOr()] });
 
 // ── a template card ──────────────────────────────────────────────────────────
 // The mockup's card is `flex gap-3 p-3.5`: a 1/4-width tile column on the left
@@ -349,116 +318,93 @@ const CAT = {
 };
 const ALL_CATS = Object.values(CAT);
 
-// ── § 02 · an illustrative "your reports" card ───────────────────────────────
-// ILLUSTRATIVE, and built so it reads that way: the band head says so in the
-// design's own words, and each card ends on the same mono annotation the mockup
-// uses for its empty state. Nothing here is bound, because nothing can be — the
-// three cards describe one signed-in user and no query can verify them
-// (npmrds-reports.html header comment, "REAL CONTENT / ILLUSTRATIVE").
-const mineCard = ({ state, when, title, prose, meta }) => lexical(
-  layout("items-center grid-cols-1 md:grid-cols-[max-content_minmax(0,1fr)_max-content] gap-x-3", [
-    litem(styled("chip", text(state))),
-    litem(para(text(""))),
-    litem(styled("metaXS", text(when))),
-  ]),
-  styled("displayXS", text(title)),
-  styled("proseSM", text(prose)),
-  styled("metaXS", text(meta)),
-);
-
 // ═════════════════════════════════════════════════════════════════════════════
 // BANDS
 // ═════════════════════════════════════════════════════════════════════════════
 const B = {
   header: randomUUID(),
   tpl: randomUUID(),
-  mine: randomUUID(),
-  examples: randomUUID(),
-  states: randomUUID(),
   footer: randomUUID(),
-  modal: randomUUID(),
 };
 const GROUPS = [
   { name: B.header,   index: 0, theme: "header",       position: "content", displayName: "Header" },
   { name: B.tpl,      index: 1, theme: "content",      position: "content", displayName: "§01 Templates" },
-  { name: B.mine,     index: 2, theme: "content_tint", position: "content", displayName: "§02 Your reports" },
-  { name: B.examples, index: 3, theme: "content",      position: "content", displayName: "§03 Worked examples" },
-  { name: B.states,   index: 4, theme: "content_tint", position: "content", displayName: "§04 The finder" },
   // A footer at position 'bottom' renders full-viewport-width OUTSIDE the layout and
   // would not line up with the sidenav-offset content column — so it is the last
   // CONTENT band wearing the `footer` layoutGroup style (§ 4.2).
-  { name: B.footer,   index: 5, theme: "footer",       position: "content", displayName: "Footer" },
-  // The find-a-report MODAL. `isModal` renders this band as a fixed overlay in VIEW
-  // mode when the `find` ACTION param is published; in /edit it is ignored and the
-  // band renders inline, which is how authors reach its sections
-  // (modal-section-group.md). ⚠ The view-mode modal renders `item.sections` — the
-  // PUBLISHED sections — so its overlay behaviour cannot be verified on a
-  // draft-only page.
-  { name: B.modal,    index: 6, theme: "content",      position: "content", displayName: "Find-a-report modal",
-    isModal: true, modalParamKey: "find", modalSize: "4xl" },
+  { name: B.footer,   index: 2, theme: "footer",       position: "content", displayName: "Footer" },
 ];
 
 // ═════════════════════════════════════════════════════════════════════════════
+// SECTIONS — draft_sections order IS render order// ═════════════════════════════════════════════════════════════════════════════
 // SECTIONS — draft_sections order IS render order
 // ═════════════════════════════════════════════════════════════════════════════
 const SECTIONS = [
 
   // ══════════ HEADER ══════════
-  // Revision 9 of the mockup fits the title, the search trigger, the freshness signal and
-  // the two primary actions on ONE line (sizes 2 + 10). Live it is FIVE sections
-  // (2 + 5 + 2 + 2 + 1), because each affordance binds something different — the trigger's
-  // count binds `reports_snap_2`, the freshness signal binds ClickHouse NPMRDS, and the
-  // create affordance is the `CreateReportButton` THEME COMPONENT, which is a section type,
-  // not a Card cell. A 12-col grid also quantises to 95.3px steps and charges 24px of
-  // gutter per internal boundary (96px across four), where the mockup's flex row charges
-  // 12px; measured budget in P7, and it is why the freshness signal takes two lines live.
-  { group: B.header, size: "2", padding: { left: "0" }, data: lexical(
+  // Revision 3's controls row is, in order: title · view toggle · search bar · New report ·
+  // New route — one line at 1600 and 1440 in the mockup, wrapping below ~1300. Live it is FIVE
+  // sections on the 12-col band grid (2 + 2 + 4 + 2 + 2), because each affordance is a different
+  // primitive: the toggle is a Card of two static cells, the search bar is the
+  // `ChooseReportButton` theme component (a section type), the create affordance is the
+  // `CreateReportButton` theme component, and New route is a Card link cell.
+  //
+  // WIDTH BUDGET, measured on the mockup at real Oswald metrics (Playwright, 2026-09-02): the
+  // toggle is 175px, New report 112px, New route 108.7px, at every viewport. On the live band
+  // grid a column is 95.3px at 1480 and the section wrapper's 12px padding IS the gutter, so a
+  // size-2 section's content box is 166.7px with both gutters and 190.7px with both zeroed —
+  // which is why the toggle is size 2 with `padding: { left: "0", right: "0" }` and not size 3
+  // (a 262px box would leave an 87px hole before the search bar). A band grid cannot wrap, so
+  // at 1280 the toggle overflows its 157px box by ~18px into the search bar's own left gutter
+  // and the search bar (the flexible member) truncates its prompt — the honest equivalent of
+  // the mockup's wrap. Logged as deviation 3.
+  //
+  // The FRESHNESS card ("complete through <month>", ClickHouse NPMRDS 583/982) is GONE — a
+  // deliberate break with cross-page contract item "freshness line", asked for on 2026-09-02
+  // and declared in the mockup's own header note. npmrds-home.html and the MAP-21 pages keep
+  // theirs. The header's search-bound match-count Card is gone too: its role (the closed
+  // trigger reporting `?search=` and its match count) moved INTO the search bar component.
+  // `top: "0"`: a lexical section pays the theme's 16px richtext padding on top of the 12px
+  // section gutter, so with the default gutter the title's centre sat at y≈50 against the
+  // 40px controls' y≈40 (measured 2026-09-02, /edit at 1440). Zeroing the gutter lands it at
+  // ≈38 — the mockup's `items-center` row within 2px.
+  { group: B.header, size: "2", padding: { left: "0", top: "0" }, data: lexical(
     styled("displayMDCaps", text("Reports"), text(".", 0, GOLD)),
   )},
 
-  // The modal TRIGGER. `find_label` carries the `click_publish` provider whose paramKey
-  // equals the modal group's `modalParamKey`, so clicking it publishes the action param
-  // that opens the dialog. The count beside it carries the finder's OWN filter tree, so a
-  // cold load of `?search=bridge` shows the CLOSED trigger reporting the match count — the
-  // design's stated consequence of action params never reaching the URL.
+  // The VIEW TOGGLE — `Templates | All reports`, the same control the list page draws in the
+  // same column with the active side flipped, so the two report surfaces read as two views of
+  // one library rather than two pages. A Card of two static cells in a gap-0 cells grid with
+  // max-content tracks, so the cells abut and read as ONE segmented control; `viewTabOn` /
+  // `viewTabOff` (additive themev2 tokens, textSettings + the dataCard mirror) carry the fill,
+  // the shared hairline and the outer radii. Active = Templates (this page) — a plain cell,
+  // like the mockup's `aria-current` span.
   //
-  // P7, two measured changes. (1) The cells are STACKED (`cellsGridSize: 1`) rather than
-  // side by side: at 1480 the prompt run is 426.7px and the match count 130px, and the
-  // widest span the header can spare for the trigger is 4 columns = 357.3px of content, so
-  // side-by-side wrapped the prompt onto a second line. (2) The prompt uses
-  // `proseSMClamp1`, the additive one-line clamp that reproduces the mockup's own
-  // `truncate` on this control — with it the trigger measures 38.8px against the mockup's
-  // 40px. The five affordances do NOT fit one 12-col row at their content widths
-  // (2 + 5 + 3 + 2 + 1 = 13 columns minimum); the freshness signal is the one that gives,
-  // and takes two lines. Logged in the task doc's P7 as a deliberate non-fix.
-  { group: B.header, size: "4", elementType: "Card", data: card(REPORTS, [
-    stat("find_label", "Find a report — search by name, road, route or description", "proseSMClamp1"),
-    // ESCALATION — the design's trigger also echoes the QUERY itself. No primitive
-    // renders a page variable's value as text, so the trigger reports the count only.
-    // `unitFontStyle` is load-bearing: `stat_value`'s built-in unit class is a RELATIVE
-    // `text-[0.4em]`, which P7 measured rendering " reports" at 4.2px — illegible. Naming
-    // the figure's own token makes figure and unit one uniform 11px mono run, which is how
-    // the mockup draws this line. `stat_value` resolves BOTH against textSettings.
-    calc("count(1) as find_matches", { type: "stat_value", unit: " reports", formatFn: "comma",
-      valueFontStyle: "metaSM", unitFontStyle: "metaSM", hideHeader: true, justify: "left" }),
+  // DECISION D2 (task file): the list page (npmrds-reports-list.html) is not built live yet,
+  // so "All reports" ships INERT — a static cell with no href — rather than a 404. Flipping it
+  // to a link later is one cell: `isLink: true, location: "/converted_reports/all_reports",
+  // searchParams: "none"`.
+  { group: B.header, size: "2", padding: { left: "0", right: "0" }, elementType: "Card", data: card(REPORTS, [
+    stat("view_templates", "Templates", "viewTabOn"),
+    stat("view_all", "All reports", "viewTabOff"),
+    SEED("view_seed"),
   ], {
-    cellsGridSize: 1, cellsGridGap: 4, cellsPadding: 0, cardsPadding: 0,
-    totalLength: 1, fetchMode: "smart",
-    _functions: { providers: [{ functionId: "click_publish", enabled: true, paramKey: "find", args: { column: "find_label" } }] },
-  }, finderFilters()) },
-
-  // The freshness signal — `max(date)` on ClickHouse NPMRDS, a partition metadata read.
-  // P7: `metaSM` (10.5px / slate-500), not `metaXS` (9.5px / slate-400) — the mockup draws
-  // this line at 10px slate-500 with the month in ink. Its own section now, because the
-  // create affordance below is a section and the mockup's reading order is
-  // trigger → freshness → New report → New route.
-  { group: B.header, size: "2", elementType: "Card", data: card(CH_NPMRDS, [
-    calc("concat('complete through ', lower(formatDateTime(max(date), '%b %Y'))) as freshness",
-      { valueFontStyle: "metaSM", hideHeader: true }),
-  ], {
-    cellsGridSize: 1, cellsPadding: 0, cardsPadding: 0,
+    cellsGridSize: 2, cellsGridGap: 0, cellsPadding: 0, cardsPadding: 0,
+    cellsTracksTemplate: "minmax(0,max-content) minmax(0,max-content)",
     cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
   }) },
+
+  // The SEARCH BAR — the `ChooseReportButton` theme component, which opens the React
+  // `ReportPickerModal` (npmrds-picker-modals.html, 2026-08-25). It was added to this page by
+  // hand that week (section 2214759, size 2, beside the old count Card) and is adopted into the
+  // builder here at the row's flexible width. Revision 3 renders it as the mockup's
+  // `#findTrigger` (components/ChooseReportButton/ChooseReportButton.theme.js): it fills its
+  // section, its resting prompt reads "search N" with N bound to the picker's own catalog
+  // count, and when the page URL carries `?search=…` it shows the query and "N matches · show
+  // results" — the role the removed count Card used to play. It reads the query off
+  // `pageState.filters` (the `search` page variable registered in PAGE_FILTERS below), which
+  // is why that registry still matters with the Filter section gone from the page body.
+  { group: B.header, size: "4", elementType: "ChooseReportButton", data: "{}" },
 
   // ══ THE CREATE AFFORDANCE — the real `CreateReportButton` theme component ══
   // Not a link and not a Card cell: the component skips PageTemplatePicker's generic
@@ -467,32 +413,38 @@ const SECTIONS = [
   // pageComponent is an element type (`element-type: "CreateReportButton"`,
   // `element-data: "{}"`), the same way 2208581 carries it.
   //
-  // It replaces the static "New report" link this build previously pointed at 2208581.
-  // That indirection existed because core's `newPage()` derives the new page's parent from
-  // `item.parent` and takes no override — and on THIS page `parent` is '', so a report
-  // created here would have landed at the pattern root. The component now falls back to
-  // the host page's own id when it has no parent ("if the page I'm on has no parent, I am
-  // the folder"), which is byte-identical wherever `item.parent` is already set.
+  // Core's `newPage()` derives the new page's parent from `item.parent` and takes no
+  // override — and on THIS page `parent` is '', so a report created here would have landed at
+  // the pattern root. The component falls back to the host page's own id when it has no parent
+  // ("if the page I'm on has no parent, I am the folder"), which is byte-identical wherever
+  // `item.parent` is already set.
   //
-  // `padding: { right: "2" }` makes the gutter to "New route" 8px — the mockup's own
-  // `gap-2` on the action cluster (the default 12px + 0 would have been 12).
-  { group: B.header, size: "2", padding: { right: "2" }, elementType: "CreateReportButton", data: "{}" },
+  // The button RIGHT-ALIGNS in its section (Alex, 2026-09-02 — `createReportButton.wrapper` is
+  // `flex w-full flex-col items-end` now, site-wide). With that, the gutter to "New route" is
+  // this section's right padding + the New route cell's own 12px value padding (`theme.value`
+  // is `px-3` and a LINK cell keeps it on the value div while the token lands on the <a>) —
+  // measured 21px with the old `right: "2"` (8px), so the gutter is zeroed and the gap is 12px
+  // against the mockup's 8. The live page's hand-set `height: "fill"` on this section
+  // (2026-08-25) is NOT carried: it stretched the wrapper to the row's tallest section, which
+  // in a row of 40px controls is a no-op.
+  { group: B.header, size: "2", padding: { right: "0" }, elementType: "CreateReportButton", data: "{}" },
 
-  // `New route` is the mockup's own in-page anchor to the § 01 routes CTA (the CTA's own
-  // button is drawn with no href and no standalone route-builder page exists — logged).
-  // Its own section now that the create affordance sits beside it; both horizontal
-  // paddings are zeroed so the pair reads as one cluster flush to the band's right edge.
-  // TWO columns, not one: `btnOutline` is `px-3.5!` either side of a 69.3px label = 97.3px,
-  // and a 1-column cell is 95.33px — measured, the button wrapped to "NEW / ROUTE".
+  // `New route` → the route-creation page (`npmrds_sub` "Route Creation", 2216258, slug
+  // `/route_creation`, published — verified 2026-09-02). The live page had already been
+  // re-pointed there by hand from the § 01 anchor this builder used to carry; that edit is
+  // adopted. `btnOutlineLG` is the mockup's white/bordered h-10 button (btnOutline is h-9 and
+  // shared by the control room's "All tickets"). The Road icon is not drawn — a link cell
+  // cannot be a lexical cell (card-layout.md) — logged as deviation 4.
+  //
+  // `justify: "left"`, not right: the mockup's action cluster is `gap-2` (8px) between the
+  // two buttons; with the create button right-aligned in ITS section and this cell
+  // left-justified in its own, the pair reads as one cluster (12px gap, see above). Right-
+  // justifying this cell would open a ~95px hole between the two (rev-2 P7 measured 137 with
+  // the old layout). The trade: the pair ends ~86px short of the band's right edge at 1440,
+  // where the mockup has it flush — a 2-column section cannot be narrower than its 184px.
   { group: B.header, size: "2", padding: { left: "0", right: "0" }, elementType: "Card", data: card(REPORTS, [
-    // `justify: "left"`, not right: the mockup's action cluster is `gap-2` (8px) between the
-    // two buttons, and with the cell right-justified the button sat at 1350.7 against the
-    // create button's right edge at 1213.7 — a 137px hole inside a pair the mockup draws
-    // 8px apart. Left-justified the gap IS 8px (create's `pr-2` + this cell's zeroed left).
-    // The trade: the pair ends 93px short of the band's right edge, where the mockup has it
-    // flush. Closing that would need `theme.createReportButton.wrapper` to right-align, and
-    // that key is GLOBAL — it would also move 2208581's button. Logged in P7.
-    stat("new_route", "New route", "btnOutline", { justify: "left", isLink: true, location: "#routes", searchParams: "none" }),
+    stat("new_route", "New route", "btnOutlineLG", { justify: "left", isLink: true, location: L.routeCreation, searchParams: "none" }),
+    SEED("route_seed"),
   ], {
     cellsGridSize: 1, cellsPadding: 0, cardsPadding: 0,
     cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
@@ -538,118 +490,12 @@ const SECTIONS = [
   { group: B.tpl, size: "12", padding: { top: "0", bottom: "0" }, data: groupHead("05", "Behavioral") },
   { group: B.tpl, size: "12", padding: { top: "2" }, elementType: "Card", data: templateCard(CAT.behavioral, 4) },
 
-  // The routes CTA. `32,569 saved` is bound — the catalogue is ~2x duplicated on its
-  // own key, so the calc is `count(distinct …)`; an isDms calc column must contain
-  // NO COMMAS. The mockup's `· 34 yours` half is NOT built: `mine` needs a
-  // `$currentUser` value sentinel (task doc escalation 2). The mockup's "New route"
-  // button has no href and no standalone route-builder page exists — also logged.
-  { group: B.tpl, size: "12", anchorId: "routes", border: "full", elementType: "Card", data: card(ROUTES, [
-    lexCell("rt_head", [styled("displayXS", icon("Road"), text(" No route yet? Build one first."))]),
-    { name: "count(distinct data->>'route_id') as saved_routes", origin: "calculated-column",
-      fn: "exempt", type: "stat_value", unit: " saved", formatFn: "comma", show: true,
-      hideHeader: true, justify: "right", valueFontStyle: "metaSM", unitFontStyle: "metaSM",
-      cellPadding: 0 },
-    stat("rt_prose", "Every template above needs at least one route. Click the TMC segments on the map in road order, or search a TMC and add it directly. Give it a descriptive name — direction included — because that name is what search matches on later.", "proseSMInk", { cellSpan: 2 }),
-  ], {
-    cellsGridSize: 2, cellsGridGap: 6, cellsPadding: 0, cardsPadding: 8,
-    cellsTracksTemplate: "minmax(0,1fr) minmax(0,max-content)",
-    totalLength: 1, fetchMode: "force",
-  }) },
-
-  // ══════════ § 02 · YOUR REPORTS — ILLUSTRATIVE ══════════
-  { group: B.mine, size: "12", anchorId: "your-reports", data: lexical(
-    layout("items-center grid-cols-1 md:grid-cols-[max-content_max-content_minmax(0,1fr)] gap-x-3", [
-      litem(styled("kickerSM", text("// 02"))),
-      litem(styled("chip", text("illustrative"))),
-      litem(styled("metaSM", text("owned by you · 7 reports · 34 routes"))),
-    ]),
-    styled("displaySM", text("Pick up where you left off.")),
-    styled("metaXS", text("illustrative · describes one signed-in user · no query can verify it")),
-  )},
-
-  { group: B.mine, size: "4", border: "full", height: "fill", data: mineCard({
-    state: "draft", when: "2 days ago",
-    title: "US-44/NY-55 Westbound Road Diet Impact Assessment",
-    prose: "Garden St, City of Poughkeepsie. Two-lane conversion; comparing spring 2025 to spring 2026 on the westbound arterial.",
-    meta: "2 routes · 6 graphs · region 8",
-  })},
-  { group: B.mine, size: "4", border: "full", height: "fill", data: mineCard({
-    state: "published", when: "5 days ago",
-    title: "NY-9D Beacon Signal Study — Travel Time Comparison",
-    prose: "Signal retiming on NY-9D through Beacon. Northbound and southbound, before against after, hourly bins.",
-    meta: "4 routes · 3 graphs · region 8",
-  })},
-  { group: B.mine, size: "4", border: "full", height: "fill", data: mineCard({
-    state: "published", when: "3 weeks ago",
-    title: "Route 44 Incident Analysis · April 2026",
-    prose: "Every reported closure on NY-44 in April, queue length and clearance time against the TRANSCOM log.",
-    meta: "1 route · 5 graphs · region 8",
-  })},
-
-  // The empty-state variant — what a first-time user sees instead of the three cards
-  // above. The mockup draws a DASHED border; the section border presets are solid,
-  // so the state is carried by the annotation line the mockup already writes.
-  { group: B.mine, size: "12", border: "full", data: lexical(
-    styled("displayXS", text("You haven't built a report yet")),
-    styled("proseSM", text("Start from a template above — it comes pre-wired with the graphs that answer a specific question — or build a route first and add graphs yourself.")),
-    layout("items-center grid-cols-1 md:grid-cols-[max-content_max-content_minmax(0,1fr)] gap-x-3", [
-      litem(styled("buttonRow", button("Start from a template", "#templates", "default"))),
-      litem(styled("buttonRow", button("Build a route", "#routes", "secondary"))),
-      litem(styled("metaXS", text("empty state · shown when the owner has no reports"))),
-    ]),
-  )},
-
-  // ══════════ § 03 · WORKED EXAMPLES ══════════
-  { group: B.examples, size: "12", anchorId: "examples", data: lexical(
-    layout("items-center grid-cols-1 md:grid-cols-[max-content_minmax(0,1fr)] gap-x-3", [
-      litem(styled("kickerSM", text("// 03"))),
-      litem(styled("metaSM", text("maintained by avail · rebuilt on the new platform"))),
-    ]),
-    styled("displaySM", text("Worked examples worth reading first.")),
-    styled("proseSM", text("Finished reports on real routes, not empty templates — what the graphs look like once a corridor and a date range are in them.")),
-  )},
-
-  // ESCALATION 2 — the band's four subjects are gone. Verified 2026-08-19: `dms page
-  // list --pattern npmrds_sub` returns 43 pages and none of 2194949 / 2192364 /
-  // 2192451 / 2191095; `raw get` on each returns an empty row. `reports_snap_2` now
-  // records a `page_path` for 14 rows only — the 12 templates (§ 01 already links
-  // them) plus two `Claude Scratch …` rows whose pages are also deleted. Shipping the
-  // four drawn cards would ship four dead links, so the band states the gap instead.
-  { group: B.examples, size: "12", border: "full", data: lexical(
-    styled("displayXS", text("No worked example is rebuilt on the new platform yet")),
-    styled("proseSM", text("This band lists finished reports on real routes — the four the design names (Tappan Zee Cashless Toll, Year Over Year, Rochester Inner Loop, Buffalo Skyway) were converted pages under this parent and no longer exist. The twelve templates in § 01 are the converted pages that do; a worked example is a template with a corridor and a date range already in it.")),
-    styled("metaXS", text("blocked on content · re-convert three or four legacy reports as child pages and re-run the builder")),
-  )},
-
-  // ══════════ § 04 · THE FINDER ══════════
-  { group: B.states, size: "12", data: lexical(
-    layout("items-center grid-cols-1 md:grid-cols-[max-content_minmax(0,1fr)] gap-x-3", [
-      litem(styled("kickerSM", text("// 04"))),
-      litem(styled("metaSM", text("live component · documented as patterns.html §11 · modal variant"))),
-    ]),
-    styled("displaySM", text("The search dialog, working.")),
-    styled("proseSM", text("The query lives in the URL — ?search=bridge — so a result set still travels in an email. Only the open flag is in-memory, which is why a shared link arrives with the query live and the dialog shut.")),
-  )},
-
-  // The mockup's five state-driver buttons exist because the mockup's dialog is drawn
-  // JS; live there is one real affordance — open the finder — and the three columns
-  // of copy that say what is wired, what is not, and what a build must know.
-  { group: B.states, size: "12", border: "full", elementType: "Card", data: card(REPORTS, [
-    stat("sd_label", "reach a state", "metaXS", { cellSpan: 2 }),
-    stat("sd_open", "Open the finder", "btnPrimary", { justify: "right" }),
-    stat("sd_wired_h", "what is wired", "metaXS"),
-    stat("sd_inert_h", "what is drawn but inert", "metaXS"),
-    stat("sd_know_h", "what a build must know", "metaXS"),
-    stat("sd_wired", "The query — an OR group of like leaves over name + description, URL-bound as ?search= — and the closed trigger's match count, which is the same filter tree counted.", "proseSMInk"),
-    stat("sd_inert", "mine — not expressible today; nothing injects the current user into a filter value. rebuilt · described — the predicate is a notempty leaf, but a default-off gap filter needs a fix in applyPageFilters and the control renders as a number input. region · measure · year · folder — the legacy table has no such columns.", "proseSMInk"),
-    stat("sd_know", "Action params never reach the URL, so a shared link arrives with the query live and the dialog shut — the closed trigger reports it. And a modal only behaves as a modal on a published page; in edit mode the group renders inline, which is how authors reach it.", "proseSMInk"),
-  ], {
-    cellsGridSize: 3, cellsGridGap: 10, cellsPadding: 0, cardsPadding: 10,
-    totalLength: 1, fetchMode: "force",
-    _functions: { providers: [{ functionId: "click_publish", enabled: true, paramKey: "find", args: { column: "sd_open" } }] },
-  }) },
+  // Revision 3 drops the "No route yet? Build one first." route CTA that closed § 01 — the
+  // header's New route is the page's one route affordance now — so the band ends on the last
+  // template card. (The Routes Data source 2107426/2107427 binding it carried is gone with it.)
 
   // ══════════ FOOTER ══════════
+  // Unchanged from revision 2 — it now sits directly under § 01.
   // The `footer` layoutGroup already carries the band's py-4, so the section's own
   // gutter is zeroed — otherwise the one-line footer measured 98px against the
   // mockup's 51.
@@ -680,79 +526,12 @@ const SECTIONS = [
     ]),
   )},
 
-  // ══════════ THE FIND-A-REPORT MODAL ══════════
-  // Section 1 — the search control. `operation: 'like'` is what renders a TEXT BOX
-  // instead of a value picker; `searchParamKey` is the page variable every consuming
-  // leaf matches on. Registered on the page's `filters` array below or nothing moves.
-  { group: B.modal, size: "12", elementType: "Filter", data: JSON.stringify({
-    externalSource: REPORTS,
-    columns: [{
-      name: "name", customName: "Search by name, road, route or description", type: "select", show: true,
-      filters: [{ type: "external", operation: "like", values: [], isMulti: false,
-        usePageFilters: true, searchParamKey: SEARCH_KEY, display: "" }],
-    }],
-    filters: { op: "AND", groups: [] },
-    display: { totalLength: 1, readyToLoad: true, hideExternalToggle: true, showAttribution: false, fetchMode: "smart" },
-    data: [], join: { sources: {} },
-  })},
-
-  // Section 2 — the result list. NO PAGINATION, by design: the finder shows the top
-  // matches and links out; a paginated walk of the whole library is a separate page.
-  { group: B.modal, size: "12", elementType: "Card", data: card(REPORTS, [
-    // Sorting on raw `updated_at` desc put NULLs FIRST (Postgres' default for DESC) —
-    // 171 rows have none — and two rows store a serialised weekday object in the
-    // field. This sort key keeps only values that start with a 4-digit year and
-    // sends everything else to the bottom, so the finder's default really is the
-    // most recently updated report. Comma-free, per the isDms calc rule.
-    rowCalc("case when (data->>'updated_at') ~ '^[0-9]{4}-' then (data->>'updated_at') else '' end as upd_sort",
-      { normalName: "upd_sort", selectOnly: true, sort: "desc" }),
-    col("name", "labelMD", { cellSpan: 3 }),
-    col("updated_at", "metaXS", { cellSpan: 1, justify: "right" }),
-    // Row 2 is 2 + 1 + 1 = the full 4 tracks, so the three cells' shared
-    // `cellBorderBottom` reads as ONE divider under the row — the design's `divide-y`.
-    // A cell border only spans its own tracks, so a row that does not cover every
-    // track draws a stub rule instead of a divider.
-    col("description", "proseSMClamp2", { cellSpan: 2, wrapText: true, cellBorderBottom: true }),
-    // Only 14 of the library's 1,645 rows are rebuilt as a DMS page. An isLink cell
-    // ALWAYS renders its anchor and the href is `location || value`, so binding
-    // `page_path` straight through emitted `…/undefined` on every legacy row — a dead
-    // link per row. These two calcs are the fix: the anchor's value (and therefore
-    // both its href AND its text — no `linkText`) is '' when there is no page, so the
-    // cell renders nothing at all, and the state cell beside it says why.
-    // ⚠ a calc's string literals must not contain " as " either — the alias parser
-    //   splits on the LAST occurrence, so `else 'rebuilt as a page' end as
-    //   rebuilt_state` came back keyed on the expression with the alias eaten and the
-    //   cell rendered empty (measured 2026-08-19). Same class of bug as the comma
-    //   rule; keep calc literals free of both.
-    rowCalc("case when (data->>'page_path') is null or (data->>'page_path') = '' then 'legacy · not rebuilt' else 'rebuilt' end as rebuilt_state",
-      { normalName: "rebuilt_state", valueFontStyle: "metaXS", hideHeader: true, cellSpan: 1, cellBorderBottom: true }),
-    rowCalc("case when (data->>'page_path') is null or (data->>'page_path') = '' then '' else (data->>'page_path') end as open_path",
-      { normalName: "open_path", valueFontStyle: "metaXSLink", hideHeader: true, cellSpan: 1, justify: "right", isLink: true, cellBorderBottom: true }),
-  ], {
-    // `rowaligned` zeroes the value cell's vertical padding (`value: 'px-3'`), which was
-    // charging each result row 24px of dead space across its two cell rows.
-    cardStyle: "rowaligned",
-    cardsGridSize: 1, cardsGridGap: 0, cardBorder: false, cardsPadding: 8,
-    cellsGridSize: 4, cellsGridGap: 8, cellsRowGap: 2, cellsPadding: 0, cellBorder: false,
-    pageSize: 8, usePagination: false, readyToLoad: true, fetchMode: "smart",
-  }, finderFilters()) },
-
-  // Section 3 — the foot: how many matched, and the note the design insists on.
-  { group: B.modal, size: "12", elementType: "Card", data: card(REPORTS, [
-    calc("count(1) as find_total", { type: "stat_value", unit: " match", formatFn: "comma",
-      valueFontStyle: "metaSM", hideHeader: true }),
-    stat("foot_note", "showing the top 8 · narrow with the search box", "metaXS"),
-    stat("foot_url", "the query stays in the url", "metaXS", { justify: "right" }),
-  ], {
-    cellsGridSize: 3, cellsGridGap: 8, cellsPadding: 0, cardsPadding: 8,
-    cellsTracksTemplate: "minmax(0,max-content) minmax(0,1fr) minmax(0,max-content)",
-    cellsContentVAlign: "center", totalLength: 1, fetchMode: "smart",
-  }, finderFilters()) },
 ];
 
 // The page-variable registry (creating-interactive-pages.md step 0). A key that is
 // not here can never become a page variable — the control's value never reaches the
-// URL and no section reacts.
+// URL and no section reacts. One consumer now: the header's ChooseReportButton reads
+// `search` off pageState.filters (and seeds ReportPickerModal's search box with it).
 const PAGE_FILTERS = [
   { id: "npmrds-reports-search", values: "", searchKey: SEARCH_KEY, useSearchParams: true },
 ];
@@ -771,7 +550,6 @@ const PAGE_FILTERS = [
 //
 // Applied as a PASS rather than 20 hand-written `padding` keys so a later size change
 // cannot silently leave a row edge padded — the rows are derived from the sizes.
-// The modal band is excluded: it renders as a fixed 896px overlay, not in the band grid.
 {
   const GRID = 12;
   let i = 0;
@@ -779,7 +557,6 @@ const PAGE_FILTERS = [
     const gid = SECTIONS[i].group;
     const band = [];
     while (i < SECTIONS.length && SECTIONS[i].group === gid) band.push(SECTIONS[i++]);
-    if (gid === B.modal) continue;
     let col = 0;
     band.forEach((s, k) => {
       if (col === 0) s.padding = { ...(s.padding || {}), left: "0" };
@@ -829,18 +606,20 @@ if (process.env.SECTIONS_DUMP != null) {
 // ═════════════════════════════════════════════════════════════════════════════
 // APPLY
 // ═════════════════════════════════════════════════════════════════════════════
-// 0 · find-or-create the page BY SLUG, then work by PAGE ID only
-const pages = lastJson(cli("page", "list", "--pattern", PATTERN)).items || [];
-let page = pages.find(p => (p.data || p).url_slug === SLUG);
-if (!page) {
-  const maxIndex = pages.reduce((m, p) => Math.max(m, Number((p.data || p).index) || 0), 0);
-  const created = lastJson(cli("page", "create", "--pattern", PATTERN, "--title", TITLE, "--slug", SLUG));
-  const id = created.id || created.data?.id;
-  cli("page", "update", String(id), "--data", tmp("page.json", { index: maxIndex + 1 }));
-  page = { id };
-  console.log(`created page ${id} (slug ${SLUG}, index ${maxIndex + 1})`);
+// 0 · resolve the page BY SLUG and check it is the pinned one, then work by PAGE ID only.
+//     `--limit 1000`: the CLI defaults to 50 rows and npmrds_sub crossed 50 live pages on
+//     2026-09-02 (report conversions); on the truncated list the old find-or-create would not
+//     have found 2188366 and would have CREATED a second converted_reports page.
+const pages = lastJson(cli("page", "list", "--pattern", PATTERN, "--limit", "1000")).items || [];
+const bySlug = pages.filter(p => (p.data || p).url_slug === SLUG);
+if (bySlug.length !== 1 || String(bySlug[0].id) !== PAGE_ID) {
+  console.error(
+    `\nREFUSING: expected exactly one ${PATTERN}/${SLUG} page with id ${PAGE_ID}; ` +
+    `\`page list\` returned ${pages.length} pages and [${bySlug.map(p => p.id).join(", ")}] for that slug.\n` +
+    `This builder never creates the page — if it has really gone, recreate it by hand and update PAGE_ID.\n`);
+  process.exit(1);
 }
-const PAGE = String(page.id);
+const PAGE = PAGE_ID;
 console.log(`page: ${PAGE} (${PATTERN}/${SLUG}) on ${ENV.DMS_HOST} ${ENV.DMS_APP}/${ENV.DMS_TYPE}`);
 
 // 0b · publish-state notice. This builder only ever writes the DRAFT pair, and a UI
