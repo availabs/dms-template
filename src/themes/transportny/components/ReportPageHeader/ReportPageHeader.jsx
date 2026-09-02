@@ -1,14 +1,15 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
 import { MountContext } from '../../../../dms/packages/dms/src/ui/mountContext';
 import { resolveMountPath } from '../../../../dms/packages/dms/src/utils/mountPath';
-import { publish } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
+import { publish, updateTitle } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
+import { getUrlSlug } from '../../../../dms/packages/dms/src/patterns/page/pages/_utils';
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
 import { resolvedRouteLabel } from '../ReportRouteList/relativeDateResolution';
-import { useReportTags } from './useReportTags';
+import { useReportCatalogRow } from './useReportCatalogRow';
 import TagsEditor from '../TagsEditor/TagsEditor';
 
 // The report canvas's page-header card (npmrds-report.html): kicker+meta → h1+purpose
@@ -21,12 +22,13 @@ import TagsEditor from '../TagsEditor/TagsEditor';
 // /edit/... shouldn't have to separately click this section into its own edit mode
 // before any of its fields become editable, same reasoning RRL's own comment gives).
 export default function ReportPageHeader() {
-  const { item, editPageMode, pageState, apiLoad, apiUpdate } = useContext(PageContext) || {};
+  const { item, editPageMode, pageState, dataItems, apiLoad, apiUpdate } = useContext(PageContext) || {};
   const { user, app } = useContext(CMSContext) || {};
   // Inline tag editor next to Done (routes-reports-users-mesh.md, Workstream D) — reads/writes
   // the SAME `reports_snap_2` row ReportRouteList/useReportRow.js owns `routes` on, via its own
-  // small hook (see useReportTags.js for why this is a separate fetch, not shared state).
-  const { tags: reportTags, persistTags: persistReportTags } = useReportTags({ apiLoad, apiUpdate, app, itemId: item?.id });
+  // small hook (see useReportCatalogRow.js for why this is a separate fetch, not shared state).
+  // Also owns syncing `name`/`page_path` on that same row when the title is renamed below.
+  const { tags: reportTags, persistTags: persistReportTags, syncTitle: syncCatalogTitle } = useReportCatalogRow({ apiLoad, apiUpdate, app, itemId: item?.id });
   const { state, setState } = useContext(ComponentContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Icon } = UI || {};
@@ -36,6 +38,31 @@ export default function ReportPageHeader() {
   const location = useLocation();
   const [shareCopied, setShareCopied] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(true);
+
+  // Inline title editor (h1) — same mechanism as the Bottom toolbar's Filter icon → Page Name
+  // field (settingsPane.jsx), reused verbatim via the shared `updateTitle` so title/url_slug
+  // change identically either way. Draft state + commit-on-blur (not fired per keystroke) because
+  // `updateTitle` both writes the page row AND navigates to the new `/edit/<slug>` URL — unlike
+  // this header's other inline fields (kickerLabel/metaLine/purpose), which are local section
+  // display state with no navigation side effect.
+  const [titleDraft, setTitleDraft] = useState(item?.title ?? '');
+  useEffect(() => { setTitleDraft(item?.title ?? ''); }, [item?.id, item?.title]);
+
+  const commitTitle = async () => {
+    const trimmed = (titleDraft ?? '').trim();
+    if (!trimmed || trimmed === item?.title) {
+      setTitleDraft(item?.title ?? '');
+      return;
+    }
+    // Recomputed independently rather than read back off `item.url_slug` after `updateTitle`
+    // resolves — `item.url_slug` in this closure is still the OLD value until the ensuing
+    // navigation's re-fetch lands. `getUrlSlug` is pure (no side effects), so calling it here
+    // with the exact same `newItem` shape `updateTitle` builds internally gives the identical
+    // slug it's about to write, with no race.
+    const nextSlug = getUrlSlug({ id: item.id, title: trimmed, parent: item?.parent || '' }, dataItems || []);
+    await updateTitle(item, dataItems, trimmed, user, apiUpdate, mountBaseUrl, siteRootPaths);
+    await syncCatalogTitle(trimmed, `/${nextSlug}`);
+  };
 
   // Same catalog (id/name/colour/TMCs/date-span), same pageState key, RRL already broadcasts for
   // every graph's own QuickControls Routes pill (ROUTE_CATALOG_PARAM_KEY, useGraphPublish.js) —
@@ -149,7 +176,21 @@ export default function ReportPageHeader() {
 
       <div className={t.titleRow}>
         <div className={t.titleCol}>
-          <h1 className={t.h1}>{item?.title}<span className={t.h1Dot}>.</span></h1>
+          {canEdit ? (
+            <input
+              className={`${t.h1} ${t.inlineInput} w-full`}
+              value={titleDraft}
+              placeholder="Report title"
+              onChange={e => setTitleDraft(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={e => {
+                if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+                if (e.key === 'Escape') { setTitleDraft(item?.title ?? ''); e.currentTarget.blur(); }
+              }}
+            />
+          ) : (
+            <h1 className={t.h1}>{item?.title}<span className={t.h1Dot}>.</span></h1>
+          )}
           {canEdit ? (
             <textarea
               className={`${t.purpose} ${t.inlineTextarea}`}
