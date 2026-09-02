@@ -14,9 +14,13 @@ loop below makes both failures visible instead of silent.
 > [`propagating-county-template-changes-to-duplicates.md`](./propagating-county-template-changes-to-duplicates.md),
 > then run this loop per pattern.
 
-> **TL;DR** — freeze the report tab into a run folder, `baseline.mjs` it, `apply.mjs --dry-run`,
-> `apply.mjs`, `mark_page_changed.mjs`, `validate.mjs`. Validation passes only when the intended
-> attribute moved and every other leaf in the row is byte-identical.
+> **TL;DR** — freeze the report tab into a run folder, dedupe it by `Draft section ID`,
+> `baseline.mjs` it, `apply.mjs --dry-run`, `apply.mjs`, `mark_page_changed.mjs`, `validate.mjs`.
+> Validation passes only when the intended attribute moved and every other leaf in the row is
+> byte-identical.
+>
+> **§0b before your first run**: the report is keyed per *page-appearance*, the loop per *row*, and a
+> section listed on two pages makes those differ.
 
 ```bash
 export DMS_HOST=https://dmsserver.availabs.org DMS_APP=mitigat-ny-prod DMS_TYPE=prod
@@ -26,6 +30,7 @@ cd planning/mitigateny/skills/scripts/report_fixes
 RUN=scratchpad/mny-admin-status/fix-runs/<date>-<what>
 
 python export_tab.py <report>.xlsx "<Worksheet tab>" $RUN/rows.csv   # 0. freeze
+#      then assert rows == distinct `Draft section ID`s (see 0b)      # 0b. dedupe
 node   baseline.mjs  $RUN/baseline --from-csv $RUN/rows.csv          # 1. scan
 node   apply.mjs     $RUN --set-from "tags=Requirement" --dry-run    # 2. preview
 node   apply.mjs     $RUN --set-from "tags=Requirement"              #    write
@@ -79,6 +84,77 @@ python export_tab.py county-template-qa-t5-requirements-v2.xlsx \
 
 Give the run folder a dated, descriptive name — `2026-08-27-caps-tags`. Run folders live under
 `scratchpad/mny-admin-status/fix-runs/` (git-ignored); they are the audit trail for the edit.
+
+---
+
+## 0b. Two different keys: the report is keyed per page-appearance, the loop per row
+
+Get this wrong and a run reports its own writes as someone else's concurrent edit.
+
+**`Draft section ID` *is* the database row id.** `dms raw get <id>` returns exactly one row. But a
+section row can be listed in the `draft_sections` array of **more than one page**, and the reports
+enumerate page by page — so **one database row becomes two report rows**:
+
+| | Pattern ID | Page ID | Page | Draft section ID |
+|---|---|---|---|---|
+| report row 1 | 2249247 | 2249278 | `the_risk/natural_hazards/lightning` | 2250911 |
+| report row 2 | 2249247 | 2249292 | `the_risk/natural_hazards/wind` | 2250911 |
+
+Note what does **not** disambiguate them: `Pattern ID` is identical, and there is no second row id to
+reach for, because there is no second row. The only differing columns are `Page` / `Page ID`.
+
+So the two keys are:
+
+| | Key | Why |
+|---|---|---|
+| a **report row** | `(Fix ID, Pattern ID, Page)` | one component, one fix, listed under each page it appears on — truthful bookkeeping, and what §6b of the fetch-mode skill already documents |
+| a **loop target** | the **`Draft section ID`** alone | a write targets a *row*, not a row-on-a-page. There is one row, so there is one write |
+
+**Where those cardinalities differ, the loop must collapse to the row.** Concretely: dedupe
+`rows.csv` by `Draft section ID` before baselining, and assert `rows == distinct ids`.
+
+Adding key columns does not help and is the tempting wrong move. It would make each report row
+uniquely addressable while both still point at the same write target — you would have disambiguated
+the *description* of the work, not the work.
+
+### What the failure actually looks like
+
+`baseline.mjs` writes one `<id>.json` per id, so it physically cannot hold two snapshots of 2250911.
+Then:
+
+1. row 1 applies → writes the attribute, `updated_at` moves;
+2. row 2 hits the same id → apply compares live `updated_at` against the baseline, sees it moved, and
+   returns **`REFUSED — live row drifted since baseline`**
+   ([`apply_element_data_key.mjs:138`](./scripts/report_fixes/apply_element_data_key.mjs)).
+
+The write is fine. **The damage is to the signal.** "Live row drifted" is this loop's one
+stop-everything alarm — it means another person edited between your scan and your write, and the
+correct response is to re-baseline and re-review, never to force past it. A run that raises that
+alarm against itself makes the alarm unreadable, and a false one costs the same verification cycle as
+a real one to tell apart. (The same lesson as the proof-row `WRONG` in the
+2026-09-01 fetch-mode run: a self-inflicted refusal is still a refusal you have to investigate.)
+
+### A section on two pages is a defect, not a state to design around
+
+It is a real data problem in the pattern — the T5 task tracks it on `county_template`, and
+duplication copied it into all three county drafts. Deduping is a **guard against the defect**;
+repairing the `draft_sections` arrays is the actual fix. Measured 2026-09-01:
+
+```
+county_template   6 sections on 2 pages     suffolk_draft  9
+schenectady_draft 9                         delaware_draft 9
+```
+
+All 33 are bound to external sources (`AVAIL - Fusion Events V2`, `NRI Counties - Hazard Normalized`),
+so the fetch-mode narrowing excluded every one and no run has yet had to handle a shared row in scope.
+**That is luck, not design** — assert the counts anyway.
+
+### And `data.parent` is no help identifying the owner
+
+Section 2250911's own `data.parent` points at page **2249296** — a *third* page, which does not list
+it in `draft_sections` at all. So for a multi-page section, `parent` is neither of the pages that
+actually contain it. Resolve ownership from the page's `draft_sections`, never from the section's
+`parent`; see the `parent≠page` note in §1.
 
 ---
 
