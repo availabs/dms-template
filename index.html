@@ -3,6 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="%VITE_DMS_FAVICON%" />
+    <!--
+      Moved up from the end of <body> and given `defer`: previously the
+      browser didn't even start downloading this until the entire rest of
+      the document (including the full SSR-rendered page) had been parsed,
+      so it couldn't scan+apply runtime theme classes (e.g. arbitrary-value
+      classes like bg-[var(--t-cobalt)] built via JS template literals,
+      which the build-time Tailwind compiler can't see) until several
+      hundred ms after first paint — a visible flash as those classes
+      resolved late. `defer` starts the fetch as soon as the parser reaches
+      this tag (in parallel with the rest of parsing) while still running
+      only after the full DOM exists to scan, same as before.
+    -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
       @custom-variant dark (&:where(.dark, .dark *));
     </style>
@@ -18,6 +31,5 @@
   <body>
     <div id="root"><!--app-html--></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   </body>
 </html>

@@ -236,14 +236,38 @@ function findSnapRow(pageId) {
   return res?.items?.[0] || null;
 }
 
+// Exact port of the DMS page editor's own toSnakeCase()
+// (packages/dms/src/patterns/page/pages/_utils/index.js) — same regex, same
+// behavior. Same port convention as the Python converter's to_snake_case()
+// (convert_old_reports_lib/pages.py).
+function toSnakeCase(str) {
+  if (!str) return str;
+  const parts = String(str).match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g);
+  return parts ? parts.map((x) => x.toLowerCase()).join('_') : str;
+}
+
 // The page slug this spec builds to, absent an explicit `--update` target —
 // shared by the fresh-create branch and the `--replace` preflight above it,
 // so the two can never compute a different slug for the same spec (which
 // would make --replace delete the wrong page, or fail to delete the right
-// one).
+// one). ALWAYS derived from `spec.title` via toSnakeCase — same algorithm the
+// admin UI's own getUrlSlug() uses, and the same one the DMS page editor
+// recomputes url_slug to on every title save (round 63/65 of
+// old-reports-conversion.md). A spec used to be able to hardcode a `slug`
+// field that diverged from its own title (`spec.slug || ...`, and a
+// different, non-matching fallback algorithm besides) — that divergence is
+// exactly what silently broke the moment anyone saved the page in the admin
+// UI (title save wins, no warning), which is what caused the golden-corpus
+// probe manifest to drift out from under 4 real pages 3 times
+// (2026-08-24/25/31). Computing the same slug the UI converges to means a
+// save is a no-op on the slug — it can never drift again. `spec.slug` is no
+// longer read; existing specs that set it are unaffected as long as it
+// already matched toSnakeCase(title) (true for every real production spec in
+// dynamic_report_specs/ as of 2026-08-31 — only the 4 probe-fixture
+// golden-corpus specs actually diverged).
 function computeTargetSlug() {
   const parentSlug = spec.parent || DEFAULT_PARENT_SLUG;
-  return spec.slug || `${parentSlug}/${String(spec.title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+  return `${parentSlug}/${toSnakeCase(spec.title)}`;
 }
 
 // Strips the `_`-prefixed working fields this script adds onto the spec
@@ -817,7 +841,7 @@ const RES_LABEL = { '5-minutes': '5-minute', '15-minutes': '15-minute', hour: 'h
 
 if (SUMMARY_ONLY) {
   console.log(`\n${spec.title}`);
-  if (spec.slug) console.log(`  slug: ${spec.slug}`);
+  console.log(`  slug: ${computeTargetSlug()}`);
   if (spec.request) console.log(`\nClient request:\n  "${spec.request}"`);
   console.log(`\nRoutes (${spec.routes.length} instance${spec.routes.length === 1 ? '' : 's'}):`);
   for (const r of spec.routes) {
@@ -1062,6 +1086,10 @@ try {
     // Start from the component's own defaultState (which already includes the
     // `data: []` that BarGraph crashes without — see the converter's note).
     const state = structuredClone(avlGraph.defaultState);
+    // NPMRDS's own per-graph-type default legend position — seeded once, here, at composition
+    // time, same seed point + reasoning as useAddGraphSection.js's own call (see
+    // composeMeasureConfig.js's DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE doc comment).
+    cmc.applyDefaultLegendPosition(state, g.graphType);
     const dwAPI = {
       setState: (fn) => fn(state),
       reconcileComparisonSeriesColumn: () => reconcileComparisonSeriesColumn(state),
@@ -1649,6 +1677,12 @@ if (updateCtx) {
     sidebar: pageTemplate.sidebar || 'left',
     ...(pageTemplate.sidebarHideInView !== undefined ? { sidebarHideInView: pageTemplate.sidebarHideInView } : {}),
     ...(pageTemplate.draft_section_groups ? { draft_section_groups: pageTemplate.draft_section_groups } : {}),
+    // Compact-sidenav override (`layout.options.sideNav.activeStyle: 1`) — the
+    // template carries this but it was never copied here, so any page this
+    // script creates (or a --replace-style recreate of an existing one) lost
+    // it even though the 2026-08-07 rollout had hand-patched it onto the
+    // original 16 template pages. See compact-sidenav-margin-bug.md.
+    ...(pageTemplate.theme ? { theme: pageTemplate.theme } : {}),
     // `dynamicReport: true` is the ONLY thing that turns a page into a Dynamic
     // Report — mirrors `toggleDynamicReport` (ReportRouteList.jsx) exactly: both
     // filters always register together, `baseDate` included even though it's only

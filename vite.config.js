@@ -78,6 +78,17 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
         manualChunks: (id) => {
           if (id.includes('maplibre-gl')) {
             return 'maplibre';
+          } else if (id.includes('exceljs') || id.includes('jszip')) {
+            // Only reachable via dynamic import() in dataWrapper's triggerDownload —
+            // kept out of the 'vendor' bucket so it stays a lazily-loaded chunk
+            // instead of being force-merged into the eagerly-loaded vendor bundle.
+            return 'excel-export';
+          } else if (id.includes('@carbon/icons-react') || id.includes('lucide-react')) {
+            // Only reachable via dynamic import() through src/themes' lazy theme
+            // loader (mny_admin -> @carbon/icons-react, tessera -> lucide-react) —
+            // must not be swept into 'vendor', or every site would still
+            // eagerly download both icon libraries regardless of its theme.
+            return undefined;
           } else if (id.includes('node_modules')) {
             return 'vendor';
           }
@@ -92,14 +103,6 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
     noExternal: [
       '@availabs/avl-falcor',
       'colorbrewer',  // "type":"module" but main is UMD — Vite uses "module" field (ESM)
-      // @observablehq/plot re-exports the full 'd3' meta-package (which itself
-      // re-exports every d3-* submodule). Left external, Rollup/Rolldown's SSR
-      // build mis-merges those re-exported symbols into a single bogus
-      // `from "d3-array"` import (e.g. curveBasis, actually from d3-shape,
-      // ends up attributed to d3-array) — a hard crash on SSR boot. Bundling
-      // this whole family instead avoids that external-merge path.
-      '@observablehq/plot',
-      /^d3(-.*)?$/,
     ],
   },
   plugins: [

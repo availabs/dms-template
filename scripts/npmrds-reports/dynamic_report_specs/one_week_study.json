@@ -1,6 +1,5 @@
 {
   "title": "One Week Study",
-  "slug": "converted_reports/one_week_study",
   "dynamicReport": true,
   "description": "This template provides speed information for a route or corridor across a single week — the synthetic drive-through, at percentile speeds.",
   "tags": ["category:floating_car"],

@@ -4,7 +4,7 @@ import { getRegisteredComponents } from '../../../../dms/packages/dms/src/patter
 import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 import { CMSContext } from '../../../../dms/packages/dms/src/patterns/page/context';
 import { applyMeasurePickToState } from '../MeasurePicker';
-import { BASE_SOURCE } from '../MeasurePicker/composeMeasureConfig';
+import { BASE_SOURCE, applyDefaultLegendPosition } from '../MeasurePicker/composeMeasureConfig';
 import { composeMapSectionConfig } from '../MeasurePicker/composeMapConfig';
 
 const AVL_GRAPH_ELEMENT_TYPE = 'AVL Graph';
@@ -75,6 +75,11 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
       // applyMeasurePickToState's own `if (!state.externalSource?.source_id)` guard, which exists
       // only for the already-configured-graph case (an author's own different Dataset pick).
       state.externalSource = { ...BASE_SOURCE.sourceInfo };
+      // NPMRDS's own per-graph-type default legend position (composeMeasureConfig.js's
+      // DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE) — seeded once, here, at real creation time only;
+      // never reasserted by applyMeasurePickToState below, so a later manual override (Settings
+      // drawer, or QuickControls' own Legend pill) survives every future re-pick on this section.
+      applyDefaultLegendPosition(state, pick.graphType);
 
       const applied = applyMeasurePickToState(state, pick, {
         externalSourceColumns: BASE_SOURCE.sourceInfo.columns,

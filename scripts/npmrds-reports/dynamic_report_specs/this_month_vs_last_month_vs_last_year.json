@@ -1,6 +1,5 @@
 {
   "title": "This Month vs. Last Month vs. Last Year",
-  "slug": "converted_reports/this_month_vs_last_month_vs_last_year",
   "dynamicReport": true,
   "description": "This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes.",
   "tags": ["category:change_over_time", "difficulty:advanced"],

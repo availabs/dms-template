@@ -1,7 +1,15 @@
 import React, { useMemo } from "react";
-import { ThemeContext } from "../../../../../dms/packages/dms/src/ui/useTheme";
+import { ThemeContext, getComponentTheme } from "../../../../../dms/packages/dms/src/ui/useTheme";
+import { damaMapTheme } from "../../../../../dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/map.theme";
+import { routecreationTheme } from "../routecreation.theme";
 import { CREATION_MODES } from "../constants";
 
+// Panel 2 · ROUTE EDITOR, from npmrds-route-creation.html (routes-reports-users-mesh.md,
+// Workstream E). Themed onto `routecreation.theme.js` + the Map component's own
+// `damaMap.layerLibrary` panel shell (header/title/count badge), same composition
+// `macroview.theme.js`'s panels already use — see that file's own header comment. Position/
+// width stay the component's own bespoke values (`editorWrapper`), not the shared panel's `p-4`
+// positioning wrapper — the mockup's own note confirms these were checked against it and kept.
 export const RouteEditor = ({
   tmc_array,
   tmcData,
@@ -12,6 +20,8 @@ export const RouteEditor = ({
   removeTmc,
   removeLastTmc,
   clearAllTmc,
+  hoveredTmc,
+  setHoveredTmc,
   setModalOpen,
   creationMode,
   setCreationMode,
@@ -19,147 +29,126 @@ export const RouteEditor = ({
   removeLastMarker,
   clearAllMarkers,
   isEditingRoute,
+  totalMiles,
 }) => {
-  const { UI } = React.useContext(ThemeContext) || {};
-  const { Button } = UI;
+  const { theme: themeFromContext = {} } = React.useContext(ThemeContext) || {};
+  const t = { ...routecreationTheme, ...getComponentTheme(themeFromContext, "routecreation") };
+  const mapT = {
+    ...damaMapTheme.layerLibrary,
+    ...getComponentTheme(themeFromContext, "damaMap.layerLibrary"),
+  };
   const isMarkerMode = creationMode === CREATION_MODES.MARKERS;
+
+  // Row <-> map two-way highlight (routes-reports-users-mesh.md, Workstream E): hovering a row
+  // lights its segment (via setHoveredTmc, read back by dataUpdate.jsx's paint expression);
+  // hovering a segment on the map lights its row (hoveredTmc, set by useMapHoverHandler).
   const tmcRows = useMemo(() => {
-    if (tmc_array?.length > 0) {
-      return tmc_array.map((tmc) => {
-        const tData = tmcData.find((td) => td.tmc === tmc) || {
-          tmc,
-          miles: 0,
-          intersection: "",
-        };
-        return (
-          <div
-            key={`tmc_${tData.tmc}`}
-            className="border-b hover:bg-gray-200 px-1 "
-          >
-            <div className="flex items-center">
-              <div className="font-bold text-sm flex-1">{tData.tmc}</div>
-              <div className="text-xs">{tData.miles.toFixed(3)} miles</div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="text-xs">{tData.intersection}</div>
-              <div
-                className="text-xs text-red-500 cursor-pointer hover:bg-gray-300 rounded p-1"
-                onClick={() => removeTmc(tData.tmc)}
-              >
-                Remove
-              </div>
+    if (!(tmc_array?.length > 0)) return null;
+    return tmc_array.map((tmc) => {
+      const tData = tmcData.find((td) => td.tmc === tmc) || {
+        tmc,
+        miles: 0,
+        intersection: "",
+      };
+      const isHighlighted = hoveredTmc === tData.tmc;
+      return (
+        <div
+          key={`tmc_${tData.tmc}`}
+          className={isHighlighted ? t.rowHighlighted : t.row}
+          onMouseEnter={() => setHoveredTmc?.(tData.tmc)}
+          onMouseLeave={() => setHoveredTmc?.(null)}
+        >
+          <div className={t.rowTop}>
+            <div className={t.rowTmc}>{tData.tmc}</div>
+            <div className={t.rowMiles}>{tData.miles.toFixed(3)} mi</div>
+          </div>
+          <div className={t.rowBottom}>
+            <div className={t.rowIntersection} title={tData.intersection}>{tData.intersection}</div>
+            <div className={t.rowRemove} onClick={() => removeTmc(tData.tmc)}>
+              Remove
             </div>
           </div>
-        );
-      });
-    } else {
-      return null;
-    }
-  }, [tmcData, tmc_array, removeTmc]);
-
-  const totalMiles = tmcData.reduce((acc, curr) => acc + curr.miles, 0);
+        </div>
+      );
+    });
+  }, [tmcData, tmc_array, removeTmc, hoveredTmc, setHoveredTmc, t]);
 
   return (
-    <div
-      className="flex flex-col gap-2 p-1 pointer-events-auto drop-shadow-lg p-4 bg-white/90 overflow-hidden"
-      style={{
-        position: "absolute",
-        top: "25px",
-        // transportNY's original offset (-168px) assumes a narrower map container
-        // with room to spill into on the right - dms-template's Map section container
-        // is wider, so that value clips the panel off-screen. Flush right instead.
-        right: "8px",
-        color: "black",
-        width: "318px",
-        // 350px looked reasonable empty, but everything ABOVE the list (mode
-        // toggle, count/Remove-Last/Clear-All row, TMC Search, list header) eats
-        // ~250px of that on its own, leaving the list itself only ~1 row of real
-        // space before scrolling - raised so the list gets a usable viewport
-        // (~5-6 rows) instead of just technically not spilling into the map.
-        maxHeight: "520px",
-      }}
-    >
-      <div className="flex gap-1 shrink-0">
-        <Button
-          themeOptions={{ color: isMarkerMode ? "transparent" : "primary" }}
-          onClick={() => setCreationMode(CREATION_MODES.TMC_CLICKS)}
-          style={{ flex: 1 }}
-        >
-          TMC Click
-        </Button>
-        <Button
-          themeOptions={{ color: isMarkerMode ? "primary" : "transparent" }}
-          onClick={() => setCreationMode(CREATION_MODES.MARKERS)}
-          style={{ flex: 1 }}
-        >
-          Markers
-        </Button>
+    <div className={t.editorWrapper}>
+      <div className={mapT.header}>
+        <svg className="size-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z" />
+        </svg>
+        <span className={mapT.headerTitle}>Route editor</span>
+        <span className={mapT.headerCount}>{isMarkerMode ? markerCount : (tmc_array?.length || 0)}</span>
       </div>
-      {/* Same "count + Remove Last/Clear All" row in both modes (only the count label
-          and the handlers underneath differ) so toggling modes doesn't jump the panel's
-          layout - TMC Click mode just adds the search box below this shared row. */}
-      <div className="flex items-center justify-between shrink-0">
-        <div className="text-sm font-bold">
-          {isMarkerMode ? `Markers: ${markerCount}` : `TMCs: ${tmc_array?.length || 0}`}
+      <div className={t.editorBody}>
+        <div className={t.segment2}>
+          <button
+            className={`${t.segmentBtnFirst} ${isMarkerMode ? t.segmentInactive : t.segmentActive}`}
+            onClick={() => setCreationMode(CREATION_MODES.TMC_CLICKS)}
+          >
+            TMC Click
+          </button>
+          <button
+            className={`${t.segmentBtn} ${isMarkerMode ? t.segmentActive : t.segmentInactive}`}
+            onClick={() => setCreationMode(CREATION_MODES.MARKERS)}
+          >
+            Markers
+          </button>
         </div>
-        <div className="flex gap-2">
-          <div
-            className="text-xs cursor-pointer hover:bg-gray-300 rounded p-1"
-            onClick={isMarkerMode ? removeLastMarker : removeLastTmc}
-          >
-            Remove Last
+        {/* Same "count + Remove Last/Clear All" row in both modes (only the count label
+            and the handlers underneath differ) so toggling modes doesn't jump the panel's
+            layout - TMC Click mode just adds the search box below this shared row. */}
+        <div className={t.countRow}>
+          <div className={t.countLabel}>
+            {isMarkerMode ? `Markers: ${markerCount}` : `TMCs: ${tmc_array?.length || 0}`}
           </div>
-          <div
-            className="text-xs text-red-500 cursor-pointer hover:bg-gray-300 rounded p-1"
-            onClick={isMarkerMode ? clearAllMarkers : clearAllTmc}
-          >
-            Clear All
+          <div className={t.countActions}>
+            <div className={t.countActionBtn} onClick={isMarkerMode ? removeLastMarker : removeLastTmc}>
+              Remove last
+            </div>
+            <div className={t.countActionBtnDestructive} onClick={isMarkerMode ? clearAllMarkers : clearAllTmc}>
+              Clear all
+            </div>
           </div>
         </div>
-      </div>
-      {!isMarkerMode && (
-        <div className="shrink-0">
-          <div className="font-bold">TMC Search</div>
-          <div className="flex w-full gap-1">
-            <label className="flex flex-1">
+        {!isMarkerMode && (
+          <div className={t.searchBlock}>
+            <div className={t.searchLabel}>TMC search</div>
+            <div className={t.searchRow}>
               <input
-                className="w-full p-2 bg-white/40 rounded"
+                className={t.searchInput}
                 value={searchInputTmc}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") addTmcFromSearch();
                 }}
               />
-            </label>
-            <Button
-              themeOptions={{ color: "primary" }}
-              disabled={searchInputTmc?.length !== 9 || !searchTmcValid}
-              onClick={addTmcFromSearch}
-            >
-              {tmc_array?.includes(searchInputTmc) ? "Remove" : "Add"}
-            </Button>
+              <button
+                className={t.searchBtn}
+                disabled={searchInputTmc?.length !== 9 || !searchTmcValid}
+                onClick={addTmcFromSearch}
+              >
+                {tmc_array?.includes(searchInputTmc) ? "Remove" : "Add"}
+              </button>
+            </div>
+            {searchInputTmc?.length === 9 && !searchTmcValid && (
+              <div className={t.searchError}>TMC not found</div>
+            )}
           </div>
-          {searchInputTmc?.length === 9 && !searchTmcValid && (
-            <div className="text-xs text-red-500">TMC not found</div>
-          )}
+        )}
+        <div className={t.listHeader}>
+          <span className={t.listHeaderLabel}>TMC list</span>
+          <span className={t.listHeaderTotal}>{totalMiles.toFixed(3)} mi total</span>
         </div>
-      )}
-      <div className="border-b-2 border-current mb-1 flex items-center shrink-0">
-        <div className="font-bold text-lg flex-1">TMC List</div>
-        <div className="text-sm">Total Miles: {totalMiles.toFixed(3)}</div>
-      </div>
-      <div className="overflow-auto scrollbar-sm flex-1 min-h-0">
-        {tmcRows}
+        <div className={t.list}>{tmcRows}</div>
       </div>
       {tmc_array?.length > 0 && (
-        <div className="mb-1 flex items-center shrink-0">
-          <Button
-            themeOptions={{ color: "transparent" }}
-            onClick={() => setModalOpen(true)}
-            style={{ width: "100%", marginTop: "10px" }}
-          >
-            {isEditingRoute ? "Update Route" : "Save Route"}
-          </Button>
+        <div className={t.footer}>
+          <button className={t.saveBtn} onClick={() => setModalOpen(true)}>
+            {isEditingRoute ? "Update route" : "Save route"}
+          </button>
         </div>
       )}
     </div>

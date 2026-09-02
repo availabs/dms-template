@@ -1,6 +1,5 @@
 {
   "title": "Single Route",
-  "slug": "converted_reports/single_route",
   "dynamicReport": true,
   "description": "This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion.",
   "tags": ["category:before_after", "difficulty:beginner"],

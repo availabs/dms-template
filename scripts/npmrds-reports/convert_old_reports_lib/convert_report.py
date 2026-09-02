@@ -6,11 +6,11 @@ from .config import COMPONENT_TYPE, GAPS_DIR, PATTERN, REPORTS_SNAP_TYPE
 from .vocab import BAR_SUMMARY_PM3_BUCKET, COLOR_RANGE_GRAPH_TYPES, DIFFERENCE_GRAPH_TYPES, GRAPH_TEMPLATE_MAP, INFO_BOX_AADT_BUCKET, INFO_BOX_BUCKET, INFO_BOX_DELAY_BUCKET, INFO_BOX_GRAIN, INFO_BOX_LENGTH_BUCKET, INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS, ROUTE_COMPARE_BUCKET
 from .expressions import ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, aadt_override_of
 from .template_specs import MEASURE_EXPR
-from .db import dms, fetch_old_report, fetch_old_routes, flatten_route_comps, now_iso
+from .db import dms, fetch_agency_tag, fetch_old_report, fetch_old_routes, flatten_route_comps, now_iso
 from .dates import report_is_pre_2017_only, resolve_relative_dates
 from .transforms import build_route_entry, group_route_comps, route_comp_display_name, route_comp_merge_key
-from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
-from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
+from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, load_graph_templates
+from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
 from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, resolve_tmc_array, template_framework_sections
@@ -89,6 +89,24 @@ def convert_report(old_id, dry_run=False, replace=False):
         else:
             seen_names[name] = rc.get("compId")
         rc["name"] = name
+    # Round 82: the old array's own storage order does NOT reliably match
+    # the old tool's rendered visual order — `admin2.reports.graph_comps` is
+    # written in whatever order the old client last saved it (often creation
+    # order), while the actual top-to-bottom/left-to-right order the old UI
+    # displayed came from each comp's own react-grid-layout `layout.y`/
+    # `layout.x`. Since sections now stack in a single column (see the
+    # `graph_layout` gap — x/y/h pixel position isn't preserved), the single
+    # thing we CAN still preserve is the top-to-bottom sequence, and every
+    # downstream consumer already just walks `graph_comps`/`analyzed` in
+    # whatever order it's given — so sorting once here, before anything else
+    # reads the list, fixes ordering everywhere for free. Confirmed on report
+    # 971 (NITTEC 150): array order and layout order were completely
+    # different sequences.
+    old["graph_comps"] = sorted(
+        old.get("graph_comps") or [],
+        key=lambda g: ((g.get("layout") or {}).get("y", 0),
+                        (g.get("layout") or {}).get("x", 0)))
+
     # Round 40 bug fix: 817/854 corpus reports (96%) have at least one
     # graph_comp with no `id` field at all (the documented old shape,
     # `id: 'graph-comp-N'`, simply isn't there for most of the corpus —
@@ -207,31 +225,34 @@ def convert_report(old_id, dry_run=False, replace=False):
             continue  # outside the join's bucket — falls through to the
                       # generic "no template mapping" gap below, same as any
                       # other uncovered GRAPH_TEMPLATE_MAP combination
-        year = graph_max_year(info, comps_by_id)
-        bin_ = graph_reliability_bin(info, comps_by_id)
-        if year is None:
-            gaps.append({"kind": "info_box_year_undetermined", "graph": gid,
-                         "detail": "no assigned comp has a startDate/endDate "
-                                   "to period-match the pm3 join"})
-            info_box_gap_logged.add(gid)
-        elif year not in PM3_VIEW_BY_YEAR:
-            gaps.append({"kind": "info_box_year_outside_pm3_coverage", "graph": gid,
-                         "detail": f"max year {year} outside 1410's "
-                                   f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage"})
-            info_box_gap_logged.add(gid)
-        elif bin_ is None:
-            gaps.append({"kind": "info_box_bin_undetermined", "graph": gid,
-                         "detail": "assigned comp(s) don't land unambiguously on "
-                                   "exactly one of 1410's real bins (amp/midd/pmp/"
-                                   "we) — e.g. 0 or 2-3 peak flags true, a mixed "
-                                   "weekday+weekend selection, or a custom "
-                                   "startTime/endTime with no peak flag; no "
-                                   "precomputed value exists for any of those"})
-            info_box_gap_logged.add(gid)
-        else:
-            graph_templates = ensure_pm3_join_template(grain, year, bin_, graph_templates, dry_run)
-            info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
-            info_box_bin_year[gid] = (year, bin_)
+        # Round 85 (2026-08-31): INFO_BOX_BUCKET's `("speed", "travel_time_all")`
+        # is the OLD TOOL'S OWN measure key for plain average speed (mph) —
+        # confirmed directly against transportNY's real source
+        # (dataTypes.js's BASE_DATA_TYPES `{key:'speed', alias:'travelTime',
+        # ...}`, no `group`, no pm3/reliability connection whatsoever;
+        # LOTTR/TTTR/reliability appear nowhere in the report-builder's own
+        # vocabulary — only in unrelated old pages like pm3Map21/MacroView).
+        # Rounds 19/38/40/49/58 mapped this bucket to the pm3 LOTTR/TTTR/
+        # Freeflow reliability join instead, as a deliberate substitution:
+        # the old tool's *literal* LOTTR/TTTR measure keys (10 reports
+        # corpus-wide) all predate 1410's 2021+ coverage, so reliability was
+        # piggybacked onto the `speed` bucket to get a real, working demo
+        # instead of 0 corpus flips. That substitution never actually
+        # reproduced what a `speed` Info Box showed in the old tool, and
+        # gated 261 real instances (~95 reports) behind pm3 year/bin
+        # resolution for no correctness reason. Now dispatches to the real
+        # plain-speed measure instead (`SPEED_EXPR`/`ensure_info_box_speed_
+        # template`, already built+proven 2026-08-12 for the spec-driven
+        # report_build.mjs path) — no year/bin dependency at all, since the
+        # date window comes from the graph's own `_measurePick.routeWindows`
+        # at render time (same live mechanism every other measure uses),
+        # not a per-year Postgres view the way 1410 is provisioned. The
+        # reliability machinery (`ensure_pm3_join_template`/
+        # `graph_reliability_bin`) is intentionally left in place, unused
+        # here — it's the right building block for real literal LOTTR/TTTR
+        # support, a separate follow-on (see "Known functionality gaps").
+        graph_templates = ensure_info_box_speed_template(grain, graph_templates, dry_run)
+        info_box_tmpl_name[gid] = f"{grain}_info_box_speed"
 
     # Bar Graph Summary freeflow-byDateRange: same per-report/year pm3 join as
     # the Info Box reliability bucket above, but bin-independent — see
@@ -474,18 +495,13 @@ def convert_report(old_id, dry_run=False, replace=False):
     # differ only in the old tool's own peak/weekday/resolution slicing —
     # redundant now that Design Push #2 moved that onto each graph's own
     # _measurePick. One entry per group, graphIds unioned across every
-    # comp in the group. comp_group_size feeds the graph-title-suffix fix
-    # below (a merged route's own name goes generic; a graph whose title
-    # never had {name} needs another way to keep the distinction visible).
+    # comp in the group.
     merge_groups = group_route_comps(
         route_comps,
         lambda rc: route_comp_merge_key(rc, old_routes.get(str(rc.get("routeId"))),
                                         resolved_tmcs.get(rc.get("compId"))))
-    comp_group_size = {}
     route_entries = []
     for group in merge_groups:
-        for rc in group:
-            comp_group_size[rc.get("compId")] = len(group)
         rep = group[0]
         union_graph_ids, seen_tids = [], set()
         for rc in group:
@@ -560,6 +576,15 @@ def convert_report(old_id, dry_run=False, replace=False):
                     # fix, so every converted page had a permanent blank/white rail-width
                     # gap in view mode.
                     "sidebarHideInView": page_template.get("sidebarHideInView", False),
+                    # The template's own `theme` carries the compact-sidenav override
+                    # (`layout.options.sideNav.activeStyle: 1`) — applied by hand to 16
+                    # specific pages on 2026-08-07 (compact-sidenav-margin-bug.md) but
+                    # never copied here, so every --report-id conversion (explicitly
+                    # excluded from that one-off sweep) rendered with the default
+                    # expanded rail instead. Copying the template's field directly makes
+                    # it durable: any future template edit propagates to new conversions
+                    # without another manual DB sweep.
+                    **({"theme": page_template["theme"]} if page_template.get("theme") else {}),
                     "published": "draft"})
     page_id = res["id"]
     print(f"created page id={page_id} slug={slug}")
@@ -586,15 +611,15 @@ def convert_report(old_id, dry_run=False, replace=False):
         if bin_year:
             year_, bin_ = bin_year
             info["title"] = f"{info['title']} ({RELIABILITY_BIN_LABELS[bin_]}, {year_})"
-        # Route-comp-merge title fix: this graph's title template never had
-        # a {name} slot (so it renders with zero per-comp distinction) AND
-        # at least one of its assigned comps got merged into a shared route
-        # entry (whose own name just went generic) — append the comp
-        # name(s) so the peak/date distinction survives somewhere on the
-        # page instead of disappearing entirely.
-        if (not info.get("had_name_token") and info.get("comp_names")
-                and any(comp_group_size.get(c, 1) > 1 for c in info["assigned"])):
-            info["title"] = f"{info['title']} — {info['comp_names']}"
+        # Round 82 (user-reported: "IDK which route/year is being shown"):
+        # any graph whose title template never had a {name} slot renders
+        # with zero per-comp route/date distinction by default — append the
+        # dated comp label(s) (route name + year/date range, see
+        # analyze_graph's comp_names_dated) unconditionally, not just when a
+        # route-comp merge made it necessary (the original, narrower reason
+        # this append existed).
+        if not info.get("had_name_token") and info.get("comp_names_dated"):
+            info["title"] = f"{info['title']} — {info['comp_names_dated']}"
         section_datas.append(
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
@@ -603,11 +628,20 @@ def convert_report(old_id, dry_run=False, replace=False):
                                          g.get("id"), False),
                                      comps_by_id=comps_by_id))
 
-    draft_ids = []
+    # -- draft rows. Created via `raw create` (a plain insert), NOT `dms section
+    # create` — that CLI command attaches itself to the page's draft_sections
+    # via its own read-modify-write (fetch page, push one ref, write back),
+    # called once per section in this loop; back-to-back calls race on that
+    # read and only the LAST section's write survives, silently dropping every
+    # other draft section (including the RRL sidebar, created first) from the
+    # page's draft_sections array. `sections` (published, below) never had
+    # this problem because it's built the same way this now is: create every
+    # row first, then attach the full list in ONE page update.
+    draft_refs = []
     for sd in section_datas:
-        r = dms(["section", "create", str(page_id), "--pattern", PATTERN], data=sd)
-        draft_ids.append(r["id"])
-    print(f"created {len(draft_ids)} draft sections: {draft_ids}")
+        r = dms(["raw", "create", "npmrdsv5", COMPONENT_TYPE], data=sd)
+        draft_refs.append({"id": str(r["id"]), "ref": f"npmrdsv5+{COMPONENT_TYPE}"})
+    print(f"created {len(draft_refs)} draft sections: {[r['id'] for r in draft_refs]}")
 
     # -- published copies (separate rows, same trackingIds — mirrors UI publish)
     published_refs = []
@@ -618,17 +652,25 @@ def convert_report(old_id, dry_run=False, replace=False):
     groups = page_template.get("draft_section_groups") or [
         {"name": "default", "index": 0, "theme": "flush", "position": "content"}]
     dms(["raw", "update", str(page_id)],
-        data={"sections": published_refs, "section_groups": groups,
+        data={"sections": published_refs, "draft_sections": draft_refs,
+              "section_groups": groups,
               "draft_section_groups": groups, "published": "", "has_changes": False})
     print(f"published page (published section rows: "
           f"{[r['id'] for r in published_refs]})")
 
     # -- reports_snap_2 row
+    agency_tag = fetch_agency_tag(old_id, "report")
     snap = {
         "report_id": str(page_id),
         "routes": json.dumps(route_entries),
+        "tags": json.dumps([agency_tag] if agency_tag else []),
         "name": old.get("name") or "",
         "description": old.get("description") or "",
+        # ReportPickerModal's isRebuilt()/badge logic (and, as of the same round, its
+        # picker-query filter) key off this field to tell a real converted page apart from a
+        # never-rebuilt legacy catalog row — omitting it (the bug up to this round) made every
+        # converted report look identical to a legacy one in the report browser/tag browser.
+        "page_path": f"/{slug}",
         "_converted_from_old_report_id": old_id,
         "_converted_at": now_iso(),
         "_old_created_by": old.get("created_by"),

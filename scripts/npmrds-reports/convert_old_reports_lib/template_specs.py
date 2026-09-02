@@ -28,12 +28,22 @@ from .expressions import AADT_DIST_JOIN, DELAY_EXPR, HOUR_EXPR, META_JOIN, MONTH
 #    avgHoursOfDelay-summary was before this round (a small, scoped
 #    composeMeasureConfig.js capability that doesn't exist yet), flagged for
 #    a follow-up round rather than built here.
+# Default `display.legend.position` for the templates below — kept in sync BY HAND with
+# `composeMeasureConfig.js`'s `DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE` (2026-09-01, Ryan's call:
+# bottom for now, may change/differ per graph type later). These two hand-built categories
+# (this base LineGraph template + the 5 per-TMC BarGraph entries below) are the only templates
+# NOT composed via the real JS through `compose_bridge.py` (see this file's own header comment for
+# why) — every other template already inherits the JS-side default for free. If you change one
+# side, change the other.
+_DEFAULT_LEGEND_POSITION = {"LineGraph": "bottom", "BarGraph": "bottom"}
+
 TEMPLATE_SPECS = {
     "tmc_travel_time_line_graph": {
         "graphType": "LineGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
                   "target": "yAxis", "fn": "exempt",
                   "customName": "Travel Time (min)"},
+        "display": {"legend": {"position": _DEFAULT_LEGEND_POSITION["LineGraph"]}},
     },
     # Round-29-family per-TMC breakdown ("Hours of Delay Graph" — a different
     # old component from "Route Bar Graph"'s route-wide __series default):
@@ -45,6 +55,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"position": _DEFAULT_LEGEND_POSITION["BarGraph"]}},
     },
     # Same per-TMC shape as tmc_delay_bar_graph_5min above, at day resolution.
     # Named distinctly from the (now bridge-composed) route-wide day template
@@ -54,6 +65,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"position": _DEFAULT_LEGEND_POSITION["BarGraph"]}},
     },
     "tmc_delay_bar_graph_hour_tmc": {
         "graphType": "BarGraph",
@@ -63,6 +75,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"position": _DEFAULT_LEGEND_POSITION["BarGraph"]}},
     },
     "tmc_delay_bar_graph_15min_tmc": {
         "graphType": "BarGraph",
@@ -72,6 +85,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"position": _DEFAULT_LEGEND_POSITION["BarGraph"]}},
     },
     "tmc_delay_bar_graph_month_tmc": {
         "graphType": "BarGraph",
@@ -81,6 +95,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"position": _DEFAULT_LEGEND_POSITION["BarGraph"]}},
     },
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"

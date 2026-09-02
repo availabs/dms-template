@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
+import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
 import { convertToUrlParams } from "../../../../dms/packages/dms/src/patterns/page/pages/_utils";
 import { reportRouteListTheme } from './ReportRouteList.theme';
@@ -17,6 +17,7 @@ import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
 export default function ReportRouteList() {
   const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
+  const { user } = useContext(CMSContext) || {};
   const { state: { join, externalSource } } = useContext(ComponentContext) || {};
   // `editPageMode` (from PageContext) is whichever sections array (`draft_sections` vs
   // `sections`) sibling components are ACTUALLY rendering from right now — that's what
@@ -96,7 +97,7 @@ export default function ReportRouteList() {
     reorderRoutes,
     updateRoute,
     pasteWindowToRoutes,
-  } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit: canMutate });
+  } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit: canMutate, user });
 
   // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/color
   // assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against

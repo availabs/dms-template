@@ -22,7 +22,7 @@
   "entries": [
     {
       "key": "golden_corpus_linegraph",
-      "url": "converted_reports/golden_corpus_linegraph",
+      "url": "converted_reports/golden_corpus_line_graph",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-linegraph.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-linegraph.json --replace --publish",
       "authRequired": true,
@@ -32,14 +32,14 @@
         "sectionGroups.sidebarHideInView",
         "display._measurePick.routeIds"
       ],
-      "notes": "Representative for the plain (non-difference) LineGraph code path, 2-route travelTime. Session-scoped page from 2026-08-07 was cleaned up per feedback_golden_corpus_pages_session_scoped — rebuild from the spec before first --capture. 2026-08-24: found 12 accidental duplicate 'Golden Corpus - *' pages across all 4 static entries (stacked from repeat rebuilds without --replace, url_slug drifted from the spec's explicit slug to a title-derived one on a later resave) — every static entry's own manifest url had stopped resolving to any live page and was silently falling back to the site homepage. Deleted all 12, rebuilt fresh from spec (now with --replace in the rebuild command below to prevent recurrence), re-baselined. 2026-08-25: RECURRED — probe_corpus.mjs run during the npmrds-picker-modals work found this and all 3 sibling static entries' urls silently falling back to the site homepage again (section count 2→20, all previously-had-content sections now blank). Confirmed via `dms page list --pattern npmrds_sub` that the 4 live pages now sit at underscored slugs (`golden_corpus_line_graph`/`_bar_graph`/`_grid_graph`/`_route_map`) while this manifest's `url` and the pages' own spec-authored slugs have no underscore between the words — the exact same title-derived-slug-drift mechanism as 2026-08-24, not a regression from that session's work. NOT caused by, or investigated further as part of, the picker-modals work (which never touches report_build.mjs or these pages) — left for whoever picks this up next to re-run each entry's `rebuild` command and re-`--capture`.",
-      "baselineCapturedAt": "2026-08-24",
-      "lastVerifiedAt": "2026-08-24",
+      "notes": "Representative for the plain (non-difference) LineGraph code path, 2-route travelTime. Session-scoped page from 2026-08-07 was cleaned up per feedback_golden_corpus_pages_session_scoped — rebuild from the spec before first --capture. 2026-08-24: found 12 accidental duplicate 'Golden Corpus - *' pages across all 4 static entries (stacked from repeat rebuilds without --replace, url_slug drifted from the spec's explicit slug to a title-derived one on a later resave) — every static entry's own manifest url had stopped resolving to any live page and was silently falling back to the site homepage. Deleted all 12, rebuilt fresh from spec (now with --replace in the rebuild command below to prevent recurrence), re-baselined. 2026-08-25: RECURRED — probe_corpus.mjs run during the npmrds-picker-modals work found this and all 3 sibling static entries' urls silently falling back to the site homepage again (section count 2→20, all previously-had-content sections now blank). Confirmed via `dms page list --pattern npmrds_sub` that the 4 live pages now sit at underscored slugs (`golden_corpus_line_graph`/`_bar_graph`/`_grid_graph`/`_route_map`) while this manifest's `url` and the pages' own spec-authored slugs have no underscore between the words — the exact same title-derived-slug-drift mechanism as 2026-08-24, not a regression from that session's work. NOT caused by, or investigated further as part of, the picker-modals work (which never touches report_build.mjs or these pages) — left for whoever picks this up next to re-run each entry's `rebuild` command and re-`--capture`. **ROOT-CAUSE FIXED 2026-08-31 (old-reports-conversion.md round 85 addendum), 3rd recurrence**: `report_build.mjs`'s `computeTargetSlug()` used to read an explicit `spec.slug` field verbatim (a fallback algorithm that didn't even match the admin UI's own `toSnakeCase`/`getUrlSlug` either) — these 4 specs' hand-picked slugs (`golden_corpus_linegraph`, no separator) never matched what their own spec `title` (`Golden Corpus - Line Graph`, two words) would produce, so every title-triggering resave silently drifted the live slug out from under the hardcoded one. Fixed at the root: `computeTargetSlug()` now ALWAYS derives the slug from `spec.title` via an exact port of `toSnakeCase()` — the same algorithm the admin UI's `getUrlSlug()` uses and the same one a title save recomputes to — so a save is a no-op on the slug going forward, permanently closing this recurrence. The now-dead `slug` field was removed from all 16 spec files (12 real `dynamic_report_specs/*` + these 4 probe fixtures) — verified every real production spec's existing slug already matched `toSnakeCase(title)` exactly, so this fix changes NOTHING for them; only these 4 fixtures' live URL actually moved (to the underscored form, matching their titles) and needed this manifest's `url` + a `--replace --publish` rebuild to re-sync, done same day.",
+      "baselineCapturedAt": "2026-08-31",
+      "lastVerifiedAt": "2026-08-31",
       "expectedValue": null
     },
     {
       "key": "golden_corpus_bargraph",
-      "url": "converted_reports/golden_corpus_bargraph",
+      "url": "converted_reports/golden_corpus_bar_graph",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-bargraph.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-bargraph.json --replace --publish",
       "authRequired": true,
@@ -50,8 +50,8 @@
         "display._measurePick.routeIds"
       ],
       "notes": "Representative for the BarGraph code path AND the Layer-3 known-good-value PoC (see expectedValue) — chosen because `speed` is a near-raw average, the class of measure the team is most confident is already correctly computed (any discrepancy is most likely rounding, not a wrong formula). Rebuild before first --capture, same as linegraph.",
-      "baselineCapturedAt": "2026-08-24",
-      "lastVerifiedAt": "2026-08-24",
+      "baselineCapturedAt": "2026-08-31",
+      "lastVerifiedAt": "2026-08-31",
       "expectedValue": {
         "description": "NY-9D Northbound (route 2195805, TMCs 120+29712/120+29713/120+29714) average speed, Monday (toDayOfWeek(date,1)=1), 2025-01-01..2025-02-28. Computed independently: per-TMC avgIf(travel_time_all_vehicles, !=0) via direct ClickHouse SQL against npmrds.s583_v982_NPMRDS_V6, summed, combined with per-TMC miles from the UDA view-3464 reference-data endpoint (a static geometry lookup, not derived from this report's own rendering), via the report's own formula (sum(miles)*3600/sum(avg_travel_time_s)). Matched the live rendered value EXACTLY (19.57234077140305, to 15 significant digits) when computed 2026-08-10 — confirms the speed formula is correct for this measure, not just close.",
         "matchRoute": "NY-9D Northbound",
@@ -63,7 +63,7 @@
     },
     {
       "key": "golden_corpus_gridgraph",
-      "url": "converted_reports/golden_corpus_gridgraph",
+      "url": "converted_reports/golden_corpus_grid_graph",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-gridgraph.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-gridgraph.json --replace --publish",
       "authRequired": true,
@@ -74,13 +74,13 @@
         "display._measurePick.routeIds"
       ],
       "notes": "Representative for the per-TMC/day heat-grid code path — see graph-new-single-categorize-limit memory (GridGraph's yAxis-not-categorize quirk lives here). Rebuild before first --capture.",
-      "baselineCapturedAt": "2026-08-24",
-      "lastVerifiedAt": "2026-08-24",
+      "baselineCapturedAt": "2026-08-31",
+      "lastVerifiedAt": "2026-08-31",
       "expectedValue": null
     },
     {
       "key": "golden_corpus_routemap",
-      "url": "converted_reports/golden_corpus_routemap",
+      "url": "converted_reports/golden_corpus_route_map",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-routemap.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-routemap.json --replace --publish",
       "authRequired": true,
@@ -91,8 +91,8 @@
         "route_map.choropleth_paint"
       ],
       "notes": "Representative for the Route Map / choropleth-baking code path — a real per-report choropleth baked server-side at build time, distinct from the other AVL Graph types. Rebuild before first --capture; the bake step's own dependencies (dama-tiles pg) must be reachable, not just ClickHouse.",
-      "baselineCapturedAt": "2026-08-24",
-      "lastVerifiedAt": "2026-08-24",
+      "baselineCapturedAt": "2026-08-31",
+      "lastVerifiedAt": "2026-08-31",
       "expectedValue": null
     },
     {

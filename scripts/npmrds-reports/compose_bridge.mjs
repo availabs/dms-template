@@ -92,6 +92,8 @@ const results = {};
 try {
   const mp = await server.ssrLoadModule(
     '/src/themes/transportny/components/MeasurePicker/index.js');
+  const cmc = await server.ssrLoadModule(
+    '/src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js');
   const graphCfg = await server.ssrLoadModule(
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/graph_new/config.jsx');
   const spreadsheetCfg = await server.ssrLoadModule(
@@ -108,6 +110,10 @@ try {
     // place via dwAPI.setState, so each request needs its own clone, not a
     // shared/reused object.
     const state = structuredClone(componentCfg.defaultState);
+    // NPMRDS's own per-graph-type default legend position — same seed point/reasoning as
+    // useAddGraphSection.js and report_build.mjs's own calls (composeMeasureConfig.js's
+    // DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE doc comment); no-ops for Table requests internally.
+    cmc.applyDefaultLegendPosition(state, req.graphType);
     const dwAPI = { setState: (fn) => fn(state) };
     let composedOk = true;
     try {

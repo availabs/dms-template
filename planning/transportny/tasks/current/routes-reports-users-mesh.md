@@ -2,7 +2,10 @@
 
 **Project:** TransportNY · **Topic:** themes · **Status:** kicked off 2026-08-25. Workstreams **A** (picker modal mockups AND the real
 `RouteTagBrowserModal`/`ReportPickerModal` implementation, sharing a new `PickerModal/` layer) and
-**C** (auto-generated route audit + cleanup) **DONE** same day, both independently live-verified. **B** (old-reports reconversion inventory) also ran same
+**C** (auto-generated route audit + cleanup) **DONE** same day, both independently live-verified —
+**correction 2026-09-01: A4's "mine" facet was NOT actually working for reports** despite being
+reported live-verified here; see the Progress log entry below for the two real bugs found+fixed.
+**B** (old-reports reconversion inventory) also ran same
 day, in its own file (`src/dms/planning/tasks/current/old-reports-conversion.md`, not here — see
 below) — surfaced a real live regression, fixed same day: graphs converted from old reports had
 silently reverted to "all days, all hours" again since a 2026-08-14 rendering-contract migration
@@ -10,7 +13,12 @@ silently reverted to "all days, all hours" again since a 2026-08-14 rendering-co
 unrelated crash bug (13/870 corpus reports, a corrupted old-tool relativeDate placeholder) was
 fixed 2026-08-26 (round 73) — see that file for both. D
 (auth) is intentionally minimal, touched only via A4. E (Route Creation Plugin redesign) explicitly
-last, not started.
+last, not started at kickoff. **2026-09-01 (later): "Choose a report" orphaned-row bug** (stale
+`reports_snap_2` rows with no live page) — cleanup done + a durable picker-side filter shipped
+(see Progress log); the `deletePage` cascade hook that would close the hole at its source is an
+open follow-on, not started. **E picked up and mostly BUILT same day** (design-artifact refresh,
+then the theme/component implementation for 5 of its 6 scoped items — see Workstream E below), once
+A/B/C/D's own work had already landed.
 · **Started:** 2026-08-25
 
 ## Objective
@@ -67,6 +75,9 @@ sibling threads below for the parts that live elsewhere.
 - **Sequencing, Ryan's own ordering**: A/B/C are the current work; D (auth) stays minimal, touched
   only via A4; E (Route Creation Plugin redesign) is explicitly last — mentioned now only so A1's
   modal mockup can borrow its visual language, not to start it.
+- **D superseded 2026-09-01**: the "stays minimal" call above is no longer current — Ryan asked for a
+  real (client-side-only) auth/tags scope for Routes and Reports. See Workstream D below for the full
+  design; this doesn't reopen A/B/C/E's own sequencing.
 - **Folders**: reference-only. The old tool's folder system (user/group/AVAIL types, nesting, bulk
   move/copy) is fully documented at `research/route-creation/findings.md:296-414` and was
   deliberately deferred when 2.0 was built — Route Tags already ship as the folder-approximation
@@ -88,6 +99,10 @@ sibling threads below for the parts that live elsewhere.
 - [`dynamic-reports-and-route-tags.md`](./dynamic-reports-and-route-tags.md) (+ `-archive.md`) — Route
   Tags (the folder-approximation), the tag-browsing picker modal's origin, and the tmc_linear
   auto-generation scheme this file's Workstream C audits.
+- **2026-09-01: Workstream D (auth) scoped for real** — no longer "minimal, touched only via
+  A4." Full client-side-only ownership/tag design locked (user tag + live-group tags,
+  default-restrictive picker visibility, inline header tag editor) — see Workstream D below.
+  Not yet implemented.
 - [`route-creation-tool.md`](./route-creation-tool.md) — current status/phase table for the
   route-creation map plugin itself (Workstream E's target, not started this arc).
 - [`npmrds-design-v2-implementation.md`](./npmrds-design-v2-implementation.md) — where Alex's
@@ -240,12 +255,133 @@ identical-vs-differing geometry per duplicate group) — deliberately does NOT c
 - Full detail (single-TMC rows with TMC identity, now-empty duplicate-name groups): 
   `scratchpad/npmrds-sub/auto_generated_route_audit_2026-08-25.json` (regenerated post-rename).
 
-## Workstream D — auth
+## Workstream D — auth + tags (scoped + BUILT + live-verified 2026-09-01)
 
-Intentionally minimal. Touched only via A4's ownership filter (see Decisions above). No folders, no
-real permission model, no server-side enforcement.
+**Ask, Ryan's own framing**: client-side-only, "fake it" — no real permission boundary, just make
+the logged-in user mostly/only see what they or their group(s) created. Concrete trigger: AVAIL's
+own test reports (round after round of `TEST`/`Testing`-named scratch reports this task's Progress
+log is full of) should stay invisible to non-AVAIL client users by default. Tags are the mechanism —
+they're already replacing the old tool's folders (`dynamic-reports-and-route-tags.md`), and now
+carry the ownership signal too.
 
-## Workstream E — Route Creation Plugin redesign (last, not started)
+### Confirmed mechanics (read the real code before designing, not assumed)
+
+- `CMSContext`'s `user` (from `AuthContext`, `src/dms/packages/dms/src/patterns/auth/context.js`)
+  already carries `id`, `email`, and a real, server-verified `groups: string[]` — the login groups
+  the user actually belongs to for this project (`avail_auth` DB, `groups`/`groups_in_projects`/
+  `users_in_groups`, joined per-project in `jwt.js`). Nothing new needed to read "my groups."
+- **Real finding, not assumed**: queried `avail_auth` directly (read-only,
+  `DBQ_OLD_CONFIG=.../availauth.config.json dbq.py old`) for the `npmrdsv5` project's live groups —
+  `AGFTC, AVAIL, BMTS, CDTC, ECTC, GBNRTC, GTC, ITCTC, MHV, MPOs, MTA, "NPMRDS New Users",
+  "NPMRDS_PM3 New Users", "NPMRDS Public", "npmrdsv5 Public", NYMTC, NYSAMPO, NYSDOT,
+  "NYSDOT Admin", OCTC, PDCTC, SMTC, "Traffic Management Group", UCTC` (24 groups). Compared against
+  `RouteTagBrowserModal/tagCategories.js`'s hardcoded `AGENCY_CODES` (22 codes): **15 overlap, but
+  the two lists are independently-maintained and already drifted** — `AGENCY_CODES` was mined from
+  the OLD tool's `admin2.folders` table (2026-07-31 inspection), never from the live auth system.
+  `WLD/SDD/TDD/MDD/HOCTS/NYSDOT_CONSULTANT` are legacy-only (no live group, nobody can ever "be a
+  member" going forward); `ECTC/MPOs/MTA/"NPMRDS_PM3 New Users"/"NPMRDS Public"/"npmrdsv5
+  Public"/"NYSDOT Admin"/"Traffic Management Group"` are real, current groups the vocabulary is
+  missing. A plain uppercase/underscore slug of the live group name reproduces the existing codes
+  exactly wherever they were meant to line up (`"NPMRDS New Users"` → `NPMRDS_NEW_USERS`, already in
+  the list) — reconciling this is mechanical, not a redesign.
+- `created_by` (DMS system column, `user.id`) is real and already used, but only as a **soft**
+  ranking boost (`reportScore.js`/its route-side twin, +30) plus an **opt-in** "Mine" facet chip
+  (`ReportPickerModal.jsx`) — nothing hides other people's content today.
+- Tags already live as a `tags` multiselect JSON column on each dataset row (`routes_data`,
+  `reports_snap_2`), filtered via the existing generic `array_contains` UDA op — no backend/library
+  change needed for any of this. Two separate, already-diverged tag-entry UIs exist:
+  `ReportTagsEditor.jsx` (RRL "Report settings" submenu, has `canonicalizeTag`) and
+  `SaveRouteModal.jsx`'s inline `TagsInputField` (route save modal, plain free-text, **zero**
+  canonicalization or validation today).
+
+### Design, locked 2026-09-01
+
+1. **New `user:<id>` tag**, written into `tags` — distinct from the immutable `created_by` audit
+   column. Supersedes the 2026-08-25 A4 decision above ("no new `user:{id}` tagging convention
+   needed for v1") for a different purpose: that decision was about the *ownership-filter signal*
+   (still `created_by`, unchanged); this is a *visible, removable* tag an author can see/manage.
+2. **Group tags derived live from `user.groups`**, not the static list — canonicalized via a small
+   slug helper into the existing `agency:<CODE>` namespace. `AGENCY_CODES`
+   (`tagCategories.js`) gets extended with the 8 real-but-missing codes found above (`ECTC`, `MPOS`,
+   `MTA`, `NPMRDS_PM3_NEW_USERS`, `NPMRDS_PUBLIC`, `NPMRDSV5_PUBLIC`, `NYSDOT_ADMIN`,
+   `TRAFFIC_MANAGEMENT_GROUP`) so they're browsable too. Future new auth groups become usable with
+   zero code changes — kills the "keep these two lists in sync by hand" footgun the current file's
+   own comment already flags.
+3. **One shared `TagsEditor` component**, replacing both `ReportTagsEditor.jsx` and
+   `SaveRouteModal.jsx`'s ad hoc field: pre-populates with `user:<id>` + the viewer's own group
+   tags; free add/remove; renders the viewer's not-yet-added groups as one-click suggestion chips;
+   **rejects** committing any `agency:`-namespaced value that isn't one of the viewer's own groups
+   (typed OR picked — closes `SaveRouteModal`'s current zero-validation free-text gap too).
+4. **Auto-tagging at creation, not just at editor-open**: a new report gets its default tags written
+   the moment its `reports_snap_2` row is first created (`useReportRow.js`'s existing "ensure row"
+   effect is the hook); a new route gets them pre-filled into `SaveRouteModal`'s initial state.
+   **No backfill** of the ~900 existing `reports_snap_2` rows or ~8,660 existing routes — go-forward
+   only, same as the original Route Tags rollout.
+5. **Default-restrictive picker visibility, CORRECTED 2026-09-01 (Ryan's own wording correction) —
+   an allow-list, not a hide-list-with-exceptions.** Original wording above ("hide only when it's
+   clearly someone else's") was backwards from what Ryan actually wants: **untagged/legacy content
+   is hidden from non-AVAIL users by default, full stop** — visibility is now a positive allow-list.
+   `ReportPickerModal`/`RouteTagBrowserModal` show a row to a non-AVAIL viewer only when at least one
+   of: (a) `created_by` is the viewer, (b) the row shares a group tag with the viewer, or (c) the row
+   carries a specific "always shown" curated marker (below). Everything else — the ~900
+   `reports_snap_2` legacy rows, the 4 golden-corpus test fixtures, ordinary (non-auto-gen) old
+   routes — is hidden by default. Explicit "Show everyone's" toggle still reveals the full catalog.
+   Priority reasoning, Ryan's own framing: the client is a low-skill, easily-distracted user, and
+   right now "looking orderly" matters more than the underlying data actually being clean — every
+   item shown by default should have an obvious reason for being there.
+   **AVAIL itself is exempt from the restriction** (not explicitly asked, but follows directly from
+   the stated goal — AVAIL runs this system and needs to see its own operational content; since
+   AVAIL staff already share the `agency:AVAIL` group tag with each other under the auto-tagging
+   design, this mostly falls out for free, but the "Show everyone's" default should start ON, not
+   OFF, for any viewer whose own groups include `AVAIL`).
+6. **Curated "always shown" markers — the two exceptions, both are backfill, not new ongoing logic.**
+   Ryan confirmed exactly two categories keep showing to everyone regardless of tags: the Dynamic
+   Report templates (reports) and the `tmc_linear` auto-generated routes (routes) — because both have
+   an obvious, explainable reason for being there. Mechanism:
+   - **Routes**: already covered — `tmc_linear` routes already carry the existing `auto_generated`
+     tag (Workstream C's audit/generator work). Just need to confirm it's actually present on the
+     current 8,660-row catalog before relying on it (a quick read-only check, not a rebuild), and
+     add `auto_generated` to the picker's allow-list check.
+   - **Reports**: genuinely needs a backfill — the 12 (or however many currently exist)
+     `reports_snap_2` rows built from `dynamic_report_specs/*.json` don't carry any positive marker
+     today. Tag them with a new `dynamic_report_template` value (plain reserved tag, not one of the
+     `county:`/`region:`/`agency:`/`user:` prefixed families) and add it to the picker's allow-list
+     check. One-time script, keyed off `_built_from_spec` pointing at `dynamic_report_specs/` (NOT
+     `report_probe_fixtures/specs/golden-corpus-*.json` — those 4 stay hidden by design, they're
+     regression-test fixtures, not client-facing content).
+   - The 6 "other real reports" and 4 golden-corpus fixtures found in the 2026-09-01 cleanup
+     (Progress log) get NO special marker — under Ryan's explicit ruling, only Dynamic Report
+     templates are visible to non-AVAIL among reports, so these stay hidden by default (correct
+     outcome of applying the rule as stated, not a gap to chase further).
+   - **Framing, Ryan's own correction**: these two markers are a one-time backfill on the CURRENT
+     catalog, not a permanent pair of hardcoded exceptions layered onto the general rule. Going
+     forward, real users' own new routes/reports get auto-tagged with their `user:`/`agency:` tags at
+     creation (item 4 above) and are found via the normal owner/group-match path — nothing new needs
+     the curated marker over time.
+7. **Inline header tag editor** (Ryan's pick over a Done-modal or leaving it in the RRL submenu): a
+   compact tag-chip row lives directly in `ReportPageHeader.jsx`'s edit controls, next to the
+   Done/Edit button — always visible while editing, no extra click. Needs a small new hook
+   (`ReportPageHeader` doesn't currently touch `reports_snap_2` at all — `ReportRouteList.jsx`'s
+   `useReportRow` owns that row) that reads/writes just the `tags` field of the SAME row RRL owns
+   `routes` on; safe because both `persistRoutes`/`persistTags` already coexist via JSONB-merge
+   writes, same pattern as today.
+
+### Explicitly not in scope
+
+No server-side enforcement (a filter's user id is never checked against the auth token — same
+caveat the 2026-08-25 A4 decision already stated). No real folders, no per-row ACL, no report
+discovery/index page beyond the existing pickers (`project_reports_folders_discovery_permissions_
+out_of_scope` memory's original ruling on discovery + permissions still stands — only route
+organization/tags were ever reopened). No backfill of tags onto pre-existing content **beyond the
+two curated markers in item 6** — the general "hide untagged legacy content" default needs no data
+migration, it falls straight out of the allow-list rule as written.
+
+### Status: BUILT + live-verified 2026-09-01 — see the Progress log entry
+("later still, BUILT + live-verified") for the full implementation record, the two
+live-caught corrections, and what was explicitly left out (server-side enforcement,
+backfilling `user:`/`agency:` tags onto pre-existing content, a live routes-side check).
+
+## Workstream E — Route Creation Plugin redesign (design pass + implementation BUILT 2026-09-01; freshness panel not started)
 
 Design source: `src/themes/transportny/TransportNY Design System/dms_design_system_v2/pages/
 npmrds-route-creation.html` — an interactive mockup (Alex) transcribed from both the legacy tool and
@@ -254,9 +390,360 @@ paint-color collision with the LOTTR "bad value" red — see the file's own head
 Treat as final per Decisions above. Explicitly sequenced last; mentioned early only so A1's modal
 mockup can borrow its visual language.
 
+**2026-09-01: design-artifact refresh, no theme/component build yet.** Ryan asked for the same
+design-process treatment Map21/MacroView already got, pointed at `routecreation.plugin.jsx` as the
+functionality to match. Grounding confirmed Map21/MacroView's own path: Alex built their rich
+`macroview.theme.js`/panel components directly (git history: `2ecd3cb` bare functional port,
+`af05609`/`1ec53e3`/`8878dc2` progressively adding the polish now live at `/macro`) — Route
+Creation never got that second pass; it's still the bare functional port (`comp.jsx`, no
+`routecreation.theme.js` at all), confirmed live via browser (`/route_creation` renders plain
+white Tailwind-default panels, no card chrome, plus the full labelled sidebar instead of the
+compact icon rail every polished page uses). Ryan confirmed re-using Alex's existing mockup rather
+than drafting a new one ("start with his mockup... I forgot/didn't know it already existed").
+
+Re-verified the mockup against the live plugin source (`comp.jsx`, `RouteEditor.jsx`,
+`SaveRouteModal.jsx`, `paint.js`, `dataUpdate.jsx`, `constants.js`, both hooks) before changing
+anything: all 8 originally-listed gaps (paint collision, missing row↔map highlight, missing route-
+identity panel, missing mode hint, pinned routing year, marker/`points` non-persistence, no
+folder/dates, client-direct routing call) are CONFIRMED still real, nothing fixed since the mockup
+was drawn. Updated the mockup in place for the one thing that DID change since: `SaveRouteModal`'s
+Tags field shipped a real validated `TagsEditor` (Workstream D, same day) — replaced the mockup's
+"free text, no vocabulary yet" Tags panel with the real chip/suggestion/rejection UX, added a
+"Tag validation · suggestion chips" row to § 04's built/specified/deferred table, and noted the
+tags-specific new-route-vs-existing-route difference (committed chips vs. suggestion chips). Also
+added a new § 04 row for the compact-sidenav gap found live (amber "gap · easy fix", not blocked —
+looks like the same missing per-page `sideNav.activeStyle` override `old-reports-conversion.md`
+round 81 already fixed once for report pages). Live-verified the edited mockup renders correctly
+(`python3 -m http.server` from `dms_design_system_v2/`, per `designing-a-dms-design-system.md`'s
+own convention — `file://` blocks the mockup's CSS/fonts) — 0 console errors, both edited sections
+(Tags chips, § 04 table) render with the same visual language as the rest of the page.
+
+**Superseded by the same-day build below**: the paragraph above originally called the theme/
+component build (a `routecreation.theme.js` + updated `RouteEditor.jsx`/`paint.js`/`dataUpdate.jsx`
+translating this mockup into the live plugin, the way Alex's `af05609`/etc. commits did for
+MacroView) "the real remaining size of Workstream E, still not started" — that's no longer current;
+see the entry immediately below for what got built the same day.
+
+**2026-09-01: implementation scoped, then BUILT + live-verified same day (items 0-4 + the theme
+refactor; item 5 freshness panel not started).** Full file-by-file plan, build record, and live-
+verification detail written into
+[`route-creation-tool.md`](./route-creation-tool.md#implementation-plan--themecomponent-build-scoped-2026-09-01-items-0-4--theme-refactor-built--live-verified-2026-09-01-item-5-freshness-panel-not-started)
+rather than duplicated here, since that file is this arc's designated "current status" doc.
+Summary: compact sidenav fixed (page-config only, re-confirmed against two known-good pages before
+applying, not assumed); brand paint (blue route/amber highlight/grey network) + a new two-way row-
+map hover highlight wired through the plugin's existing state mechanism (new
+`useMapHoverHandler.js`); two new panels (route identity, docked mode-hint pill — copy taken
+verbatim from the old tool's `RouteCreationInfoBox.jsx`); a new `routecreation.theme.js` following
+`macroview.theme.js`'s precedent, with `RouteEditor.jsx` fully refolded onto it. Live-verified via
+claude-in-chrome: real TMC click-to-add, row hover-highlight, mode toggle (clears selection,
+updates copy), and marker-mode drop all work; zero console errors. The freshness panel (item 5) is
+the one deferred piece — its data-source question is still open. This does NOT reopen the
+network-vintage selector, waypoint persistence, or the server-side routing proxy, all still
+explicitly out of scope.
+
 ---
 
 ## Progress log
+
+- **2026-09-01 (later still, homepage buttons fixed)**: Ryan asked for the `/converted_reports`
+  homepage's "New Route" button and "Build a route" empty-state button to point at the
+  route-creation page just fixed above (`/route_creation`) — both were dead-ended at an in-page
+  `#routes` anchor instead. Found 2 distinct button occurrences (a Card cell's `location` field on
+  the "New Route" button, id `2214127` published / `2214768` draft; a lexical `button` node's
+  `path` field on the "Build a route" empty-state button, id `2214144` published / `2214787`
+  draft — draft/published are disjoint component rows per the standing platform fact, all 4
+  patched). Fixed via `dms raw update <id> --data <file>`: fetched each row's full `data`,
+  string-replaced `#routes` → `/route_creation` inside the one JSON-string `element-data` field
+  only, wrote the complete object back (full-replacement semantics, not a partial merge, so the
+  whole row had to be supplied — verified via re-query that every other field was byte-identical
+  before/after). Live-verified: clicking "New Route" now lands on `/route_creation` (URL bar
+  confirmed). Noted for the record: Ryan flagged 2+ other Claude sessions were concurrently active
+  on this same dev environment while this was in progress — re-checked all 4 patched rows via a
+  fresh read-only query afterward to rule out a collision; all 4 still correct, no clobber
+  detected.
+
+- **2026-09-01 (later still, real bug found + fixed — NOT a Workstream D regression)**: Ryan
+  reported the post-save URL read `?undefined=2216261` instead of `?route_id=2216261` after saving
+  a real new route on `/route_creation`. Root-caused before touching anything (Ryan's own first
+  guess — "almost certainly in the plugin, it used to work correctly" — checked, not assumed):
+  `comp.jsx`'s `addItem`/`routeIdFilterValue` logic derives the URL param's key by looking up an
+  entry in `pageFilters` matching `searchKey === PAGE_FILTER_KEY` ('route_id') and reading THAT
+  entry's own `searchKey` back out — a roundabout way of re-deriving a constant already in hand,
+  and a landmine if no such entry exists: `.find()` returns `undefined`, spreads into `{}`, and
+  `routeFilter.searchKey` is `undefined`. Confirmed via `git log`/`git show` across all 4 commits
+  ever touching this file (`2ecd3cb` 2026-07-29 port through today) that this exact code is
+  byte-identical since the very first port commit — genuinely not a regression, code-wise. The
+  real cause: DMS's generic page-variable registry (`getPageVariableRegistry`/
+  `updatePageStateFiltersOnSearchParamChange`, `pages/_utils/index.js`) only syncs a URL param
+  to/from `pageState.filters` for searchKeys the PAGE ITSELF has authored with `useSearchParams:
+  true` — and the `/route_creation` page Ryan stood up for me (id `2216258`) had a completely
+  empty `filters` array (confirmed via direct read-only DB query before touching anything). This
+  meant the READ side (`?route_id=X` loading an existing route into edit mode) was equally broken
+  beforehand, not just the write side — nobody had hit it because the write side always failed
+  first, on the very first real save.
+
+  **Fixed** with a one-line, additive page-config change (no code change — `comp.jsx`/
+  `SaveRouteModal.jsx` remain untouched from the port): `dms page update 2216258 --data
+  '{"filters": [{"id": "route-creation-route-id", "searchKey": "route_id", "useSearchParams":
+  true, "values": ""}]}'` — matches the canonical page-filter shape (`page-pattern-guide.md`'s
+  "Page Filters" section) and the same proven-safe `--data`-is-a-shallow-top-level-merge pattern
+  `traversing-report-pages.md` already documents (verified via a read-only re-query: title/slug/
+  published/section counts all unchanged, only `filters` added).
+
+  **Live-verified both directions** using Ryan's own real leftover test route (`route_id=2216261`,
+  named `test_tag_route`, still holding the `You`/`AVAIL` tags it was created with from the
+  earlier routes-side Workstream D verification): navigating to `?route_id=2216261` now correctly
+  loads the route's 3 real TMCs and shows "Update Route" (previously would have failed to resolve
+  `routeIdFilterValue` at all); clicking Update now produces `?route_id=2216261` in the address bar
+  (previously `?undefined=2216261`, Ryan's exact reported symptom). Zero console errors both times.
+
+- **2026-09-01 (later still, routes-side live-verified)**: Ryan supplied the route-creation
+  page's real URL (`http://npmrds.localhost:5173/route_creation` — "I kinda had to recreate it"),
+  plus two gotchas for future reference: it accepts a `route_id` URL param to edit an existing
+  route, and after saving a brand-new route the tool stays pointed at that route (any further save
+  updates it, doesn't create a new one) — already covered by `SaveRouteModal`'s own "You are
+  updating an existing route" warning text. Map-click precision was hard in automation as expected
+  (a real device-pixel-ratio mismatch confirmed via JS: the MapLibre canvas's actual size,
+  1376x1174, doesn't match the screenshot's displayed 1512x789) — Ryan clicked 3 real TMCs
+  directly rather than have me keep guessing pixel coordinates. Opening "Save Route" on that
+  brand-new route confirmed the auto-tag-at-creation design works exactly as intended: the tag
+  editor showed `You`/`NYSDOT`/`AVAIL` already committed (not just suggested) — this test account
+  turns out to be in both AVAIL and NYSDOT groups, both handled correctly. This is the same
+  "auto-commit on a brand-new item, suggest-to-re-add on an already-existing one" behavior already
+  proven on the reports side (a pre-existing report only showed suggestion chips because its row
+  already existed with the seeding effect never re-firing) — confirms the two are actually
+  consistent, not two different behaviors. Zero console errors. Cancelled out without saving (no
+  real route created). Workstream D is now live-verified on both routes and reports.
+
+- **2026-09-01 (later still, BUILT + live-verified)**: Workstream D implemented end-to-end
+  from the locked design, per Ryan's go-ahead. Files: `RouteTagBrowserModal/tagCategories.js`
+  (8 new real `AGENCY_CODES` entries + `slugifyGroupName`/`groupNameToAgencyTag`/`makeUserTag`/
+  `isUserTag`/`isAgencyTag`/`defaultTagsForUser`/`isTagAllowedForUser`/`DYNAMIC_REPORT_TEMPLATE_TAG`),
+  new shared `TagsEditor/` (`TagsEditor.jsx` + `.theme.js`, replaces both the old
+  `ReportRouteList/ReportTagsEditor.jsx` — deleted — and `SaveRouteModal.jsx`'s old zero-validation
+  free-text field), `PickerModal/pickerScoring.js` (`isAvailUser`, `buildVisibilityAllowListFilterGroup`),
+  `ReportPickerModal.jsx`/`RouteTagBrowserModal.jsx` (new "Show everyone's" facet chip wired to the
+  allow-list), `useReportRow.js` (auto-tags a report's catalog row the moment it's first created),
+  `routecreation/comp.jsx` + `SaveRouteModal.jsx` (auto-tags a brand-new route's modal state),
+  new `ReportPageHeader/useReportTags.js` (a second, independent read/write hook onto the SAME
+  `reports_snap_2` row RRL owns `routes` on — see its own header comment for why this is a separate
+  fetch, not shared state) + `ReportPageHeader.jsx`/`.theme.js` (inline tag editor next to Done).
+
+  **Two corrections mid-build, both from Ryan watching the live result:**
+  1. The visibility rule as first written was backwards — "hide only when clearly someone else's,
+     untagged stays visible" — from what Ryan actually wants: untagged/legacy content hidden from
+     non-AVAIL by default, full stop (an allow-list, not a hide-list). Fixed in the Workstream D
+     section above before any code was written against the wrong version. Two curated markers stay
+     visible to everyone regardless: `auto_generated` (routes, already present — confirmed live via
+     read-only query, exactly 8,660/8,660 `tmc_linear` rows carry it, matching the Workstream C
+     audit count) and a new `dynamic_report_template` tag (reports — genuinely needed backfilling,
+     see below).
+  2. `ReportPageHeader.jsx`'s tag editor didn't appear at first — it was gated on `canEdit =
+     editPageMode && sectionEditorOpen` (this section's own separate pencil-click), not just
+     `editPageMode`. Ryan's correction: "if the PAGE is in edit mode, the user SHOULD NOT HAVE TO
+     change any component into edit mode to make changes" — same "no extra click" convention RRL
+     already documents for itself. Fixed by dropping the `sectionEditorOpen` requirement entirely
+     (`canEdit = Boolean(editPageMode)`) — applies to the WHOLE header (kicker/purpose/freshness/
+     data-link fields too, not just the new tag editor), not a narrow tags-only carve-out. A third
+     live-caught issue: the new tag editor's first drop-in used `TagsEditor`'s generic blue-chip
+     default theme, which visibly clashed with this header's own deliberate dark/gold/uppercase
+     design system ("the CSS in the header component is off now"). Fixed with a real header-matched
+     theme override (`ReportPageHeader.theme.js`'s new `tagsEditor*` keys, reusing
+     `inlineFieldLabel`/`routePill`'s own look) plus a new `inline` prop on the shared `TagsEditor`
+     (label beside the chips in one row, not stacked above) — a genuine small reusable addition, not
+     a one-off hack, since any future compact placement can reuse it. Once fixed, Ryan asked for the
+     now-redundant RRL "Report settings" tag editor to be removed entirely (done — `ReportRouteList.jsx`
+     no longer renders a tags row at all; report tagging lives only in the header now).
+
+  **Live-verified** (claude-in-chrome, authenticated as the real dev user, `report_probe.mjs --auth`
+  first confirming 0 console/page/SQL errors on the edit page): the header tag editor renders inline
+  next to Done with zero extra clicks; "+ You"/"+ AVAIL" one-click suggestion chips appear correctly
+  (derived live from `user.groups`, not a hardcoded list); typing "NYSDOT" (a real vocabulary value
+  the test user is NOT a member of) is correctly rejected inline ("You're not in NYSDOT — ask an
+  admin to add you to that group first."), text stays uncommitted; adding/removing a tag persists
+  across reload and doesn't touch `routes`/`name`/`page_path` on the same row (JSONB-merge writes
+  coexisting correctly, same mechanism RRL's own routes/tags writes already relied on). Captured the
+  actual `/graph` request from "Choose a report" with "Show everyone's" toggled off: filterGroups
+  decoded to exactly `{OR: [created_by=993, tags array_contains [user:993, agency:AVAIL,
+  dynamic_report_template]]}` — confirms the allow-list composes correctly server-side from real
+  generic UDA primitives, not just client-side. Toggled on by default for this AVAIL test account
+  (confirmed via the chip's active styling) — couldn't directly observe an exclusion effect since
+  every row in this dev corpus already belongs to (or is taggable by) the one real human test
+  account, but the captured query proves the mechanism itself is correct.
+
+  **Backfill done** (the one-time, go-forward-only exception from the Design section): all 12
+  `reports_snap_2` rows built from `dynamic_report_specs/*.json` (identified via
+  `_built_from_spec`, NOT the 4 golden-corpus fixtures) now carry `dynamic_report_template` in
+  addition to their existing `category:`/`difficulty:` tags (a taxonomy this session discovered
+  already existed, unrelated to county/region/agency) — via `dms dataset update`, one row tested
+  and read back before batching the other 11, all 12/12 confirmed via a read-only re-query.
+  `auto_generated` needed no backfill (already correct, see above).
+
+  **Not done, explicitly out of scope for this pass**: no server-side enforcement (unchanged from
+  the original v1 scope call); no backfill of `user:`/`agency:` tags onto any other pre-existing
+  content; the routes-side `comp.jsx`/`SaveRouteModal.jsx` auto-tag-at-creation and `TagsEditor`
+  wiring were code-reviewed carefully (structurally identical to the proven reports-side wiring) but
+  NOT live-verified in a browser — the route-creation map-plugin's live page URL wasn't found this
+  session (a genuine "where does this even live" gap, not a bug); worth a live pass next time that
+  page is being worked on anyway.
+
+- **2026-09-01 (later still, correction)**: Ryan corrected the Workstream D visibility rule right
+  after it was written — his intent was an allow-list (untagged/legacy hidden from non-AVAIL by
+  default), not a hide-list-with-exceptions (untagged visible by default, hide only clear foreign
+  ownership) as first drafted. Two curated categories (Dynamic Report templates, `tmc_linear`
+  auto-gen routes) stay visible to everyone via a one-time backfill tag, framed explicitly as
+  backfill/current-catalog cleanup, not permanent hardcoded exceptions to the general rule. Section
+  above rewritten in place (item 5 corrected, new item 6 for the backfill). Also asked a
+  non-blocking side question (how custom/free-form tags work + the groupBy/count-per-tag
+  limitation) — answered in-conversation, not written into this file (pure explanation, no design
+  decision attached).
+
+- **2026-09-01 (later still)**: Workstream D (auth) scoped for real, per Ryan's explicit ask —
+  full writeup above in "Workstream D — auth + tags." Grounding included a live, read-only query
+  against `avail_auth` (the real auth DB) to check Ryan's own hunch that login groups already match
+  the `agency:` tag vocabulary — confirmed a real, previously-undiscovered drift (15/22 overlap, 8
+  live groups missing from the tag vocabulary, 6 tag codes with no live group), not just a
+  hypothetical. Two design calls made via AskUserQuestion (both went with the recommended option):
+  picker visibility defaults to hiding other people's/groups' content rather than staying opt-in,
+  and the report tag editor surfaces inline in `ReportPageHeader.jsx` rather than a Done-modal or
+  staying buried in RRL's submenu. Not yet implemented — next session picks up the build from the
+  Workstream D section's "Design, locked" list.
+
+- **2026-09-01 (later same day)**: User-reported a second, distinct bug — "Choose a report" surfaces
+  results whose slug has no live page (example: `claude_scratch_quickcontrols_when_check`, navigating
+  there redirects to the site homepage). Hypothesis (confirmed): the generic DMS "Delete Page" admin
+  action (`pagesEditor.jsx`'s `deletePage`, `dms.controller.js`'s `deleteData`) never cascades to
+  `reports_snap_2` — a page's `type` (`{pattern}|page`) has no `:`, so `deleteData`'s cascade check
+  (`kind === 'source' || 'view'`) never fires, confirmed by direct code trace, not just inference.
+  Scoped into three parts: **(1) one-off cleanup of existing orphans — DONE this entry**, (2) an
+  optional `deletePage` cascade hook (opt-in via `ThemeContext`, zero behavior change for any site
+  that doesn't define it — not yet built), (3) a durable picker-side filter that drops any result
+  whose `report_id` no longer resolves to a live page (batched existence check, not per-row — not
+  yet built).
+
+  **Cleanup (1), DONE**: `scratchpad/npmrds-sub/cleanup_orphaned_reports_snap.py` (reads via
+  `psql_new`, deletes via `dms raw delete`, 16-way parallel — same conventions
+  `backfill_report_page_path.py`/`dedupe_auto_gen_names.py` already established). Dry-run surfaced
+  that the naive "report_id doesn't resolve to a live page" test conflates two very different
+  populations: **868 rows** have a `report_id` under 100000 — the OLD tool's own small-integer
+  report ids from an early conversion pass that predates the "report_id = the new page's own DMS id"
+  convention (real DMS ids here start at 225867) — these are the SAME ~934 rows this file's earlier
+  2026-09-01 entry already found and explicitly ruled out of scope ("pre-existing DB churn... not a
+  symptom of this bug"); left untouched, per that standing decision. **73 rows** were genuine
+  orphans — a real (large) page id that no longer exists, or (one row) a corrupted non-numeric
+  `report_id` value — matching the actual bug just reported, including the exact reported example
+  (snap row `2212675`, report_id `2212666`). Deleted all 73, 0 failures, confirmed via re-query
+  (`reports_snap_2` row count 969 → 896; row 2212675 confirmed gone).
+
+  **Follow-up same session**: Ryan then explicitly overrode the "out of scope" call on the 868
+  legacy rows above — the end state he wants is `reports_snap_2` containing ONLY real,
+  navigable-via-web new-tool reports, full stop. Ran the same script with `--legacy` (also deletes
+  rows with `report_id < 100000`): 868 deleted, 0 failures. `reports_snap_2` row count 896 → 28.
+  Manually reviewed all 28 survivors — every one has a real name and a `page_path` matching an
+  actual live page (golden-corpus test reports, the 12 Dynamic Report template instances, and a
+  handful of individually-named real reports) — confirmed clean. Items (2) (`deletePage` cascade
+  hook) and (3) (picker-side live-page filter) not yet built — next up.
+
+  **Second follow-up, same session**: Ryan asked for a created-at breakdown of the 28 survivors
+  (to correlate creation cohort with functionality/bugs), which surfaced 3 clear cohorts: 12 rows
+  created 08-17 20:26-20:32 (confirmed real Dynamic Report template instances — each snap row's
+  `_built_from_spec` points at `scripts/npmrds-reports/dynamic_report_specs/<name>.json`), 6 rows
+  created 08-26/08-27 one at a time (individually-authored manual test reports, no spec marker),
+  and 10 rows created 08-31 (today's session — R5 HELP/NYC Test/787 NB/NITTEC 150/Madison Ave/I-87
+  Exit 4, plus 4 "Golden Corpus" rows whose `_built_from_spec` points at
+  `report_probe_fixtures/specs/golden-corpus-*.json` — the golden-corpus regression-test fixtures,
+  a DIFFERENT spec family from the Dynamic Report templates). Ryan then asked to delete every
+  non-dynamic-report page created on or before 8/27 — resolves to exactly the 6 manual test
+  reports from the second cohort (Skyway SB vs. Lake Ave EB/WB Jan 5 2017 `2214921`, Van Wyck CO2
+  Test Single TMC `2214949`, Inc 3/1/2023 NY33 EB @ Dodge St `2214973`, I-190 NB COVID Comparison
+  `2215001`, Rochester Inner Loop `2215037`, K-Bridge 9-21-17 `2215071`). Unlike the cleanup above
+  (which only ever touched orphaned catalog rows), this deleted 6 REAL live pages — both the page
+  itself (`dms raw delete npmrdsv5 npmrds_sub|page <id>`) and its `reports_snap_2` catalog row
+  (same command against `reports_snap_2|2177440:data`), done manually for both since the
+  `deletePage` cascade hook (item 2) doesn't exist yet — confirmed via re-query: `reports_snap_2`
+  28 → 22, all 6 page ids gone from `data_items`. `reports_snap_2` now contains only the 12
+  Dynamic Report templates, the 4 golden-corpus fixtures, and 6 other real reports (22 total).
+
+  **Item (3), DONE — picker-side live-page filter.** Added `checkIdsExist(falcor, app, ids)` to
+  the `@availabs/dms` library's `api/` layer (`src/dms/packages/dms/src/api/index.js`, re-exported
+  from the package root) — a genuinely reusable, generic addition: batch-checks which of a list of
+  ids still exist as `data_items` rows for an app, in ONE round trip, by calling the
+  `dms.data[{app}].byId[{ids}][{attrs}]` Falcor route directly (it already fans an array of ids
+  into a single server-side `WHERE id IN (...)` query). Needed a real new function rather than
+  reusing `apiLoad`: `dmsDataLoader`/`createRequest.js`'s `'edit'`/`'view'` action path derives
+  exactly one id-ref per active config (`dmsDataLoader`'s `activeIds` derivation reads a single
+  `$ref` per config), so it can't be repurposed for a bulk check.
+  `useReportSearch.js` now runs a second pass after the underlying catalog fetch settles: collects
+  the `report_id`s of the returned rows, calls `checkIdsExist`, and drops any row whose id doesn't
+  come back — fails open (keeps all rows) on a transient error rather than blanking the list, and
+  guards against a slow check clobbering a newer search's results the same way `useCatalogFetch.js`
+  already does (a monotonic request-id ref). `ReportPickerModal.jsx` now also destructures `falcor`
+  from `CMSContext` to pass through.
+  **Live-verified**: created a synthetic orphaned `reports_snap_2` row (snap `2216211`,
+  `report_id: '999999999'`, name "TEST ORPHAN FILTER VERIFY", real `page_path`) — before this fix
+  it would have matched the catalog query outright; searching for it in "Choose a report" (live,
+  via claude-in-chrome) correctly returned **0 reports / "No reports found"**, zero console errors.
+  A real search ("Golden") still correctly returned all 4 golden-corpus reports. Deleted the test
+  row after verifying. Files: `src/dms/packages/dms/src/api/index.js`, `src/dms/packages/dms/src/index.js`,
+  `src/themes/transportny/components/ReportPickerModal/useReportSearch.js`,
+  `src/themes/transportny/components/ReportPickerModal/ReportPickerModal.jsx`.
+
+  **Item (2), NOT STARTED — follow-on/TODO.** The `deletePage` cascade hook (an optional
+  `themeFromContext?.admin?.onPageDeleted?.(page, {...})` call in `pagesEditor.jsx`'s `deletePage`,
+  ~line 815 — `ThemeContext` is already in scope there — wrapped in try/catch so it can never break
+  page deletion for any site; zero behavior change for every site that doesn't define the hook)
+  would close the hole at its source instead of relying solely on item (3)'s safety net. Deferred,
+  not abandoned — item (3) alone is durable enough for now per Ryan's own framing of it as "works
+  indefinitely." Pick this up when there's appetite for a shared-library-touching change (affects
+  every DMS site's page-delete path, not just transportny, even though the hook itself is opt-in).
+
+- **2026-09-01**: User-reported bug — created a report via "Create Report" on `/converted_reports`,
+  published it with zero routes, then couldn't find it in "Choose a report" under the "Mine" chip.
+  Root-caused to **two independent, compounding bugs**, both confirmed live against the dev DB
+  (not just by reading code):
+  1. **A report with zero routes never gets a `reports_snap_2` catalog row at all.**
+     `CreateReportButton.jsx` → `newPage()` only creates the page; the catalog row was only ever
+     created lazily, the first time an author added a route (`ReportRouteList/useReportRow.js`'s
+     `persistRoutes`). Since `useReportSearch.js`'s base query unconditionally requires
+     `page_path notempty` + `name notempty` on that row, a routeless report is invisible in
+     "Choose a report" under **every** facet, not just "Mine" — confirmed live: page `2216183`
+     ("Page 23") had zero `reports_snap_2` rows anywhere in the DB despite being published.
+  2. **The "Mine" facet was never wired to a field anything populates.** `reportCatalogSource.js`
+     declared `created_by` as a plain `data->>'created_by'` JSON column — a *different* thing from
+     DMS's own audit column of the same name (auto-stamped from the auth token on every write,
+     confirmed live: page `2216183`'s real system `created_by` = `993`, correctly the logged-in
+     user). Nothing ever wrote the JSON field: the Python converter stashes the old tool's creator
+     under an inert `_old_created_by` key instead, and the live `persistRoutes`/`persistTags`
+     writers never sent `created_by` at all. So "Mine" could never match ANY report, converted or
+     live-authored — this is the actual reason A4 (in the Decisions section above, and the
+     2026-08-25 "live-verified" entry below) turned out not to work despite reading as solved: the
+     design note assumed the auto-populated system column, but the implementation keyed off a
+     separate, hand-maintained field of the same name.
+
+  **Fixed**, both live-verified: (1) `reportCatalogSource.js`'s `created_by` column now declared
+  `systemCol: true` (same convention as `id` elsewhere in this codebase), so it resolves to the
+  real, always-populated system column — proven live via the exact same `{col:'id', op:'filter'}`
+  pattern `useDynamicReportRoutes.js` already uses for systemCol filtering. (2)
+  `useReportRow.js`: `persistRoutes`/`persistTags` now also send `name`/`page_path` (derived from
+  the page's own title/url_slug) on every write — self-healing, since the underlying write is a
+  JSONB merge — and a new effect creates the catalog row immediately when a report's edit page
+  opens and none exists yet, instead of waiting for a route to be added. Along the way, found and
+  fixed the reason that new effect didn't fire on the first attempt: a UDA query with zero matching
+  rows returns a truthy placeholder object (every field a valueless Falcor atom) rather than an
+  empty result, which `loadReportRow`'s naive truthiness check couldn't tell apart from a real row
+  — now an id-less extraction is correctly treated as "no row."
+
+  **Live-verified end-to-end** via claude-in-chrome, in the user's own authenticated session:
+  reloading "Page 23"'s edit page created its `reports_snap_2` row on the spot (`name`/`page_path`
+  populated, system `created_by=993`); "Choose a report" → search "Page 23" → "Mine" chip active
+  shows it with both "Mine" and "Rebuilt" pills. **Backfilled** 6 other pre-existing live pages
+  found with the same broken (name/page_path-less) catalog row from earlier manual testing (Pages
+  13/19/20/22/25/26) via `dms dataset update` — all now read back correctly. Did NOT touch the
+  ~934 other `reports_snap_2` rows in the dev DB found during the investigation — those point at
+  report ids with no live page at all (pre-existing DB churn from `--replace` reconversions/dev-DB
+  resets across many past rounds), out of scope, not a symptom of this bug.
+  Files: `src/themes/transportny/components/ReportPickerModal/reportCatalogSource.js`,
+  `src/themes/transportny/components/ReportRouteList/useReportRow.js`.
 
 - **2026-08-26**: Ryan corrected a standing wrong assumption: `/converted_reports` (page
   2188366) is the site's real homepage, not `/converted_reports/reports` (page 2208581, the

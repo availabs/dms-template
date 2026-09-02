@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { get, set } from "lodash-es";
 import mapboxgl from "maplibre-gl";
@@ -21,11 +21,15 @@ import {
   DEFAULT_CREATION_MODE,
   DEFAULT_ROUTING_YEAR,
 } from "./constants";
+import { defaultTagsForUser } from "../RouteTagBrowserModal/tagCategories";
 import { useMapTmcHandler } from "./hooks/useMapTmcHandler";
 import { useMapMarkerHandler } from "./hooks/useMapMarkerHandler";
+import { useMapHoverHandler } from "./hooks/useMapHoverHandler";
 import { useRouteData } from "./hooks/useRouteData";
 import { RouteEditor } from "./components/RouteEditor";
 import { SaveRouteModal } from "./components/SaveRouteModal";
+import { RouteIdentityPanel } from "./components/RouteIdentityPanel";
+import { ModeHintPill } from "./components/ModeHintPill";
 
 const INITIAL_MODAL_STATE = {
   open: false,
@@ -45,6 +49,10 @@ const Comp = ({ state, setState, map }) => {
   const { apiUpdate, pageState: { app, filters: pageFilters } } = pContext;
   const ctx = mctx?.falcor ? mctx : cctx;
   const { falcor, pgEnv } = ctx;
+  // Always from CMSContext directly (not `ctx`, which prefers MapEditorContext when embedded in
+  // the map editor and may not carry `user`) — the real, server-verified `{id, groups}` used to
+  // default a brand-new route's tags (routes-reports-users-mesh.md, Workstream D).
+  const { user } = cctx || {};
 
   const INTERNAL_DATASETS_KEY = `${app}+datasets`;
 
@@ -67,15 +75,19 @@ const Comp = ({ state, setState, map }) => {
     };
   }, [state.symbologies]);
 
-  const { tmc_array, view_id, searchInputTmc } = useMemo(() => {
+  const { tmc_array, view_id, searchInputTmc, hoveredTmc } = useMemo(() => {
     const shapefileLayerId = get(state, `${pluginDataPath}['active-layers'][${SHAPEFILE_LAYER_KEY}]`);
     return {
       tmc_array: get(state, `${pluginDataPath}['tmc_array']`, []),
       view_id: get(state, `${symbologyLayerPath}['${shapefileLayerId}']['view_id']`, null),
-      searchInputTmc: get(state, `${pluginDataPath}['search_input_tmc']`, "")
+      searchInputTmc: get(state, `${pluginDataPath}['search_input_tmc']`, ""),
+      hoveredTmc: get(state, `${pluginDataPath}['hovered_tmc']`, null),
     };
   }, [pluginDataPath, symbologyLayerPath, state]);
   const { tmcData } = useRouteData(state, pluginDataPath, view_id, tmc_array, pgEnv);
+  // Shared by both RouteEditor's own total and RouteIdentityPanel's meta line - one calc,
+  // not two independently-drifting reduces over the same tmcData.
+  const totalMiles = useMemo(() => tmcData.reduce((acc, curr) => acc + curr.miles, 0), [tmcData]);
 
   const [creationMode, setCreationModeState] = useState(DEFAULT_CREATION_MODE);
   const isMarkerMode = creationMode === CREATION_MODES.MARKERS;
@@ -86,6 +98,7 @@ const Comp = ({ state, setState, map }) => {
   const { toggleTmc, removeLastTmc, clearAllTmc } = useMapTmcHandler(
     map, state, setState, pluginDataPath, symbPath, !isMarkerMode
   );
+  const { setHoveredTmc } = useMapHoverHandler(map, state, setState, pluginDataPath);
 
   // Tracks whether the currently-typed 9-char searchInputTmc resolved to a real
   // geometry (see the searchInputTmc effect below) - gates the search box's "Add"
@@ -240,11 +253,40 @@ const Comp = ({ state, setState, map }) => {
     }
   }, [routeIdFilterValue]);
 
+  // Default a brand-new route's tags to the author's own user tag + their real login-group
+  // tags (routes-reports-users-mesh.md, Workstream D) — mirrors ReportRouteList/useReportRow.js's
+  // report-side auto-tagging. Only fires in "new route" mode (no `routeIdFilterValue` — editing
+  // an existing route loads its REAL tags via the effect above instead) and only once per new-route
+  // session (`seededDefaultTagsRef`), so removing every default tag afterward sticks rather than
+  // snapping back on the next render. Waits for `user` to resolve rather than seeding an empty
+  // default; the guard resets whenever `routeIdFilterValue` becomes truthy so a later "start a
+  // fresh route" (id clears again) reseeds correctly.
+  const seededDefaultTagsRef = useRef(false);
+  useEffect(() => {
+    if (routeIdFilterValue) {
+      seededDefaultTagsRef.current = false;
+      return;
+    }
+    if (seededDefaultTagsRef.current || !user?.id) return;
+    seededDefaultTagsRef.current = true;
+    setModalState((prev) => (prev.tags?.length ? prev : { ...prev, tags: defaultTagsForUser(user) }));
+  }, [routeIdFilterValue, user]);
+
   return (
     <>
+      <RouteIdentityPanel
+        name={modalState.name}
+        tags={modalState.tags}
+        tmcCount={tmc_array?.length || 0}
+        totalMiles={totalMiles}
+        routeId={routeIdFilterValue}
+        isEditingRoute={Boolean(routeIdFilterValue)}
+        networkYear={DEFAULT_ROUTING_YEAR}
+      />
       <RouteEditor
         tmc_array={tmc_array}
         tmcData={tmcData}
+        totalMiles={totalMiles}
         searchInputTmc={searchInputTmc}
         setSearchInput={(val) => setState((draft) => set(draft, `${pluginDataPath}['search_input_tmc']`, val))}
         searchTmcValid={searchTmcValid}
@@ -252,6 +294,8 @@ const Comp = ({ state, setState, map }) => {
         removeTmc={removeTmc}
         removeLastTmc={removeLastTmc}
         clearAllTmc={clearAllTmc}
+        hoveredTmc={hoveredTmc}
+        setHoveredTmc={setHoveredTmc}
         setModalOpen={(val) => setModalState((prev) => ({ ...prev, open: val }))}
         creationMode={creationMode}
         setCreationMode={setCreationMode}
@@ -260,6 +304,7 @@ const Comp = ({ state, setState, map }) => {
         clearAllMarkers={clearAllMarkers}
         isEditingRoute={Boolean(routeIdFilterValue)}
       />
+      <ModeHintPill creationMode={creationMode} />
       <SaveRouteModal
         isEditingRoute={Boolean(routeIdFilterValue)}
         modalStyle={{
@@ -279,6 +324,7 @@ const Comp = ({ state, setState, map }) => {
         modalState={modalState}
         setRouteMeta={(meta) => setModalState({ ...modalState, ...meta })}
         addItem={addItem}
+        user={user}
       />
     </>
   );

@@ -1,6 +1,5 @@
 {
   "title": "Snapshot",
-  "slug": "converted_reports/snapshot",
   "dynamicReport": true,
   "description": "The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.",
   "tags": ["category:behavioral"],
