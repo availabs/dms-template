@@ -699,7 +699,9 @@ const logo = {
 // planning/transportny/tasks/current/subdomain-to-path-consolidation.md.
 const logoNav = {
   sites: [
-    { name: "NPMRDS",        path: "/npmrds",       subdomain: "npmrds",        icon: "ProductNpmrds",       chip: "bg-[#0F2D4D]", tag: "travel time" },
+    // NPMRDS stays on its OWN SUBDOMAIN — it is not part of the path cutover (owner
+    // call 2026-09-01). No `path`, so siteHref falls through to the subdomain hop.
+    { name: "NPMRDS",                               subdomain: "npmrds",        icon: "ProductNpmrds",       chip: "bg-[#0F2D4D]", tag: "travel time" },
     { name: "TSMO",          path: "/tsmo",         subdomain: "tsmo2",         icon: "ProductTsmo",         chip: "bg-[#37576B]", tag: "operations" },
     { name: "Freight Atlas", path: "/freightatlas", subdomain: "freightatlas2", icon: "ProductFreightAtlas", chip: "bg-[#1F3F8F]", tag: "freight" },
   ],

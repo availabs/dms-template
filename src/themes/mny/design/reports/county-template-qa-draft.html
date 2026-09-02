@@ -28,11 +28,10 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
   <link rel="stylesheet" href="../theme/index.css.additions">
   <style>
-    .screen{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:12.5px;line-height:1.75;white-space:pre-wrap;overflow-x:auto;min-width:0}
     code{overflow-wrap:anywhere}
     .tbl{width:100%;border-collapse:collapse;font-size:13px}
-    .tbl th{text-align:left;font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#37576B;border-bottom:2px solid #C5D7E0;padding:7px 10px;white-space:nowrap}
-    .tbl td{border-bottom:1px solid #E0EBF0;padding:7px 10px;vertical-align:top;color:#2D3E4C}
+    .tbl th{text-align:left;font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#37576B;border-bottom:2px solid #C5D7E0;padding:8px 10px;white-space:nowrap}
+    .tbl td{border-bottom:1px solid #E0EBF0;padding:8px 10px;vertical-align:top;color:#2D3E4C}
     .tbl tbody tr:nth-child(even){background:#F7FAFB}
     .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .wrap{overflow-x:auto;min-width:0;-webkit-overflow-scrolling:touch}
@@ -40,21 +39,17 @@
     .p1{background:rgba(221,82,76,.15);color:#AA2E26;border-color:rgba(221,82,76,.4)}
     .p2{background:rgba(234,173,67,.18);color:#8A6412;border-color:rgba(234,173,67,.45)}
     .p3{background:rgba(109,150,174,.18);color:#37576B;border-color:rgba(109,150,174,.45)}
-    .pok{background:rgba(84,185,155,.15);color:#1F6E5A;border-color:rgba(84,185,155,.4)}
+    .pok{background:rgba(84,185,155,.15);color:#1F6E5A;border-color:rgba(84,185,155,.45)}
   </style>
 </head>
 <body class="min-h-screen"
       style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
 
-<!-- ================================================================
-     HEADER
-     ================================================================ -->
 <div data-dms="layoutGroup" data-name="header">
   <div class="w-full h-full flex-1 flex flex-row">
     <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
       <div class="w-full grid grid-cols-6 md:grid-cols-12">
         <div class="col-span-6 md:col-span-12">
-
           <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
             <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
               <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
@@ -66,7 +61,7 @@
                   <div class="flex flex-col gap-1">
                     <div class="px-1 z-[5]">
                       <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
-                        Explore Progress &middot; QA Report
+                        Explore Progress &middot; QA Report &middot; rev 4
                       </div>
                     </div>
                     <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
@@ -74,26 +69,24 @@
                     </div>
                   </div>
                   <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
-                    The <strong>draft</strong> sections an author is working in &mdash; scoped to the 26
-                    pages marked <em>Relevant</em>, with tag-exempt and hidden components excluded.
+                    Draft sections on the 26 <em>Relevant</em> pages. Every finding that renders to a
+                    reader is now closed; what is left is latent or authoring work.
                   </div>
                   <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
-                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">8 findings &middot; 26 pages &middot; 1,438 draft sections</span>
-                    <span class="px-3 py-1.5 bg-mny-red border border-mny-red rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">3 undermine the data</span>
-                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">pattern 1300890 &middot; 31 Aug 2026 &middot; no changes made</span>
+                    <span class="px-3 py-1.5 bg-mny-grn border border-mny-grn rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">0 Tier 1 remaining</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">56 open &middot; 69 closed since rev 3</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">pattern 1300890 &middot; 1 Sep 2026 &middot; read-only scan</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- TOPNAV -->
 <div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
   <nav>
     <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
@@ -110,81 +103,60 @@
             <span class="uppercase text-mny-900 font-medium text-[12px]">Search</span>
             <div class="bg-mny-700 p-[10px] rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="text-white" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><!-- icon: Search --><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"/></svg></div>
           </button>
-          <div class="flex p-1 items-center">
-            <div class="flex p-2 justify-center items-center">
-              <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><!-- icon: UserAvatar --><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
-              </div>
+          <div class="flex p-1 items-center"><div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><!-- icon: UserAvatar --><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
             </div>
-          </div>
+          </div></div>
         </div>
       </div>
     </div>
   </nav>
 </div>
 
-<!-- ================================================================
-     VERDICT STRIP
-     ================================================================ -->
 <div class="max-w-[1440px] mx-auto">
   <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
     <div class="flex flex-1 md:px-4 xl:px-[64px]">
       <div class="h-full flex-1 min-w-0">
-
         <div class="pt-8 pb-2 px-2">
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Tier 1 open</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">0</p>
+              <p class="font-proxima text-[11px] text-[#1F6E5A] font-[600] mt-1">was 48 at rev 3</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Open findings</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">56</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">9 Tier 2 &middot; 47 Tier 3</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Closed since rev 3</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">69</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">3 whole classes</p>
+            </div>
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Pages in scope</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">26 / 59</p>
-              <p class="font-proxima text-[11px] text-mny-400 mt-1">1,438 draft sections</p>
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Sections assessed</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">1,123</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">of 1,443 &middot; 320 hidden</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Deferred by decision</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">296</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">owner ruling recorded</p>
             </div>
             <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Force sweep blind spot</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">42</p>
-              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">never seen by the scanner</p>
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Never audited</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">37</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">Map sections</p>
             </div>
-            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Snapshot behind source</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">112</p>
-              <p class="font-proxima text-[11px] text-mny-400 mt-1">of 628 assessable</p>
-            </div>
-            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Stores zero rows</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">58</p>
-              <p class="font-proxima text-[11px] text-mny-400 mt-1">all of them filtered</p>
-            </div>
-            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">SHMP text unlocked</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">30</p>
-              <p class="font-proxima text-[11px] text-mny-400 mt-1">of 450 LHMP_IA components</p>
-            </div>
-            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
-              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">No requirement tag</p>
-              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">190</p>
-              <p class="font-proxima text-[11px] text-mny-400 mt-1">after exempt + hidden removed</p>
-            </div>
-          </div>
-
-          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
-            <div class="bg-mny-red" style="width:37.5%;" title="Tier 1 (3)"></div>
-            <div class="bg-mny-y700" style="width:37.5%;" title="Tier 2 (3)"></div>
-            <div class="bg-mny-400" style="width:25%;" title="Tier 3 (2)"></div>
-          </div>
-          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
-            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-red"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 1 &mdash; a reader would doubt the data (3)</span></div>
-            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 2 &mdash; nobody has finished this (3)</span></div>
-            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-400"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Tier 3 &mdash; feels unmaintained (2)</span></div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<!-- ================================================================
-     CONTENT CARD
-     ================================================================ -->
 <div class="max-w-[1440px] mx-auto">
   <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
     <div class="flex flex-1 md:px-4 xl:px-[64px]">
@@ -192,391 +164,153 @@
         <div data-dms="layoutGroup" data-name="content">
           <div class="bg-white rounded-[12px] shadow-md p-5 sm:p-8 my-4 min-w-0">
 
-            <!-- ============ SCOPE ============ -->
-            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">How this run was scoped</h2>
-            <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[62ch]">
-              Everything below is measured against <strong>draft</strong> sections
-              (<code>page.draft_sections</code>), not the published set. That is the copy an author sees
-              in the admin, and it is the copy the earlier fix runs addressed.
+            <!-- CHANGED SINCE REV 3 -->
+            <div class="rounded-[10px] border border-mny-grn/45 bg-mny-grn/[0.07] p-4 sm:p-5">
+              <h2 class="font-display text-[20px] uppercase text-mny-900 font-[600] leading-tight">What moved since rev 3</h2>
+              <div class="wrap mt-3">
+                <table class="tbl">
+                  <thead><tr><th>Class</th><th class="num">rev 3</th><th class="num">now</th><th>What happened</th></tr></thead>
+                  <tbody>
+                    <tr><td>R1 &middot; Deprecated column rendered and filtering</td><td class="num">15</td><td class="num"><strong>0</strong></td><td>All 16 Measures Inventory tables rebuilt to match the corrected ice_storm copy</td></tr>
+                    <tr><td>R2 &middot; No Data Fetch Mode</td><td class="num">33</td><td class="num"><strong>0</strong></td><td><strong>41 sections written to <code>force</code></strong>, including the 33 the original scanner could not see</td></tr>
+                    <tr><td>R3 &middot; SHMP not permission locked</td><td class="num">21</td><td class="num"><strong>0</strong></td><td>Locked to LHMP Template Editor, verified field-by-field</td></tr>
+                    <tr><td>R4 &middot; No requirement tag</td><td class="num">9</td><td class="num">9</td><td>unchanged</td></tr>
+                    <tr><td>R5 &middot; Deprecated column bound, not rendered</td><td class="num">47</td><td class="num">47</td><td>unchanged</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="font-proxima text-[14px] text-mny-700 mt-3 max-w-[76ch]">
+                Two side effects of that work, both confirmed rather than assumed: <strong>12 components
+                migrated from the v1 config shape to v2</strong> as a consequence of being saved, and
+                <strong>5 new hidden Cards</strong> were added on the extreme_heat, hail, flooding,
+                hurricane and drought pages. Nothing was removed. No section changed placement.
+              </p>
+            </div>
+
+            <hr class="my-8 border-mny-100">
+
+            <!-- OPEN -->
+            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Open findings</h2>
+            <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
+              Nothing in Tier 1 remains. Both open classes are things a reader cannot currently see.
             </p>
 
-            <div class="wrap mt-4">
-              <table class="tbl">
-                <thead><tr><th>Filter</th><th>Source of the rule</th><th class="num">Effect</th></tr></thead>
-                <tbody>
-                  <tr><td>Pages marked <code>Relevant</code></td><td><code>county-template-qa-t5-requirements-v2.xlsx</code> &rarr; <em>Likely Needing Tags</em> / <em>T5 fixes (draft IDs)</em>, <code>Page Relevance</code></td><td class="num">59 &rarr; <strong>26</strong> pages</td></tr>
-                  <tr><td>Tag-exempt components ignored for the tag check</td><td>Same workbook, <code>Tag exempt</code> column &mdash; <em>Hidden from view</em> (355), <em>Section title only</em> (18), both (1)</td><td class="num">374 ids, <strong>324</strong> in scope</td></tr>
-                  <tr><td>Hidden components ignored for the tag check</td><td><code>display.hideSection === true</code></td><td class="num"><strong>10</strong> more</td></tr>
-                  <tr><td>Force re-fetch section scoped to six sources</td><td><code>mny-county-template-fetch-mode.md</code> &mdash; the owner&rsquo;s narrowing of 2026-08-28</td><td class="num"><strong>143</strong> components</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <p class="font-proxima text-[13px] text-mny-400 mt-3">
-              Both worksheet tabs agree on the same 26 pages &mdash; no page appears in one and not the other.
-              The 16 pages the workbook saw but did not label <code>Relevant</code>, and the 17 it never
-              assessed, are out of scope here by the same policy the fetch-mode task recorded.
-            </p>
-
-            <hr class="my-8 border-mny-100">
-
-            <!-- ============ TIER 1 ============ -->
-            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Tier 1 &mdash; a reader would doubt the data</h2>
-
-            <!-- F1 -->
-            <div class="mt-5 border-l-4 border-mny-red pl-4">
-              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span class="pill p1">Tier 1</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">1 &middot; The force re-fetch sweep never saw more than half the data components</h3>
-              </div>
-              <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
-                Friday&rsquo;s task closed with <strong>&ldquo;99 in scope, 99 correct, 0 outstanding&rdquo;</strong>.
-                That number reproduces exactly &mdash; and it is complete only over components stored in the
-                <strong>v2</strong> config shape. Components still stored in <strong>v1</strong> were invisible
-                to the scanner, because it selects rows that bind an <code>externalSource</code>, and a v1 row
-                keeps its snapshot under <code>sourceInfo</code> instead.
-              </p>
-              <div class="wrap mt-3">
-                <table class="tbl">
-                  <thead><tr><th>On the six in-scope sources</th><th class="num">Count</th><th>Config shape</th></tr></thead>
-                  <tbody>
-                    <tr><td>Stored <code>fetchMode: "force"</code> &mdash; the sweep&rsquo;s result</td><td class="num">99</td><td><span class="pill pok">v2 &times; 99</span></td></tr>
-                    <tr><td>No <code>fetchMode</code> at all, and the kind has the control</td><td class="num"><strong>42</strong></td><td><span class="pill p1">v1 &times; 42</span></td></tr>
-                    <tr><td>No <code>fetchMode</code>, but the kind has no control (Filter, Header: MNY Data)</td><td class="num">2</td><td>&mdash;</td></tr>
-                    <tr><td><strong>Actual in-scope total</strong></td><td class="num"><strong>143</strong></td><td>458 v1 / 362 v2 across all 820</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="font-proxima text-[14px] text-mny-700 mt-3 max-w-[70ch]">
-                The split is total: <strong>every one of the 99 already set is v2, and 42 of the 43 unset are v1.</strong>
-                That is not a coincidence of authoring history &mdash; I checked <code>created_at</code>, and the
-                unset components span June 2025 to August 2026, the same range as the ones that were fixed.
-                They were not missed because they are new. They were missed because the scanner could not see them.
-              </p>
-              <div class="wrap mt-3">
-                <table class="tbl">
-                  <thead><tr><th>Page</th><th class="num">Unset</th><th>Source</th></tr></thead>
-                  <tbody>
-                    <tr><td><code>the_plan/jurisdictional_annexes/select_jurisdiction</code></td><td class="num">36</td><td>Jurisdictions</td></tr>
-                    <tr><td><code>the_plan/capabilities_assessment</code></td><td class="num">6</td><td>Capabilities_Catalogue</td></tr>
-                    <tr><td><code>the_risk/natural_hazards/hurricane</code></td><td class="num">1</td><td>Hazards_of_Concern</td></tr>
-                    <tr><td><code>the_plan/jurisdictional_annexes</code></td><td class="num">1</td><td>Jurisdictions</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="font-proxima text-[13px] text-mny-400 mt-2">
-                Examples: <code>2380934</code> Jurisdictional Annex Table &middot; <code>1496881</code> Planning Process &middot;
-                <code>1436166</code> Critical Buildings &middot; <code>1437360</code> Critical Infrastructure.
-                10 of the 42 are also hidden from view.
-              </p>
-              <p class="font-proxima text-[14px] text-mny-900 mt-3 font-[600]">
-                Fix: re-run <code>scan_fetchmode.mjs</code> selecting on <code>sourceInfo || externalSource</code>,
-                rebuild the report, and apply the same narrowed rule. Expect 42 writes, not 0.
-              </p>
-            </div>
-
-            <!-- F2 -->
-            <div class="mt-8 border-l-4 border-mny-red pl-4">
-              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span class="pill p1">Tier 1</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">2 &middot; 112 components are bound to a snapshot older than their source</h3>
-              </div>
-              <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
-                Each data component stores its own copy of the source&rsquo;s column list. Where that copy is a
-                generation behind, the admin&rsquo;s out-of-date badge is measured against the stale copy, so it
-                reads clean while the component is in fact behind. Column count is the cheapest detector for this.
-              </p>
-              <div class="wrap mt-3">
-                <table class="tbl">
-                  <thead><tr><th>Source</th><th class="num">Live cols</th><th class="num">Used by</th><th class="num">Stale</th><th>Snapshot generations in use</th></tr></thead>
-                  <tbody>
-                    <tr><td>Jurisdictions</td><td class="num">42</td><td class="num">40</td><td class="num"><strong>36</strong></td><td>39&times;35 &middot; 42&times;4 &middot; <strong>6&times;1</strong></td></tr>
-                    <tr><td>Actions_Revised</td><td class="num">160</td><td class="num">36</td><td class="num"><strong>32</strong></td><td>147&times;32 &middot; 160&times;4</td></tr>
-                    <tr><td>LHMP_IA</td><td class="num">48</td><td class="num">450</td><td class="num">30</td><td>48&times;420 &middot; 22&times;16 &middot; 26&times;12 &middot; 40&times;2</td></tr>
-                    <tr><td>Mitigation_Measures</td><td class="num">53</td><td class="num">16</td><td class="num">8</td><td>54&times;8 &middot; 53&times;8 &nbsp;<span class="pill p2">snapshot ahead</span></td></tr>
-                    <tr><td>Capabilities_Catalogue</td><td class="num">136</td><td class="num">27</td><td class="num">6</td><td>136&times;21 &middot; 130&times;6</td></tr>
-                    <tr><td>Hazards_of_Concern</td><td class="num">23</td><td class="num">36</td><td class="num">0</td><td><span class="pill pok">all current</span></td></tr>
-                    <tr><td>R_and_V_Matrix</td><td class="num">28</td><td class="num">18</td><td class="num">0</td><td><span class="pill pok">all current</span></td></tr>
-                    <tr><td>NYS_Dams &middot; Roles &middot; Participation</td><td class="num">43/20/19</td><td class="num">4</td><td class="num">0</td><td><span class="pill pok">all current</span></td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="font-proxima text-[14px] text-mny-700 mt-3 max-w-[70ch]">
-                Two things stand out. <strong>Component <code>1348542</code> on <code>select_jurisdiction</code>
-                holds a 6-column snapshot of a 42-column source</strong> &mdash; it is bound to a view of
-                Jurisdictions that barely exists any more. And <strong>Mitigation_Measures runs the other way</strong>:
-                8 components hold 54 columns where the source now has 53, meaning the source dropped a column
-                those components still carry.
-              </p>
-              <p class="font-proxima text-[14px] text-mny-900 mt-3 font-[600]">
-                Fix: opening a component and saving it re-binds the snapshot &mdash; this was verified on
-                <code>1515016</code>, where a save took the snapshot 19&nbsp;&rarr;&nbsp;20 columns and pulled in a
-                column the stale yardstick had reported clean.
-              </p>
-            </div>
-
-            <!-- F3 -->
-            <div class="mt-8 border-l-4 border-mny-red pl-4">
-              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span class="pill p1">Tier 1</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">3 &middot; 58 data components store a row count of exactly zero</h3>
-              </div>
-              <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
-                Every one of the 58 carries a filter block, and every one stores <code>totalLength: 0</code>
-                with no cached rows &mdash; not <code>null</code>, but a zero that was computed and written.
-                On a published plan these are the sections a reader meets as a heading with nothing under it,
-                or as a pager reading <em>Page 1 of 0</em>.
-              </p>
-              <div class="wrap mt-3">
-                <table class="tbl">
-                  <thead><tr><th>By kind</th><th class="num">n</th><th>Worst pages</th><th class="num">n</th></tr></thead>
-                  <tbody>
-                    <tr><td>Spreadsheet</td><td class="num">29</td><td><code>the_risk/natural_hazards/wildfire</code></td><td class="num">6</td></tr>
-                    <tr><td>Card</td><td class="num">22</td><td><code>the_risk/natural_hazards/landslide</code></td><td class="num">6</td></tr>
-                    <tr><td>Graph</td><td class="num">6</td><td><code>the_risk/natural_hazards/earthquake</code></td><td class="num">5</td></tr>
-                    <tr><td>Header: MNY Data</td><td class="num">1</td><td><code>the_risk/natural_hazards/avalanche</code></td><td class="num">5</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="font-proxima text-[13px] text-mny-400 mt-2">
-                Spread across 19 of the 26 pages. Recurring sources: Hazards_of_Concern, Capabilities_Catalogue,
-                AVAIL&nbsp;&mdash;&nbsp;Fusion Events V2.
-              </p>
-              <p class="font-proxima text-[14px] text-mny-700 mt-3 max-w-[70ch]">
-                <strong>Caveat, and it matters:</strong> <code>totalLength</code> is a cached count written at save
-                time, not a live query result. A stored zero can mean the subject genuinely has no rows, or that the
-                filter no longer matches, or simply that the count was written before the data arrived. These three
-                have identical config and opposite fixes. This finding is a <em>triage list</em>, not a defect list.
-              </p>
-            </div>
-
-            <hr class="my-8 border-mny-100">
-
-            <!-- ============ TIER 2 ============ -->
-            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Tier 2 &mdash; nobody has finished this</h2>
-
-            <!-- F4 -->
-            <div class="mt-5 border-l-4 border-mny-y700 pl-4">
+            <div class="mt-6 border-l-4 border-mny-y700 pl-4">
               <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span class="pill p2">Tier 2</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">4 &middot; 30 SHMP narrative components are still editable by anyone</h3>
+                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">R4 &middot; 9 titled sections carry no requirement tag</h3>
               </div>
-              <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
-                Of 450 draft sections bound to <code>LHMP_IA</code>, <strong>420 carry
-                <code>authPermissions</code> and 30 do not.</strong> The locked ones all read
-                <code>{"users":{},"groups":{"LHMP Template Editor":["*"]}}</code>, so the intended value is
-                unambiguous. All 30 unlocked are Cards.
-              </p>
-              <div class="wrap mt-3">
-                <table class="tbl">
-                  <thead><tr><th>Page</th><th class="num">Unlocked</th><th>Page</th><th class="num">Unlocked</th></tr></thead>
-                  <tbody>
-                    <tr><td><code>the_risk/natural_hazards/flooding</code></td><td class="num">6</td><td><code>the_risk/natural_hazards/wind</code></td><td class="num">2</td></tr>
-                    <tr><td><code>the_risk/natural_hazards/hurricane</code></td><td class="num">4</td><td><code>the_risk/natural_hazards/lightning</code></td><td class="num">2</td></tr>
-                    <tr><td><code>the_risk/natural_hazards/ice_storm</code></td><td class="num">3</td><td>9 further pages</td><td class="num">1 each</td></tr>
-                    <tr><td><code>the_plan/about_the_process</code></td><td class="num">3</td><td><em>16 pages affected in total</em></td><td class="num">30</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="font-proxima text-[13px] text-mny-400 mt-2">
-                Unlike finding 1, this one does <strong>not</strong> track the v1/v2 split &mdash; all 30 are v2, but
-                105 other v2 components are locked, and 315 v1 components are locked. I could not find a mechanical
-                cause, and <code>created_at</code> spreads them from Sept 2025 to Aug 2026. Treat it as an
-                incomplete pass rather than a systematic blind spot.
-              </p>
-            </div>
-
-            <!-- F5 -->
-            <div class="mt-8 border-l-4 border-mny-y700 pl-4">
-              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span class="pill p2">Tier 2</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">5 &middot; 190 sections still carry no requirement tag &mdash; but 49 of them are page headers and footers</h3>
-              </div>
-              <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
-                After removing the 324 in-scope tag-exempt ids and the 10 hidden sections, 190 remain untagged.
-                <strong>49 of those are the banner and footer strips that frame a page</strong> &mdash;
-                <code>Header: MNY Data</code> (25) and <code>Footer: MNY Footer</code> (24). Requirement tags name
-                44 CFR 201.6 elements, and a page header does not satisfy any part of the federal requirement, so
-                there is no correct tag to give it. Those 49 will read as untagged in every future run of this
-                check and nobody can ever close them.
-              </p>
-              <div class="wrap mt-3">
-                <table class="tbl">
-                  <thead><tr><th>Component kind</th><th class="num">Untagged</th><th>Reading</th></tr></thead>
-                  <tbody>
-                    <tr><td>Card</td><td class="num">91</td><td>real authoring gap</td></tr>
-                    <tr><td>lexical</td><td class="num">44</td><td>real authoring gap</td></tr>
-                    <tr><td>Header: MNY Data</td><td class="num">25</td><td><span class="pill p3">page frame &mdash; belongs in the exempt vocabulary</span></td></tr>
-                    <tr><td>Footer: MNY Footer</td><td class="num">24</td><td><span class="pill p3">page frame &mdash; belongs in the exempt vocabulary</span></td></tr>
-                    <tr><td>Spreadsheet / Filter / Map</td><td class="num">6</td><td>real authoring gap</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="font-proxima text-[14px] text-mny-900 mt-3 font-[600]">
-                The actionable number is <strong>141</strong>, not 190. Adding a third exempt reason for page
-                headers and footers would stop 49 rows recurring in every future run of this check.
+              <p class="font-proxima text-[14px] text-mny-700 mt-2 max-w-[72ch]">
+                Visible, titled, and in no work list &mdash; the fresh <code>hideInView</code>-aware scan the
+                tag task lists as outstanding. Six sit on <code>select_jurisdiction</code>; the rest on
+                <code>about_the_process</code>, <code>natural_environment</code> and
+                <code>high_hazard_dams</code>.
               </p>
               <p class="font-proxima text-[13px] text-mny-400 mt-2">
-                Concentrated on <code>select_jurisdiction</code> (14) and evenly at 8&ndash;9 per natural-hazard page,
-                which is the signature of a template slot rather than 16 independent omissions.
-              </p>
-            </div>
-
-            <!-- F6 -->
-            <div class="mt-8 border-l-4 border-mny-y700 pl-4">
-              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span class="pill p2">Tier 2</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">6 &middot; 192 data components bind a source that no longer resolves</h3>
-              </div>
-              <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
-                Of the 820 draft sections that bind a source, <strong>192 point at a source id with no row behind
-                it</strong> &mdash; 15 distinct legacy numeric ids (<code>870</code> alone carries 138 components,
-                then <code>1508</code>&times;32, <code>1651</code>&times;8, and eleven more with 1&ndash;2 each).
-              </p>
-              <p class="font-proxima text-[14px] text-mny-700 mt-3 max-w-[70ch]">
-                These are not necessarily broken &mdash; they are most likely DaMa-side sources living outside this
-                app&rsquo;s tables. But <strong>nothing in this report can assess them</strong>: no snapshot check, no
-                column drift, no source-side reasoning. That is a 23% hole in the coverage of every data finding
-                above, and it should be closed before anyone reads a clean result as a complete one.
-              </p>
-            </div>
-
-            <hr class="my-8 border-mny-100">
-
-            <!-- ============ TIER 3 ============ -->
-            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Tier 3 &mdash; feels unmaintained</h2>
-
-            <div class="mt-5 border-l-4 border-mny-400 pl-4">
-              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span class="pill p3">Tier 3</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">7 &middot; Two per-subject sections carry no filter at all</h3>
-              </div>
-              <p class="font-proxima text-[14px] text-mny-700 mt-2 max-w-[70ch]">
-                <code>1545851</code> &ldquo;Total Events and Losses in $: Declared Disasters&rdquo; on
-                <code>the_risk/natural_hazards/tornado</code>, and <code>1602206</code> &ldquo;Measures
-                Inventory&rdquo; on <code>the_risk/natural_hazards/ice_storm</code>. On a page about one hazard,
-                an unfiltered collection renders every hazard&rsquo;s rows. Only two, which makes them look like
-                slips rather than a pattern &mdash; the other 818 data sections all carry a filter block.
+                <code>1657662</code> Local Context &middot; <code>1703876</code> County Open Space Plan &middot;
+                <code>1515074</code> Other Related Planning Processes &middot; <code>1920837</code> Buildings in
+                The Floodplain &middot; <code>1920935</code> Critical Buildings in The Floodplain &middot;
+                <code>1684993</code> Cascading Impacts from Hazards &middot; <code>1499931</code> Other Hazards &middot;
+                <code>1499254</code> Additional Context (Strategy) &middot; <code>1499264</code> Additional Context (Progress)
               </p>
             </div>
 
             <div class="mt-8 border-l-4 border-mny-400 pl-4">
               <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span class="pill p3">Tier 3</span>
-                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">8 &middot; The template runs two config generations at once</h3>
+                <span class="pill p3">Tier 3</span><span class="pill p3">Check C</span>
+                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">R5 &middot; 47 deprecated-column bindings, none rendering</h3>
               </div>
-              <p class="font-proxima text-[14px] text-mny-700 mt-2 max-w-[70ch]">
-                <strong>458 v1 and 362 v2</strong> among the 820 data components. The library treats this as a
-                transition &mdash; <code>buildUdaConfig.js:1775</code> is an explicit &ldquo;temporary adapter&rdquo;
-                mapping <code>sourceInfo &rarr; externalSource</code> and
-                <code>dataRequest.filterGroups &rarr; filters</code> at read time, so both render correctly.
+              <p class="font-proxima text-[14px] text-mny-700 mt-2 max-w-[72ch]">
+                27 components, 7 columns. Nothing a reader sees today &mdash; but the same steward instruction
+                that produced R1, and two are still wired into filters. These break the moment the source is
+                cleaned up.
               </p>
-              <p class="font-proxima text-[14px] text-mny-700 mt-2 max-w-[70ch]">
-                It is Tier 3 for a reader and Tier 1 for tooling: finding 1 exists <em>only</em> because a
-                maintenance script assumed one shape. Any script that reads component config must handle both,
-                and any count that doesn&rsquo;t say which shapes it covered is not yet a complete count. Opening
-                and saving a v1 component migrates it &mdash; verified on <code>1515016</code>.
+              <div class="wrap mt-3">
+                <table class="tbl">
+                  <thead><tr><th>Source :: column</th><th>Live title</th><th class="num">Components</th><th class="num">In a filter</th></tr></thead>
+                  <tbody>
+                    <tr><td>Actions_Revised :: <code>num_proposed</code></td><td>&ldquo;# Proposed - deprecated&rdquo;</td><td class="num">16</td><td class="num">0</td></tr>
+                    <tr><td>Actions_Revised :: <code>num_not_started</code></td><td>&ldquo;# Not Started - deprecated (dep)&rdquo;</td><td class="num">16</td><td class="num">0</td></tr>
+                    <tr><td>Capabilities_Catalogue :: <code>planning_regulatory</code></td><td>&ldquo;(Delete) FEMA - Planning &amp; Regulatory&rdquo;</td><td class="num">6</td><td class="num">0</td></tr>
+                    <tr><td>Actions_Revised :: <code>hazards_json</code></td><td>&ldquo;Hazards - (no flood, deprecated)&rdquo;</td><td class="num">4</td><td class="num">0</td></tr>
+                    <tr><td>Capabilities_Catalogue :: <code>financial</code></td><td>&ldquo;(Delete) FEMA - Financial&rdquo;</td><td class="num">2</td><td class="num">1</td></tr>
+                    <tr><td>Capabilities_Catalogue :: <code>administrative_technical</code></td><td>&ldquo;(Delete) FEMA - Administrative &amp; Technical&rdquo;</td><td class="num">2</td><td class="num">0</td></tr>
+                    <tr><td>Capabilities_Catalogue :: <code>education_outreach</code></td><td>&ldquo;(Delete) FEMA - Education/ Outreach&rdquo;</td><td class="num">1</td><td class="num">1</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="font-proxima text-[13px] text-mny-400 mt-3">
+                <code>&ldquo;Hazards - (no flood, deprecated)&rdquo;</code> is worth a look regardless of tier:
+                the title says the column omits flooding, and 4 components on <code>select_jurisdiction</code>
+                are bound to it.
               </p>
             </div>
 
             <hr class="my-8 border-mny-100">
 
-            <!-- ============ CHECKED AND CLEAN ============ -->
-            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Checked, and clean &mdash; or disproved</h2>
-            <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[68ch]">
-              What this run ruled out matters as much as what it found. Two detectors produced large counts that
-              did not survive checking.
+            <!-- DEFERRED -->
+            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Deferred and non-issues</h2>
+            <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[70ch]">
+              True, measured, and not this sweep's to raise &mdash; recorded so no future run raises them again.
             </p>
             <div class="wrap mt-4">
               <table class="tbl">
-                <thead><tr><th>Claim</th><th>Verdict</th><th>Basis</th></tr></thead>
+                <thead><tr><th>Class</th><th class="num">Rows</th><th>Ruling</th></tr></thead>
                 <tbody>
-                  <tr>
-                    <td><strong>609 components have inert pagination</strong></td>
-                    <td><span class="pill p3">discarded</span></td>
-                    <td>569 are Cards with 1&ndash;23 rows and a larger page size. <code>usePagination</code> defaults on; whether a pager actually draws was not verified, and an undrawn control is not a finding. Reported here only so the next run does not re-raise it.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>The fetch-mode and permission gaps are new components drifting back in</strong></td>
-                    <td><span class="pill p3">disproved</span></td>
-                    <td>Tested against <code>created_at</code>. The 44 unset span 2025-06-10 &rarr; 2026-08-13 and the 99 set span 2025-06-10 &rarr; 2026-08-28 &mdash; the same range. The cause is the scanner&rsquo;s shape assumption, not authoring recency.</td>
-                  </tr>
-                  <tr>
-                    <td>Friday&rsquo;s &ldquo;99 in scope, 99 correct&rdquo;</td>
-                    <td><span class="pill pok">reproduced</span></td>
-                    <td>Exactly 99 six-source components store <code>force</code>, and all 99 are v2. The figure is right; its scope was narrower than stated.</td>
-                  </tr>
-                  <tr>
-                    <td>Hazards_of_Concern snapshot drift</td>
-                    <td><span class="pill pok">clean</span></td>
-                    <td>All 36 components hold the current 23-column snapshot.</td>
-                  </tr>
-                  <tr>
-                    <td>R_and_V_Matrix &middot; NYS_Dams &middot; Roles &middot; Participation</td>
-                    <td><span class="pill pok">clean</span></td>
-                    <td>22 components, zero snapshot drift.</td>
-                  </tr>
-                  <tr>
-                    <td>Unresolved section references</td>
-                    <td><span class="pill pok">clean</span></td>
-                    <td>All 1,438 draft section ids resolve to a component row. No orphans in scope.</td>
-                  </tr>
-                  <tr>
-                    <td>Page-relevance disagreement between the two workbook tabs</td>
-                    <td><span class="pill pok">clean</span></td>
-                    <td>Both name the same 26 pages; neither has a page the other lacks.</td>
-                  </tr>
+                  <tr><td>Bound to a source that does not resolve</td><td class="num">192</td><td><span class="pill p3">deferred</span> Separate update planned</td></tr>
+                  <tr><td>Stores a row count of zero</td><td class="num">61</td><td><span class="pill p3">deferred</span> A blank table is expected where the jurisdiction has no rows</td></tr>
+                  <tr><td>Tag record disagrees with platform</td><td class="num">43</td><td><span class="pill p3">deferred</span> Tags deliberately excluded; they broke the design and the requirement is met elsewhere</td></tr>
+                  <tr><td>Source snapshot behind the live definition</td><td class="num">77</td><td><span class="pill pok">not an issue</span> Ruled 1 Sep: does not affect what is displayed</td></tr>
+                  <tr><td>Untitled, contentless section</td><td class="num">75</td><td><span class="pill pok">not an issue</span> Headers, footers, filters, maps and hazard cards are headerless by design</td></tr>
+                  <tr><td>No filter block in stored config</td><td class="num">1</td><td><span class="pill pok">not an issue</span> Verified filtering correctly</td></tr>
+                  <tr><td>Coded identifier shown with no lookup</td><td class="num">1</td><td><span class="pill p2">needs a render check</span> <code>jurisdiction_geoid</code></td></tr>
                 </tbody>
               </table>
             </div>
 
             <hr class="my-8 border-mny-100">
 
-            <!-- ============ FIX UNITS ============ -->
-            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Fix units</h2>
-            <p class="font-proxima text-[15px] text-mny-700 mt-2 max-w-[68ch]">
-              Eight findings, six units of work. Ordered by what a reader of the published plan would notice first.
-            </p>
+            <!-- CHECKS -->
+            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Checks run, and checks skipped</h2>
             <div class="wrap mt-4">
               <table class="tbl">
-                <thead><tr><th class="num">#</th><th>Unit</th><th class="num">Items</th><th>Kind of change</th></tr></thead>
+                <thead><tr><th>Check</th><th>Status</th><th>Result / why not</th></tr></thead>
                 <tbody>
-                  <tr><td class="num">1</td><td>Widen the fetch-mode scanner to both config shapes, rebuild, apply</td><td class="num">42</td><td>one script change, then 42 writes</td></tr>
-                  <tr><td class="num">2</td><td>Re-bind stale snapshots &mdash; open and save, worst source first (Jurisdictions, Actions_Revised)</td><td class="num">112</td><td>author action, per component</td></tr>
-                  <tr><td class="num">3</td><td>Triage the zero-row components into <em>genuinely empty</em> / <em>filter broken</em> / <em>stale count</em></td><td class="num">58</td><td>investigation before any fix</td></tr>
-                  <tr><td class="num">4</td><td>Apply the LHMP Template Editor lock to the remaining SHMP cards</td><td class="num">30</td><td>one setting, repeated</td></tr>
-                  <tr><td class="num">5</td><td>Add a header/footer exemption to the tag vocabulary, then tag the remainder</td><td class="num">49 + 141</td><td>one vocabulary change, then authoring</td></tr>
-                  <tr><td class="num">6</td><td>Identify the 15 unresolvable source ids so the 192 components can be assessed</td><td class="num">192</td><td>investigation</td></tr>
+                  <tr><td><strong>A</strong> &mdash; metadata out-of-date</td><td><span class="pill pok">run</span></td><td>77 drifted; ruled not an issue</td></tr>
+                  <tr><td><strong>C</strong> &mdash; deprecation-marked columns</td><td><span class="pill pok">run</span></td><td>47 bindings, 7 columns, 27 components &mdash; all hidden. Was 62 over 8 columns at rev 3</td></tr>
+                  <tr><td><strong>G</strong> &mdash; cached and dangling state</td><td><span class="pill pok">run</span></td><td>Cached counts treated as evidence about storage, not render</td></tr>
+                  <tr><td><strong>M</strong> &mdash; coded identifiers</td><td><span class="pill pok">run</span></td><td>1 candidate</td></tr>
+                  <tr><td><strong>B</strong> &mdash; filters that don't fit their context</td><td><span class="pill p2">not run</span></td><td>Needs a stated editorial intent per section</td></tr>
+                  <tr><td><strong>D, E, F, H</strong> &mdash; map checks</td><td><span class="pill p1">not run</span></td><td><strong>37 Map sections in scope, unaudited.</strong> Need tile-route probes and a render. Largest remaining gap</td></tr>
+                  <tr><td><strong>I, J, K, L</strong> &mdash; presentational</td><td><span class="pill p1">not run</span></td><td>Require measured geometry off a rendered page</td></tr>
+                  <tr><td><strong>Part 0</strong> &mdash; the visitor pass</td><td><span class="pill p1">not run</span></td><td>Draft sections render only in edit mode behind auth</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="font-proxima text-[14px] text-mny-700 mt-4 max-w-[70ch]">
-              <strong>Unit 1 is the one to do first</strong>, and not because it is the largest. It is the one that
-              changes what the other numbers mean: a maintenance script that silently covered half its target
-              produced a &ldquo;complete&rdquo; result, and the same assumption may sit in the other scripts in
-              <code>scripts/report_fixes/</code>. Checking that is cheaper than discovering it a third time.
-            </p>
 
             <hr class="my-8 border-mny-100">
 
-            <!-- ============ LIMITS ============ -->
             <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Limits</h2>
             <div class="wrap mt-4">
               <table class="tbl">
                 <thead><tr><th>Dimension</th><th>Covered</th><th>Not covered</th></tr></thead>
                 <tbody>
-                  <tr><td>Pages</td><td>26 assessed from config</td><td>33 of the pattern&rsquo;s 59, by the scoping rule above</td></tr>
-                  <tr><td>Render</td><td><strong>none</strong></td><td>Draft sections render only in edit mode behind auth, so no visitor pass was run. Detectors V1 (stale paint on navigation) and V6 (measured geometry) cannot be answered from config and are absent from this report.</td></tr>
-                  <tr><td>Data components</td><td>628 of 820 assessable for snapshot drift</td><td>192 bind an unresolvable source</td></tr>
-                  <tr><td>Row counts</td><td>stored <code>totalLength</code></td><td>no live query was issued; stored counts can be stale in either direction</td></tr>
-                  <tr><td>Platform</td><td>read-only throughout</td><td><strong>no changes of any kind were made</strong> &mdash; no writes, no saves, no publishes</td></tr>
+                  <tr><td>Pages</td><td>26 of 59</td><td>33, by the workbook's relevance labelling</td></tr>
+                  <tr><td>Sections</td><td>1,123 visible</td><td>320 <code>hideInView</code></td></tr>
+                  <tr><td>Check C reach</td><td>10 of 25 sources resolvable</td><td><strong>192 components bind a source whose attributes cannot be read</strong>, so Check C could not run on them</td></tr>
+                  <tr><td>Maps</td><td>&mdash;</td><td>37 Map sections</td></tr>
+                  <tr><td>Render</td><td>none</td><td>Every claim is from stored config plus live source rows</td></tr>
+                  <tr><td>Other patterns</td><td>&mdash;</td><td>Suffolk, Schenectady, Delaware drafts inherit from this template and were not scanned</td></tr>
+                  <tr><td>Platform</td><td>read-only this run</td><td>No changes made during this scan</td></tr>
                 </tbody>
               </table>
             </div>
             <p class="font-proxima text-[13px] text-mny-400 mt-4">
-              Sources: pattern 1300890 draft sections read 31 Aug 2026 &middot; scope from
-              <code>county-template-qa-t5-requirements-v2.xlsx</code> &middot; force re-fetch scope from
-              <code>planning/mitigateny/tasks/current/mny-county-template-fetch-mode.md</code> &middot; method from
+              Work list: <code>county-template-qa-draft.csv</code>, <code>Disposition</code> column
+              (Ranked / Deferred / Observation), fix ids from <code>ledgers/qa2-draft-ids.json</code>.
+              Pattern 1300890 draft sections read 1 Sep 2026 &middot; scope from
+              <code>county-template-qa-t5-requirements-v2.xlsx</code> &middot; owner rulings from
+              <code>county-template-qa-draft-relevance.csv</code> &middot; method and relevance gate from
               <code>planning/shared/component-qa-prompt.md</code>.
             </p>
 
@@ -587,8 +321,6 @@
   </div>
 </div>
 
-<!-- Floating design-system nav widget -->
 <script src="../ds-nav.js"></script>
-
 </body>
 </html>
