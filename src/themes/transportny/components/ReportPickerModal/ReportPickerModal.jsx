@@ -2,6 +2,8 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme';
 import { CMSContext, PageContext } from '../../../../dms/packages/dms/src/patterns/page/context';
+import { MountContext } from '../../../../dms/packages/dms/src/ui/mountContext';
+import { resolveMountPath } from '../../../../dms/packages/dms/src/utils/mountPath';
 import { reportPickerModalTheme } from './ReportPickerModal.theme';
 import { useReportSearch } from './useReportSearch';
 import { buildReportCatalogSource } from './reportCatalogSource';
@@ -47,6 +49,7 @@ export default function ReportPickerModal({ open, setOpen }) {
   const { Button, Input, Icon, Modal, Pill } = UI || {};
   const { user, app, falcor } = useContext(CMSContext) || {};
   const { apiLoad } = useContext(PageContext) || {};
+  const { baseUrl: mountBaseUrl, siteRootPaths } = useContext(MountContext) || {};
   const navigate = useNavigate();
   const currentUserId = user?.id;
   const t = { ...reportPickerModalTheme, ...getComponentTheme(themeFromContext, 'reportPickerModal') };
@@ -145,7 +148,10 @@ export default function ReportPickerModal({ open, setOpen }) {
   const openReport = (row) => {
     if (!row.page_path) return; // legacy row, nothing to navigate to yet
     setOpen?.(false);
-    navigate(row.page_path);
+    // row.page_path is a site-absolute authored path (e.g. /converted_reports/nyc_test) — resolve
+    // it against the current mount's baseUrl (e.g. /npmrds) the same way Card/TableCell/ButtonNode
+    // do, so the modal works on whichever mount it's opened from.
+    navigate(resolveMountPath(row.page_path, mountBaseUrl, siteRootPaths));
   };
 
   const badgesFor = (row) => (

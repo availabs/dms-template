@@ -1,4 +1,4 @@
-import { SHAPEFILE_LAYER_KEY } from "./constants";
+import { SHAPEFILE_LAYER_KEY, NETWORK_COLOR, ROUTE_COLOR, HIGHLIGHT_COLOR } from "./constants";
 import { get, set } from "lodash-es";
 
 const DataUpdate = (map, state, setState) => {
@@ -18,32 +18,40 @@ const DataUpdate = (map, state, setState) => {
     symbPath = `symbology`;
   }
   const tmc_array = get(state, `${pluginDataPath}['tmc_array']`, null);
+  const hoveredTmc = get(state, `${pluginDataPath}['hovered_tmc']`, null);
   const shapefileLayerId = get(
     state,
     `${pluginDataPath}['active-layers'][${SHAPEFILE_LAYER_KEY}]`,
   );
   if (shapefileLayerId) {
     setState((draft) => {
-      let lineColor = "#CCCCCC"; // The fallback color if it DOES NOT match (e.g., Gray)
+      // Three paint states (npmrds-route-creation.html, routes-reports-users-mesh.md
+      // Workstream E): network grey · route blue · highlighted amber. The highlighted TMC
+      // always wins over "in route" - hovering a route segment (or its list row) should
+      // always show as highlighted, whether or not it's also selected.
+      let lineColor;
       if (tmc_array && tmc_array.length > 0) {
-        set(
-          draft,
-          `${symbologyLayerPath}['${shapefileLayerId}']['layers'][1]['paint']['line-color']`,
-          [
-            "match",
-            ["get", "tmc"], // The property to check
-            tmc_array, // Your list of TMCs
-            "#FF0000", // The color if it matches (e.g., Red)
-            lineColor,
-          ],
-        ); //Mapbox paint
+        lineColor = [
+          "case",
+          ["==", ["get", "tmc"], hoveredTmc || ""],
+          HIGHLIGHT_COLOR,
+          ["match", ["get", "tmc"], tmc_array, ROUTE_COLOR, NETWORK_COLOR],
+        ];
+      } else if (hoveredTmc) {
+        lineColor = [
+          "case",
+          ["==", ["get", "tmc"], hoveredTmc],
+          HIGHLIGHT_COLOR,
+          NETWORK_COLOR,
+        ];
       } else {
-        set(
-          draft,
-          `${symbologyLayerPath}['${shapefileLayerId}']['layers'][1]['paint']['line-color']`,
-          lineColor,
-        ); //Mapbox paint
+        lineColor = NETWORK_COLOR;
       }
+      set(
+        draft,
+        `${symbologyLayerPath}['${shapefileLayerId}']['layers'][1]['paint']['line-color']`,
+        lineColor,
+      ); //Mapbox paint
     });
   }
 };

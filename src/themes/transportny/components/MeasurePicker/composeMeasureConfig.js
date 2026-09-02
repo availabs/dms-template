@@ -61,6 +61,63 @@ export const GRAPH_TYPE_OPTIONS = [
     { value: 'GridGraph', label: 'Grid Graph' },
 ];
 
+// Per-graph-type default `display.legend.position` for a FRESHLY-CREATED NPMRDS graph — Ryan's
+// call, 2026-09-01: bottom for now, may change, and may want to differ per graph type later (e.g.
+// bottom for Line, right for Bar) — this map is the one place to make that call, not a scattered
+// literal. GridGraph gets its own key/value: its legend is a linear color-scale gradient, not a
+// per-series swatch list, so it uses the corner-based position vocabulary
+// (`LEGEND_POSITION_OPTIONS_GRID` below) instead of plain top/bottom — 'bottom' isn't one of its
+// valid positions (see `ComponentRegistry/graph_new/config.jsx`'s `legendForGridGraph` control
+// group), so it defaults to the closest analog, 'bottom-right'.
+//
+// Deliberately NOT read by `composeMeasureConfig()` itself — see
+// `planning/transportny/tasks/current/graph-legend-position-quickcontrol.md`'s design note: this
+// function's own convention is to fully re-compose/overwrite every field it owns (colors/tooltip/
+// legend.show) on EVERY apply, which is right for those fields but would be wrong for `position` —
+// it would silently stomp a manual override (Settings drawer, or the QuickControls Legend pill)
+// the next time an author touched any other pill on the same card. `applyDefaultLegendPosition`
+// below is called once, only at genuine section-creation time, by each of this app's 3 independent
+// "mint a brand-new graph section" call sites (`useAddGraphSection.js`, `compose_bridge.mjs`,
+// `report_build.mjs`) — never on a re-pick of an existing section.
+export const DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE = {
+    BarGraph: 'bottom',
+    LineGraph: 'bottom',
+    GridGraph: 'bottom-right',
+};
+
+// Seeds `state.display.legend.position` with this app's own default for `graphType`, once, for a
+// brand-new section — see the map above for the full "why here, why not composeMeasureConfig"
+// reasoning. No-op for Table (no chart legend concept) or a state with no `display` at all (Map's
+// own compose branch, which never calls this). Safe to call unconditionally; callers don't need
+// their own Table/Map gate.
+export function applyDefaultLegendPosition(state, graphType) {
+    if (!state?.display || graphType === 'Table') return;
+    const position = DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE[graphType] || 'bottom';
+    state.display.legend = { ...(state.display.legend || {}), position };
+}
+
+// The author-facing option set for a "Legend Position" control — same split as the DMS Settings
+// drawer's own `legend`/`legendForGridGraph` control groups (`ComponentRegistry/graph_new/
+// config.jsx`), reused here so QuickControls' own Legend pill never drifts from what the Settings
+// drawer offers.
+export const LEGEND_POSITION_OPTIONS = [
+    { value: 'right', label: 'Right' },
+    { value: 'left', label: 'Left' },
+    { value: 'top', label: 'Top' },
+    { value: 'bottom', label: 'Bottom' },
+];
+export const LEGEND_POSITION_OPTIONS_GRID = [
+    { value: 'right', label: 'Right' },
+    { value: 'left', label: 'Left' },
+    { value: 'top-right', label: 'Top Right' },
+    { value: 'top-left', label: 'Top Left' },
+    { value: 'bottom-right', label: 'Bottom Right' },
+    { value: 'bottom-left', label: 'Bottom Left' },
+];
+export function legendPositionOptionsFor(graphType) {
+    return graphType === 'GridGraph' ? LEGEND_POSITION_OPTIONS_GRID : LEGEND_POSITION_OPTIONS;
+}
+
 export const MEASURE_OPTIONS = Object.entries(vocab.measures).map(([value, m]) => ({
     value, label: m.label,
 }));

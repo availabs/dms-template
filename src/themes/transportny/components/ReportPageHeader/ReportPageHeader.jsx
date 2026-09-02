@@ -2,6 +2,8 @@ import { useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
+import { MountContext } from '../../../../dms/packages/dms/src/ui/mountContext';
+import { resolveMountPath } from '../../../../dms/packages/dms/src/utils/mountPath';
 import { publish } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
@@ -29,6 +31,7 @@ export default function ReportPageHeader() {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Icon } = UI || {};
   const t = { ...reportPageHeaderTheme, ...getComponentTheme(themeFromContext, 'reportPageHeader') };
+  const { baseUrl: mountBaseUrl, siteRootPaths } = useContext(MountContext) || {};
   const navigate = useNavigate();
   const [shareCopied, setShareCopied] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(true);
@@ -94,11 +97,14 @@ export default function ReportPageHeader() {
   // click that LEAVES edit mode (editPageMode true → false); entering edit mode is a plain
   // navigate, same as before.
   const handleEditToggle = async () => {
+    // editPath/publicPath are site-absolute (`/edit/<slug>`, `/<slug>`) — resolve against the
+    // current mount's baseUrl (e.g. /npmrds) the same way ReportPickerModal/Card/TableCell/
+    // ButtonNode do, so Edit/Done stay on the mount the report was opened from.
     if (editPageMode) {
       await publish(user, item, apiUpdate);
-      navigate(publicPath);
+      navigate(resolveMountPath(publicPath, mountBaseUrl, siteRootPaths));
     } else {
-      navigate(editPath);
+      navigate(resolveMountPath(editPath, mountBaseUrl, siteRootPaths));
     }
   };
 
