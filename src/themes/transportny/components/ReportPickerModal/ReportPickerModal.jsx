@@ -44,7 +44,14 @@ import { TAG_CATEGORIES, DYNAMIC_REPORT_TEMPLATE_TAG, parseTags, tagToLabel } fr
 //
 // Client-side only, same v1 scope call as the route picker's "mine" facet: the CMSContext user
 // id drives ranking/filtering with no server-side check that it matches the real auth token.
-export default function ReportPickerModal({ open, setOpen }) {
+//
+// `initialSearchTerm` (2026-09-02, npmrds-reports-page-rev3.md Phase 3, ADDITIVE — defaults to
+// '' so every existing caller is byte-identical): the root view's search box opens pre-filled
+// with it. The header trigger (ChooseReportButton) passes the page's live `?search=` variable,
+// so "N matches · show results" on the closed trigger opens onto those results rather than an
+// empty box. Read at open time only — a later change to the prop does not disturb a dialog the
+// user is already typing in.
+export default function ReportPickerModal({ open, setOpen, initialSearchTerm = '' }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon, Modal, Pill } = UI || {};
   const { user, app, falcor } = useContext(CMSContext) || {};
@@ -74,7 +81,7 @@ export default function ReportPickerModal({ open, setOpen }) {
     setActiveCategoryKey(null);
     setActiveValue(null);
     setCategoryFilterTerm('');
-    setRootSearchTerm('');
+    setRootSearchTerm(initialSearchTerm || '');
     setWithinSearchTerm('');
     setOtherTagTerm('');
     setFacets({ mine: false, hideIncomplete: false });

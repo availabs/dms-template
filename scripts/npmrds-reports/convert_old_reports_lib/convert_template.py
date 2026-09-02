@@ -33,7 +33,7 @@ def finish_template(old_id, old, page_id, gaps, dry_run, slug=None):
         print(f"  [{g['kind']}] " + json.dumps(
             {k: v for k, v in g.items() if k != 'kind'})[:200])
     if page_id and not dry_run:
-        print(f"\nview it: http://npmrds.localhost:5173/{slug or f'template_{old_id}'} "
+        print(f"\nview it: http://www.localhost:5173/npmrds/{slug or f'template_{old_id}'} "
               f"(page id {page_id})")
     return report
 

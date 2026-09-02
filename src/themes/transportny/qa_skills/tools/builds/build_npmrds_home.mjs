@@ -151,8 +151,11 @@ const WARN_MARK = "color:#A9701C;font-weight:700";
 // ── live link targets (every one verified against `dms page list` in P0) ──────
 const L = {
   macro: "/macro",
-  reports: "/converted_reports",
-  reportIndex: "/converted_reports/reports",
+  reports: "/reports",
+  // reportIndex previously pointed at the `converted_reports/reports` catalog page (2208581),
+  // destroyed 2026-09-02 (v0.1 landing page, see rename-converted-reports-url-to-reports.md) —
+  // repointed at the reports homepage itself, which now owns the "Create a report" entry point.
+  reportIndex: "/reports",
   comparison: "/route_comparison",
   map21: "/map_21",
   lottr: "/map_21/level_of_travel_time_reliability",
@@ -167,13 +170,13 @@ const L = {
   docBatchApi: "/docs/ap_is/batch_reports_api",
   docVideos: "/docs/npmrds/training_videos",
   docAppendix: "/docs/npmrds/appendix",
-  // ready-made reports — real converted_reports children
-  rSnapshot: "/converted_reports/snapshot",
-  rSeasonality: "/converted_reports/seasonality",
-  rBidirectional: "/converted_reports/bi_directional",
-  rYoY: "/converted_reports/year_over_year",
-  rThreeWay: "/converted_reports/this_month_vs_last_month_vs_last_year",
-  rMonthlyCongestion: "/converted_reports/monthly_congestion",
+  // ready-made reports — real reports/* children (renamed 2026-09-02 from converted_reports/*)
+  rSnapshot: "/reports/snapshot",
+  rSeasonality: "/reports/seasonality",
+  rBidirectional: "/reports/bi_directional",
+  rYoY: "/reports/year_over_year",
+  rThreeWay: "/reports/this_month_vs_last_month_vs_last_year",
+  rMonthlyCongestion: "/reports/monthly_congestion",
 };
 
 // ── band-head helper (the house recipe: eyebrow ROW → displaySM title, FLAT) ──

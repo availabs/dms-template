@@ -1,6 +1,7 @@
 import { useContext, useMemo, useState } from 'react';
 import { CMSContext, PageContext } from '../../../../dms/packages/dms/src/patterns/page/context';
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme';
+import { MountContext } from '../../../../dms/packages/dms/src/ui/mountContext';
 import { buildPageTemplateType } from '../../../../dms/packages/dms/src/patterns/utils';
 import { newPage } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
 import { createReportButtonTheme } from './CreateReportButton.theme';
@@ -17,6 +18,7 @@ const REPORT_PAGE_TEMPLATE_ID = '2187021';
 export default function CreateReportButton() {
   const { item, dataItems, apiLoad, apiUpdate, format } = useContext(PageContext) || {};
   const { user } = useContext(CMSContext) || {};
+  const { baseUrl: mountBaseUrl, siteRootPaths } = useContext(MountContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Icon } = UI || {};
   const t = { ...createReportButtonTheme, ...getComponentTheme(themeFromContext, 'createReportButton') };
@@ -50,8 +52,11 @@ export default function CreateReportButton() {
       // it the sibling-index scan and getUrlSlug's parent prefix — is byte-identical.
       //
       // 1A's newPath redirect takes over from here, navigating into the new report's own
-      // /edit/... route once apiUpdate resolves.
-      await newPage({ ...item, parent: item?.parent || item?.id }, dataItems, user, apiUpdate, template);
+      // /edit/... route once apiUpdate resolves. Passing mountBaseUrl/siteRootPaths through
+      // resolves that redirect against the CURRENT mount (e.g. `/npmrds`) the same way
+      // ReportPageHeader/ReportPickerModal/Card/TableCell/ButtonNode already do, so creating a
+      // report from a prefixed mount lands on `/npmrds/edit/...` instead of dropping the prefix.
+      await newPage({ ...item, parent: item?.parent || item?.id }, dataItems, user, apiUpdate, template, mountBaseUrl, siteRootPaths);
     } catch (e) {
       console.error('<CreateReportButton>', e);
       setError('Could not create report.');

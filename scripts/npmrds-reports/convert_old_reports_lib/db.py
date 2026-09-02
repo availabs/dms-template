@@ -3,7 +3,9 @@ import os
 import subprocess
 from datetime import datetime, timezone
 
-from .config import DMS_ENV, NEW_DB_CONFIG, OLD_DB_CONFIG, TOKEN_FILE
+import re
+
+from .config import AUTH_DB_CONFIG, DMS_ENV, NEW_DB_CONFIG, OLD_DB_CONFIG, TOKEN_FILE
 
 # ── Low-level helpers ────────────────────────────────────────────────────────
 
@@ -26,6 +28,10 @@ def psql_old(sql):
 
 def psql_new(sql):
     return psql(NEW_DB_CONFIG, sql)
+
+
+def psql_auth(sql):
+    return psql(AUTH_DB_CONFIG, sql)
 
 
 def dms(args, data=None):
@@ -126,6 +132,46 @@ def fetch_agency_tag(old_id, stuff_type):
         f"AND f.type = 'group'")
     code = AGENCY_FOLDER_NAME_TO_CODE.get(out.strip()) if out else None
     return f"agency:{code}" if code else None
+
+
+def fetch_user_tag(created_by):
+    """Returns a `user:<id>` tag for the report/template's creator (`admin2.reports.created_by` /
+    `admin2.templates.created_by` — a raw `avail_auth.users.id`), matching the exact
+    `USER_TAG_PREFIX`/`makeUserTag()` convention in
+    src/themes/transportny/components/RouteTagBrowserModal/tagCategories.js. Applied unconditionally
+    (every report has a creator, regardless of which folder type it's filed under) — Ryan's
+    direction (2026-09-02): always add the user tag, on top of whichever agency tag applies below.
+    Returns None only if `created_by` is missing."""
+    return f"user:{int(created_by)}" if created_by else None
+
+
+def slugify_group_name(name):
+    """Python port of tagCategories.js's slugifyGroupName() — keep both in sync if either
+    changes. Must match exactly: it's how a raw login-group name becomes the `agency:<CODE>`
+    tag's canonical value."""
+    return re.sub(r"[^A-Z0-9]+", "_", (name or "").strip().upper()).strip("_")
+
+
+def fetch_auth_agency_tags(created_by):
+    """Fallback agency-tag derivation, used ONLY when the report/template is in no real
+    agency/`group` folder (fetch_agency_tag() above returns None) — Ryan's explicit precedence
+    (2026-09-02): the folder-curated agency tag wins when one exists; only derive from the auth
+    system otherwise. Mirrors the live UI's defaultTagsForUser()/realGroupTags() exactly: resolves
+    the creator's real login-group membership for this project (`avail_auth.users_in_groups` join
+    `groups_in_projects` on project_name='npmrdsv5' — same query dms-server's own getUserGroups()
+    runs), excludes the synthetic 'public' pseudo-group every user has, and slugifies each real
+    group name into `agency:<CODE>` via slugify_group_name() (== groupNameToAgencyTag()
+    client-side). Returns a list — 0, 1, or more tags (a user can belong to several groups)."""
+    if not created_by:
+        return []
+    out = psql_auth(
+        f"SELECT DISTINCT gip.group_name FROM users u "
+        f"JOIN users_in_groups uig ON uig.user_email = u.email "
+        f"JOIN groups_in_projects gip ON gip.group_name = uig.group_name "
+        f"WHERE u.id = {int(created_by)} AND gip.project_name = 'npmrdsv5'")
+    names = [n.strip() for n in out.splitlines() if n.strip()] if out else []
+    return sorted({f"agency:{slugify_group_name(n)}" for n in names
+                   if n.lower() != "public"})
 
 
 def flatten_route_comps(route_comps, gaps):
