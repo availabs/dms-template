@@ -263,7 +263,9 @@ const KEY_FILE_OVERRIDE = {
   "npmrds:route_comparison": "route-comparison.html",
   "npmrds:map_21": "map-21.html",
   "npmrds:lottr": "map-21-lottr.html",
-  "npmrds:converted_reports/reports": "npmrds-reports.html",
+  // "npmrds:converted_reports/reports" (page 2208581) was destroyed 2026-09-02 (v0.1 landing
+  // page, see rename-converted-reports-url-to-reports.md) — this override already resolved
+  // nothing (its slug was absent from include_slugs below), so nothing to repoint it to.
   // the live page moved /about → /about_the_plan (ticket #107); the mockup kept its old name
   "freightatlas2:about_the_plan": "freight-atlas-about.html",
   "freightatlas2:maps_gallery": "freight-atlas-gallery.html",
@@ -297,9 +299,10 @@ function ingestDesign(surface, slug, page_key) {
 // to before — `allow` is null and short-circuits before the `&&`, so tsmo2 / landing /
 // 2175436 / npmrds2 keep inventorying every live page exactly as they did.
 //
-// This exists because `npmrds_sub` holds 39 live pages, 22 of them `converted_reports*`
-// report conversions that must NOT enter the QA pipeline; only `macro` and `home` are asked
-// for. Excluded slugs are collected so that (a) the run prints what it skipped, and (b)
+// This exists because `npmrds_sub` holds dozens of live pages, most of them `reports*`
+// (renamed 2026-09-02 from `converted_reports*`) report conversions that must NOT enter the
+// QA pipeline; only `macro` and `home` are asked for. Excluded slugs are collected so that
+// (a) the run prints what it skipped, and (b)
 // `--prune` cannot delete a page row merely because the allowlist stopped enumerating it —
 // see the `allowExcluded` guard at the prune step.
 const desired = [];

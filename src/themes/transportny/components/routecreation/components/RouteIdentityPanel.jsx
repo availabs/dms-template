@@ -36,7 +36,7 @@ export const RouteIdentityPanel = ({
   // baseUrl (e.g. /npmrds) the same way ReportPickerModal/CreateReportButton do, so this link
   // doesn't drop the mount prefix on a non-root mount (live-caught 2026-09-02: it did).
   const { baseUrl: mountBaseUrl, siteRootPaths } = React.useContext(MountContext) || {};
-  const allRoutesHref = resolveMountPath("/converted_reports#routes", mountBaseUrl, siteRootPaths);
+  const allRoutesHref = resolveMountPath("/reports#routes", mountBaseUrl, siteRootPaths);
 
   return (
     <div className={`${t.posTopLeft} ${mapT.panel}`}>

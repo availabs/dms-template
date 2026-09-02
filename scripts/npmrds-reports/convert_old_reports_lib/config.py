@@ -105,7 +105,7 @@ ROUTES_CATALOG_TYPE = "routes_data|2107427:data"
 # Direct-read split tables (read-only checks; writes go through the CLI)
 REPORTS_SNAP_TABLE = "dms_npmrdsv5.data_items__s2177438_v2177440_reports_snap_2"
 ROUTES_CATALOG_TABLE = "dms_npmrdsv5.data_items__s2107426_v2107427_routes_data"
-CONVERTED_PARENT_SLUG = "converted_reports"
+CONVERTED_PARENT_SLUG = "reports"
 CONVERTED_PARENT_TITLE = "Converted Reports"
 
 NEW_DB_CONFIG = os.path.join(

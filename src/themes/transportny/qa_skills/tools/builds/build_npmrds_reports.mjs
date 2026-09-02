@@ -86,7 +86,7 @@ const ENV = {
 };
 const CLI = "src/dms/packages/dms/cli/bin/dms.js";
 const PATTERN = "npmrds_sub";
-const SLUG = "converted_reports";
+const SLUG = "reports"; // renamed 2026-09-02 from "converted_reports", see rename-converted-reports-url-to-reports.md
 const TITLE = "Converted Reports";
 
 const cli = (...a) => execFileSync("node", [CLI, ...a], { env: ENV, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
@@ -138,8 +138,10 @@ function assertFlat(elementData, where) {
 const L = {
   home: "/home",
   macro: "/macro",
-  reports: "/converted_reports",
-  reportIndex: "/converted_reports/reports",
+  reports: "/reports",
+  // reportIndex previously pointed at the `converted_reports/reports` catalog page (2208581),
+  // destroyed 2026-09-02 (v0.1 landing page) — repointed at the reports homepage itself.
+  reportIndex: "/reports",
   comparison: "/route_comparison",
   map21: "/map_21",
   docOverview: "/docs/npmrds/overview",

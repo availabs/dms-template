@@ -63,7 +63,7 @@ const PAGE_TYPE = `${PATTERN}|page`;
 const COMPONENT_TYPE = `${PATTERN}|component`;
 const PAGE_TEMPLATE_ID = 2187021;                    // "Report Page" page template
 const REPORTS_SNAP_TYPE = 'reports_snap_2|2177440:data';
-const DEFAULT_PARENT_SLUG = 'converted_reports';
+const DEFAULT_PARENT_SLUG = 'reports';
 // The "Routes Data" catalog a spec's `route_id`s refer to.
 const ROUTES_SOURCE_ID = 2107426;
 const ROUTES_VIEW_ID = 2107427;
@@ -1494,7 +1494,7 @@ let pageId, slug, parentRef, graphTrackingIds, sectionDatas;
 // `sidebarGroup` lookup (`groupSource.find(g => g?.position === 'sidebar' ||
 // g?.name === 'sidebar')`) falls back to a synthetic `{name:'sidebar',
 // position:'sidebar', theme:'content'}` when the groups array has no explicit
-// sidebar entry — exactly what `converted_reports/snapshot`'s own real
+// sidebar entry — exactly what `reports/snapshot`'s own real
 // `section_groups` (a single content-position entry) relies on. A first, WRONG
 // attempt at this part of the fix (forcing every section's `group` to
 // 'default') broke the rail entirely — RRL rendered as a full-width stacked
@@ -1775,8 +1775,9 @@ const routeEntries = spec.routes.map((r, i) => {
 const cleanSpec = stripInternal(spec);
 const specKeyMap = Object.fromEntries(spec.graphs.map((g, i) => [g.key, graphTrackingIds[i]]));
 
-// Catalog metadata (`/reports`'s category tiles, e.g. `converted_reports/reports` id
-// 2208581) — read directly from each Card section's `filterGroups`: every one of the 5
+// Catalog metadata (category tiles filtering by tag, formerly on the `converted_reports/reports`
+// id 2208581 landing page — destroyed 2026-09-02, see rename-converted-reports-url-to-reports.md)
+// — read directly from each Card section's `filterGroups`: every one of the 5
 // category tiles filters `reports_snap_2` on `{col: 'tags', op: 'filter', value:
 // ['category:<x>']}`, so `tags` is the actual row-selection mechanism, not just display —
 // a spec-built row missing it is invisible on the catalog, not just under-labeled.

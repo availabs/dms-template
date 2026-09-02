@@ -22,7 +22,7 @@
   "entries": [
     {
       "key": "golden_corpus_linegraph",
-      "url": "converted_reports/golden_corpus_line_graph",
+      "url": "reports/golden_corpus_line_graph",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-linegraph.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-linegraph.json --replace --publish",
       "authRequired": true,
@@ -39,7 +39,7 @@
     },
     {
       "key": "golden_corpus_bargraph",
-      "url": "converted_reports/golden_corpus_bar_graph",
+      "url": "reports/golden_corpus_bar_graph",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-bargraph.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-bargraph.json --replace --publish",
       "authRequired": true,
@@ -63,7 +63,7 @@
     },
     {
       "key": "golden_corpus_gridgraph",
-      "url": "converted_reports/golden_corpus_grid_graph",
+      "url": "reports/golden_corpus_grid_graph",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-gridgraph.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-gridgraph.json --replace --publish",
       "authRequired": true,
@@ -80,7 +80,7 @@
     },
     {
       "key": "golden_corpus_routemap",
-      "url": "converted_reports/golden_corpus_route_map",
+      "url": "reports/golden_corpus_route_map",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-routemap.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-routemap.json --replace --publish",
       "authRequired": true,
@@ -97,7 +97,7 @@
     },
     {
       "key": "dynamic_report_one_week_study",
-      "url": "converted_reports/one_week_study?routes=2207838&asOf=2026-07-23",
+      "url": "reports/one_week_study?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/one_week_study.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/one_week_study.json --replace --publish",
       "wait": 20000,
@@ -129,7 +129,7 @@
     },
     {
       "key": "dynamic_report_monthly_congestion",
-      "url": "converted_reports/monthly_congestion?routes=2207838&asOf=2026-07-23",
+      "url": "reports/monthly_congestion?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/monthly_congestion.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/monthly_congestion.json --replace --publish",
       "authRequired": true,
@@ -146,7 +146,7 @@
     },
     {
       "key": "dynamic_report_seasonality",
-      "url": "converted_reports/seasonality?routes=2207838&asOf=2026-07-23",
+      "url": "reports/seasonality?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/seasonality.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/seasonality.json --replace --publish",
       "authRequired": true,
@@ -166,7 +166,7 @@
     },
     {
       "key": "dynamic_report_annual_average_study",
-      "url": "converted_reports/annual_average_study?routes=2207838&asOf=2026-07-23",
+      "url": "reports/annual_average_study?routes=2207838&asOf=2026-07-23",
       "source": "spec:scripts/npmrds-reports/dynamic_report_specs/annual_average_study.json",
       "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/annual_average_study.json --replace --publish",
       "authRequired": true,
