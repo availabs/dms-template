@@ -5,6 +5,11 @@
 export const reportPageHeaderTheme = {
   wrapper: "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-6 py-6",
 
+  // ── backlink to the reports landing page (same vocabulary as routecreation's own
+  // "All routes" backlink — font-mono uppercase kicker-style label, brand-blue link color) ──
+  backLink: "inline-flex items-center gap-1.5 mb-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#1F3F8F] hover:underline",
+  backIcon: "size-3",
+
   // ── kicker row: label · rule · meta · published/draft pill ──
   kickerRow: "flex items-center gap-3 mb-2 flex-wrap",
   kickerLabel: "font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]",

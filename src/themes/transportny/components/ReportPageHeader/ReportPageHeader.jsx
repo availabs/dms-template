@@ -138,6 +138,13 @@ export default function ReportPageHeader() {
     navigate(`${location.pathname}${search ? `?${search}` : ''}`);
   };
 
+  // Backlink to the reports landing page (Ryan, 2026-09-03: no way to navigate back to the
+  // reports list from an individual report page). Site-absolute authored path, resolved
+  // against the current mount the same way RouteIdentityPanel's "All routes" backlink does
+  // (its `#routes` counterpart on the reports homepage) — bare `/reports` rather than an
+  // anchor, since this just needs to land on the landing page, not a specific band on it.
+  const reportsHomeHref = resolveMountPath('/reports', mountBaseUrl, siteRootPaths);
+
   const canEdit = Boolean(editPageMode);
   const d = state?.display || {};
 
@@ -188,6 +195,15 @@ export default function ReportPageHeader() {
 
   return (
     <div className={t.wrapper}>
+      <a
+        href={reportsHomeHref}
+        className={t.backLink}
+        onClick={(e) => { e.preventDefault(); navigate(reportsHomeHref); }}
+      >
+        <Icon icon="ArrowLeft" className={t.backIcon} />
+        All reports
+      </a>
+
       <div className={t.kickerRow}>
         {canEdit ? (
           <input
