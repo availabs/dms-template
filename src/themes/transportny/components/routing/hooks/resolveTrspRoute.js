@@ -15,8 +15,12 @@
 //
 // No `algorithm: "alt"` override: the ALT/landmark heuristic's cold precompute is too slow for a
 // live click and stalls the UI on long routes - see
-// planning/transportny/tasks/current/alt-landmark-heuristic-routing.md. Defaults to plain
-// dijkstra on the backend.
+// planning/transportny/tasks/current/alt-landmark-heuristic-routing.md.
+//
+// `algorithm` IS sent now (chooseAlgorithm/haversineMiles.js, same auto-select the sibling
+// ../../detour plugin already does) - this call previously never sent it at all, silently
+// defaulting to the backend's plain "dijkstra" for every request including genuinely long routes,
+// which is what made long routes take ~10s+.
 //
 // The user drops pins at real-world points (usePointPicker.js) - this sends raw lon/lat and lets
 // the backend snap server-side to the nearest graph node (data-types/routing/index.js's
@@ -28,11 +32,11 @@
 // turn-restriction-aware.
 const API_HOST = import.meta.env.VITE_API_HOST || "https://dmsserver.availabs.org";
 
-export async function resolveTrspRoute(source, destination, pgEnv) {
+export async function resolveTrspRoute(source, destination, pgEnv, algorithm) {
   const res = await fetch(`${API_HOST}/dama-admin/${pgEnv}/routing/trsp-memory`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ source, destination }),
+    body: JSON.stringify({ source, destination, algorithm }),
   });
   const { ok, result, error } = await res.json();
   if (!ok) throw new Error(error || "Routing request failed");

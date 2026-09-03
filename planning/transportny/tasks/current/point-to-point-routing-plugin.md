@@ -1404,3 +1404,50 @@ against the 2025 data after a server restart on this plugin's sibling (`detour`)
 shares the exact same backend resolution path, so the same fix applies here with no plugin-specific
 changes needed. `DEFAULT_CONFLATION_VIEW_ID` and all `conflation_view_id` passing removed from this
 plugin's frontend permanently, confirmed via `git commit 7192724`.
+
+### NY-boundary click gate - shipped
+
+`usePointPicker.js` now rejects a click that isn't near any real graph node before placing a
+point (shows "Routing only covers New York State..." via `RouteDetailsPanel`'s new `outOfBounds`
+prop). Two approaches tried first, both rejected - see the sibling `detour` task file's own "NY-
+boundary click-gate" entry for the fuller history:
+
+1. A bundled static NY county-boundary GeoJSON + client-side point-in-polygon - rejected (a 70KB
+   duplicated dataset, doesn't guarantee it matches actual road coverage).
+2. A new dedicated backend route - rejected per explicit instruction not to add a new route.
+
+**Shipped approach**: reuses the existing `GET /routing/nodes?bbox=...` route (already used
+elsewhere for viewport lookups) - on click, query a box around the point; zero nodes returned =
+reject. No new route, no static file.
+
+**Bbox size found wrong on first pass, fixed live**: started at `0.005°` (~500m), which
+false-rejected genuine clicks in sparse areas - verified directly against the backend that a real
+point deep in the Adirondacks returns zero nodes even at `0.05°` (~5.5km), only resolving at
+`0.1°` (~11km). Widened `COVERAGE_BBOX_DEGREES` to `0.1` - re-verified both directions: the
+Adirondacks point now resolves, and the original Scranton PA test case (used to catch the original
+bbox-bounding-box bug) still correctly returns zero nodes at this wider size. Accepted trade-off:
+a click just over a nearby state border may now fall inside the box too (its nodes are close
+enough) - preferred over false-rejecting real NY clicks in rural/mountainous areas.
+
+Frontend-only, no backend restart needed - live-network call per click against an existing route.
+
+### Missing algorithm dispatch - long routes were always slow, fixed
+
+Found while investigating "long routes taking a lot of time" (~10s+): `resolveTrspRoute.js` never
+sent an `algorithm` param in its request body at all, so every request - including genuinely long
+point-to-point routes - silently defaulted to the backend's plain `dijkstra`, never using
+`bidirectional` even where it clearly wins. The sibling `detour` plugin's own copy of this hook
+already auto-selects `bidirectional` past 80mi straight-line (`chooseAlgorithm`/
+`haversineMiles.js`, validated in this file's own 20-pair benchmark); this plugin simply never got
+that fix applied to it.
+
+Added a matching `haversineMiles.js`/`chooseAlgorithm` here and threaded `algorithm` through
+`resolveTrspRoute` -> `useTrspRoute` -> `comp.jsx`'s `getRoute` call. Does **not** touch the
+backend's own default (still plain `dijkstra` when no `algorithm` is sent - that blanket
+auto-dispatch was tried and reverted server-side per the 20-pair benchmark, see
+`data-types/routing/index.js`'s own comment on `/trsp-memory`) - this is the same per-request,
+client-chosen override mechanism the backend already explicitly supports and `detour` already
+uses, not a change to server behavior.
+
+Frontend-only, no backend restart needed - the backend already accepted the `algorithm` override,
+it just was never being sent.

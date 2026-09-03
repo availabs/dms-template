@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { resolveTrspRoute } from "./resolveTrspRoute";
+import { chooseAlgorithm } from "./haversineMiles";
 
 // Owns the backend call + both route variants (shortest/fastest), fired explicitly by the "Get
 // Route" button (not automatically on point selection - see comp.jsx). `selectedVariant` is
@@ -19,7 +20,7 @@ export const useTrspRoute = (pgEnv) => {
     setLoading(true);
     setError(null);
 
-    resolveTrspRoute(source, destination, pgEnv)
+    resolveTrspRoute(source, destination, pgEnv, chooseAlgorithm(source, destination))
       .then((r) => {
         if (requestIdRef.current !== requestId) return;
         setRoutes(r);

@@ -16,6 +16,7 @@ const RouteDetailsPanel = ({
   canGetRoute,
   loading,
   error,
+  outOfBounds,
   routes,
   selectedVariant,
   onSelectVariant,
@@ -41,6 +42,12 @@ const RouteDetailsPanel = ({
       <div className={t.title}>Point-to-point route</div>
 
       {step && <div className={t.stepText}>{step}</div>}
+
+      {outOfBounds && (
+        <div className={t.errorText}>
+          Routing only covers New York State - click within the state to place a point.
+        </div>
+      )}
 
       {loading && <div className={t.loadingText}>Computing route…</div>}
 

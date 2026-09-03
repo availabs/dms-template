@@ -15,7 +15,7 @@ const Comp = ({ state, setState, map }) => {
   const ctx = mctx?.falcor ? mctx : cctx;
   const { pgEnv } = ctx || {};
 
-  const { source, destination, reset: resetSelection } = usePointPicker(map, true);
+  const { source, destination, outOfBounds, reset: resetSelection } = usePointPicker(map, true, pgEnv);
 
   const {
     routes, selectedVariant, setSelectedVariant, loading, error, getRoute, reset: resetRoute,
@@ -41,6 +41,7 @@ const Comp = ({ state, setState, map }) => {
       canGetRoute={Boolean(source && destination)}
       loading={loading}
       error={error}
+      outOfBounds={outOfBounds}
       routes={routes}
       selectedVariant={selectedVariant}
       onSelectVariant={setSelectedVariant}
