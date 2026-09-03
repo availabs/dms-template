@@ -1394,5 +1394,13 @@ configuration.
 
 **Superseded same day** - see the sibling file's [§ "2025 conflation data, take
 2"](./detour-avoid-segment-routing-plugin.md). `DEFAULT_CONFLATION_VIEW_ID` is removed again from
-this plugin's `constants.js`; the backend now resolves 2025 tables via hardcoded literals (no DB
-lookup) instead. Not yet live-tested against a server restart.
+this plugin's `constants.js`; the backend resolved 2025 tables via hardcoded literals briefly, then
+was refined further (same day, § "Conflation table resolution refined again") to resolve by
+hardcoded `source_id` + a hardcoded `CURRENT_CONFLATION_VERSION` constant against
+`data_manager.views`, memoized once per server process (no per-request DB cost) - this survives a
+future conflation reprocess without a code change, unlike a literal table name or a hardcoded
+`view_id`. **Live-tested and confirmed working** (2026-09-02) - real routes computed successfully
+against the 2025 data after a server restart on this plugin's sibling (`detour`); this plugin
+shares the exact same backend resolution path, so the same fix applies here with no plugin-specific
+changes needed. `DEFAULT_CONFLATION_VIEW_ID` and all `conflation_view_id` passing removed from this
+plugin's frontend permanently, confirmed via `git commit 7192724`.

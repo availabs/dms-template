@@ -2372,3 +2372,285 @@ Verified via `node --check` and `npx eslint` (same pre-existing findings only, n
 **Not yet live-tested** - needs a backend restart to confirm the warm-load resolves all four
 tables correctly and that a real request afterward is fast (no DB round trip beyond the one-time
 warm-load cost).
+
+### Root-caused the candidate-gap-relaxation issue (from the diagnostic log), fixed the actual cause
+
+The "points look closer than 1 mile" question (raised right after the source_id+version fix above)
+was root-caused, not just re-explained as the known tradeoff, once real diagnostic data came back:
+```
+rawStartPoolSize: 41002, ... startSameValidCount: 151, startOtherValidCount: 150,
+candidatesRejected: 0, startGapUsedM: 402.335, endGapUsedM: 402.335
+```
+User's sharp pushback - **"but this is happening or all segment[s]... this is a trad[e]off but
+not for all things right?"** - was correct: `startGapUsedM`/`endGapUsedM` of ~402m (0.25mi, exactly
+two halvings from the 1609m target) with ZERO rejected candidates and a 41,002-node raw pool is
+not "the road genuinely lacks spread" (the documented tradeoff) - it's a real, fixable cause.
+
+**Root cause**: `MAX_ATTEMPTS` (`numCandidates * 30` = 300) validation attempts were spent on a
+CONTIGUOUS NEAREST-FIRST PREFIX of the raw pool (`budgetTestIndices`'s old `for (let i = 0; i <
+sameRoadCap; i++)` loop). On a dense network (41,002 raw nodes within the 8mi radius), 300
+nearest-first attempts never reach past roughly the first mile - so `MIN_GAP_M`'s gap-relaxation
+logic was handed an artificially clustered validated pool and had no choice but to shrink the gap,
+even though the road clearly has far more spread available (41,000 nodes' worth) that the search
+simply never got to.
+
+**Fix**: `budgetTestIndices` (`data-types/routing/memoryGraph.js`) now picks its `MAX_ATTEMPTS`
+worth of validation attempts STRATIFIED across the full distance range instead of a nearest-first
+prefix - `stratifiedIndices(poolLength, cap)` picks `cap` indices evenly spaced across
+`[0, poolLength)` (`Math.floor(i * poolLength / cap)`), applied separately to the same-road and
+"other" sub-ranges. Near, mid, and far candidates all get a chance to be validated within the SAME
+total budget - no change to `MAX_ATTEMPTS` itself, no change to the 8mi search radius, only where
+within that radius the fixed attempt budget gets spent. `applyBudget`'s same-road/other
+classification changed from a magnitude check (`idx < sameRoadCap`, which assumed a contiguous
+prefix) to an explicit `sameRoadIndexSet.has(idx)` Set membership check, since a stratified pick
+can land anywhere in its sub-range, not just below a cutoff.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings, no new errors).
+
+**Not yet live-tested** - needs a backend restart. Expect `startGapUsedM`/`endGapUsedM` to land
+much closer to the full 1609m target on segments like the one diagnosed above (dense network,
+plenty of raw candidates) - if it's still relaxing significantly on a network with a genuinely
+large raw pool, that's a sign this fix needs another look, not that the tradeoff was correct all
+along.
+
+### REVERTED same day, live-tested and rejected
+
+Live test after restart: candidates now spread across a MUCH larger geographic area (a screenshot
+spanning Halfmoon down to Colonie/Troy - many miles) and the analysis visibly slowed down. User's
+verdict, direct and immediate: **"points are coming in both direction that is not the thing i
+wanteed at all so revert it first."**
+
+This is the real, predictable cost of stratified sampling that wasn't weighed clearly enough before
+implementing: spreading the SAME `MAX_ATTEMPTS` validation budget across the full 8mi radius means
+some of those 300 searches now run against genuinely far candidates instead of exclusively nearby
+ones - each such search costs more (longer path), which is a real, direct explanation for "taking a
+lot of time." More importantly, the RESULT itself - candidates legitimately spread across many
+miles instead of clustered near the closure - was explicitly not what was wanted, even though it
+technically satisfies "genuinely spread out, not clustered." The tighter, closer-together candidate
+set (the thing this fix set out to "fix") was closer to the actually-desired behavior than the
+wider, farther-spread, slower alternative.
+
+**Reverted**: `budgetTestIndices` and `applyBudget` both restored to their exact pre-fix,
+byte-identical-to-commit-`7192724` state (confirmed via `diff`) - `stratifiedIndices` and
+`sameRoadIndexSet` fully removed, back to the plain nearest-first contiguous-prefix budget. Verified
+via `node --check` and `npx eslint` (same 3 pre-existing findings only).
+
+**Where this leaves the original gap-relaxation question**: back to the pre-diagnosis state - the
+0.25mi-instead-of-1mi gap on dense networks is confirmed, real, and its root cause (budget spent
+entirely near-first) is understood, but the fix that follows from that root cause was tried and
+explicitly rejected on the basis of its actual live behavior, not reverted blind. Any future attempt
+at this needs a mechanism that doesn't trade "clustered but fast and geographically tight" for
+"spread but slow and geographically wide" - both extremes were now tested live and both were
+rejected for different reasons (the ORIGINAL gap-relaxation issue was rejected as "not that good";
+this fix's over-correction was rejected as "not what i wanted at all"). Left genuinely unresolved,
+not silently dropped.
+
+### A third, much more precisely specified rewrite: round-synchronized multi-branch expansion
+
+Given a precise, literal spec this time - **"i said expand in dir[ection] if junc[tion] come from
+the side expand one node in junc[tion] and one in the same dir[ection]... if 2-3 junction there
+expand 1-1-1 in all dir[ections] and another round in all dir[ections] and continue... can take
+more than 10 if it['s] there"** - implemented a genuinely different search algorithm from the two
+reverted earlier attempts (weighted-Dijkstra direction bias; distance-stratified validation
+budget). User also floated using AADT (traffic volume) to help distinguish real branches from
+minor forks on short roads - noted as a good follow-up, deliberately NOT bundled into this same
+change since it requires loading a new column into the in-memory graph (the same class of change
+as the reverted `edgeOsm` load) and this rewrite was already substantial enough on its own.
+
+**`farthestToNearestNodes` rewritten** (`data-types/routing/memoryGraph.js`) - replaced the plain
+distance-ordered Dijkstra flood entirely with a round-synchronized branch walk: every ACTIVE
+branch (starting as just the seed) advances by exactly ONE hop per round; when a branch's node
+offers more than one viable next edge (a real junction, pure topology), that ONE branch is
+replaced by MULTIPLE new branches - one per viable direction - each of which ALSO advances by one
+hop on the SAME round (so a 3-way junction produces 3 new frontier nodes in one round, not
+staggered). Every frontier node a round produces is a candidate. A branch's "which road does this
+represent" tag is set on its first hop and inherited by every child branch a later junction spawns
+from it - this is what feeds the existing same-road/other classification, unchanged in meaning.
+Same function signature and `{nodes, sameRoadCount}` return shape as before, so the caller needed
+minimal changes.
+
+**Selection logic also changed** to honor "can take more than 10 if it's there": the gap-relaxation
+mechanism (`pickWithBestEffortGap`, which shrunk `MIN_GAP_M` down to hit exactly `numCandidates`)
+is REMOVED - replaced with `pickWithFixedGap`, which never relaxes below the full 1-mile gap and
+never caps the result at `numCandidates`. `numCandidates` is now the same-road-first fallback
+logic's MINIMUM TARGET (try same-road-only at full spacing first; only fall back to the combined
+same-road+branched pool if same-road alone can't reach the target), not a count either side is
+forced to hit exactly. The reasoning for why this is safe now (it wasn't, twice, on 2026-08-24):
+those earlier hard-floor attempts ran against the OLD distance-ordered flood-fill, which really
+could produce a thin pool on a small network; the new round-based search produces a structurally
+richer, genuinely-multi-directional pool by construction, so a full non-relaxing gap should
+actually work rather than starve.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings only, no new errors)
+and `grep` (confirmed zero dangling references to the removed `pickWithMinGap`/
+`pickWithBestEffortGap`/`reachedVia`).
+
+**Not yet live-tested** - needs a backend restart. Given the very direct rejections of both prior
+attempts, this should be evaluated carefully against the user's literal spec (does expansion
+genuinely follow "1-1-1 per junction, one round at a time," do candidates land in believable,
+locally-sensible places rather than either clustered or scattered miles apart, is the count
+sometimes above 10 as expected) before being trusted.
+
+### Fix: round-based expansion was dying to ~1 branch (global `visited` starvation)
+
+Live test of the above: **"it just picking 1-1 points so just expand it more."** Root cause: the
+round-based rewrite still gated every branch's next-step options through one GLOBAL `visited` Set
+shared across ALL branches. On any real (non-rural) road network, branches spreading outward from
+nearby junctions race to claim the same small pool of nearby nodes - within a few rounds almost the
+entire local neighborhood is claimed by whichever branch got there first, and every other branch
+has nothing left to step onto and dies. Only the 1-2 branches that happened to escape into
+genuinely untouched territory survive to keep producing candidates - exactly the "1-1" symptom.
+
+**Fix** (`farthestToNearestNodes`, `data-types/routing/memoryGraph.js`): removed the global
+`visited` Set entirely. Each branch now only avoids its own immediate previous node/edge
+(`prevNode`/`prevEdge`, already tracked - prevents trivial one-step backtracking); it's otherwise
+free to cross paths with a sibling branch. Added `MAX_ACTIVE_BRANCHES = 400` as a safety valve
+(deterministic truncation if a single round would spawn more branches than that) so removing global
+dedup can't cause unbounded branch-count blowup on a dense grid. The final `reached` list is
+deduplicated by node afterward (nearest-distance occurrence wins) so overlapping branches don't
+report the same candidate twice - this replaces what the old global `visited` was doing, but only
+at the reporting stage, not during exploration (so it no longer starves other branches).
+
+Verified via `node --check` (clean) and `npx eslint` (same 3 pre-existing findings only - `require`/
+`module` not defined under the ESM-flavored lint config, `edgeSource` unused elsewhere in the file;
+no new errors introduced).
+
+User confirmed AADT integration stays scoped to "just for the no u-turn stuff" - i.e. purely a
+future aid for picking which junction direction is the real one (to suppress U-turn candidates on
+short roads), not bundled into this fix and not a general search-weighting change.
+
+**Not yet live-tested** - needs a backend restart, then re-verify against the same checklist as
+above (genuine multi-directional spread, locally-sensible placement, count sometimes >10) plus
+confirm this specific fix: multiple candidates per side again, not just 1-1.
+
+### Reverted: round-based rewrite dropped entirely, back to 10-10 flood-fill
+
+User: **"i mean from it started picking only 1-1 points revert that and tack back to 10-10."** The
+global-visited fix above was not trusted as a live-tested fix for a live-tested regression - reverted
+the whole round-synchronized branch-expansion algorithm (both the original rewrite and the
+global-visited fix on top of it) via `git checkout 7192724 -- data-types/routing/memoryGraph.js`,
+back to the plain distance-ordered flood-fill (`farthestToNearestNodes`) and `pickWithBestEffortGap`
+selection that was last confirmed live to reliably produce 10-10 candidates. This reintroduces the
+known, previously-diagnosed tradeoff: on a thin candidate pool, the gap can relax well below the
+1-mile target (real diagnostic data showed candidates as close as ~402m / 0.25mi in one case) -
+this was root-caused (validation budget spent nearest-first only) but not yet fixed in a way the
+user has accepted; see the two earlier rejected fix attempts above (directional-bias weighting,
+distance-stratified budget) and the round-based rewrite itself, all three tried and reverted. This
+problem (10-10 count vs. real 1-mile spacing) is genuinely unresolved as of this revert - no
+further attempt is in flight.
+
+Verified via `node --check` (clean) and `git diff --stat` (only doc/task-file changes remain
+outside this revert; `memoryGraph.js` is byte-identical to commit 7192724 again).
+
+### Overshoot-and-drop-the-near-end fix
+
+User observation, live-tested against the 10-10 flood-fill above: **"first 3-3 points were worst
+where last 10 points were great, so can we keep 15 for the points and pick last 10"** - i.e. the
+nearest picks (closest to the closure) are consistently the weak ones, and the farthest picks
+within the validated set are consistently the strong ones.
+
+**`selectClosureDensityCandidates`** (`data-types/routing/memoryGraph.js`): added
+`OVERSHOOT = 5` and `searchTarget = numCandidates + OVERSHOOT` (15 when `numCandidates` is the
+default 10). `MAX_ATTEMPTS` and `selectPreferSameRoad`'s gap-relaxation target both now use
+`searchTarget`, not `numCandidates` directly - so the extra 5 candidates are genuinely searched
+and validated for, not sliced out of what a 10-target search would have found anyway (which would
+just be the same 10 near points, no better/worse). After selection, `startCandidates`/
+`endCandidates` (already nearest-to-farthest sorted, since `pickWithMinGap` walks that direction)
+are sliced to `.slice(-numCandidates)` - keeping only the farthest `numCandidates` (10), dropping
+the nearest `OVERSHOOT` (5).
+
+No change to `DENSITY_NUM_CANDIDATES` (stays 10, reverted from a brief 13 earlier the same day per
+"taking a lot of time keep it 10") - `numCandidates` the caller passes is still the requested final
+count; overshoot is purely internal search/selection headroom.
+
+Verified via `node --check` (clean). **Reverted same day, before ever being live-tested** - "lol
+revert that." Back to byte-identical with commit 7192724 again.
+
+**Reapplied 2026-09-03** - "now can we try to improve the points as noted yestaday." Same change as
+above (`OVERSHOOT = 5`, `searchTarget` drives `MAX_ATTEMPTS`/`selectPreferSameRoad`, final
+`.slice(-numCandidates)` keeps the farthest 10 of 15 searched). Verified via `node --check` and
+`npx eslint` (same 3 pre-existing findings only).
+
+**Live-tested, request time flagged**: "it's taking a lot of time... i mean its 15 right?" -
+confirmed `searchTarget` (15) driving `MAX_ATTEMPTS` was a real cost increase (450 vs 300
+validations/side). Fixed by decoupling: `MAX_ATTEMPTS` reverted to `numCandidates * 30` (original
+cost), `searchTarget` kept only for the selection-target widening. Verified, not yet re-tested at
+that point before the next round of live feedback arrived.
+
+**Live-tested again, real clustering bug found**: screenshot showed 10 candidates landing almost on
+top of each other in a tight loop near the closure (Saratoga Ave/Cohoes) - matches the diagnostic
+log from the same test: `startGapUsedM: 100.58375` (barely a tenth of the 1-mile target). Root
+cause: on a dense local grid, the ENTIRE validation budget (nearest-graph-order first) gets spent
+inside one small real-world radius before ever reaching genuinely farther, spread-out roads - so
+even "keep the farthest of what got searched" still only had a tightly-clustered pool to choose
+from. Proposed a distance-targeted validation-index fix (test near/mid/far real-world distances
+instead of nearest-order); user declined that specific direction.
+
+### Hard gap floor (2026-09-03) - the actual accepted fix
+
+Explicit instruction: **"i want you to follow the rules and pick the points based on that i know
+some roads are not like that and will not follow our rules but yeah you have to pick the good
+points... i mean its total 1 mile gap between all points."** Reading: the 1-mile spacing is the
+non-negotiable rule; `numCandidates` (10) becomes a CEILING, not a floor - a road whose validated
+pool genuinely can't support 10 points a full mile apart should return FEWER points, never closer
+ones. This is a direct reversal of the 2026-08-21 "count is the hard requirement, spacing gives
+way" rule that had been in place since the very first version of this feature - that original rule
+is exactly what produced every clustering complaint this session, all the way back to the first one.
+
+**`selectClosureDensityCandidates`** (`data-types/routing/memoryGraph.js`):
+- `pickWithBestEffortGap`/`pickWithMinGap` (relaxing, count-capped) REMOVED, replaced with
+  `pickWithFixedGap(sortedValid, minGapM)` - takes EVERY candidate that clears the full `MIN_GAP_M`
+  from the previous pick, no count target, no relaxation at all.
+- `selectPreferSameRoad` same-road-first fallback logic unchanged in shape (try same-road-only
+  first, fall back to combined same-road+other only if same-road alone can't reach `numCandidates`)
+  but now calls `pickWithFixedGap` instead of the relaxing picker.
+- The OVERSHOOT/keep-farthest-10-of-15 logic (`searchTarget`, `.slice(-numCandidates)` after
+  selection) is UNCHANGED and composes naturally with the hard floor: `pickWithFixedGap` now
+  returns however many points genuinely clear the gap (could be fewer OR more than
+  `numCandidates`), and the final slice still keeps only the farthest `numCandidates` of those.
+- `startGapUsedM`/`endGapUsedM` in the diagnostic/response are now always exactly `MIN_GAP_M` (or
+  `null` if literally zero candidates passed) - they no longer vary run-to-run, since the gap is
+  never relaxed anymore.
+- Removed all dangling comment references to the deleted relaxing picker; confirmed via `grep`.
+
+Verified via `node --check` (clean) and `npx eslint` (same 3 pre-existing findings only - no new
+errors from the removed function).
+
+**Not yet live-tested.** This is a real behavior change or the request may now more often return
+FEWER than 10 candidates per side on dense/short local networks (by design, per the user's explicit
+instruction) - re-verify this is the actually-wanted trade-off once tested, not just that spacing
+looks correct.
+
+### Reverted: hard gap floor rejected on live testing - "do not focus on distance"
+
+Live test: **"no it's not good revert to last, do not focus on distance just keep points good."**
+The hard, non-relaxing gap floor is REVERTED - back to `pickWithBestEffortGap` (relaxes the gap
+downward, never the count) + the decoupled `searchTarget`/OVERSHOOT (search 15, keep farthest 10,
+`MAX_ATTEMPTS` sized off the original `numCandidates` so cost stays at the 10-10 baseline) - this
+is the exact state from the "it's taking a lot of time... i mean its 15 right?" fix earlier in this
+same file, restored verbatim. `pickWithFixedGap` and its `HARD GAP FLOOR` comment block are
+removed entirely; confirmed via `grep` (zero remaining references).
+
+**This closes out the hard-floor idea for this session**: it has now been tried and rejected on
+live data four separate times total (2026-08-24 x2 under the old search algorithm, 2026-09-03
+under this one) - most recently on the user's own explicit instruction to prioritize picking GOOD
+(valid, real) points over strictly enforcing the 1-mile spacing. Do not re-attempt a non-relaxing
+gap floor without a new, explicit ask.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings only). **Not yet
+live-tested** post-revert - needs a backend restart. Current live behavior is unchanged from the
+"it's taking a lot of time" fix: search 15 within the original 10-10-sized budget, keep the
+farthest 10 of whatever validates, gap relaxes downward if the count can't be hit at full spacing.
+No further point-picking change is in flight; genuinely open items remain the same as documented
+throughout this file (interchange fake-branches, trivially-local small networks, AADT for
+no-U-turn).
+
+### Reverted further: overshoot/keep-farthest also dropped, plain 10-10 restored
+
+**"now leave and revert the overlook also just normal 10-10 points keep those."** The
+overshoot/keep-farthest-10-of-15 logic is also reverted - `git checkout 7192724 --
+data-types/routing/memoryGraph.js` again, back to byte-identical with that commit. Plain 10-10
+point picking, `MIN_GAP_M` relaxes downward if the validated pool can't support the full count at
+full spacing - no overshoot, no hard floor, no other change in flight. This is the same stable
+baseline the file has repeatedly been reverted back to throughout this session; nothing in
+`selectClosureDensityCandidates` differs from commit 7192724 as of this entry.
