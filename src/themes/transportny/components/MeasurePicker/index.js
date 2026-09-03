@@ -52,7 +52,11 @@ import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages
 // MEASURE_PICKER_COLUMN_ORIGIN. "delta" added 2026-08-21 for Table's own Route Compare "% vs
 // Main" column (composeMeasureConfig.js's buildRouteCompareDeltaColumn) — same reasoning, a
 // picker-owned column that must be fully replaced (not left as an orphan) on every re-pick.
-const MANAGED_TARGETS = ['xAxis', 'yAxis', 'color', 'delta'];
+// "height" added 2026-09-02 for GridGraph's row-height-by-TMC-length column
+// (composeMeasureConfig.js's buildGridHeightColumn) — same reasoning again: without it, a
+// re-pick (measure/resolution change, or a graph-type round-trip through and back out of
+// GridGraph) would leave a stale height column in place and append a new one alongside it.
+const MANAGED_TARGETS = ['xAxis', 'yAxis', 'color', 'delta', 'height'];
 
 function selectItem({ id, name, options, value, onPick }) {
     const current = options.find(o => o.value === value);

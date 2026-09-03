@@ -92,12 +92,21 @@ const Comp = ({ state, setState, map }) => {
   const [creationMode, setCreationModeState] = useState(DEFAULT_CREATION_MODE);
   const isMarkerMode = creationMode === CREATION_MODES.MARKERS;
 
-  const { markerCount, removeLastMarker, clearAllMarkers } = useMapMarkerHandler(
+  const { markerCount, removeLastMarker, clearAllMarkers, isResolving } = useMapMarkerHandler(
     map, setState, pluginDataPath, isMarkerMode, DEFAULT_ROUTING_YEAR
   );
   const { toggleTmc, removeLastTmc, clearAllTmc } = useMapTmcHandler(
     map, state, setState, pluginDataPath, symbPath, !isMarkerMode
   );
+  // "Clear all" resets everything regardless of which mode is active - previously it
+  // ran only whichever of clearAllTmc/clearAllMarkers matched the CURRENT mode, so
+  // e.g. clicking it in TMC Click mode never touched marker-mode state (2026-09-03
+  // user report: "Whenever i click clear all, it should clear them, regardless of
+  // mode").
+  const clearAll = useCallback(() => {
+    clearAllTmc();
+    clearAllMarkers();
+  }, [clearAllTmc, clearAllMarkers]);
   const { setHoveredTmc } = useMapHoverHandler(map, state, setState, pluginDataPath);
 
   // Tracks whether the currently-typed 9-char searchInputTmc resolved to a real
@@ -277,6 +286,8 @@ const Comp = ({ state, setState, map }) => {
       <RouteIdentityPanel
         name={modalState.name}
         tags={modalState.tags}
+        onTagsChange={(tags) => setModalState((prev) => ({ ...prev, tags }))}
+        user={user}
         tmcCount={tmc_array?.length || 0}
         totalMiles={totalMiles}
         routeId={routeIdFilterValue}
@@ -293,7 +304,7 @@ const Comp = ({ state, setState, map }) => {
         addTmcFromSearch={addTmcFromSearch}
         removeTmc={removeTmc}
         removeLastTmc={removeLastTmc}
-        clearAllTmc={clearAllTmc}
+        clearAll={clearAll}
         hoveredTmc={hoveredTmc}
         setHoveredTmc={setHoveredTmc}
         setModalOpen={(val) => setModalState((prev) => ({ ...prev, open: val }))}
@@ -301,25 +312,13 @@ const Comp = ({ state, setState, map }) => {
         setCreationMode={setCreationMode}
         markerCount={markerCount}
         removeLastMarker={removeLastMarker}
-        clearAllMarkers={clearAllMarkers}
+        isResolving={isResolving}
         isEditingRoute={Boolean(routeIdFilterValue)}
       />
       <ModeHintPill creationMode={creationMode} />
       <SaveRouteModal
+        open={modalState.open}
         isEditingRoute={Boolean(routeIdFilterValue)}
-        modalStyle={{
-          display: modalState.open ? "block" : "none",
-          position: "fixed",
-          top: "10%",
-          left: "25vw",
-          width: "50vw",
-          height: "60vh",
-          padding: "20px",
-          borderRadius: "5px",
-          boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)",
-          zIndex: 1001,
-          opacity: ".9",
-        }}
         setModalOpen={(val) => setModalState((prev) => ({ ...prev, open: val }))}
         modalState={modalState}
         setRouteMeta={(meta) => setModalState({ ...modalState, ...meta })}

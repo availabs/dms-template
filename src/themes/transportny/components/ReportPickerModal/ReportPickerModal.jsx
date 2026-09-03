@@ -7,8 +7,8 @@ import { resolveMountPath } from '../../../../dms/packages/dms/src/utils/mountPa
 import { reportPickerModalTheme } from './ReportPickerModal.theme';
 import { useReportSearch } from './useReportSearch';
 import { buildReportCatalogSource } from './reportCatalogSource';
-import { reportScore, isMine, looksIncomplete, isRebuilt } from './reportScore';
-import { rankByScore, isAvailUser, buildVisibilityAllowListFilterGroup } from '../PickerModal/pickerScoring';
+import { reportScore, isMine, looksIncomplete } from './reportScore';
+import { sortRows, SORT_MODE_OPTIONS, isAvailUser, buildVisibilityAllowListFilterGroup } from '../PickerModal/pickerScoring';
 import { PickerSearchInput, PickerFacetChips, PickerCountBar } from '../PickerModal/PickerModalParts';
 import { TAG_CATEGORIES, DYNAMIC_REPORT_TEMPLATE_TAG, parseTags, tagToLabel } from '../RouteTagBrowserModal/tagCategories';
 
@@ -31,8 +31,16 @@ import { TAG_CATEGORIES, DYNAMIC_REPORT_TEMPLATE_TAG, parseTags, tagToLabel } fr
 // converted report indistinguishable from one of these — both problems compounding to make a
 // just-converted, just-tagged report invisible/unopenable in its own picker. `useReportSearch.js`
 // now filters `page_path notempty` unconditionally, so only rebuilt reports ever reach this
-// component — `isRebuilt`/the "Legacy" Pill branch below is now a defensive no-op, not a live
-// path, kept in case a future row somehow slips through with no page_path.
+// component.
+//
+// 2026-09-03 (Ryan's correction): the above meant the "Rebuilt" badge (`isRebuilt`,
+// reportScore.js) had become vacuous — literally every row reaching this component always has
+// `page_path` set (the filter above guarantees it), so the badge was rendering "Rebuilt" on
+// 100% of results with zero information value, including reports a coworker had just authored
+// directly as a real page (never "rebuilt" from anything legacy). Removed — both the Pill below
+// and `isRebuilt`/its dead "Legacy" branch. `reportScore()` still gives `page_path` a +25 ranking
+// weight, but since it's now a constant across every visible row it doesn't change relative
+// order either — left alone since it's inert, not wrong, and removing it is a separate call.
 //
 // Round 82 (old-reports-conversion.md, "Round B", 2026-08-31) added the category→value tag
 // drill-down — mirrors RouteTagBrowserModal's `view: root/category/value/other` state machine
@@ -44,7 +52,14 @@ import { TAG_CATEGORIES, DYNAMIC_REPORT_TEMPLATE_TAG, parseTags, tagToLabel } fr
 //
 // Client-side only, same v1 scope call as the route picker's "mine" facet: the CMSContext user
 // id drives ranking/filtering with no server-side check that it matches the real auth token.
-export default function ReportPickerModal({ open, setOpen }) {
+//
+// `initialSearchTerm` (2026-09-02, npmrds-reports-page-rev3.md Phase 3, ADDITIVE — defaults to
+// '' so every existing caller is byte-identical): the root view's search box opens pre-filled
+// with it. The header trigger (ChooseReportButton) passes the page's live `?search=` variable,
+// so "N matches · show results" on the closed trigger opens onto those results rather than an
+// empty box. Read at open time only — a later change to the prop does not disturb a dialog the
+// user is already typing in.
+export default function ReportPickerModal({ open, setOpen, initialSearchTerm = '' }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon, Modal, Pill } = UI || {};
   const { user, app, falcor } = useContext(CMSContext) || {};
@@ -63,6 +78,10 @@ export default function ReportPickerModal({ open, setOpen }) {
   const [withinSearchTerm, setWithinSearchTerm] = useState('');
   const [otherTagTerm, setOtherTagTerm] = useState('');
   const [facets, setFacets] = useState({ mine: false, hideIncomplete: false });
+  // 2026-09-03 (Ryan's correction): the footer used to show a static "sort: Best match" label
+  // that looked like a control but wasn't one. Real sort state now — see SORT_MODE_OPTIONS
+  // (pickerScoring.js) for the 3 modes shared with the route picker.
+  const [sortMode, setSortMode] = useState('best');
   // Default picker visibility (routes-reports-users-mesh.md, Workstream D item 5): an allow-list
   // applied server-side unless toggled off. Defaults to OFF (already showing everyone's) for an
   // AVAIL user, ON (restricted) for everyone else — see isAvailUser.
@@ -74,11 +93,12 @@ export default function ReportPickerModal({ open, setOpen }) {
     setActiveCategoryKey(null);
     setActiveValue(null);
     setCategoryFilterTerm('');
-    setRootSearchTerm('');
+    setRootSearchTerm(initialSearchTerm || '');
     setWithinSearchTerm('');
     setOtherTagTerm('');
     setFacets({ mine: false, hideIncomplete: false });
     setShowEverything(isAvailUser(user));
+    setSortMode('best');
   }, [open]);
 
   const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
@@ -124,8 +144,8 @@ export default function ReportPickerModal({ open, setOpen }) {
 
   const rankedResults = useMemo(() => {
     const withIds = results.filter((r) => r.report_id != null || r.id != null);
-    return rankByScore(withIds, (r) => reportScore(r, { currentUserId }));
-  }, [results, currentUserId]);
+    return sortRows(withIds, sortMode, { scoreFn: (r) => reportScore(r, { currentUserId }), dateField: 'updated_at' });
+  }, [results, currentUserId, sortMode]);
 
   const visibleResults = useMemo(
     () => (facets.hideIncomplete ? rankedResults.filter((r) => !looksIncomplete(r)) : rankedResults),
@@ -157,7 +177,6 @@ export default function ReportPickerModal({ open, setOpen }) {
   const badgesFor = (row) => (
     <span className={t.reportBadgeRow}>
       {isMine(row, currentUserId) ? <Pill text="Mine" activeStyle="blue" /> : null}
-      {isRebuilt(row) ? <Pill text="Rebuilt" activeStyle="green" /> : <Pill text="Legacy — not yet rebuilt" activeStyle="zinc" />}
       {looksIncomplete(row) ? <Pill text="Possible draft" activeStyle="amber" /> : null}
     </span>
   );
@@ -258,7 +277,8 @@ export default function ReportPickerModal({ open, setOpen }) {
           <PickerFacetChips t={t} Pill={Pill} facets={facetChips} onToggle={toggleFacet} onClearAll={clearFacets} />
         ) : null}
         {showFacetsAndCount && !loading && !error ? (
-          <PickerCountBar t={t} countLabel={`${visibleResults.length} report${visibleResults.length === 1 ? '' : 's'}`} />
+          <PickerCountBar t={t} countLabel={`${visibleResults.length} report${visibleResults.length === 1 ? '' : 's'}`}
+            sortValue={sortMode} sortOptions={SORT_MODE_OPTIONS} onSortChange={setSortMode} />
         ) : null}
 
         <div className={t.body}>
@@ -295,7 +315,11 @@ export default function ReportPickerModal({ open, setOpen }) {
         </div>
 
         <div className={t.footer}>
-          <div className={t.footerCount}>sorted: yours → rebuilt → described → recency</div>
+          <div className={t.footerCount}>
+            {sortMode === 'name' ? 'sorted: name (A–Z)'
+              : sortMode === 'recent' ? 'sorted: most recently updated'
+              : 'sorted: yours → described → recency'}
+          </div>
           <div className={t.footerButtons}>
             <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={() => setOpen?.(false)}>Close</Button>
           </div>

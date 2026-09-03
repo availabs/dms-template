@@ -2,7 +2,7 @@ import json
 import os
 import re
 
-from .config import COLOR_BREAKS, GRAPH_TEMPLATE_TYPE
+from .config import APPLY_STATIC_BREAKS_TO_MAP, COLOR_BREAKS, GRAPH_TEMPLATE_TYPE
 from .expressions import AADT_DIST_JOIN, HOURS_OF_DELAY_VALUE_EXPR, META_JOIN, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, SPEED_VALUE_EXPR, TRAVEL_TIME_VALUE_EXPR
 from .template_specs import TEMPLATE_BASE_NAME
 from .db import dms, now_iso
@@ -44,6 +44,12 @@ def _resolve_tile_host():
 TILE_HOST = _resolve_tile_host()
 print(f"[convert_old_reports] TILE_HOST resolved to {TILE_HOST}"
       f"{' (auto-detected local dev server)' if TILE_HOST.startswith('http://localhost') and not os.environ.get('DMS_TILE_HOST') else ''}")
+
+# See config.py's APPLY_STATIC_BREAKS_TO_MAP for the toggle this drives — "custom" (round 80: fixed
+# breaks, no live recompute) when True, "quantile" (pre-round-80, semi-reverted 2026-09-02: the
+# live Map runtime recomputes breaks from real data every render) when False. Every
+# ensure_route_map_*_template choropleth builder below mints this same value.
+CHOROPLETH_BIN_METHOD = "custom" if APPLY_STATIC_BREAKS_TO_MAP else "quantile"
 
 
 def ensure_route_map_none_template(year, templates, dry_run):
@@ -329,8 +335,9 @@ def ensure_route_map_speed_template(year, templates, dry_run):
         # Round 80: 'custom' (not 'quantile') — skips the live Map runtime's
         # colorDomain refetch entirely, same mechanism composeMapConfig.js
         # now uses; this is what makes the breaks above ACTUALLY permanent at
-        # render time, not just at mint time.
-        "bin-method": "custom",
+        # render time, not just at mint time. Semi-reverted 2026-09-02: see
+        # CHOROPLETH_BIN_METHOD / config.py's APPLY_STATIC_BREAKS_TO_MAP.
+        "bin-method": CHOROPLETH_BIN_METHOD,
         "color-range": breaks["colors"],
         "legend-data": painted["legend"],
         # The runtime materializes one visible clone per comparison_series
@@ -463,7 +470,7 @@ def ensure_route_map_traveltime_template(year, templates, dry_run):
         "series-feature-column": "tmc",
         "layer-type": "choropleth",
         "data-column": "value",
-        "num-bins": len(breaks["colors"]), "bin-method": "custom",
+        "num-bins": len(breaks["colors"]), "bin-method": CHOROPLETH_BIN_METHOD,
         "color-range": breaks["colors"],
         "legend-data": painted["legend"],
         # The runtime materializes one visible clone per comparison_series
@@ -644,7 +651,7 @@ def ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_r
         "series-feature-column": "tmc",
         "layer-type": "choropleth",
         "data-column": "value",
-        "num-bins": len(breaks["colors"]), "bin-method": "custom",
+        "num-bins": len(breaks["colors"]), "bin-method": CHOROPLETH_BIN_METHOD,
         "color-range": breaks["colors"],
         "legend-data": painted["legend"],
         # The runtime materializes one visible clone per comparison_series
@@ -766,7 +773,7 @@ def ensure_route_map_hoursofdelay_template(year, templates, dry_run):
         "series-feature-column": "tmc",
         "layer-type": "choropleth",
         "data-column": "value",
-        "num-bins": len(breaks["colors"]), "bin-method": "custom",
+        "num-bins": len(breaks["colors"]), "bin-method": CHOROPLETH_BIN_METHOD,
         "color-range": breaks["colors"],
         "legend-data": painted["legend"],
         # The runtime materializes one visible clone per comparison_series

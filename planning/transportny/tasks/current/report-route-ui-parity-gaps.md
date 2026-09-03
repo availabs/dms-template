@@ -2,7 +2,13 @@
 
 **Project:** TransportNY
 
-**Status:** IN PROGRESS — 5 of 16 gaps fixed so far (#16 added 2026-08-12, found while scoping
+**Status:** IN PROGRESS — 11 of 22 gaps fixed so far (#19-#24 added AND fixed 2026-09-03 —
+hard-to-click network lines, invisible Marker-mode pins, click-selecting a TMC leaving a
+permanent popup behind (a multi-round fix, see #21's entry for the full arc including two
+dead-end intermediate attempts), a too-subtle selected-TMC color (fixed via width, which
+surfaced and fixed a real MapLibre expression bug along the way), "Clear all" ignoring the
+active mode, and no loading feedback in Marker mode — all reported directly by the user and
+live-verified same-session, see their entries below; #16 added 2026-08-12, found while scoping
 Info Box/Route Compare multi-measure support — see `dynamic-reports-and-route-tags.md`; #4 `route_id` overwrite labeling,
 #5 TMC Search-to-add, both live-verified 2026-07-27 in transportNY; #11 peak-hour filtering,
 both spec and UI halves, live-verified 2026-07-28 in dms-template AND ported + re-verified
@@ -97,6 +103,147 @@ scoping. Permissions/ACL is now the only piece of the original 2026-07-27 ruling
    (`999+99999`) and confirmed Add stayed disabled. This was explicitly called out by
    the user as making the tool driveable by claude-in-chrome without needing pixel-
    accurate map clicks.
+19. **TMC Click mode's lines were hard to click** — the network layer rendered at
+    1-1.5px (zoom 13) / 5-8px (zoom 18), and the click handler hit-tested a bare
+    `e.point`, so a near-miss (a few px off the line) silently selected nothing. **FIXED
+    2026-09-03**: `paint.js` line-width bumped at the working zoom levels (13: 1→1.8,
+    1.5→2.5; 18: 5→7, 8→11; zoom 0 left alone, nobody clicks at whole-Northeast zoom),
+    and `useMapTmcHandler`/`useMapHoverHandler` now query a ±5px box
+    (`CLICK_TOLERANCE_PX`, constants.js) around the point instead of the single pixel.
+    Live-verified: a click a few px off a visible line now registers the segment
+    (`TMCs: 1`, correct name/mileage in the panel) where the same click missed before
+    the fix.
+20. **Marker mode placed markers with no visible pin** — `Markers: N` incremented in the
+    panel and `resolveRouteFromPoints` ran, but nothing appeared on the map at the click
+    point. **Root cause (confirmed live via DOM inspection):** the app never loads
+    maplibre-gl's own stylesheet (no `.maplibregl-marker` CSS rule anywhere in the
+    document — checked `document.styleSheets`), so a `new mapboxgl.Marker()`'s wrapper
+    div has no `position` rule and renders as a `position: static`, page-width block
+    instead of a small pin positioned via the library's translate transform — this had
+    already been hit and fixed once, in `avl-map.jsx`'s own click-to-pin marker
+    (`normalizeMarkerElement`), but `useMapMarkerHandler.js` built its markers directly
+    and never picked up that fix. **FIXED 2026-09-03**: moved `normalizeMarkerElement`
+    to the shared `ui/components/map/utils.js` and applied it to
+    `useMapMarkerHandler.js`'s marker creation too. Live-verified: two clicks in Markers
+    mode now show visible green→red gradient pins at the exact click points, connected
+    by the auto-routed line.
+21. **Clicking to select a TMC (or drop a marker) left a permanent popup behind** — the
+    "particular use case" of a broader, long-standing map-framework issue: the shared
+    `AvlMap`'s click-to-pin-the-hover-popup listener (`avl-map.jsx`, gated by any active
+    layer's `onHover.isPinnable`) fires on the exact same click useMapTmcHandler/
+    useMapMarkerHandler use for TMC selection, so every segment/marker click also froze
+    a copy of the current hover popup in place — stacking indefinitely, since nothing
+    ever removed an old pinned popup (only a manual close did). Took several rounds to
+    land — logged in full since two of the intermediate "fixes" looked right and weren't:
+
+    **Root cause #1 — pinning could never be turned off, for anyone, ever.**
+    `SymbologyViewLayer.jsx`'s `onHover.isPinnable: this.isPinnable || true` discarded
+    any explicitly-configured `false` (`false || true` is `true`) — `this.isPinnable` is
+    never set anywhere in that class or its base (confirmed via `git blame`: introduced
+    whole, in one large "MapEditor stuff" commit — not a deliberate hardcode, just dead
+    scaffolding). Changed to `this.isPinnable !== false` — explicit about the one value
+    that flips it, per user request, rather than `??`'s null/undefined-only coercion.
+
+    **Root cause #2 — even after fixing #1, a plugin's config still couldn't reach it.**
+    `onHover` is a class field evaluated ONCE when the layer instance is constructed
+    (`new SymbologyViewLayer(l)`); `routecreation.plugin.jsx`'s `mapRegister` mutates the
+    layer's stored config via `setState` well after that instant, so `this.isPinnable`
+    never reflected the plugin's setting no matter what value was written there — worked
+    for a synthetic click with no preceding hover (the first live "verification"), didn't
+    for a real mouse hover-then-click (what the user actually tested). Fixed by reading
+    the LIVE per-layer config first in two shared files, falling back to the frozen
+    class-field value for every layer that doesn't override it: `avl-map.jsx`'s
+    top-level `isPinnable` memo (gates whether the global click-to-pin listener attaches
+    at all) and `avl-layer.jsx`'s per-layer hover effect (`layerProps?.isPinnable ??
+    defaultIsPinnable`; same pattern for `tolerance`/`hoverTolerance`, next finding).
+
+    **A second, related sync bug found live:** widening useMapTmcHandler/
+    useMapHoverHandler's own click/hover hit test (gap #19) without also widening the
+    *generic* framework's hover-popup hit test meant a click a few px off a line could
+    select the TMC while the tooltip never showed for that same spot ("you could click
+    to add a tmc but never see a popover"). Root cause: MapLibre's layer-scoped
+    `mousemove` event (`avl-layer.jsx`) has its own internal exact-pixel gate deciding
+    whether to invoke our hover callback *at all* — a box-widened query inside the
+    callback is moot on a near-miss the outer gate never let through (confirmed live:
+    the cursor never flipped to `pointer`). Fixed by adding an opt-in `tolerance` (px) to
+    the same live-config mechanism: when set (`> 0`), the layer binds a canvas-wide
+    `mousemove` instead of the native layer-scoped one — bypassing MapLibre's gate
+    entirely, the same technique useMapTmcHandler/useMapHoverHandler already used — and
+    treats an empty box-query result as a leave. Every other layer's binding path (the
+    `tolerance === 0` branch) is untouched, character-for-character.
+
+    **Final behavior, per a same-day follow-up** ("i kinda still want them to be
+    pinnable, just only 1 open at a time"): pinning was turned back on (left at its true
+    default) instead of disabled, and a new opt-in `pinExclusive` flag (same live-config
+    pattern) makes a new pin replace the previous one instead of either stacking
+    indefinitely (the original bug) or never pinning (the first fix) — `avl-map.jsx`'s
+    `pin-hover-comp` reducer case removes every previously-pinned marker from the map
+    before replacing the whole `pinnedHoverComps` array, when `exclusive` is set on the
+    dispatched action, instead of appending to it.
+
+    **Regression scope, checked directly, not just reasoned about:** `avl-layer.jsx`/
+    `avl-map.jsx` are shared by 4 separate `onHover.isPinnable`-defining layer classes
+    (this one, an identical copy in the page-pattern's `SymbologyViewLayer.jsx`, and two
+    more in `gis_dataset/Layer2.jsx`/`Map.jsx`) — grepped the whole repo to confirm
+    nothing else sets `isPinnable`/`hoverTolerance`/`pinExclusive` on a layer config, so
+    every new code path is provably unreachable except through routecreation's own
+    layer. The identical `|| true` dead-code bug still exists, untouched, in the other
+    3 classes — not fixed, since nothing needs it fixed yet and leaving it is zero risk.
+
+    Live-verified: pinned popups no longer stack across repeated TMC/marker clicks
+    (exactly one on the map at a time, replacing the last), hover-popup range now
+    matches click-select range, TMC-list selection unaffected throughout.
+
+    **Deliberately deferred, per user direction:** a pinned popup can still survive a
+    mode switch or "Clear all" click — `pinExclusive` dismisses it on the *next* click
+    that happens to land near a road segment, but not immediately on the switch/clear
+    itself. The clean fix needs `AvlMap`'s internal `pinnedHoverComps` state threaded
+    through `avl-map.jsx` → `avl-layer.jsx` → `PluginLayer.jsx` to reach routecreation's
+    `Comp` at all (it currently receives `state`/`setState` from the DMS page-content
+    context — a completely separate React tree from where pinned-popup state lives) —
+    more shared-code surface than the gap is worth right now.
+
+22. **Selected/hovered TMC's blue was too subtle against the dark basemap** — a route
+    segment differed from the network only by color (ROUTE_COLOR `#1F3F8F`, fairly dark
+    against this basemap), which barely read as "different" at the current line widths.
+    **Not fixed by changing the color** — `#1F3F8F` is the same brand blue used across
+    ~10 Tailwind arbitrary-value classes in `routecreation.theme.js`'s panel chrome
+    (buttons, borders, links), deliberately kept in sync with the map paint value per an
+    existing comment; changing it would cascade into the whole panel's branding for no
+    reason. **Fixed by width instead:** `dataUpdate.jsx` now boosts a selected/hovered
+    feature's `line-width` by `SELECTED_LINE_WIDTH_MULTIPLIER` (1.6×) alongside its
+    color, using the exact same `tmc_array`/`hoveredTmc` condition as the color override.
+
+    **Caused a real, live-reproducing bug the first time:** the initial version wrapped
+    `npmrdsLineWidth` (a zoom-based `interpolate`) in `["*", multiplier, ...]`, itself
+    inside an outer `case`/`match` — MapLibre/Mapbox style expressions allow only ONE
+    zoom-based `step`/`interpolate` anywhere in an expression tree, and this nested a
+    second one. MapLibre didn't crash; it logged `Error: layers.<id>.paint.line-width:
+    Only one zoom-based "step" or "interpolate" subexpression may be used in an
+    expression` on every hover and silently dropped the paint update. **Fixed
+    structurally, not around the edges:** `paint.js`'s `buildLineWidth(isSelectedExpr)`
+    keeps the single `interpolate(zoom, ...)` as the OUTERMOST expression — the same
+    shape `npmrdsLineWidth` already used for its `n` road-classification `match` — and
+    nests the selection `case` *inside* each zoom stop's value instead of around the
+    whole thing. `isSelectedExpr` is a pure per-feature data expression (`get`/`==`/
+    `in`), never a zoom expression, so this is valid at any nesting depth. Worth
+    remembering for any future zoom-dependent paint property on this layer (or any
+    MapLibre layer): a per-feature condition belongs *inside* each zoom stop, never
+    wrapped around the whole interpolate.
+
+23. **"Clear all" only cleared whichever mode was currently active** —
+    `RouteEditor.jsx` wired the button to `isMarkerMode ? clearAllMarkers : clearAllTmc`,
+    so clicking it in TMC Click mode never touched marker-mode state and vice versa.
+    **FIXED 2026-09-03**: `comp.jsx` now exposes a single `clearAll` that always calls
+    both `clearAllTmc()` and `clearAllMarkers()`, and the button calls that
+    unconditionally.
+
+24. **No loading feedback while Marker mode resolves a route** —
+    `resolveRouteFromPoints` is a real network round-trip to routing2.availabs.org; the
+    TMC list stayed blank (indistinguishable from "no markers yet") the whole time it
+    was in flight. **FIXED 2026-09-03**: `useMapMarkerHandler`'s `resolve()` now tracks
+    `isResolving`, and the TMC list shows "Finding a route between your markers…" while
+    a resolve is pending.
 
 ### Report building (`creating-reports.md`)
 

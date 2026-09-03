@@ -1,7 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import { ThemeContext, getComponentTheme } from "../../../../../dms/packages/dms/src/ui/useTheme";
 import { damaMapTheme } from "../../../../../dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/map.theme";
+import { MountContext } from "../../../../../dms/packages/dms/src/ui/mountContext";
+import { resolveMountPath } from "../../../../../dms/packages/dms/src/utils/mountPath";
 import { routecreationTheme } from "../routecreation.theme";
+import TagsEditor from "../../TagsEditor/TagsEditor";
 
 // Panel 1 · THE ROUTE (top-left), from npmrds-route-creation.html
 // (routes-reports-users-mesh.md, Workstream E). The port previously showed a route's name only
@@ -12,6 +16,8 @@ import { routecreationTheme } from "../routecreation.theme";
 export const RouteIdentityPanel = ({
   name,
   tags,
+  onTagsChange,
+  user,
   tmcCount,
   totalMiles,
   routeId,
@@ -25,6 +31,12 @@ export const RouteIdentityPanel = ({
     ...getComponentTheme(themeFromContext, "damaMap.layerLibrary"),
   };
   const displayName = name || (isEditingRoute ? `Route ${routeId}` : "New route (unsaved)");
+  const navigate = useNavigate();
+  // Site-absolute authored path ("this pattern's page") - resolve against the current mount's
+  // baseUrl (e.g. /npmrds) the same way ReportPickerModal/CreateReportButton do, so this link
+  // doesn't drop the mount prefix on a non-root mount (live-caught 2026-09-02: it did).
+  const { baseUrl: mountBaseUrl, siteRootPaths } = React.useContext(MountContext) || {};
+  const allRoutesHref = resolveMountPath("/reports#routes", mountBaseUrl, siteRootPaths);
 
   return (
     <div className={`${t.posTopLeft} ${mapT.panel}`}>
@@ -46,13 +58,7 @@ export const RouteIdentityPanel = ({
               {tmcCount} tmc · {totalMiles.toFixed(2)} mi{isEditingRoute ? ` · route ${routeId}` : ""}
             </div>
           </div>
-          {tags?.length > 0 && (
-            <div className={t.tagRow}>
-              {tags.map((tag) => (
-                <span key={tag} className={t.tag}>{tag}</span>
-              ))}
-            </div>
-          )}
+          <TagsEditor tags={tags} onChange={onTagsChange} user={user} theme={t} />
           {/* Network vintage - a static chip, not a select. Phase 3 (routecreation-marker-
               placement-autorouting.md) is blocked on re-verifying which years the routing
               service actually matches - a live test found only 2020-2022 resolving. */}
@@ -68,7 +74,14 @@ export const RouteIdentityPanel = ({
               </span>
             </div>
           </div>
-          <a href="/converted_reports#routes" className={t.backLink}>
+          <a
+            href={allRoutesHref}
+            className={t.backLink}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate(allRoutesHref);
+            }}
+          >
             <svg className={t.backIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M19 12H5m0 0 6-6m-6 6 6 6" />
             </svg>

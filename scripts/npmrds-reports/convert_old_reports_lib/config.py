@@ -77,6 +77,17 @@ COLOR_BREAKS_PATH = os.path.join(
 with open(COLOR_BREAKS_PATH) as _f:
     COLOR_BREAKS = json.load(_f)["measures"]
 
+# Semi-reverted 2026-09-02 (Ryan): mirrors composeMapConfig.js's
+# `APPLY_STATIC_BREAKS_TO_MAP` (see that file's header comment) — Ryan walked back round 80's
+# fixed choropleth breaks for maps too, same "own dynamic scale per report" call as the chart
+# revert, kept just as easy to flip back. False = route_map.py mints `bin-method: "quantile"`
+# (pre-round-80: the live Map runtime recomputes breaks from real data on every render;
+# COLOR_BREAKS' `breaks`/`maxValue` for a measure go unused, only `colors` still comes from here).
+# True = round 80's `bin-method: "custom"` (fixed breaks baked at conversion time). Flip alongside
+# composeMapConfig.js's flag, not independently — a report converted with one setting and
+# re-authored live under the other gets a mismatched map.
+APPLY_STATIC_BREAKS_TO_MAP = False
+
 # ── New-system constants (npmrdsv5/dev2 dev site) ──────────────────────────
 DMS_ENV = {
     "DMS_HOST": os.environ.get("DMS_HOST", "http://localhost:3001"),
@@ -94,12 +105,16 @@ ROUTES_CATALOG_TYPE = "routes_data|2107427:data"
 # Direct-read split tables (read-only checks; writes go through the CLI)
 REPORTS_SNAP_TABLE = "dms_npmrdsv5.data_items__s2177438_v2177440_reports_snap_2"
 ROUTES_CATALOG_TABLE = "dms_npmrdsv5.data_items__s2107426_v2107427_routes_data"
-CONVERTED_PARENT_SLUG = "converted_reports"
+CONVERTED_PARENT_SLUG = "reports"
 CONVERTED_PARENT_TITLE = "Converted Reports"
 
 NEW_DB_CONFIG = os.path.join(
     REPO, "src/dms/packages/dms-server/src/db/configs/dms-mercury-3.config.json")
 OLD_DB_CONFIG = "/home/ryan/code/avail-falcor/db_service/npmrds.config.json"
+# Same Postgres host:port as NEW_DB_CONFIG, different `database` (avail_auth vs dms3) — see
+# fetch_auth_agency_tags() in db.py.
+AUTH_DB_CONFIG = os.path.join(
+    REPO, "src/dms/packages/dms-server/src/db/configs/availauth.config.json")
 
 GAPS_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/gaps")
 

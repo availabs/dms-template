@@ -28,6 +28,16 @@ import vocab from './vocabulary.json';
 // one from whatever's currently loaded, the same "very similar charts, different color scales"
 // problem Ryan flagged for Route Map applying equally here.
 import colorBreaks from './colorBreaks.json';
+// Semi-reverted 2026-09-02 (Ryan): round 80 (above) wired colorBreaks.json's
+// static [min,max] into every GridGraph/single-series-BarGraph's color scale,
+// same as Route Map's choropleth. Ryan walked that back for charts only —
+// maps keep the static scale (queried/built differently, can have load
+// issues that make a consistent legend worth more there); non-map charts go
+// back to a per-section, data-computed domain. This flag is the switch — see
+// its use in composeMeasureConfig's `displayPatch.colors` below.
+// colorBreaks.json/composeMapConfig.js are untouched; flip this back to true
+// to re-apply static breaks to charts without re-deriving any of that wiring.
+const APPLY_STATIC_BREAKS_TO_CHARTS = false;
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): the same time-of-day/day-of-week helpers
 // QuickControls'/AddGraphModal's own "When" pill already use, reused here (not re-derived) so the
 // auto-title's phrasing of a window never drifts from what the pill itself shows for it.
@@ -347,6 +357,45 @@ const TMC_GRAIN_MEASURE_OVERRIDE = {
     aadt: { expr: 'table1.aadt as aadt', fn: 'avg' },
 };
 
+// Row-height source for a per-TMC GridGraph ("1 row = 1 tmc") — TMC segment length
+// (`table1.miles`, the same META_JOIN column speed/length/aadt/etc. already read for their own
+// math). `max()` not `avg()`: every row in a GridGraph's yAxis group is already scoped to exactly
+// one TMC (buildGridBreakdownColumn, above), so `miles` is constant within the group — `max` just
+// reads it out without ClickHouse's nested-aggregate rejection (same rationale as
+// TMC_GRAIN_MEASURE_OVERRIDE above). Unconditional for every per-TMC GridGraph pick, same
+// "not an author-facing toggle" rule buildGridBreakdownColumn's own comment states for the row
+// dimension itself. Verified live on DMS page tsmo2/corridor_view (build_tsmo2_corridor_view.mjs),
+// whose main time-space grid carries the identical `round(max(meta.miles),3) as rowmiles` column
+// targeted "height" — see planning/transportny/tasks/current/gridgraph-row-height-scaling.md.
+const GRID_ROW_HEIGHT_MEASURE = { expr: 'round(max(table1.miles),3) as tmc_miles', fn: 'exempt' };
+
+function buildGridHeightColumn() {
+    return buildMeasureYAxisColumn(GRID_ROW_HEIGHT_MEASURE, 'height');
+}
+
+// travelTime is normally the ONLY measure with requiresJoin: [] (see the note near
+// composeTableMeasuresConfig below) — its vocabulary.json expression is deliberately written
+// with bare, unqualified column names, correct only when NO join exists at all (the base table
+// stays unaliased in that case). ANY join forced in for a query travelTime is part of breaks that
+// invariant: the base table gets aliased `ds`, and META_JOIN carries its own `tmc` column too, so
+// travelTime's bare `tmc` becomes an ambiguous reference between `ds.tmc` and `table1.tmc`. One
+// `ds.`-qualified twin of the expression, reused at every call site that can force such a join —
+// today that's `composeTableMeasuresConfig`'s multi-measure union join (`QUALIFIED_EXPR_WHEN_
+// TABLE_HAS_JOIN`, further down) and, as of this round, a per-TMC GridGraph's forced-in height
+// column (`GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE`, right below) — kept as ONE literal so the
+// two can never independently drift.
+const TRAVELTIME_JOIN_QUALIFIED_EXPR =
+    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles";
+
+// Building a GridGraph row-height column (above) forces META_JOIN in regardless of which measure
+// was picked — see TRAVELTIME_JOIN_QUALIFIED_EXPR's comment for why that needs travelTime's
+// expression qualified. Same "explicit override for the one measure this affects" pattern as
+// TMC_GRAIN_MEASURE_OVERRIDE above — used ONLY when the join is being forced in for the
+// row-height column, never for a plain travelTime pick with no GridGraph breakdown.
+const GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE = {
+    travelTime: { expr: TRAVELTIME_JOIN_QUALIFIED_EXPR, fn: 'exempt' },
+};
+
 // "Summary" (one bar per route, no time bucket) reuses every measure's
 // existing `expr`/`fn` verbatim EXCEPT avgHoursOfDelay — confirmed by reading
 // convert_old_reports_lib/expressions.py: SPEED_SUMMARY_EXPR/TRAVEL_TIME_EXPR/
@@ -477,8 +526,24 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     // when this happens.
     if (isUnsupportedSummaryMeasure(resolutionKey, measureKey, summaryDelayGrainKey)) return null;
     const isAvgDelaySummary = resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
+
+    // Per-TMC row breakdown ("1 row = 1 tmc") is unconditional for every GridGraph pick (see
+    // buildGridBreakdownColumn's own comment) — and so, as of this round, is the matching row
+    // HEIGHT column scaling each row to the TMC's real length, so a GridGraph reads as a true
+    // space-time diagram instead of uniform slivers. See buildGridHeightColumn and
+    // GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE above for why this needs its own forced join and
+    // (for travelTime specifically) a re-qualified measure expression. Computed before
+    // yAxisMeasure/join below because both need to know whether the join is being forced in.
+    const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
+    const gridHeightColumn = gridBreakdownColumn ? buildGridHeightColumn() : null;
+    const forcedJoinMeasureOverride = gridHeightColumn && !measure.requiresJoin?.length
+        ? GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE[measureKey]
+        : null;
+
     const yAxisMeasure = isAvgDelaySummary
         ? { ...measure, expr: avgDelaySummaryExpr(SUMMARY_DELAY_BUCKET_EXPR[summaryDelayGrainKey]) }
+        : forcedJoinMeasureOverride
+        ? { ...measure, ...forcedJoinMeasureOverride }
         : measure;
 
     // GridGraph's value column targets "color" (per-cell heat), every other
@@ -486,8 +551,12 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     const yAxisTarget = graphType === 'GridGraph' ? 'color' : 'yAxis';
     const yAxisColumn = buildMeasureYAxisColumn(yAxisMeasure, yAxisTarget);
     const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
-    const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
-    const join = buildJoin(measure);
+    // gridHeightColumn forces META_JOIN into the join set even for a measure (only travelTime
+    // today) that wouldn't otherwise need one — Set-dedup preserves table1/table2 ordering for
+    // every measure that already lists META_JOIN, so this is a no-op there.
+    const join = gridHeightColumn
+        ? buildJoinFromKeys([...new Set([...(measure.requiresJoin || []), 'META_JOIN'])])
+        : buildJoin(measure);
     const isDifference = comparisonModeKey === 'difference';
 
     const resolution = vocab.resolutions[resolutionKey];
@@ -543,7 +612,17 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // format for the first time). Explicit `format: null` is a no-op format
         // (GridGraph.jsx only calls d3format() when `format` is a truthy string),
         // so the tmc value renders as its own raw string.
-        displayPatch.yAxis = { format: null };
+        //
+        // `showGridLines: false` (2026-09-02, Ryan — reports only, this branch is
+        // already GridGraph-gated): GridGraph's y-axis is the categorical tmc-row
+        // breakdown, not a numeric scale — horizontal gridlines there just add
+        // visual noise between cell rows, unlike a LineGraph/BarGraph's real
+        // numeric axis where they're a useful reference. Overrides the shared
+        // `defaultState`/`ChartDefaults` default of `true` (see graph_new/config.jsx
+        // and graph_new/theme.js) for GridGraph specifically, without touching
+        // that shared default for Line/BarGraph or for GridGraph sections created
+        // outside the NPMRDS report picker/converter.
+        displayPatch.yAxis = { format: null, showGridLines: false };
     }
     // Plain-mode color scale. `defaultColors` is the base template's own
     // flat palette of distinct route-identity swatches — correct for a
@@ -580,11 +659,14 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // at all) silently keep today's per-section dynamic range — same
         // "compose nothing extra" contract every other optional field in this
         // file already follows.
+        //
+        // Semi-reverted 2026-09-02 — see APPLY_STATIC_BREAKS_TO_CHARTS's own
+        // comment near the colorBreaks.json import above.
         const staticBreaks = colorBreaks.measures[measureKey];
         displayPatch.colors = {
             type: 'scheme', scheme: 'rdylgn', reverse: measure.reverseColors,
             ...(graphType === 'BarGraph' ? { byValue: true } : {}),
-            ...(staticBreaks ? { domainMin: staticBreaks.domain[0], domainMax: staticBreaks.domain[1] } : {}),
+            ...(APPLY_STATIC_BREAKS_TO_CHARTS && staticBreaks ? { domainMin: staticBreaks.domain[0], domainMax: staticBreaks.domain[1] } : {}),
         };
     } else {
         displayPatch.colors = defaultColors || null;
@@ -605,7 +687,15 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // formats it as "M:SS" instead, which a viewer reads directly as a duration and which
         // keeps whole-second precision. `yFormat` covers LineGraph's own tooltip read (see
         // GraphComponent.jsx's hoverComp comment); `valueFormat` covers every other chart type.
-        ...(measureKey === 'travelTime' ? { valueFormat: 'duration_mmss', yFormat: 'duration_mmss' } : {}),
+        // Explicitly cleared to null (not omitted) for every OTHER measure — applyMeasurePickToState
+        // MERGES display.tooltip onto the existing state rather than replacing it, so omitting
+        // these keys here would leave a stale 'duration_mmss' from a PRIOR travelTime pick applied
+        // to the newly-picked measure's own (non-duration) values. Live-reported 2026-09-02:
+        // switching a GridGraph from Travel Time to Speed (Truck) kept the tooltip in M:SS. Same
+        // "re-picking must fully determine every display field it touches" rule the xAxis/yAxis
+        // format-clearing above and the legend `show` below already follow.
+        valueFormat: measureKey === 'travelTime' ? 'duration_mmss' : null,
+        yFormat: measureKey === 'travelTime' ? 'duration_mmss' : null,
     };
     // "summary" has no categorize-targeted column to key a legend off (the categorize
     // column IS the x-axis here — see buildXAxisColumn), so the legend would otherwise
@@ -620,7 +710,7 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     displayPatch.legend = { show: resolutionKey !== 'summary' };
 
     return {
-        columns: [yAxisColumn, xAxisColumn, gridBreakdownColumn].filter(Boolean),
+        columns: [yAxisColumn, xAxisColumn, gridBreakdownColumn, gridHeightColumn].filter(Boolean),
         join,
         comparisonSeriesCombine: isDifference ? { mode: 'difference', ...(anchorInvert ? { invert: true } : {}) } : null,
         displayPatch,
@@ -647,8 +737,11 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
 //
 // A literal lookup, not a regex rewrite: exactly one measure needs this today. Add another entry
 // here, by measure key, if a future zero-`requiresJoin` measure ever needs the same treatment.
+// Shares its one expression with GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE above (both trace back
+// to TRAVELTIME_JOIN_QUALIFIED_EXPR) — same fix, two call sites that can each force a join a
+// zero-join measure wasn't written for.
 const QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN = {
-    travelTime: 'arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles',
+    travelTime: TRAVELTIME_JOIN_QUALIFIED_EXPR,
 };
 
 // Table-only: `TableCell.jsx` renders a column's raw value verbatim with NO formatting unless
