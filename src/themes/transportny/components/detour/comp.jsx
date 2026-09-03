@@ -18,14 +18,14 @@ import { EDGES_LAYER_KEY } from "./constants";
 import { DetourDetailsPanel } from "./components/DetourDetailsPanel";
 import { ClosureDensityPanel } from "./components/ClosureDensityPanel";
 
-// Simple detour mode's endpoint picker (2026-08-25 perf) - moved server-side entirely
+// Simple detour mode's endpoint picker is resolved server-side entirely
 // (resolveDetourEndpoints.js -> POST .../trsp-memory-detour-endpoints ->
 // memoryGraph.js's walkToFirstBranch). The old client-side walk made one HTTP request PER HOP
 // (resolveEdgesInBbox), which on a highway with short edges over a multi-mile budget could mean
-// hundreds of sequential network round trips just to pick the start/end points, before "Get
-// detour" even ran the real route search. Same walk-to-first-branch rule either way (pure
-// topology - a node with more than one viable next edge is a real branch, take exactly one more
-// hop past it and stop that direction), just one fast in-memory call now instead of many.
+// hundreds of sequential network round trips just to pick the start/end points. Same
+// walk-to-first-branch rule either way (pure topology - a node with more than one viable next
+// edge is a real branch, take exactly one more hop past it and stop that direction), just one
+// fast in-memory call now instead of many.
 //
 // Takes a resolved ogc_fid (see resolveEdgeAtPoint's own comment for why this can no longer be
 // the raw picked-layer feature id), not a segment object.
@@ -35,8 +35,7 @@ const resolveVerifiedEndpoints = async (ogcFid, pgEnv) => {
   return { start: result.start, end: result.end };
 };
 
-// Returns the clicked segment's own first/last coordinates (2026-09-02 - "take the start and end
-// lat long and find which segment is disconnected in 2025"). Two real endpoints let the backend
+// Returns the clicked segment's own first/last coordinates. Two real endpoints let the backend
 // validate actual network topology (a real edge connecting two snapped nodes), not just proximity
 // to one point.
 const endpointsOf = (geometry) => {
@@ -56,20 +55,20 @@ const endpointsOf = (geometry) => {
 // clicks ONE segment, start/end are derived automatically as the nearest OTHER node to each of
 // that segment's own endpoints, then an explicit "Get detour" press computes the route. Once
 // shown, the pickable network hides so only the clean result remains - "Clear detour" resumes
-// picking (2026-08-19 follow-up).
+// picking.
 const Comp = ({ state, setState, map }) => {
   const mctx = React.useContext(MapEditorContext);
   const cctx = React.useContext(CMSContext);
   const ctx = mctx?.falcor ? mctx : cctx;
   const { pgEnv } = ctx || {};
 
-  // Closure coverage / density analysis mode (2026-08-20) - a second "view" within this same
+  // Closure coverage / density analysis mode - a second "view" within this same
   // plugin, toggled from the Legend panel's "Closure density mode" switch (internalPanel.jsx),
   // shared with the "Display default legend" toggle via the same plugin-data store. Segment
   // picking (useEdgeLayer below) is reused as-is in both modes - only what happens after selection
   // differs.
   //
-  // pluginDataPath branches on `state.symbologies` vs `state.symbology` (2026-08-25 fix, same
+  // pluginDataPath branches on `state.symbologies` vs `state.symbology` (same
   // pattern as macroview/comp.jsx and macroview.plugin.jsx's mapRegister) - a hardcoded
   // `symbology.pluginData.detour` path only resolves inside the mapeditor test harness, where
   // `state.symbology` sits at the top level. A regular DMS page's Map section nests it instead
@@ -78,12 +77,25 @@ const Comp = ({ state, setState, map }) => {
   const pluginDataPath = state.symbologies
     ? `symbologies['${Object.keys(state.symbologies)[0]}'].symbology.pluginData.detour`
     : "symbology.pluginData.detour";
-  const isDensityMode = Boolean(get(state, `${pluginDataPath}['density-mode']`, false));
-  // "Show candidate points" Legend-panel toggle (2026-08-21) - independent of density mode itself.
-  const showCandidatePoints = Boolean(get(state, `${pluginDataPath}['show-candidates']`, false));
+  // MapEditor stays exactly as-is (author-only density-mode/show-candidates/pick-pair-testing
+  // toggles below, via internalPanel.jsx). DMS pages get a single Simple/Multi switch
+  // (DetourModeSwitch, rendered below) that overrides all three at once - undefined until a
+  // visitor actually toggles it, so a fresh page load still starts from the author's own defaults.
+  const isMapEditor = Boolean(mctx?.falcor);
+  const multiModeOverride = isMapEditor ? undefined : get(state, `${pluginDataPath}['multi-mode']`, undefined);
+  const isDensityMode = multiModeOverride !== undefined
+    ? multiModeOverride
+    : Boolean(get(state, `${pluginDataPath}['density-mode']`, false));
+  // "Show candidate points" Legend-panel toggle - independent of density mode itself for the
+  // author, folded into multi-mode for DMS-page visitors.
+  const showCandidatePoints = multiModeOverride !== undefined
+    ? multiModeOverride
+    : Boolean(get(state, `${pluginDataPath}['show-candidates']`, false));
   // Testing-only pair picker toggle - only takes effect when density mode + show-candidates are
-  // ALSO on, per the user's own framing ("it is depended on the point switch it must be on").
-  const pickPairTesting = Boolean(get(state, `${pluginDataPath}['pick-pair-testing']`, false));
+  // ALSO on.
+  const pickPairTesting = multiModeOverride !== undefined
+    ? multiModeOverride
+    : Boolean(get(state, `${pluginDataPath}['pick-pair-testing']`, false));
 
   const {
     routes, baselineRoutes, selectedVariant, setSelectedVariant,
@@ -97,7 +109,7 @@ const Comp = ({ state, setState, map }) => {
   const hasResult = isDensityMode
     ? Boolean(density) || Boolean(densityError)
     : Boolean(routes) || Boolean(error);
-  // Base network layer (2026-08-31): author-selected via internalPanel.jsx instead of the plugin
+  // Base network layer: author-selected via internalPanel.jsx instead of the plugin
   // fetching its own data - see the task file's "Base layer" section. `edgesLayerId` is the
   // maplibre layer id of an already-added, already-tiled DMS layer (source 2097 "Temp OSM
   // Conflation Edges" or equivalent - must be the `_edges` table, not the main conflation table).
@@ -108,17 +120,15 @@ const Comp = ({ state, setState, map }) => {
   // contract.
   const { selectedSegment, clearSegment } = useEdgeLayer(map, edgesLayerId, !hasResult);
 
-  // Segment-identity fix (2026-09-02, "the layer showing here is 2024 and the backend using data
-  // is of 2025... ogc_fid... is not consistant across the years it just the int PK"): the base
-  // network layer (`edgesLayerId` above) is author-selected and can be ANY year's tiled layer,
-  // but every /trsp-memory-* backend call routes against ONE hardcoded conflation table set. The
-  // raw `selectedSegment.ogcFid` (that layer's own feature id) is therefore NOT a safe identifier
-  // into the backend's table - it silently matched an unrelated segment, which is why candidate
-  // points were landing "way too far ahead" of the segment actually clicked. `resolvedOgcFid` is
-  // the backend's OWN ogc_fid for whatever real-world segment the author clicked, snapped
-  // server-side from the clicked geometry's start/end coordinates (resolveEdgeAtPoint.js) - this
-  // is the only ogc_fid ever passed to resolveDetourEndpoints/analyze/getRoute/usePickedPairRoute
-  // below.
+  // Segment-identity resolution: the base network layer (`edgesLayerId` above) is author-selected
+  // and can be ANY year's tiled layer, but every /trsp-memory-* backend call routes against ONE
+  // hardcoded conflation table set, and ogc_fid is not consistent across years (it's just an int
+  // PK). The raw `selectedSegment.ogcFid` (that layer's own feature id) is therefore NOT a safe
+  // identifier into the backend's table - it can silently match an unrelated segment, producing
+  // candidate points nowhere near the segment actually clicked. `resolvedOgcFid` is the backend's
+  // OWN ogc_fid for whatever real-world segment the author clicked, snapped server-side from the
+  // clicked geometry's start/end coordinates (resolveEdgeAtPoint.js) - this is the only ogc_fid
+  // ever passed to resolveDetourEndpoints/analyze/getRoute/usePickedPairRoute below.
   const [resolvedOgcFid, setResolvedOgcFid] = React.useState(null);
   const [segmentResolveError, setSegmentResolveError] = React.useState(null);
   React.useEffect(() => {
@@ -140,9 +150,8 @@ const Comp = ({ state, setState, map }) => {
       if (cancelled) return;
       setResolvedOgcFid(ogc_fid);
       // No real edge connects the two snapped nodes in the live table - the clicked segment
-      // doesn't exist in this shape in the current routing data (a real, name-the-cause
-      // condition per the user's own framing - "find which segment is disconnected in 2025" -
-      // not something to silently paper over with a best-effort nearest-edge guess).
+      // doesn't exist in this shape in the current routing data. Surface this explicitly rather
+      // than silently papering over it with a best-effort nearest-edge guess.
       if (!exactMatch) {
         setSegmentResolveError("This segment doesn't match a connected road in the current routing data - results may be inaccurate.");
       }
@@ -157,31 +166,29 @@ const Comp = ({ state, setState, map }) => {
   const [resolving, setResolving] = React.useState(false);
   // Fault tolerance: distinct from "still resolving" - covers (a) resolution finished but found
   // truly nothing at one/both endpoints (a fully isolated node - even the plain-nearest-node
-  // fallback found no other node nearby), and (b) a network/backend error during resolution
-  // (previously only console.error'd, leaving the panel stuck on "Finding..." forever with no
-  // visible sign anything went wrong - 2026-08-20 fault-tolerance pass).
+  // fallback found no other node nearby), and (b) a network/backend error during resolution.
+  // Without this, an error previously only console.error'd, leaving the panel stuck on "Finding..."
+  // forever with no visible sign anything went wrong.
   const [resolveError, setResolveError] = React.useState(null);
 
-  // Both travel directions render simultaneously, always (2026-08-20 - replaces the earlier
-  // direction-toggle and "show all routes" ideas): AtoB is ALWAYS primary (bold/solid), BtoA is
-  // ALWAYS secondary (dimmed/dashed) - a direction's line style is fixed, not reassigned based on
-  // which direction(s) happen to have a route. Only the SELECTED cost objective (shortest/fastest)
-  // shows for each direction, not all 4 at once - keeps the map readable while still surfacing the
-  // directional asymmetry this feature exists to show.
+  // Both travel directions render simultaneously, always: AtoB is ALWAYS primary (bold/solid),
+  // BtoA is ALWAYS secondary (dimmed/dashed) - a direction's line style is fixed, not reassigned
+  // based on which direction(s) happen to have a route. Only the SELECTED cost objective
+  // (shortest/fastest) shows for each direction, not all 4 at once - keeps the map readable while
+  // still surfacing the directional asymmetry this feature exists to show.
   //
-  // Fixed 2026-08-24 ("the route possible is end to start but still hard yellow is there, it has
-  // to be dotted"): the old version PROMOTED BtoA to solid/primary styling whenever AtoB had no
-  // route, so the only available route rendered bold even though DetourDetailsPanel's own "End ->
-  // Start" swatch always shows dashed - a real mismatch between the panel's legend and the map.
-  // AtoB no longer falls back to BtoA for primaryFeature, and secondaryFeatures no longer requires
-  // BOTH directions to exist - BtoA renders dashed whenever it exists, period.
+  // AtoB must never fall back to BtoA for primaryFeature, and secondaryFeatures must not require
+  // BOTH directions to exist: an earlier version promoted BtoA to solid/primary styling whenever
+  // AtoB had no route, so the only available route rendered bold even though DetourDetailsPanel's
+  // own "End -> Start" swatch always shows dashed - a mismatch between the panel's legend and the
+  // map. BtoA renders dashed whenever it exists, period.
   const primaryFeature = routes?.AtoB?.[selectedVariant]?.feature || null;
   const secondaryFeatures = React.useMemo(() => {
     const f = routes?.BtoA?.[selectedVariant]?.feature;
     return f ? [f] : [];
   }, [routes, selectedVariant]);
 
-  // Testing-only individual-pair route (2026-08-21) - pick any start + any end candidate point,
+  // Testing-only individual-pair route - pick any start + any end candidate point,
   // see the actual route between them highlighted. Reuses the existing single-trip resolver.
   const {
     pickedStart, pickedEnd, route: pickedRoute, loading: pickedRouteLoading,
@@ -201,10 +208,9 @@ const Comp = ({ state, setState, map }) => {
   // heatmap has its own layer instead, EXCEPT when the testing pair-picker has a route to show -
   // that borrows this same layer since only one of the two is ever active at once.
   //
-  // Gated on `pickerActive`, not just `isDensityMode` (2026-08-24 - "if last option [Pick point
-  // pair] is turned off, that yellow route line is also get turned off"): `pickedRoute` state only
-  // clears when the selected SEGMENT changes, not when the picker toggle itself is switched off -
-  // so without this gate, a route picked earlier kept rendering after the toggle was turned off.
+  // Gated on `pickerActive`, not just `isDensityMode`: `pickedRoute` state only clears when the
+  // selected SEGMENT changes, not when the picker toggle itself is switched off - so without this
+  // gate, a route picked earlier kept rendering after the toggle was turned off.
   useRouteLayer(
     map,
     isDensityMode ? (pickerActive ? pickedRoute?.shortest?.feature || null : null) : primaryFeature,
@@ -224,14 +230,12 @@ const Comp = ({ state, setState, map }) => {
     isDensityMode && showCandidatePoints,
   );
 
-  // Auto-zoom to whatever result just came in (2026-09-02 - "the points are not visible and
-  // routes too" reported with no console/server errors and confirmed-correct backend data:
-  // nothing anywhere ever moved the map to the result, so a result several miles from wherever
-  // the map happened to be panned/zoomed when the segment was picked would render correctly but
-  // simply be off-screen). Fits to the closure-density heatmap's edge geometries (falls back to
-  // candidate points if the tally hasn't finished yet) in density mode, or the primary/secondary
-  // route features in single-trip mode - whichever is the actual visual result for the current
-  // mode.
+  // Auto-zoom to whatever result just came in: without this, nothing moves the map to the
+  // result, so a result several miles from wherever the map happened to be panned/zoomed when the
+  // segment was picked renders correctly but is simply off-screen. Fits to the closure-density
+  // heatmap's edge geometries (falls back to candidate points if the tally hasn't finished yet) in
+  // density mode, or the primary/secondary route features in single-trip mode - whichever is the
+  // actual visual result for the current mode.
   React.useEffect(() => {
     if (!map) return;
     const coords = [];

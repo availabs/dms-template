@@ -3,9 +3,8 @@ import { DENSITY_CANDIDATES_SOURCE_ID, DENSITY_CANDIDATES_LAYER_ID, MARKER_COLOR
 import { runWhenStyleReady } from "./runWhenStyleReady";
 
 // Small toggleable dots for the BFS-picked candidate start/end nodes used by the closure-density
-// analysis (2026-08-21: "i want to know which can be the start and end points that you pick... a
-// small points will be good as well") - a `circle` layer, not the plain-dot approach
-// useStartEndMarkers.js uses for the single-trip mode's two markers, since there can be up to
+// analysis - a `circle` layer, not the plain-dot approach useStartEndMarkers.js uses for the
+// single-trip mode's two markers, since there can be up to
 // DENSITY_NUM_CANDIDATES*2 of these at once. Reuses MARKER_COLORS' green/start, red/end
 // convention. `visible` is the "Show candidate points" Legend-panel toggle - independent of
 // whether an analysis has actually run yet (no points = nothing rendered either way).

@@ -33,23 +33,21 @@ const ClosureDensityPanel = ({
   const hasResult = Boolean(density) || Boolean(error);
   const totalPairs = DENSITY_NUM_CANDIDATES * DENSITY_NUM_CANDIDATES;
 
-  // Route comparison (2026-08-24, planning/transportny/tasks/current/
+  // Route comparison (planning/transportny/tasks/current/
   // closure-density-route-comparison-tab.md) - heatmap legend + both bar graphs all visible at
-  // once now (2026-08-25 - "keep all visible on window, no tabs for that"), not tab-switched. The
-  // comparison charts live in their own panel, stacked above the main results panel below (both
-  // bottom-left) so the results panel doesn't get overcrowded - see the second panel below.
+  // once, not tab-switched. The comparison charts live in their own panel, stacked above the main
+  // results panel below (both bottom-left) so the results panel doesn't get overcrowded - see the
+  // second panel below.
   const hasComparisons = Boolean(density?.pairComparisons?.length);
 
   return (
-    // Both panels stacked in ONE bottom-left region (2026-08-26 - "just above the closure
-    // coverage density so both will manage... both need to be working accordingly not overlap"):
-    // scattering panels across all 4 corners kept colliding with something else already claimed
-    // there (Legend at top-right, the plugin control panel at top-left, native map controls at
-    // bottom-right) - staying in the one region nothing else uses sidesteps every collision.
-    // `flex-col-reverse` puts the FIRST child (density results) at the bottom and stacks later
-    // children (the comparison panel) above it, so the visual order matches "comparison above
-    // density" without hardcoded offsets. No internal scroll/height cap on either panel
-    // (2026-08-26 - "no scroll also full stretch") - each just stretches to fit its own content;
+    // Both panels stacked in ONE bottom-left region: scattering panels across all 4 corners kept
+    // colliding with something else already claimed there (Legend at top-right, the plugin
+    // control panel at top-left, native map controls at bottom-right) - staying in the one region
+    // nothing else uses sidesteps every collision. `flex-col-reverse` puts the FIRST child
+    // (density results) at the bottom and stacks later children (the comparison panel) above it,
+    // so the visual order matches "comparison above density" without hardcoded offsets. No
+    // internal scroll/height cap on either panel - each just stretches to fit its own content;
     // gap-3 on the wrapper keeps them visually separated as they grow.
     <div className={t.wrapper}>
     <div className={t.panel}>
@@ -76,9 +74,9 @@ const ClosureDensityPanel = ({
         </div>
       )}
 
-      {/* Two-phase status (2026-08-21: "let route mapping in process" - points can already be
-          visible on the map here while the route tally is still running, so the message should
-          say which step is actually happening, not one generic "Analyzing" for both). */}
+      {/* Two-phase status - points can already be visible on the map here while the route tally
+          is still running, so the message should say which step is actually happening, not one
+          generic "Analyzing" for both. */}
       {loading && phase === "points" && (
         <div className={t.statusText}>Finding candidate points near this segment…</div>
       )}
@@ -109,10 +107,9 @@ const ClosureDensityPanel = ({
               ))}
             </div>
             {/* Numeric range under each swatch, computed from the SAME computeDensityStops the
-                map layer's own `step` paint expression uses (constants.js, 2026-08-24 - fixes a
-                real bug where a low maxCount produced duplicate/non-increasing stops), so the
-                legend never drifts out of sync with what's actually drawn (2026-08-21: "show
-                numbers in left bottom range of color" - replaces plain "fewer"/"more" labels). */}
+                map layer's own `step` paint expression uses (constants.js - fixes a real bug
+                where a low maxCount produced duplicate/non-increasing stops), so the legend never
+                drifts out of sync with what's actually drawn. */}
             <div className={t.legendRangeRow}>
               {[0, ...computeDensityStops(density.maxCount)].map((lo, i, stops) => {
                 const hi = i < stops.length - 1 ? stops[i + 1] - 1 : density.maxCount;
@@ -127,9 +124,9 @@ const ClosureDensityPanel = ({
         </>
       )}
 
-      {/* Testing-only pair picker (2026-08-21) - pick any start + any end candidate point,
-          highlight the route between them, spot-check an individual OD pair rather than only
-          seeing the aggregated heatmap. Only shown once there ARE candidate points to click. */}
+      {/* Testing-only pair picker - pick any start + any end candidate point, highlight the
+          route between them, spot-check an individual OD pair rather than only seeing the
+          aggregated heatmap. Only shown once there ARE candidate points to click. */}
       {pickPairTesting && density?.startPoints?.length > 0 && (
         <div className={t.pairPickerBox}>
           <div className={t.pairPickerTitle}>Pick a pair</div>

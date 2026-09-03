@@ -44,9 +44,9 @@ const MPH_TO_MPS = 0.44704;
 // (real observed speed, NPMRDS probe data) and ris_posted_speed (real posted limit, RIS inventory)
 // live on the MAIN conflation table, keyed by the tmc/ris codes each edge carries in its own
 // tmc[]/ris[] array columns - `edgesAlias` must be a table/alias in scope with those columns.
-// Requires btree indexes on the main table's tmc/ris columns (added 2026-08-14 - confirmed via
-// direct testing this join is a ~100s-for-300-edges full-table-scan disaster without them, ~0.1s
-// with them - do not remove those indexes without re-verifying this stays fast).
+// Requires btree indexes on the main table's tmc/ris columns - confirmed via direct testing this
+// join is a ~100s-for-300-edges full-table-scan disaster without them, ~0.1s with them - do not
+// remove those indexes without re-verifying this stays fast.
 const speedMphSql = (conflationTable, edgesAlias) => `COALESCE(
   (SELECT avg(m.tmc_avg_speedlimit) FROM ${conflationTable} m WHERE m.tmc = ANY(${edgesAlias}.tmc) AND m.tmc_avg_speedlimit IS NOT NULL),
   (SELECT avg(m.ris_posted_speed::numeric) FROM ${conflationTable} m WHERE m.ris = ANY(${edgesAlias}.ris) AND m.ris_posted_speed IS NOT NULL),
@@ -65,22 +65,18 @@ const snapToNearestNode = async (db, nodesTable, { lon, lat }) => {
   return rows[0].osm_id;
 };
 
-// Detour plugin's segment identity fix (2026-09-02, "the layer showing here is 2024 and the
-// backend using data is of 2025... why the main reason is ogc_fid that we are picking here this
-// is not good option as it's not consistant across the years it just the int PK"): the base
-// network layer is author-selected and can be ANY year's tiled layer, but the routing backend
-// always computes against ONE hardcoded conflation table set. `ogc_fid` is a per-import serial
-// PK, not a stable cross-year identifier - the same integer in 2024's edges table and 2025's
-// edges table almost certainly refer to two entirely unrelated physical roads.
+// Detour plugin's segment identity fix: the base network layer is author-selected and can be ANY
+// year's tiled layer, but the routing backend always computes against ONE hardcoded conflation
+// table set. `ogc_fid` is a per-import serial PK, not a stable cross-year identifier - the same
+// integer in one year's edges table and another year's edges table almost certainly refer to two
+// entirely unrelated physical roads.
 //
 // Fix: never trust a client-supplied ogc_fid as an identifier into the live conflation table.
-// "take the start and end lat long and find which segment is disconnected in 2025... find points
-// from the old selected lat longs of those points" - snap the clicked segment's own START and END
-// coordinates to nodes in the live table and require a real edge connecting them. That validates
-// real network topology, not just proximity, and gives a clean signal for exactly the failure
-// mode the user named: when the live table doesn't have a direct edge between those two snapped
-// points, the segment genuinely doesn't exist there in the same shape (disconnected/re-split by
-// the reconflation), and callers should be told, not handed a silent guess.
+// Snap the clicked segment's own START and END coordinates to nodes in the live table and require
+// a real edge connecting them. That validates real network topology, not just proximity: when the
+// live table doesn't have a direct edge between those two snapped points, the segment genuinely
+// doesn't exist there in the same shape (disconnected/re-split by the reconflation), and callers
+// should be told, not handed a silent guess.
 const resolveEdgeBetweenPoints = async (db, edgesTable, nodesTable, { start, end }) => {
   const [startNode, endNode] = await Promise.all([
     snapToNearestNode(db, nodesTable, start),
@@ -132,14 +128,13 @@ const getNodesInBbox = async (db, nodesTable, [minLon, minLat, maxLon, maxLat]) 
 // as a GeoJSON LineString feature (ogc_fid as the feature id) so the frontend can render + click
 // it directly, no client-side geometry assembly needed.
 //
-// No LIMIT (2026-08-26, "i want all bbox must be working and showing all" - the earlier 2000-row
-// cap silently dropped edges in a dense viewport, and without a deterministic order the dropped
-// set could even change between identical repeat queries, looking like segments randomly
-// vanishing/reappearing on revisit). ORDER BY ogc_fid still applied for stable, reproducible
-// results.
+// No LIMIT - an earlier 2000-row cap silently dropped edges in a dense viewport, and without a
+// deterministic order the dropped set could even change between identical repeat queries, looking
+// like segments randomly vanishing/reappearing on revisit. ORDER BY ogc_fid still applied for
+// stable, reproducible results.
 const getEdgesInBbox = async (db, edgesTable, [minLon, minLat, maxLon, maxLat]) => {
   const { rows } = await db.query(
-    // `osm` (2026-08-25, detour plugin's endpoint-picker walk) - the OSM WAY id each edge belongs
+    // `osm` (detour plugin's endpoint-picker walk) - the OSM WAY id each edge belongs
     // to. Ground truth for "is this the same road" instead of guessing from highway-type string
     // match + bearing angle: two edges sharing the same `osm` id are literally the same mapped
     // way (including its own reverse-direction pair, for a two-way road), while a different `osm`
@@ -246,7 +241,7 @@ const computeTrspRoutes = async (db, pgEnv, { source, destination, source_node_i
 
   // pgr_trsp evaluates restrictions_sql as its own independent statement - it cannot see a CTE
   // wrapped around the outer pgr_trsp call, so the restrictions have to be a real, materialized
-  // temp table restrictions_sql can reference by name (confirmed by direct testing 2026-08-12).
+  // temp table restrictions_sql can reference by name (confirmed by direct testing).
   const restrictionsTable = `temp_trsp_restrictions_${pgEnv}_${sourceNodeId}_${destNodeId}`;
 
   // An unbounded pgr_trsp search over the full ~9.6M-edge network takes ~60-70s (confirmed by
@@ -334,19 +329,18 @@ const computeTrspRoutes = async (db, pgEnv, { source, destination, source_node_i
 };
 
 // Warm-load the default conflation view's in-memory graph shortly after the server boots, so the
-// FIRST real request doesn't pay the ~80s cold-load cost (2026-08-20 user ask: "auto load cache
-// for this graph so that it will response fast from the first api call itself").
+// FIRST real request doesn't pay the ~80s cold-load cost.
 //
-// The conflation source/version is now a single server-side constant (memoryGraph.js's
-// CONFLATION_TABLE/etc, 2026-09-02) - both frontend plugins (routing/constants.js and
-// detour/constants.js) no longer know or send a view id at all, so one warm-load benefits both.
+// The conflation source/version is a single server-side constant (memoryGraph.js's
+// CONFLATION_TABLE/etc) - both frontend plugins (routing/constants.js and detour/constants.js) no
+// longer know or send a view id at all, so one warm-load benefits both.
 //
-// DELIBERATELY DEFERRED, not fired immediately at registration: an earlier attempt (2026-08-19)
-// called helpers.getDb(...) + the graph load synchronously at plugin-registration time, which
-// raced the server's own DAMA-env init sequence for the SAME pgEnv and hung the entire server
-// boot (confirmed live - the process never reached "DMS Server running"). A fixed delay is not
-// a fully deterministic fix (there's no confirmed "server fully ready" hook to listen for
-// instead), but 20s is comfortably past every boot sequence observed live in this task so far.
+// DELIBERATELY DEFERRED, not fired immediately at registration: an earlier attempt called
+// helpers.getDb(...) + the graph load synchronously at plugin-registration time, which raced the
+// server's own DAMA-env init sequence for the SAME pgEnv and hung the entire server boot
+// (confirmed live - the process never reached "DMS Server running"). A fixed delay is not a fully
+// deterministic fix (there's no confirmed "server fully ready" hook to listen for instead), but
+// 20s is comfortably past every boot sequence observed live so far.
 //
 // Fire-and-forget: never blocks route registration, and any failure here just logs - the existing
 // lazy load (getOrLoadGraph, called normally by /trsp-memory on the first real request) is the
@@ -419,11 +413,10 @@ module.exports = {
         }
 
         // Default is plain dijkstra, unchanged. Smart auto-dispatch (choosing bidirectional by
-        // straight-line distance) was tried 2026-08-19, then explicitly reverted per user request
-        // ("keep it here the stuff for the dijkstra only but keep code for bi directional also") -
-        // bidirectionalDijkstra() stays available as an explicit `algorithm: "bidirectional"`
-        // override (see the 20-pair verification in point-to-point-routing-plugin.md for why the
-        // auto-dispatch threshold wasn't a clean win worth keeping as the default behavior).
+        // straight-line distance) was tried and reverted - bidirectionalDijkstra() stays available
+        // as an explicit `algorithm: "bidirectional"` override (see the 20-pair verification in
+        // point-to-point-routing-plugin.md for why the auto-dispatch threshold wasn't a clean win
+        // worth keeping as the default behavior).
         const resolvedAlgorithm = algorithm || "dijkstra";
 
         const db = helpers.getDb(req.params.pgEnv);
@@ -490,8 +483,8 @@ module.exports = {
     });
 
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory-resolve-edge
-    // Segment-identity resolver (2026-09-02, see resolveEdgeBetweenPoints's own comment above for
-    // the full "ogc_fid isn't stable across conflation years" bug this fixes). The detour plugin's
+    // Segment-identity resolver (see resolveEdgeBetweenPoints's own comment above for the full
+    // "ogc_fid isn't stable across conflation years" bug this fixes). The detour plugin's
     // base network layer is author-selected and can be ANY year's tiled layer; this snaps the
     // clicked segment's own start/end coordinates to nodes in THIS backend's live conflation
     // table and looks for a real edge connecting them, returning that edge's own ogc_fid - the
@@ -520,7 +513,7 @@ module.exports = {
     });
 
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory-detour-endpoints
-    // Simple detour mode's endpoint picker, moved server-side (2026-08-25 perf) - replaces the
+    // Simple detour mode's endpoint picker, moved server-side - replaces the
     // client-side per-hop-HTTP-request walk (comp.jsx's old walkForward) with ONE fast in-memory
     // call using the same walk-to-first-branch rule (memoryGraph.js's walkToFirstBranch, shared
     // with selectClosureDensityCandidates's own seeding).
@@ -549,10 +542,10 @@ module.exports = {
     });
 
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory-density-points
-    // Closure coverage/density analysis, STEP 1/2 (2026-08-21 - split into two calls so the
-    // frontend can show/confirm candidate points before committing to the expensive full
-    // analysis; also lets the timing of point-selection vs. route-tallying be measured
-    // separately). Returns candidate start/end points only, no route tallying yet.
+    // Closure coverage/density analysis, STEP 1/2 - split into two calls so the frontend can
+    // show/confirm candidate points before committing to the expensive full analysis; also lets
+    // the timing of point-selection vs. route-tallying be measured separately. Returns candidate
+    // start/end points only, no route tallying yet.
     router.post("/trsp-memory-density-points", async (req, res) => {
       try {
         const { ogc_fid, num_candidates, cost_objective } = req.body || {};

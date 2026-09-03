@@ -1,10 +1,9 @@
 // Detour plugin's fetch boundary for the closure-density backend calls, mirroring
 // resolveTrspRoute.js's pattern - own copy, not shared with ../../routing.
 //
-// Split into two calls (2026-08-21 - "can you make 2 api call here first to get points and then
-// route the segment dense thing?"): point selection is its own step so candidate markers can show
-// up before the (slower) route-tallying step finishes, and so each step's timing is visible
-// separately server-side.
+// Split into two calls: point selection is its own step so candidate markers can show up before
+// the (slower) route-tallying step finishes, and so each step's timing is visible separately
+// server-side.
 const API_HOST = import.meta.env.VITE_API_HOST || "https://dmsserver.availabs.org";
 
 // Step 1/2 - contract: POST {API_HOST}/dama-admin/{pgEnv}/routing/trsp-memory-density-points

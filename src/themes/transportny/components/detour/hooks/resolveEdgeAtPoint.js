@@ -1,9 +1,9 @@
-// Segment-identity resolver (2026-09-02 fix - see data-types/routing/index.js's
-// resolveEdgeBetweenPoints for the full writeup): the author-selected base network layer can be
-// ANY year's tiled layer, but the backend always routes against ONE hardcoded conflation table
-// set. `ogc_fid` is a per-import serial PK, not stable across years, so the raw feature id from
-// whatever layer is currently displayed cannot be trusted as an identifier into the backend's
-// live table - it silently landed on a totally unrelated segment.
+// Segment-identity resolver (see data-types/routing/index.js's resolveEdgeBetweenPoints for the
+// full writeup): the author-selected base network layer can be ANY year's tiled layer, but the
+// backend always routes against ONE hardcoded conflation table set. `ogc_fid` is a per-import
+// serial PK, not stable across years, so the raw feature id from whatever layer is currently
+// displayed cannot be trusted as an identifier into the backend's live table - it silently landed
+// on a totally unrelated segment.
 //
 // Snaps the clicked segment's own START and END coordinates to nodes in the backend's live table
 // and requires a real edge connecting them. That validates actual network topology, not just

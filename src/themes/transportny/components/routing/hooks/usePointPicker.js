@@ -1,20 +1,17 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { MARKER_COLORS, POINTS_SOURCE_ID, POINTS_LAYER_ID, POINTS_LABEL_LAYER_ID } from "../constants";
 
-// Phase 8: click-anywhere-on-the-map point picker, replacing Phase 6's node-dot layer. The user
-// never sees or picks a raw graph node - they drop a pin the way they'd expect (same mental model
-// as Google Maps), and the backend silently snaps it to the nearest graph node server-side (see
-// resolveTrspRoute.js - the /trsp route already supports raw {source,destination} lon/lat).
-// 1st click places a source point, 2nd places destination, 3rd restarts from a fresh source -
-// same felt behavior as the deleted pre-Phase-6 useTwoPointHandler.js and Phase 6's
-// useNodeSelection.js this replaces.
+// Click-anywhere-on-the-map point picker. The user never sees or picks a raw graph node - they
+// drop a pin the way they'd expect (same mental model as Google Maps), and the backend silently
+// snaps it to the nearest graph node server-side (see resolveTrspRoute.js - the /trsp route
+// already supports raw {source,destination} lon/lat). 1st click places a source point, 2nd places
+// destination, 3rd restarts from a fresh source.
 //
 // Renders points as a plain GeoJSON circle+label layer (the same proven-working primitive
 // useRouteLayer.js already uses for the route line itself) instead of a DOM-based
-// mapboxgl.Marker - a real mapboxgl.Marker was tried first and its DOM element existed and was
-// confirmed in the document (verified live, 2026-08-14), but never rendered visibly in this
-// specific MapEditor host page for reasons not fully root-caused (likely a CSS conflict specific
-// to this page's styles, not something the plugin's own code controls). A canvas-rendered layer
+// mapboxgl.Marker: a Marker's DOM element mounts but never renders visibly in this specific
+// MapEditor host page for reasons not fully root-caused (likely a CSS conflict specific to this
+// page's styles, not something the plugin's own code controls). A canvas-rendered layer
 // sidesteps that class of bug entirely and is the same primitive already proven to work here.
 export const usePointPicker = (map, isActive) => {
   const [source, setSource] = useState(null); // { lng, lat } | null

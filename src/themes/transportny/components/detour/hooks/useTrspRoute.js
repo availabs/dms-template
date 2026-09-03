@@ -5,21 +5,20 @@ import { chooseAlgorithm } from "./haversineMiles";
 // Detour plugin's own copy of the route-fetch lifecycle - own state, not shared with
 // ../../routing/hooks/useTrspRoute.js.
 //
-// Computes BOTH travel directions through the closed segment (2026-08-19, user's own framing:
-// "it can be different for the both ways... explore those all" - a river-crossing analogy for how
-// turn restrictions can make the two directions genuinely different routes, not just the same
-// route reversed). `routes` shape: { AtoB: {shortest,fastest}|null, BtoA: {shortest,fastest}|null,
-// AtoBError, BtoAError } | null, where A=start, B=end as derived in comp.jsx.
+// Computes BOTH travel directions through the closed segment - turn restrictions can make the two
+// directions genuinely different routes, not just the same route reversed. `routes` shape:
+// { AtoB: {shortest,fastest}|null, BtoA: {shortest,fastest}|null, AtoBError, BtoAError } | null,
+// where A=start, B=end as derived in comp.jsx.
 //
-// 2026-08-20: also fetches the BASELINE ("open," no exclusion) route for the same two directions,
-// alongside the closed/detour one - the "closure impact" comparison the panel now shows (distance/
-// time/edges, open vs. closed, with the delta). Same shape as `routes`, stored separately as
-// `baselineRoutes` so the panel can show both without conflating them.
+// Also fetches the BASELINE ("open," no exclusion) route for the same two directions, alongside
+// the closed/detour one - the "closure impact" comparison the panel shows (distance/time/edges,
+// open vs. closed, with the delta). Same shape as `routes`, stored separately as `baselineRoutes`
+// so the panel can show both without conflating them.
 //
 // Direction SELECTION (which of AtoB/BtoA is currently shown) does NOT live here - comp.jsx reads
 // it from the shared plugin state (`state.symbology.pluginData.detour.direction`), the same store
-// backing this plugin's internalPanel.jsx controls (2026-08-19 follow-up: "use this window to put
-// the button for the last both direction stuff"). Keeping one source of truth for that selection.
+// backing this plugin's internalPanel.jsx controls. Keeping one source of truth for that
+// selection.
 export const useTrspRoute = (pgEnv) => {
   const [routes, setRoutes] = useState(null);
   const [baselineRoutes, setBaselineRoutes] = useState(null);

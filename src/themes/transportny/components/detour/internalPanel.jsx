@@ -10,23 +10,22 @@ import { internalPanelTheme } from "./internalPanel.theme";
 // missing these isn't the `_edges` table, regardless of how plausible its name looks.
 const REQUIRED_COLUMNS = ["ogc_fid", "from_node", "to_node", "highway"];
 
-// Base network layer picker (2026-08-31) - the author picks which already-added DMS layer
-// (source 2097 "Temp OSM Conflation Edges" or equivalent) both of this plugin's modes pick
-// segments from, instead of the plugin fetching its own data - mirrors
-// ../routecreation/internalPanel.jsx exactly. Must be the `_edges` table (ogc_fid matches
-// excluded_edge_ids/resolveDetourEndpoints), not the main conflation match table - see the task
-// file's "Base layer" section for why that distinction matters.
+// Base network layer picker - the author picks which already-added DMS layer (source 2097
+// "Temp OSM Conflation Edges" or equivalent) both of this plugin's modes pick segments from,
+// instead of the plugin fetching its own data - mirrors ../routecreation/internalPanel.jsx
+// exactly. Must be the `_edges` table (ogc_fid matches excluded_edge_ids/resolveDetourEndpoints),
+// not the main conflation match table - see the task file's "Base layer" section for why that
+// distinction matters.
 //
-// Column validation (2026-08-31): nothing previously stopped an author from picking ANY layer -
-// a wrong pick could fail visibly (no ogc_fid at all) or, worse, silently return wrong routes if
-// its feature ids happen to also exist in the backend's graph for an unrelated segment. Fetches
-// the picked layer's real source metadata (same falcor "uda"/sources/byId/<id>/metadata path
-// used throughout MapEditor's own LayerEditor - see Controls.jsx et al.) and checks the declared
-// columns include what this plugin actually needs, surfacing a clear warning if not.
+// Column validation: nothing stops an author from picking ANY layer - a wrong pick could fail
+// visibly (no ogc_fid at all) or, worse, silently return wrong routes if its feature ids happen
+// to also exist in the backend's graph for an unrelated segment. Fetches the picked layer's real
+// source metadata (same falcor "uda"/sources/byId/<id>/metadata path used throughout MapEditor's
+// own LayerEditor - see Controls.jsx et al.) and checks the declared columns include what this
+// plugin actually needs, surfacing a clear warning if not.
 //
-// Closure coverage / density analysis mode switch (2026-08-20) - same plugin, same segment-picking
-// flow, just a second "view" toggled on here rather than a separate plugin (user: "plugin will be
-// same just add the switch to enable and disable that view/tab"). Rendered below the
+// Closure coverage / density analysis mode switch - same plugin, same segment-picking flow, just
+// a second "view" toggled on here rather than a separate plugin. Rendered below the
 // InternalPluginPanel's own "Display default legend" toggle. comp.jsx reads this same
 // `state.symbology.pluginData.detour['density-mode']` path and branches between the single-trip
 // detour flow and the closure-density heatmap flow.
@@ -109,9 +108,8 @@ const InternalPanel = ({ state }) => {
         },
       ],
     },
-    // Small on/off switch for the BFS candidate start/end points (2026-08-21: "i want to know which
-    // can be the start and end points that you pick") - independent of density mode itself, so it
-    // can stay off by default without hiding the toggle only after switching modes on.
+    // Small on/off switch for the BFS candidate start/end points - independent of density mode
+    // itself, so it can stay off by default without hiding the toggle only after switching modes on.
     {
       label: "Show candidate points",
       controls: [
@@ -122,10 +120,9 @@ const InternalPanel = ({ state }) => {
         },
       ],
     },
-    // Testing-only pair picker (2026-08-21): pick any start + any end candidate point, highlight
+    // Testing-only pair picker: pick any start + any end candidate point, highlight
     // the actual route between them. Only takes effect in comp.jsx when "Show candidate points" is
-    // ALSO on - the points have to be visible/clickable for this to do anything, per the user's own
-    // framing ("it is depended on the point switch it must be on").
+    // ALSO on - the points have to be visible/clickable for this to do anything.
     {
       label: "Pick point pair",
       controls: [

@@ -2,22 +2,20 @@ import React from "react";
 import { ThemeContext, getComponentTheme } from "../../../../../dms/packages/dms/src/ui/useTheme";
 import { routeComparisonBarChartTheme } from "./RouteComparisonBarChart.theme";
 
-// Closure-density route comparison tabs (2026-08-24,
+// Closure-density route comparison tabs (see
 // planning/transportny/tasks/current/closure-density-route-comparison-tab.md) - for every
 // start/end pair used in the density analysis, shows how much longer that pair's route becomes
-// once the segment closes - by DISTANCE (miles) and, in a separate tab, by TIME (minutes) - "this
-// detour cost is in distance cost, what about time cost, add new tab."
+// once the segment closes - by DISTANCE (miles) and, in a separate tab, by TIME (minutes).
 //
-// Binned into 5 equal-width ranges (2026-08-24 - "make range of 5 so that user understand from
-// those data": a raw one-bar-per-pair list of up to 100 pairs read as noise, not a distribution a
-// user could actually take something from). 5 buckets matches the SAME bucket-count convention as
-// the heatmap legend just above these tabs (ClosureDensityPanel.jsx's DENSITY_STEP_FRACTIONS) -
-// bar height/width is the COUNT of pairs whose detour cost falls in that range, not one bar per
-// pair.
+// Binned into 5 equal-width ranges: a raw one-bar-per-pair list of up to 100 pairs reads as noise,
+// not a distribution a user could actually take something from. 5 buckets matches the SAME
+// bucket-count convention as the heatmap legend just above these tabs (ClosureDensityPanel.jsx's
+// DENSITY_STEP_FRACTIONS) - bar height/width is the COUNT of pairs whose detour cost falls in that
+// range, not one bar per pair.
 //
-// Plain divs, not a chart library (2026-08-24) - this panel already renders its heatmap legend the
-// same way (see ClosureDensityPanel.jsx's DENSITY_COLOR_RAMP swatches), and no chart dependency is
-// in package.json yet.
+// Plain divs, not a chart library - this panel already renders its heatmap legend the same way
+// (see ClosureDensityPanel.jsx's DENSITY_COLOR_RAMP swatches), and no chart dependency is in
+// package.json yet.
 const NUM_BUCKETS = 5;
 
 // `metric` picks which per-pair field drives the buckets - kept as a small config object (not two
@@ -55,10 +53,9 @@ const RouteComparisonBarChart = ({ pairComparisons, metric = "distance" }) => {
   }
 
   const { valueOf, unit, decimals, label } = METRICS[metric];
-  // 2026-08-25 fix - this used to always show BOTH the miles and minutes average under EVERY
-  // section (identical text repeated under Distance and under Time), which read as a bug, not a
-  // summary. Now shows only the metric this chart is actually for, as the visual hero number
-  // ("highlight those main avg numbers... those were the important ones").
+  // Shows only the metric this chart is actually for, as the visual hero number - avoid reverting
+  // to showing BOTH the miles and minutes average under every section (identical text repeated
+  // under Distance and under Time reads as a bug, not a summary).
   const avgValue = pairComparisons.reduce((sum, p) => sum + valueOf(p), 0) / pairComparisons.length;
   const buckets = buildBuckets(pairComparisons, valueOf);
   const maxCount = Math.max(...buckets.map((b) => b.count), 1);

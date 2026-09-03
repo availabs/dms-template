@@ -12,8 +12,7 @@ const fmtSigned = (n, digits) => (n >= 0 ? "+" : "") + n.toFixed(digits);
 const VARIANT_LABELS = { shortest: "Shortest", fastest: "Fastest" };
 
 // One direction's open (baseline, no exclusion) vs closed (detour, segment excluded) comparison,
-// stacked - the original reviewed-and-picked design (2026-08-20), restored after a simplification
-// attempt went the wrong way ("keep the first one").
+// stacked - keep this layout; a prior simplification attempt regressed it and was reverted.
 const ImpactBlock = ({ t, label, color, dashed, openRoute, closedRoute }) => {
   const swatchStyle = dashed
     ? { background: "none", borderTop: `2px dashed ${color}`, height: 0 }
@@ -96,15 +95,15 @@ const DetourDetailsPanel = ({
   // otherwise BtoA. Used only to pick which one's segment list to show below.
   const primary = AtoB ? { label: "Start → End", route: AtoB } : { label: "End → Start", route: BtoA };
 
-  // 2026-08-20: start/end normally continue the SAME road as the closed segment (see
-  // findSameRoadNode.js) - if either point had to fall back to a plain nearest-node search, that
-  // means this endpoint is genuinely disconnected from any continuing road (a dead-end/isolated
-  // case), worth surfacing rather than presenting it as an ordinary pick.
+  // start/end normally continue the SAME road as the closed segment (see findSameRoadNode.js) -
+  // if either point had to fall back to a plain nearest-node search, that means this endpoint is
+  // genuinely disconnected from any continuing road (a dead-end/isolated case), worth surfacing
+  // rather than presenting it as an ordinary pick.
   const anyFallback = startEnd?.start?.usedFallback || startEnd?.end?.usedFallback;
 
-  // 2026-08-25: some segments (a long highway with no nearby cross-road) genuinely have no real
-  // intersection within a reasonable distance - the endpoint picker gives up after 10mi rather than
-  // walking forever, and flags it here so that's visible instead of looking like an ordinary pick.
+  // Some segments (a long highway with no nearby cross-road) genuinely have no real intersection
+  // within a reasonable distance - the endpoint picker gives up after 10mi rather than walking
+  // forever, and flags it here so that's visible instead of looking like an ordinary pick.
   const anyDistanceCap = startEnd?.start?.hitDistanceCap || startEnd?.end?.hitDistanceCap;
 
   const asymmetric = routes?.AtoB && routes?.BtoA &&

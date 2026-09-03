@@ -52,16 +52,13 @@ const findEdgeIndexByOgcFid = (edgeOgcFid, targetOgcFid) => {
   return -1;
 };
 
-// Conflation source ids + target version (2026-09-02, refined per explicit user instruction: "do
-// not hardcode table name just hardcode th[e] view_id... keep sourrce and find version... make
-// sure it will not impact on the speed of response"). SOURCE ids are PERMANENT - they never
-// change across a conflation reprocess, only which VIEW under each source is "current" does
-// (a fresh reprocess mints a brand-new view_id AND a brand-new physical table name). Hardcoding
-// the literal table name (the 2026-09-02-earlier-same-day approach) broke this: it goes stale the
-// moment the pipeline reprocesses, exactly like the old per-plugin `DEFAULT_CONFLATION_VIEW_ID`
-// did across 3608->3689->3692->3699. Hardcoding source_id + a target version string instead and
-// resolving the CURRENT view/table for that pair survives a reprocess automatically, as long as
-// the reprocess re-publishes under the SAME version string.
+// Conflation source ids + target version. SOURCE ids are PERMANENT - they never change across a
+// conflation reprocess, only which VIEW under each source is "current" does (a fresh reprocess
+// mints a brand-new view_id AND a brand-new physical table name). Hardcoding the literal table
+// name goes stale the moment the pipeline reprocesses, exactly like the old per-plugin
+// `DEFAULT_CONFLATION_VIEW_ID` did across 3608->3689->3692->3699. Hardcoding source_id + a target
+// version string instead and resolving the CURRENT view/table for that pair survives a reprocess
+// automatically, as long as the reprocess re-publishes under the SAME version string.
 const MAIN_CONFLATION_SOURCE_ID = 2125;
 const NODES_SOURCE_ID = 2096;
 const EDGES_SOURCE_ID = 2097;
@@ -78,15 +75,14 @@ const findViewTableBySourceAndVersion = async (db, sourceId, version) => {
 };
 
 // Resolved ONCE per server process and cached forever after (module-level memoized promise) -
-// this is the piece that keeps the "no hardcoded table name" fix from costing anything at
-// request time. Every caller (loadGraph, and every per-request route below that still calls this
-// directly) shares the SAME resolution: the first caller pays the four-query DB round trip
-// (fast in practice - four indexed lookups against `data_manager.views`, not the "few sec" cost
-// the user was originally right to reject for a PER-REQUEST cost); every caller after that,
-// including every real user request for the rest of the process's uptime, gets the cached result
-// synchronously with zero DB cost. In practice the FIRST caller is the warm-load
-// (`data-types/routing/index.js`, ~20s after boot) - "the memory store on restart" - so real user
-// traffic essentially never pays this cost at all, only the warm-load does, once, at startup.
+// this is what keeps table-name resolution from costing anything at request time. Every caller
+// (loadGraph, and every per-request route below that still calls this directly) shares the SAME
+// resolution: the first caller pays the four-query DB round trip (fast in practice - four indexed
+// lookups against `data_manager.views`); every caller after that, including every real user
+// request for the rest of the process's uptime, gets the cached result synchronously with zero DB
+// cost. In practice the FIRST caller is the warm-load (`data-types/routing/index.js`, ~20s after
+// boot), so real user traffic essentially never pays this cost at all, only the warm-load does,
+// once, at startup.
 let cachedTablesPromise = null;
 const resolveConflationTables = (db) => {
   if (!cachedTablesPromise) {
@@ -610,14 +606,12 @@ const bidirectionalDijkstra = (graph, sourceNodeIdx, destNodeIdx, costArray, exc
 
 // Finds a route for one cost objective ("distance" or "time"). Geometry for the final path is
 // fetched via a small SQL lookup (same as the existing SQL path) - only for the few hundred to
-// low-thousand edges actually used, not the full network. This one small query was never the
-// bottleneck (confirmed by the earlier EXPLAIN/timing work); moving pathfinding + restrictions
-// off SQL is what actually mattered.
+// low-thousand edges actually used, not the full network; this query was never the bottleneck,
+// moving pathfinding + restrictions off SQL is what mattered.
 // Finds the reverse-direction edge for the same physical road as `edgeIdx` - an edge going from
 // edgeTarget[edgeIdx] back to edgeSource[edgeIdx]. Used by the detour/avoid-segment feature to
-// exclude BOTH directions of a road the user picked, not just the one directional edge feature
-// they clicked (see detour-avoid-segment-routing-plugin.md - "exclude both directions" decision).
-// Returns -1 if no such edge exists (e.g. a genuinely one-way road).
+// exclude BOTH directions of a road the user picked, not just the one directional edge they
+// clicked. Returns -1 if no such edge exists (e.g. a genuinely one-way road).
 const findReverseEdge = (graph, edgeIdx) => {
   const { adjHead, adjEdgeIndex, edgeSource, edgeTarget } = graph;
   const fromNode = edgeTarget[edgeIdx], toNode = edgeSource[edgeIdx];
@@ -704,28 +698,27 @@ const findRoute = async (db, graph, { lon: srcLon, lat: srcLat }, { lon: dstLon,
 };
 
 // Closure coverage/density analysis (planning/transportny/tasks/current/
-// detour-avoid-segment-routing-plugin.md, "Closure coverage / density analysis") - answers "of
-// all the plausible trips that would have used this segment, which surrounding roads absorb the
-// most rerouted traffic," not one trip's detour.
+// detour-avoid-segment-routing-plugin.md) - answers which surrounding roads absorb the most
+// rerouted traffic from all plausible trips that would have used this segment, not one trip's
+// detour.
 const MILE_M = 1609.34;
 // Max search radius for candidate points, MEASURED FROM THE SEED POINT (walkToFirstBranch's
-// result), not the segment's own endpoint. Shrunk 20mi -> 8mi (2026-08-25 perf - "why is it still
-// taking a lot of time": the 20mi figure was sized back when candidates started right at the
-// segment's own endpoint, to guarantee enough spread for 10 points at 0.5-0.75mi apart. Now that
-// seeding (walkToFirstBranch) already pushes the search origin out to a real branch - sometimes
-// itself up to 10mi out on a segment with no nearby cross-road - stacking a full 20mi candidate
-// radius ON TOP of that seed distance means every validation/tally search may need to traverse a
-// much longer route than before, which is real Dijkstra work no amount of worker-pool parallelism
-// shrinks. 8mi still comfortably covers the ~7mi of spread 10 points at that spacing needs, without
-// compounding the seed distance into a combined 20-30mi search radius on already-far-seeded sides.
+// result), not the segment's own endpoint. The 20mi figure was sized back when candidates started
+// right at the segment's own endpoint, to guarantee enough spread for 10 points at 0.5-0.75mi
+// apart. Now that seeding (walkToFirstBranch) already pushes the search origin out to a real
+// branch - sometimes itself up to 10mi out on a segment with no nearby cross-road - stacking a
+// full 20mi candidate radius ON TOP of that seed distance means every validation/tally search may
+// need to traverse a much longer route than before, which is real Dijkstra work no amount of
+// worker-pool parallelism shrinks. 8mi still comfortably covers the ~7mi of spread 10 points at
+// that spacing needs, without compounding the seed distance into a combined 20-30mi search radius
+// on already-far-seeded sides.
 const MAX_CANDIDATE_DISTANCE_M = 8 * MILE_M;
 
 // Candidate search - ONE continuous search from the closed segment's own endpoint, not two
-// separate searches stitched together (2026-08-21 rewrite, replacing an earlier same-road-then-
-// fallback two-pass design after live testing kept surfacing bugs at the seam between the two
-// passes). User's own framing for the correct shape: "need to expand from the broken segment
-// only but need to go further in directional more priority and then if end then expand on both
-// side of roads... a general algorithm."
+// separate searches stitched together; an earlier same-road-then-fallback two-pass design kept
+// surfacing bugs at the seam between the two passes. The correct shape: expand from the broken
+// segment with directional priority first, then branch onto both sides of other roads once that
+// direction ends - a general algorithm, not a two-phase special case.
 //
 // Single unrestricted Dijkstra by real network distance (node-based - candidate picking only
 // needs "how far is this node," not a turn-restriction-correct path), undirected, excluding the
@@ -759,12 +752,11 @@ const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited
     if (d > maxDistanceM) break; // Dijkstra pops in ascending distance order - once we're past the cap, nothing left can be closer
     if (nodeIdx !== startNodeIdx && !excluded.has(nodeIdx)) reached.push({ node: nodeIdx, dist: d });
 
-    // `blockedNode` (2026-08-21 - live-tested real bug: "some start are going to the dir of the
-    // end points") - `preVisited` only excluded the OTHER endpoint from being counted as a
+    // `blockedNode` - `preVisited` only excluded the OTHER endpoint from being counted as a
     // candidate, it never stopped the search from traveling THROUGH it to reach the far side of
     // the closure. Blocking it here treats it as removed from the graph for this search, so the
     // start side's expansion stays confined to its own side of the closure (and symmetrically
-    // for the end side) - "if you expand the road/dir, start go in that line and same for end."
+    // for the end side).
     for (let i = adjHead[nodeIdx]; i < adjHead[nodeIdx + 1]; i++) {
       const e = adjEdgeIndex[i];
       if (excludedEdgeSet.has(e)) continue;
@@ -783,29 +775,24 @@ const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited
     }
   }
 
-  // `farthestFirst` (2026-08-21 follow-up - "first ones are good but the others are too far... go
-  // a bit by bit slow, take .5 miles then 1 mile and etc... not like one point is near and all
-  // are 4 miles"): farthest-first walking (the previous default) produced a bimodal near+far
+  // `farthestFirst`: farthest-first walking (the previous default) produced a bimodal near+far
   // split with nothing in between, once combined with the caller's stop-at-target validation
   // logic. Nearest-first gives smooth, gradual outward coverage instead - each group (same-road,
   // then fallback) stays in its natural ascending-distance order when `farthestFirst` is false.
   // Each entry is `{node, dist}` - `dist` is real network distance from the origin, needed by
-  // the caller to enforce a minimum real-world gap between chosen candidates (2026-08-21 - "do
-  // not take points nearby, take one far apart... a barrier of 0.25 to 0.5 miles minimum
-  // distance between 2 start and 2 end points").
-  // Return shape: `{ nodes, sameRoadCount }` - `sameRoadCount` (2026-08-21) lets the caller
-  // budget the same-road and "escape onto other roads" phases SEPARATELY. Without this, a small
-  // looped same-road network with many closely-spaced nodes (a real case hit live - "Campus
-  // Access Road (inner)," a short loop) could consume the ENTIRE validation attempt budget
-  // re-checking that one small loop, never reaching the roads that actually expand farther out -
-  // "if dead end go to both direction and expand... it's kind of traversal finding."
+  // the caller to enforce a minimum real-world gap between chosen candidates.
+  // Return shape: `{ nodes, sameRoadCount }` - `sameRoadCount` lets the caller budget the
+  // same-road and escape-onto-other-roads phases SEPARATELY. Without this, a small looped
+  // same-road network with many closely-spaced nodes (a real case: a short inner-loop service
+  // road) could consume the ENTIRE validation attempt budget re-checking that one small loop,
+  // never reaching the roads that actually expand farther out.
   if (preferredHighway == null) return { nodes: farthestFirst ? reached.reverse() : reached, sameRoadCount: reached.length };
   const sameRoad = [], other = [];
   for (const r of reached) {
     (edgeHighway[reachedVia[r.node]] === preferredHighway ? sameRoad : other).push(r);
   }
-  // Same-road nodes first (the search's own priority direction) - matches "go further in
-  // directional priority, then if [that] ends expand on both sides."
+  // Same-road nodes first (the search's own priority direction) - stay on the current road
+  // direction with priority, then expand onto both sides once that direction ends.
   const nodes = farthestFirst ? [...sameRoad.reverse(), ...other.reverse()] : [...sameRoad, ...other];
   return { nodes, sameRoadCount: sameRoad.length };
 };
@@ -813,29 +800,27 @@ const farthestToNearestNodes = (graph, startNodeIdx, excludedEdgeSet, preVisited
 // Walks from `startNode` along the network (both edge directions, since a real intersection can be
 // reached via either) until it finds a REAL BRANCH - a node with more than one viable next edge,
 // pure topology (edge count), same rule as the simple detour mode's endpoint picker
-// (comp.jsx/findSameRoadNode.js) - then takes exactly ONE more hop and stops there. 2026-08-25,
-// "the same kind of first expansion I need in the closure density mode - this must be the first
-// point, then expand network after that point": ported server-side (not reusing the client's
-// bbox-fetch version) because the in-memory CSR graph already has full adjacency in memory, so
-// this is a fast synchronous walk, not a per-hop network round trip. Excludes `excludedEdgeSet`
-// (the closed segment itself) and never crosses through `blockedNode` (the segment's OTHER
-// endpoint - same crossing-prevention rule `farthestToNearestNodes` uses), so the seed point for
-// each side stays confined to its own side of the closure. Falls back to whatever node the walk
-// dead-ended at (or the start node itself, if nothing connects at all) rather than failing -
-// "if dead end keep it there, it's okay."
+// (comp.jsx/findSameRoadNode.js) - then takes exactly ONE more hop and stops there. Ported
+// server-side (not reusing the client's bbox-fetch version) because the in-memory CSR graph
+// already has full adjacency in memory, so this is a fast synchronous walk, not a per-hop network
+// round trip. Excludes `excludedEdgeSet` (the closed segment itself) and never crosses through
+// `blockedNode` (the segment's OTHER endpoint - same crossing-prevention rule
+// `farthestToNearestNodes` uses), so the seed point for each side stays confined to its own side
+// of the closure. Falls back to whatever node the walk dead-ended at (or the start node itself, if
+// nothing connects at all) rather than failing.
 const MAX_SEED_WALK_HOPS = 2000;
-const MAX_SEED_WALK_DISTANCE_M = 10 * MILE_M; // per side - "10 miles in a single dir"
+const MAX_SEED_WALK_DISTANCE_M = 10 * MILE_M; // per side
 // Returns `{ node, path }` - `path` is every node visited along the way (including `startNode` and
-// the final `node`), not just the destination. 2026-08-25 fix: once each side's search starts from
-// a SEED further out (not the segment's own endpoint), blocking only the opposite side's final
-// seed node isn't enough to keep the two sides from crossing - the search can still reach into the
-// other side's territory via a path that never touches that one blocked node, especially along a
-// shared road (live-tested: start/end candidate points interleaving on the same street). Blocking
-// the WHOLE corridor each seed-walk traveled closes that gap.
+// the final `node`), not just the destination. Once each side's search starts from a SEED further
+// out (not the segment's own endpoint), blocking only the opposite side's final seed node isn't
+// enough to keep the two sides from crossing - the search can still reach into the other side's
+// territory via a path that never touches that one blocked node, especially along a shared road
+// (live-tested: start/end candidate points interleaving on the same street). Blocking the WHOLE
+// corridor each seed-walk traveled closes that gap.
 // Bearing in degrees [0,360) from node `a` to node `b`, using nodeLon/nodeLat - same formula as
 // the old client-side walk (comp.jsx's bearing(), now unused there since this replaced it), needed
-// here so `walkToFirstBranch` can tell "the road continuing straight ahead" apart from "a cross
-// street that happens to touch this same node."
+// here so `walkToFirstBranch` can tell the road continuing straight ahead apart from a cross
+// street that happens to touch this same node.
 const bearingDeg = (graph, a, b) => {
   const lat1 = (graph.nodeLat[a] * Math.PI) / 180;
   const lat2 = (graph.nodeLat[b] * Math.PI) / 180;
@@ -846,9 +831,9 @@ const bearingDeg = (graph, a, b) => {
 };
 const bearingDiff = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
 
-// Two independent copies (2026-08-26, "make search for both separate" - simple mode and density
-// mode were sharing one function via a `stopAtBranch` flag; kept identical logic today, but now
-// each mode can be tuned on its own without any risk of the other regressing). Both walk from
+// Two independent copies - simple mode and density mode previously shared one function via a
+// `stopAtBranch` flag; kept identical logic for now, but each mode can be tuned on its own
+// without risk of the other regressing. Both walk from
 // `startNode` (both edge directions - a real intersection can be reached via either) until a
 // REAL BRANCH - a node with more than one viable next edge, pure topology - then take exactly one
 // more hop past it and stop. `hop > 0` guards the closed segment's OWN endpoint, which OSM almost
@@ -860,16 +845,15 @@ const walkToFirstBranchSimple = (graph, startNode, blockedNode, excludedEdgeSet)
   let current = startNode;
   let prevNode = -1;
   let prevEdge = -1;
-  // FIXED reference bearing, captured once on the first real hop and never updated after
-  // (2026-08-31 fix - "see the deflection from the direction... pick point on that direction only
-  // when any road join"). Previously this compared each hop against the bearing of the hop JUST
-  // taken (reset every iteration), which is locally-greedy: on a real street grid, small per-hop
-  // bearing drift compounds, and at a junction the walk could pick whatever's straightest relative
-  // to the last hop rather than the road's actual original direction - live-confirmed via a visible
-  // bend in the walked path at a real intersection (osm 5593248) that had no business turning there.
-  // Comparing every hop against the ORIGINAL direction instead keeps the walk locked onto the road
-  // it started on; it still genuinely stops/deflects at a real junction once nothing continues that
-  // original direction closely enough, per the branch-stop logic below.
+  // FIXED reference bearing, captured once on the first real hop and never updated after.
+  // Comparing each hop against the bearing of the hop JUST taken (reset every iteration) is
+  // locally-greedy: on a real street grid, small per-hop bearing drift compounds, and at a
+  // junction the walk could pick whatever's straightest relative to the last hop rather than the
+  // road's actual original direction - live-confirmed via a visible bend in the walked path at a
+  // real intersection (osm 5593248) that had no business turning there. Comparing every hop
+  // against the ORIGINAL direction instead keeps the walk locked onto the road it started on; it
+  // still genuinely stops/deflects at a real junction once nothing continues that original
+  // direction closely enough, per the branch-stop logic below.
   let referenceBearing = null;
   let travelledM = 0;
   const path = [startNode];
@@ -923,8 +907,8 @@ const walkToFirstBranchDensity = (graph, startNode, blockedNode, excludedEdgeSet
   let current = startNode;
   let prevNode = -1;
   let prevEdge = -1;
-  // FIXED reference bearing, not updated per hop - same 2026-08-31 fix as walkToFirstBranchSimple
-  // above (see its comment for the full reasoning/live-observed bug).
+  // FIXED reference bearing, not updated per hop - same fix as walkToFirstBranchSimple above (see
+  // its comment for the full reasoning/live-observed bug).
   let referenceBearing = null;
   let travelledM = 0;
   const path = [startNode];
@@ -983,11 +967,11 @@ const closureContext = (graph, ogcFid, costObjective) => {
   return { edgeIdx, reverseIdx, excludedEdgeSet, costArray, routeUsesClosedSegment };
 };
 
-// Simple detour mode's endpoint picker, moved server-side (2026-08-25 perf) - the client-side
-// version (comp.jsx's walkForward) made ONE HTTP request per hop of the walk, which on a highway
-// with short edges over a 10-mile budget could mean hundreds of sequential network round trips
-// just to pick the start/end points, before "Get detour" even ran the real route search. This is
-// the exact same walk-to-first-branch rule (`walkToFirstBranch` above, already used by
+// Simple detour mode's endpoint picker, moved server-side - the client-side version (comp.jsx's
+// walkForward) made ONE HTTP request per hop of the walk, which on a highway with short edges
+// over a 10-mile budget could mean hundreds of sequential network round trips just to pick the
+// start/end points, before the real route search even ran. This is the exact same
+// walk-to-first-branch rule (`walkToFirstBranch` above, already used by
 // selectClosureDensityCandidates), just exposed as one fast in-memory call instead of many.
 const resolveDetourEndpoints = (graph, ogcFid) => {
   const { edgeIdx, excludedEdgeSet } = closureContext(graph, ogcFid, "distance"); // costObjective is irrelevant here - only used for excludedEdgeSet/edgeIdx
@@ -1002,37 +986,30 @@ const resolveDetourEndpoints = (graph, ogcFid) => {
   return { start: toPoint(startWalk.node, startWalk), end: toPoint(endWalk.node, endWalk) };
 };
 
-// Step 1/2 (2026-08-21 - split into two API calls so the frontend can show/confirm candidate
-// points before committing to the expensive full analysis): point SELECTION only, no route
-// tallying. See the inline comments below for the full history of how this selection logic
-// evolved same day (evenly-spaced targets -> rejected, greedy-accept-first-N -> rejected,
-// same-road-first accidentally dropped then restored).
+// Step 1/2 - split into two API calls so the frontend can show/confirm candidate points before
+// committing to the expensive full analysis: point SELECTION only, no route tallying.
 const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10, costObjective = "distance") => {
   const { edgeIdx, reverseIdx, excludedEdgeSet } = closureContext(graph, ogcFid, costObjective);
   const fromNode = graph.edgeSource[edgeIdx];
   const toNode = graph.edgeTarget[edgeIdx];
   const closedHighway = graph.edgeHighway[edgeIdx];
 
-  // Seed each side from its FIRST REAL BRANCH past the closed segment (2026-08-25, "the same kind
-  // of first expansion I need in the closure density mode - this must be the first point, then
-  // expand network after that point") - same walk-to-first-branch rule as the simple detour mode's
-  // endpoint picker, so the expansion below starts from a genuine junction (somewhere a detour
-  // actually has options) instead of the segment's own endpoint, which by OSM's own way-splitting
-  // convention is usually already sitting exactly at an intersection.
+  // Seed each side from its FIRST REAL BRANCH past the closed segment - same walk-to-first-branch
+  // rule as the simple detour mode's endpoint picker, so the expansion below starts from a genuine
+  // junction (somewhere a detour actually has options) instead of the segment's own endpoint,
+  // which by OSM's own way-splitting convention is usually already sitting exactly at an
+  // intersection.
   const startWalk = walkToFirstBranchDensity(graph, fromNode, toNode, excludedEdgeSet);
   const endWalk = walkToFirstBranchDensity(graph, toNode, fromNode, excludedEdgeSet);
   const startSeed = startWalk.node;
   const endSeed = endWalk.node;
 
-  // Point selection (2026-08-21, confirmed rule, refined twice same day). First refinement:
-  // "it's not like evenly... it's like we want the BEST points to understand the value of the
-  // segment" - no fixed count/spacing, validity (does the OD pair actually use the segment) is
-  // the primary filter. Second refinement, after a live test showed every accepted point crammed
-  // right next to the closure: "keep points those are few miles away also, why that nearest?" -
-  // greedily accepting the first N valid points was self-defeating, since points immediately
-  // next to a closure are ALMOST ALWAYS valid (their open route obviously used the segment - it's
-  // the most direct path), so the walk filled every slot with near points before ever reaching
-  // farther out. Fixed by splitting validation from final selection:
+  // Point selection: validity (does the OD pair actually use the segment) is the primary filter,
+  // not a fixed count/spacing. Greedily accepting the first N valid points is self-defeating,
+  // since points immediately next to a closure are ALMOST ALWAYS valid (their open route
+  // obviously used the segment - it's the most direct path), so the walk fills every slot with
+  // near points before ever reaching farther out. Fixed by splitting validation from final
+  // selection:
   //   1. Seed each side with its nearest few points, accepted unconditionally (bootstrap - close
   //      points reliably represent real segment usage, so they're a trustworthy reference set).
   //   2. Validate the REST of each pool (out to MAX_CANDIDATE_DISTANCE_M) against the OTHER
@@ -1041,30 +1018,26 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   //      final `numCandidates` spread EVENLY BY INDEX across that whole validated list - so the
   //      final set spans near, mid, and far distances among genuinely valid pairs, instead of
   //      clustering at whichever end was walked first.
-  // `farthestFirst: false` (2026-08-21 follow-up - see the walk-direction note on
-  // farthestToNearestNodes above): walk NEAREST-first so validation covers gradual, incremental
-  // distances (roughly .5mi, 1mi, 1.5mi, etc., however the real road network actually spaces
-  // out) rather than jumping straight to the far end.
+  // `farthestFirst: false` (see the walk-direction note on farthestToNearestNodes above): walk
+  // NEAREST-first so validation covers gradual, incremental distances rather than jumping
+  // straight to the far end.
   // blockedNode = the OTHER endpoint - keeps the start side's search from crossing through it to
   // reach the end side's own territory, and vice versa (see farthestToNearestNodes' comment).
   // Block the OPPOSITE side's entire seed-walk corridor (every node it passed through, not just
-  // its final seed point - see walkToFirstBranch's comment) - 2026-08-25 fix for a live-tested bug
-  // where start/end candidate points interleaved along the same shared road once each side's
-  // search started from a seed farther out than the segment's own endpoint.
+  // its final seed point - see walkToFirstBranch's comment): fixes a bug where start/end candidate
+  // points interleaved along the same shared road once each side's search started from a seed
+  // farther out than the segment's own endpoint.
   const { nodes: rawStartPool, sameRoadCount: startSameRoadCount } = farthestToNearestNodes(graph, startSeed, excludedEdgeSet, endWalk.path, MAX_CANDIDATE_DISTANCE_M, closedHighway, false, endWalk.path);
   const { nodes: rawEndPool, sameRoadCount: endSameRoadCount } = farthestToNearestNodes(graph, endSeed, excludedEdgeSet, startWalk.path, MAX_CANDIDATE_DISTANCE_M, closedHighway, false, startWalk.path);
 
-  // MIN_GAP_M (2026-08-21 - "do not take points nearby, take one far apart... a barrier of 0.25
-  // to 0.5 miles minimum distance between 2 start and 2 end points"): the earlier evenly-spaced-
-  // BY-INDEX selection could still land two picks close together in real distance if the
-  // validated list happened to be dense in one stretch (exactly what the screenshot showed -
-  // several points bunched within a couple hundred meters near the top of one road). Enforcing
-  // an actual minimum GAP IN METERS between consecutive picks (walking the already nearest-to-
-  // farthest validated list and skipping anything too close to the last accepted pick) fixes
-  // this directly, rather than index-spacing which only approximates it.
-  // Raised from 0.75mi to 1mi (2026-08-21) - pickWithBestEffortGap below only relaxes DOWNWARD
-  // from here if the count can't be reached at full spacing, so whatever gap actually gets used
-  // naturally lands at or below 1mi.
+  // MIN_GAP_M: the earlier evenly-spaced-BY-INDEX selection could still land two picks close
+  // together in real distance if the validated list happened to be dense in one stretch (points
+  // bunched within a couple hundred meters near the top of one road). Enforcing an actual minimum
+  // GAP IN METERS between consecutive picks (walking the already nearest-to-farthest validated
+  // list and skipping anything too close to the last accepted pick) fixes this directly, rather
+  // than index-spacing which only approximates it. pickWithBestEffortGap below only relaxes
+  // DOWNWARD from this value if the count can't be reached at full spacing, so whatever gap
+  // actually gets used naturally lands at or below 1mi.
   const MIN_GAP_M = 1 * MILE_M;
   const pickWithMinGap = (sortedValid, count, minGapM) => {
     const picked = [];
@@ -1077,19 +1050,16 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
     }
     return picked;
   };
-  // "pick minimum 10-10 each side... let fix number 10" (2026-08-21) - count is now a hard
-  // requirement, spacing is the thing allowed to give way if the validated pool genuinely can't
-  // support both. Halves the gap and retries until `count` is reached or the gap bottoms out at
-  // 0 (accept any validated point, spacing no longer enforced) - only relaxes AFTER exhausting
-  // room to keep the requested gap, so it still prefers well-spaced picks whenever possible.
-  // (A hard-floor variant - never relax below MIN_GAP_M, let count give way instead - was tried
-  // twice on 2026-08-24, each time reverted the same day: once when it collapsed to ~1 point per
-  // side on a small-pool segment, and again shortly after being reinstated.)
-  // Returns `{ picked, gapUsedM }` (not just `picked`) - 2026-08-21, "it was not behaving like
-  // that, the distance total also not 0.75 miles" - the relaxation was real but INVISIBLE: with
-  // no way to see how far it had backed off, "the gap silently collapsed" and "the gap logic is
-  // broken" looked identical from the outside. Reporting the actual achieved gap lets that be
-  // checked with a real number instead of eyeballing a screenshot.
+  // Count is a hard requirement, spacing is the thing allowed to give way if the validated pool
+  // genuinely can't support both. Halves the gap and retries until `count` is reached or the gap
+  // bottoms out at 0 (accept any validated point, spacing no longer enforced) - only relaxes AFTER
+  // exhausting room to keep the requested gap, so it still prefers well-spaced picks whenever
+  // possible. A hard-floor variant (never relax below MIN_GAP_M, let count give way instead) was
+  // tried and reverted: it collapsed to ~1 point per side on a small-pool segment.
+  // Returns `{ picked, gapUsedM }` (not just `picked`) - the relaxation was real but INVISIBLE
+  // without this: with no way to see how far it had backed off, a silently-collapsed gap and a
+  // genuinely broken gap-selection bug looked identical from the outside. Reporting the actual
+  // achieved gap lets that be checked with a real number instead of eyeballing a screenshot.
   const pickWithBestEffortGap = (sortedValid, count, minGapM) => {
     let gap = minGapM;
     let picked = pickWithMinGap(sortedValid, count, gap);
@@ -1104,12 +1074,11 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   // represent real segment usage, which is exactly why they're trustworthy as a reference.
   // `rawStartPool`/`rawEndPool` are nearest-first now, so the seed is the FIRST few elements, and
   // the main walk below covers everything AFTER that seed head (so the seed is never
-  // re-validated against itself). Reduced from 3 to 1 (2026-08-21 - "still a lot of time" even
-  // after switching to bidirectionalDijkstra) - each candidate now costs 1 open-route search.
-  // Tried restoring to 3 on 2026-08-25 to make passedFromCells's ">50% matched route" check a
-  // genuine majority vote again (not a degenerate single check) - measured 20s -> 52s on a real
-  // cold run and reverted. The SEED_COUNT/">50%" gap stays open; fixing it needs a real perf
-  // budget for the extra searches, not a free win.
+  // re-validated against itself). Reduced from 3 to 1 (each candidate costs 1 open-route search,
+  // so this keeps the per-request cost down). Restoring to 3 (to make passedFromCells's ">50%
+  // matched route" check a genuine majority vote again, not a degenerate single check) measured
+  // 20s -> 52s on a real cold run and was reverted. The SEED_COUNT/">50%" gap stays open; fixing
+  // it needs a real perf budget for the extra searches, not a free win.
   const SEED_COUNT = Math.min(1, numCandidates);
   const seedStart = rawStartPool.slice(0, SEED_COUNT);
   const seedEnd = rawEndPool.slice(0, SEED_COUNT);
@@ -1120,43 +1089,35 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   const restStartSameRoadCount = Math.max(0, startSameRoadCount - SEED_COUNT);
   const restEndSameRoadCount = Math.max(0, endSameRoadCount - SEED_COUNT);
 
-  // MAX_ATTEMPTS (2026-08-21 - "still a lot of time," a real hard bound): caps total candidates
-  // tried per side, so cost stays bounded regardless of how large the pool is or how many fail
-  // validation - a request that returns fewer than `numCandidates` valid points beats one that
-  // fails outright past the server's 30s timeout.
+  // MAX_ATTEMPTS: caps total candidates tried per side, so cost stays bounded regardless of how
+  // large the pool is or how many fail validation - a request that returns fewer than
+  // `numCandidates` valid points beats one that fails outright past the server's 30s timeout.
   //
   // Validates the WHOLE attempt budget up front - does NOT stop as soon as `numCandidates` valid
-  // points are found (2026-08-21 follow-up fix: stopping early was the actual cause of the
-  // "first ones good, others too far" bimodal result - walking nearest-first AND stopping at the
-  // target just filled the target from the near end again; walking farthest-first AND stopping
-  // at the target jumped straight to the far end. Validating the FULL budget nearest-first, THEN
-  // choosing the final spread via `spreadSelect` below, is what actually produces smooth gradual
-  // coverage - "go a bit by bit slow, take .5 miles then 1 mile and etc").
-  // Bumped from *4 to *6 to *15 to now *30 (2026-08-21 - "pick minimum 10-10 each side... let fix
-  // number 10," a hard requirement, not a best-effort target; count went back from 5 to 10 the
-  // same day once the 90s scoped timeout made the extra cost affordable - see
-  // DENSITY_POINTS_TIMEOUT in dms-server's index.js). Each prior multiplier still wasn't enough
-  // pool to find `numCandidates` genuinely valid points spread a full 0.75mi apart before the
-  // gap-relaxation fallback kicked in. Widening the budget gives that fallback (which relaxes the
-  // GAP, never the count) a much larger validated pool to actually pick spaced-out points from.
+  // points are found. Stopping early causes a bimodal near+far result: walking nearest-first AND
+  // stopping at the target just fills the target from the near end again; walking farthest-first
+  // AND stopping at the target jumps straight to the far end. Validating the FULL budget
+  // nearest-first, THEN choosing the final spread via `spreadSelect` below, is what actually
+  // produces smooth gradual coverage.
+  // Count is a hard requirement (10-10 each side), not a best-effort target - see
+  // DENSITY_POINTS_TIMEOUT in dms-server's index.js for the 90s scoped timeout this budget fits
+  // inside. Wide budget so gap-relaxation has enough validated candidates to find `numCandidates`
+  // genuinely valid points spread a full 0.75mi apart, rather than falling back to a tighter gap
+  // for lack of pool.
   const MAX_ATTEMPTS = numCandidates * 30;
-  // Split-budget fix (2026-08-21 - live-tested real bug): a short LOOPED same-road network can
-  // have many closely-spaced nodes (a real case - "Campus Access Road (inner)," a small loop)
-  // and, walking same-road-first with one shared budget, could consume the ENTIRE MAX_ATTEMPTS
-  // re-validating that one small loop before ever reaching the "other" (escape-onto-a-different-
-  // road) group that actually expands farther out - "so explore both direction for start and
-  // end... if dead end go to both direction and expand... it's kind of traversal finding." Half
-  // the budget is reserved for "other," guaranteed regardless of how large the same-road group
-  // is or how much of its own half-budget it actually used.
+  // Split-budget fix: a short LOOPED same-road network can have many closely-spaced nodes (a real
+  // case: a short inner-loop service road) and, walking same-road-first with one shared budget,
+  // could consume the ENTIRE MAX_ATTEMPTS re-validating that one small loop before ever reaching
+  // the "other" (escape-onto-a-different-road) group that actually expands farther out. Half the
+  // budget is reserved for "other," guaranteed regardless of how large the same-road group is or
+  // how much of its own half-budget it actually used.
   let candidatesRejected = 0;
-  // Returns `{ sameRoadValid, otherValid }` SEPARATELY (2026-08-21 follow-up - "give priority to
-  // the direction, if dead end then only expand the last branch... this is [a] long road so all
-  // points must be on the same road"): a live test on a genuinely long road still pulled in a few
-  // "other" (branched-off) points even though the same road alone had enough room for the full
-  // count - because the previous version merged both phases into one list before selection, with
-  // no preference for staying on the same road when it didn't actually need to branch. Keeping
-  // them separate lets the caller try same-road-ONLY first and fall back to the branch only if
-  // that's not enough - not just at validation time, at SELECTION time too.
+  // Returns `{ sameRoadValid, otherValid }` SEPARATELY: a live test on a genuinely long road still
+  // pulled in a few "other" (branched-off) points even though the same road alone had enough room
+  // for the full count - because merging both phases into one list before selection gives no
+  // preference for staying on the same road when it didn't actually need to branch. Keeping them
+  // separate lets the caller try same-road-ONLY first and fall back to the branch only if that's
+  // not enough - not just at validation time, at SELECTION time too.
   // Pure range computation, split out of validateBudget below so the SAME index ranges can be
   // used twice: once to decide which pairs need a search (before dispatch), once to apply the
   // results (after dispatch) - without duplicating the sameRoadCap/otherStart/otherEnd arithmetic.
@@ -1171,9 +1132,9 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
     return { indices, sameRoadCap };
   };
 
-  // worker_threads pool (2026-08-24 perf, planning/transportny/tasks/current/
-  // closure-density-performance.md): every (candidate, opposite-seed-point) pair is an
-  // independent OPEN-network search, so instead of calling passesValidation live in the
+  // worker_threads pool (see planning/transportny/tasks/current/closure-density-performance.md):
+  // every (candidate, opposite-seed-point) pair is an independent OPEN-network search, so instead
+  // of calling passesValidation live in the
   // validateBudget loop below (one search at a time on the main thread), every pair either side's
   // budget will check is dispatched to the pool in ONE combined batch up front - same exact
   // pass/fail semantics (fails/oppositeSet.length <= 0.5), just computed in parallel instead of
@@ -1210,11 +1171,11 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   // Same fails/oppositeSet.length <= 0.5 aggregation passesValidation used to do live, now reading
   // the precomputed cells instead of calling out to a search.
   //
-  // A closed-network BFS reachability check was added here 2026-08-25 (catch a candidate whose
-  // OPEN route passes validation but is genuinely disconnected once actually closed) and reverted
-  // 2026-08-26 - it made point-selection noticeably slower (per-candidate BFS on the main thread),
-  // and this call needs to stay fast for the demo. Revisit as a properly-parallelized version
-  // (worker pool, like the >50% check below) rather than re-adding it inline here.
+  // A closed-network BFS reachability check (to catch a candidate whose OPEN route passes
+  // validation but is genuinely disconnected once actually closed) was tried and reverted - it
+  // made point-selection noticeably slower (per-candidate BFS on the main thread), and this call
+  // needs to stay fast. Revisit as a properly-parallelized version (worker pool, like the >50%
+  // check below) rather than re-adding it inline here.
   const passedFromCells = (testIndices, cells, oppositeCount) => {
     const passed = new Map(); // restPool index -> boolean
     testIndices.forEach((idx, ti) => {
@@ -1245,18 +1206,18 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   const { sameRoadValid: startSameValid, otherValid: startOtherValid } = applyBudget(restStart, seedStart, startTest, startPassed);
   const { sameRoadValid: endSameValid, otherValid: endOtherValid } = applyBudget(restEnd, seedEnd, endTest, endPassed);
 
-  // Min-gap-enforced selection over the validated (nearest-to-farthest) list - "spread gradually
-  // near to far among genuinely valid pairs, at least MIN_GAP_M apart," not "farthest possible,"
-  // "first N found," or index-spacing alone. Falls back to a smaller gap (never a smaller count)
+  // Min-gap-enforced selection over the validated (nearest-to-farthest) list - spread gradually
+  // near to far among genuinely valid pairs, at least MIN_GAP_M apart, not farthest-possible,
+  // first-N-found, or index-spacing alone. Falls back to a smaller gap (never a smaller count)
   // if the validated pool can't support both - see pickWithBestEffortGap above.
   //
-  // SAME-ROAD PRIORITY AT SELECTION TIME (2026-08-21): try the same-road-validated set ALONE
-  // first. Only fall back to the combined (same-road + branched-onto-other-roads) set if the
-  // same road genuinely can't supply `numCandidates` even after fully relaxing the gap - "give
-  // priority to the direction, if dead end then only expand the last branch." A long road with
-  // plenty of its own valid, spread-out points should never need to touch the branch at all.
-  // (A "fall back sooner, whenever same-road needed any relaxation" variant was tried 2026-08-24
-  // alongside the hard gap floor above and reverted together with it the same day.)
+  // SAME-ROAD PRIORITY AT SELECTION TIME: try the same-road-validated set ALONE first. Only fall
+  // back to the combined (same-road + branched-onto-other-roads) set if the same road genuinely
+  // can't supply `numCandidates` even after fully relaxing the gap - directional priority first,
+  // branch only once that direction dead-ends. A long road with plenty of its own valid,
+  // spread-out points should never need to touch the branch at all. A "fall back sooner, whenever
+  // same-road needed any relaxation" variant was tried alongside a hard gap floor and reverted:
+  // it collapsed to too few points per side on a small-pool segment.
   const selectPreferSameRoad = (sameValid, otherValid) => {
     const sameRoadOnly = pickWithBestEffortGap(sameValid, numCandidates, MIN_GAP_M);
     if (sameRoadOnly.picked.length >= numCandidates) return sameRoadOnly;
@@ -1267,12 +1228,11 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   const { picked: startCandidates, gapUsedM: startGapUsedM } = selectPreferSameRoad(startSameValid, startOtherValid);
   const { picked: endCandidates, gapUsedM: endGapUsedM } = selectPreferSameRoad(endSameValid, endOtherValid);
 
-  // TEMP DIAGNOSTIC (2026-09-01, remove once the 10-10 shortfall is actually root-caused) - "i
-  // want 10-10 must and check why it's not coming": logs the count at EVERY stage of the pipeline
-  // so a real shortfall can be traced to its actual cause (raw pool too small = genuinely sparse
-  // network vs. validation rejecting too many = the >50% majority rule being too strict vs. the
-  // gap-relaxation itself failing to reach numCandidates despite enough valid points) instead of
-  // guessing and changing another parameter blind, per the last attempt's revert.
+  // TEMP DIAGNOSTIC (remove once the 10-10 shortfall is actually root-caused): logs the count at
+  // EVERY stage of the pipeline so a real shortfall can be traced to its actual cause (raw pool
+  // too small = genuinely sparse network vs. validation rejecting too many = the >50% majority
+  // rule being too strict vs. the gap-relaxation itself failing to reach numCandidates despite
+  // enough valid points) instead of guessing and changing another parameter blind.
   console.log("[closure-density candidates] diagnostic", {
     ogcFid, numCandidates,
     rawStartPoolSize: rawStartPool.length, rawEndPoolSize: rawEndPool.length,
@@ -1291,7 +1251,7 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
     startPoints: startCandidates.map(toPoint),
     endPoints: endCandidates.map(toPoint),
     candidatesRejected,
-    // Real diagnostic (2026-08-21) - the ACTUAL gap (meters) used per side, after any relaxation.
+    // Real diagnostic - the ACTUAL gap (meters) used per side, after any relaxation.
     // Equal to MIN_GAP_M when full spacing was achieved; smaller if the validated pool couldn't
     // support both the requested gap and the full count; `null` if even ungapped selection
     // couldn't reach `numCandidates` (fewer than numCandidates valid points exist at all).
@@ -1307,7 +1267,7 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
 const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmIds, endNodeOsmIds, costObjective = "distance") => {
   const { edgeIdx, reverseIdx } = closureContext(graph, ogcFid, costObjective);
   const resolve = (osmId) => graph.nodeIdToIndex.get(String(osmId));
-  // Route-comparison tab (2026-08-24, planning/transportny/tasks/current/
+  // Route-comparison tab (see planning/transportny/tasks/current/
   // closure-density-route-comparison-tab.md) - keep the original osm_id alongside each resolved
   // node index so the per-pair comparison result can be labeled without a second lookup pass.
   const startResolved = (startNodeOsmIds || []).map((osmId) => ({ osmId: String(osmId), node: resolve(osmId) })).filter((r) => r.node !== undefined);
@@ -1320,8 +1280,8 @@ const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmId
   let totalPairsComputed = 0;
   let totalPairsFailed = 0;
 
-  // worker_threads pool (2026-08-24 perf, planning/transportny/tasks/current/
-  // closure-density-performance.md) - every start/end pair needs TWO independent searches (open
+  // worker_threads pool (see planning/transportny/tasks/current/closure-density-performance.md) -
+  // every start/end pair needs TWO independent searches (open
   // baseline + closed/detour), so ALL of them - both modes, every pair - run in ONE combined batch
   // spread across the pool, not two sequential passes. Uses bidirectionalDijkstra (via the worker)
   // instead of dijkstraEdgeExpansion - same exact edge-expansion Dijkstra semantics, no heuristic,
@@ -1371,8 +1331,8 @@ const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmId
       deltaDurationS: closedStats.durationS - openStats.durationS,
     });
   }
-  // Smallest to largest detour cost (2026-08-24, per the task's chosen chart form) - the frontend
-  // bar graph renders in this order directly, no client-side sort needed.
+  // Smallest to largest detour cost, per the task's chosen chart form - the frontend bar graph
+  // renders in this order directly, no client-side sort needed.
   pairComparisons.sort((a, b) => a.deltaMiles - b.deltaMiles);
 
   const ogcFids = [...frequency.keys()].map((e) => graph.edgeOgcFid[e]);
@@ -1408,8 +1368,8 @@ module.exports = {
   // Exported for index.js's warm-load log line only - the single hardcoded target version every
   // resolveConflationTables() call resolves against (see that constant's own comment above).
   CURRENT_CONFLATION_VERSION,
-  // Exported for the standalone bridge-detour-process tool (2026-08-26,
-  // /home/sarang/Documents/avail/bridge-detour-process) - it needs to keep walking a failed
+  // Exported for the standalone bridge-detour-process tool
+  // (/home/sarang/Documents/avail/bridge-detour-process) - it needs to keep walking a failed
   // direction's endpoint further out (past additional branches) when the initial one-hop-past-
   // first-branch point hits a turn restriction, rather than duplicating this already-tested walk
   // logic in a separate script. closureContext resolves the segment's own fromNode/toNode/
@@ -1423,9 +1383,9 @@ module.exports = {
   // pure search function directly, so the parallelized path is provably the same algorithm as the
   // single-threaded one, not a reimplementation that could silently drift.
   bidirectionalDijkstra,
-  // Exported for the standalone bridge-detour-process tool's on-disk graph cache (2026-08-27,
-  // "load the graph in once for this process in a storage") - loadGraph's ~1min DB round-trip is
-  // fine once, but re-paid on every iteration while tuning the batch logic. The tool serializes
+  // Exported for the standalone bridge-detour-process tool's on-disk graph cache - loadGraph's
+  // ~1min DB round-trip is fine once, but re-paid on every iteration while tuning the batch logic.
+  // The tool serializes
   // the typed arrays straight to disk and, on a cache hit, rebuilds nodeGrid from the restored
   // nodeLon/nodeLat itself rather than duplicating this class's spatial-bucketing logic.
   NodeGrid,

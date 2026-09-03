@@ -7,7 +7,7 @@
 import { ROUTE_COLOR, ROUTE_SECONDARY_COLOR } from "../constants";
 
 export const detourDetailsPanelTheme = {
-  // Dynamic (not Tailwind-class) colors, folded in alongside the classNames (2026-09-01) - single
+  // Dynamic (not Tailwind-class) colors, folded in alongside the classNames - single
   // source of truth, constants.js is what other files (map paint, etc.) still read directly.
   colors: { primary: ROUTE_COLOR, secondary: ROUTE_SECONDARY_COLOR },
 

@@ -6,7 +6,7 @@
 import { ROUTE_COLOR } from "../constants";
 
 export const routeComparisonBarChartTheme = {
-  // Dynamic (not Tailwind-class) color, folded in alongside the classNames (2026-09-01).
+  // Dynamic (not Tailwind-class) color, folded in alongside the classNames.
   colors: { primary: ROUTE_COLOR },
 
   emptyText: "text-gray-500 text-xs",

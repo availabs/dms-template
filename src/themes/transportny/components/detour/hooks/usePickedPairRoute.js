@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { resolveTrspRoute } from "./resolveTrspRoute";
 import { chooseAlgorithm } from "./haversineMiles";
 
-// Testing-only (2026-08-21): once both a start and end candidate point are picked (via
-// useDensityPointPicker), fetches the actual route between them - reuses the existing single-trip
-// resolver (resolveTrspRoute) with the closed segment excluded, same as single-trip mode's own
-// route computation. Lets someone spot-check an individual OD pair from the density analysis
-// rather than only seeing the aggregated heatmap.
+// Testing-only: once both a start and end candidate point are picked (via useDensityPointPicker),
+// fetches the actual route between them - reuses the existing single-trip resolver
+// (resolveTrspRoute) with the closed segment excluded, same as single-trip mode's own route
+// computation. Lets someone spot-check an individual OD pair from the density analysis rather than
+// only seeing the aggregated heatmap.
 export const usePickedPairRoute = (pgEnv, excludedOgcFid) => {
   const [pickedStart, setPickedStart] = useState(null);
   const [pickedEnd, setPickedEnd] = useState(null);

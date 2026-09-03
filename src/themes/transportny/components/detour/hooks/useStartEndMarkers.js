@@ -4,14 +4,13 @@ import { runWhenStyleReady } from "./runWhenStyleReady";
 
 // Renders the two DERIVED trip start/end points (see comp.jsx's findNearestOtherNode - these are
 // NOT the selected segment's own endpoints, they're the nearest OTHER node to each) as plain
-// green/red dots, no text labels (2026-08-20: "do not write start and end just green and red dots
-// only"). Display-only, no click handling - the user's only interaction in this plugin is
-// selecting a segment.
+// green/red dots, no text labels. Display-only, no click handling - the user's only interaction in
+// this plugin is selecting a segment.
 //
-// Also returns an imperative `clear()` - 2026-08-20 follow-up: "clear detour is not removing the
-// start and destination points" was reported twice despite the prop-driven effect below looking
-// correct on inspection; `clear()` lets comp.jsx's handleReset wipe the markers directly and
-// immediately, rather than relying solely on a `start`/`end` prop change reaching this effect.
+// Also returns an imperative `clear()`: the prop-driven effect below alone was not reliably
+// clearing the markers on reset, so `clear()` lets comp.jsx's handleReset wipe the markers
+// directly and immediately, rather than relying solely on a `start`/`end` prop change reaching
+// this effect.
 export const useStartEndMarkers = (map, start, end) => {
   const render = useCallback((s, e) => {
     if (!map) return;

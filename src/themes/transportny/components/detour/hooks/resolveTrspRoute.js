@@ -1,11 +1,9 @@
 // Detour plugin's own boundary for the routing backend - kept as its own copy, not shared with
-// ../../routing/hooks/resolveTrspRoute.js (explicit user instruction: keep the two plugins fully
-// independent).
+// ../../routing/hooks/resolveTrspRoute.js, to keep the two plugins fully independent.
 //
 // Contract: POST {API_HOST}/dama-admin/{pgEnv}/routing/trsp-memory
 //   body { source: {lon,lat}, destination: {lon,lat}, excluded_edge_ids?, algorithm? }
-//   (conflation table is a hardcoded server-side constant, 2026-09-02 - see
-//   data-types/routing/memoryGraph.js)
+//   (conflation table is a hardcoded server-side constant - see data-types/routing/memoryGraph.js)
 //   -> { ok, result: { routes: { shortest: {feature,segments}, fastest: {feature,segments} } } }
 //      | { ok: false, error }
 // excluded_edge_ids (ogc_fid values) forces the search to route around those edges AND their

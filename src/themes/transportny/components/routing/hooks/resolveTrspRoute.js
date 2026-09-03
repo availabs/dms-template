@@ -7,29 +7,25 @@
 //
 // Contract: POST {API_HOST}/dama-admin/{pgEnv}/routing/trsp
 //   body { source: {lon,lat}, destination: {lon,lat} }
-//   (conflation table is a hardcoded server-side constant, 2026-09-02 - see
-//   data-types/routing/memoryGraph.js)
+//   (conflation table is a hardcoded server-side constant - see data-types/routing/memoryGraph.js)
 //   -> { ok, result: { routes: { shortest: {feature,segments}, fastest: {feature,segments} } } }
 //      | { ok: false, error }
 //
-// TEMPORARY (Phase 11 Stage A live check, 2026-08-18): pointed at /routing/trsp-memory instead of
-// /routing/trsp so the in-memory-graph path can be seen on the actual map, not just curl. Revert
-// to /trsp (or make this switchable) once Stage A's UI check is done - see
-// planning/transportny/tasks/current/point-to-point-routing-plugin.md Phase 11.
+// Points at /routing/trsp-memory (in-memory-graph path) rather than /routing/trsp.
 //
-// ALT ("algorithm: alt") was tried live here 2026-08-19 and reverted immediately - it got the UI
-// stuck on a long route (cold landmark precompute is too slow for a live click, see
-// planning/transportny/tasks/current/alt-landmark-heuristic-routing.md). Back to no algorithm
-// override (defaults to plain dijkstra on the backend).
+// No `algorithm: "alt"` override: the ALT/landmark heuristic's cold precompute is too slow for a
+// live click and stalls the UI on long routes - see
+// planning/transportny/tasks/current/alt-landmark-heuristic-routing.md. Defaults to plain
+// dijkstra on the backend.
 //
-// Location-picking UX (Phase 8): the user drops pins at real-world points (usePointPicker.js) -
-// this sends raw lon/lat and lets the backend snap server-side to the nearest graph node
-// (data-types/routing/index.js's snapToNearestNode). The backend also still accepts
-// {source_node_id, dest_node_id} directly (Phase 6's now-unused path) but this plugin no longer
-// exercises that - the node-picker UI it was built for was removed.
+// The user drops pins at real-world points (usePointPicker.js) - this sends raw lon/lat and lets
+// the backend snap server-side to the nearest graph node (data-types/routing/index.js's
+// snapToNearestNode). The backend also still accepts {source_node_id, dest_node_id} directly but
+// this plugin no longer exercises that path.
 //
-// Two objectives, not true alternates (Phase 7): "shortest" optimizes distance, "fastest"
-// optimizes a road-class-speed-weighted time estimate - both independently turn-restriction-aware.
+// "shortest" and "fastest" are two objectives, not true alternates: shortest optimizes distance,
+// fastest optimizes a road-class-speed-weighted time estimate - both independently
+// turn-restriction-aware.
 const API_HOST = import.meta.env.VITE_API_HOST || "https://dmsserver.availabs.org";
 
 export async function resolveTrspRoute(source, destination, pgEnv) {

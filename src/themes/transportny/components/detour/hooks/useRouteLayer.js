@@ -6,9 +6,8 @@ import {
 import { runWhenStyleReady } from "./runWhenStyleReady";
 
 // Detour plugin's own route-line renderer - own ids, primary (bold, currently-selected
-// direction+variant) + secondary (dimmed, everything else - the "show all routes" test toggle,
-// 2026-08-19: "just for test... always highlight the route like this one"). Same plain geojson
-// source/layer primitive as ../../routing/hooks/useRouteLayer.js.
+// direction+variant) + secondary (dimmed, everything else - the "show all routes" test toggle).
+// Same plain geojson source/layer primitive as ../../routing/hooks/useRouteLayer.js.
 export const useRouteLayer = (map, primaryFeature, secondaryFeatures = []) => {
   useEffect(() => {
     if (!map) return;

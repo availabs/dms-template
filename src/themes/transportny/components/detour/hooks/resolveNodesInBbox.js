@@ -1,7 +1,7 @@
-// Used to find the nearest OTHER node to each of the selected segment's endpoints (see
-// comp.jsx's "nearest node that isn't the segment's own endpoint" logic, confirmed with the user
-// 2026-08-19) - reuses the routing plugin's backend GET /nodes bbox route (Phase 6 leftover,
-// still live) via this plugin's own fetch boundary, not a shared import.
+// Used to find the nearest OTHER node to each of the selected segment's endpoints (see comp.jsx's
+// "nearest node that isn't the segment's own endpoint" logic) - reuses the routing plugin's
+// backend GET /nodes bbox route (Phase 6 leftover, still live) via this plugin's own fetch
+// boundary, not a shared import.
 //
 // Contract: GET {API_HOST}/dama-admin/{pgEnv}/routing/nodes?bbox=minLon,minLat,maxLon,maxLat
 //   -> { ok, result: { nodes: [{id,lon,lat}] } } | { ok: false, error }

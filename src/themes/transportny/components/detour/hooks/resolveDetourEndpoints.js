@@ -1,8 +1,7 @@
-// Detour plugin's endpoint-picker, resolved server-side (2026-08-25 perf) - replaces the old
-// per-hop client-side walk (comp.jsx's walkForward, which made one HTTP request per hop and could
-// mean hundreds of sequential round trips on a long road) with ONE call to the in-memory graph's
-// walkToFirstBranch (data-types/routing/memoryGraph.js), shared with
-// selectClosureDensityCandidates's own seeding.
+// Detour plugin's endpoint-picker, resolved server-side - replaces the old per-hop client-side walk
+// (comp.jsx's walkForward, which made one HTTP request per hop and could mean hundreds of
+// sequential round trips on a long road) with ONE call to the in-memory graph's walkToFirstBranch
+// (data-types/routing/memoryGraph.js), shared with selectClosureDensityCandidates's own seeding.
 //
 // Contract: POST {API_HOST}/dama-admin/{pgEnv}/routing/trsp-memory-detour-endpoints
 //   body { ogc_fid }

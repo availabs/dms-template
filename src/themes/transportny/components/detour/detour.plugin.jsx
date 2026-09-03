@@ -22,23 +22,22 @@ const resolvePluginPaths = (state) => {
 };
 
 // Detour/avoid-segment routing plugin - a SEPARATE plugin from ../routing/routing.plugin.jsx.
-// Corrected flow (2026-08-19): user clicks one segment; start/end are derived automatically from
-// that segment's own endpoints - no point-picking. See planning/transportny/tasks/current/
+// User clicks one segment; start/end are derived automatically from that segment's own
+// endpoints - no point-picking. See planning/transportny/tasks/current/
 // detour-avoid-segment-routing-plugin.md.
 //
-// Base network layer (2026-08-31): the pickable network is now an author-selected DMS layer
-// (internalPanel.jsx), not a layer this plugin owns - see the task file's "Base layer" section.
+// Base network layer: the pickable network is an author-selected DMS layer (internalPanel.jsx),
+// not a layer this plugin owns - see the task file's "Base layer" section.
 //
-// REVERTED 2026-08-31: mapRegister previously force-set `hover: false` on the chosen layer to
-// suppress MapEditor's generic hover/pin-marker popup. Confirmed WRONG via deep architecture
-// trace - `props.hover` only gates HoverComp's own inner content div; the mousemove hover
-// detection, the click-to-pin marker, and its X close button are all driven by a SEPARATE,
-// hardcoded-on-every-ViewLayer mechanism (avl-layer.jsx's onHover gate, avl-map.jsx's global
-// click-to-pin listener) that never reads `props.hover` at all. The mutation only emptied the
-// popup's content, making it look MORE broken (an empty pin), and did nothing for the actual
-// interference. Per explicit instruction not to touch shared map code
-// (avl-map.jsx/avl-layer.jsx/SymbologyViewLayer.jsx), there is currently no plugin-side lever
-// that cleanly suppresses this - see the task file's note on this for the real options.
+// mapRegister does NOT force-set `hover: false` on the chosen layer to suppress MapEditor's
+// generic hover/pin-marker popup - that was tried and reverted. `props.hover` only gates
+// HoverComp's own inner content div; the mousemove hover detection, the click-to-pin marker, and
+// its X close button are all driven by a SEPARATE, hardcoded-on-every-ViewLayer mechanism
+// (avl-layer.jsx's onHover gate, avl-map.jsx's global click-to-pin listener) that never reads
+// `props.hover` at all, so the mutation only emptied the popup's content (an empty pin) without
+// fixing the actual interference. Shared map code (avl-map.jsx/avl-layer.jsx/
+// SymbologyViewLayer.jsx) is off-limits to edit, so there is currently no plugin-side lever that
+// cleanly suppresses this - see the task file's note on this for the real options.
 export const DetourPlugin = {
   id: "detour",
   type: "plugin",

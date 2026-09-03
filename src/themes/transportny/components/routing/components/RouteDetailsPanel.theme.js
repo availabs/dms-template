@@ -9,10 +9,10 @@
 import { ROUTE_VARIANT_COLORS } from "../constants";
 
 export const routeDetailsPanelTheme = {
-  // Dynamic (not Tailwind-class) colors, folded into the theme too (2026-09-01) so a site override
-  // can restyle the selected/unselected route variant colors the same way it can restyle layout -
-  // single source of truth, ROUTE_VARIANT_COLORS in constants.js is what other files (map paint,
-  // etc.) still read directly for non-panel uses.
+  // Dynamic (not Tailwind-class) colors, folded into the theme too so a site override can restyle
+  // the selected/unselected route variant colors the same way it can restyle layout - single
+  // source of truth, ROUTE_VARIANT_COLORS in constants.js is what other files (map paint, etc.)
+  // still read directly for non-panel uses.
   colors: ROUTE_VARIANT_COLORS,
 
   panel: "absolute bottom-4 left-4 z-10 w-80 bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto",

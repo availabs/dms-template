@@ -3,18 +3,18 @@ import { resolveClosureDensityPoints, resolveClosureDensityRoutes } from "./reso
 import { DENSITY_NUM_CANDIDATES } from "../constants";
 
 // Fetch lifecycle for the closure coverage / density analysis mode - own state, mirrors
-// useTrspRoute.js's shape but for the two-step aggregated backend calls (2026-08-21: points
-// first, then route tallying - see resolveClosureDensity.js) instead of a per-direction route
-// pair. `density` is built up progressively so consumers (useDensityCandidatesLayer,
+// useTrspRoute.js's shape but for the two-step aggregated backend calls (points first, then route
+// tallying - see resolveClosureDensity.js) instead of a per-direction route pair. `density` is
+// built up progressively so consumers (useDensityCandidatesLayer,
 // useClosureDensityLayer, ClosureDensityPanel) don't need to know which step is done - after step
 // 1 it's `{ startPoints, endPoints, candidatesRejected }`, after step 2 it also has
 // `{ edgeFrequencies, maxCount, totalPairsComputed, totalPairsFailed }`.
 export const useClosureDensity = (pgEnv) => {
   const [density, setDensity] = useState(null);
   const [loading, setLoading] = useState(false);
-  // Two-phase status (2026-08-21: "let route mapping in process" - candidate points can already
-  // be visible on the map while the route tally is still running, so a single generic "Analyzing"
-  // message no longer reflects what's actually happening). "points" | "routes" | null.
+  // Two-phase status: candidate points can already be visible on the map while the route tally is
+  // still running, so a single generic "Analyzing" message wouldn't reflect what's actually
+  // happening. "points" | "routes" | null.
   const [phase, setPhase] = useState(null);
   const [error, setError] = useState(null);
 
