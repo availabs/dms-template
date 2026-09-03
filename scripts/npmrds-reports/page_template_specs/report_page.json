@@ -1,0 +1,22 @@
+{
+  "_readme": "Spec for the master 'Report Page' page_template row (npmrdsv5+npmrds_sub|page_template, id 2187021) — the template every report starts from via '+ Add Page → Your Templates' / '+ Create Report'. Built by report_page_template_build.mjs. Only the editorial fields an author would actually want to change live here; the ReportRouteList sidebar's join/externalSource plumbing is 100% invariant and lives in report_page_route_list_element_data.json instead, not because it's secret but because no one edits it by hand and it doesn't belong in a reviewable-copy diff. See planning/transportny/tasks/current/report-page-template-editorial-slots.md for the template's change history.",
+  "name": "Report Page",
+  "slug": "report_page",
+  "description": "",
+  "sidebar": "left",
+  "sidebarHideInView": true,
+  "theme": { "layout": { "options": { "sideNav": { "activeStyle": 1 } } } },
+  "sectionGroups": [
+    { "name": "default", "index": 0, "theme": "flush", "position": "content" }
+  ],
+  "header": {
+    "kickerLabel": "// REPORT",
+    "metaLine": "region · county · agency",
+    "purpose": "What question does this report answer? Describe what it compares and why it matters — then update the copy above to match your own report.",
+    "dataHref": "",
+    "freshnessLabel": "npmrds speeds",
+    "freshnessComplete": "",
+    "freshnessPartial": "",
+    "freshnessSince": ""
+  }
+}

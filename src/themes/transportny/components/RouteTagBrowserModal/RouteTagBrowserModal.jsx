@@ -6,7 +6,7 @@ import { useTagBrowser } from './useTagBrowser';
 import { TAG_CATEGORIES, AUTO_GENERATED_TAG, parseTags, tagToLabel } from './tagCategories';
 import { parseTmcArray } from '../ReportRouteList/utils';
 import { routeScore, isFragment, EXCLUDE_FRAGMENTS_FILTER } from './routeScore';
-import { rankByScore, isOwnedByCurrentUser, isAvailUser, buildVisibilityAllowListFilterGroup } from '../PickerModal/pickerScoring';
+import { sortRows, SORT_MODE_OPTIONS, isOwnedByCurrentUser, isAvailUser, buildVisibilityAllowListFilterGroup } from '../PickerModal/pickerScoring';
 import { PickerSearchInput, PickerFacetChips, PickerCountBar } from '../PickerModal/PickerModalParts';
 
 // Shared route-picker modal — mirrors the old tool's folder-browser *organizing effect* (drill
@@ -80,6 +80,9 @@ export default function RouteTagBrowserModal({
   // Single-TMC "fragment" routes collapse behind this toggle in any unscoped (non-search) view;
   // reset at each navigation point below so a stale expansion doesn't survive into a new list.
   const [fragmentsExpanded, setFragmentsExpanded] = useState(false);
+  // 2026-09-03 (Ryan's correction): same fix as ReportPickerModal.jsx — the footer's "sort: Best
+  // match" label used to be static, not a real control. See SORT_MODE_OPTIONS (pickerScoring.js).
+  const [sortMode, setSortMode] = useState('best');
 
   // Reset all transient state on open — a stale drill-down/selection from a previous open would
   // otherwise persist across unrelated add-route sessions. `selected` seeds from
@@ -100,6 +103,7 @@ export default function RouteTagBrowserModal({
     setRouteFacets({ mine: false, curated: false, autogen: false });
     setShowEverything(isAvailUser(user));
     setFragmentsExpanded(false);
+    setSortMode('best');
   }, [open]);
 
   const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
@@ -162,8 +166,8 @@ export default function RouteTagBrowserModal({
     const scoped = isUnscopedRecentView
       ? withIds.filter((r) => !excludeSet.has(String(r.id)))
       : withIds.map((r) => ({ ...r, alreadyAdded: excludeSet.has(String(r.id)) }));
-    return rankByScore(scoped, (r) => routeScore(r, { currentUserId }));
-  }, [results, excludeSet, isUnscopedRecentView, currentUserId]);
+    return sortRows(scoped, sortMode, { scoreFn: (r) => routeScore(r, { currentUserId }), dateField: 'created_at' });
+  }, [results, excludeSet, isUnscopedRecentView, currentUserId, sortMode]);
 
   const visibleCategoryValues = useMemo(() => {
     if (!activeCategory) return [];
@@ -353,6 +357,7 @@ export default function RouteTagBrowserModal({
         {showFacetsAndCount && !loading && !error ? (
           <PickerCountBar t={t}
             countLabel={`${visibleResults.length} route${visibleResults.length === 1 ? '' : 's'}${showFragmentsToggle ? ' (short segments hidden)' : ''}`}
+            sortValue={sortMode} sortOptions={SORT_MODE_OPTIONS} onSortChange={setSortMode}
           />
         ) : null}
 

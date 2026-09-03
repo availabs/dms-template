@@ -2,16 +2,22 @@
 
 **Project:** TransportNY
 
-## Status: Callout Stat REMOVED from the template 2026-09-03 — see "Removal" section below.
+## Status: Callout Stat REMOVED 2026-09-03, standalone lexical block ALSO removed same day,
+## template moved to a spec+builder. See "Removal" and "Standalone lexical block removed..." below.
 Ryan looked at the template and read the empty hero-stat Card as dead space between the header
 prose and the first graph slot, and asked whether it could be deleted if it wasn't doing anything
 functional. Told him what it actually was (this file's round 2 + the still-open menu-misleading
 bug below) before touching anything — Ryan's call, informed, was to remove it anyway. The whole
 Callout Stat capability (component, menu registration, template section) is gone from the master
 template as of this section; new reports built from it get no starter data/visual section of any
-kind (an author adds their first one via RRL's "+ Add Graph"). Everything below this point is
-historical record of the feature while it existed — kept for context on why it was built the way
-it was, not a live status. `CalloutStatPicker`'s code was left in place (see "Removal" for why),
+kind (an author adds their first one via RRL's "+ Add Graph"). **Same-day follow-up**: the
+standalone `lexical` header block (redundant with `ReportPageHeader`'s own `purpose` field) was
+also removed, and the template itself was turned into a git-committed spec + builder
+(`scripts/npmrds-reports/page_template_specs/report_page.json` +
+`report_page_template_build.mjs`) — future template edits should go through that, not a fresh
+`dms raw update`. Everything below this point (down through "Removal") is historical record of the
+feature while it existed — kept for context on why it was built the way it was, not a live status.
+`CalloutStatPicker`'s code was left in place (see "Removal" for why),
 so nothing here should be read as "the component doesn't exist" — it's just no longer wired into
 the template or discoverable by an author.
 
@@ -312,6 +318,59 @@ Report" → new page (`reports/page_24`, id `2217752`) rendered with zero gap be
 does this report answer?" and the end of content (no blank Card slot, no console errors) — matches
 the DB edit's intent. Scratch page deleted after verification (`dms page delete 2217752 --pattern
 npmrds_sub`).
+
+## Standalone lexical block removed + template moved to a spec/builder (2026-09-03, same day)
+
+Ryan asked two things in one message, after Claude told him the template's other content
+duplication finding (the `lexical` block from round 2's header design duplicating
+`ReportPageHeader`'s own `purpose` field, flagged but not fixed above): (1) whether the master
+template row could be represented as a git-committed JSON spec, the same way the 12 catalog
+Dynamic Report templates are built from `scripts/npmrds-reports/dynamic_report_specs/*.json` via
+`report_build.mjs`; (2) if so, also remove the standalone `lexical` block while doing it, since it's
+redundant and there are no compelling lexical-block report examples in this codebase to justify
+keeping the pattern around as a worked example.
+
+**Built `scripts/npmrds-reports/report_page_template_build.mjs` + `page_template_specs/
+report_page.json`** — a much smaller, purpose-built analog of `report_build.mjs`, scoped to this
+one singleton row (id `2187021`) instead of arbitrary report pages. The template has exactly two
+sections, both already flagged `templateRole: 'framework'` (the same flag `report_build.mjs`'s own
+`templateFrameworkSections()` reads to decide what to clone into a spec-built page — this script
+produces sections shaped to satisfy that existing convention, not a new one):
+1. `ReportPageHeader` — real authored copy (kicker/meta/purpose/freshness/data-link). The only part
+   of the template an author would ever want to change, and the only thing the spec actually varies.
+2. `ReportRouteList` (sidebar) — a fixed reports_snap_2⋈routes_data join every report needs
+   identically. Nobody hand-edits this, so its `element-data` lives verbatim in a fixture
+   (`page_template_specs/report_page_route_list_element_data.json`) rather than being reimplemented
+   as JS object literals that could drift from the real shape — extracted byte-for-byte from the
+   live row, not retyped.
+
+Both sections' trackingIds are hardcoded constants in the builder (not re-minted per run), so
+re-running the builder with an unchanged spec produces a byte-identical row — same reasoning
+`report_build.mjs`'s own `--update` matches sections by spec `key` rather than reminting identity
+every time. One vestigial fact preserved rather than "fixed" as a drive-by: the `ReportRouteList`
+section's `parent` ref points at page id `2187164`, which no longer exists (`dms raw get 2187164`
+returns empty) — harmless (a template row is never itself rendered, so this ref is never resolved),
+kept byte-identical to the live row rather than silently changed.
+
+**Modes**: `--dry-run` (prints the exact composed row, no writes), `--apply` (writes it). Ryan
+pushed back on the first version of this script (250 lines with `--summary`/`--from-template`/a
+diff-on-apply log, copying `report_build.mjs`'s full shape onto a singleton row that doesn't need
+most of it) — trimmed to just these two modes, ~100 lines. `--from-template` (temporarily present
+during the build) was used once to bootstrap `report_page.json` from the post-Card-removal live
+state and confirm round-trip fidelity before being cut; not kept as a standing feature.
+
+**Verified**: `--apply` reduced the live row from 3 `draft_sections` to 2 (`ReportPageHeader`,
+`ReportRouteList` — the `lexical` block gone). Live UI check via `/npmrds/reports` → "+ Create
+Report" → new page (`reports/page_25`, id `2217779`): header renders with its `purpose` field as the
+ONLY "what question does this report answer" text on the page (no duplicate heading+prose block
+below it), 0 console errors. Scratch page deleted after verification (`dms page delete 2217779
+--pattern npmrds_sub`).
+
+**Going forward**: any future edit to this template's header copy (or, if the sidebar plumbing ever
+needs a real change, the fixture file) should go through `report_page_template_build.mjs
+page_template_specs/report_page.json --apply`, not a fresh `dms raw update`/scratch script — this
+is now a reviewable, git-diffable artifact instead of DB surgery reconstructed after the fact from
+task-file prose (exactly the failure mode this whole file's history is full of).
 
 ## Not done / explicitly out of scope
 
