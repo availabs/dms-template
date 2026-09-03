@@ -429,13 +429,23 @@ const SECTIONS = [
   // the shared hairline and the outer radii. Active = Templates (this page) — a plain cell,
   // like the mockup's `aria-current` span.
   //
-  // DECISION D2 (task file): the list page (npmrds-reports-list.html) is not built live yet,
-  // so "All reports" ships INERT — a static cell with no href — rather than a 404. Flipping it
-  // to a link later is one cell: `isLink: true, location: "/converted_reports/all_reports",
-  // searchParams: "none"`.
+  // DECISION D2 (task file) RESOLVED 2026-09-03: the list page
+  // (planning/transportny/tasks/current/npmrds-all-reports-list-page.md) is now built at
+  // `reports/list` (page 2217965, a child of this page) — "All reports" is a real link, no
+  // longer inert. `/reports/list` is site-relative (not `/npmrds/reports/list`): the `npmrds_sub`
+  // pattern's own `base_url` ("/npmrds") is prepended automatically, same convention every other
+  // `L.*` target in this file already relies on.
+  //
+  // KNOWN, DEFERRED (2026-09-03, Ryan's call): the two cells now render as two separate pills
+  // with a visible gap/misaligned border rather than one seamless segmented control —
+  // `viewTabOn`/`viewTabOff` bake "the active/dark cell is always the LEFT one" into the same
+  // class as the color, which stops being true the moment the OTHER cell becomes a real link
+  // (found live testing this change). A real fix needs shared theme work — deliberately not
+  // done in this session; that's Alex's call, not this one's. Shipping the known cosmetic bug
+  // today; fix it tomorrow with Alex.
   { group: B.header, size: "2", padding: { left: "0", right: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
     stat("view_templates", "Templates", "viewTabOn"),
-    stat("view_all", "All reports", "viewTabOff"),
+    stat("view_all", "All reports", "viewTabOff", { isLink: true, location: "/reports/list", searchParams: "none" }),
     SEED("view_seed"),
   ], {
     cellsGridSize: 2, cellsGridGap: 0, cellsPadding: 0, cardsPadding: 0,

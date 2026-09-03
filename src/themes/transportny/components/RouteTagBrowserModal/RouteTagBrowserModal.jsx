@@ -254,7 +254,7 @@ export default function RouteTagBrowserModal({
           </span>
           {tags.length > 0 && (
             <span className={t.routeTagChips}>
-              {tags.map((tag) => <span key={tag} className={t.routeTagChip}>{tagToLabel(tag)}</span>)}
+              {tags.map((tag) => <span key={tag} className={t.routeTagChip}>{tagToLabel(tag, currentUserId)}</span>)}
             </span>
           )}
         </span>

@@ -99,10 +99,30 @@ export const AUTO_GENERATED_TAG = 'auto_generated';
 // time by anything yet.
 export const DYNAMIC_REPORT_TEMPLATE_TAG = 'dynamic_report_template';
 
+// Reports-side axes (2026-09-03, npmrds-all-reports-list-page.md finding 2): measured over the
+// real 51-row dev `reports_snap_2` catalog, these are the two axes that actually carry report
+// data (12 rows / 5 values, 8 rows / 3 values) — county:/region: have zero report rows but stay
+// shared with routes above. Values/order match the live data, not an invented taxonomy.
+export const REPORT_CATEGORIES = [
+  { value: 'behavioral', label: 'Behavioral' },
+  { value: 'change_over_time', label: 'Change Over Time' },
+  { value: 'floating_car', label: 'Floating Car' },
+  { value: 'before_after', label: 'Before/After' },
+  { value: 'events', label: 'Events' },
+];
+
+export const REPORT_DIFFICULTIES = [
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
+];
+
 export const TAG_CATEGORIES = [
   { key: 'county', label: 'County', tagPrefix: 'county:', values: NY_COUNTIES.map(name => ({ value: `county:${name}`, label: name })) },
   { key: 'region', label: 'Region', tagPrefix: 'region:', values: NYSDOT_REGIONS.map(r => ({ value: `region:${r.number}`, label: r.label })) },
   { key: 'agency', label: 'Agency', tagPrefix: 'agency:', values: AGENCY_CODES.map(a => ({ value: `agency:${a.code}`, label: a.label })) },
+  { key: 'category', label: 'Category', tagPrefix: 'category:', values: REPORT_CATEGORIES.map(c => ({ value: `category:${c.value}`, label: c.label })) },
+  { key: 'difficulty', label: 'Difficulty', tagPrefix: 'difficulty:', values: REPORT_DIFFICULTIES.map(d => ({ value: `difficulty:${d.value}`, label: d.label })) },
 ];
 
 // A result row's raw `tags` column arrives as a JSON-array string from most sources but can
@@ -130,8 +150,15 @@ const TAG_LABEL_BY_VALUE = new Map(
 TAG_LABEL_BY_VALUE.set(AUTO_GENERATED_TAG, 'Auto-generated');
 TAG_LABEL_BY_VALUE.set(DYNAMIC_REPORT_TEMPLATE_TAG, 'Dynamic Report template');
 
-export function tagToLabel(tag) {
-  if (isUserTag(tag)) return 'You';
+// `viewerId` (2026-09-03, npmrds-all-reports-list-page.md finding 1): a `user:<id>` tag used to
+// render as "You" for EVERY viewer regardless of whose tag it was — harmless in a modal that only
+// ever surfaced your own rows near the top, wrong on a page listing everyone's reports (another
+// author's `user:993` tag reading "You" to a viewer who is `175`). Compares against the viewer's
+// own id and falls through to the raw tag string for anyone else's user tag (no name-lookup exists
+// to render a nicer label). `viewerId` is optional so a caller that never had a signed-in user in
+// scope still gets the old vocabulary-lookup/raw-tag behavior instead of throwing.
+export function tagToLabel(tag, viewerId) {
+  if (isUserTag(tag)) return viewerId != null && tag === makeUserTag(viewerId) ? 'You' : tag;
   return TAG_LABEL_BY_VALUE.get(tag) || tag;
 }
 

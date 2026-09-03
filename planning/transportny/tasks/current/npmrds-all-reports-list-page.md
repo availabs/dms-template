@@ -1,6 +1,6 @@
 # NPMRDS "All Reports" list page
 
-**Project:** TransportNY · **Topic:** themes · **Status:** SCOPED, not started · **Started:** 2026-09-03
+**Project:** TransportNY · **Topic:** themes · **Status:** BUILT + VERIFIED LIVE (draft only, not published) · **Started:** 2026-09-03
 
 ## Objective
 
@@ -62,7 +62,85 @@ report templates, are invisible because the marker was never written). This page
 everyone's" **defaulted ON** (opposite of the modal's default), same as the mockup, specifically to
 route around this — see Decisions below.
 
-## Architecture decision — mostly native primitives, revised 2026-09-03
+## Architecture decision — FINAL, 2026-09-03 (second revision, supersedes the "mostly native primitives, revised" draft below)
+
+**The draft below correctly found the `user_id` mechanism but stopped short — its own open
+question #3 ("is native Card sort-binding possible") is now answered, and the answer reshapes the
+whole plan. Keep the draft's reasoning for the `user_id`/visibility parts (still correct); replace
+its conclusion on the results table.**
+
+1. **Item 3 (native sort) — confirmed NO for `Card`, but the right fix is a different section
+   type, not a custom component.** Read `buildUdaConfig.js`: a Card's `orderBy` is derived
+   (`buildUdaConfig.js:1429`) from a static `column.sort` set at authoring time — no runtime
+   binding exists for Card. BUT: Ryan pointed at a live screenshot (MAP-21 PM3, a `table`-type
+   section) showing a real, viewer-facing "Sort: Not Sorted / A→Z / Z→A" dropdown on a column
+   header. Traced it: `ComponentRegistry/spreadsheet/config.jsx`'s `Sort` header control has
+   `displayCdn: ({ attribute, isEdit }) => isEdit || !attribute.disableSort` — i.e. **not**
+   edit-gated (unlike every neighboring control) — the comment states outright: "Sort is the ONE
+   header control viewers see... it doubles as the published sort affordance." Selecting it calls
+   `setState` on that column's `sort`, which (same `useSetDataRequest`/`buildUdaConfig` pipeline
+   Card uses) triggers a real re-fetch with a new `ORDER BY`. `elementType: 'table'`
+   (`spreadsheet/config.jsx`'s registered `type`) is a sibling `ComponentRegistry` entry to `Card`
+   — same `useDataWrapper`, same Filter-leaf binding, same `usePagination`/`pageSize`. **So the
+   fix is: build the results grid as a `table` section, not a `Card`.** Zero custom fetch/sort
+   code needed for it.
+   - This makes the mockup's own finding #5 ("viewer-changeable sort is not a DMS capability...
+     the pill goes away") **wrong**, the same class of miss as the `user_id` correction below —
+     both times a real primitive existed and an earlier pass concluded it didn't. Corrected here.
+   - **Trade-off flagged to Ryan and confirmed (2026-09-03, AskUserQuestion):** native per-column
+     sort cannot reproduce `reportScore.js`'s weighted composite ("Best match" — log-scaled
+     magnitude + ownership + recency + name-penalty summed to one number, not a single DB column).
+     Ryan picked the native `table` section — **"Best match" is dropped for this page**; the
+     table's default/author-set order is `updated_at desc` ("Recently updated"), and any viewer
+     can click any sortable column header to re-order for real. This is a genuine, deliberate
+     behavior difference from the modal, not an oversight.
+2. **`buildVisibilityAllowListFilterGroup`'s groups branch — also fully native**, once the table
+   is native: no custom fetch call needs `user.groups` at all. Reproduce the SAME shape as two
+   ordinary page-filter-bound leaves in one `OR` group:
+   `{ op:'OR', groups: [ {col:'created_by', op:'filter', usePageFilters:true, searchParamKey:
+   'restricted_owner'}, {col:'tags', op:'filter', usePageFilters:true, searchParamKey:
+   'restricted_curated'} ] }`. Both leaves are empty (dropped) unless the rail's "Show everyone's"
+   toggle is OFF, in which case the rail writes BOTH URL params at once (`restricted_owner=<the
+   viewer's own id, read from CMSContext>`, `restricted_curated=dynamic_report_template`) — a
+   real, deliberate simplification from the modal's allow-list: **the `agency:<group>` OR-branch
+   is dropped** (no native "current viewer's groups" page filter exists, confirmed by the original
+   draft's own grep, and it's not worth a custom component just for that one branch). Flagged, not
+   asked — matches "Show everyone's" already shipping defaulted ON specifically to route around
+   the same backfill gap.
+   - **The auto-injected `user_id` page filter is NOT the right binding for the "Mine" toggle.**
+     `patternFilters` appends `{searchKey:'user_id', values: user?.id}` UNCONDITIONALLY on every
+     page load (confirmed, draft below) — so a leaf bound directly to `searchParamKey:'user_id'`
+     is ALWAYS populated and can never be "off". A toggleable "Mine" facet needs its OWN key
+     (`mine`) that the rail writes with the viewer's id when ON and clears when OFF — same
+     `navigate()` + `URLSearchParams` pattern `ReportPageHeader.jsx`'s "Viewing as of" control
+     already uses (confirmed live code, not a new mechanism).
+3. **Search — the established native recipe, verbatim.** `src/dms/skills/full-text-search-filter.md`
+   is the exact recipe: one `elementType:'filter'` control section (`operation:'like'`,
+   `searchParamKey:'search'`, `hideExternalToggle:true`) + an `OR` group of `like` leaves (name,
+   description) on the table section, both `usePageFilters:true` + `searchParamKey:'search'`. Its
+   own worked example (MNY `actions_index`, page 2239721) uses a **Spreadsheet** (`table`) section
+   as the responding data section — independent confirmation that `table` sections take Filter-leaf
+   bindings exactly like Card.
+4. **Net result: the results grid needs NO custom component at all** — search, Mine, tag filter,
+   visibility toggle, pagination, and now sort are ALL native (`elementType:'filter'` control +
+   `elementType:'table'` data section + page-filter-bound leaves). The **only** custom code left is
+   one small rail component (category pills + expandable value list + "Other tags" free-text +
+   breadcrumb + active-filter chips + the Mine/Show-everyone's toggle pills) — pure UI that reads
+   `pageState.filters` and writes URL params via `navigate()`, same shape as `ReportPageHeader`'s
+   `asOf` control. It does no data fetching itself; the table section does that. This is a
+   *smaller* custom-code surface than either prior draft in this file, and reuses the picker's
+   actual constants (`TAG_CATEGORIES`, `tagToLabel`, `DYNAMIC_REPORT_TEMPLATE_TAG`) rather than
+   re-typing them, per Ryan's instruction to reuse the picker's code/infra where it's genuinely the
+   same knowledge (vocabulary, curated-tag semantics) — the parts that don't reuse (composite
+   scoring, client-side pagination) are exactly the parts a native primitive now replaces outright.
+5. **Not solved, deliberately dropped:** the modal's "Hide incomplete-looking" facet
+   (`LOOKS_INCOMPLETE_RE`, a multi-substring case-insensitive regex over `name`) has no native
+   filter op — `buildUdaConfig.js`'s leaf vocabulary is `like/filter/exclude/empty/notempty/time/
+   is_null/is_not_null`, no regex/not-like-multiple-substrings op. Not worth a custom component
+   for one heuristic toggle that (per the mockup's own measurement) hides exactly one row in the
+   current catalog. Flagged, dropped, not built.
+
+## Architecture decision — "mostly native primitives" draft, 2026-09-03 (superseded above on the results-table conclusion; the `user_id`/visibility reasoning below is still correct and load-bearing)
 
 **Correction of this task file's own earlier draft.** The first pass here assumed no native DMS
 primitive could resolve "the current viewer's id" inside an authored filter, and recommended a single
@@ -136,116 +214,255 @@ toggle's active side flipped. The search *input* in the header should reuse what
 
 ## Known, already-established gaps — ship around them, don't try to solve them here
 
-- **Viewer-changeable sort is NOT a gap — correction, 2026-09-03.** Both `ReportPickerModal.jsx` and
-  `RouteTagBrowserModal.jsx` shipped a real, viewer-changeable sort control *today* (`sortMode` state,
-  `SORT_MODE_OPTIONS`/`sortRows` from `PickerModal/pickerScoring.js`, executed client-side over
-  fetched rows). The "no viewer-changeable sort" limitation this task file previously cited is a
-  *different*, still-real gap that's specific to **native Card-based table sort** (an author-fixed
-  column property, no runtime control) — it applies to the Templates shelf page's Card sections, not
-  to a custom component like this one or the two modals. Since this page is a custom component (see
-  Architecture decision), it gets a real sort control for free: reuse `SORT_MODE_OPTIONS`/`sortRows`/
-  `reportScore.js` verbatim, the same as both modals now do. The mockup's `<select id="sort">` stays
-  in scope, wired for real.
+- **Viewer-changeable sort IS natively buildable — second correction, 2026-09-03.** The FINAL
+  Architecture decision above (item 1) supersedes both this file's original "not a DMS capability"
+  claim and its own first correction ("only the modals can do it, via client JS"). It's the
+  `table`/Spreadsheet section type's own header control, live for any viewer, no client JS needed.
+  What's genuinely dropped: `reportScore.js`'s composite "Best match" ranking has no single-column
+  equivalent, so this page's default/author-set order is `updated_at desc`, not a prominence score
+  — Ryan's explicit call once the native mechanism was shown to him (AskUserQuestion, 2026-09-03).
 - **No library-wide tag histogram.** Confirmed: the UDA query engine has no groupBy-unnest path for a
   multiselect column (`tagCategories.js`'s own header comment), so a true "every tag + its count"
-  histogram over arbitrary/free-text tags isn't buildable. Recommend dropping the mockup's "Tags in
-  this library" free histogram entirely rather than faking it — the "Browse by tag" rail's three (now
-  five, after the fix above) fixed categories don't need it; showing the vocabulary without counts,
-  or lazily fetching per-value counts only for the currently-expanded category (via the same
-  `udaLength`-style single-count request `useReportCatalogCount.js` already uses, bounded to that
-  category's ~3-62 values), is enough.
+  histogram over arbitrary/free-text tags isn't buildable. Drop the mockup's "Tags in this library"
+  free histogram entirely rather than faking it — the "Browse by tag" rail's five fixed categories
+  (after the fix above) don't need it; the rail shows the vocabulary, not counts.
+- **"Hide incomplete-looking" is dropped, not ported.** `LOOKS_INCOMPLETE_RE` is a multi-substring
+  case-insensitive regex over `name` — `buildUdaConfig.js`'s filter-leaf vocabulary
+  (`like/filter/exclude/empty/notempty/time/is_null/is_not_null`) has no regex/not-like-many-terms
+  op. Not worth a custom component for a heuristic that (per the mockup's own measurement) hides
+  exactly one row in the current catalog.
 
 ## URL / page tree
 
 New page as a **child of page 2188366** (the `/npmrds/reports` page) — matches how every existing
-report page nests (`reports/<name>`). Slug: **`list`** → `/npmrds/reports/list`, per the user's own
-suggestion; this is exactly what the live page tree's convention predicts (a sibling of
-`reports/snapshot`, `reports/year_over_year`, etc.). No `/npmrds/` prefix needed beyond what the
-pattern already adds automatically.
+report page nests (`reports/<name>`). Slug (`url_slug`): **`reports/list`** → `/npmrds/reports/list`.
+
+**Correction, verified live 2026-09-03 (built the page, then had to fix this):** `url_slug` is a
+FLAT, fully-composed path string, not a leaf segment — `parent` is hierarchy metadata only and is
+NOT prepended at routing/slug-lookup time. Confirmed: `dms page show reports/year_over_year`
+resolves (an existing child of 2188366); `dms page show year_over_year` does not. `dms page create
+--slug list --parent 2188366` stores `url_slug:"list"` verbatim — the page then 404s/silently
+falls back to the site's home page at `/npmrds/reports/list` (traversing-dms-pages.md's own
+"any unresolvable slug silently falls back to home" gotcha; easy to misread as "page rendered
+correctly, blank" instead of "wrong URL"). Fixed via `dms page update <id> --slug reports/list`.
+The builder script now passes `--slug reports/list` directly on create.
 
 (The build script's own placeholder comment for the toggle's future href says
 `/converted_reports/all_reports` — that's a **stale, pre-rename literal**, not a locked decision; it
 predates the 2026-09-02 `converted_reports`→`reports` slug rename and was never updated. Treat `list`
 under the current `reports` parent as the real target, not that string.)
 
+## Page-filter registry (the keys this page registers, per `creating-interactive-pages.md` step 0)
+
+| `searchKey` | Written by | Read by | Semantics when absent |
+|---|---|---|---|
+| `search` | native `filter` control section (header) | table's OR-group of `like` leaves (name, description) | no constraint |
+| `tag` | rail (category/value pick) | table's `tags` `filter` (array_contains) leaf | no constraint |
+| `tag_like` | rail ("Other tags" free-text box) | table's `tags` `like` (substring) leaf | no constraint |
+| `mine` | rail "Mine" toggle — writes the viewer's own `user.id` | table's `created_by` `filter` leaf | no constraint |
+| `restricted_owner` | rail "Show everyone's" toggle (OFF only) — writes viewer's own `user.id` | one arm of the visibility `OR` group | dropped (both `restricted_*` leaves empty → no constraint → "show everyone's") |
+| `restricted_curated` | rail "Show everyone's" toggle (OFF only) — writes the literal string `dynamic_report_template` | other arm of the visibility `OR` group | dropped |
+
+`restricted_owner`/`restricted_curated` are written and cleared TOGETHER by the one "Show
+everyone's" toggle — never independently. Do not bind anything to the auto-injected `user_id`
+page filter directly (see Architecture decision item 2) — it's always populated, so a leaf bound
+to it can never be "off".
+
 ## Plan
 
 1. **Shared-code fixes** (small, low-risk, benefit the modal too):
-   - `tagToLabel` takes a viewer id parameter and compares before returning "You".
-   - Add `category`/`difficulty` entries to `TAG_CATEGORIES` with their real value sets.
-   - Fix `fetchCatalogRows.js`'s hardcoded `fromIndex: 0, toIndex: limit-1` to accept a real page
-     offset.
-2. **First, verify the two remaining open technical questions** (see Architecture decision items 1
-   and 3): whether Ryan wants exact visibility-allow-list parity (groups branch) or the simplified
-   version, and whether a native Card's sort can bind to a page filter. Then **build**: the results
-   table as a native paginated Card (search leaf bound to `search`, Mine leaf bound to `user_id`,
-   single-tag leaf bound to a new URL-bound tag key — `usePagination:true`, author `pageSize`); one
-   small rail component for browse-by-tag (category pills + value panel + "Other tags" free-text,
-   writing the resolved tag into that same URL-bound key), Hide incomplete-looking, Show-everyone's
-   (defaulting **ON**), and — if item 1 keeps exact parity — the groups-aware half of the visibility
-   check. A **real sort control**, wired natively if possible (item 3), otherwise reusing
-   `SORT_MODE_OPTIONS`/`sortRows`/`reportScore.js` verbatim from `pickerScoring.js` same as both
-   modals. Breadcrumb + removable active-filter chips + count bar can live in the rail component
-   (they describe the *filter* state, which the rail already owns) even though the table itself is
-   native. All rail-written state URL-bound the same way `Filter` sections already are.
-3. **Page + header build** — a headless CLI builder script mirroring
-   `build_npmrds_reports.mjs`'s structure and discipline (find-by-slug-then-address-by-id, runtime
-   parity guard, draft-only, `SECTIONS_DUMP` escape hatch): create `reports/list` under 2188366;
-   header band (title "All reports" · view-toggle Card with "All reports" active · search input ·
-   `CreateReportButton` · New-route Card link); content band (rail + table, sibling sections per the
-   mockup's own `items-stretch` note); reuse the Templates page's footer verbatim.
+   - `tagToLabel(tag, viewerId)` — new second param; compares `tag` against `makeUserTag(viewerId)`
+     before returning "You", falls through to the existing raw-tag/vocabulary lookup otherwise.
+     Update all 4 call sites (`ReportPickerModal.jsx`, `RouteTagBrowserModal.jsx`, `TagsEditor.jsx`
+     ×2) to pass their already-in-scope `currentUserId`/`user?.id`.
+   - Add `category`/`difficulty` entries to `TAG_CATEGORIES` with their real, confirmed value sets
+     (pulled live via `dms dataset dump 2177438`, 2026-09-03, 51 rows): category → behavioral(4),
+     change_over_time(4), floating_car(2), before_after(1), events(1); difficulty → beginner(4),
+     intermediate(2), advanced(2).
+   - `fetchCatalogRows.js`'s hardcoded `fromIndex`/`toIndex` is **NOT touched** — this page's table
+     doesn't call it at all (native `table` section, not a custom fetch). Removed from scope.
+2. **Rail component** (the only new custom code) — category pills + expandable value panel +
+   "Other tags" free-text + breadcrumb + active-filter chips + Mine/Show-everyone's toggle pills.
+   Imports `TAG_CATEGORIES`/`tagToLabel`/`DYNAMIC_REPORT_TEMPLATE_TAG`/`makeUserTag` from
+   `tagCategories.js` (post-fix) rather than re-declaring the vocabulary. Reads `pageState.filters`,
+   writes `search`/`tag`/`mine`/`restricted_owner`/`restricted_curated` via `navigate()` +
+   `URLSearchParams`, same pattern as `ReportPageHeader.jsx`'s "Viewing as of" control (confirmed
+   live convention, not a new mechanism). No data fetching of its own.
+3. **Page + header build** — a headless CLI builder script mirroring `build_npmrds_reports.mjs`'s
+   structure and discipline (find-by-slug-then-create, runtime parity guard, draft-only,
+   `SECTIONS_DUMP` escape hatch): create `reports/list` under 2188366.
+   - Header band: title "All reports." · view-toggle Card (flip active side vs. the Templates
+     page) · a native `elementType:'filter'` search control (`operation:'like'`,
+     `searchParamKey:'search'`, `hideExternalToggle:true` — `full-text-search-filter.md` step 1,
+     NOT `ChooseReportButton`, since there's no modal to open on this page) · `CreateReportButton`
+     · New-route Card link.
+   - Content band, ONE band, TWO sibling sections (`items-stretch`, per the mockup's own note and
+     `feedback_rail_column_layout_in_pages_theme`): rail (size 3, the new custom component) + table
+     (size 9, `elementType:'table'`) bound to `reports_snap_2`. Table's authored filter tree: static
+     `page_path notempty` + `name notempty` (legacy-row exclusion, always on) AND the `search`
+     OR-group (step 1 above) AND a `tags` `filter` leaf bound to `tag` AND a `created_by` `filter`
+     leaf bound to `mine` AND the `restricted_owner`/`restricted_curated` OR-group. Columns: name,
+     tags, counts_label (routes · graphs), updated_at, page_path (link, `disableSort` on
+     non-meaningful columns e.g. `page_path`). `display.usePagination:true`, author `pageSize`
+     (mockup uses 25), default `sort` on `updated_at`: `'desc nulls last'`.
+   - Reuse the Templates page's footer verbatim.
 4. **Flip the Templates page's toggle** — edit `build_npmrds_reports.mjs`'s "All reports" cell
    (currently inert) to `isLink: true, location: "/reports/list", searchParams: "none"`, re-run.
-5. **Verify**: both toggle directions round-trip; a `?search=…&tag=…&page=2`-style URL shared cold
-   restores the same state; pagination math (`from`/`to`/total) matches the visible count after
-   facets; the two shared-code fixes don't regress `ReportPickerModal` (spot-check the modal live —
-   `user:993` no longer reads "You" to a viewer who is `175`; `category:`/`difficulty:` tags render
-   as real labels in its chips too).
+5. **Verify**: both toggle directions round-trip; a `?search=…&tag=…&mine=…` URL shared cold
+   restores the same table state; native pagination and native per-column sort both work by
+   clicking table headers; the shared-code fixes don't regress `ReportPickerModal`/
+   `RouteTagBrowserModal` (spot-check live — `user:993` no longer reads "You" to a viewer who is
+   `175`; `category:`/`difficulty:` tags render as real labels in chips, not raw storage strings).
 
 ## Decisions made in scoping (flagged, not asked — override any of these freely)
 
 - Slug `list` (not `all_reports`) — matches the user's own suggestion and the live sibling-slug
   convention equally well; no functional difference either way.
 - Fix the two `tagCategories.js` bugs now, as part of this task, rather than filing them separately —
-  they're small, additive, and this page can't be honest without them.
+  they're small, additive, and this page can't be honest without them. Adding `category`/`difficulty`
+  to the SHARED `TAG_CATEGORIES` also makes those two pills appear in `RouteTagBrowserModal` (routes
+  never carry these tags, so they'd always show zero matches there) — a minor, known side effect of
+  following this file's own already-written plan to extend the shared list; not gated on.
 - Defer the `dynamic_report_template` backfill; ship "Show everyone's" defaulted ON instead.
-- Drop the mockup's free-tag histogram outright rather than building a fake/partial version — a
-  genuine, already-known DMS gap (no groupBy-unnest for multiselect columns), not this page's to
-  solve. (The sort control is NOT dropped — see correction above, it ships real.)
-- Results TABLE is a native paginated Card, not a custom component — the `user_id` page-filter
-  mechanism (confirmed 2026-09-03) makes search/Mine/single-tag-filter/pagination all natively
-  expressible. Only the tag-browse rail UI (and possibly the visibility allow-list's groups branch
-  and/or sort, pending items 1 and 3 above) stays custom — see Architecture decision for the reduced
-  surface.
+- Drop the mockup's free-tag histogram AND "Hide incomplete-looking" outright — see Known gaps.
+- "Best match" composite sort is dropped for this page (native per-column sort instead) —
+  Ryan's explicit choice, see Architecture decision item 1.
+- Visibility allow-list's `agency:<group>` OR-branch is dropped for this page (native
+  `restricted_owner`/`restricted_curated` OR-group instead, no groups branch) — flagged, not asked,
+  see Architecture decision item 2.
+- Results table + search + Mine + tag-filter + visibility toggle + pagination + sort are ALL native
+  (`elementType:'table'` + `elementType:'filter'` + page-filter-bound leaves) — zero custom fetch
+  code. Only the tag-browse rail (pure UI, no data fetching) is custom.
 
-## Files likely touched
+## Files touched
 
-- `src/themes/transportny/components/RouteTagBrowserModal/tagCategories.js` — `tagToLabel` viewer-id
-  fix, two new `TAG_CATEGORIES` entries.
-- `src/themes/transportny/components/ReportPickerModal/fetchCatalogRows.js` (or wherever the
-  hardcoded `fromIndex`/`toIndex` lives — confirm exact filename during implementation) — real
-  pagination.
-- New: a small rail component directory under `src/themes/transportny/components/` (name TBD, e.g.
-  `ReportsListRail` — registered as an `elementType`) for the tag-browse accordion + toggles + (maybe)
-  the groups-aware visibility check. The results table itself is a native Card authored in the CLI
-  builder script below, not a new component.
-- New: `src/themes/transportny/qa_skills/tools/builds/build_npmrds_reports_list.mjs`.
-- `src/themes/transportny/qa_skills/tools/builds/build_npmrds_reports.mjs` — flip the toggle cell.
+- `src/themes/transportny/components/RouteTagBrowserModal/tagCategories.js` — `tagToLabel(tag,
+  viewerId)` viewer-id fix; `REPORT_CATEGORIES`/`REPORT_DIFFICULTIES` + two new `TAG_CATEGORIES`
+  entries.
+- `src/themes/transportny/components/ReportPickerModal/ReportPickerModal.jsx`,
+  `src/themes/transportny/components/RouteTagBrowserModal/RouteTagBrowserModal.jsx`,
+  `src/themes/transportny/components/TagsEditor/TagsEditor.jsx` — updated all 5 `tagToLabel(...)`
+  call sites for the new second parameter.
+- New: `src/themes/transportny/components/ReportsListRail/` (`ReportsListRail.jsx`,
+  `ReportsListRail.theme.js`, `index.jsx`) — the tag-browse rail + Mine/Show-everyone's toggles +
+  breadcrumb + active-filter chips. Pure UI, no data fetching.
+- `src/themes/transportny/themev2.js` — imports and registers `ReportsListRail` in
+  `pageComponents` (the theme actually in use — not the older, unregistered `theme.js`).
+- New: `src/themes/transportny/qa_skills/tools/builds/build_npmrds_reports_list.mjs` — creates/
+  updates page 2217965 (`reports/list`), idempotent re-run.
+- `src/themes/transportny/qa_skills/tools/builds/build_npmrds_reports.mjs` — flipped the "All
+  reports" toggle cell from inert to a real link (`isLink`, `location: "/reports/list"`).
 
-## Testing checklist
+## Testing checklist — all verified live 2026-09-03 (dev2, page 2217965, `/npmrds/edit/reports/list`)
 
-- [ ] `tagToLabel` fix verified live on the existing modal (not just this new page)
-- [ ] `category`/`difficulty` tag chips render real labels (not raw storage strings) in both the
-  modal and the new page
-- [ ] New page loads at `/npmrds/reports/list`, shows all 26 (dev) rows paginated at the authored
-  page size
-- [ ] Search, single-tag filter (via category browse and via "Other tags"), Mine, Hide
-  incomplete-looking, Show-everyone's all narrow the table correctly and update the URL
-- [ ] Sort control (Best match / Recently updated / Name A-Z) actually re-sorts the visible rows
-- [ ] A copy-pasted filtered URL restores identical state on a fresh load
-- [ ] View toggle round-trips both directions (`/npmrds/reports` ⇄ `/npmrds/reports/list`)
-- [ ] Templates page (`/npmrds/reports`) unaffected — regression-checked since its own builder script
-  is touched
+- [x] New page loads at `/npmrds/reports/list` (edit view — page is draft-only, not yet published),
+  shows all rows paginated at the authored page size (25; measured 26+ rows over 2-3 pages live)
+- [x] Search narrows correctly across name+description (typed "Seasonality" → exactly the 2
+  matching rows) and updates the URL (`?search=Seasonality`)
+- [x] Tag filter (category browse: Category → Behavioral) narrows correctly (4 rows, all carrying
+  `category:behavioral`) with breadcrumb ("ALL REPORTS / CATEGORY / BEHAVIORAL") and a removable
+  active chip
+- [x] `category`/`difficulty` rail pills render with real counts (5/3) and real value labels
+  (Behavioral, Change Over Time, Floating Car, Before/After, Events; Beginner, Intermediate,
+  Advanced) — not raw storage strings
+- [x] Native per-column sort works: clicking the Updated column header opens the real
+  Not-Sorted/A→Z/Z→A control and re-orders the table on a real re-query (verified both directions)
+- [x] View toggle round-trips both directions: Templates → All Reports link (draft) correctly
+  navigates to `/npmrds/reports/list`; All Reports → Templates link unchanged
+- [x] Templates page (`/npmrds/reports`) unaffected by the toggle-cell edit — regression-checked,
+  its own 12-template shelf still renders correctly in edit mode
+- [x] `created_by`/`systemCol` resolution mechanism CONFIRMED CORRECT (see finding below) — but
+  **cannot be visually distinguished against this specific dev catalog**, so Mine/Show-everyone's
+  are mechanism-verified, not behavior-verified, pending real data
+- [ ] `tagToLabel` "You" fix — not independently re-verified live this session (the fix + its 5
+  call-site updates were code-reviewed at write time; no live check was done against the modal)
+- [ ] A copy-pasted filtered URL restoring state on a cold (non-edit-mode) load — not tested; the
+  page has never been published, so only the `/edit` route was exercised this session
+
+### Real bug found and fixed during testing: `created_by` needs BOTH `systemCol:true` AND to be
+### listed in the section's own `columns` array
+
+Two separate, compounding bugs, both now fixed in `build_npmrds_reports_list.mjs`:
+1. `RS_COLS` (copied from `build_npmrds_reports.mjs`, which never filters on `created_by`) lacked
+   `systemCol: true` — the exact bug `reportCatalogSource.js` already documents and fixed
+   elsewhere (2026-09-01). Without it, `created_by` resolves to the inert JSON field
+   `data->>'created_by'`.
+2. Even after adding `systemCol: true`, the `mine`/`restricted_owner` filters still did nothing —
+   traced to `buildUdaConfig.js:839` (`buildColumnsWithSettings`): it only enriches/returns
+   entries already present in the SECTION's own authored `columns` array, using
+   `externalSource.columns` purely as a lookup table for entries that already exist in `columns` —
+   it never adds a new entry from `externalSource` outright. `created_by` and `description` were
+   never in `RESULTS_COLUMNS` (both are filter-only, never displayed), so `getColumn('created_by')`
+   returned `undefined` and the leaf silently never resolved — no error, no SQL, no constraint.
+   Fixed by adding both as `selectOnly:true, show:false` entries to `RESULTS_COLUMNS`.
+
+Both fixes verified with a temporary diagnostic (`created_by` shown as a real visible column with
+a hardcoded `value:["993"]` filter) before being reverted to the real `usePageFilters`-bound
+version — see the finding below for what that diagnostic actually revealed.
+
+### Finding: every row in this dev catalog shares the same real `created_by` (993)
+
+The diagnostic column showed **every single visible row's real system `created_by` is 993**,
+regardless of what `user:<id>` TAG it carries (rows tagged `user:1`, `user:175`, `user:643` all
+still have `created_by:993`). This is a DATA fact of this dev environment (everything was written
+via the same authenticated identity — imports, conversions, and this session's own testing all
+ran as the same account), not a bug: the `user:<id>` tag and the real DMS `created_by` audit stamp
+are two independently-maintained fields (per `tagCategories.js`'s own Workstream D commentary), and
+in this dev catalog they've simply never diverged from the writer's own account. Net effect:
+**Mine and the `restricted_owner` half of Show-everyone's will show ALL rows in dev today**,
+correctly and by design (the filter really does evaluate to true for every row) — this is a real
+limitation for demoing/screenshotting this page against dev data, not a code defect. A real
+production catalog with distinct authors would show correct narrowing.
+
+### One throwaway test artifact created and cleaned up
+
+Clicking "Create Report" while testing produced a real page (id 2218002, slug `reports/page_25`,
+named "Page 25" — collided in name only, not id, with pre-existing catalog debris of the same
+name). Deleted via `dms page delete 2218002` after use.
+
+## Real bug found and fixed: orphaned `reports_snap_2` catalog rows (2026-09-03)
+
+Ryan caught this live on the new list page: deleting a report page via the generic admin
+"Delete Page" action does not cascade to `reports_snap_2` — the catalog row survives, still
+pointing at a `report_id` that no longer resolves to any real page. This is the SAME root cause
+`ReportPickerModal/useReportSearch.js`'s `checkIdsExist` band-aid was built for (2026-09-01) — the
+modal hides these live, per-search, via a runtime existence check against `dms.data[app].byId`.
+The native `Spreadsheet`-based list page has no equivalent hook (a plain SQL query, no per-row
+cross-table check available) — this is a real, structural gap between "native primitives" and
+"the picker's own custom JS," not something a `page_path notempty` filter catches (orphans keep
+their stale `page_path`, which still reads as non-empty).
+
+**Fixed today:**
+1. Identified and deleted the 3 rows currently orphaned (cross-referenced every `reports_snap_2`
+   row's `report_id` against the live `npmrds_sub` page list) — catalog went from 52 → 49 rows,
+   confirmed zero orphans remaining. Two of the three ("Page 25" ×2) were debris from THIS
+   session's own live testing (a throwaway report created via "Create Report," then deleted — the
+   exact same bug, self-inflicted); the third ("Page 24", `report_id` 2217752) predates this
+   session.
+2. New: `src/themes/transportny/qa_skills/tools/prune_report_snap_orphans.mjs` — a reusable,
+   dry-run-by-default script (same cross-reference logic) to catch and remove future orphans.
+   Not a live safeguard (the list page still has no runtime check) — a maintenance tool to re-run
+   when the list looks wrong, until "Delete Page" itself cascades to this dataset (a deeper
+   platform fix, not attempted here).
+
+**Not fixed / explicitly out of scope today:** the root cause (Delete Page not cascading) and any
+live, per-row existence check on the list page itself — the native-Spreadsheet architecture has
+no hook for the latter without reintroducing custom fetch code, which this task deliberately
+avoided (see the FINAL Architecture decision above).
+
+## Shared-theme CSS — reverted, deferred to Alex (2026-09-03)
+
+Ryan's explicit call: remove every style change this session made to `themev2.js` (a shared file
+another contributor, Alex, is actively working in — the source of the git merge conflict this
+session hit) and defer ALL toggle/search-box CSS fixes to him. Done: `themev2.js` reverted to
+exactly the committed HEAD (`git checkout HEAD --`), removing the `viewTabOffLeft`/
+`viewTabOnRight`/`search_bar`/`bare` additions this session made. Both build scripts
+(`build_npmrds_reports.mjs`, `build_npmrds_reports_list.mjs`) updated to reference only tokens
+that still exist post-revert (`viewTabOn`/`viewTabOff`, no `filterStyle` override) — both toggle
+and search-box KNOWN COSMETIC BUGS (mismatched border/gap on the toggle pills; stacked
+label-above-box on the search input) are shipped as-is today, flagged in-code as deferred, not
+fixed. The functional `isLink` wiring (the toggle actually navigating between the two pages)
+is unaffected — that's page-script logic, not a theme change, and was kept.
 
 ## Peripheral findings (not blocking, noted for whoever's next in these files)
 

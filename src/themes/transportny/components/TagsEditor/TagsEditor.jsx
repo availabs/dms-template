@@ -34,7 +34,7 @@ export default function TagsEditor({ tags, onChange, user, theme, Icon, inline =
       return;
     }
     if (!isTagAllowedForUser(tag, user)) {
-      setError(`You're not in ${tagToLabel(tag)} — ask an admin to add you to that group first.`);
+      setError(`You're not in ${tagToLabel(tag, user?.id)} — ask an admin to add you to that group first.`);
       return;
     }
     setError('');
@@ -67,7 +67,7 @@ export default function TagsEditor({ tags, onChange, user, theme, Icon, inline =
           return (
             <span key={tag} className={chipClass}>
               {userTag ? <span className={t.tagsEditorChipUserDot} /> : null}
-              {tagToLabel(tag)}
+              {tagToLabel(tag, user?.id)}
               <button type="button" onClick={() => removeTag(tag)}>
                 {Icon ? <Icon icon="XMark" className={removeClass} /> : <span className={removeClass}>&times;</span>}
               </button>
@@ -76,7 +76,7 @@ export default function TagsEditor({ tags, onChange, user, theme, Icon, inline =
         })}
         {suggestions.map((tag) => (
           <button key={tag} type="button" className={t.tagsEditorSuggestionChip} onClick={() => addSuggestion(tag)}>
-            + {tagToLabel(tag)}
+            + {tagToLabel(tag, user?.id)}
           </button>
         ))}
         <input
