@@ -2654,3 +2654,164 @@ point picking, `MIN_GAP_M` relaxes downward if the validated pool can't support 
 full spacing - no overshoot, no hard floor, no other change in flight. This is the same stable
 baseline the file has repeatedly been reverted back to throughout this session; nothing in
 `selectClosureDensityCandidates` differs from commit 7192724 as of this entry.
+
+### Bounded bidirectionalDijkstra search cost - genuine performance fix
+
+Live-tested closure-density tally on a downtown segment (river-crossing candidates) took ~88s
+total (17.5s point selection + 70s tally, 64/100 pairs failing). Root cause:
+`bidirectionalDijkstra`'s loop only terminates when both search frontiers are fully exhausted -
+for a genuinely unreachable pair (candidates on opposite sides of a river with no nearby bridge in
+the graph), the search has to traverse the entire reachable component before concluding "no
+route," which is worst-case-expensive on a 5.4M-node graph. 64 failing pairs meant 64+ full-graph
+exhaustions.
+
+Fix: `bidirectionalDijkstra` now takes an optional `maxCost` (default `Infinity`, so every existing
+unbounded caller - the point-candidate validation search in particular - is unaffected). Added
+`haversineM`/`searchCostCap` (`data-types/routing/memoryGraph.js`): the cap scales with each pair's
+own straight-line distance (`straightLineM * 5 + 20mi floor`, converted to a time budget via a
+generous 100mph ceiling for the "time" cost objective) rather than a fixed number, so a
+legitimately long route stays proportionally bounded and isn't falsely rejected - only pairs that
+are actually unreachable (or absurdly indirect) hit the cap. Wired into both real call sites:
+`findRoute` (live route computation, `routing`/`detour` plugins) and
+`computeClosureDensityFromPoints` (closure-density tally, per-pair cap threaded through
+`densitySearchPool.js`'s `runTallyBatch` and `graphSearchWorker.js`'s `tallyBatch` handler).
+
+Verified via `node --check` on all three touched files
+(`memoryGraph.js`/`densitySearchPool.js`/`graphSearchWorker.js`) and a `grep` confirming the
+point-candidate `batch` validation search (graphSearchWorker.js line ~70) still omits `maxCost`,
+so it stays unbounded as before - this fix is scoped to the two call sites that actually showed the
+problem. **Not yet live-tested** - needs a backend restart, then re-run the same downtown segment
+and confirm the tally completes fast even with a high failure rate, and that a real long
+legitimate route (e.g. NYC-Buffalo) still succeeds.
+
+### Closure-density candidate-point rules, for client reference
+
+Client asked for the current candidate-picking behavior in detail with a worked example.
+Published as a themed artifact (TransportNY design-system tokens):
+https://claude.ai/code/artifact/bd78be35-8337-4abe-b5ad-19d411416568. Full rule text below, kept
+in sync with `selectClosureDensityCandidates` (`data-types/routing/memoryGraph.js`) as of this
+entry (byte-identical to commit 7192724 - see the "Reverted further" entry above):
+
+1. **Seed** - from each end of the closed segment, walk outward along the straightest
+   continuation of the road until reaching a node that actually offers more than one way
+   forward (a real junction, by pure topology). That's the seed for that side.
+2. **Flood** - from the seed, every reachable road out to 8 miles is collected and sorted
+   nearest-to-farthest, tagged same-road (matches the closure's own highway type) or other
+   (branched onto a different road). The two sides' searches are blocked from crossing into
+   each other's territory.
+3. **Trust** - the single nearest candidate on each side is accepted automatically, without
+   validation - a point right next to the closure is almost always a genuine, direct use of it.
+4. **Validate** - every other candidate (nearest first, up to `numCandidates * 30` = 300 tried
+   per side) is tested: does the OPEN route from it to the opposite seed actually pass through
+   the closed segment? If not, it's discarded. Same-road gets up to half the budget guaranteed,
+   other gets the rest.
+5. **Prefer same-road** - if same-road-only validated candidates can hit the target count (10)
+   at full 1-mile spacing, they're used exclusively; only falls back to combining with other
+   (branched) candidates if same-road alone can't supply 10.
+6. **Select with a gap, count wins** - walk the validated list nearest-to-farthest, skip
+   anything within 1 mile of the last pick. If fewer than 10 are reached, halve the gap and
+   retry, repeating until either 10 points are picked or the gap bottoms out at 0. **Count (10)
+   is the hard requirement; the 1-mile spacing is what silently relaxes to hit it** - this is
+   the known, previously-discussed trade-off behind "points too close" complaints on dense/short
+   networks, kept this way per the explicit decision logged above ("do not focus on distance
+   just keep points good").
+
+Worked example (illustrative, matches the artifact's diagram): a closure on a long, mostly
+straight road. The seed lands ~0.3mi out. The same road alone supplies more than 10 validated
+points, so rule 5 never needs to branch. Walking nearest-to-farthest with the full 1-mile gap
+lands exactly 10 points between the seed and ~7.4mi out, each ~1 mile apart - the well-behaved
+case, contrasted with the dense-downtown-grid case (rule 6's known trade-off) documented earlier
+in this file.
+
+### DMS-page Simple/Multi mode switch - shipped
+
+End-user-facing "Simple / Multi-point coverage" switch, for visitors on a live DMS page (not
+MapEditor). `internalPanel.jsx`'s three author toggles (`density-mode`/`show-candidates`/
+`pick-pair-testing`) are unchanged and still drive MapEditor's own behavior and the default a
+fresh page load starts from.
+
+- **`DetourModeSwitch`** (`components/DetourModeSwitch.jsx` + its keys in
+  `components/DetourDetailsPanel.theme.js`, `modeSwitch*`) - a themed two-button control (not the
+  generic externalPanel/PluginControls system, which is hardcoded Tailwind never routed through
+  ThemeContext), rendered directly by `Comp`.
+- **`comp.jsx`**: `isMapEditor` (`mctx?.falcor`) gates the switch out of MapEditor entirely - the
+  editor's own UI is unchanged, confirmed live. A visitor's toggle writes one master flag,
+  `pluginData.detour['multi-mode']`, which `isDensityMode`/`showCandidatePoints`/`pickPairTesting`
+  all check first, falling back to the author's three toggles only when a visitor hasn't touched
+  the switch yet.
+- Safe by construction on a live page: the Map section only persists to the DB when `isEdit`
+  (`map/index.jsx`'s save-effect guard) - a visitor's toggle is local React state only, resets on
+  reload, never shared across viewers, never written to the saved page config.
+- Two earlier approaches were tried and rejected before this: (1) the generic `externalPanel`/
+  `PluginControls` system - discovered to be fundamentally unthemed (bug found along the way: its
+  `ToggleControl`/`InputControl`/`RadioControl` were missing the `MapContext`-vs-`SymbologyContext`
+  fallback `SelectControl` already had, so those controls silently don't work on a live page at
+  all - fixed then reverted once the themeable requirement redirected the approach entirely,
+  keeping `src/dms` at zero net change for this feature); (2) that fix left in place with an
+  `isLivePage` signal threaded through `ExternalPluginPanel` - also reverted once the switch moved
+  into `Comp` directly and no longer needed either mechanism.
+
+Live-tested and confirmed working by the user.
+
+### Session-scoped result caching - shipped
+
+Both `useTrspRoute.js` (simple detour) and `useClosureDensity.js` (closure-density) now cache a
+finished computation in `sessionStorage`, keyed by the closed segment (+ start/end for simple
+mode, + cost objective for density mode). Repeating the same analysis (re-pressing "Get detour"/
+"Analyze coverage" without an intervening "Clear") skips the backend entirely; "Clear detour"/
+"Clear analysis" purges that specific cache entry so the next run is genuinely fresh, not stale.
+Fail-soft: every `sessionStorage` call is wrapped in try/catch, so a browser with storage
+unavailable/full just skips the cache rather than breaking analysis. Entirely frontend - does not
+touch the backend's own in-memory graph cache (`graphCache` in `memoryGraph.js`), a separate,
+unrelated cache the user was careful to flag should stay untouched.
+
+### Coverage-methodology design-system page - shipped
+
+`detour-coverage-methodology.html` added under `TransportNY Design System/dms_design_system_v2/
+pages/` as a sub-page of `bridge-detour-report.html` (real DMS-shaped structure, actual brand
+primitives - see that file's own header comment for the full rationale). Registered in `ds-nav.js`
+under a new `detour` section, which also fixed a pre-existing gap: `bridge-detour-report.html`/
+`bridge-detour-route.html` existed on disk but were never registered in any `SECTIONS` entry.
+Cross-linked bidirectionally: a "read more" callout in `bridge-detour-report.html`'s launch-point
+section points to the methodology page; the methodology page's "related" sidebar and footer point
+back.
+
+The worked-example diagram is a static illustrative image (matplotlib-generated, uploaded via the
+platform's own `file_upload` route, captioned "a possible example - real spacing and count vary by
+network") - not a live interactive map. An interactive Map section (bound to the real 2025 edges
+layer, source 2097/view 3774) was tried first and rejected: the user wants an illustrative example
+image, not real/current data, since "real can be different for so many cases."
+
+### NY-boundary click-gate for the `routing` plugin - reverted, not yet reattempted
+
+Explored three approaches this session, all reverted:
+1. A bundled static NY county-boundary GeoJSON (`nyCountyBoundaries.json`) + client-side
+   ray-casting point-in-polygon - rejected: a 70KB duplicated dataset that has to be kept in sync
+   and doesn't even guarantee it matches the actual road network's real coverage.
+2. A new dedicated backend route (`/trsp-memory-coverage-check`) using the in-memory graph's own
+   node grid (no static file, no DB call) - rejected per explicit instruction not to add a new
+   route; told to find a different approach and verify it before implementing.
+3. **Proposed, not yet implemented**: reuse the existing `GET /routing/nodes?bbox=...` route - on
+   click, query a small bbox around the point; zero nodes returned = reject as outside coverage.
+   No new route, no static file. Awaiting go-ahead to implement.
+
+Current state: `usePointPicker.js`/`comp.jsx`/`constants.js`/`RouteDetailsPanel.jsx` in
+`routing/` are byte-identical to their pre-feature state (no gating at all, any click places a
+point).
+
+### bidirectionalDijkstra maxCost search-cap - tried and reverted (real regression found)
+
+Added an optional `maxCost` bound to `bidirectionalDijkstra` (scaled to each pair's own
+straight-line distance, `5x + 20mi floor`) to stop a genuinely-unreachable OD pair from exhausting
+the whole graph before failing - the diagnosed cause of a 70-90s closure-density tally with a high
+failure rate on a river-crossing downtown segment.
+
+**Live-tested and found to cause a worse regression**: on a different river-crossing segment
+(Green Island/Cohoes/Troy area), the SAME fix produced 100/100 pairs failing, fast (9s for 200
+searches) - the speed itself is the tell: a genuinely unbounded exhaustive search failing that
+consistently would take much longer, so the cap was very likely cutting off real routes that
+legitimately need to detour far to reach the nearest bridge. **Fully reverted** (`memoryGraph.js`,
+`densitySearchPool.js`, `graphSearchWorker.js` all back to byte-identical with commit `669dbc6`) -
+a slow-but-correct search beats a fast-but-wrong one. The original slowness problem this was meant
+to fix is real and still open; a flat straight-line-distance multiplier is now a confirmed-bad
+approach to it and should not be re-attempted as-is.

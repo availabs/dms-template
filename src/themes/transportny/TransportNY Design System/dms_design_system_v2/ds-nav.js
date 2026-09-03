@@ -60,6 +60,14 @@
       { f: 'floating-car.html', t: 'floating-car' }, { f: 'employment-estimates.html', t: 'employment-estimates' },
       { f: 'employment-estimates-mpo.html', t: 'employment · mpo' }, { f: 'lehd-od.html', t: 'lehd-od' },
     ]},
+    // `bridge-detour-report`/`bridge-detour-route` existed on disk but were never registered here
+    // (missing from every SECTIONS entry). Grouped with the coverage methodology page since all
+    // three document the same detour/avoid-segment plugin.
+    { key: 'detour', label: 'Detour', landing: 'bridge-detour-report.html', dir: 'pages', pages: [
+      { f: 'bridge-detour-report.html', t: 'bridge candidates · report' },
+      { f: 'bridge-detour-route.html', t: 'bridge candidates · route' },
+      { f: 'detour-coverage-methodology.html', t: 'coverage points · methodology' },
+    ]},
     { key: 'fa', label: 'Freight Atlas', landing: 'freight-atlas-home.html', dir: 'pages', pages: [
       { f: 'freight-atlas-home.html', t: 'home' }, { f: 'freight-atlas-map.html', t: 'map' },
       { f: 'freight-atlas-gallery.html', t: 'gallery' }, { f: 'freight-atlas-insights.html', t: 'insights' },

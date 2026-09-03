@@ -2,14 +2,20 @@
 // src/dms/packages/dms/CLAUDE.md's Vite Fast Refresh section). Not registered into any site-wide
 // merge pipeline - see ../../routing/components/RouteDetailsPanel.theme.js for the full reasoning;
 // same local-default-spread + getComponentTheme pattern, same safe no-op fallback since nothing
-// registers a `detourDetailsPanel` key into ThemeContext. Covers both DetourDetailsPanel itself and
-// its co-located ImpactBlock sub-component (same file, same theme).
+// registers a `detourDetailsPanel` key into ThemeContext. Covers DetourDetailsPanel, its
+// co-located ImpactBlock sub-component, and DetourModeSwitch (shares this theme object under the
+// modeSwitch* keys below instead of its own sibling file).
 import { ROUTE_COLOR, ROUTE_SECONDARY_COLOR } from "../constants";
 
 export const detourDetailsPanelTheme = {
   // Dynamic (not Tailwind-class) colors, folded in alongside the classNames - single
   // source of truth, constants.js is what other files (map paint, etc.) still read directly.
   colors: { primary: ROUTE_COLOR, secondary: ROUTE_SECONDARY_COLOR },
+
+  // DetourModeSwitch
+  modeSwitchWrapper: "absolute top-4 left-4 z-10 inline-flex bg-white/95 border rounded-md shadow-md p-1 pointer-events-auto gap-1",
+  modeSwitchOption: "text-xs font-medium px-2.5 py-1.5 rounded text-gray-500 hover:bg-gray-100 cursor-pointer",
+  modeSwitchOptionActive: "text-xs font-medium px-2.5 py-1.5 rounded bg-blue-600 text-white cursor-pointer",
 
   panel: "absolute bottom-4 left-4 right-4 sm:right-auto z-10 w-auto sm:w-80 max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/95 border rounded-md shadow-md p-3 text-sm pointer-events-auto",
   title: "font-bold mb-1",

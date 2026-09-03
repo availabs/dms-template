@@ -1,5 +1,5 @@
 import React from "react";
-import { get } from "lodash-es";
+import { get, set } from "lodash-es";
 import { MapEditorContext } from "../../../../dms/packages/dms/src/patterns/mapeditor/context";
 import { CMSContext } from "../../../../dms/packages/dms/src";
 
@@ -17,6 +17,7 @@ import { resolveEdgeAtPoint } from "./hooks/resolveEdgeAtPoint";
 import { EDGES_LAYER_KEY } from "./constants";
 import { DetourDetailsPanel } from "./components/DetourDetailsPanel";
 import { ClosureDensityPanel } from "./components/ClosureDensityPanel";
+import { DetourModeSwitch } from "./components/DetourModeSwitch";
 
 // Simple detour mode's endpoint picker is resolved server-side entirely
 // (resolveDetourEndpoints.js -> POST .../trsp-memory-detour-endpoints ->
@@ -96,6 +97,9 @@ const Comp = ({ state, setState, map }) => {
   const pickPairTesting = multiModeOverride !== undefined
     ? multiModeOverride
     : Boolean(get(state, `${pluginDataPath}['pick-pair-testing']`, false));
+  const setMultiMode = (val) => setState((draft) => {
+    set(draft, `${pluginDataPath}['multi-mode']`, val);
+  });
 
   const {
     routes, baselineRoutes, selectedVariant, setSelectedVariant,
@@ -339,44 +343,56 @@ const Comp = ({ state, setState, map }) => {
     clearPickedPair();
   };
 
+  // DetourModeSwitch is the DMS-page-only Simple/Multi control - MapEditor keeps its own
+  // internalPanel.jsx toggles unchanged.
+  const modeSwitch = !isMapEditor && (
+    <DetourModeSwitch mode={isDensityMode ? "multi" : "simple"} onChange={(mode) => setMultiMode(mode === "multi")} />
+  );
+
   if (isDensityMode) {
     return (
-      <ClosureDensityPanel
-        selectedSegment={selectedSegment}
-        canAnalyze={Boolean(resolvedOgcFid) && !hasResult}
-        loading={densityLoading}
-        phase={densityPhase}
-        error={densityError}
-        resolveError={segmentResolveError}
-        density={density}
-        onAnalyze={handleAnalyze}
-        onReset={handleReset}
-        pickPairTesting={pickerActive}
-        pickedStart={pickedStart}
-        pickedEnd={pickedEnd}
-        pickedRoute={pickedRoute}
-        pickedRouteLoading={pickedRouteLoading}
-        pickedRouteError={pickedRouteError}
-        onClearPickedPair={clearPickedPair}
-      />
+      <>
+        {modeSwitch}
+        <ClosureDensityPanel
+          selectedSegment={selectedSegment}
+          canAnalyze={Boolean(resolvedOgcFid) && !hasResult}
+          loading={densityLoading}
+          phase={densityPhase}
+          error={densityError}
+          resolveError={segmentResolveError}
+          density={density}
+          onAnalyze={handleAnalyze}
+          onReset={handleReset}
+          pickPairTesting={pickerActive}
+          pickedStart={pickedStart}
+          pickedEnd={pickedEnd}
+          pickedRoute={pickedRoute}
+          pickedRouteLoading={pickedRouteLoading}
+          pickedRouteError={pickedRouteError}
+          onClearPickedPair={clearPickedPair}
+        />
+      </>
     );
   }
 
   return (
-    <DetourDetailsPanel
-      selectedSegment={selectedSegment}
-      canGetDetour={Boolean(startEnd) && Boolean(resolvedOgcFid) && !hasResult}
-      loading={loading || resolving}
-      error={error}
-      resolveError={resolveError || segmentResolveError}
-      routes={routes}
-      baselineRoutes={baselineRoutes}
-      selectedVariant={selectedVariant}
-      onSelectVariant={setSelectedVariant}
-      onGetDetour={handleGetDetour}
-      onReset={handleReset}
-      startEnd={startEnd}
-    />
+    <>
+      {modeSwitch}
+      <DetourDetailsPanel
+        selectedSegment={selectedSegment}
+        canGetDetour={Boolean(startEnd) && Boolean(resolvedOgcFid) && !hasResult}
+        loading={loading || resolving}
+        error={error}
+        resolveError={resolveError || segmentResolveError}
+        routes={routes}
+        baselineRoutes={baselineRoutes}
+        selectedVariant={selectedVariant}
+        onSelectVariant={setSelectedVariant}
+        onGetDetour={handleGetDetour}
+        onReset={handleReset}
+        startEnd={startEnd}
+      />
+    </>
   );
 };
 

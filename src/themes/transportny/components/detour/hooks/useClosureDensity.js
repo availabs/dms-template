@@ -2,6 +2,37 @@ import { useCallback, useRef, useState } from "react";
 import { resolveClosureDensityPoints, resolveClosureDensityRoutes } from "./resolveClosureDensity";
 import { DENSITY_NUM_CANDIDATES } from "../constants";
 
+// Session-scoped cache for a finished analysis's full result (points + tally, the GeoJSON-bearing
+// shape) - re-analyzing the SAME segment (e.g. the author switches modes and comes back, or
+// re-clicks "Analyze coverage" without an intervening "Clear analysis") skips both backend calls
+// entirely instead of re-paying the full search cost. Keyed by ogcFid + costObjective so the two
+// objectives never collide. sessionStorage (not localStorage) - survives a reload within the same
+// tab, cleared with the rest of the session, never leaks across tabs/devices as a stale copy.
+const CACHE_PREFIX = "detour-density-cache:";
+const cacheKey = (ogcFid, costObjective) => `${CACHE_PREFIX}${ogcFid}:${costObjective}`;
+const readCache = (key) => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null; // storage unavailable/corrupt - just skip the cache, don't fail analysis over it
+  }
+};
+const writeCache = (key, value) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // quota exceeded or storage unavailable - the analysis still succeeded, only the cache is lost
+  }
+};
+const clearCache = (key) => {
+  try {
+    sessionStorage.removeItem(key);
+  } catch {
+    // no-op
+  }
+};
+
 // Fetch lifecycle for the closure coverage / density analysis mode - own state, mirrors
 // useTrspRoute.js's shape but for the two-step aggregated backend calls (points first, then route
 // tallying - see resolveClosureDensity.js) instead of a per-direction route pair. `density` is
@@ -19,15 +50,31 @@ export const useClosureDensity = (pgEnv) => {
   const [error, setError] = useState(null);
 
   const requestIdRef = useRef(0);
+  // The segment (+ cost objective) the currently-shown `density` belongs to - reset() needs this
+  // to know which cache entry to purge, since it only receives no arguments from the caller.
+  const activeCacheKeyRef = useRef(null);
 
-  const analyze = useCallback((ogcFid) => {
+  const analyze = useCallback((ogcFid, costObjective = "distance") => {
+    const key = cacheKey(ogcFid, costObjective);
+    activeCacheKeyRef.current = key;
+
+    const cached = readCache(key);
+    if (cached) {
+      requestIdRef.current++; // invalidate any in-flight request from a previous analyze() call
+      setDensity(cached);
+      setLoading(false);
+      setPhase(null);
+      setError(null);
+      return;
+    }
+
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setPhase("points");
     setError(null);
     setDensity(null);
 
-    resolveClosureDensityPoints(ogcFid, pgEnv, DENSITY_NUM_CANDIDATES)
+    resolveClosureDensityPoints(ogcFid, pgEnv, DENSITY_NUM_CANDIDATES, costObjective)
       .then((pointsResult) => {
         if (requestIdRef.current !== requestId) return;
         setDensity(pointsResult); // candidate markers can render now, before the tally finishes
@@ -37,11 +84,13 @@ export const useClosureDensity = (pgEnv) => {
         if (!startNodeIds.length || !endNodeIds.length) {
           throw new Error("No valid candidate points found for this segment.");
         }
-        return resolveClosureDensityRoutes(ogcFid, pgEnv, startNodeIds, endNodeIds).then((tallyResult) => {
+        return resolveClosureDensityRoutes(ogcFid, pgEnv, startNodeIds, endNodeIds, costObjective).then((tallyResult) => {
           if (requestIdRef.current !== requestId) return;
-          setDensity((prev) => ({ ...prev, ...tallyResult }));
+          const full = { ...pointsResult, ...tallyResult };
+          setDensity(full);
           setPhase(null);
           setLoading(false);
+          writeCache(key, full); // only cache a genuinely completed analysis, never a partial one
         });
       })
       .catch((err) => {
@@ -55,6 +104,8 @@ export const useClosureDensity = (pgEnv) => {
 
   const reset = useCallback(() => {
     requestIdRef.current++;
+    if (activeCacheKeyRef.current) clearCache(activeCacheKeyRef.current);
+    activeCacheKeyRef.current = null;
     setDensity(null);
     setPhase(null);
     setError(null);
