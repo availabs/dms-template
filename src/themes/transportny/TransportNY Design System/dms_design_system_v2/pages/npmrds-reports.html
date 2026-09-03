@@ -18,6 +18,20 @@
   Replaces the legacy everything-table. The library holds 869 reports (32 already rebuilt as
   DMS pages), so the page is organised around STARTING one and FINDING one — not listing them all.
 
+  ═══ REVISION 3.1 · 2026-09-03 (Alex) — DESIGN-ONLY EXPERIMENT ══════════════════════════════
+  The "N routes · N graphs" counts line is REMOVED from all 12 template cards, to see what the
+  cards look like with that room given to the description (Alex: "in the design only I want to
+  see what it looks like to remove the num routes num graphs text"). Each card's foot is now the
+  bare "use template →" run on its hairline, and the description's clamp goes 2 → 3 lines so the
+  freed row is spent on the copy rather than on a shorter card (cards 141 → 143px at 1440 with the
+  3-line clamp; 127px with the clamp left at 2). A measured side effect worth knowing: the difficulty
+  chip under the plate used to overlap that counts line — by 4.3px on beginner/advanced cards and
+  33.9px on the two INTERMEDIATE cards (Playwright, 1440) — so the removal also resolves a
+  collision the design was carrying. Also 2026-09-03 (Alex): the FOOTER drops its "route-comparison"
+  link and the word "DMS" from its copy ("© NYSDOT · TransportNY v0.2"). Alex approved the counts removal the same day ("I like removing the graph /
+  routes text") and it is PORTED to the live page: the template Cards drop `counts_label`, the
+  description takes `proseSMClamp3`, and the foot rule moves onto the "use template →" cell.
+
   ═══ REVISION 3 · 2026-09-02 (Alex) ═══════════════════════════════════════════════════════
   THE PAGE IS NOW THE TEMPLATES BAND, AND NOTHING BELOW IT. Removed, all requested:
     · § 02 YOUR REPORTS ("Pick up where you left off.") — the three owned-report cards and the
@@ -316,9 +330,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Single Route</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 11 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -343,9 +356,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">One Week Study</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This template provides speed information for a route or corridor across a single week — the synthetic drive-through, at percentile speeds.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This template provides speed information for a route or corridor across a single week — the synthetic drive-through, at percentile speeds.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 8 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -356,9 +368,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Annual Average Study</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 9 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -384,9 +395,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Single Day (Advanced)</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 7 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -410,9 +420,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Year Over Year</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report shows the travel time and average hours of delay for a single route across multiple years. The report is intended to give the analyst a year over year look at changes to average hours of delay and travel times.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This report shows the travel time and average hours of delay for a single route across multiple years. The report is intended to give the analyst a year over year look at changes to average hours of delay and travel times.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 21 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -427,9 +436,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">This Month vs. Last Month vs. Last Year</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 27 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -444,9 +452,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Monthly Congestion</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report is for analyzing congestion by comparing speed and travel time across all months of a single year. It is intended to give the analyst a monthly view of a particular route over a year.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This report is for analyzing congestion by comparing speed and travel time across all months of a single year. It is intended to give the analyst a monthly view of a particular route over a year.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 16 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -460,9 +467,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Monthly Speed Comparisons</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">For route performance comparing the latest full year to all-time, and analyzing the performance by month for the latest year.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">For route performance comparing the latest full year to all-time, and analyzing the performance by month for the latest year.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 13 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -484,9 +490,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Snapshot</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">3 routes · 17 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -501,9 +506,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Seasonality</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report analyzes seasonal behavior of a selected route. It compares data for a season against the full year. The report looks at average speeds and congestion.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This report analyzes seasonal behavior of a selected route. It compares data for a season against the full year. The report looks at average speeds and congestion.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">1 route · 22 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -518,9 +522,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Bi-directional</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">This report is designed to look at the behavior of two directions of a bi-directional corridor. It is set up to show yearly averages for each year of the NPMRDS.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">This report is designed to look at the behavior of two directions of a bi-directional corridor. It is set up to show yearly averages for each year of the NPMRDS.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">2 routes · 23 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -534,9 +537,8 @@
                   </div>
                   <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[15px] leading-[1.3] text-[#0F1722] mt-1">Weekly Average</div>
-                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-2">No description recorded. Three graphs — an average weekday profile with the weekend separated out — but nothing written down about when to reach for it.</p>
+                    <p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1 flex-1 line-clamp-3">No description recorded. Three graphs — an average weekday profile with the weekend separated out — but nothing written down about when to reach for it.</p>
                     <div class="mt-2 pt-2 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">
-                      <span class="tabular-nums">2 routes · 3 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
@@ -552,13 +554,12 @@
                 <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
                 <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
                 <a href="npmrds-report.html" class="hover:text-slate-900">report</a>
-                <a href="route-comparison.html" class="hover:text-slate-900">route-comparison</a>
                 <a href="map-21.html" class="hover:text-slate-900">map-21</a>
                 <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
                 <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
 
               </div>
-              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY v0.2</span>
             </div>
           </footer>
 

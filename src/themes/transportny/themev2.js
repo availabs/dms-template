@@ -71,7 +71,7 @@ const textSettings = {
       "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
       "kicker", "cardTitle", "cardTitleSM", "labelSM", "labelMD", "btnPrimary", "btnOutline", "toggleOn", "toggleOff",
-      "viewTabOn", "viewTabOff", "btnOutlineLG",
+      "viewTabOn", "viewTabOff", "btnOutlineLG", "hairline",
       "statNum", "statXL", "statLG", "statMD", "buttonRow", "kickerXS",
     ],
   },
@@ -224,7 +224,17 @@ const textSettings = {
     // btnOutlineLG — the header's "New route": btnOutline's shape at the controls row's h-10,
     // ink text, hover border in the Reports field colour (mockup: `h-10 px-3.5 rounded-[6px]
     // bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]`).
-    btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
+    // `whitespace-nowrap` (2026-09-03): the owner put New route in a size-1 section (92px at
+    // 1440, 79px at 1280) and the 84.7px button wrapped to "NEW / ROUTE"; a button label never
+    // wraps, so it overflows its column instead — 5.7px / 19px into the band's 32px right margin.
+    btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! whitespace-nowrap bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
+    // hairline — a 1px rule drawn by an EMPTY styled paragraph, for the "rule fills the rest of
+    // the line" idiom (npmrds-reports.html group heads: `<span class="flex-1 h-px bg-zinc-950/10">`).
+    // A lexical paragraph cannot draw a rule that stops at its own line, but a layout-container
+    // ITEM can: put this paragraph in a `minmax(0,1fr)` column beside the head's runs and it
+    // stretches to the remaining width. `h-px!` + `overflow-hidden` clip the `<br>` Lexical emits
+    // for an empty paragraph; `my-0!` beats the paragraph's own vertical margin.
+    hairline: `block w-full h-px! min-h-0! my-0! overflow-hidden leading-none bg-zinc-950/10`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
@@ -501,6 +511,19 @@ const layoutGroup = {
       name: "footer",
       wrapper1: "w-full bg-white border-t border-zinc-950/10",
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between",
+      wrapper3: "",
+    },
+    {
+      // footer_full — `footer` for a band that HOSTS SECTIONS. `footer`'s wrapper2 is the mockup's
+      // own inner div (`flex items-center justify-between`), right for hand-placed children but
+      // a flex ROW that SHRINK-WRAPS a sectionArray grid to its content (measured 799.5px inside
+      // a 1104px column on npmrds/reports, 2026-09-03), so a footer section could never reach the
+      // column's right edge. This one stacks, like `content`. ADDITIVE — the five other pages on
+      // `footer` (npmrds home/macro, tsmo home/reliability/incident_search) are untouched until
+      // they opt in.
+      name: "footer_full",
+      wrapper1: "w-full bg-white border-t border-zinc-950/10",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex flex-col",
       wrapper3: "",
     },
     {
@@ -1280,6 +1303,11 @@ const dataCard = {
       // the brand's `proseSM` rung; `text-slate-600` is the design's body ink, the
       // same disagreement proseSMInk exists to resolve.
       proseSMClamp2: `${F_SANS} text-[12.5px]! leading-[1.5]! text-slate-600! line-clamp-2`,
+      // proseSMClamp3 — the same run at THREE lines: the template card's description once the
+      // "N routes · N graphs" line was dropped (npmrds-reports.html REVISION 3.1, 2026-09-03) and
+      // its row given to the copy. ADDITIVE beside proseSMClamp2, which the picker's result rows
+      // still use at two lines.
+      proseSMClamp3: `${F_SANS} text-[12.5px]! leading-[1.5]! text-slate-600! line-clamp-3`,
       // proseSMClamp2's ONE-LINE sibling, in the placeholder colour — the search trigger's
       // prompt. The mockup gives that prompt `truncate` (one line, ellipsis) because the
       // trigger is a fixed-height control; a Card value cell has no truncation knob at all
@@ -1406,6 +1434,12 @@ const dataCard = {
       // theme's linkMono* styles are only reachable from a Lexical button node.
       // ADDITIVE: metaXS is unchanged, so every meta cell renders as before.
       metaXSLink: `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-[#1F3F8F]! no-underline!`,
+      // linkMonoFoot — the page FOOTER's link run as a Card LINK cell (npmrds-reports.html
+      // footer: `font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500
+      // hover:text-slate-900`). Same reason metaXSLink exists: a link cell's token lands on
+      // the anchor and only THIS map is reachable; the `button` theme's linkMono* styles are
+      // Lexical-only. Additive (2026-09-03).
+      linkMonoFoot: `${F_MONO} text-[10.5px]! uppercase tracking-[0.16em] text-slate-500! hover:text-slate-900 no-underline!`,
       // plateEmpty — patterns.html §14's "no preview" tile: the 4:5 plate footprint,
       // kept so the row stays on rhythm, saying what is missing rather than showing a
       // broken image. Box-shaped tokens must carry their own width (`w-full!`) and
@@ -1427,7 +1461,8 @@ const dataCard = {
       // that renders; the textSettings copy keeps the Lexical picker and the dropdown in sync.
       viewTabOn:  `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-[#37576B] text-white! no-underline! rounded-l-[6px]`,
       viewTabOff: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-l-0 border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-r-[6px] transition-colors`,
-      btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
+      btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! whitespace-nowrap bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
+      hairline: `block w-full h-px! min-h-0! my-0! overflow-hidden leading-none bg-zinc-950/10`,
       // ── Unit suffix in a list row (npmrds-home § 01: `ratio` / `veh-hr` / `tons/yr`).
       // ADDITIVE, not a change to metaXS: the design draws this run at `text-[9px]`
       // where metaXS is 9.5px, and metaXS is shared by as-of badges and card meta all

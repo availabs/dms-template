@@ -1,6 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Build the NPMRDS REPORTS page — pattern `npmrds_sub` (2100394), slug
-// `converted_reports` (page 2188366), on npmrdsv5 / dev2 — from the converged mockup
+// Build the NPMRDS REPORTS page — pattern `npmrds_sub` (2100394), slug `reports`
+// (page 2188366 — `converted_reports` until the owner renamed it in the admin UI on
+// 2026-09-02, which re-slugged its 48 children to `reports/…` too), on npmrdsv5 / dev2 —
+// from the converged mockup
 //   src/themes/transportny/TransportNY Design System/dms_design_system_v2/pages/npmrds-reports.html
 //   (REVISION 3, 2026-09-02 — the page is the templates band and nothing below it: a
 //    header row of title · view toggle · search bar · New report · New route, § 01
@@ -48,9 +50,10 @@
 //
 // LAYOUT (the mockup's bands → DMS primitives)
 //  · 3 bands: header / §01 templates / footer.
-//  · Header: title (2) · view toggle Card (2) · ChooseReportButton search bar (4) ·
-//    CreateReportButton (2) · New route Card (2) = 12. The HEADER block below carries
-//    the measured width budget.
+//  · Header: title (2) · view toggle Card (2) · ChooseReportButton search bar (5) ·
+//    CreateReportButton (2) · New route Card (1) = 12 — the owner widened the search bar
+//    and narrowed New route by hand on 2026-09-03; adopted here. The HEADER block below
+//    carries the measured width budget.
 //  · § 01 is revision 2's, unchanged except for the dropped route CTA: the mockup's
 //    three narrow template groups (before-after 3 · floating-car 6 · events 3) each
 //    draw their sub-head INSIDE the group box. A Card's static cells repeat per record,
@@ -106,7 +109,7 @@ const ENV = {
 };
 const CLI = "src/dms/packages/dms/cli/bin/dms.js";
 const PATTERN = "npmrds_sub";
-const SLUG = "converted_reports";
+const SLUG = "reports"; // was "converted_reports" until 2026-09-02 (owner rename)
 const TITLE = "Converted Reports";
 // The page this builder owns. Pinned (feedback_stale_builders_check_before_rerun: a find-or-create
 // on a truncated `page list` minted a duplicate congestion page once) — the slug lookup below must
@@ -129,9 +132,7 @@ const tmp = (name, obj) => {
 // period rendered ink rgb(15,23,34) against the mockup's rgb(202,138,4).
 const GOLD = "color:#CA8A04";
 const text = (t, format = 0, style = "") => ({ type: "text", version: 1, detail: 0, format, mode: "normal", style, text: t });
-const para = (...children) => ({ type: "paragraph", version: 1, direction: "ltr", format: "", indent: 0, textFormat: 0, textStyle: "", children });
 const styled = (styleKey, ...children) => ({ type: "styled-paragraph", version: 1, direction: "ltr", format: "", indent: 0, textFormat: 0, textStyle: "", styleKey, children });
-const button = (linkText, path_, style = "plain") => ({ type: "button", version: 1, linkText, path: path_, style, keepSearchParams: false });
 const litem = (...children) => ({ type: "layout-item", version: 1, children });
 // ONE container, whose items hold only leaf styled()/para() nodes. Nesting a
 // container inside an item makes Lexical mangle it at render time
@@ -140,6 +141,11 @@ const layout = (templateColumns, items) => ({ type: "layout-container", version:
 const lexical = (...nodes) => JSON.stringify({
   bgColor: "rgba(0,0,0,0)", isCard: "", showToolbar: false,
   text: { root: { type: "root", version: 1, direction: "ltr", format: "", indent: 0, children: nodes } },
+});
+// A BARE lexical document — the shape a lexical CARD CELL's staticValue must have
+// (LexicalView's parseValue tests `JSON.parse(value)?.root`).
+const lexDoc = (...nodes) => JSON.stringify({
+  root: { type: "root", version: 1, direction: "ltr", format: "", indent: 0, children: nodes },
 });
 
 function assertFlat(elementData, where) {
@@ -157,29 +163,34 @@ function assertFlat(elementData, where) {
 const L = {
   home: "/home",
   macro: "/macro",
-  reports: "/converted_reports",
-  reportIndex: "/converted_reports/reports",
+  // this page (slug renamed 2026-09-02). The old "report index" child 2208581
+  // (`converted_reports/reports`, the AVAIL-curated grid) was deleted the same day, so the
+  // footer's "report" link now points here.
+  reports: "/reports",
   routeCreation: "/route_creation",
-  comparison: "/route_comparison",
   map21: "/map_21",
   docOverview: "/docs/npmrds/overview",
 };
 
-// ── the two-line group head (numeral · name), one per template category ──────
+// ── the group head (numeral · name · rule), one per template category ───────
 // The mockup draws a hairline rule filling the rest of the head's line
-// (`flex-1 h-px bg-zinc-950/10`). A lexical run cannot draw a rule that stops at
-// its own line, so the rule is dropped — logged once for all five heads.
+// (`flex-1 h-px bg-zinc-950/10`). A lexical RUN cannot draw a rule that stops at its own
+// line, but a layout-container COLUMN can (Alex, 2026-09-03: "use columns in these lexical
+// components"): the third item is an empty paragraph styled `hairline` (a 1px
+// `bg-zinc-950/10` block, additive themev2 token) in a `minmax(0,1fr)` column, so it takes
+// the rest of the line; `items-center` puts it on the head's midline like the mockup's.
 // `!mt-0 !mb-0` is load-bearing: a layout-container ships the Lexical paragraph's own
 // vertical margin, and on a ONE-LINE head that margin is most of the section's height
 // (measured 74.4px live against the mockup's 24px row before this).
 const groupHead = (num, name) => lexical(
-  layout("w-full !mt-0 !mb-0 items-center grid-cols-1 md:grid-cols-[max-content_minmax(0,1fr)] gap-x-3", [
+  layout("w-full !mt-0 !mb-0 items-center grid-cols-1 md:grid-cols-[max-content_max-content_minmax(0,1fr)] gap-x-3", [
     // `kickerSM`, not `kicker`: P7 measured the lexical `kicker` at 11px on a 22.4px line
     // box against the mockup's 10.5px/15.75px, because `kicker` declares no leading and the
     // richtext wrapper's ABSOLUTE `leading-[22.4px]` inherits into it. `kickerSM` carries
     // the mockup's own numeral class (10.5px / leading-[1.5] / 0.2em / #CA8A04).
     litem(styled("kickerSM", text(num))),
     litem(styled("labelMD", text(name))),
+    litem(styled("hairline", text(""))),
   ]),
 );
 
@@ -221,6 +232,11 @@ const calc = (name, extra = {}) =>
 // an EMPTY attribute list, and the server errors (card-layout.md "An all-static card still
 // fires a query — seed it"; build_npmrds_home.mjs uses the same idiom).
 const SEED = name => calc(`count(1) as ${name}`, { selectOnly: true, hideHeader: true });
+// `origin:'static'` + `type:'lexical'` — the read-only richtext cell, for chrome that needs
+// mixed runs (the title's ink word + gold period). ⚠ A lexical cell cannot be a link.
+const lexCell = (name, nodes, extra = {}) =>
+  ({ name, origin: "static", type: "lexical", staticValue: lexDoc(...nodes),
+     show: true, hideHeader: true, justify: "left", cellPadding: 0, ...extra });
 // A bound column cell.
 const col = (name, valueFontStyle, extra = {}) =>
   ({ name, display_name: name, key: name, type: "text", formatFn: " ",
@@ -237,32 +253,38 @@ const SEARCH_KEY = "search";
 // ── a template card ──────────────────────────────────────────────────────────
 // The mockup's card is `flex gap-3 p-3.5`: a 1/4-width tile column on the left
 // (plate over the difficulty chip) and a text column on the right (name /
-// description / a bordered foot of counts + "use template →"). A cells grid at
-// `cellsGridSize: 4` IS that shape — the tile is one track, the text spans three —
-// and one grid shared by every card in the group is what makes the four foot rules
-// line up, which four separate sections could never do.
+// description / a bordered foot holding "use template →" — the "N routes · N graphs" run
+// that used to share that foot was dropped in REVISION 3.1, 2026-09-03, and its row given
+// to a third line of description; Alex approved it in the mockup and asked for it live). A TWO-track cells grid
+// `minmax(0,1fr) minmax(0,3fr)` with `cellsColumnGap: 12` IS that shape — the tile track
+// is 56px and the text track 168px in a 236px card at 1440, against the mockup's 57.5 /
+// 160.5 with its `gap-3` — and one grid shared by every card in the group is what makes
+// the foot rules line up, which separate sections could never do. (Rev 2 used four equal
+// tracks with the text spanning three and a 4px gap, which put the text column 9.5px
+// closer to the plate than the mockup and widened the chip/counts overlap to 14.9px;
+// measured 2026-09-03.)
 //
 //   ┌──────────┬──────────────────────────────┐
-//   │ plate    │ difficulty          (span 3) │   rowsTemplate 'max-content'
-//   │ (rowspan │ name                (span 3) │   rowsTemplate 'max-content'
-//   │  4)      │ description         (span 3) │   rowsTemplate '1fr'  ← absorbs slack
-//   │          ├──────────────────────────────┤
-//   │          │ counts_label        (span 3) │   rowsTemplate 'max-content'
-//   │          │        use template →(span 3)│   rowsTemplate 'max-content'
+//   │ plate    │ name                         │   rowsTemplate 'max-content'
+//   │ (rowspan │ description (3 lines)        │   rowsTemplate '1fr'  ← absorbs slack
+//   │  2)      ├──────────────────────────────┤
+//   │ chip     │                use template →│   rowsTemplate 'max-content'
 //   └──────────┴──────────────────────────────┘
+//     1fr           3fr   (cellsColumnGap 12 = the mockup's gap-3)
 //
-// counts and the CTA take a row each rather than sharing one. The mockup's foot is
-// `flex flex-wrap gap-y-0.5`, i.e. it ALREADY wraps to two lines at this column
-// width; live they were two grid tracks of ~90px and ~45px, so both wrapped
-// internally into 2- and 3-line stacks. One row each reproduces the mockup's own
-// wrapped rendering and costs ~14px.
+// The foot is the "use template →" cell alone, carrying the rule (`cellBorderTop`) the
+// mockup draws over its foot line. (Rev 2 gave the counts and the CTA a row each because
+// the two wrapped internally at track width; with the counts gone that note is history.)
 //
-// The difficulty chip sits in the TEXT column, not under the plate as the mockup
-// draws it. Measured 2026-08-19: the tile track is one of four `minmax(0,1fr)`
-// tracks (~45px in a 3-col card), and `BEGINNER` at the design's 9.5px/0.18em is
-// ~62px — the chip overflowed its track and collided with the counts beside it.
-// patterns.html §14's own plate card puts the chip row at the top of the text
-// column, so this is the design system's other drawn placement, not an invention.
+// The difficulty chip sits UNDER THE PLATE, in the tile column, as the mockup draws it
+// (Alex, 2026-09-03: "the tags … are below the preview in the design and I think that looks
+// better"). Rev 2 had moved it into the text column because the chip overflows its ~56px
+// track — and it still does: measured on the MOCKUP at 1440, the chip overlaps the counts
+// line by 4.3px on beginner/advanced and 33.9px on INTERMEDIATE, so the design carries the
+// same collision; the counts-line removal Alex asked to see in the mockup is what resolves
+// it — and with the counts line gone (REVISION 3.1) the chip has the whole foot row to
+// overflow into: it now meets only the right-aligned "use template →". The plate spans
+// rows 1–2 so the chip (row 3) lands right under it.
 //
 // `cellsRowsTemplate` is the mockup's `flex-1` on the description: the row above the
 // foot absorbs the card's leftover height, so the foot stays pinned to the bottom
@@ -272,20 +294,20 @@ const templateCells = () => ([
   // layout-derived shape needs a new column type, so the tile renders patterns.html
   // §14's "no preview" state. The column is the plate's own track: swapping this
   // one cell for an image / shape cell is the whole change.
-  stat("tpl_plate", "no preview", "plateEmpty", { cellSpan: 1, cellRowSpan: 5, justify: "center" }),
+  stat("tpl_plate", "no preview", "plateEmpty", { cellRowSpan: 2, justify: "center" }),
+  col("name", "labelMD"),
+  // Three lines, not two: the description owns the row the counts line used to take.
+  col("description", "proseSMClamp3", { wrapText: true }),
   // difficulty is beginner / intermediate / advanced on 9 of 12 rows and '' on the
   // other 3 — StatusPillView returns null for an empty value, which is exactly the
-  // mockup's chip-less card (tpl 77 and tpl 278 draw no chip).
+  // mockup's chip-less card (tpl 77 and tpl 278 draw no chip). Row 3, track 1.
   { name: "difficulty", display_name: "difficulty", key: "difficulty", type: "status_pill",
-    show: true, hideHeader: true, justify: "left", cellSpan: 3,
+    show: true, hideHeader: true, justify: "left",
     pillColors: { beginner: "chip_meta", intermediate: "chip_meta", advanced: "chip_meta" } },
-  col("name", "labelMD", { cellSpan: 3 }),
-  col("description", "proseSMClamp2", { cellSpan: 3, wrapText: true }),
-  col("counts_label", "metaXS", { cellSpan: 3, cellBorderTop: true }),
-  // The card's link. A Card's link affordance is per cell, so the whole-card anchor
-  // the mockup draws is not expressible (card-layout.md "A design row that is ONE
-  // <a>") — logged. `page_path` is the working link column on 2208581.
-  col("page_path", "metaXSLink", { cellSpan: 3, justify: "right",
+  // The card's link — and the foot rule. A Card's link affordance is per cell, so the
+  // whole-card anchor the mockup draws is not expressible (card-layout.md "A design row
+  // that is ONE <a>") — logged. `page_path` is the working link column.
+  col("page_path", "metaXSLink", { justify: "right", cellBorderTop: true,
     isLink: true, linkText: "use template →" }),
 ]);
 // `cardStyle: 'tile'` is the design's own card shell, already in the theme:
@@ -299,12 +321,18 @@ const templateCells = () => ([
 //    of the card's 5 cell rows 12px of dead bottom padding (60px per card).
 // Named styles inherit missing keys from styles[0] (useTheme.js getComponentTheme), so
 // every token the cells name — plateEmpty, labelMD, proseSMClamp2, metaXSLink — still
-// resolves. `cardsPadding: 0` because the tile's own `p-4` IS the card's inset.
+// resolves. `cardsPadding: 14` is the card's inset — the mockup's `p-3.5`. Revision 2 set
+// it to 0 believing the tile's own `p-4` was the inset; measured 2026-09-02 (Alex: "the cards
+// linking to each report need more padding around the content"): an explicit `cardsPadding`
+// is emitted as an inline `padding` on the SAME element the tile's `p-4` class sits on, and
+// an explicit value — including 0 — always wins (card-layout.md), so the cards had no inset
+// at all (plate 7px from the border, computed padding 0px).
 const templateCard = (categoryTag, across) => card(REPORTS, templateCells(), {
   cardStyle: "tile",
-  cardsGridSize: across, cardsGridGap: 16, cardBorder: false, cardsPadding: 0,
-  cellsGridSize: 4, cellsGridGap: 4, cellsPadding: 0,
-  cellsRowsTemplate: "max-content max-content 1fr max-content max-content",
+  cardsGridSize: across, cardsGridGap: 16, cardBorder: false, cardsPadding: 14,
+  cellsGridSize: 2, cellsColumnGap: 12, cellsRowGap: 4, cellsPadding: 0,
+  cellsTracksTemplate: "minmax(0,1fr) minmax(0,3fr)",
+  cellsRowsTemplate: "max-content 1fr max-content",
   pageSize: 12, readyToLoad: true,
 }, { op: "AND", groups: [{ col: "tags", op: "filter", value: [categoryTag] }] });
 
@@ -332,7 +360,11 @@ const GROUPS = [
   // A footer at position 'bottom' renders full-viewport-width OUTSIDE the layout and
   // would not line up with the sidenav-offset content column — so it is the last
   // CONTENT band wearing the `footer` layoutGroup style (§ 4.2).
-  { name: B.footer,   index: 2, theme: "footer",       position: "content", displayName: "Footer" },
+  // `footer_full`, not `footer`: the shared `footer` band style's wrapper2 is a flex ROW that
+  // shrink-wraps the section grid to its content (799.5px in a 1104px column, measured
+  // 2026-09-03), so the © copy could never sit at the column's right edge. `footer_full`
+  // (additive themev2 style) stacks like `content`.
+  { name: B.footer,   index: 2, theme: "footer_full",  position: "content", displayName: "Footer" },
 ];
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -344,7 +376,7 @@ const SECTIONS = [
   // ══════════ HEADER ══════════
   // Revision 3's controls row is, in order: title · view toggle · search bar · New report ·
   // New route — one line at 1600 and 1440 in the mockup, wrapping below ~1300. Live it is FIVE
-  // sections on the 12-col band grid (2 + 2 + 4 + 2 + 2), because each affordance is a different
+  // sections on the 12-col band grid (2 + 2 + 5 + 2 + 1), because each affordance is a different
   // primitive: the toggle is a Card of two static cells, the search bar is the
   // `ChooseReportButton` theme component (a section type), the create affordance is the
   // `CreateReportButton` theme component, and New route is a Card link cell.
@@ -359,18 +391,34 @@ const SECTIONS = [
   // and the search bar (the flexible member) truncates its prompt — the honest equivalent of
   // the mockup's wrap. Logged as deviation 3.
   //
+  // 2026-09-03, owner's hand edits adopted: the search bar is size 5 and New route size 1
+  // (both x-gutters zeroed, so its 84.7px button has 105px at 1600, 92px at 1440 and 79px at
+  // 1280 — with `whitespace-nowrap` on `btnOutlineLG` it overflows the column by 5.7px at 1440
+  // and 19px at 1280 into the band's 32px right margin, instead of wrapping to "NEW / ROUTE").
+  //
   // The FRESHNESS card ("complete through <month>", ClickHouse NPMRDS 583/982) is GONE — a
   // deliberate break with cross-page contract item "freshness line", asked for on 2026-09-02
   // and declared in the mockup's own header note. npmrds-home.html and the MAP-21 pages keep
   // theirs. The header's search-bound match-count Card is gone too: its role (the closed
   // trigger reporting `?search=` and its match count) moved INTO the search bar component.
-  // `top: "0"`: a lexical section pays the theme's 16px richtext padding on top of the 12px
-  // section gutter, so with the default gutter the title's centre sat at y≈50 against the
-  // 40px controls' y≈40 (measured 2026-09-02, /edit at 1440). Zeroing the gutter lands it at
-  // ≈38 — the mockup's `items-center` row within 2px.
-  { group: B.header, size: "2", padding: { left: "0", top: "0" }, data: lexical(
-    styled("displayMDCaps", text("Reports"), text(".", 0, GOLD)),
-  )},
+  // VERTICAL ALIGNMENT (Alex, 2026-09-03: the title and the two buttons "could be better
+  // aligned" with the rest of the line). Before: the row was 83px tall because the lexical
+  // title section paid the richtext `p-4` on top of its gutter, and the four controls hugged
+  // the TOP of that row (y 20–60) while the title's centre sat at ≈38. The mockup's grid is
+  // `items-center`. Live, every header section now takes `height: "fill"` (the section's
+  // content box becomes a flex column filling the row) and centres its own content: the Cards
+  // with `cellsVerticalAlign: "stretch"` + `cellsContentVAlign: "center"`, the two theme
+  // components with `flex-1` + centring on their wrappers (ChooseReportButton /
+  // CreateReportButton .theme.js). The title is a Card too — a static LEXICAL cell carrying the
+  // ink word + gold period — because a lexical SECTION cannot centre and pays 32px of padding.
+  { group: B.header, size: "2", padding: { left: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
+    lexCell("title", [styled("displayMDCaps", text("Reports"), text(".", 0, GOLD))]),
+    SEED("title_seed"),
+  ], {
+    cardStyle: "rowaligned",
+    cellsGridSize: 1, cellsPadding: 0, cardsPadding: 0,
+    cellsVerticalAlign: "stretch", cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
+  }) },
 
   // The VIEW TOGGLE — `Templates | All reports`, the same control the list page draws in the
   // same column with the active side flipped, so the two report surfaces read as two views of
@@ -384,14 +432,14 @@ const SECTIONS = [
   // so "All reports" ships INERT — a static cell with no href — rather than a 404. Flipping it
   // to a link later is one cell: `isLink: true, location: "/converted_reports/all_reports",
   // searchParams: "none"`.
-  { group: B.header, size: "2", padding: { left: "0", right: "0" }, elementType: "Card", data: card(REPORTS, [
+  { group: B.header, size: "2", padding: { left: "0", right: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
     stat("view_templates", "Templates", "viewTabOn"),
     stat("view_all", "All reports", "viewTabOff"),
     SEED("view_seed"),
   ], {
     cellsGridSize: 2, cellsGridGap: 0, cellsPadding: 0, cardsPadding: 0,
     cellsTracksTemplate: "minmax(0,max-content) minmax(0,max-content)",
-    cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
+    cellsVerticalAlign: "stretch", cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
   }) },
 
   // The SEARCH BAR — the `ChooseReportButton` theme component, which opens the React
@@ -404,7 +452,7 @@ const SECTIONS = [
   // results" — the role the removed count Card used to play. It reads the query off
   // `pageState.filters` (the `search` page variable registered in PAGE_FILTERS below), which
   // is why that registry still matters with the Filter section gone from the page body.
-  { group: B.header, size: "4", elementType: "ChooseReportButton", data: "{}" },
+  { group: B.header, size: "5", height: "fill", elementType: "ChooseReportButton", data: "{}" },
 
   // ══ THE CREATE AFFORDANCE — the real `CreateReportButton` theme component ══
   // Not a link and not a Card cell: the component skips PageTemplatePicker's generic
@@ -423,11 +471,12 @@ const SECTIONS = [
   // `flex w-full flex-col items-end` now, site-wide). With that, the gutter to "New route" is
   // this section's right padding + the New route cell's own 12px value padding (`theme.value`
   // is `px-3` and a LINK cell keeps it on the value div while the token lands on the <a>) —
-  // measured 21px with the old `right: "2"` (8px), so the gutter is zeroed and the gap is 12px
+  // measured 21px with the old `right: "2"` (8px), so the gutter is zeroed and the gap is 13px
   // against the mockup's 8. The live page's hand-set `height: "fill"` on this section
   // (2026-08-25) is NOT carried: it stretched the wrapper to the row's tallest section, which
-  // in a row of 40px controls is a no-op.
-  { group: B.header, size: "2", padding: { right: "0" }, elementType: "CreateReportButton", data: "{}" },
+  // in a row of 40px controls is a no-op — but with the row centred on `height: "fill"` today
+  // (see the HEADER note) the section carries `fill` again, for the alignment, not the height.
+  { group: B.header, size: "2", padding: { right: "0" }, height: "fill", elementType: "CreateReportButton", data: "{}" },
 
   // `New route` → the route-creation page (`npmrds_sub` "Route Creation", 2216258, slug
   // `/route_creation`, published — verified 2026-09-02). The live page had already been
@@ -438,16 +487,20 @@ const SECTIONS = [
   //
   // `justify: "left"`, not right: the mockup's action cluster is `gap-2` (8px) between the
   // two buttons; with the create button right-aligned in ITS section and this cell
-  // left-justified in its own, the pair reads as one cluster (12px gap, see above). Right-
+  // left-justified in its own, the pair reads as one cluster (13px gap, see above). Right-
   // justifying this cell would open a ~95px hole between the two (rev-2 P7 measured 137 with
   // the old layout). The trade: the pair ends ~86px short of the band's right edge at 1440,
   // where the mockup has it flush — a 2-column section cannot be narrower than its 184px.
-  { group: B.header, size: "2", padding: { left: "0", right: "0" }, elementType: "Card", data: card(REPORTS, [
+  { group: B.header, size: "1", padding: { left: "0", right: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
     stat("new_route", "New route", "btnOutlineLG", { justify: "left", isLink: true, location: L.routeCreation, searchParams: "none" }),
     SEED("route_seed"),
   ], {
+    // `rowaligned`: a LINK cell keeps `theme.value` (`px-3 pb-3`) on its value div while the token
+    // lands on the <a>, so with the default style the 40px button sat in a 52px box and centred
+    // 6px high (measured 2026-09-03: cy 41 vs the row's 47). `rowaligned` is `px-3` only.
+    cardStyle: "rowaligned",
     cellsGridSize: 1, cellsPadding: 0, cardsPadding: 0,
-    cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
+    cellsVerticalAlign: "stretch", cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
   }) },
 
   // ══════════ § 01 · TEMPLATES ══════════
@@ -459,6 +512,25 @@ const SECTIONS = [
   // The plate LEGEND the mockup draws beside this head (map / bar / line / grid /
   // table swatches) is deliberately NOT built: it documents the preview plate, and
   // the plate is escalation 1. It comes back with the plate.
+  //
+  // SPACING (Alex, 2026-09-02: "takes up too much vertical space and should not be full width
+  // so the text is forced to wrap"). Measured live at 1440 before the fix: section 159px with
+  // the title on a 1104px line and the prose wrapping 1078px + a short orphan line; each of the
+  // three rows was paying the value div's `pb-3` (12px) and the kicker row measured 34px against
+  // the mockup's 16. Two changes: (1) `cardStyle: "rowaligned"` — the dataCard style whose
+  // `value` is `px-3` only, so the rows lose their 12px bottom padding and `cellsRowGap: 6`
+  // carries the mockup's own rhythm (`mb-1` under the kicker row, `mt-2` over the prose);
+  // (2) the three tracks are capped so the grid is 760px wide — the mockup's `max-w-[760px]`
+  // text block — and the title/prose cells (`cellSpan: 3`) wrap at that width rather than at
+  // the section's. ⚠ NO track may carry an INTRINSIC min OR max: a spanning item's own
+  // max-content is distributed into every intrinsic track it spans (CSS Grid §12.5), so
+  // `minmax(0,max-content) minmax(0,max-content) minmax(0,565px)` measured the kicker track at
+  // 282px with the title still on a 1078px line, and `minmax(max-content,70px) …` (intrinsic
+  // MIN) blew the tracks to 590 + 650px and the section 191px past its column. `minmax(0,Npx)`
+  // on all three is the form a spanning cell cannot grow: each track sizes to its own label
+  // (66 / 127 / 154px measured) and then to its cap, the caps sum to 760, and below 760px of
+  // column the tracks shrink together instead of overflowing. The section stays size 12
+  // because a narrower section would let the first group head onto its row.
   { group: B.tpl, size: "12", anchorId: "templates", elementType: "Card", data: card(REPORTS, [
     stat("hd_kicker", "// 01", "kicker"),
     // `unitFontStyle` — see the header trigger: without it `stat_value`'s relative
@@ -469,8 +541,9 @@ const SECTIONS = [
     stat("hd_title", "Start from a question, not a blank page.", "displaySM", { cellSpan: 3 }),
     stat("hd_prose", "Every template arrives pre-wired with the graphs that answer one question — you supply the route and the dates. Date ranges stay editable afterwards: open a route in the report's Routes panel, set the period, then Update.", "proseSMInk", { cellSpan: 3 }),
   ], {
-    cellsGridSize: 3, cellsGridGap: 4, cellsPadding: 0, cardsPadding: 0,
-    cellsTracksTemplate: "minmax(0,max-content) minmax(0,max-content) minmax(0,1fr)",
+    cardStyle: "rowaligned",
+    cellsGridSize: 3, cellsGridGap: 4, cellsRowGap: 6, cellsPadding: 0, cardsPadding: 0,
+    cellsTracksTemplate: "minmax(0,70px) minmax(0,130px) minmax(0,560px)",
     totalLength: 1, fetchMode: "force",
   }, { op: "AND", groups: [{ col: "tags", op: "filter", value: ALL_CATS }] }) },
 
@@ -495,37 +568,33 @@ const SECTIONS = [
   // template card. (The Routes Data source 2107426/2107427 binding it carried is gone with it.)
 
   // ══════════ FOOTER ══════════
-  // Unchanged from revision 2 — it now sits directly under § 01.
-  // The `footer` layoutGroup already carries the band's py-4, so the section's own
-  // gutter is zeroed — otherwise the one-line footer measured 98px against the
-  // mockup's 51.
-  // P7, two changes. (1) `linkMonoRow`, not `plain`: `plain` is a 13px Proxima chrome button on
-  // a fixed `h-9`, where the mockup's footer links are `font-mono text-[10.5px] uppercase
-  // tracking-[0.16em] text-slate-500` with no chrome and no fixed height — that fixed height is
-  // what cost the footer band +23px (74 live vs 51). (2) The links stay INLINE SIBLINGS in ONE
-  // paragraph, which is the only primitive that flows and wraps the way the mockup's
-  // `flex flex-wrap gap-x-6` does — one link per layout-container ITEM was tried and cost
-  // +65.9px at 390, because a grid cannot reflow. `linkMonoRow` is `linkMono` plus `mr-6
-  // last:mr-0`, i.e. the mockup's own 24px gutter, carried by the button because a lexical
-  // button node has no margin knob (six bare `linkMono`s rendered as one run of glued words).
-  { group: B.footer, size: "12", padding: { top: "0", bottom: "0" }, data: lexical(
-    layout("w-full !mt-0 !mb-0 items-center grid-cols-1 md:grid-cols-[minmax(0,max-content)_minmax(0,1fr)_minmax(0,max-content)]", [
-      litem(para(
-        button("home", L.home, "linkMonoRow"),
-        button("macro-view", L.macro, "linkMonoRow"),
-        button("report", L.reportIndex, "linkMonoRow"),
-        button("route-comparison", L.comparison, "linkMonoRow"),
-        button("map-21", L.map21, "linkMonoRow"),
-        button("docs", L.docOverview, "linkMonoRow"),
-      )),
-      litem(para(text(""))),
-      // P7: `metaMD` (12px mono, proper case, slate-600), not `metaXS` (10px UPPERCASE
-      // 0.18em slate-400) — the mockup's copyright line is `font-mono text-[12px]
-      // text-slate-500`, i.e. not a meta LABEL and not uppercased.
-      litem(styled("metaMD", text("© NYSDOT · TransportNY DMS v0.2"))),
-    ]),
-  )},
-
+  // A CARD, not a lexical section (2026-09-03, Alex: the footer "takes up too much vertical
+  // space and the TransportNY should be on the right"). The lexical footer paid the theme's
+  // richtext `p-4` (32px) on top of the band's `py-4`, measuring 92px against the mockup's 51 —
+  // and sat in a shrink-wrapped 800px band (see the `footer_full` note on GROUPS). As a Card
+  // the row is the link run's own 17px: five static LINK cells (`linkMonoFoot`, the mockup's
+  // footer link class, additive dataCard token) in max-content tracks + the © copy
+  // (`metaMD`) right-justified in the `1fr` remainder, so it lands at the column's right edge.
+  // `cellsColumnGap: 0` because `rowaligned`'s value `px-3` already puts 12 + 12 = 24px
+  // between neighbouring links — exactly the mockup's `gap-x-6` — and the same 12px inset the
+  // header title and the § 01 head carry. Two copy changes the same day, in the mockup too:
+  // the "route-comparison" link is gone, and the copy reads "TransportNY v0.2", not "TransportNY
+  // DMS v0.2". (Rev 2's lexical footer and its P7 measurements — `linkMonoRow`, the one-paragraph
+  // inline-siblings rule, `metaMD` — are history now; the tokens stay for other pages.)
+  { group: B.footer, size: "12", padding: { top: "0", bottom: "0" }, elementType: "Card", data: card(REPORTS, [
+    stat("f_home",  "home",       "linkMonoFoot", { isLink: true, location: L.home,        searchParams: "none" }),
+    stat("f_macro", "macro-view", "linkMonoFoot", { isLink: true, location: L.macro,       searchParams: "none" }),
+    stat("f_report","report",     "linkMonoFoot", { isLink: true, location: L.reports,     searchParams: "none" }),
+    stat("f_map21", "map-21",     "linkMonoFoot", { isLink: true, location: L.map21,       searchParams: "none" }),
+    stat("f_docs",  "docs",       "linkMonoFoot", { isLink: true, location: L.docOverview, searchParams: "none" }),
+    stat("f_copy",  "© NYSDOT · TransportNY v0.2", "metaMD", { justify: "right" }),
+    SEED("foot_seed"),
+  ], {
+    cardStyle: "rowaligned",
+    cellsGridSize: 6, cellsColumnGap: 0, cellsPadding: 0, cardsPadding: 0,
+    cellsTracksTemplate: "repeat(5, minmax(0,max-content)) minmax(0,1fr)",
+    cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
+  }) },
 ];
 
 // The page-variable registry (creating-interactive-pages.md step 0). A key that is

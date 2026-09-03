@@ -265,13 +265,12 @@ const KEY_FILE_OVERRIDE = {
   "npmrds:route_comparison": "route-comparison.html",
   "npmrds:map_21": "map-21.html",
   "npmrds:lottr": "map-21-lottr.html",
-  // The REPORTS OVERVIEW — the `npmrds_sub` nav's Reports item, page 2188366 (slug
-  // `converted_reports`), enrolled 2026-09-02 (npmrds-reports-page-rev3.md, Phase 5). Its CHILD
-  // 2208581 `converted_reports/reports` (the AVAIL-curated template grid — one "Templates" band)
-  // used to hold this mapping; it is a different surface with no mockup of its own, so it is
-  // neither mapped nor enrolled (decision D4 in that task file) — two pages must never claim
-  // one mockup, or the Design page lies about one of them.
-  "npmrds:converted_reports": "npmrds-reports.html",
+  // The REPORTS OVERVIEW — the `npmrds_sub` nav's Reports item, page 2188366 — was enrolled
+  // 2026-09-02 as `converted_reports` (npmrds-reports-page-rev3.md, Phase 5) and the owner
+  // renamed its slug to `reports` the same afternoon, which the `npmrds-` prefix rule resolves
+  // by convention (reports → npmrds-reports.html), so it needs no override any more. The old
+  // child 2208581 `converted_reports/reports` (the AVAIL-curated grid) once held this mapping;
+  // it was a different surface with no mockup of its own and has since been deleted.
   // the live page moved /about → /about_the_plan (ticket #107); the mockup kept its old name
   "freightatlas2:about_the_plan": "freight-atlas-about.html",
   "freightatlas2:maps_gallery": "freight-atlas-gallery.html",
@@ -336,6 +335,19 @@ for (const { pattern, surface, surface_label, subdomain, base_url, include_slugs
   }
 }
 console.log(`live pages across ${surfaces.length} pattern(s): ${desired.length}`);
+// ⚠ A pattern that lists ZERO live pages is an EXPIRED/ABSENT TOKEN, not an empty site (the CLI
+// returns an empty list rather than an error for an auth-gated pattern; measured 2026-09-03 when
+// a 6h-old token quietly turned every npmrds row into "not in live patterns"). With --prune that
+// would delete the whole inventory. Refuse unless the caller says the pattern is really empty.
+{
+  const empty = surfaces.filter((s) => !listPages(s.pattern).length).map((s) => s.pattern);
+  if (empty.length && !flag("allow-empty-pattern")) {
+    console.error(`\nREFUSING: pattern(s) [${empty.join(", ")}] returned 0 live pages — almost certainly an expired` +
+      ` DMS_AUTH_TOKEN (re-mint with src/dms/packages/dms/cli/bin/mint-token.mjs). Pass --allow-empty-pattern if a` +
+      ` tracked pattern really has no pages.\n`);
+    process.exit(1);
+  }
+}
 if (DESIGN) console.log(`design mockups ingested: ${desired.filter((d) => d.design_html).length}/${desired.length}` +
   ` (missing: ${desired.filter((d) => !d.design_html).map((d) => d.page_key).join(", ") || "none"})`);
 
