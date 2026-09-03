@@ -2,11 +2,18 @@
 
 **Project:** TransportNY
 
-## Status: REOPENED 2026-07-31 — see "Follow-up" section below for the current open item.
-Original scope (rounds 1+2, below) is still valid and live. Moved back from `tasks/completed/`
-because same-day follow-up testing found the hero-stat menu misleading and an attempted fix's
-actual effect on newly-created pages is unconfirmed/inconsistent — not re-closed until that's
-either fixed properly or explicitly redescoped.
+## Status: Callout Stat REMOVED from the template 2026-09-03 — see "Removal" section below.
+Ryan looked at the template and read the empty hero-stat Card as dead space between the header
+prose and the first graph slot, and asked whether it could be deleted if it wasn't doing anything
+functional. Told him what it actually was (this file's round 2 + the still-open menu-misleading
+bug below) before touching anything — Ryan's call, informed, was to remove it anyway. The whole
+Callout Stat capability (component, menu registration, template section) is gone from the master
+template as of this section; new reports built from it get no starter data/visual section of any
+kind (an author adds their first one via RRL's "+ Add Graph"). Everything below this point is
+historical record of the feature while it existed — kept for context on why it was built the way
+it was, not a live status. `CalloutStatPicker`'s code was left in place (see "Removal" for why),
+so nothing here should be read as "the component doesn't exist" — it's just no longer wired into
+the template or discoverable by an author.
 
 ## Original status (rounds 1+2): CLOSED 2026-07-31, live-verified (two rounds — round 1 superseded, see below)
 
@@ -256,6 +263,55 @@ identically to every card the section renders, i.e. per-section not per-route) r
 per-route freeform note, since the underlying rows are query results (aggregated stats), not
 editable records — there is no per-route storage slot to hang author-typed prose off of without
 inventing one. Revisit from scratch if picked up; nothing was built or committed to this shape.
+
+## Removal (2026-09-03)
+
+**What was live at removal time, contradicting this file's own "ships unconfigured" line above**:
+re-reading the template row (`dms raw get 2187021`) before touching anything showed the Card
+section was NOT shipping empty — it carried a real, fully-wired Speed pick (`externalSource`/
+`join`/`columns`/`comparisonSeries`/`_calloutStatPick: {"measure":"speed"}`), i.e. the "attempted
+fix" logged in the Follow-up section above (pre-wiring the template's Card starter with a real
+config) was still in place and had never been reverted. Doesn't change the removal decision, but
+means the mental model of "ships empty, only wires up once an author touches the menu" was stale by
+the time this was done.
+
+**Also found, not fixed, flagged for whoever picks up template cleanup next**: the template's
+`draft_sections[1]` (a standalone `lexical` section — kicker `// 01 · MEASURE · DATE RANGE` /
+h2 "What question does this report answer?" / prose "Describe what this report compares...") is
+near-verbatim redundant with `ReportPageHeader`'s own `purpose` field (`draft_sections[0]`, which
+carries the same "What question does this report answer? Describe what it compares..." text as
+real seeded data, not a placeholder). A freshly-created page shows both, back to back — the same
+message twice, once as body prose under the H1 and once as a full kicker+heading+prose block right
+below it. This predates `ReportPageHeader.jsx`'s introduction (2026-09-01, `report-authoring-ux-
+overhaul.md` Workstream D) — the standalone lexical block is a leftover from before that component
+existed and looks like it was never reconciled once ReportPageHeader started carrying the same
+content as its own editable field. Not touched this round — out of scope of what was asked, and a
+lower-severity author-empowerment call (does an author want ONE editable "what this report answers"
+field or two?) that deserves its own decision, not a folded-in side effect of removing Callout Stat.
+
+**What was actually removed**: the `Card` entry in the template row's (`2187021`) `draft_sections`
+array (trackingId `384367a2-0942-42bf-9a1e-db6af5143176`) — read the row, filtered that one entry
+out, wrote the full `data` object back via `dms raw update 2187021 --data <file>` (a file, not an
+inline `--set`, to avoid hand-quoting a multi-KB JSON blob). This row has no published `sections`
+array (only `draft_sections` — templates aren't published/draft the way pages are), so there was
+only the one array to patch. Template now has exactly 3 sections: `ReportPageHeader`, the
+standalone `lexical` block (see above), `ReportRouteList` (sidebar). A fresh report therefore ships
+with **no starter data/visual section of any kind** — an author's first graph now always comes from
+RRL's own "+ Add Graph", never a pre-existing slot.
+
+**`CalloutStatPicker` component/menu registration left in place, deliberately** — this removal is
+scoped to the template's auto-inserted starter section, not the underlying capability. An author
+can still manually add a Card section to any report page and use its "Callout Stat" menu item
+(`sectionMenuExtensions["Card"]` in `themev2.js`) exactly as before; it's just no longer
+pre-populated by the template. This also means the "misleading pre-selected menu" bug from the
+Follow-up section above is now moot for the common path (nothing auto-inserts the Card anymore) but
+still real for anyone who adds one by hand — not fixed, just lower-traffic.
+
+**Live-verified via the real UI flow, not just a DB read-back**: `/npmrds/reports` → "+ Create
+Report" → new page (`reports/page_24`, id `2217752`) rendered with zero gap between "What question
+does this report answer?" and the end of content (no blank Card slot, no console errors) — matches
+the DB edit's intent. Scratch page deleted after verification (`dms page delete 2217752 --pattern
+npmrds_sub`).
 
 ## Not done / explicitly out of scope
 

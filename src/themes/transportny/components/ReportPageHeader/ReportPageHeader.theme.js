@@ -52,6 +52,13 @@ export const reportPageHeaderTheme = {
   freshnessValue: "text-[#0f1722]",
   freshnessEditRow: "mt-4 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2",
 
+  // ── "Viewing as of" (Dynamic Reports using the Today anchor only) ──
+  asOfRow: "mt-3 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500",
+  asOfLabel: "shrink-0",
+  asOfInput: "font-sans normal-case tracking-normal text-[12.5px] text-[#0F1722] border border-zinc-950/15 rounded-[4px] px-2 py-1 bg-white",
+  asOfReset: "normal-case tracking-normal text-[#1F3F8F] hover:underline cursor-pointer",
+  asOfHint: "normal-case tracking-normal text-slate-400",
+
   // ── routes-in-this-report disclosure (view mode's only route list — RRL itself is edit-only) ──
   routesWrapper: "mt-3",
   routesToggle: "inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 hover:text-[#1F3F8F] cursor-pointer",
