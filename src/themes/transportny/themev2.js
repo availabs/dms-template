@@ -43,6 +43,7 @@ import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 import CreateReportButton from "./components/CreateReportButton"
 import ChooseReportButton from "./components/ChooseReportButton"
+import ReportsListRail from "./components/ReportsListRail"
 
 import icons from "./icons";
 
@@ -2861,6 +2862,7 @@ const pageComponents = {
   RouteComparison,
   CreateReportButton,
   ChooseReportButton,
+  ReportsListRail,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
