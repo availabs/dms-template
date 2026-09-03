@@ -109,7 +109,7 @@ const ENV = {
 };
 const CLI = "src/dms/packages/dms/cli/bin/dms.js";
 const PATTERN = "npmrds_sub";
-const SLUG = "reports"; // was "converted_reports" until 2026-09-02 (owner rename)
+const SLUG = "reports"; // renamed 2026-09-02 from "converted_reports" (owner, admin UI) — see rename-converted-reports-url-to-reports.md
 const TITLE = "Converted Reports";
 // The page this builder owns. Pinned (feedback_stale_builders_check_before_rerun: a find-or-create
 // on a truncated `page list` minted a duplicate congestion page once) — the slug lookup below must
@@ -163,9 +163,10 @@ function assertFlat(elementData, where) {
 const L = {
   home: "/home",
   macro: "/macro",
-  // this page (slug renamed 2026-09-02). The old "report index" child 2208581
-  // (`converted_reports/reports`, the AVAIL-curated grid) was deleted the same day, so the
-  // footer's "report" link now points here.
+  // this page (slug renamed 2026-09-02, see rename-converted-reports-url-to-reports.md). The
+  // old "report index" child 2208581 (`converted_reports/reports`, the AVAIL-curated grid / v0.1
+  // landing page) was destroyed the same day, so the footer's "report" link points here; the
+  // `reportIndex` key that used to name it is gone with the lexical footer that consumed it.
   reports: "/reports",
   routeCreation: "/route_creation",
   map21: "/map_21",

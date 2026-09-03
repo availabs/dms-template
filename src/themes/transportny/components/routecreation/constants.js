@@ -3,6 +3,11 @@ const INTERNAL_ROUTES_SOURCE_ID = 2107426;
 const INTERNAL_ROUTES_TYPE = 'routes_data';
 const srcAttr = ["app", "name", "config", "default_columns"];
 const SHAPEFILE_LAYER_KEY = "npmrds_shapefile";
+
+// Half-width (px) of the box queried around a click/hover point when hit-testing the
+// network layer - a bare e.point hit test only registers a hit exactly on the (1-2px
+// wide, per paint.js) line itself, which is what made segments hard to click.
+const CLICK_TOLERANCE_PX = 5;
 const BLANK_OPTION = { value: "", name: "" };
 
 const PAGE_FILTER_KEY = 'route_id';
@@ -38,6 +43,7 @@ const DEFAULT_ROUTING_YEAR = 2022;
 
 export {
   SHAPEFILE_LAYER_KEY,
+  CLICK_TOLERANCE_PX,
   BLANK_OPTION,
   INTERNAL_ROUTES_VIEW_ID,
   INTERNAL_ROUTES_SOURCE_ID,

@@ -19,7 +19,7 @@ export const RouteEditor = ({
   addTmcFromSearch,
   removeTmc,
   removeLastTmc,
-  clearAllTmc,
+  clearAll,
   hoveredTmc,
   setHoveredTmc,
   setModalOpen,
@@ -27,7 +27,7 @@ export const RouteEditor = ({
   setCreationMode,
   markerCount,
   removeLastMarker,
-  clearAllMarkers,
+  isResolving,
   isEditingRoute,
   totalMiles,
 }) => {
@@ -108,7 +108,7 @@ export const RouteEditor = ({
             <div className={t.countActionBtn} onClick={isMarkerMode ? removeLastMarker : removeLastTmc}>
               Remove last
             </div>
-            <div className={t.countActionBtnDestructive} onClick={isMarkerMode ? clearAllMarkers : clearAllTmc}>
+            <div className={t.countActionBtnDestructive} onClick={clearAll}>
               Clear all
             </div>
           </div>
@@ -142,7 +142,11 @@ export const RouteEditor = ({
           <span className={t.listHeaderLabel}>TMC list</span>
           <span className={t.listHeaderTotal}>{totalMiles.toFixed(3)} mi total</span>
         </div>
-        <div className={t.list}>{tmcRows}</div>
+        <div className={t.list}>
+          {isMarkerMode && isResolving
+            ? <div className={t.listLoading}>Finding a route between your markers…</div>
+            : tmcRows}
+        </div>
       </div>
       {tmc_array?.length > 0 && (
         <div className={t.footer}>

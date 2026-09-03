@@ -14,7 +14,7 @@ to read" rule (same pattern as `report-page-redesign.md`/`-archive.md`).
 |---|---|
 | 1. Add Route Flow (RRL) | **DONE.** Tag-browser modal, Add-Graph modal, Route Row visual redesign all built + live-verified. One prototyped lever (sidebar width) stashed by Ryan, not merged. |
 | 2. Route Tags ("folder approximation") | **DONE** (tag taxonomy + manual editing UI). TMC-linear auto-generation: **2024 pilot DONE** (8,660 routes); 10 other years not yet generated (scripts are already generic over year). |
-| 3. Dynamic Reports | **Core mechanism DONE.** Old-template porting: 12 catalog templates converted (`converted_reports/reports`). Mechanism B (route-relative dates) DONE. **Relative-dates-relative-to-today: DONE 2026-08-10/11 — all 12 catalog templates now have zero fixed dates**, including the calendar-position grammar enrichment. **`report_build.mjs` Dynamic Report spec support: DONE 2026-08-11 — all 12 catalog templates are now spec-built** (git-committed JSON under `scripts/npmrds-reports/dynamic_report_specs/`, no old-DB dependency) and live-verified for real, superseding the earlier direct-DB-patch round whose comp-date fixes had silently failed to persist. See `report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full record. **Per-route window overrides (`routeWindows`): DONE 2026-08-14 — weekdays/startTime/endTime moved off `routes[]` onto `graphs[]`/`routeWindows` platform-wide, all 12 catalog templates confirmed consistent (8 migrated, 4 never needed it), `snapshot`'s 5-gap hand-by-hand review fully closed.** See "Per-route window overrides" section below for the mechanism build and `snapshot` review write-up for the applied fixes. **2026-08-17: `ReportPageHeader` routes disclosure + duplicate-title-block removal, `--replace` flag for `report_build.mjs`, `travelTime` tooltip duration formatting.** See "Report header routes disclosure..." section below. |
+| 3. Dynamic Reports | **Core mechanism DONE.** Old-template porting: 12 catalog templates converted (`converted_reports/reports`). Mechanism B (route-relative dates) DONE. **Relative-dates-relative-to-today: DONE 2026-08-10/11 — all 12 catalog templates now have zero fixed dates**, including the calendar-position grammar enrichment. **`report_build.mjs` Dynamic Report spec support: DONE 2026-08-11 — all 12 catalog templates are now spec-built** (git-committed JSON under `scripts/npmrds-reports/dynamic_report_specs/`, no old-DB dependency) and live-verified for real, superseding the earlier direct-DB-patch round whose comp-date fixes had silently failed to persist. See `report-spec-and-build-script.md`'s "Follow-on: Dynamic Report spec support" for the full record. **Per-route window overrides (`routeWindows`): DONE 2026-08-14 — weekdays/startTime/endTime moved off `routes[]` onto `graphs[]`/`routeWindows` platform-wide, all 12 catalog templates confirmed consistent (8 migrated, 4 never needed it), `snapshot`'s 5-gap hand-by-hand review fully closed.** See "Per-route window overrides" section below for the mechanism build and `snapshot` review write-up for the applied fixes. **2026-08-17: `ReportPageHeader` routes disclosure + duplicate-title-block removal, `--replace` flag for `report_build.mjs`, `travelTime` tooltip duration formatting.** See "Report header routes disclosure..." section below. **2026-09-03: persistent "Viewing as of" control added to `ReportPageHeader`** — the Today-anchor `?asOf=` override is no longer only settable via RRL's one-time entry gate. See "Persistent 'Viewing as of' header control" section below. |
 
 **Context that applies to all three items:** Ryan's coworker (Alex) did separate visual/design work
 across these repos (`dms_design_system_v2` NPMRDS category) — see
@@ -439,6 +439,46 @@ to two visibly different series rounding to the identical displayed value. Added
 'travelTime'`, formatting as "M:SS" with whole-second precision instead — `yFormat` covers
 LineGraph's own tooltip read, `valueFormat` every other chart type. `showTotal` behavior (added
 2026-08-12, see `annual_average_study` section above) is unchanged.
+
+### Persistent "Viewing as of" header control — built + live-verified 2026-09-03
+
+Ryan's ask: the Today-anchor `?asOf=` override (relative-dates-relative-to-today, above) was only
+ever settable via `RouteTagBrowserModal`'s "Viewing as of" field inside RRL's blocking entry gate —
+a one-time prompt shown only when a Dynamic Report's routes haven't resolved yet. Once past that
+gate (or for an author who never saw it), there was no way to change the date without hand-editing
+the URL, which most viewers won't do. Framed as the first case of a custom component letting a
+viewer change page-view-mode state outside the existing `filters`/`pageFilters` pattern — turned
+out to need no new mechanism at all, just porting RRL's existing plumbing to a persistent location.
+
+**`ReportPageHeader.jsx`** (already reading the route catalog `useGraphPublish.js` broadcasts
+unconditionally, in both edit and view mode, for its routes disclosure) gained a "Viewing as of"
+date input, shown whenever the route catalog has any entry with `derivedFromRoute ===
+TODAY_ANCHOR_COMP_ID` (i.e. the report actually uses the Today anchor) AND the report's `baseDate`-
+typed page filter is registered (a Dynamic Report authored before that filter existed has nothing
+to control). Writes the URL the same way RRL's entry gate does — `navigate` with an updated search-
+params string — but built off the raw `location.search` (only the `asOf` key touched) rather than
+reconstructing every `useSearchParams` filter's own value shape, so `?routes=` (already `|||`-
+delimited) is preserved byte-for-byte with no risk of re-encoding it wrong.
+
+**Reset-button wording fix, same day, Ryan caught it live**: the no-override default
+(`defaultAnchorDate()`) is real wall-clock today MINUS `NPMRDS_DATA_LAG_DAYS` (21 days, the known
+ClickHouse publish-lag buffer — see relative-dates-relative-to-today above), not literal today. A
+"Reset to today" button would have been actively misleading about what date it resets to. Renamed
+to "Use latest available (<resolved date>)" — puts the real date in the label so a viewer never has
+to guess what "latest" means — plus a `title` tooltip repeating why data isn't real-time. When no
+override is active, a plain "latest available" hint sits next to the date input for the same reason.
+
+**Live-verified**: `report_probe.mjs` against `reports/one_week_study?routes=2207838&asOf=2026-07-23`
+(`--auth`, since this pattern's pages 401 for an unauthenticated probe) — control renders pre-filled
+with the URL's date; changing it via `fill`+`change` navigates to a new `?asOf=` value with `?routes=`
+untouched; reset button reads "Use latest available (2026-08-13)" (the real resolved date, not
+"today"); 0 console/page/SQL errors, all 9 sections still render. No golden-corpus baseline changes
+needed — this is a new, additive, previously-absent control, not a change to any existing render
+path a corpus entry already covers.
+
+**Files changed**: `src/themes/transportny/components/ReportPageHeader/ReportPageHeader.jsx`,
+`ReportPageHeader.theme.js`. No changes to `ReportRouteList.jsx`/`RouteTagBrowserModal.jsx` — the
+entry gate's own "Viewing as of" field is untouched and still does its one-time job the same way.
 
 ---
 

@@ -267,10 +267,12 @@ const KEY_FILE_OVERRIDE = {
   "npmrds:lottr": "map-21-lottr.html",
   // The REPORTS OVERVIEW — the `npmrds_sub` nav's Reports item, page 2188366 — was enrolled
   // 2026-09-02 as `converted_reports` (npmrds-reports-page-rev3.md, Phase 5) and the owner
-  // renamed its slug to `reports` the same afternoon, which the `npmrds-` prefix rule resolves
-  // by convention (reports → npmrds-reports.html), so it needs no override any more. The old
-  // child 2208581 `converted_reports/reports` (the AVAIL-curated grid) once held this mapping;
-  // it was a different surface with no mockup of its own and has since been deleted.
+  // renamed its slug to `reports` the same afternoon (rename-converted-reports-url-to-reports.md),
+  // which the `npmrds-` prefix rule resolves by convention (reports → npmrds-reports.html), so
+  // the `"npmrds:converted_reports"` override that briefly lived here resolved nothing and is
+  // gone. The old child 2208581 `converted_reports/reports` (the AVAIL-curated template grid /
+  // v0.1 landing page) once held the mapping; it was a different surface with no mockup of its
+  // own and was destroyed the same day — two pages must never claim one mockup anyway.
   // the live page moved /about → /about_the_plan (ticket #107); the mockup kept its old name
   "freightatlas2:about_the_plan": "freight-atlas-about.html",
   "freightatlas2:maps_gallery": "freight-atlas-gallery.html",
@@ -304,9 +306,10 @@ function ingestDesign(surface, slug, page_key) {
 // to before — `allow` is null and short-circuits before the `&&`, so tsmo2 / landing /
 // 2175436 / npmrds2 keep inventorying every live page exactly as they did.
 //
-// This exists because `npmrds_sub` holds 39 live pages, 22 of them `converted_reports*`
-// report conversions that must NOT enter the QA pipeline; only `macro` and `home` are asked
-// for. Excluded slugs are collected so that (a) the run prints what it skipped, and (b)
+// This exists because `npmrds_sub` holds dozens of live pages, most of them `reports*`
+// (renamed 2026-09-02 from `converted_reports*`) report conversions that must NOT enter the
+// QA pipeline; only `macro` and `home` are asked for. Excluded slugs are collected so that
+// (a) the run prints what it skipped, and (b)
 // `--prune` cannot delete a page row merely because the allowlist stopped enumerating it —
 // see the `allowExcluded` guard at the prune step.
 const desired = [];

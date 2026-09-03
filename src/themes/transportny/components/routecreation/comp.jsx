@@ -92,12 +92,21 @@ const Comp = ({ state, setState, map }) => {
   const [creationMode, setCreationModeState] = useState(DEFAULT_CREATION_MODE);
   const isMarkerMode = creationMode === CREATION_MODES.MARKERS;
 
-  const { markerCount, removeLastMarker, clearAllMarkers } = useMapMarkerHandler(
+  const { markerCount, removeLastMarker, clearAllMarkers, isResolving } = useMapMarkerHandler(
     map, setState, pluginDataPath, isMarkerMode, DEFAULT_ROUTING_YEAR
   );
   const { toggleTmc, removeLastTmc, clearAllTmc } = useMapTmcHandler(
     map, state, setState, pluginDataPath, symbPath, !isMarkerMode
   );
+  // "Clear all" resets everything regardless of which mode is active - previously it
+  // ran only whichever of clearAllTmc/clearAllMarkers matched the CURRENT mode, so
+  // e.g. clicking it in TMC Click mode never touched marker-mode state (2026-09-03
+  // user report: "Whenever i click clear all, it should clear them, regardless of
+  // mode").
+  const clearAll = useCallback(() => {
+    clearAllTmc();
+    clearAllMarkers();
+  }, [clearAllTmc, clearAllMarkers]);
   const { setHoveredTmc } = useMapHoverHandler(map, state, setState, pluginDataPath);
 
   // Tracks whether the currently-typed 9-char searchInputTmc resolved to a real
@@ -295,7 +304,7 @@ const Comp = ({ state, setState, map }) => {
         addTmcFromSearch={addTmcFromSearch}
         removeTmc={removeTmc}
         removeLastTmc={removeLastTmc}
-        clearAllTmc={clearAllTmc}
+        clearAll={clearAll}
         hoveredTmc={hoveredTmc}
         setHoveredTmc={setHoveredTmc}
         setModalOpen={(val) => setModalState((prev) => ({ ...prev, open: val }))}
@@ -303,7 +312,7 @@ const Comp = ({ state, setState, map }) => {
         setCreationMode={setCreationMode}
         markerCount={markerCount}
         removeLastMarker={removeLastMarker}
-        clearAllMarkers={clearAllMarkers}
+        isResolving={isResolving}
         isEditingRoute={Boolean(routeIdFilterValue)}
       />
       <ModeHintPill creationMode={creationMode} />

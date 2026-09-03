@@ -65,6 +65,10 @@ export const routecreationTheme = {
   listHeaderLabel: "text-[10px] font-semibold uppercase tracking-wider text-zinc-500 flex-1",
   listHeaderTotal: "font-mono text-[10.5px] tabular-nums text-zinc-500",
   list: "flex-1 min-h-0 overflow-y-auto scrollbar-sm divide-y divide-zinc-950/5",
+  // Marker mode's tmc_array only appears once resolveRouteFromPoints returns (a real
+  // network round-trip) - shown in the list area while that's in flight so the panel
+  // doesn't look frozen/empty (2026-09-03).
+  listLoading: "px-2 py-3 text-[11px] text-zinc-400 text-center",
   row: "px-2 py-1.5 hover:bg-zinc-50",
   rowHighlighted: "px-2 py-1.5 bg-amber-50 border-l-2 border-[#CA8A04]",
   rowTop: "flex items-center gap-2",

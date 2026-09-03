@@ -92,3 +92,32 @@ export function buildVisibilityAllowListFilterGroup(user, curatedTag) {
 export function rankByScore(rows, scoreFn) {
   return [...rows].sort((a, b) => scoreFn(b) - scoreFn(a));
 }
+
+// The picker modals' sort control (2026-09-03, Ryan's correction: the footer's "sort: Best
+// match" pill LOOKED like a chooseable control but wasn't one — PickerModalParts.jsx used to
+// render it as a static label on purpose, "the ranking honestly rather than implying a choosable
+// control that isn't there yet"; this is that control, now built). `value` is what
+// PickerCountBar's <select> shows/writes; `label` is unused by the control itself but kept for
+// any other place a sort mode needs a human-readable name.
+export const SORT_MODE_OPTIONS = [
+  { value: 'best', label: 'Best match' },
+  { value: 'recent', label: 'Recently updated' },
+  { value: 'name', label: 'Name (A–Z)' },
+];
+
+// Apply one of SORT_MODE_OPTIONS to a COPY of `rows` (never mutates, same convention as
+// rankByScore). 'best' delegates to the existing rankByScore/scoreFn — completely unchanged
+// behavior, still each domain's own routeScore/reportScore. 'recent' and 'name' are plain field
+// sorts that don't need a scoreFn. `dateField` is per-domain on purpose: reports have a real
+// `updated_at`; routes only ever populate `created_at` (see RouteTagBrowserModal/useTagBrowser.js
+// — there is no reliable per-row `updated_at` on the routes catalog), so each caller passes its
+// own domain's actual recency field rather than this file guessing one that doesn't exist.
+export function sortRows(rows, mode, { scoreFn, dateField = 'updated_at', nameField = 'name' } = {}) {
+  if (mode === 'name') {
+    return [...rows].sort((a, b) => String(a?.[nameField] || '').localeCompare(String(b?.[nameField] || '')));
+  }
+  if (mode === 'recent') {
+    return [...rows].sort((a, b) => (Date.parse(b?.[dateField]) || 0) - (Date.parse(a?.[dateField]) || 0));
+  }
+  return rankByScore(rows, scoreFn);
+}
