@@ -826,3 +826,48 @@ explicitly out of scope.
     route/tag edit, same as before this session).
   - **Also fixed**: `scripts/npmrds-reports/report_probe.mjs` and `pick_test_report.py`'s default
     dev host (both hardcoded the retired `npmrds.localhost:5173` subdomain).
+
+- **2026-09-03: real sort control shipped; "Rebuilt" badge removed (vacuous), BUILT +
+  live-verified**. Ryan asked what the "Possible draft" and "Rebuilt" pills actually meant (didn't
+  remember either being reviewed), and separately flagged that the footer's "sort: Best match" pill
+  implied a chooseable control it didn't have.
+  - **"Possible draft"** was already accurately understood via code read: `looksIncomplete()`
+    (reportScore.js) wrapping the shared `LOOKS_INCOMPLETE_RE` regex (pickerScoring.js) — a
+    whole-word title match on test/testing/delete/bug/saving. Same predicate the "Hide
+    incomplete-looking" facet chip filters on — one heuristic, two surfaces, confirmed to Ryan when
+    he asked if they were the same thing.
+  - **Real finding**: "Rebuilt" (`isRebuilt`, `row.page_path` truthy) had gone vacuous. Round 83
+    (2026-08-31, above) made `useReportSearch.js` filter `page_path notempty` unconditionally, so
+    every row that can ever reach this modal already has `page_path` set — the badge was rendering
+    "Rebuilt" on 100% of results, which is exactly why Ryan's coworker's brand-new report (authored
+    directly as a real page, never "rebuilt" from a legacy row) got tagged "Rebuilt" too. Ryan asked
+    to remove it — done: the Pill (both the "Rebuilt" and dead "Legacy — not yet rebuilt" branches),
+    the now-unused `isRebuilt` export, and "rebuilt" from the footer's sort-explanation string.
+    `reportScore()`'s own `+25` `page_path` ranking weight is now equally inert (a constant added to
+    every visible row, so it can't affect relative order) but was left alone — harmless, and
+    removing a scoring weight is a different call than removing a visibly-wrong badge; flagged
+    in-code if anyone wants to revisit.
+  - **Sort control**: added `SORT_MODE_OPTIONS`/`sortRows()` to `PickerModal/pickerScoring.js` —
+    'best' delegates unchanged to the existing `rankByScore`/`routeScore`/`reportScore`; 'recent' and
+    'name' are plain field sorts (`created_at` for routes — routes have no reliable `updated_at`,
+    see useTagBrowser.js; `updated_at` for reports). `PickerModalParts.jsx`'s `PickerCountBar` now
+    renders a real native `<select>` (not `UI.Select`/MultiSelect — deliberately kept in the same
+    "small utility control, native element, theme-styled" convention this file already uses for
+    RouteTagBrowserModal's `asOfDate` date input, not worth pulling in MultiSelect's much heavier
+    chrome for a 3-item dropdown) instead of the old static "Best match" text. Wired into both
+    `ReportPickerModal.jsx` and `RouteTagBrowserModal.jsx` (own `sortMode` state, reset on open,
+    passed through to `PickerCountBar`); the report picker's footer note text now reflects the live
+    mode instead of a hardcoded string.
+  - **Live-verified** (claude-in-chrome, `/npmrds/reports` → "Choose a report"): switching the sort
+    select through all 3 modes correctly re-ordered the real 49-report result set each time (Best
+    match → prominence order restored; Name (A–Z) → alphabetical, surfacing a real `2025 Test`
+    row's "Possible draft" pill along the way; Recently updated) and the footer text tracked each
+    mode; after the "Rebuilt" removal, re-checked the same page — no card carries "Rebuilt" or
+    "Legacy" anymore, zero console errors. Did NOT click through the route picker's sort control
+    live (Ryan flagged mid-session that browser automation was in the wrong place at a moment
+    another session needed that page) — same code path as the already-verified report picker, and
+    syntax-checked (`esbuild`) clean, but not independently click-verified.
+  - Files: `PickerModal/pickerScoring.js`, `PickerModal/PickerModalParts.jsx`,
+    `PickerModal/PickerModal.theme.js`, `ReportPickerModal/ReportPickerModal.jsx`,
+    `ReportPickerModal/reportScore.js`, `RouteTagBrowserModal/RouteTagBrowserModal.jsx`.
+    Uncommitted as of this entry.
