@@ -45,8 +45,12 @@ first attempt did, and produced seven byte-identical files, because the params d
 shot was the default view. Click the controls, and verify the captures differ (`md5sum *.png`) before
 trusting them.
 
-The macro view lives at the **subdomain** origin `http://npmrds.localhost:<port>/macro`; the bare
-`localhost:<port>/macro` path resolves to the platform landing page instead.
+The macro view lived at the **subdomain** origin `http://npmrds.localhost:<port>/macro` when these
+were captured (2026-08-27); the bare `localhost:<port>/macro` path resolves to the platform landing
+page instead. **Stale as of 2026-09-02**: npmrds_sub moved off the `npmrds` subdomain to a
+`www:/npmrds` path-mount — re-running this recipe today needs `http://www.localhost:<port>/npmrds/macro`
+instead (see `traversing-dms-pages.md`'s subdomain gotcha). The commands above are left as literally
+run, for provenance; don't copy them verbatim for a new capture.
 
 ## Inventory
 

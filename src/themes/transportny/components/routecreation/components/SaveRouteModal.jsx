@@ -1,97 +1,98 @@
 import React from "react";
+import { ThemeContext, getComponentTheme } from "../../../../../dms/packages/dms/src/ui/useTheme";
+import useModalOverlay from "../../../../../dms/packages/dms/src/ui/components/useModalOverlay";
+import { routecreationTheme } from "../routecreation.theme";
 import TagsEditor from "../../TagsEditor/TagsEditor";
 
+// Save/update dialog — npmrds-route-creation.html § 02 ("the modal, drawn"). Replaces the old
+// inline-`style` div (raw `style={modalStyle}`, no backdrop, no close-on-escape/click-outside,
+// an `<input type="textarea">` for Description that only ever behaved as one line) with the SAME
+// backdrop+wrapper mechanism macroview's DownloadBuilder (downloadBuilder.jsx) already uses for
+// a floating map-plugin modal, styled to the mockup's own skin (white header, the Panel 1 Road
+// icon, brand blue `#1F3F8F` submit) rather than macroview's dark-header/yellow-accent one. Same
+// three fields the old modal had — name/description/tags — findings.md Part 4 covers why folder
+// + start/end date stay out; this pass is styling + chrome, not new fields.
 export const SaveRouteModal = ({
+  open,
   modalState,
-  modalStyle,
   setModalOpen,
   setRouteMeta,
   addItem,
   isEditingRoute,
   user,
 }) => {
+  const { theme: themeFromContext = {} } = React.useContext(ThemeContext) || {};
+  const t = { ...routecreationTheme, ...getComponentTheme(themeFromContext, "routecreation") };
+  const close = () => setModalOpen(false);
+  useModalOverlay(open, close);
+
+  if (!open) return null;
+
   return (
-    <div
-      style={modalStyle}
-      className="bg-white/[95%] pointer-events-auto"
-    >
-      <div className="flex flex-col h-[100%]">
-        <div className="flex items-center m-1">
-          <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-            <i className="fad fa-layer-group text-blue-600" aria-hidden="true" />
-          </div>
-          <div className="mt-3 text-center sm:ml-2 sm:mt-0 sm:text-left w-full">
-            <div className="text-lg align-center font-semibold leading-6 text-gray-900">
-              {isEditingRoute ? "Update Route" : "Save New Route"}
-            </div>
-            {isEditingRoute && (
-              <div className="text-sm text-red-600">
-                You are updating an existing route. Saving will overwrite it, not create a new one.
+    <>
+      <div className={t.saveModalBackdrop} onClick={close} />
+      <div className={t.saveModalWrapper}>
+        <div className={t.saveModalCard}>
+          <div className={t.saveModalBody}>
+            <div className={t.saveModalHead}>
+              <span className={t.saveModalIconWrap}>
+                <svg className={t.saveModalIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <div className={t.saveModalTitle}>{isEditingRoute ? "Update route" : "Save new route"}</div>
+                {isEditingRoute && (
+                  <p className={t.saveModalWarning}>
+                    You are updating an existing route. Saving overwrites it — it does not create a new one.
+                  </p>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-        <div className="flex gap-4">
-          <ModalInputField
-            label="Name"
-            value={modalState.name}
-            path={"name"}
-            onChange={setRouteMeta}
-            type="text"
-          />
-        </div>
-        <div className="flex gap-4">
-          <ModalInputField
-            label="Description"
-            value={modalState.description}
-            path={"description"}
-            onChange={setRouteMeta}
-            type="textarea"
-          />
-        </div>
-        <div className="flex gap-4 border-b-2 py-4 mb-4">
-          <TagsEditor
-            tags={modalState.tags}
-            onChange={(tags) => setRouteMeta({ tags })}
-            user={user}
-          />
-        </div>
-        <div className="absolute" style={{ bottom: "20px", right: "20px" }}>
-          <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-            <button
-              onClick={addItem}
-              className="disabled:bg-slate-300 disabled:cursor-warning inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto cursor-pointer"
-            >
-              {isEditingRoute ? "Update" : "Save"}
-            </button>
-            <button
-              type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto cursor-pointer"
-              onClick={() => setModalOpen(false)}
-            >
-              Cancel
-            </button>
+            </div>
+
+            <div className={t.saveModalFields}>
+              <div>
+                <div className={t.saveModalFieldLabel}>Name</div>
+                <input
+                  type="text"
+                  className={t.saveModalNameInput}
+                  value={modalState.name}
+                  onChange={(e) => setRouteMeta({ name: e.target.value })}
+                />
+              </div>
+              <div>
+                <div className={t.saveModalFieldLabel}>Description</div>
+                <textarea
+                  className={t.saveModalDescInput}
+                  rows={3}
+                  value={modalState.description}
+                  onChange={(e) => setRouteMeta({ description: e.target.value })}
+                />
+              </div>
+              <div>
+                {/* No separate field-label div here - TagsEditor renders its own "Tags" label
+                    (non-inline mode); overriding it to saveModalFieldLabel's style keeps it
+                    looking like Name/Description's labels instead of stacking two "Tags" headers. */}
+                <TagsEditor
+                  tags={modalState.tags}
+                  onChange={(tags) => setRouteMeta({ tags })}
+                  user={user}
+                  theme={{ ...t, tagsEditorWrapper: "", tagsEditorLabel: t.saveModalFieldLabel }}
+                />
+              </div>
+            </div>
+
+            <div className={t.saveModalFoot}>
+              <button type="button" className={t.saveModalCancelBtn} onClick={close}>
+                Cancel
+              </button>
+              <button type="button" className={t.saveModalSubmitBtn} onClick={addItem}>
+                {isEditingRoute ? "Update" : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
-
-const ModalInputField = ({ label, path, value, onChange, type = "text" }) => (
-  <div>
-    <div className="font-bold">{label}</div>
-    <label className="flex w-full">
-      <div className="flex w-full items-center">
-        <input
-          type={type}
-          className="w-full p-2 bg-white rounded"
-          value={value}
-          onChange={(e) => {
-            onChange({ [path]: e.target.value });
-          }}
-        />
-      </div>
-    </label>
-  </div>
-);

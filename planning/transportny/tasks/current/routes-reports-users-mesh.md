@@ -786,3 +786,88 @@ explicitly out of scope.
   agent against `old-reports-conversion.md` (verification + classification pass, no bulk conversion
   run yet — that's a separate go/no-go once the classification lands). Workstream A (the modal
   mockups) is next.
+- **2026-09-02: header title edit + mount-prefix redirect fix, BUILT + live-verified**. Ryan asked
+  for the report canvas HEADER's own h1 (`ReportPageHeader.jsx`) to be directly editable in edit
+  mode — same mechanism as the Bottom toolbar's Filter icon → Page Name field, not a parallel one:
+  title, `url_slug`, and the `reports_snap_2` catalog row's `name`/`page_path` should all change
+  together, exactly as they do via that existing path.
+  - **Mechanism**: the h1 becomes a real `<input>` when `editPageMode` (draft state + commit on
+    blur/Enter, not per-keystroke — `updateTitle` both writes the page row AND navigates). Calls
+    the literal core `updateTitle()` (`editFunctions.jsx`) — same function the Page Name field
+    calls — so title/url_slug behavior is identical by construction, not reimplemented.
+  - **`reports_snap_2` sync**: `updateTitle` has no idea the catalog row exists (it's a
+    transportny-theme concern, not core dms). `useReportTags.js` renamed to
+    `useReportCatalogRow.js` and extended with a `syncTitle(name, pagePath)` function alongside
+    the existing `persistTags` — writes just `name`/`page_path` (JSONB merge, `tags` untouched) to
+    the SAME row `useReportRow.js`'s `persistRoutes`/`persistTags` already self-heal on every
+    route/tag edit. Without this, a rename-only session (no route/tag touch afterward) left the
+    catalog stale indefinitely — now it's synced the moment the title commits. The new page_path is
+    computed via the same pure `getUrlSlug()` `updateTitle` itself calls internally (recomputed
+    with the identical `newItem` shape, not read back off `item.url_slug` post-navigate, which is
+    still stale until the redirect's re-fetch lands — no race).
+  - **Real bug found and fixed along the way, not pre-existing-and-ignored**: `updateTitle`'s own
+    post-rename redirect (`/edit/${url_slug}`) never routed through `resolveMountPath`, unlike its
+    sibling `newPage()` in the same file — on the `www.localhost:5173/npmrds` mount this dropped
+    the `/npmrds` prefix and fell through to a DIFFERENT pattern's page (TransportNY's root
+    landing page), not a 404. Ryan flagged it live as "very common issue." Fixed at the source
+    (`updateTitle` gained optional `mountBaseUrl`/`siteRootPaths` params, both callers —
+    `settingsPane.jsx` and `ReportPageHeader.jsx` — now pass `MountContext` through), so this also
+    fixes the pre-existing Page Name field, not just the new header editor. Full writeup:
+    `src/dms/planning/tasks/current/mount-aware-links-and-retired-subdomains.md`'s new Follow-up
+    section.
+  - **Live-verified** on a scratch report (`converted_reports/page_20`, deleted after) on the
+    now-current `www.localhost:5173/npmrds` mount (the `npmrds.localhost` subdomain was retired the
+    same day, see `traversing-dms-pages.md`'s updated subdomain gotcha): renamed via the header
+    twice and via the Page Name field once, cross-checking both paths — `dms page show` confirmed
+    `title`/`url_slug` correct after each; `dms dataset query reports_snap_2` confirmed the catalog
+    row's `name`/`page_path` updated after every HEADER rename (one row throughout, no duplicates,
+    `tags`/`routes` untouched) and correctly stayed on the OLD value after the Page Name field
+    rename (that path was intentionally left unchanged — it still only self-heals on the next
+    route/tag edit, same as before this session).
+  - **Also fixed**: `scripts/npmrds-reports/report_probe.mjs` and `pick_test_report.py`'s default
+    dev host (both hardcoded the retired `npmrds.localhost:5173` subdomain).
+
+- **2026-09-03: real sort control shipped; "Rebuilt" badge removed (vacuous), BUILT +
+  live-verified**. Ryan asked what the "Possible draft" and "Rebuilt" pills actually meant (didn't
+  remember either being reviewed), and separately flagged that the footer's "sort: Best match" pill
+  implied a chooseable control it didn't have.
+  - **"Possible draft"** was already accurately understood via code read: `looksIncomplete()`
+    (reportScore.js) wrapping the shared `LOOKS_INCOMPLETE_RE` regex (pickerScoring.js) — a
+    whole-word title match on test/testing/delete/bug/saving. Same predicate the "Hide
+    incomplete-looking" facet chip filters on — one heuristic, two surfaces, confirmed to Ryan when
+    he asked if they were the same thing.
+  - **Real finding**: "Rebuilt" (`isRebuilt`, `row.page_path` truthy) had gone vacuous. Round 83
+    (2026-08-31, above) made `useReportSearch.js` filter `page_path notempty` unconditionally, so
+    every row that can ever reach this modal already has `page_path` set — the badge was rendering
+    "Rebuilt" on 100% of results, which is exactly why Ryan's coworker's brand-new report (authored
+    directly as a real page, never "rebuilt" from a legacy row) got tagged "Rebuilt" too. Ryan asked
+    to remove it — done: the Pill (both the "Rebuilt" and dead "Legacy — not yet rebuilt" branches),
+    the now-unused `isRebuilt` export, and "rebuilt" from the footer's sort-explanation string.
+    `reportScore()`'s own `+25` `page_path` ranking weight is now equally inert (a constant added to
+    every visible row, so it can't affect relative order) but was left alone — harmless, and
+    removing a scoring weight is a different call than removing a visibly-wrong badge; flagged
+    in-code if anyone wants to revisit.
+  - **Sort control**: added `SORT_MODE_OPTIONS`/`sortRows()` to `PickerModal/pickerScoring.js` —
+    'best' delegates unchanged to the existing `rankByScore`/`routeScore`/`reportScore`; 'recent' and
+    'name' are plain field sorts (`created_at` for routes — routes have no reliable `updated_at`,
+    see useTagBrowser.js; `updated_at` for reports). `PickerModalParts.jsx`'s `PickerCountBar` now
+    renders a real native `<select>` (not `UI.Select`/MultiSelect — deliberately kept in the same
+    "small utility control, native element, theme-styled" convention this file already uses for
+    RouteTagBrowserModal's `asOfDate` date input, not worth pulling in MultiSelect's much heavier
+    chrome for a 3-item dropdown) instead of the old static "Best match" text. Wired into both
+    `ReportPickerModal.jsx` and `RouteTagBrowserModal.jsx` (own `sortMode` state, reset on open,
+    passed through to `PickerCountBar`); the report picker's footer note text now reflects the live
+    mode instead of a hardcoded string.
+  - **Live-verified** (claude-in-chrome, `/npmrds/reports` → "Choose a report"): switching the sort
+    select through all 3 modes correctly re-ordered the real 49-report result set each time (Best
+    match → prominence order restored; Name (A–Z) → alphabetical, surfacing a real `2025 Test`
+    row's "Possible draft" pill along the way; Recently updated) and the footer text tracked each
+    mode; after the "Rebuilt" removal, re-checked the same page — no card carries "Rebuilt" or
+    "Legacy" anymore, zero console errors. Did NOT click through the route picker's sort control
+    live (Ryan flagged mid-session that browser automation was in the wrong place at a moment
+    another session needed that page) — same code path as the already-verified report picker, and
+    syntax-checked (`esbuild`) clean, but not independently click-verified.
+  - Files: `PickerModal/pickerScoring.js`, `PickerModal/PickerModalParts.jsx`,
+    `PickerModal/PickerModal.theme.js`, `ReportPickerModal/ReportPickerModal.jsx`,
+    `ReportPickerModal/reportScore.js`, `RouteTagBrowserModal/RouteTagBrowserModal.jsx`.
+    Uncommitted as of this entry.

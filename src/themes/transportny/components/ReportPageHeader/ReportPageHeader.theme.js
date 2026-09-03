@@ -5,6 +5,11 @@
 export const reportPageHeaderTheme = {
   wrapper: "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-6 py-6",
 
+  // ── backlink to the reports landing page (same vocabulary as routecreation's own
+  // "All routes" backlink — font-mono uppercase kicker-style label, brand-blue link color) ──
+  backLink: "inline-flex items-center gap-1.5 mb-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#1F3F8F] hover:underline",
+  backIcon: "size-3",
+
   // ── kicker row: label · rule · meta · published/draft pill ──
   kickerRow: "flex items-center gap-3 mb-2 flex-wrap",
   kickerLabel: "font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]",
@@ -51,6 +56,13 @@ export const reportPageHeaderTheme = {
   freshnessSep: "text-slate-300",
   freshnessValue: "text-[#0f1722]",
   freshnessEditRow: "mt-4 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2",
+
+  // ── "Viewing as of" (Dynamic Reports using the Today anchor only) ──
+  asOfRow: "mt-3 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500",
+  asOfLabel: "shrink-0",
+  asOfInput: "font-sans normal-case tracking-normal text-[12.5px] text-[#0F1722] border border-zinc-950/15 rounded-[4px] px-2 py-1 bg-white",
+  asOfReset: "normal-case tracking-normal text-[#1F3F8F] hover:underline cursor-pointer",
+  asOfHint: "normal-case tracking-normal text-slate-400",
 
   // ── routes-in-this-report disclosure (view mode's only route list — RRL itself is edit-only) ──
   routesWrapper: "mt-3",

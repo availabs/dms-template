@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { get, set } from "lodash-es";
-import { SHAPEFILE_LAYER_KEY } from "../constants";
+import { SHAPEFILE_LAYER_KEY, CLICK_TOLERANCE_PX } from "../constants";
 
 // Two-way row <-> map highlight (npmrds-route-creation.html, routes-reports-users-mesh.md
 // Workstream E). Parallel to useMapTmcHandler's click handler - same queryRenderedFeatures
@@ -31,9 +31,13 @@ export const useMapHoverHandler = (map, state, setState, pluginDataPath) => {
     if (!map || !shapefileLayerId) return;
 
     const MAP_MOUSEMOVE = (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: [shapefileLayerId],
-      });
+      // Same tolerance-box widening as useMapTmcHandler's click hit test, so the row
+      // that lights up on hover always matches what a click there would select.
+      const { x, y } = e.point;
+      const features = map.queryRenderedFeatures(
+        [[x - CLICK_TOLERANCE_PX, y - CLICK_TOLERANCE_PX], [x + CLICK_TOLERANCE_PX, y + CLICK_TOLERANCE_PX]],
+        { layers: [shapefileLayerId] }
+      );
       setHoveredTmc(features?.[0]?.properties?.tmc);
     };
     // Generic (canvas-wide) event, not the layer-scoped 'mouseleave' - clears the highlight
