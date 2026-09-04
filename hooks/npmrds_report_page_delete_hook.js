@@ -32,10 +32,11 @@ async function onPageDeleted(row, ctx) {
   const resolved = resolveTable(APP, REPORTS_SNAP_TYPE, dbType, splitMode, REPORTS_SNAP_SOURCE_ID);
   if (!resolved.table.startsWith('data_items__')) return;
 
-  await dms_db.promise(
-    `DELETE FROM ${resolved.fullName} WHERE ${jsonField('data', 'report_id')} = $1;`,
+  const deleted = await dms_db.promise(
+    `DELETE FROM ${resolved.fullName} WHERE ${jsonField('data', 'report_id')} = $1 RETURNING id;`,
     [String(row.id)]
   );
+  console.log(`[page-delete-hook] npmrds_report_page_delete: removed ${deleted.length} reports_snap_2 row(s) for page #${row.id}`);
 }
 
 module.exports = onPageDeleted;

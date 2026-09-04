@@ -20,15 +20,18 @@ const loaded = [];
 for (const [name, modulePath] of HANDLERS) {
   try {
     loaded.push([name, require(modulePath)]);
+    console.log(`[page-delete-hook] Registered: ${name}`);
   } catch (e) {
     console.error(`[page-delete-hook] SKIPPED ${name} (${modulePath}): ${e.message}`);
   }
 }
+console.log(`[page-delete-hook] Loaded ${loaded.length} of ${HANDLERS.length} page-delete hook(s)`);
 
 module.exports = async function onPageDeleted(row, ctx) {
   for (const [name, handler] of loaded) {
     try {
       await handler(row, ctx);
+      console.log(`[page-delete-hook] ${name} ran for ${row.app}/${row.type}#${row.id}`);
     } catch (e) {
       console.error(`[page-delete-hook] ${name} failed for ${row.app}/${row.type}#${row.id}: ${e.message}`);
     }

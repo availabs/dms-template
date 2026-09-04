@@ -26,8 +26,12 @@ in `HANDLERS` independently and composes them into the one function `dms-server`
 ```js
 module.exports = async function onPageDeleted(row, ctx) {
   for (const [name, handler] of loaded) {
-    try { await handler(row, ctx); }
-    catch (e) { console.error(`[page-delete-hook] ${name} failed for ...: ${e.message}`); }
+    try {
+      await handler(row, ctx);
+      console.log(`[page-delete-hook] ${name} ran for ${row.app}/${row.type}#${row.id}`);
+    } catch (e) {
+      console.error(`[page-delete-hook] ${name} failed for ${row.app}/${row.type}#${row.id}: ${e.message}`);
+    }
   }
 };
 ```
@@ -38,6 +42,17 @@ down with it. `dms-server` itself wraps the WHOLE composed call in another try/c
 (`cascadePageDelete`), so a total require failure of this file (bad path, syntax error) is logged
 and simply skipped — a page delete never fails or rolls back because of this mechanism, with or
 without a registered hook.
+
+**Logging.** At boot, `register_page_delete_hooks.js` logs each handler it loads
+(`[page-delete-hook] Registered: <name>`) and a total (`Loaded N of M page-delete hook(s)`) —
+mirrors `dama/datatypes/index.js`'s `Registered: <name>` / `Mounted routes for N datatype(s)`
+pair. At call time, `cascadePageDelete` in `dms.controller.js` logs
+`[page-delete-hook] dispatched for <app>/<type>#<id>` right after the composed hook returns
+(next to its existing failure log), and the composed function itself logs
+`[page-delete-hook] <name> ran for <app>/<type>#<id>` per handler. A concrete handler like
+`npmrds_report_page_delete_hook.js` additionally logs what it actually did (e.g. how many
+`reports_snap_2` rows it removed) — the dispatch-level logs only confirm the mechanism fired,
+not that a given handler's business logic matched anything.
 
 Zero behavior change for any deployment that doesn't set `DMS_PAGE_DELETE_HOOK` at all.
 
