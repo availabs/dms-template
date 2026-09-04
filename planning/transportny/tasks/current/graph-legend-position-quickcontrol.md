@@ -1,9 +1,10 @@
 # Graph legend position — template default + QuickControls pill
 
-**Project:** TransportNY · **Topic:** themes · **Status: BUILT, not yet live-verified** — code
-written 2026-09-01 per Ryan's go-ahead; live verification deliberately held (Ryan had another
-Claude session active on the same dev environment) — pick this up first next session. ·
-**Started:** 2026-09-01
+**Project:** TransportNY · **Topic:** themes · **Status: BUILT + live-verified working** (confirmed
+by Ryan 2026-09-04). **Default value changing 2026-09-04** — see note below; the `"bottom"` default
+this doc originally shipped is being flipped to `top`/`top-right` per Ryan's feedback batch, tracked
+in `npmrds-reports-routes-feedback-triage.md` Phase 1. Mechanism/pill itself stays as built, only the
+default value changes. · **Started:** 2026-09-01
 
 ## Objective
 
@@ -98,6 +99,12 @@ Set the NPMRDS default once, at the point a graph section is first minted, and l
   explicitly asked for **per-graph-type** defaults (e.g. bottom for Line, right for Bar) to be a
   real, easy-to-edit capability going forward, not just a single global constant — see
   `DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE` below, one map entry per graph type.
+- **Superseded 2026-09-04 (Ryan)**: live-verified `"bottom"` first, then changed his mind — new
+  default is `top`/`top-right`, paired with an ask to align the legend inline with the graph title
+  to save vertical space. Same one-line-per-type map, just different values; the QuickControls pill
+  and the 4 mint-site seeding mechanism described below are unaffected. See
+  `npmrds-reports-routes-feedback-triage.md` Phase 1 for the combined legend-default + title-alignment
+  work item.
 
 ## Part 2: new QuickControls "Legend" pill
 

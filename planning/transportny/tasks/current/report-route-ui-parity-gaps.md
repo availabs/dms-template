@@ -260,6 +260,11 @@ scoping. Permissions/ACL is now the only piece of the original 2026-07-27 ruling
    significantly since this gap was written (report-authoring-ux-overhaul.md's Tier 4A rebuilt
    `RouteRow.jsx` entirely, removing the pencil/Save gate site-wide) — re-check whether this
    specific input-commit bug still reproduces before picking it back up.
+   **Back in scope 2026-09-04:** Ryan's RRL feedback batch asks to combine the expand/edit
+   toggles so edit mode replaces the normal title+dates view in place (title becomes editable
+   again) — same surface as this gap. See Phase 2 of
+   `npmrds-reports-routes-feedback-triage.md`, which folds this rename-control fix in rather
+   than treating it as separate follow-up work.
 8. **Difference-graph anchor is "whichever instance was added to the report first"**
    (`route_comp_id` order) — invisible in the UI, so getting the sign right is a
    coin-flip unless you already know the add-order convention. The spec's `anchor`

@@ -17,9 +17,11 @@ template" editor for relative-date relationships) — Ryan asked to disregard th
 Revisit separately when he's ready to firm it up.
 
 **Process notes:**
-- New file only — no existing `.md` was edited (including `todo.md`), per Ryan's instruction that
-  other Claude sessions may have files open. A `todo.md` pointer to this doc should get added once
-  that's safe to do without colliding with concurrent work.
+- Held off editing existing `.md` files for the initial triage pass, per Ryan's instruction that
+  other Claude sessions may have files open. **Lifted 2026-09-04** — Ryan confirmed it's fine to
+  update docs now. `todo.md` got a pointer to this doc; `report-route-ui-parity-gaps.md` (gap #7) and
+  `graph-legend-position-quickcontrol.md` (default-value change) each got a same-day note so they
+  don't read as stale against the decisions below.
 - Do not touch `npmrds-reports-combined-page-design.md`, `ds-nav.js`, or `patterns.html` under
   `src/themes/transportny/TransportNY Design System/...` — those are a different, currently in-flight
   session's work (new/modified today, unrelated to this feedback batch).
