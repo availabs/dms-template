@@ -13,10 +13,10 @@ import { useReportCatalogRow } from './useReportCatalogRow';
 import TagsEditor from '../TagsEditor/TagsEditor';
 
 // The report canvas's page-header card (npmrds-report.html): kicker+meta → h1+purpose
-// → action stack → freshness footline. h1 and the published/draft pill read the page's
+// → action stack. h1 and the published/draft pill read the page's
 // own `title`/`published` fields directly (real page data, not duplicated into this
-// section's state); everything else (kicker label, meta line, purpose, freshness, the
-// tag editor, the optional Data link) is this component's own authored state, edited
+// section's state); everything else (kicker label, meta line, purpose, the
+// tag editor) is this component's own authored state, edited
 // inline in place, gated on `editPageMode` ALONE — same "no extra click" convention
 // ReportRouteList already uses (2026-09-01 correction, Workstream D: an author on
 // /edit/... shouldn't have to separately click this section into its own edit mode
@@ -267,11 +267,6 @@ export default function ReportPageHeader() {
 
         <div className={t.actionCol}>
           <div className={t.actionRow}>
-            {(canEdit || d.dataHref) && Button ? (
-              <Button activeStyle="compact" disabled={!d.dataHref} onClick={() => d.dataHref && window.open(d.dataHref, '_blank')}>
-                <Icon icon="Download" className={t.actionIcon} /><span className={t.actionLabel}>Data</span>
-              </Button>
-            ) : null}
             {Button ? (
               <Button activeStyle="compact" onClick={handleShare}>
                 <Icon icon="LinkSquare" className={t.actionIcon} /><span className={t.actionLabel}>{shareCopied ? 'Copied' : 'Share'}</span>
@@ -293,39 +288,8 @@ export default function ReportPageHeader() {
               <TagsEditor tags={reportTags} onChange={persistReportTags} user={user} Icon={Icon} theme={t} inline />
             </div>
           ) : null}
-          {canEdit ? (
-            <div className={t.dataHrefRow}>
-              <span className={t.inlineFieldLabel}>Data link</span>
-              <input
-                className={`${t.inlineInput} text-[11px] flex-1 min-w-[160px]`}
-                value={d.dataHref ?? ''}
-                placeholder="https://…"
-                onChange={e => set('dataHref', e.target.value)}
-              />
-            </div>
-          ) : null}
         </div>
       </div>
-
-      {canEdit ? (
-        <div className={t.freshnessEditRow}>
-          <span className={t.inlineFieldLabel}>Data source</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessLabel ?? ''} placeholder="npmrds speeds" onChange={e => set('freshnessLabel', e.target.value)} />
-          <span className={t.inlineFieldLabel}>complete through</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessComplete ?? ''} placeholder="jun 2026" onChange={e => set('freshnessComplete', e.target.value)} />
-          <span className={t.inlineFieldLabel}>partial</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessPartial ?? ''} placeholder="jul 2026 partial" onChange={e => set('freshnessPartial', e.target.value)} />
-          <span className={t.inlineFieldLabel}>since</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessSince ?? ''} placeholder="since jan 2017" onChange={e => set('freshnessSince', e.target.value)} />
-        </div>
-      ) : (d.freshnessLabel || d.freshnessComplete || d.freshnessPartial || d.freshnessSince) ? (
-        <div className={t.freshnessWrapper}>
-          {d.freshnessLabel ? <span className={t.freshnessDotWrap}><span className={t.freshnessDot} />{d.freshnessLabel}</span> : null}
-          {d.freshnessComplete ? <>{d.freshnessLabel ? <span className={t.freshnessSep}>·</span> : null}<span>complete through <span className={t.freshnessValue}>{d.freshnessComplete}</span></span></> : null}
-          {d.freshnessPartial ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessPartial}</span></> : null}
-          {d.freshnessSince ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessSince}</span></> : null}
-        </div>
-      ) : null}
 
       {usesTodayAnchor && baseDateFilter ? (
         <div className={t.asOfRow}>

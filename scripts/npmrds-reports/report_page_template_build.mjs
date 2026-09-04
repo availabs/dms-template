@@ -61,9 +61,6 @@ const headerElementData = {
   filters: { op: 'AND', groups: [] },
   display: {
     kickerLabel: h.kickerLabel ?? '', metaLine: h.metaLine ?? '', purpose: h.purpose ?? '',
-    dataHref: h.dataHref ?? '', freshnessLabel: h.freshnessLabel ?? '',
-    freshnessComplete: h.freshnessComplete ?? '', freshnessPartial: h.freshnessPartial ?? '',
-    freshnessSince: h.freshnessSince ?? '',
   },
   columns: [], data: [], externalSource: { columns: [] },
 };

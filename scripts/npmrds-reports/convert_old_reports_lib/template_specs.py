@@ -30,12 +30,13 @@ from .expressions import AADT_DIST_JOIN, DELAY_EXPR, HOUR_EXPR, META_JOIN, MONTH
 #    a follow-up round rather than built here.
 # Default `display.legend.position` for the templates below — kept in sync BY HAND with
 # `composeMeasureConfig.js`'s `DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE` (2026-09-01, Ryan's call:
-# bottom for now, may change/differ per graph type later). These two hand-built categories
+# bottom for now, may change/differ per graph type later; flipped to top 2026-09-04 — see that
+# map's own comment). These two hand-built categories
 # (this base LineGraph template + the 5 per-TMC BarGraph entries below) are the only templates
 # NOT composed via the real JS through `compose_bridge.py` (see this file's own header comment for
 # why) — every other template already inherits the JS-side default for free. If you change one
 # side, change the other.
-_DEFAULT_LEGEND_POSITION = {"LineGraph": "bottom", "BarGraph": "bottom"}
+_DEFAULT_LEGEND_POSITION = {"LineGraph": "top", "BarGraph": "top"}
 
 TEMPLATE_SPECS = {
     "tmc_travel_time_line_graph": {

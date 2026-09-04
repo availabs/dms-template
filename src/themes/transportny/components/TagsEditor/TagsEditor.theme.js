@@ -8,7 +8,7 @@ export const tagsEditorTheme = {
   tagsEditorWrapper: 'pt-1.5 border-t border-zinc-950/06',
   // `inline` mode (2026-09-01, ReportPageHeader's inline-next-to-Done placement): label sits
   // beside the chips in one row instead of stacked above them, no top divider (the header has its
-  // own separate divider rhythm already, via freshnessEditRow/dataHrefRow).
+  // own separate divider rhythm already, via dataHrefRow).
   tagsEditorWrapperInline: 'flex items-center flex-wrap',
   tagsEditorLabel: 'font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1',
   tagsEditorChips: 'flex flex-wrap items-center gap-1.5',

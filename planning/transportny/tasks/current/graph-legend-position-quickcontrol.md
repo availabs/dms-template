@@ -1,10 +1,13 @@
 # Graph legend position — template default + QuickControls pill
 
-**Project:** TransportNY · **Topic:** themes · **Status: BUILT + live-verified working** (confirmed
-by Ryan 2026-09-04). **Default value changing 2026-09-04** — see note below; the `"bottom"` default
-this doc originally shipped is being flipped to `top`/`top-right` per Ryan's feedback batch, tracked
-in `npmrds-reports-routes-feedback-triage.md` Phase 1. Mechanism/pill itself stays as built, only the
-default value changes. · **Started:** 2026-09-01
+**Project:** TransportNY · **Topic:** themes · **Status: BUILT + live-verified working**, including
+the 2026-09-04 default flip. Default is now `top`/`top-right` (was `bottom`/`bottom-right`,
+live-verified working 2026-09-01 then superseded same-day per Ryan's feedback batch — see note
+below). All 4 mint sites (`useAddGraphSection.js`, `compose_bridge.mjs`, `report_build.mjs`,
+`template_specs.py`'s hand-synced dict) updated together; live-verified via
+`npmrds-reports-routes-feedback-triage.md`'s Phase 1 work (paired with the new title/legend inline
+row — see that doc for the live-verification detail, not duplicated here). Mechanism/pill itself
+unchanged from what this doc built. · **Started:** 2026-09-01
 
 ## Objective
 
@@ -204,20 +207,31 @@ Ryan's "another Claude is using the dev environment right now" instruction): `no
 - `scripts/npmrds-reports/convert_old_reports_lib/template_specs.py`
 - `src/themes/transportny/components/QuickControls/index.jsx`
 
-## Testing checklist — NOT YET RUN (dev environment was in use by another session)
+## Testing checklist
 
+Original build's checklist (2026-09-01) was never run before the default flip superseded it. Status
+as of the 2026-09-04 flip work (see `npmrds-reports-routes-feedback-triage.md` for full detail):
+
+- [x] A brand-new graph created via AddGraphModal (the UI "+ Add Graph" flow, `useAddGraphSection.js`)
+  renders with the new default (`top`) position — verified live on a scratch page with a real route
+  and real ClickHouse data (`page_25`, since deleted).
 - [ ] `node scripts/npmrds-reports/probe_corpus.mjs` before/after (standing convention for any
-  RRL/report touch, per `report-authoring-ux-overhaul.md`'s testing-requirements section).
-- [ ] A brand-new graph created via AddGraphModal renders with the new default (bottom) position.
+  RRL/report touch, per `report-authoring-ux-overhaul.md`'s testing-requirements section) — **not
+  run this pass**, still owed.
 - [ ] A brand-new old-report conversion (Python converter) renders with the new default position,
-  for both a bridge-composed template and one of the 2 hand-built categories.
+  for both a bridge-composed template and one of the 2 hand-built categories — **not run**; only the
+  `_DEFAULT_LEGEND_POSITION` dict value was updated + `py_compile`-checked, not live-verified through
+  an actual conversion.
 - [ ] The new QuickControls pill changes an existing graph's legend position, live, without
-  entering the Settings drawer.
-- [ ] That change survives clicking a different QuickControls pill on the same card afterward
-  (Routes/Measure/When/Aggregate/Mode) — proves the "seed once, don't reassert" design actually
-  holds.
-- [ ] GridGraph's pill offers the 6-way corner set, every other chart type offers the 4-way set.
-- [ ] Update `src/dms/skills/authoring-graphs.md` / `traversing-report-pages.md` if live
-  verification surfaces anything they don't already say (standing project convention).
-- [ ] Use a dedicated scratch report for the live click-through, per this project's standing
-  convention — never a page Ryan might have open.
+  entering the Settings drawer — **not re-verified this pass** (unrelated to the default-value flip;
+  still resting on whatever verification the original 2026-09-01 build had, if any).
+- [ ] That change survives clicking a different QuickControls pill on the same card afterward — **not
+  re-verified this pass**.
+- [ ] GridGraph's pill offers the 6-way corner set, every other chart type offers the 4-way set —
+  **not re-verified this pass**.
+- [x] Update `src/dms/skills/traversing-dms-pages.md` if live verification surfaces anything it
+  doesn't already say — done (the `url_slug` prefix gotcha found while verifying Item 3, unrelated
+  to legend position specifically but from the same session).
+- [x] Use a dedicated scratch report for the live click-through, per this project's standing
+  convention — never a page Ryan might have open. Done (`page_25`, a `report_build.mjs`-built spec
+  page, both created and deleted this session).

@@ -1,6 +1,9 @@
 # NPMRDS Reports/Routes tools — 2026-09-04 feedback batch: triage
 
-**Project:** TransportNY · **Topic:** themes · **Status:** TRIAGE ONLY — not yet validated or implemented · **Started:** 2026-09-04
+**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **Phase 1 DONE** (all 4
+non-deferred items shipped + live-verified 2026-09-04; map TMC line-width and submodule graph-theme
+tuning remain deferred per Ryan's call, see below). Phase 2 (RRL panel restructure) not yet started.
+· **Started:** 2026-09-04
 
 ## Objective
 
@@ -59,28 +62,118 @@ open-ended polish last (so we're not tuning padding twice).
 
 Small, self-contained diffs with no design ambiguity. Good first batch.
 
-- **[Item 3]** Remove the "Data source · complete through…" line from the Report Header.
-  `src/themes/transportny/components/ReportPageHeader/ReportPageHeader.jsx:310-328` (both the
-  `canEdit` edit-row and the read-only `freshnessWrapper` display need removing — check whether the
-  underlying `dataHref`/freshness fields should also stop being written, or just stop rendering).
-- **[Item 1]** Button copy: `derive from…` → `use fixed dates` / `use relative dates`. Pure string
-  change, no layout impact — trivially separable from the rest of Item 1.
-- **[Item 4]** Increase TMC line-width on the maps. Map symbology/paint-layer change, not the graph
-  theme file — see `src/dms/skills/editing-map-symbologies.md`.
-- **[Item 4]** Rounded corners on graph/section cards to match the rest of the theme.
-- **[Item 4]** Legend default position + title/legend alignment, bundled — both **decided 2026-09-04**:
-  flip `DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE` in
-  `src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js` from `bottom` to
-  `top`/`top-right` (the `bottom` build is already live-verified working, this is just a value change,
-  not new mechanism); and improve the graph-native title so it sits inline/vertically aligned with the
-  legend to reduce vertical space. Ryan chose this as the smaller lift over migrating titles to
-  section-level (see resolved Phase 3 below) — no longer blocked on that decision.
-- **[Item 4]** Default graph theme visual tuning in
-  `src/dms/packages/dms/src/ui/components/graph_new/theme.js` (submodule — route the actual task file
-  to `src/dms/planning/` when picked up): font sizes/colors, y-axis ticks-without-axis-line, bar
-  `categoryPercentage`/`barPercentage`-style inner spacing default raised above 0. Bounded, concrete,
-  no open design question — distinct from the open-ended "spend more time on legends/padding" asks
-  bundled into Phase 5.
+**Deferred out of this pass (2026-09-04, Ryan's call, made when starting implementation):**
+- Map TMC line-width increase — pushed to as late as possible in the overall sequence. Reason: hard
+  to verify visually, and re-validating a map change is costly if something else later touches map
+  code; better to do it last so nothing after it forces a re-check. Still Item 4, still belongs in
+  a Phase-1-shaped bucket whenever it's picked up — see `src/dms/skills/editing-map-symbologies.md`.
+- Default graph theme visual tuning in `graph_new/theme.js` (submodule) — pulled out entirely. Ryan
+  wants to tackle this as its own dedicated piece of work with more thought, not bundled into this
+  quick-wins batch. Still needs its own task file under `src/dms/planning/` when picked up (per the
+  routing note originally here).
+
+Remaining four items, implemented this pass:
+
+- [x] **[Item 3]** Remove the "Data source · complete through…" line from the Report Header — **DONE
+  2026-09-04**. Removed both the `canEdit` edit-row and read-only `freshnessWrapper` block from
+  `ReportPageHeader.jsx`, the now-unused `freshness*` style keys from `ReportPageHeader.theme.js`,
+  and the `freshnessLabel/Complete/Partial/Since` fields from the default state
+  (`ReportPageHeader/index.jsx`) and the master template spec (`page_template_specs/report_page.json`
+  + `report_page_template_build.mjs`) so new reports stop seeding the dead fields at all — confirmed
+  via DB query that no existing report had ever populated them, so this was a pure no-op removal, not
+  a data-loss risk. **Expanded scope, Ryan's call while implementing:** also removed the "Data" link
+  button + "Data Link" edit-row (`dataHref`) from the same header — confirmed via DB query no
+  existing report had a populated `dataHref` either, so same zero-data-loss removal. Rebuilt the live
+  master "Report Page" template row (id 2187021) via
+  `node scripts/npmrds-reports/report_page_template_build.mjs --apply` so new reports stop carrying
+  either dead field. Live-verified in edit mode on `reports/beacon_9_d_jan_25_vs_26`: header now shows
+  kicker/title/purpose → Share/Print/Done → tags only, no freshness row, no Data button/link row;
+  "NO CHANGES" indicator confirmed nothing was mutated by the check. New utility script written
+  during this: `scripts/npmrds-reports/check_page_exists.py` (lists/filters real `npmrds_sub|page`
+  url_slugs from the DB, since `/edit/<slug>` and `/<slug>` both silently fall through to an unrelated
+  page instead of 404ing on a bad guess).
+- [x] **[Item 1]** Button copy: `derive from…` → `use fixed dates` / `use relative dates` — **DONE
+  2026-09-04**. Only one button actually needed renaming — `RouteRow.jsx`'s "Use fixed dates instead"
+  (fixed→derived escape hatch) already matched; "Derive from another route instead" (the
+  fixed-mode button that switches TO derived dates) is now "Use relative dates instead", matching
+  its sibling's phrasing. Live-verified on a fresh scratch page (`reports/page_25`, created and
+  deleted this session, never published): added 2 routes, confirmed both buttons render with the new
+  copy, clicked "Use relative dates instead" and confirmed it correctly opens the derive-controls
+  panel (Derive From/Pattern/Span/etc.) with "Use fixed dates instead" to switch back — the label
+  rename didn't touch the mode-switch logic, `onClick={startDeriveMode}` unchanged.
+- [x] **[Item 4]** Rounded corners on graph/section cards to match the rest of the theme — **DONE
+  2026-09-04, future-default only (Ryan's explicit call, not a retroactive backfill)**. The theme
+  already fully supports this per-section (`border: 'full'` → `themev2.js`'s
+  `pages.sectionArray.styles[0].border.full`, `rounded-[8px] border ... bg-white shadow-sm` — same
+  recipe as `ReportPageHeader`'s wrapper) via the section-menu's own Border control; the gap was
+  that neither place that MINTS a brand-new graph/map/info-box section set it, so new sections
+  defaulted to `border: 'none'` (square, no card). Both mint points fixed, sharing one real constant
+  (Ryan's call, not two hardcoded literals) via a new file,
+  `src/themes/transportny/components/ReportRouteList/reportSectionDefaults.js`
+  (`DEFAULT_GRAPH_SECTION_BORDER = 'full'`):
+  - `useAddGraphSection.js` (UI "+ Add Graph" flow) — plain import.
+  - `report_build.mjs`'s `graphSectionData()` (CLI spec-driven builder) — loaded through the same
+    `server.ssrLoadModule` Vite-SSR bridge the script already uses for `composeMeasureConfig.js`,
+    not a re-hardcoded string.
+  Live-verified: built a scratch report (`report_build.mjs` against a throwaway spec, since deleted)
+  and confirmed both in the raw DB row (`"border":"full"` on the AVL Graph section) and visually in
+  edit mode — the graph card now renders with the same rounded/white/shadow chrome as the header.
+  Existing reports are untouched and keep their current (square) chrome until an author edits the
+  section's Border control themselves or a future `--update` run regenerates it.
+- [x] **[Item 4]** Legend default position + title/legend alignment — **DONE 2026-09-04**.
+
+  **Legend default position flip** — `DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE` in
+  `composeMeasureConfig.js` flipped `bottom`→`top` (BarGraph/LineGraph) and `bottom-right`→`top-right`
+  (GridGraph). Same "seeded once, at real section-creation time only" mechanism as before (3 JS mint
+  sites + 1 hand-synced Python dict) — also updated the 4th, easy-to-miss sync point:
+  `convert_old_reports_lib/template_specs.py`'s `_DEFAULT_LEGEND_POSITION` dict (Python can't import
+  the JS map, kept in sync BY HAND per that file's own header comment — would have silently drifted
+  back to `bottom` for the 2 hand-built template categories otherwise).
+
+  **Title/legend inline row** — genuinely shares one row (title left, legend right) instead of
+  stacking, but **opt-in and theme-scoped**, not a blanket change to shared `graph_new` code (Ryan's
+  explicit ask mid-implementation: many other sites use these components, and other NPMRDS graphs —
+  Macro View, MAP-21 PM3 — may still want the old stacked look). Design, in order of "where does this
+  live":
+  1. **New avlGraph theme style**, `src/themes/transportny/themev2.js`'s `avlGraph.styles[1]`,
+     name `"reportInlineTitle"` — inherits every key from `styles[0]` ("default") except one new key,
+     `titleInlineWithLegend: true`. The site-wide default (`options.activeStyle: 0`) is untouched.
+  2. **Selected per-section**, not site-wide — a section's own top-level `activeStyle` field (same
+     level as `border`; traced via `section.jsx:329` → `ComponentContext` →
+     `graph_new/index.jsx`'s `getComponentTheme(contextTheme, 'avlGraph', activeStyle)`) is set to
+     `'reportInlineTitle'` **only** by the two places that mint a brand-new Report-page `'AVL Graph'`
+     section — `report_build.mjs`'s `graphSectionData()` and `ReportRouteList/useAddGraphSection.js`
+     (both gated on `elementType === 'AVL Graph'`; Map/Spreadsheet-backed InfoBox/RouteCompare never
+     get it, they have no avlGraph theme to select). Every other NPMRDS graph, and every other site,
+     never sets `activeStyle` → stays on `"default"`, completely untouched.
+  3. **Rendering logic** — `graph_new/GraphComponent.jsx` reads `theme.titleInlineWithLegend`; when
+     true AND `legend.show` AND `legend.position` starts with `"top"`, it passes the already-built
+     `<GraphTitle>` element down as a new `titleNode` prop instead of rendering it standalone above
+     the chart. **Safety net:** any other combination (legend hidden, or positioned left/right/
+     bottom/bottom-*) falls back to the normal standalone title — the title can never be silently
+     dropped. `LineGraph.jsx`/`BarGraph.jsx`/`GridGraph.jsx` (the 3 chart types NPMRDS's own
+     vocabulary uses) each render `{props.titleNode}` as a sibling of the legend inside their
+     existing top-legend-row block, switching that row's `justify-center` (or GridGraph's
+     corner-specific `justify-end`) to `justify-between` only when a `titleNode` is actually passed —
+     byte-identical layout otherwise. GridGraph's top-left/top-right corner distinction is
+     deliberately superseded by plain title-left/legend-right once a title is sharing the row (see
+     that file's own comment for why this is a reasonable simplification, not an oversight).
+
+  **Live-verified**, both mint points, both with real ClickHouse data:
+  - `useAddGraphSection.js` (UI "+ Add Graph"): built a scratch page (`page_25`, real "+ Create
+    Report" → "+ Add Route" → "+ Add Graph" flow, since deleted) with a real route/date range —
+    confirmed visually: "TRAVEL TIME (MIN)" title and "■ Route 5 Part" legend swatch render side by
+    side, title left / legend right, one row, on a rounded card.
+  - `report_build.mjs` (CLI): built a scratch report from a spec (since deleted) — confirmed via raw
+    DB read that the section row carries `activeStyle: "reportInlineTitle"`, `border: "full"`,
+    `legend.position: "top"` together, and via DOM inspection that the new
+    `flex items-center shrink-0 justify-between gap-3` wrapper renders with exactly 2 children
+    (title node + legend node) — this particular scratch report's own chart had no visible data
+    (CLI-materialized sections don't self-bind to RRL's routes — a known, pre-existing, unrelated
+    gotcha, not a defect in this change), but the structural proof is the same either way.
+  - **Backward compatibility**: re-checked the existing, unrelated `reports/beacon_9_d_jan_25_vs_26`
+    report (real, published, pre-existing) — renders exactly as before: square/borderless cards, no
+    legend row, standalone title. Confirms the opt-in scoping actually works, not just in theory.
 
 ### Phase 2 — RRL panel restructure (Item 1, remaining pieces)
 

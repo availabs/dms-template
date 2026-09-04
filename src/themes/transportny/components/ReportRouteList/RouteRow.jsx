@@ -348,8 +348,8 @@ export default function RouteRow({
               <div className={t.facetLabel}>dates</div>
               {/* Copy/paste is a LITERAL span, which would silently conflict with a derived
                   row's live-computed value — Fixed-only, same as before. No pencil anymore
-                  (2026-08-19, item 4A): the fields below are always live, and "Derive from
-                  another route instead" / "Use fixed dates instead" ARE the mode switches. */}
+                  (2026-08-19, item 4A): the fields below are always live, and "Use relative dates
+                  instead" / "Use fixed dates instead" ARE the mode switches. */}
               {canMutateRow && dateMode === 'fixed' && (
                 <div className={t.windowActionsRow}>
                   <button type="button" className={t.iconBtn} title="Copy this date span" onClick={onCopyWindow}>
@@ -481,7 +481,7 @@ export default function RouteRow({
                   <span className={t.shiftKeepsLength}>keeps the length</span>
                 </div>
                 {eligibleBases.length > 0 && (
-                  <button type="button" className={`${t.pill} mt-1.5`} onClick={startDeriveMode}>Derive from another route instead</button>
+                  <button type="button" className={`${t.pill} mt-1.5`} onClick={startDeriveMode}>Use relative dates instead</button>
                 )}
               </div>
             )}

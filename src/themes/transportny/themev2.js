@@ -2024,6 +2024,22 @@ const graph = {
         labelFontFamily: "Proxima Nova, 'Source Sans 3', system-ui, sans-serif", labelFontSize: "13px", labelFontWeight: "600", labelColor: "#334155" },
       legend: { show: false },
     },
+  }, {
+    // Report-page-only variant (2026-09-04, Ryan) — selected per-section via that
+    // section's own `activeStyle` field (see `section.jsx`'s `value?.activeStyle` →
+    // `graph_new/index.jsx`'s `getComponentTheme(contextTheme, 'avlGraph', activeStyle)`),
+    // set ONLY by the two places that mint a brand-new Report-page graph section
+    // (`report_build.mjs`'s `graphSectionData()` and `ReportRouteList/useAddGraphSection.js`).
+    // Every other NPMRDS graph (Macro View, MAP-21 PM3, anything hand-authored elsewhere)
+    // never sets `activeStyle`, so it stays on `"default"` above, untouched — this is
+    // deliberately NOT the site-wide avlGraph default, because other NPMRDS graphs may
+    // still want the old stacked title/legend look. Inherits every other key from
+    // `"default"` (styles[0]) except the one below — NOT `headerWrapper`: GraphComponent.jsx
+    // falls back to the normal standalone title render (using the default headerWrapper)
+    // whenever there's no top-row legend to actually share a row with (legend hidden, or
+    // positioned somewhere other than top/top-*), so the title is never silently dropped.
+    name: "reportInlineTitle",
+    titleInlineWithLegend: true,
   }],
 };
 

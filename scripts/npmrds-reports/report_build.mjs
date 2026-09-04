@@ -994,12 +994,18 @@ const { createServer } = await import('vite');
 const server = await createServer({ root: REPO, server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 
 let composedStates;
+let DEFAULT_GRAPH_SECTION_BORDER;
 try {
   const mp = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/index.js');
   const cmc = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js');
   const graphCfg = await server.ssrLoadModule(
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/graph_new/config.jsx');
   const avlGraph = graphCfg.default;
+  // Shared with useAddGraphSection.js (the UI "+ Add Graph" flow's counterpart to this
+  // function) via reportSectionDefaults.js, loaded through the same ssrLoadModule bridge
+  // already used for composeMeasureConfig.js — one real module, not a duplicated literal.
+  ({ DEFAULT_GRAPH_SECTION_BORDER } = await server.ssrLoadModule(
+    '/src/themes/transportny/components/ReportRouteList/reportSectionDefaults.js'));
 
   // Validate picks against the vocabulary before composing, so a typo fails
   // loudly here instead of producing a silently empty graph.
@@ -1530,15 +1536,26 @@ function clonedSection(tmplSection, trackingId) {
 }
 
 function graphSectionData(g, i, trackingId) {
+  const elementType = g._mapElementType || g._infoBoxElementType || g._routeCompareElementType || 'AVL Graph';
   return {
     type: COMPONENT_TYPE,
     group: 'default',
     title: g.title || '',
     parent: parentRef,
     trackingId,
+    // Rounded card by default (2026-09-04, Ryan) — see reportSectionDefaults.js for why
+    // this is a shared constant, not a literal. Future-default only, not retroactive —
+    // existing reports keep their current chrome until an author (or a future --update
+    // run) touches them.
+    border: DEFAULT_GRAPH_SECTION_BORDER,
+    // Inline title/legend row (2026-09-04, Ryan) — selects the `reportInlineTitle` avlGraph
+    // style (transportny/themev2.js), which is what actually reads `theme.titleInlineWithLegend`
+    // in GraphComponent.jsx. Only meaningful for the real chart component ('AVL Graph' —
+    // Map/Spreadsheet-backed InfoBox/RouteCompare sections have no avlGraph theme to select).
+    ...(elementType === 'AVL Graph' ? { activeStyle: 'reportInlineTitle' } : {}),
     ...(g.size ? { size: String(g.size) } : {}),
     element: {
-      'element-type': g._mapElementType || g._infoBoxElementType || g._routeCompareElementType || 'AVL Graph',
+      'element-type': elementType,
       // element-data is a JSON STRING, not an object (see the CLI skill's
       // element-data gotcha) — a nested object here is silently unusable.
       'element-data': JSON.stringify(composedStates[i]),

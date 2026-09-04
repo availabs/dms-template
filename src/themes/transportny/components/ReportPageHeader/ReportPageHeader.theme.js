@@ -1,5 +1,5 @@
 // ReportPageHeader — the report canvas's page-header card (npmrds-report.html):
-// kicker+meta → h1+purpose → action stack → freshness footline. Local-default theme,
+// kicker+meta → h1+purpose → action stack. Local-default theme,
 // same convention as ReportRouteList: no site theme override exists today, so this
 // file is the sole source of truth — see reportRouteListTheme for precedent.
 export const reportPageHeaderTheme = {
@@ -31,10 +31,8 @@ export const reportPageHeaderTheme = {
   actionRow: "flex items-center gap-2 flex-wrap justify-end",
   actionIcon: "size-4 text-[#37576B]",
   actionLabel: "font-display uppercase text-[12.5px] tracking-wide",
-  dataHrefRow: "flex items-center gap-2",
   // Inline tag editor next to Done (2026-09-01, Workstream D) — right-aligned, wraps under the
-  // action buttons naturally rather than a hard width cap (which clipped/misaligned against the
-  // narrower dataHrefRow beneath it — caught live).
+  // action buttons naturally rather than a hard width cap.
   tagsRow: "w-full flex justify-end",
   // TagsEditor theme override, matched to this header's own vocabulary instead of the shared
   // component's generic blue-chip default (which visibly clashed with this design system — caught
@@ -48,14 +46,6 @@ export const reportPageHeaderTheme = {
   tagsEditorSuggestionChip: "inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-dashed border-slate-300 font-mono text-[10.5px] text-slate-400 hover:border-[#1F3F8F] hover:text-[#1F3F8F] cursor-pointer",
   tagsEditorInput: "bg-transparent border-b border-dashed border-slate-300 focus:border-[#1F3F8F] focus:outline-none text-[10.5px] font-mono placeholder:text-slate-400 py-0.5 min-w-[6rem]",
   tagsEditorError: "font-mono text-[10px] text-red-600 w-full text-right mt-1",
-
-  // ── freshness footline ──
-  freshnessWrapper: "mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1",
-  freshnessDotWrap: "text-emerald-700 inline-flex items-center gap-1.5",
-  freshnessDot: "size-1.5 rounded-full bg-emerald-500",
-  freshnessSep: "text-slate-300",
-  freshnessValue: "text-[#0f1722]",
-  freshnessEditRow: "mt-4 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2",
 
   // ── "Viewing as of" (Dynamic Reports using the Today anchor only) ──
   asOfRow: "mt-3 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500",
