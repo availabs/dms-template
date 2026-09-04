@@ -86,6 +86,16 @@ const lexical = (...nodes) => JSON.stringify({
   bgColor: "rgba(0,0,0,0)", isCard: "", showToolbar: false,
   text: { root: { type: "root", version: 1, direction: "ltr", format: "", indent: 0, children: nodes } },
 });
+// A BARE lexical document — the shape a lexical CARD CELL's staticValue must have
+// (LexicalView's parseValue tests `JSON.parse(value)?.root`). Copied verbatim from
+// build_npmrds_reports.mjs, used the same way: the header title as a Card cell so it can
+// centre on `height:'fill'` (a lexical SECTION cannot centre and pays 32px of padding).
+const lexDoc = (...nodes) => JSON.stringify({
+  root: { type: "root", version: 1, direction: "ltr", format: "", indent: 0, children: nodes },
+});
+const lexCell = (name, nodes, extra = {}) =>
+  ({ name, origin: "static", type: "lexical", staticValue: lexDoc(...nodes),
+     show: true, hideHeader: true, justify: "left", cellPadding: 0, ...extra });
 
 function assertFlat(elementData, where) {
   const SHADOW = new Set(["layout-container", "layout-item"]);
@@ -165,14 +175,28 @@ const searchControl = () => JSON.stringify({
       filters: [{
         type: "external", operation: "like", values: [], isMulti: false,
         usePageFilters: true, searchParamKey: SEARCH_KEY, display: "",
+        // The mockup puts this copy INSIDE the box as the input's placeholder, not in a
+        // separate label row above it (npmrds-reports-list.html: `<input placeholder="Search
+        // by name or description…">`). CORRECTED 2026-09-04: this section is `elementType:
+        // 'Filter'`, whose data is rendered by `RenderFilterValueSelector.jsx` — a DIFFERENT
+        // component from `ConditionValueInput.jsx` (that one only renders for the v2
+        // `filters.groups` tree path, via `ExternalFilters.jsx`; this page's tree is empty, so
+        // it renders null) and, separately, `elementType:'Filter'` data is never run through
+        // migrateToV2's legacy-conversion at all (`compName === 'Filter'` returns it verbatim).
+        // Both the `migrateToV2.js` change AND the assumption this field alone would work were
+        // wrong — `RenderFilterValueSelector.jsx` hardcoded a literal `'search...'` for every
+        // 'like' leaf, ignoring `filter.placeholder` entirely; fixed there (added a
+        // `filter.placeholder ||` fallback, same pattern `ConditionValueInput.jsx` already has)
+        // — that is the actual live path this key reaches.
+        placeholder: "Search by name or description…",
       }],
     },
   ],
   filters: { op: "AND", groups: [] },
-  // No `filterStyle` override — the library default (a visible label above the box) is a known
-  // cosmetic mismatch next to this row's other h-10 controls, deferred to Alex (see the toggle's
-  // own comment above for the "no shared-theme edits this session" call).
-  display: { totalLength: 1, readyToLoad: true, hideExternalToggle: true },
+  // `filterStyle: "header_search"` — hides the (now redundant) label row and fills+centers the
+  // control so it lands on the row's mid-line beside its h-10 neighbors, matching the Templates
+  // page's header vertical rhythm. Fixed 2026-09-04 — see themev2.js's `filters` styles[6].
+  display: { totalLength: 1, readyToLoad: true, hideExternalToggle: true, filterStyle: "header_search" },
 });
 
 // ── the RESULTS TABLE — `elementType:'Spreadsheet'`, native pagination + native
@@ -262,46 +286,87 @@ const GROUPS = [
 const SECTIONS = [
 
   // ══════════ HEADER — same 5-section, 12-col budget as build_npmrds_reports.mjs ══════════
-  { group: B.header, size: "2", padding: { left: "0", top: "0" }, data: lexical(
-    styled("displayMDCaps", text("All reports"), text(".", 0, GOLD)),
-  )},
+  // VERTICAL ALIGNMENT — FIXED 2026-09-04 (was pinned to the section's top; build_npmrds_reports.mjs
+  // fixed the SAME row on the Templates page 2026-09-03 and this page never got the matching
+  // treatment). Every header section here now takes `height:'fill'` and centres its own content,
+  // same recipe as the Templates page: the title becomes a Card (a lexical SECTION cannot centre
+  // and pays 32px of padding) with `cellsVerticalAlign:'stretch'`, the two Card toggle/New-route
+  // cells get the same, and the Filter search control gets a `filterStyle` that fills+centers
+  // (see searchControl() above and themev2.js's `filters` styles[6]).
+  { group: B.header, size: "2", padding: { left: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
+    lexCell("title", [styled("displayMDCaps", text("All reports"), text(".", 0, GOLD))]),
+    SEED("title_seed"),
+  ], {
+    cardStyle: "rowaligned",
+    cellsGridSize: 1, cellsPadding: 0, cardsPadding: 0,
+    cellsVerticalAlign: "stretch", cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
+  }) },
 
   // The VIEW TOGGLE — same control as the Templates page, active side flipped: "Templates" is
   // now the LINK cell (back to /reports), "All reports" is the active plain cell.
   //
-  // KNOWN, DEFERRED (2026-09-03, Ryan's call): using `viewTabOff`/`viewTabOn` verbatim here is
-  // cosmetically wrong — those two tokens bake "the active/dark cell is always the LEFT one"
-  // into the same class as the color (true on the Templates page, false here — Templates stays
-  // LEFT per the mockup's own toggle order, but All reports is the ACTIVE one and stays on the
-  // RIGHT), so the rounded corners + shared seam land on the wrong sides and the two cells don't
-  // read as one segmented control. A real fix needs new theme tokens (a `viewTabOffLeft`/
-  // `viewTabOnRight` pair) or a component-level change — deliberately NOT done here: shared
-  // theme edits are Alex's call, not this session's, per Ryan's explicit ask. Ship the known
-  // cosmetic bug today; fix it tomorrow with Alex.
-  { group: B.header, size: "2", padding: { left: "0", right: "0" }, elementType: "Card", data: card(REPORTS, [
-    stat("view_templates", "Templates", "viewTabOff", { isLink: true, location: L.reports, searchParams: "none" }),
-    stat("view_all", "All reports", "viewTabOn"),
+  // FIXED 2026-09-04 (was: KNOWN, DEFERRED 2026-09-03). `viewTabOff`/`viewTabOn` baked "the
+  // active/dark cell is always the LEFT one" into the same class as the color — true on the
+  // Templates page, false here (Templates stays LEFT per the mockup's fixed toggle order, but
+  // All reports is the ACTIVE one and stays on the RIGHT), so the rounded corners + border-drop
+  // seam landed on the wrong sides: a visible gap between the two pills, each one's rounded
+  // corner facing OUT instead of the two square corners meeting in the middle. Fixed with two
+  // new POSITION-aware theme tokens (themev2.js: `viewTabOffLeft`/`viewTabOnRight`) rather than
+  // touching the existing pair, so the Templates page (already correct) is untouched. Also adds
+  // `height:'fill'` + `cellsVerticalAlign:'stretch'` (see the HEADER note above).
+  //
+  // SECOND FIX, same day: correcting the token pair above was not sufficient — "Templates" (the
+  // LINK cell here) still had a ~14px gap from "All reports" even with the right corners/colors.
+  // Root cause is a level below the theme tokens: a LINK cell's wrapper <div> (theme.value,
+  // `px-3 pb-3...`) is a SEPARATE parent of the <a> the token classes land on, so the token's
+  // `!important` padding can't reach it — a STATIC cell doesn't have this problem (its wrapper
+  // classes merge onto the SAME element the token lands on, so `!important` wins there). Fixed
+  // with `cardStyle:'flush'` (themev2.js dataCard styles, new — `rowaligned` only drops the
+  // vertical half of this padding, not the horizontal `px-3` that was causing the gap).
+  // `cardsVerticalAlign:'stretch'` — REQUIRED alongside `layoutModel:'v2'` (the `flush` style):
+  // Card.layout.js's `resolveCardsPackMode` inverts the default between the two layout models —
+  // v1 (every OTHER Card on this row) defaults to 'stretch' packing unless told 'top'; v2 defaults
+  // to 'top' packing unless told 'stretch'. Without this, switching to v2 silently top-packed the
+  // toggle inside its (now taller, from the search-box fix below) section instead of centering
+  // it — found live, 2026-09-04: all 4 other header controls centered at the row's y=46, the
+  // toggle alone sat at y=40 (flush with the section's own top edge).
+  { group: B.header, size: "2", padding: { left: "0", right: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
+    stat("view_templates", "Templates", "viewTabOffLeft", { isLink: true, location: L.reports, searchParams: "none" }),
+    stat("view_all", "All reports", "viewTabOnRight"),
     SEED("view_seed"),
   ], {
+    cardStyle: "flush",
+    cardsVerticalAlign: "stretch",
     cellsGridSize: 2, cellsGridGap: 0, cellsPadding: 0, cardsPadding: 0,
     cellsTracksTemplate: "minmax(0,max-content) minmax(0,max-content)",
-    cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
+    cellsVerticalAlign: "stretch", cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
   }) },
 
   // The SEARCH control — a REAL native filter (not ChooseReportButton/a modal trigger — there is
-  // nothing to open on this page). full-text-search-filter.md step 1. Ships with the library
-  // default Filter style (no `filterStyle` override) — same "defer shared-theme changes to
-  // Alex" call as the toggle above; the stacked label-above-box look is a known cosmetic gap.
-  { group: B.header, size: "4", elementType: "Filter", data: searchControl() },
+  // nothing to open on this page). full-text-search-filter.md step 1. `height:'fill'` +
+  // `filterStyle:'header_search'` (searchControl() above) fill+center it — FIXED 2026-09-04, was
+  // the stacked label-above-box known cosmetic gap.
+  //
+  // size:5 (was 4) — FIXED 2026-09-04: this section's original size (4) + New route's (2, below)
+  // summed to the same 12-column budget as the Templates page's ChooseReportButton(5) + New
+  // route(1), but split differently — found live, the Create Report / New route cluster sat
+  // visibly closer to page-center on this page than on Templates (New route's own column a full
+  // track wider pushed the pair left). Matching Templates' exact split (5/2/1, not just the same
+  // total) lands the button cluster in the same place on both pages.
+  { group: B.header, size: "5", height: "fill", elementType: "Filter", data: searchControl() },
 
-  { group: B.header, size: "2", padding: { right: "0" }, elementType: "CreateReportButton", data: "{}" },
+  { group: B.header, size: "2", padding: { right: "0" }, height: "fill", elementType: "CreateReportButton", data: "{}" },
 
-  { group: B.header, size: "2", padding: { left: "0", right: "0" }, elementType: "Card", data: card(REPORTS, [
+  { group: B.header, size: "1", padding: { left: "0", right: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
     stat("new_route", "New route", "btnOutlineLG", { justify: "left", isLink: true, location: L.routeCreation, searchParams: "none" }),
     SEED("route_seed"),
   ], {
+    // `rowaligned` — same fix as build_npmrds_reports.mjs's New route Card: a LINK cell keeps
+    // `theme.value`'s padding on its value div while the token lands on the <a>, which off-centres
+    // the button inside its cell under the default style.
+    cardStyle: "rowaligned",
     cellsGridSize: 1, cellsPadding: 0, cardsPadding: 0,
-    cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
+    cellsVerticalAlign: "stretch", cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",
   }) },
 
   // ══════════ § 01 · THE LIST — ONE band, TWO sibling sections (rail + table) ══════════

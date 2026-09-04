@@ -352,6 +352,13 @@ to it can never be "off".
   updates page 2217965 (`reports/list`), idempotent re-run.
 - `src/themes/transportny/qa_skills/tools/builds/build_npmrds_reports.mjs` — flipped the "All
   reports" toggle cell from inert to a real link (`isLink`, `location: "/reports/list"`).
+- 2026-09-04 header-alignment fixes (see "Shared-theme CSS" section above for the full story):
+  `src/themes/transportny/themev2.js` (2 new `viewTab*` tokens, `flush` dataCard style,
+  `header_search` filters style), `build_npmrds_reports_list.mjs` (header sections rebuilt), and
+  3 files in the `src/dms` submodule — `.../dataWrapper/components/filters/RenderFilters.jsx`,
+  `.../filters/Components/RenderFilterValueSelector.jsx` (theme-threading fix + placeholder
+  fallback), and `.../dataWrapper/migrateToV2.js` (touched then reverted — confirmed dead for
+  `elementType:'Filter'` sections).
 
 ## Testing checklist — all verified live 2026-09-03 (dev2, page 2217965, `/npmrds/edit/reports/list`)
 
@@ -450,19 +457,93 @@ live, per-row existence check on the list page itself — the native-Spreadsheet
 no hook for the latter without reintroducing custom fetch code, which this task deliberately
 avoided (see the FINAL Architecture decision above).
 
-## Shared-theme CSS — reverted, deferred to Alex (2026-09-03)
+## Shared-theme CSS — reverted, deferred to Alex (2026-09-03); FIXED 2026-09-04
 
-Ryan's explicit call: remove every style change this session made to `themev2.js` (a shared file
-another contributor, Alex, is actively working in — the source of the git merge conflict this
-session hit) and defer ALL toggle/search-box CSS fixes to him. Done: `themev2.js` reverted to
-exactly the committed HEAD (`git checkout HEAD --`), removing the `viewTabOffLeft`/
-`viewTabOnRight`/`search_bar`/`bare` additions this session made. Both build scripts
-(`build_npmrds_reports.mjs`, `build_npmrds_reports_list.mjs`) updated to reference only tokens
-that still exist post-revert (`viewTabOn`/`viewTabOff`, no `filterStyle` override) — both toggle
-and search-box KNOWN COSMETIC BUGS (mismatched border/gap on the toggle pills; stacked
-label-above-box on the search input) are shipped as-is today, flagged in-code as deferred, not
-fixed. The functional `isLink` wiring (the toggle actually navigating between the two pages)
-is unaffected — that's page-script logic, not a theme change, and was kept.
+Ryan's explicit call (2026-09-03): remove every style change that session made to `themev2.js` (a
+shared file another contributor, Alex, is actively working in — the source of the git merge
+conflict that session hit) and defer ALL toggle/search-box CSS fixes to him. `themev2.js` was
+reverted to exactly the committed HEAD, both build scripts updated to reference only tokens that
+still existed post-revert, and both KNOWN COSMETIC BUGS (mismatched border/gap on the toggle
+pills; stacked label-above-box on the search input) shipped as-is, flagged in-code as deferred.
+
+**Fixed 2026-09-04**, after Ryan re-raised it with a fresh screenshot. Took THREE passes to get
+right — the first two looked fixed from a screenshot but weren't at the pixel level, and Ryan
+caught a real mistake in the third (see below). Root causes, in the order found:
+
+1. **Toggle gap + reversed corners** — `viewTabOn`/`viewTabOff` (themev2.js) bake "the active/dark
+   cell is always the LEFT one" into the same class as the color: the left cell owns the full
+   border + left radius, the right cell drops its left border + owns the right radius. This page
+   needs the OPPOSITE (Templates left/inactive, All reports right/active). Fixed with two new
+   POSITION-aware tokens, `viewTabOffLeft`/`viewTabOnRight` (themev2.js, `textSettings` +
+   `dataCard` copies + `slashKeys`), rather than touching the existing (already-correct on
+   Templates) pair.
+2. **Toggle STILL had a ~14px gap** after (1) — a screenshot-only check missed it; a raw-pixel
+   scan of a saved screenshot caught it, and Ryan independently confirmed it live. Root cause one
+   level below the tokens: a Card LINK cell's wrapper `<div>` (`theme.value`, default `px-3 pb-3`)
+   is a SEPARATE parent of the `<a>` the token classes land on, so the token's `!important`
+   padding can't reach it — a STATIC cell doesn't have this problem (wrapper + token classes merge
+   onto the SAME element). Fixed with a new `dataCard` style, `flush` (`value:''`), applied via
+   `cardStyle:'flush'` on the toggle Card.
+3. **Still ~2px, from Card's v1/v2 layout split** — `flush` alone left a residual 2px: Card.layout.js's
+   v1 model (the default everywhere) gives every cell an always-on `border border-transparent`
+   (+2px, reserved for the edit-hover outline). Fixed by adding `layoutModel:'v2'` to `flush`
+   (v2 drops that border, uses a real CSS outline instead — zero layout impact). This is SAFE
+   only because `cellBorder:false` is this Card's existing default.
+4. **v2 switch silently top-packed the toggle** — Card.layout.js's `resolveCardsPackMode` inverts
+   the default between layout models: v1 defaults to 'stretch' packing, v2 defaults to 'top'.
+   Without `cardsVerticalAlign:'stretch'` alongside `layoutModel:'v2'`, the toggle sat 6px higher
+   than its 4 header siblings (all still v1). Ryan caught this live by eyeballing pixel offsets
+   the tool measurements hadn't flagged.
+5. **Search bar + toggle not vertically aligned with the row** — `build_npmrds_reports.mjs` got a
+   `height:'fill'` treatment on every header section (2026-09-03) that centres content on the
+   row's mid-line; this page never got the matching treatment. Fixed by porting the same recipe
+   to all 5 header sections; the title became a Card (a lexical section can't centre); the search
+   Filter control got a new named `filters` style, `header_search` (themev2.js, styles[6]) that
+   hides the label row and fills+centers.
+6. **Header row still ~12px taller than Templates'** after (5) — Ryan caught this too. The search
+   section's OWN natural (pre-stretch) content was 76px vs its siblings' 64-66px, so `height:'fill'`
+   stretched everything else to match. Two contributors: (a) the shared `input` theme is `h-11`
+   (44px) vs this row's `h-10` controls — left as-is, Ryan's explicit call, not worth the
+   regression risk to the shared `Input`/`Textarea` theme used elsewhere in the app; (b) an
+   unreachable `filterRowWrapper` override (+8px) — see next section for why and how that got
+   fixed for real. Net: row height went 76px → 68px (Templates is 66px; the residual 2px is (a),
+   accepted).
+7. **Button cluster sat visibly closer to page-center than on Templates** — Ryan caught this too,
+   unrelated to the above. This page's header column split (title 2 / toggle 2 / search 4 /
+   create 2 / new-route 2 = 12) summed to the same total as Templates' (2/2/5/2/1) but distributed
+   differently, so New route's own column being a full track wider shifted the whole
+   Create-Report/New-route cluster left. Fixed by matching Templates' exact split (search→5,
+   new route→1).
+
+**A real mistake, caught by Ryan, corrected the same session:** the search box's placeholder text
+fix (see next section) initially touched `migrateToV2.js` — Ryan asked "are you sure that's not
+legacy-only?" and was right: `migrateToV2` returns `elementType:'Filter'` data verbatim
+(`compName === 'Filter'` early-return, before any migration logic), so that edit was dead code,
+never reached. Reverted cleanly. The ACTUAL live component
+(`RenderFilterValueSelector.jsx`, not `ExternalFilters.jsx`/`ConditionValueInput.jsx` — this
+page's `filters.groups` tree is empty, so `ExternalFilters` renders null) had two real, separate
+bugs instead: it re-resolved its own `filters` theme with no style selector (dropping the parent
+`RenderFilters.jsx`'s already-correct one, so `header_search`'s `filterRowWrapper`/`filtersWrapper`
+overrides were silently ignored — fixed by threading the resolved `theme` down as a prop) and its
+placeholder text was hardcoded to a literal `'search...'` for every `'like'` leaf, never reading
+`filter.placeholder` at all (fixed by adding a `filter.placeholder ||` fallback, mirroring
+`ConditionValueInput.jsx`'s existing pattern for the other code path). Both are narrow,
+backward-compatible library fixes (3 files, `src/dms` submodule) — see "Files touched" below.
+
+Verified live (`/npmrds/edit/reports/list`, dev2), pixel-measured via JS `getBoundingClientRect`,
+not just screenshots: toggle gap is exactly 0px; all 6 header controls (title, both toggle pills,
+search box, Create Report, New route) share the exact same vertical center; header row is 68px
+(Templates: 66px, the accepted 2px residual); button cluster lands in the same columns as
+Templates; search placeholder renders the real copy, not the generic default; search still
+narrows results correctly. Templates page (`/npmrds/edit/reports`) regression-checked at each
+step, byte-unchanged.
+
+**Not done, and not part of this fix:** publishing the page (still draft-only, `dms page publish
+2217965` is the owner's call) — the page WAS published mid-session by Ryan from an earlier,
+partially-fixed draft, so it's stale again relative to the final draft above; needs a re-publish.
+Ryan also asked the same session to design a COMBINED page (one toggle switching what renders
+below it, no navigation) via the Design System; that is a separate, larger deliverable, not
+started here.
 
 ## Peripheral findings (not blocking, noted for whoever's next in these files)
 

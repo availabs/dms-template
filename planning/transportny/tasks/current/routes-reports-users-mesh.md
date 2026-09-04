@@ -688,14 +688,21 @@ explicitly out of scope.
   `src/themes/transportny/components/ReportPickerModal/useReportSearch.js`,
   `src/themes/transportny/components/ReportPickerModal/ReportPickerModal.jsx`.
 
-  **Item (2), NOT STARTED — follow-on/TODO.** The `deletePage` cascade hook (an optional
-  `themeFromContext?.admin?.onPageDeleted?.(page, {...})` call in `pagesEditor.jsx`'s `deletePage`,
-  ~line 815 — `ThemeContext` is already in scope there — wrapped in try/catch so it can never break
-  page deletion for any site; zero behavior change for every site that doesn't define the hook)
-  would close the hole at its source instead of relying solely on item (3)'s safety net. Deferred,
-  not abandoned — item (3) alone is durable enough for now per Ryan's own framing of it as "works
-  indefinitely." Pick this up when there's appetite for a shared-library-touching change (affects
-  every DMS site's page-delete path, not just transportny, even though the hook itself is opt-in).
+  **Item (2), RE-SCOPED 2026-09-04 — follow-on/TODO, not started.** Bit again: the new
+  `/npmrds/reports/list` page (native Card/Spreadsheet primitives bound to `reports_snap_2`) has no
+  client-side hook point to attach item (3)'s `checkIdsExist` filter to, so it has *no* band-aid at
+  all today — only the manual `prune_report_snap_orphans.mjs` sweep. Ryan asked for the real fix,
+  not another band-aid. Re-scoped away from this entry's original `ThemeContext`-based sketch (a
+  client-only hook that CLI `page delete`/`raw delete` would silently bypass) toward a **server-side**
+  extension of `deleteData`'s existing `kind`-based cascade dispatch (`dms.controller.js`) — the
+  same mechanism already proven for the source/view orphan fix, explicitly designed to cover every
+  delete caller uniformly, not just one React component. Full design, rejected-alternative
+  rationale, and open questions in
+  `src/dms/planning/tasks/current/page-delete-lifecycle-hook.md` (also indexed in
+  `src/dms/planning/todo.md` under `dms-server`) — that file is now the source of truth for this
+  item; this entry just cross-links it. Still deferred pending appetite for the shared-library
+  change (same category this entry originally flagged), but scoped in full now rather than left as
+  a one-line sketch.
 
 - **2026-09-01**: User-reported bug — created a report via "Create Report" on `/converted_reports`,
   published it with zero routes, then couldn't find it in "Choose a report" under the "Mine" chip.

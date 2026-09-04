@@ -72,7 +72,7 @@ const textSettings = {
       "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
       "kicker", "cardTitle", "cardTitleSM", "labelSM", "labelMD", "btnPrimary", "btnOutline", "toggleOn", "toggleOff",
-      "viewTabOn", "viewTabOff", "btnOutlineLG", "hairline",
+      "viewTabOn", "viewTabOff", "viewTabOffLeft", "viewTabOnRight", "btnOutlineLG", "hairline",
       "statNum", "statXL", "statLG", "statMD", "buttonRow", "kickerXS",
     ],
   },
@@ -222,6 +222,18 @@ const textSettings = {
     // `px!`/`py-0!` trick as btnPrimary to beat the injected value-cell paddings.
     viewTabOn:  `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-[#37576B] text-white! no-underline! rounded-l-[6px]`,
     viewTabOff: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-l-0 border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-r-[6px] transition-colors`,
+    // viewTabOffLeft / viewTabOnRight — POSITION-aware siblings of viewTabOn/viewTabOff, for a
+    // toggle where the DARK/active cell is on the RIGHT (the list page: "Templates" stays left
+    // per the mockup's fixed toggle order, but "All reports" is the active one there). The
+    // original pair bakes "active = left cell" into the same class as the color (left cell
+    // owns the full border + left radius, right cell drops its left border + owns the right
+    // radius) — reusing them with the active cell on the right put the radius/seam on the WRONG
+    // sides (found live, 2026-09-03: gap between the two pills, each one's rounded corner facing
+    // OUT instead of the two square corners meeting in the middle). These two mirror the same
+    // "whichever cell is on the left keeps its full border + left radius; whichever is on the
+    // right drops its left border + owns the right radius" rule, just with the color swapped.
+    viewTabOffLeft: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-l-[6px] transition-colors`,
+    viewTabOnRight: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-l-0 border-[#37576B] text-white! no-underline! rounded-r-[6px]`,
     // btnOutlineLG — the header's "New route": btnOutline's shape at the controls row's h-10,
     // ink text, hover border in the Reports field colour (mockup: `h-10 px-3.5 rounded-[6px]
     // bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]`).
@@ -1462,6 +1474,10 @@ const dataCard = {
       // that renders; the textSettings copy keeps the Lexical picker and the dropdown in sync.
       viewTabOn:  `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-[#37576B] text-white! no-underline! rounded-l-[6px]`,
       viewTabOff: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-l-0 border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-r-[6px] transition-colors`,
+      // Parity with textSettings — see there for why these two POSITION-aware siblings exist
+      // (the reports LIST page's toggle has the dark/active cell on the right).
+      viewTabOffLeft: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-l-[6px] transition-colors`,
+      viewTabOnRight: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-l-0 border-[#37576B] text-white! no-underline! rounded-r-[6px]`,
       btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! whitespace-nowrap bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
       hairline: `block w-full h-px! min-h-0! my-0! overflow-hidden leading-none bg-zinc-950/10`,
       // ── Unit suffix in a list row (npmrds-home § 01: `ratio` / `veh-hr` / `tons/yr`).
@@ -1607,6 +1623,38 @@ const dataCard = {
       name: "rowaligned",
       header: "px-3",
       value:  "px-3",
+    },
+    {
+      // "flush" — for cells that must sit with ZERO gap against a neighbor (a segmented-control
+      // pair like the reports view toggle: `cellsGridGap:0`, the cells' own borders/rounding
+      // carry the seam). Found live, 2026-09-04: a LINK cell's wrapper div is a SEPARATE parent
+      // of the <a> (`<div class="px-3 pb-3 ...">` wrapping `<a class="...px-3.5! ...">`), so the
+      // token's own `!important` padding can only win on the <a> itself — it can't neutralize the
+      // wrapper's `px-3`. A STATIC (non-link) cell doesn't have this problem: its wrapper classes
+      // merge onto the SAME element the token classes land on, so `px-3.5!`/`py-0!` beat the
+      // wrapper's plain `px-3 pb-3` there. `rowaligned` (above) only drops the vertical half
+      // (`pb-3`); this drops both, so a link cell's pill sits flush against a `cellsGridGap:0`
+      // neighbor exactly like a static cell's does. Pick via the section "Card style"
+      // (`display.cardStyle:'flush'`). Only appropriate for a cell whose own token fully
+      // self-styles (background/text/border) — unlike `rowaligned`, `value:""` drops the
+      // default's `text-[14px] text-[#0F1722]` too, so a cell relying on that inherited text
+      // styling (rather than its own valueFontStyle) would render unstyled text.
+      //
+      // `layoutModel:'v2'` — the SECOND, deeper layer of the same gap (found live, 2026-09-04,
+      // after the `value:""` fix above still left ~2px). Card.layout.js's v1 model (the default
+      // everywhere else in this theme) gives every cell an always-on `border border-transparent`
+      // — reserved space for the edit-mode hover outline, +2px on every cell, undocumented at the
+      // call site but explained in Card.layout.js's own header comment. v2 drops that border
+      // entirely and draws edit-hover as a CSS `outline` instead, which takes no layout space.
+      // Safe here because `cellBorder:false` is already this Card's default (`card()` helper) —
+      // v2's `resolveCellBorderClass` only emits `theme.itemBorder` when `cellBorder` is true, so
+      // with it false the cell chrome class is empty either way; only the +2px reservation goes
+      // away in v2. (v2 also changes card-ROW packing for a multi-row `cardsGrid`, per that file's
+      // own comment — irrelevant here, this Card has one row.)
+      name: "flush",
+      layoutModel: "v2",
+      header: "",
+      value: "",
     },
   ],
 };
@@ -2172,6 +2220,38 @@ const filters = {
       filterSettingsWrapperStacked: "w-full",
       filtersWrapper:               "w-full",
       input:                        "w-full h-10 px-3 flex items-center text-[13px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/10 rounded-[6px] bg-white focus:outline-none focus:border-[#1F3F8F]",
+    },
+    { // 6 · header_search — a page CONTROLS ROW search box (npmrds-reports-list.html "the
+      // search control"): the mockup draws ONE plain h-10 bordered box with the guidance copy
+      // AS THE PLACEHOLDER (`<input placeholder="Search by name or description…">`), not a
+      // separate label row — this style hides the label wrapper the other styles show above/
+      // beside the control (the leaf's own `filter.placeholder`, RenderFilterValueSelector.jsx,
+      // carries the copy instead) and fills+centers so the control lands on the row's mid-line beside
+      // its h-10 neighbors (view toggle / New report / New route) instead of pinned to the
+      // section's top — same `h-full` + flex-centering trick as `tone_bar` above, just on the
+      // vertical (flex-col) axis since this band is white, not a `tone_bar`'s horizontal band.
+      // NOTE: does NOT touch `input:` — the actual `<input>` box for a 'like' leaf is styled by
+      // the top-level `input` theme (Input.jsx → theme.input, a flat h-11 map here, not h-10 like
+      // this row's other controls), not this key — `theme.filters.input` is dropped unused by
+      // TextEdit (columnTypes/text.jsx destructures `className` but never applies it). Left as a
+      // known, minor (4px) residual rather than restructuring the shared `input` theme.
+      //
+      // `filterRowWrapper: ""` — this section's config is authored in the v1 `columns[].filters[]`
+      // shape (full-text-search-filter.md's recipe), which routes through
+      // `RenderFilterValueSelector.jsx`, NOT `ExternalFilters.jsx`/`ConditionValueInput.jsx` (this
+      // page's `filters.groups` tree is empty, so `ExternalFilters` renders null). That component
+      // wraps every row in `theme.filters.filterRowWrapper` (default `p-1 relative text-xs`,
+      // +8px). FOUND LIVE, 2026-09-04: this override was initially a no-op —
+      // `RenderFilterValueSelector.jsx` re-resolved its OWN `theme` with no style selector
+      // (`getComponentTheme(themeFromContext,'filters')`, dropping every key of this named style
+      // except `controlStyle`, which `RenderFilters.jsx` threads separately) — FIXED at the
+      // source (`RenderFilterValueSelector.jsx`/`RenderFilters.jsx`, same session): `RenderFilters`
+      // now passes its own already-selector-resolved `theme` down as a prop instead of the child
+      // re-deriving one. This key now actually reaches the rendered row.
+      name: "header_search",
+      labelWrapperStacked: "hidden",
+      filtersWrapper: "h-full w-full flex flex-col justify-center",
+      filterRowWrapper: "",
     },
   ],
 };
