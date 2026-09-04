@@ -452,10 +452,18 @@ their stale `page_path`, which still reads as non-empty).
    when the list looks wrong, until "Delete Page" itself cascades to this dataset (a deeper
    platform fix, not attempted here).
 
-**Not fixed / explicitly out of scope today:** the root cause (Delete Page not cascading) and any
-live, per-row existence check on the list page itself — the native-Spreadsheet architecture has
-no hook for the latter without reintroducing custom fetch code, which this task deliberately
-avoided (see the FINAL Architecture decision above).
+**Root cause FIXED 2026-09-04** (separate session, prompted by this exact page having no runtime
+band-aid available): `dms.data.delete`'s server-side cascade dispatch (already extended once for
+source/view orphans, `delete-cascade-source-view-orphans.md`) now also dispatches page deletes to
+an optional, deployment-registered hook (`DMS_PAGE_DELETE_HOOK`, same shape as the already-shipped
+`DMS_EXTRA_DATATYPES`) — `hooks/register_page_delete_hooks.js` → `npmrds_report_page_delete_hook.js`
+deletes the matching `reports_snap_2` row whenever a report page is deleted, covering the admin UI,
+`dms page delete`, and `dms raw delete` uniformly (not just this page). Full design + the exact
+diff in `src/dms/planning/tasks/current/page-delete-lifecycle-hook.md`. This page itself needed no
+changes — the fix is entirely upstream of it. `prune_report_snap_orphans.mjs` (above) stays as a
+defense-in-depth backstop (hook failures are logged, never blocking) rather than becoming dead
+code. **Still open**: PG-dialect test run and live verification against a real deploy (no docker
+socket / VPN access in that session's sandbox) — see that task file's testing checklist.
 
 ## Shared-theme CSS — reverted, deferred to Alex (2026-09-03); FIXED 2026-09-04
 

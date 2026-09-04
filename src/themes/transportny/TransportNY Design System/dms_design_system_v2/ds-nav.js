@@ -42,6 +42,7 @@
       { f: 'npmrds-tmc.html', t: 'segment · tmc' },
       { f: 'npmrds-reports.html', t: 'reports · templates' },
       { f: 'npmrds-reports-list.html', t: 'reports · all (list)' },
+      { f: 'npmrds-reports-combined.html', t: 'reports · combined (proposal)' },
       { f: 'npmrds-report.html', t: 'report' },
       { f: 'npmrds-picker-modals.html', t: 'picker modals (proposal)' },
       { f: 'npmrds-route-creation.html', t: 'route creation' },
