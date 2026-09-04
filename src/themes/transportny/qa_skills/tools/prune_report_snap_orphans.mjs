@@ -1,14 +1,12 @@
-// Prune orphaned `reports_snap_2` catalog rows — a real, currently-recurring bug: the generic
-// "Delete Page" admin action does not cascade to this dataset (same root cause
-// ReportPickerModal/useReportSearch.js's `checkIdsExist` band-aid was built for, 2026-09-01 —
-// see that file's own comment). Deleting a report page leaves its `reports_snap_2` catalog row
-// behind, pointing at a `report_id` that no longer resolves to any real page. The picker modal
-// hides these live, per-search, via a runtime existence check (`checkIdsExist`); the native
-// `Spreadsheet`-based "All reports" list page (npmrds-all-reports-list-page.md) has no
-// equivalent runtime hook — it is a plain SQL query with no per-row cross-table check available
-// — so orphans need to be pruned at the DATA layer instead. Run this whenever the list page
-// looks like it's showing dead rows, or periodically as a maintenance task, until "Delete Page"
-// itself cascades to this dataset (a deeper platform fix, out of scope here).
+// Prune orphaned `reports_snap_2` catalog rows. Historically the generic "Delete Page" admin
+// action never cascaded to this dataset — fixed at the source 2026-09-04 by
+// dms-server's cascadePageDelete + hooks/npmrds_report_page_delete_hook.js (see
+// src/dms/planning/tasks/current/page-delete-lifecycle-hook.md), so a page delete going
+// forward should no longer orphan its catalog row. Keep this script around as a defense-in-depth
+// backstop (same reasoning as ReportPickerModal/useReportSearch.js's `checkIdsExist` — a hook
+// failure is logged but never blocks the delete, and any row created before the fix landed is
+// still out there) and to prune anything a future regression or out-of-band delete produces.
+// Run whenever the list page looks like it's showing dead rows, or periodically as maintenance.
 //
 // DRY BY DEFAULT — prints what it would delete and exits. Pass --apply to actually delete.
 //
@@ -18,20 +16,31 @@
 //   node src/themes/transportny/qa_skills/tools/prune_report_snap_orphans.mjs           # dry run
 //   node src/themes/transportny/qa_skills/tools/prune_report_snap_orphans.mjs --apply   # actually delete
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "..");
+
+// npmrdsv5's app/pattern name and the reports_snap_2 catalog's source/view ids
+// are the single source of truth in hooks/reports_snap_ids.json — also read by
+// convert_old_reports_lib/config.py, report_build.mjs, and dms-server's
+// npmrds_report_page_delete_hook.js. Do not hardcode a second copy here.
+const REPORTS_SNAP_IDS = JSON.parse(readFileSync(resolve(REPO, "hooks/reports_snap_ids.json"), "utf8"));
 
 const APPLY = process.argv.includes("--apply");
 const ENV = {
   ...process.env,
   DMS_HOST: process.env.DMS_HOST || "https://dmsserver.availabs.org",
-  DMS_APP: process.env.DMS_APP || "npmrdsv5",
+  DMS_APP: process.env.DMS_APP || REPORTS_SNAP_IDS.app,
   DMS_TYPE: process.env.DMS_TYPE || "dev2",
 };
 const CLI = "src/dms/packages/dms/cli/bin/dms.js";
-const PATTERN = "npmrds_sub";
+const PATTERN = REPORTS_SNAP_IDS.pattern;
 // The `reports_snap_2` catalog binding — same source/view every report page and picker reads
 // (reportCatalogSource.js, build_npmrds_reports.mjs, build_npmrds_reports_list.mjs).
-const CATALOG_SOURCE_ID = 2177438;
-const CATALOG_VIEW_ID = 2177440;
+const CATALOG_SOURCE_ID = REPORTS_SNAP_IDS.reports_snap_source_id;
+const CATALOG_VIEW_ID = REPORTS_SNAP_IDS.reports_snap_view_id;
 const CATALOG_SPLIT_TYPE = `reports_snap_2|${CATALOG_VIEW_ID}:data`;
 
 const cli = (...a) => execFileSync("node", [CLI, ...a], { env: ENV, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });

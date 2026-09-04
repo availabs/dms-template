@@ -54,24 +54,29 @@ import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+// npmrdsv5's app/pattern name and the reports_snap_2 catalog's source/view ids
+// are the single source of truth in hooks/reports_snap_ids.json — also read by
+// convert_old_reports_lib/config.py, prune_report_snap_orphans.mjs, and
+// dms-server's npmrds_report_page_delete_hook.js. Do not hardcode a second copy here.
+const REPORTS_SNAP_IDS = JSON.parse(readFileSync(resolve(REPO, 'hooks/reports_snap_ids.json'), 'utf8'));
+
 // ── DMS content constants (mirrors scripts/npmrds-reports/convert_old_reports.py) ──────────
-const APP = process.env.DMS_APP || 'npmrdsv5';
+const APP = process.env.DMS_APP || REPORTS_SNAP_IDS.app;
 const SITE_TYPE = process.env.DMS_TYPE || 'dev2';
 const HOST = process.env.DMS_HOST || 'http://localhost:3001';
-const PATTERN = 'npmrds_sub';
+const PATTERN = REPORTS_SNAP_IDS.pattern;
 const PAGE_TYPE = `${PATTERN}|page`;
 const COMPONENT_TYPE = `${PATTERN}|component`;
 const PAGE_TEMPLATE_ID = 2187021;                    // "Report Page" page template
-const REPORTS_SNAP_TYPE = 'reports_snap_2|2177440:data';
+// The reports_snap_2 dataset itself — used both to write the routes catalog row
+// and to look a report's own row back up by report_id for --update/--from-page.
+const REPORTS_SNAP_SOURCE_ID = REPORTS_SNAP_IDS.reports_snap_source_id;
+const REPORTS_SNAP_VIEW_ID = REPORTS_SNAP_IDS.reports_snap_view_id;
+const REPORTS_SNAP_TYPE = `reports_snap_2|${REPORTS_SNAP_VIEW_ID}:data`;
 const DEFAULT_PARENT_SLUG = 'reports';
 // The "Routes Data" catalog a spec's `route_id`s refer to.
 const ROUTES_SOURCE_ID = 2107426;
 const ROUTES_VIEW_ID = 2107427;
-// The reports_snap_2 dataset itself — used to look a report's own row back up
-// by report_id for --update/--from-page (source/view ids read off a live row's
-// dataset query response; matches REPORTS_SNAP_TABLE's name in convert_old_reports.py).
-const REPORTS_SNAP_SOURCE_ID = 2177438;
-const REPORTS_SNAP_VIEW_ID = 2177440;
 // Sanity cap on _specRevisions length (see the task file's storage-decisions table).
 const REVISION_CAP = 200;
 
