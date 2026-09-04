@@ -62,6 +62,9 @@ export default defineConfig(({ isSsrBuild, mode }) => {
           path.resolve(__dirname, '.netlify/**'),
           path.resolve(__dirname, 'scratchpad/**'),
           path.resolve(__dirname, 'research/**'),
+          // Markdown is docs/planning/skills content, not app source — don't
+          // let editing it trigger a dev-server reload.
+          '**/*.md',
         ],
       },
     },
