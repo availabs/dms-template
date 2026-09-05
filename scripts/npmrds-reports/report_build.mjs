@@ -80,6 +80,29 @@ const ROUTES_VIEW_ID = 2107427;
 // Sanity cap on _specRevisions length (see the task file's storage-decisions table).
 const REVISION_CAP = 200;
 
+// Every `dms` CLI call this script makes runs unauthenticated unless given a token — and several
+// commands (section create/delete, page update, raw update --set) do their own internal
+// read-modify-write against the target page/row. `npmrdsv5+npmrds_sub`'s pattern restricts
+// `view-page` via authPermissions; an unauthenticated read of a gated row comes back as the
+// literal string "no-access" (not an error), which those commands' read-modify-write logic
+// silently treats as empty data — discarding whatever was already there (a page's
+// draft_sections, say) with zero error anywhere in the chain. Found + fully reproduced
+// 2026-09-05, see src/dms/planning/tasks/current/auth-permission-chain-and-unguarded-writes.md's
+// "Defect D" for the full mechanism. This doesn't fix that underlying CLI/library gap — it's a
+// library-level issue, not this script's — it just makes sure THIS script always runs
+// authenticated so it can't hit it. Always mints a fresh token (not "reuse the file if present")
+// since a stale token risks the exact same silent-corruption failure mode, just intermittently.
+const AUTH_TOKEN = (() => {
+  const mintScript = resolve(REPO, 'scratchpad/npmrds-sub/mint_token.sh');
+  try {
+    execFileSync('bash', [mintScript], { stdio: 'pipe' });
+  } catch (e) {
+    fail(`could not mint a dev auth token (${mintScript}): ${e.message}\n` +
+      `Every dms CLI call below needs one — see the comment above this block for why.`);
+  }
+  return readFileSync(resolve(REPO, 'scratchpad/npmrds-sub/.dms-auth-token'), 'utf8').trim();
+})();
+
 // A `graphType: "Map"` graph is NOT an AVL Graph — it's built by shelling out
 // to convert_old_reports.py's `--route-map-section` (see composeMapGraphState
 // below), which reuses the Route Map choropleth machinery built for the
@@ -224,7 +247,7 @@ function fail(msg) {
 // resolution and config. Same approach the Python converter uses. Defined
 // early (before spec loading) because --from-page runs without a spec at all.
 function dms(args, data) {
-  const full = ['--host', HOST, '--app', APP, '--type', SITE_TYPE, ...args];
+  const full = ['--host', HOST, '--app', APP, '--type', SITE_TYPE, '--auth-token', AUTH_TOKEN, ...args];
   if (data !== undefined) full.push('--data', JSON.stringify(data));
   const out = execFileSync('dms', full, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   const trimmed = out.trim();
