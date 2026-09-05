@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
@@ -41,16 +41,21 @@ export default function ReportRouteList() {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Icon, ColorPicker, Switch, Popup } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
+  // Also doubles as "this row is in edit mode" (2026-09-04): the combined expand/edit toggle
+  // (RouteRow.jsx) opens name+dates editing in place for whichever rows are expanded — no more
+  // separate single-flight rename buffer (see gap #7 in report-route-ui-parity-gaps.md). Since
+  // 2026-09-05, an explicit Save/Discard commits or reverts each row's own edit buffer; toggling
+  // this same state off (Save, Discard, or the header's own Discard shortcut) collapses the row.
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
-  const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
-  const [editNameValue, setEditNameValue] = useState('');
   // Report settings disclosure (2026-08-19, item 4A) — houses the Dynamic Report switch,
   // collapsed by default. See ReportRouteList.theme.js's settingsDisclosureWrapper comment for why.
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  // Date editing (2026-08-19, item 4A) no longer has a parent-owned single-flight edit buffer —
-  // each RouteRow now owns its own live, always-editable date state and auto-saves (debounced)
-  // through `onUpdateDates` below, so several rows can be mid-edit at once. See RouteRow.jsx.
+  // Name + date editing (2026-09-05: explicit Save/Discard — see RouteRow.jsx's own doc comment
+  // for the full history, including the 2026-08-19/2026-09-04 auto-save designs this replaced) —
+  // no parent-owned edit buffer for either field; each RouteRow owns its own local buffer and
+  // calls `onUpdateRoute` exactly once, at an explicit Save click. Several rows can still be
+  // mid-edit (unsaved) at once. See RouteRow.jsx.
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,8 +95,8 @@ export default function ReportRouteList() {
     routes,
     saving,
     error,
-    setError,
     persistRoutes,
+    persistCounts,
     addRoutes,
     removeRoute,
     reorderRoutes,
@@ -208,11 +213,34 @@ export default function ReportRouteList() {
     setActionParam,
     clearActionParam,
   });
-  const graphCountByCompId = useMemo(() => {
-    const counts = new Map();
-    graphs.forEach((g) => (g.routeIds || []).forEach((id) => counts.set(id, (counts.get(id) || 0) + 1)));
-    return counts;
-  }, [graphs]);
+
+  // Item 5 (2026-09-04, npmrds-reports-routes-feedback-triage.md Phase 2): keeps the "All
+  // Reports" list page's routes/graphs column (`graph_count`/`counts_label` on `reports_snap_2`)
+  // live for a hand-authored report — today those are only ever written once, at spec-build
+  // time, by report_build.mjs/the Python converter. `graphs` (from useGraphPublish, just above)
+  // is already a LIVE discovery off this page's own sections, so this effect re-fires and
+  // catches a graph SECTION being deleted via the normal section-menu too, not just RRL's own
+  // Add Graph flow. Uses raw `routes.length` (the authored/slot count), not
+  // `effectiveRoutes.length` — for a Dynamic Report the slot count is the meaningful catalog
+  // number, matching what a spec-built report's own `routes.length` means; `effectiveRoutes` can
+  // be transiently 0 in edit mode before a `?routes=` preview is picked.
+  // Gated on `reportRow?.id != null` — never fires before the row exists yet, so this can't
+  // race `persistRoutes`'s own `ensuringForRef` create sequence into a duplicate row (see
+  // `persistCounts`'s own guard in useReportRow.js).
+  const lastPersistedCountsRef = useRef(null);
+  useEffect(() => {
+    if (!canMutate || !reportRow?.id) return;
+    const nextGraphCount = graphs.length;
+    const nextCountsLabel = `${routes.length} routes · ${nextGraphCount} graphs`;
+    const last = lastPersistedCountsRef.current;
+    if (last && last.graphCount === nextGraphCount && last.countsLabel === nextCountsLabel) return;
+    if (reportRow.graphCount === nextGraphCount && reportRow.countsLabel === nextCountsLabel) {
+      lastPersistedCountsRef.current = { graphCount: nextGraphCount, countsLabel: nextCountsLabel };
+      return;
+    }
+    lastPersistedCountsRef.current = { graphCount: nextGraphCount, countsLabel: nextCountsLabel };
+    persistCounts({ graphCount: nextGraphCount, countsLabel: nextCountsLabel });
+  }, [canMutate, reportRow?.id, reportRow?.graphCount, reportRow?.countsLabel, routes.length, graphs.length, persistCounts]);
 
   // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
   // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
@@ -239,7 +267,8 @@ export default function ReportRouteList() {
   // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
   // `isPlaceholderName: true` marks this generated name as meaningless (see
   // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
-  // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
+  // name with nothing real behind it yet; cleared the moment a human renames it (RouteRow's
+  // own commitName, via `onUpdateRoute`).
   //
   // Auto-expands the new slot (2026-08-19, item 4A) — `addRoutes` always appends, so the new
   // row lands at today's `routes.length`; setting that BEFORE the async add resolves is safe
@@ -560,59 +589,46 @@ export default function ReportRouteList() {
                 key={r.route_comp_id ?? i}
                 route={r}
                 miles={mileageByRouteCompId.get(r.route_comp_id)}
-                graphCount={graphCountByCompId.get(r.route_comp_id) || 0}
                 theme={t}
                 Icon={Icon}
                 ColorPicker={ColorPicker}
                 Popup={Popup}
                 onChangeColor={(c) => updateRoute({ index: i, updates: { color: c } })}
-                onCopyWindow={() => setClipboard({
+                // Buffer-based (2026-09-05, Save/Discard restructure): Copy reads whatever's
+                // CURRENTLY in this row's own edit buffer (not necessarily the persisted `r`,
+                // if the author is mid-edit) — RouteRow passes its own local start/end through.
+                // Paste hands the clipboard values back for RouteRow to drop into its buffer;
+                // it does NOT persist here (that's what the old direct `updateRoute` call did,
+                // before this row had a Save/Discard gate of its own).
+                onCopyWindow={(start, end) => setClipboard({
                   from: r.route_comp_id,
                   fromName: r.name,
-                  start: r.startDate,
-                  end: r.endDate,
+                  start,
+                  end,
                 })}
-                onPasteWindow={() => clipboard && updateRoute({
-                  index: i,
-                  updates: { startDate: clipboard.start, endDate: clipboard.end },
-                })}
+                onPasteWindow={() => clipboard ? { startDate: clipboard.start, endDate: clipboard.end } : null}
                 clipboard={clipboard}
                 isEdit={canMutate}
                 saving={saving}
                 isExpanded={!!expandedRoutes[i]}
                 onToggleExpand={() => toggleRoute(i)}
-                isEditingName={editingRouteNameIndex === i}
-                editNameValue={editNameValue}
-                onEditNameValueChange={setEditNameValue}
-                onStartEditName={() => { setEditingRouteNameIndex(i); setEditNameValue(r.name); }}
-                onSaveEditName={() => {
-                  // Unlike addRoute's auto-suffix (the name came from the catalog, not
-                  // typed by the user), a rename is an explicit user choice — block it
-                  // instead of silently rewriting what they typed. See the dedupeRouteName
-                  // comment in useReportRow.js for why names must stay unique at all.
-                  const collision = routes.some((rt, idx) => idx !== i && rt.name === editNameValue);
-                  if (collision) {
-                    setError(`A route named "${editNameValue}" already exists.`);
-                    return;
-                  }
-                  // A deliberate rename — even to something generic — is a real editorial
-                  // decision from here on; clears isPlaceholderName so a future Dynamic Report
-                  // resolution never overwrites it with the resolved route's own name again.
-                  updateRoute({ index: i, updates: { name: editNameValue, isPlaceholderName: false } });
-                  setEditingRouteNameIndex(null);
-                }}
-                onCancelEditName={() => setEditingRouteNameIndex(null)}
+                // Rename's uniqueness check (2026-09-04, replaces the old parent-owned
+                // single-flight rename buffer — see RouteRow.jsx's own doc comment and gap #7
+                // in report-route-ui-parity-gaps.md) now happens INSIDE RouteRow at Save time,
+                // so it just needs the sibling name list, not a callback.
+                siblingNames={routes.filter((rt, idx) => idx !== i).map((rt) => rt.name)}
                 derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
                 baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
                 derivableSiblings={derivableSiblings}
-                // Date editing (2026-08-19, item 4A: removed the pencil/Save/Cancel gate — dates
-                // are always live-editable whenever the row is expanded, auto-saving through this
-                // one callback). RouteRow owns its own local buffer + debounce now (several rows
-                // can be mid-edit at once, unlike the old single-flight parent-owned buffer) and
-                // always sends a complete, atomic `updates` object here — for Derived mode that
-                // means `dateFormula`+`derivedFromRoute` together, matching the resolver's own
-                // requirement (relativeDateResolution.js only resolves when both are present).
-                onUpdateDates={(updates) => updateRoute({ index: i, updates })}
+                // Name + date editing (2026-09-05: explicit Save/Discard, reversing the prior
+                // auto-save-on-blur/debounce design — see RouteRow.jsx's own doc comment).
+                // RouteRow owns a purely local buffer for both fields and calls this ONE
+                // callback exactly once, at an explicit Save click, with a complete, atomic
+                // `updates` object — for Derived-mode dates that means `dateFormula`+
+                // `derivedFromRoute` together, matching the resolver's own requirement
+                // (relativeDateResolution.js only resolves when both are present). Several rows
+                // can still be mid-edit (unsaved) at once — each has its own buffer.
+                onUpdateRoute={(updates) => updateRoute({ index: i, updates })}
                 canMoveUp={i > 0}
                 canMoveDown={i < effectiveRoutes.length - 1}
                 onReorderUp={() => reorderRoutes(i, 'up')}

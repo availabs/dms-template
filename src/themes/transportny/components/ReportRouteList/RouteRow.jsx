@@ -17,31 +17,37 @@ import {
   isValidFormula,
 } from './relativeDatePresets';
 
-// One route's row: expand/collapse, name/date inline editing, remove. Every mutation
-// ultimately calls back into the parent's `useReportRow`-backed handlers (this
-// component owns no persistence logic itself), but the two editable facets differ in
-// where their edit-buffer state lives:
-// - Name: still a parent-owned single-flight buffer (`isEditingName`/`editNameValue`) —
-//   only one row's name can be mid-rename at a time across the whole list.
-// - Dates (2026-08-19, item 4A — removed the pencil/Save/Cancel gate): this row owns
-//   its OWN local buffer + debounced auto-save (`dateMode`/`localStart`/`localEnd`/
-//   `deriveFrom`/`deriveFormula` below), since dates are now always live whenever the
-//   row is expanded — several rows can be mid-edit simultaneously.
-// It also owns a purely-local disclosure toggle (dependents list) — not meaningful
-// outside this one row's own render, so it never needed to live in the parent either.
+// One route's row: a single combined toggle (2026-09-04, RRL feedback batch item 1) puts the row
+// into edit mode — collapsed, it shows a bold, prominent date-range line + a muted TMC/mileage
+// line (2026-09-05: swapped and reweighted per feedback — dates are the thing an author scans
+// for, not TMC count); expanded/editing, that summary is REPLACED (not appended below) by name +
+// date editing.
 //
-// Design push #2 (2026-08-06): weekday mask / time-of-day / graph assignment moved
-// off the route entirely (they're properties of the QUESTION a graph asks, not of
-// the route — see QuickControls/index.jsx and useGraphPublish.js's per-graph
-// transformReportRoutes). A route is now name · colour · TMCs · date span, full
-// stop — this file used to also own the "Days"/"Time of day" facets and the
-// per-graph assignment chips; both blocks (and the "N of M days" masked count,
-// which required knowing a weekday mask this component no longer has) are gone,
-// not just hidden.
+// Explicit Save/Discard (2026-09-05, reversing the 2026-09-04 auto-save-on-blur/debounce design,
+// itself an extension of the 2026-08-19 item-4A "always live, no Save/Cancel" decision for
+// dates): Ryan's call — a single ambiguous "X + Done" toggle wasn't enough, and autosave-on-blur
+// wasn't what he wanted here. Every field (name, dates, derive-mode picks) now lives in a pure
+// local buffer that persists nothing until Save is clicked; Discard reverts the buffer to the
+// last-persisted values. Both actions live in the header row itself (Discard=X, Save=floppy
+// disk, side by side) — a same-day follow-up (also 2026-09-05) consolidated them there and
+// removed a separate bottom action row once it turned out redundant with the header's own X.
+// This still directly resolves report-route-ui-parity-gaps.md gap #7 (the old rename control's
+// input-commit bug) — that bug lived in a parent-owned, single-flight buffer swapped by list
+// index; this row's buffer is fully local and only ever read at an explicit Save click, never
+// raced by a debounce timer or an index reshuffle.
+//
+// Design push #2 (2026-08-06): weekday mask / time-of-day / graph assignment moved off the route
+// entirely (they're properties of the QUESTION a graph asks, not of the route — see
+// QuickControls/index.jsx and useGraphPublish.js's per-graph transformReportRoutes). A route is
+// now name · colour · TMCs · date span, full stop.
+//
+// Per-route graph-count display was tried (2026-08-07) and removed again (2026-09-04, Ryan's
+// explicit call) — dropped entirely, not relocated. The underlying discovery
+// (`useGraphPublish`'s self-bound-graph count) still exists in `ReportRouteList.jsx`, just
+// feeding the `reports_snap_2` write-path (Item 5) instead of a per-row display.
 export default function RouteRow({
   route,
   miles,
-  graphCount,
   theme: t,
   Icon,
   ColorPicker,
@@ -51,16 +57,11 @@ export default function RouteRow({
   saving,
   isExpanded,
   onToggleExpand,
-  isEditingName,
-  editNameValue,
-  onEditNameValueChange,
-  onStartEditName,
-  onSaveEditName,
-  onCancelEditName,
+  siblingNames,
   derivedFromRouteName,
   baseForNames,
   derivableSiblings,
-  onUpdateDates,
+  onUpdateRoute,
   onCopyWindow,
   onPasteWindow,
   clipboard,
@@ -80,114 +81,75 @@ export default function RouteRow({
   // re-fire onChange on every render -> updateRoute -> re-render -> new onChangeColor
   // -> infinite loop (confirmed live: DevTools network tab showed a runaway request
   // storm). Route the callback through a ref so the function identity handed to
-  // ColorPicker never changes, while always invoking the latest onChangeColor.
+  // ColorPicker never changes, while always invoking the latest onChangeColor. Color is a
+  // standalone, always-on quick action (works even when this row isn't in edit mode at all) —
+  // deliberately NOT part of the Save/Discard buffer below.
   const onChangeColorRef = useRef(onChangeColor);
   onChangeColorRef.current = onChangeColor;
   const stableOnChangeColor = useCallback((c) => onChangeColorRef.current?.(c), []);
 
-  // ── Date editing (2026-08-19, item 4A) ──────────────────────────────────────────
-  // No more pencil/Save/Cancel: the date fields are always live whenever the row is
-  // expanded, auto-saving (debounced) through the one `onUpdateDates(updates)` callback
-  // the parent wraps around `updateRoute`. This buffer now lives PER ROW (it used to be
-  // a single-flight buffer owned by the parent, since only one row could be "in edit
-  // mode" at a time) — several rows can be mid-edit simultaneously now.
-  //
-  // `lastFlushedRef` distinguishes an EXTERNAL change to this route (a sibling
-  // recomputing this derived row's dates, a clipboard paste from ReportRouteList, another
-  // session's edit landing) from an ECHO of this row's own just-sent write — only the
-  // former should overwrite whatever's in the local buffer.
-  const lastFlushedRef = useRef({ startDate: r.startDate, endDate: r.endDate, dateFormula: r.dateFormula, derivedFromRoute: r.derivedFromRoute });
+  // ── Edit buffer: name + dates, Save/Discard-gated (2026-09-05) ──────────────────────
+  // Initialized from the persisted route once at mount; re-initialized on the RISING EDGE of
+  // `isExpanded` (collapsed -> editing), not on every render or on every upstream prop change —
+  // while the row is collapsed, its collapsed-line summary reads `r` directly (see below), so a
+  // stale buffer while collapsed is harmless; while actively editing, an external change to the
+  // same route (a sibling's derive recompute, another session) deliberately does NOT clobber
+  // whatever's in the buffer — only re-entering edit mode (or a Discard) refreshes it.
+  const [localName, setLocalName] = useState(r.name);
   const [dateMode, setDateMode] = useState(r.dateFormula ? 'derived' : 'fixed');
   const [localStart, setLocalStart] = useState(r.startDate);
   const [localEnd, setLocalEnd] = useState(r.endDate);
   const [deriveFrom, setDeriveFrom] = useState(r.derivedFromRoute || '');
   const [deriveFormula, setDeriveFormula] = useState(r.dateFormula || '');
 
-  useEffect(() => {
-    const last = lastFlushedRef.current;
-    if (r.startDate === last.startDate && r.endDate === last.endDate
-      && r.dateFormula === last.dateFormula && r.derivedFromRoute === last.derivedFromRoute) return;
-    lastFlushedRef.current = { startDate: r.startDate, endDate: r.endDate, dateFormula: r.dateFormula, derivedFromRoute: r.derivedFromRoute };
+  const resetBufferFromRoute = () => {
+    setLocalName(r.name);
     setLocalStart(r.startDate);
     setLocalEnd(r.endDate);
     setDateMode(r.dateFormula ? 'derived' : 'fixed');
     setDeriveFrom(r.derivedFromRoute || '');
-    if (r.dateFormula) setDeriveFormula(r.dateFormula);
-  }, [r.startDate, r.endDate, r.dateFormula, r.derivedFromRoute]);
-
-  const pendingRef = useRef({});
-  const timerRef = useRef(null);
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
-
-  const flushDates = (extra) => {
-    const merged = { ...pendingRef.current, ...extra };
-    pendingRef.current = {};
-    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-    lastFlushedRef.current = { ...lastFlushedRef.current, ...merged };
-    onUpdateDates?.(merged);
-  };
-  // Debounced AND merged (not replaced) — two fields changed within the same window (e.g.
-  // "From" then "To" in quick succession) land in ONE `updateRoute` call instead of two
-  // racing writes each built off a stale `routes` snapshot, which would otherwise silently
-  // drop the first field's change.
-  const scheduleFlush = (patch) => {
-    pendingRef.current = { ...pendingRef.current, ...patch };
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => flushDates({}), 400);
-  };
-  const cancelPendingFlush = () => {
-    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-    pendingRef.current = {};
+    setDeriveFormula(r.dateFormula || '');
   };
 
-  const handleStartChange = (e) => {
-    const v = e.target.value;
-    setLocalStart(v);
-    scheduleFlush({ startDate: v });
+  const wasExpandedRef = useRef(isExpanded);
+  useEffect(() => {
+    if (isExpanded && !wasExpandedRef.current) resetBufferFromRoute();
+    wasExpandedRef.current = isExpanded;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExpanded]);
+
+  const handleNameKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); handleSave(); }
+    if (e.key === 'Escape') { e.preventDefault(); handleDiscard(); }
   };
-  const handleEndChange = (e) => {
-    const v = e.target.value;
-    setLocalEnd(v);
-    scheduleFlush({ endDate: v });
-  };
+
+  const handleStartChange = (e) => setLocalStart(e.target.value);
+  const handleEndChange = (e) => setLocalEnd(e.target.value);
 
   // Moves both dates by exactly one year, preserving the span's length — plain
   // string year substitution (not a Date object) so it never silently rolls Feb 29
-  // into Mar 1 in a non-leap target year.
+  // into Mar 1 in a non-leap target year. Buffer-only, like every other field here.
   const shiftYear = (delta) => {
     const shiftOne = (val) => {
       if (!val) return val;
       const [y, m, d] = val.split('-');
       return `${Number(y) + delta}-${m}-${d}`;
     };
-    const ns = shiftOne(localStart);
-    const ne = shiftOne(localEnd);
-    setLocalStart(ns);
-    setLocalEnd(ne);
-    scheduleFlush({ startDate: ns, endDate: ne });
+    setLocalStart((s) => shiftOne(s));
+    setLocalEnd((en) => shiftOne(en));
   };
 
   // Mechanism B (relativeDate/isRelativeDateBase, see relativeDateResolution.js) — a row's
   // startDate/endDate is LIVE-COMPUTED from another route's own date, not an independent literal,
   // whenever `dateMode === 'derived'`; the Fixed/Derived switch below lets an author create,
-  // change, or remove that relationship, live.
+  // change, or remove that relationship — buffered until Save, same as every other field.
   // Single-hop only (relativeDateResolution.js never resolves a chain) — `derivableSiblings`
   // (computed by the parent from the whole report's routes) already excludes any row that's
   // itself derived; this just also excludes the row itself.
   const eligibleBases = (derivableSiblings || []).filter((s) => s.route_comp_id !== r.route_comp_id);
   const derivePreset = parseFormula(deriveFormula);
-  // Debounced (not immediate) — covers the free-typed "How many"/day-of-month/Advanced-formula
-  // inputs, which fire per keystroke; a harmless extra ~400ms on the plain dropdowns too.
-  const setDerivePresetField = (patch) => {
-    const nextFormula = buildFormula({ ...derivePreset, ...patch });
-    setDeriveFormula(nextFormula);
-    if (deriveFrom && isValidFormula(nextFormula)) scheduleFlush({ dateFormula: nextFormula, derivedFromRoute: deriveFrom });
-  };
-  const handleAdvancedFormulaChange = (e) => {
-    const v = e.target.value;
-    setDeriveFormula(v);
-    if (deriveFrom && isValidFormula(v)) scheduleFlush({ dateFormula: v, derivedFromRoute: deriveFrom });
-  };
+  const setDerivePresetField = (patch) => setDeriveFormula(buildFormula({ ...derivePreset, ...patch }));
+  const handleAdvancedFormulaChange = (e) => setDeriveFormula(e.target.value);
   const handleDeriveFromChange = (e) => {
     const v = e.target.value;
     setDeriveFrom(v);
@@ -197,84 +159,90 @@ export default function RouteRow({
     // (even over a span the author already set by hand; Ryan's call: simpler, no new "was this
     // touched" state needed) and left untouched when the base's range doesn't exactly match any
     // span option (e.g. 37 days) — no closest-match guessing.
-    let nextFormula = deriveFormula;
     if (derivePreset.pattern === 'snap' && v) {
       const base = eligibleBases.find((s) => s.route_comp_id === v);
       const inferred = base && inferExactSpan(base.startDate, base.endDate);
       if (inferred && inferred !== derivePreset.span) {
-        nextFormula = buildFormula({ ...derivePreset, span: inferred });
-        setDeriveFormula(nextFormula);
+        setDeriveFormula(buildFormula({ ...derivePreset, span: inferred }));
       }
     }
-    // A discrete pick, not continuous typing — commit right away rather than debouncing.
-    if (v && isValidFormula(nextFormula)) flushDates({ dateFormula: nextFormula, derivedFromRoute: v });
   };
-  // Both of these are deliberate, discrete mode switches — commit immediately, same
-  // "happens right away" feel the old Save button gave them, rather than debouncing.
-  const useFixedInstead = () => {
-    cancelPendingFlush();
-    setDateMode('fixed');
-    flushDates({ startDate: localStart, endDate: localEnd, dateFormula: undefined, derivedFromRoute: undefined });
-  };
+  const useFixedInstead = () => setDateMode('fixed');
   const startDeriveMode = () => {
-    cancelPendingFlush();
     setDateMode('derived');
-    const formula = deriveFormula || buildFormula(DEFAULT_PRESET);
-    if (!deriveFormula) setDeriveFormula(formula);
-    // Already has a complete, valid pick from before (e.g. flipped to Fixed and back) —
-    // recommit right away instead of making the author re-pick to get back where they were.
-    if (deriveFrom && isValidFormula(formula)) flushDates({ dateFormula: formula, derivedFromRoute: deriveFrom });
+    if (!deriveFormula) setDeriveFormula(buildFormula(DEFAULT_PRESET));
   };
   const derivePreviewBase = eligibleBases.find((s) => s.route_comp_id === deriveFrom);
   const derivePreview = derivePreviewBase
     ? resolveRelativeDateFormula(deriveFormula, derivePreviewBase.startDate, derivePreviewBase.endDate)
     : null;
+
+  // Per-row Copy/Paste (2026-09-05): reads/writes the BUFFER, not the persisted route — copying
+  // mid-edit shares what's currently on screen, not a stale persisted value, and pasting lands in
+  // the buffer for the author to Save or Discard like everything else here. The separate
+  // "paste into all" clipboard-strip bulk action (ReportRouteList.jsx) is UNCHANGED — it applies
+  // to routes regardless of edit-mode state and still persists immediately; it's a distinct bulk
+  // tool, not part of this per-row edit session.
+  const handleCopyWindow = () => onCopyWindow?.(localStart, localEnd);
+  const handlePasteWindow = () => {
+    const pasted = onPasteWindow?.();
+    if (!pasted) return;
+    setLocalStart(pasted.startDate);
+    setLocalEnd(pasted.endDate);
+  };
+
+  // ── Validation, computed live (not stateful) so Save's enabled-state and any inline message
+  // are always in sync with the current buffer — no stale-error risk. ──
+  const trimmedName = localName.trim();
+  const nameError = !trimmedName
+    ? 'Route needs a name.'
+    : (trimmedName !== r.name && (siblingNames || []).includes(trimmedName))
+      ? `A route named "${trimmedName}" already exists.`
+      : '';
+  // Mirrors the exact three-way condition the derive UI below already displays inline — "ready"
+  // only in the branch that shows a real resolved preview, not just "a base is picked."
+  const dateReady = dateMode === 'fixed' || (!!deriveFrom && isValidFormula(deriveFormula) && !!derivePreview);
+  const canSave = !nameError && dateReady;
+
+  const handleSave = () => {
+    if (!canSave) return;
+    const dateUpdates = dateMode === 'derived'
+      ? { dateFormula: deriveFormula, derivedFromRoute: deriveFrom }
+      : { startDate: localStart, endDate: localEnd, dateFormula: undefined, derivedFromRoute: undefined };
+    const updates = { ...dateUpdates };
+    if (trimmedName !== r.name) {
+      // A deliberate rename — even to something generic — is a real editorial decision from
+      // here on; clears isPlaceholderName so a future Dynamic Report resolution never
+      // overwrites it with the resolved route's own name again.
+      updates.name = trimmedName;
+      updates.isPlaceholderName = false;
+    }
+    onUpdateRoute?.(updates);
+    onToggleExpand?.();
+  };
+  const handleDiscard = () => {
+    resetBufferFromRoute();
+    onToggleExpand?.();
+  };
+
   const tmcCount = parseTmcArray(r.tmc_array).length;
 
-  // One-line meta ("9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28 · 3 graphs") — the count/range the
-  // engine will really enumerate, not four disabled inputs' worth of the same information.
-  // `miles` is computed by the parent's useRouteMileage (a live TMC->miles lookup, not a stored
-  // field) and arrives as undefined for the one render before that fetch resolves — omit the
-  // segment rather than show a misleading "0.0 mi" while loading. `graphCount` is likewise
-  // computed live by the parent from `useGraphPublish`'s self-bound-graph discovery (each
-  // graph's own `_measurePick.routeIds`) — NOT from this route's stored `graphIds` field, which
-  // is write-once at conversion time and goes stale the moment a graph's Routes pill reassigns
-  // anything. "0 graphs" is a real, useful signal (a route sitting in the list feeding nothing),
-  // so it's never omitted the way a still-loading `miles` is.
-  const metaText = [
-    `${tmcCount} TMC${tmcCount === 1 ? '' : 's'}`,
-    miles != null ? `${miles.toFixed(1)} mi` : null,
-    (formatDateShort(r.startDate) || formatDateShort(r.endDate))
-      ? `${formatDateShort(r.startDate) || '?'} → ${formatDateShort(r.endDate) || '?'}`
-      : 'No dates set',
-    `${graphCount ?? 0} graph${(graphCount ?? 0) === 1 ? '' : 's'}`,
-  ].filter(Boolean).join(' · ');
+  // Collapsed-row summary (2026-09-04 restructure, reweighted 2026-09-05 per feedback): the
+  // date-range line is now the bold/prominent one — it's the thing an author scans for — with
+  // the TMC/mileage line muted underneath. `miles` is computed by the parent's useRouteMileage
+  // (a live TMC->miles lookup, not a stored field) and arrives as undefined for the one render
+  // before that fetch resolves — omit the segment rather than show a misleading "0.0 mi" while
+  // loading. Graph-count (previously a third segment here) was removed entirely 2026-09-04 —
+  // the discovery it was reading still exists, feeding the reports_snap_2 write-path in
+  // ReportRouteList.jsx instead of a per-row display.
+  const dateMeta = (formatDateShort(r.startDate) || formatDateShort(r.endDate))
+    ? `${formatDateShort(r.startDate) || '?'} → ${formatDateShort(r.endDate) || '?'}`
+    : 'No dates set';
+  const tmcMileageMeta = `${tmcCount} TMC${tmcCount === 1 ? '' : 's'}${miles != null ? ` · ${miles.toFixed(1)} mi` : ''}`;
 
   const canMutateRow = isEdit;
 
-  const rowClass = isEditingName ? t.rowRenaming : (isExpanded ? t.rowOpen : t.row);
-
-  if (isEditingName) {
-    return (
-      <div className={rowClass} data-row={r.route_comp_id}>
-        <div className={t.editContainer}>
-          <span className={t.colorDot} style={{ backgroundColor: r.color }} />
-          <input
-            autoFocus
-            value={editNameValue}
-            onChange={(e) => onEditNameValueChange(e.target.value)}
-            className={t.renameInput}
-          />
-          <button type="button" className={t.saveBtn} title="Save" onClick={onSaveEditName}>
-            <Icon icon="FloppyDisk" />
-          </button>
-          <button type="button" className={t.cancelBtn} title="Cancel" onClick={onCancelEditName}>
-            <Icon icon="CancelCircle" />
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const rowClass = isExpanded ? t.rowOpen : t.row;
 
   return (
     <div className={rowClass} data-row={r.route_comp_id}>
@@ -289,9 +257,30 @@ export default function RouteRow({
             </button>
           </span>
         )}
-        <button type="button" className={isExpanded ? t.expanderOpen : t.expander} onClick={onToggleExpand} title={isExpanded ? 'Collapse' : 'Expand'}>
-          {isExpanded ? '−' : '+'}
-        </button>
+        {/* Entering edit mode: one Pencil toggle, same as before. While editing (2026-09-05,
+            consolidated per feedback — the bottom Save/Discard row was redundant with a header
+            control): the header itself carries BOTH actions side by side — Discard (X) and Save
+            — instead of a single ambiguous toggle plus a separate bottom action row. A read-only
+            viewer keeps the plain expand/collapse affordance (no edit concept to merge with). */}
+        {canMutateRow && isExpanded ? (
+          <>
+            <button type="button" className={t.expanderOpen} onClick={handleDiscard} title="Discard changes">
+              <Icon icon="XMark" />
+            </button>
+            <button type="button" className={t.saveIconBtn} onClick={handleSave} disabled={!canSave} title="Save changes">
+              <Icon icon="FloppyDisk" />
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className={isExpanded ? t.expanderOpen : t.expander}
+            onClick={onToggleExpand}
+            title={canMutateRow ? 'Edit route' : (isExpanded ? 'Collapse' : 'Expand')}
+          >
+            {canMutateRow ? <Icon icon="PencilSquare" /> : (isExpanded ? '−' : '+')}
+          </button>
+        )}
         {canMutateRow && ColorPicker && Popup ? (
           <Popup
             button={<button type="button" className={t.colorDotButton} style={{ backgroundColor: r.color }} title={`Identity colour ${r.color} — click to change`} />}
@@ -323,23 +312,35 @@ export default function RouteRow({
           <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />
         )}
         <div className={t.iconContainer}>
-          <span className={t.routeTitle} title={r.name}>{r.name}</span>
+          {canMutateRow && isExpanded ? (
+            <input
+              autoFocus
+              value={localName}
+              onChange={(e) => setLocalName(e.target.value)}
+              onKeyDown={handleNameKeyDown}
+              className={t.titleInput}
+            />
+          ) : (
+            <span className={t.routeTitle} title={r.name}>{r.name}</span>
+          )}
           {canMutateRow && (
-            <>
-              <button type="button" className={t.iconBtn} title="Edit name" onClick={onStartEditName}>
-                <Icon icon="PencilSquare" />
-              </button>
-              <button type="button" className={t.dangerBtn} title="Remove route from report" onClick={onRemove} disabled={saving}>
-                <Icon icon="Trash" />
-              </button>
-            </>
+            <button type="button" className={t.dangerBtn} title="Remove route from report" onClick={onRemove} disabled={saving}>
+              <Icon icon="Trash" />
+            </button>
           )}
         </div>
       </div>
 
-      <div className={`${t.metaIndent} ${t.meta}`}>{metaText}</div>
+      {canMutateRow && isExpanded && nameError && trimmedName && (
+        <div className={`${t.metaIndent} ${t.deriveFormulaError}`}>{nameError}</div>
+      )}
 
-      {isExpanded && (
+      {!isExpanded ? (
+        <div className={t.metaIndent}>
+          <div className={t.metaProminent}>{dateMeta}</div>
+          <div className={t.meta}>{tmcMileageMeta}</div>
+        </div>
+      ) : (
         <div className={t.expandedContainer}>
           {/* ── DATE SPAN: the one window facet a route still owns — weekday mask and
               time-of-day moved to the graph (see QuickControls). ── */}
@@ -347,12 +348,11 @@ export default function RouteRow({
             <div className={t.windowHead}>
               <div className={t.facetLabel}>dates</div>
               {/* Copy/paste is a LITERAL span, which would silently conflict with a derived
-                  row's live-computed value — Fixed-only, same as before. No pencil anymore
-                  (2026-08-19, item 4A): the fields below are always live, and "Use relative dates
+                  row's live-computed value — Fixed-only, same as before. "Use relative dates
                   instead" / "Use fixed dates instead" ARE the mode switches. */}
               {canMutateRow && dateMode === 'fixed' && (
                 <div className={t.windowActionsRow}>
-                  <button type="button" className={t.iconBtn} title="Copy this date span" onClick={onCopyWindow}>
+                  <button type="button" className={t.iconBtn} title="Copy this date span" onClick={handleCopyWindow}>
                     <Icon icon="Copy" />
                   </button>
                   <button
@@ -360,7 +360,7 @@ export default function RouteRow({
                     className={t.iconBtn}
                     title={clipboard && clipboard.from !== r.route_comp_id ? `Paste the date span copied from ${clipboard.fromName}` : 'Copy a date span from another route first'}
                     disabled={!clipboard || clipboard.from === r.route_comp_id}
-                    onClick={onPasteWindow}
+                    onClick={handlePasteWindow}
                   >
                     <Icon icon="Paste" />
                   </button>
@@ -499,14 +499,6 @@ export default function RouteRow({
                   {baseForNames.map((name) => <span key={name} className={t.miniPill}>{name}</span>)}
                 </div>
               )}
-            </div>
-          )}
-
-          {canMutateRow && (
-            <div className={t.openOutRemoveRow}>
-              <button type="button" className={t.openOutRemoveBtn} onClick={onRemove} disabled={saving}>
-                <Icon icon="Trash" /><span className={t.openOutRemoveLabel}>Remove route from report</span>
-              </button>
             </div>
           )}
         </div>

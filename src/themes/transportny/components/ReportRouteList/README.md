@@ -38,7 +38,12 @@ sectionMenu — no page attribute, no hardcoded source, no DMS-core changes:
   "Dataset" pick. The Report Page template pre-wires this to `reports_snap_2`, one row per report
   (`report_id = <page id>`, a `routes` JSON-array column). `loadReportRow`/`persistRoutes` read/write
   this row directly via `apiLoad`/`apiUpdate` — the same generic mechanism Card/Spreadsheet use for
-  their own editable rows.
+  their own editable rows. The same row also carries `graph_count`/`counts_label` (2026-09-04,
+  `npmrds-all-reports-list-page.md`'s "routes/graphs" column) — a spec-built report gets these once
+  at build time (`report_build.mjs`/the Python converter); a hand-authored report gets them kept live
+  by `ReportRouteList.jsx`'s own count-sync effect + `persistCounts`, which recomputes them from this
+  report's real route count and `useGraphPublish`'s live self-bound-graph discovery on every route/
+  graph add or remove.
 - **Route catalog** (which routes are addable) reads `state.join.sources.<alias>.sourceInfo` — the
   sectionMenu's **"Add Join Source"** slot, deliberately left *incomplete* (source + view picked, no
   join columns). `buildUdaConfig.js`'s `isJoinComplete()` requires non-empty join columns before a
@@ -159,41 +164,37 @@ component instead keeps that one exception alive, and is unconditional — no pe
 to remember, unlike `hideInView`. **Never set `hideInView` on this component's section** — see
 Gotchas below.
 
-## Expanded route row: collapsed-by-default subsections (`RouteRow.jsx`)
+## Route row: one combined expand/edit toggle (`RouteRow.jsx`)
 
-Redesigned 2026-08-05 from a real design critique (a screenshot of a route acting as the base for 8
-date-derived siblings). The old expanded row rendered every control open all the time — TMCs, a full
-disabled date-range block plus an italic run-on sentence naming every dependent, an always-open
-`ColorPicker` (swatch grid + gradient + hue bar), a flat wrap of every graph chip, and a full-width red
-"Remove Route from Report" button — all visible at once regardless of whether the author needed any of
-it right now.
+This section has been redesigned several times since an original 2026-08-05 disclosure-based pass
+(a `menuOpen`/`colorOpen`/`dateDetailsOpen` overflow-menu design, since fully superseded — Design
+Push #2 on 2026-08-06 moved graph assignment off the route entirely, and item 4A on 2026-08-19
+removed the pencil/Save/Cancel gate for dates). Current state (2026-09-04):
 
-`RouteRow.jsx` now keeps each of those as its own local disclosure (`dateDetailsOpen`, `depsOpen`,
-`colorOpen`, `menuOpen` — plain `useState`, ephemeral, never lifted to the parent, same convention as
-the pre-existing `showAllTmcs`):
+- **Collapsed**: title + a prominent `"N TMCs · X.X mi"` line right under it, and a separate muted
+  date-range line below that. No per-route graph-count is shown anywhere (tried 2026-08-07, removed
+  again 2026-09-04 — Ryan's call; the underlying live self-bound-graph discovery still exists, feeding
+  the `reports_snap_2` write-path instead, see Storage above).
+- **One combined toggle** (an author only — a real viewer keeps a plain +/− expand for the read-only
+  date span) both expands the row AND enters live editing — no separate "Edit name" pencil anymore.
+  Toggling it in **replaces** the two collapsed summary lines with the editable name input + the
+  Fixed/Derived date editor, in the same visual slot, rather than appending a panel below them.
+- **Name and dates share one architecture**: each row owns its own local live buffer (no parent-owned
+  single-flight edit slot for either field anymore) — dates auto-save debounced (since 2026-08-19,
+  item 4A), name commits on blur/Enter with an inline uniqueness error (since 2026-09-04 — this also
+  fixed `report-route-ui-parity-gaps.md` gap #7's old rename input-commit bug, by construction: the
+  bug lived in the old parent-owned shared-slot buffer this replaced, not in this local-buffer
+  design).
+- **Remove** lives in exactly one place: the trash icon in the header row, next to the title —
+  the old SECOND remove button at the bottom of the expanded panel was deleted 2026-09-04 (it
+  duplicated the header one for no reason).
+- **"Base for N routes"** stays a standing, always-visible one-liner inside the edit-mode body that
+  expands into a pill list of dependent names.
+- **Appearance** stays a color swatch + label; the real `ColorPicker` only mounts once clicked open
+  (a `Popup`, unrelated to the expand/edit toggle).
 
-- **Date Range** collapses to a one-line summary (`"1/1/2024 – 12/31/2024 · Weekdays only"`, or
-  `"· Derived from {base name}"`) — the full read-only detail, or the Fixed/Derived edit controls,
-  only mount once expanded or once actively editing.
-- **"Base for N routes"** is a standing, always-visible one-liner (independent of the Date Range
-  disclosure above) that expands into a pill list of dependent names — replaces the old italic
-  run-on sentence, the worst offender in the original critique.
-- **Appearance** collapses to a color swatch + label; the real `ColorPicker` only mounts once clicked
-  open.
-- **Graphs** are grouped into "On"/"Off" with a `"N of M graphs"` summary line, instead of one flat
-  alphabetical wrap of every chip.
-- **Remove** (and **Rename**, moved here as a same-arc follow-up) live in a "⋮" overflow menu next to
-  the reorder arrows, instead of a full-width danger button competing with routine controls on every
-  expanded row.
-
-The kebab trigger's wrapper needs `relative flex items-center`, not just `relative` — a plain block
-wrapper around an inline-block `Button` doesn't center the button inside it, landing it a few px off
-from the reorder arrows beside it (real bug, caught live, fixed same day).
-
-Live-verified against `converted_reports/year_over_year_beginner_0` (Dynamic Report, slot placeholders)
-and `converted_reports/claude_scratch_tag_browser` (real TMC data — confirms the redesign didn't
-regress TMC rendering; it was only ever absent on Dynamic Report slot placeholders, unrelated to this
-pass).
+See `npmrds-reports-routes-feedback-triage.md`'s Phase 2 (in `planning/transportny/tasks/current/`)
+for the full plan this redesign was built from.
 
 ## Where the template lives
 

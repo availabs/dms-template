@@ -2,11 +2,14 @@
 
 **Project:** TransportNY · **Topic:** themes · **Status:** BUILT + VERIFIED LIVE (draft only, not published) · **Started:** 2026-09-03
 
-**Publish blocker flagged 2026-09-04:** Ryan noticed the `counts_label` (routes · graphs) column
-is currently only populated by json-spec-generated reports — most reports have nothing there.
-Decided: build a real write-path (RRL updates `reports_snap_2` whenever a route/graph is
-added/removed), not remove the column. Tracked as part of Phase 2 in
-`npmrds-reports-routes-feedback-triage.md`. Worth resolving before this page publishes.
+**Publish blocker flagged 2026-09-04, RESOLVED same day:** Ryan noticed the `counts_label`
+(routes · graphs) column was only populated by json-spec-generated reports — most reports had
+nothing there. Decided: build a real write-path (RRL updates `reports_snap_2` whenever a
+route/graph is added/removed), not remove the column. Built + live-verified as part of Phase 2 in
+`npmrds-reports-routes-feedback-triage.md` — `ReportRouteList.jsx` now keeps `graph_count`/
+`counts_label` live for any hand-authored report, confirmed via a live add-graph and
+remove-route on a scratch report, DB-read before/after. No longer a blocker for this page's
+publish.
 
 ## Objective
 

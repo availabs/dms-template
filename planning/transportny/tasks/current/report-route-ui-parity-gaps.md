@@ -265,6 +265,17 @@ scoping. Permissions/ACL is now the only piece of the original 2026-07-27 ruling
    again) — same surface as this gap. See Phase 2 of
    `npmrds-reports-routes-feedback-triage.md`, which folds this rename-control fix in rather
    than treating it as separate follow-up work.
+   **FIXED 2026-09-04** as part of that Phase 2 restructure — root cause, not a patch: the old
+   rename buffer was parent-owned and single-flight (`editingRouteNameIndex`/`editNameValue`,
+   swapped by list index), the exact shape date-editing itself had before item 4A gave dates a
+   local per-row buffer; the input-commit bug lived in that shared-slot mechanism. `RouteRow.jsx`
+   now gives the name field the identical local-buffer architecture dates already had (commit on
+   blur/Enter, inline collision error, no shared parent slot). Live-verified on a scratch report:
+   typed a new name, pressed Enter, committed correctly (graph legend + header chip updated in the
+   same render); typed a colliding sibling name, got the inline error, and the row was NOT
+   persisted. Two distinct instances of the same route still can't get distinct labels without an
+   explicit rename (unchanged, was never this gap's ask) but the rename control itself is now
+   reliable.
 8. **Difference-graph anchor is "whichever instance was added to the report first"**
    (`route_comp_id` order) — invisible in the UI, so getting the sign right is a
    coin-flip unless you already know the add-order convention. The spec's `anchor`
@@ -552,8 +563,8 @@ rationale below still reads coherently) — pick up at #7 next.
 4. ~~#8 difference-graph anchor UI affordance~~ — **DONE + live-verified 2026-07-30**
    (an "Anchor Route" item in the graph's own Measure Picker; see gap #8's entry
    above).
-5. **#7 RRL rename control** — needs the existing fragile input-commit bug root-caused
-   first.
+5. ~~#7 RRL rename control~~ — **DONE + live-verified 2026-09-04** (see gap #7's entry above; the
+   input-commit bug was root-caused as part of the Phase 2 RRL restructure, not patched separately).
 6. **#6 RRL pill silent-fail** and **#12 re-save-needed** — both need investigation
    before a fix is even scoped; group them since they may share a root cause (some
    RRL/graph-state update not propagating to the query layer without an explicit

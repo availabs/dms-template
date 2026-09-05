@@ -71,38 +71,41 @@ export const reportRouteListTheme = {
   //     flagged live: rows used to read as separate bordered cards. ──
   row: 'px-2 py-2.5',
   rowOpen: 'px-2 py-2.5 bg-slate-50/60 rounded-[6px]',
-  rowRenaming: 'px-2 py-2.5 bg-[#1F3F8F]/5 rounded-[6px]',
   rowHeaderWrapper: 'flex items-start gap-1 min-w-0',
   reorderButtons: 'flex flex-col shrink-0 mt-0.5',
   reorderBtn: 'size-4 flex items-center justify-center text-slate-400 hover:text-slate-700 disabled:text-slate-200 disabled:cursor-not-allowed',
   // The +/- expander: small, WHITE, bordered — a plain +/- character, not a filled button.
   expander: 'size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]',
   expanderOpen: 'size-5 mt-0.5 shrink-0 rounded border border-[#37576B]/40 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-[#37576B]',
+  // Save, header-row icon button (2026-09-05) — sits beside expanderOpen's Discard (X) while a
+  // row is being edited; same bordered-tint shape as expanderOpen, green to read as the
+  // affirmative action (a solid saturated fill read as "heinous" — Ryan, live feedback; this
+  // reuses the exact green this component's very first Save button used, pre-2026-09-04).
+  saveIconBtn: 'size-5 mt-0.5 shrink-0 rounded border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] hover:bg-[#10B981]/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#10B981]/10',
   // Identity-colour dot: edit permission gets a ring-hover popover trigger; a read-only
   // viewer gets a plain static swatch.
   colorDot: 'size-3 mt-1 rounded-full shrink-0',
   colorDotButton: 'size-3.5 mt-1 rounded-full ring-1 ring-[#0f1722]/20 shrink-0 hover:ring-2 hover:ring-[#1F3F8F]/40 cursor-pointer',
   iconContainer: 'min-w-0 flex-1 flex items-center gap-1',
   routeTitle: 'font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0',
-  // Row-level actions (rename/remove) — transparent icon buttons, background only on hover.
+  // Row-level actions (remove) — transparent icon buttons, background only on hover.
   iconBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0',
   dangerBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 shrink-0',
-  editContainer: 'flex items-center gap-1.5 min-w-0',
-  renameInput: 'flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 font-proxima text-[12.5px] text-slate-700 focus:outline-none',
-  saveBtn: 'size-7 rounded-[6px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] shrink-0',
-  cancelBtn: 'size-7 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c] shrink-0',
+  // Inline title input (2026-09-04) — replaces the route title span in place when the
+  // combined expand/edit toggle is on; same slot, no separate rename-mode row swap.
+  titleInput: 'flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 font-proxima text-[12.5px] text-slate-700 focus:outline-none',
 
-  // Meta line ("9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28") — a compact mono micro-label,
-  // indented to the name's left edge (past reorder/expander/dot).
+  // Collapsed-row summary (2026-09-04, reweighted 2026-09-05) — two lines instead of one
+  // combined string. `metaProminent` now carries the DATE-RANGE line (bold — the thing an
+  // author scans for); the muted `meta` line below it now carries TMC/mileage. Both share the
+  // same left indent.
   metaIndent: 'pl-7',
+  metaProminent: 'font-proxima text-[12px] font-semibold text-slate-700 mt-0.5',
   meta: 'font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5',
 
   // ── Open-out · full row width (no indent), a bordered white card. NO TMC list —
   //     the count already lives in the meta line; nobody reads codes off a 340px rail. ──
   expandedContainer: 'mt-2 rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-3',
-  openOutRemoveRow: 'pt-2.5 border-t border-zinc-950/05 flex justify-end',
-  openOutRemoveBtn: 'h-7 px-2 inline-flex items-center gap-1.5 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/5 text-[#b91c1c] hover:bg-[#EF4444]/10',
-  openOutRemoveLabel: 'font-display uppercase text-[10.5px] tracking-wide',
 
   // ── Date-span block · the one window facet a route still owns (design push #2, 2026-08-06 —
   //     weekday mask/time-of-day moved to the graph, see QuickControls). ──
