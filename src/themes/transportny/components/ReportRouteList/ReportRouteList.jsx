@@ -212,6 +212,7 @@ export default function ReportRouteList() {
     pageState,
     setActionParam,
     clearActionParam,
+    routeSourceInfo,
   });
 
   // Item 5 (2026-09-04, npmrds-reports-routes-feedback-triage.md Phase 2): keeps the "All

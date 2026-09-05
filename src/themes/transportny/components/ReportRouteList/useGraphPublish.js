@@ -26,6 +26,12 @@ function labelRouteVariant(routeName, weekdays, start, end) {
 // QuickControls/index.jsx reads the identical key rather than a second, driftable copy.
 export const ROUTE_CATALOG_PARAM_KEY = '__report_routes_catalog__';
 
+// Page-wide pageState key RRL broadcasts its own join-bound `routeSourceInfo` to (same
+// convention as ROUTE_CATALOG_PARAM_KEY) — lets a sibling section open RouteTagBrowserModal
+// without needing its own "Add Join Source" binding configured. Used by ReportPageHeader's
+// route preview-swap button (dynamic-reports-authoring-gaps.md sub-item 3).
+export const ROUTE_SOURCE_INFO_PARAM_KEY = '__report_route_source_info__';
+
 // Changing this file's read of `_measurePick`? Every golden-corpus entry tagged
 // "display._measurePick.routeIds" (scripts/npmrds-reports/report_probe_fixtures/
 // golden-corpus.json) needs re-verifying — `node scripts/npmrds-reports/probe_corpus.mjs
@@ -201,7 +207,7 @@ function findSelfBoundGraphs(sectionList) {
 // one fixed page-wide key every graph's QuickControls reads from. `isEdit` here means only "is
 // the page open at /edit/..." (drives `sectionsKey` — which sections array sibling graphs
 // actually render from right now).
-export function useGraphPublish({ item, isEdit, routes, pageState, setActionParam, clearActionParam }) {
+export function useGraphPublish({ item, isEdit, routes, pageState, setActionParam, clearActionParam, routeSourceInfo }) {
   const sectionsKey = isEdit ? 'draft_sections' : 'sections';
   const sectionList = item?.[sectionsKey] || EMPTY_SECTIONS;
   const graphs = useMemo(() => findSelfBoundGraphs(sectionList), [sectionList]);
@@ -264,6 +270,12 @@ export function useGraphPublish({ item, isEdit, routes, pageState, setActionPara
   useEffect(() => {
     if (!setActionParam) return;
     const catalog = routes.map((r) => ({
+      // The real catalog route's own id — added 2026-09-05 (dynamic-reports-authoring-gaps.md
+      // sub-item 3): the header's route preview-swap button needs this to pre-populate
+      // RouteTagBrowserModal (which identifies/dedupes selections by `.id`) and to build the
+      // `?routes=` id list on confirm. `undefined` for an unresolved Dynamic Report slot (no
+      // real route picked yet) — same as every other field here.
+      id: r.id,
       route_comp_id: r.route_comp_id,
       name: r.name,
       // Carried alongside name/startDate/endDate so a consumer can run this same catalog entry
@@ -300,6 +312,19 @@ export function useGraphPublish({ item, isEdit, routes, pageState, setActionPara
     if (isEqual(current, catalog)) return;
     setActionParam(ROUTE_CATALOG_PARAM_KEY, catalog);
   }, [routes, pageState?.filters, setActionParam]);
+
+  // Broadcasts this section's own join-bound `routeSourceInfo` (same convention as the route
+  // catalog above) — added 2026-09-05 so ReportPageHeader's route preview-swap button
+  // (dynamic-reports-authoring-gaps.md sub-item 3) can open RouteTagBrowserModal without needing
+  // a second "Add Join Source" binding configured on the header's own section. Skips entirely
+  // until `routeSourceInfo` itself has resolved (RRL's own join binding not yet loaded) rather
+  // than broadcasting an empty/partial value a consumer might mistake for "ready."
+  useEffect(() => {
+    if (!setActionParam || !routeSourceInfo) return;
+    const current = pageState?.filters?.find(f => f.searchKey === ROUTE_SOURCE_INFO_PARAM_KEY && f.type === 'action')?.values?.[0];
+    if (isEqual(current, routeSourceInfo)) return;
+    setActionParam(ROUTE_SOURCE_INFO_PARAM_KEY, routeSourceInfo);
+  }, [routeSourceInfo, pageState?.filters, setActionParam]);
 
   return { graphs };
 }

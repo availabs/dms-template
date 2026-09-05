@@ -56,8 +56,14 @@ export const reportPageHeaderTheme = {
 
   // ── routes-in-this-report disclosure (view mode's only route list — RRL itself is edit-only) ──
   routesWrapper: "mt-3",
+  routesToggleRow: "flex items-center gap-3 flex-wrap",
   routesToggle: "inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 hover:text-[#1F3F8F] cursor-pointer",
   routesToggleIcon: "size-3",
+  // Dynamic Reports only — reopens the route picker to swap the report's `?routes=` for preview
+  // purposes (dynamic-reports-authoring-gaps.md sub-item 3). Same vocabulary as `routesToggle`,
+  // brand-blue like an inline link since it's an action, not a disclosure toggle.
+  changeRoutesBtn: "inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#1F3F8F] hover:underline cursor-pointer disabled:text-slate-300 disabled:no-underline disabled:cursor-default",
+  changeRoutesIcon: "size-3",
   routesGroupList: "flex flex-col gap-2.5 mt-2",
   routeGroup: "flex flex-col gap-1",
   routeGroupName: "font-display text-[13px] font-semibold text-[#0F1722]",

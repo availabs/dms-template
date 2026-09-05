@@ -1,7 +1,7 @@
 # Dynamic Reports — authoring gaps (route-slot naming, add-slot UX, preview-swap, static↔dynamic conversion)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **item 1 DONE + live-verified
-2026-09-05** · **Started:** 2026-09-05
+**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **items 1 and 3 DONE +
+live-verified 2026-09-05** · **Started:** 2026-09-05
 
 ## Objective
 
@@ -138,16 +138,61 @@ unset. Ryan's note (triage doc): "the json-spec layer can already express this" 
 `route_slot_group` is a plain spec field already) — so this is very likely UI-only, no new
 resolution-side mechanism. Confirm during implementation, not assumed.
 
-## Sub-item 3 — Header preview-swap button (not yet designed in detail)
+## Sub-item 3 — Header preview-swap button — DONE + live-verified 2026-09-05
 
-Add a button to `ReportPageHeader.jsx`, visible in both view and edit mode (same visibility gate as
-the "Viewing as of" control — i.e. whenever the report is a Dynamic Report with a `routeSlots`
-filter registered, not just when routes are unresolved), that reopens `RouteTagBrowserModal` in
-`selectionMode="exact"` / `requiredCount={routeSlotGroups.length}` (same props the entry gate
-already uses) pre-populated with the currently-resolved routes, and on a fresh pick, `navigate`s
-with an updated `?routes=` — same raw-`location.search` patch approach as "Viewing as of", so
-`?asOf=` (if present) survives untouched. No RRL/`persistRoutes` involvement — this never touches
-the page's own persisted `routes[]` slot array, purely a URL/view-time swap, same as `?asOf=`.
+**Real gap found while scoping, fixed as a prerequisite**: `ReportPageHeader.jsx` has no join
+source of its own configured (confirmed via `dms raw get` on the header section's `element-data` —
+no `join` key at all, unlike RRL's own section, which has the "Routes Data" source/view
+2107426/2107427 bound), so it had no `routeSourceInfo` to hand `RouteTagBrowserModal` and couldn't
+open a real picker. Rather than requiring every report (old and new) to get a second, redundant
+"Add Join Source" binding added to its header section, RRL now broadcasts its own `routeSourceInfo`
+the same way it already broadcasts the route catalog — new `ROUTE_SOURCE_INFO_PARAM_KEY`
+(`useGraphPublish.js`), a second `isEqual`-guarded effect alongside the existing catalog broadcast,
+gated on `routeSourceInfo` itself having resolved. `ReportRouteList.jsx` passes its own
+`routeSourceInfo` into `useGraphPublish` for this. Zero authoring changes needed on any existing
+report — works immediately everywhere RRL is already the sidebar.
+
+**Second real gap found + fixed in the same pass**: the broadcast route catalog
+(`ROUTE_CATALOG_PARAM_KEY`) never carried each entry's real catalog `id` — harmless for its
+original two consumers (the header's routes disclosure, the chart legend), which only ever display
+a route, never re-identify one. This header button needs `.id` to pre-populate
+`RouteTagBrowserModal`'s selection (keyed by `.id`) and to build the `?routes=` id list on confirm.
+Added `id: r.id` to the catalog map in `useGraphPublish.js`.
+
+**Implementation** (`ReportPageHeader.jsx`): reads `isDynamicReport` (a `type: 'routeSlots'` page
+filter, same test RRL's own uses) and the broadcast `routeSourceInfo`. A "Change routes" button
+renders next to the existing "N routes in this report" toggle, whenever `isDynamicReport &&
+routeGroups.length > 0` (nothing to swap when the report has zero route slots yet) — disabled with
+a tooltip if `routeSourceInfo` hasn't broadcast yet. Clicking it opens `RouteTagBrowserModal` with
+`selectionMode="exact"` / `requiredCount={routeGroups.length}` (identical props to the entry gate),
+pre-populated via a small derived array (`swapInitialRoutes` — `routeCatalog` with each entry's
+`name` run through `resolvedRouteLabel` first, so the modal's selected-chip shows the same resolved
+display name the header/legend already show, not an unresolved `%n`/`%y` template literal — found
+live, fixed same pass). On confirm, `handleRouteSwapConfirm` rewrites `?routes=` via the identical
+raw-`location.search`-patch approach `handleAsOfChange` ("Viewing as of") already uses, so a
+sibling `?asOf=` survives untouched. No RRL/`persistRoutes` involvement — purely a URL/view-time
+swap, never touches the page's own persisted `routes[]` slot array.
+
+**Live-verified** on the same kept scratch Dynamic Report as sub-item 1
+(`reports/claude_scratch_pct_template`, page id 2218565, real URL:
+`localhost:5173/npmrds/reports/claude_scratch_pct_template?routes=2207838&asOf=2026-07-23` — the
+`/npmrds` path-mount prefix is required, already documented in `traversing-dms-pages.md`'s §4
+subdomain/mount gotcha):
+- Button renders next to "1 route in this report", opens the modal with the current route
+  pre-selected (chip read `"35E 36081 Queens Midtown Expy Westbound..."`, the resolved name, not
+  the raw `%n (%y) (2)` template — confirms the chip-label fix), full real route search/browse
+  working (60 routes, tag facets, "Best match" sort) — confirms `routeSourceInfo` actually resolved
+  and the query against the real "Routes Data" catalog works.
+- Deselected the current route, selected "Route 5 Part" (a different real catalog route, 6 TMCs),
+  confirmed "Add 1 Route" → URL became `?routes=2216791&asOf=2026-07-23` (`asOf` untouched), header
+  pill + title + chart legend all updated to "Route 5 Part" in the same render, with genuinely
+  different ClickHouse data plotted (confirms this isn't just a label swap).
+- Reloaded with the ORIGINAL `?routes=2207838` — resolved back to the original route exactly as
+  before, proving the swap never persisted anything to the report's own storage.
+- Regression check: `reports/beacon_9_d_jan_25_vs_26` (a real, published, unmodified STATIC report)
+  shows "1 route in this report" with **no** "Change routes" button next to it — confirms the
+  `isDynamicReport` gate correctly hides this for every non-Dynamic-Report page.
+- 0 console errors across every navigation in this pass.
 
 ## Sub-item 4 — Bidirectional static↔dynamic conversion (deferred, own design pass)
 
@@ -174,14 +219,24 @@ Sub-item 1 (DONE — see above):
   scoped for sub-item 1**, but needed: added `catalogRouteName` to the broadcast route catalog so
   `%n` resolves for the header's pill consumer, not just the chart-legend consumer.
 
-Sub-items 2–3 (not started):
+Sub-item 3 (DONE — see above):
+- `ReportPageHeader.jsx` — `isDynamicReport`/`routeSourceInfo` derivation, `swapInitialRoutes`,
+  `handleRouteSwapConfirm`, the "Change routes" button, and the `RouteTagBrowserModal` render.
+  Imports `RouteTagBrowserModal` and `ROUTE_SOURCE_INFO_PARAM_KEY` — **not** originally scoped to
+  need `RouteTagBrowserModal` invokable from outside RRL's entry gate at all; turned out to just
+  work unmodified (`dismissible` defaults `true`, no assumption inside it about being a blocking
+  gate) once fed a real `routeSourceInfo`.
+- `ReportPageHeader.theme.js` — new `routesToggleRow`/`changeRoutesBtn`/`changeRoutesIcon` tokens.
+- `useGraphPublish.js` — **not originally scoped for sub-item 3**, but needed: added `id: r.id` to
+  the broadcast route-catalog entries, and a new broadcast key (`ROUTE_SOURCE_INFO_PARAM_KEY`) +
+  effect carrying RRL's own `routeSourceInfo` so the header never needs its own join-source binding.
+- `ReportRouteList.jsx` — passes its own `routeSourceInfo` into `useGraphPublish`.
+
+Sub-item 2 (not started):
 - `ReportRouteList.jsx` — sub-item 2's reuse-vs-distinct picker; may also touch the
   `routeSlotGroups`/`needsRouteSelection` computation if reuse changes group cardinality live.
 - `RouteRow.jsx` — sub-item 2's slot-creation entry point if exposed per-row rather than only via
   the top-level "+ Add Route Slot" button.
-- `ReportPageHeader.jsx`, `ReportPageHeader.theme.js` — sub-item 3's new button + modal wiring.
-- `RouteTagBrowserModal.jsx` — sub-item 3 needs it invokable from outside RRL's entry gate; check
-  it doesn't assume it's always the blocking first-load gate.
 
 ## Testing checklist
 
@@ -199,7 +254,23 @@ Sub-item 1:
   slot used a `dateFormula`); the code path is identical regardless (`yearSpanOf` only reads
   `startDate`/`endDate`), so this is expected to work, just not separately clicked-through.
 
-Sub-items 2–4: not started, no checklist yet.
+Sub-item 3:
+- [x] Button renders next to "N routes in this report", only when `isDynamicReport &&
+  routeGroups.length > 0` — confirmed present on the Dynamic Report scratch page, confirmed absent
+  on a real static report (`reports/beacon_9_d_jan_25_vs_26`).
+- [x] Opens pre-populated with the current route, resolved-label chip (not the raw `%n`/`%y`
+  template).
+- [x] Full route search/browse works inside the modal (confirms the broadcast `routeSourceInfo`
+  resolves and queries the real catalog).
+- [x] Confirm swap rewrites `?routes=`, preserves `?asOf=`, updates header pill/title/chart legend
+  live with genuinely different data.
+- [x] No persistence: reloading with the original `?routes=` resolves back to the original route.
+- [x] 0 console errors across every navigation exercised.
+- [ ] Sub-item 2's "reuse an existing group" picker not yet built, so not cross-tested against a
+  report with 2+ route-slot groups (multi-group swap, e.g. an NB/SB Dynamic Report) — only a
+  single-slot-group report was available to test against this pass.
+
+Sub-items 2 and 4: not started, no checklist yet.
 
 Scratch page: `reports/claude_scratch_pct_template` (id 2218565) — **kept, not deleted, per Ryan's
 2026-09-05 call**, for reuse across the rest of this Phase 4 arc. Left in a clean one-slot state.

@@ -6,8 +6,9 @@ graph-theme tuning remain deferred per Ryan's call, see below). **Phase 2 CLOSED
 (RRL panel restructure, DONE + live-verified 2026-09-04, plus a same-day-after-ship Save/Discard +
 collapsed-row-reweight follow-up 2026-09-05 — see "Phase 2 follow-up" and "Phase 2 — CLOSED" below).
 Phase 3 resolved (decision log). **Remaining: Phase 4** (Dynamic Reports, Item 2 — SCOPED 2026-09-05
-into [`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md), not yet implemented)
-**and Phase 5** (open-ended polish, Item 4 remainder) — neither started. · **Started:** 2026-09-04
+into [`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — **sub-items 1 and 3
+DONE + live-verified 2026-09-05, sub-items 2 and 4 remain**) **and Phase 5** (open-ended polish, Item
+4 remainder) — Phase 5 not started. · **Started:** 2026-09-04
 
 ## Phase 2 follow-up (2026-09-05): explicit Save/Discard replaces auto-save row editing
 
@@ -515,9 +516,12 @@ Given `dynamic-reports-and-route-tags.md` is already large, this got its **own n
 [`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — current-state grounding
 for all four sub-items. **Sub-item 1 (`%n`/`%y` route-slot name templating) DONE + live-verified
 2026-09-05**, including a real bug found+fixed along the way (`useGraphPublish.js`'s broadcast route
-catalog was missing `catalogRouteName`). Sub-items 2-3 scoped only (file-level, not designed).
-Sub-item 4 (static↔dynamic conversion) intentionally left undesigned pending its own pass. Sequence
-within the item, smallest/least-coupled first:
+catalog was missing `catalogRouteName`). **Sub-item 3 (header preview-swap button) DONE +
+live-verified 2026-09-05** — needed RRL to start broadcasting its own `routeSourceInfo`/route `id`s
+(the header had no join source of its own), see that file's own section for the full record.
+Sub-item 2 scoped only (file-level, not designed). Sub-item 4 (static↔dynamic conversion)
+intentionally left undesigned pending its own pass. Sequence within the item, smallest/
+least-coupled first:
 
 1. `%n` / `%y` route-slot name variable substitution (template-name resolution only); default a new
    slot's name to `%n`.
