@@ -5,8 +5,9 @@
 graph-theme tuning remain deferred per Ryan's call, see below). **Phase 2 CLOSED 2026-09-05**
 (RRL panel restructure, DONE + live-verified 2026-09-04, plus a same-day-after-ship Save/Discard +
 collapsed-row-reweight follow-up 2026-09-05 — see "Phase 2 follow-up" and "Phase 2 — CLOSED" below).
-Phase 3 resolved (decision log). **Remaining: Phase 4** (Dynamic Reports, Item 2) **and Phase 5**
-(open-ended polish, Item 4 remainder) — neither started. · **Started:** 2026-09-04
+Phase 3 resolved (decision log). **Remaining: Phase 4** (Dynamic Reports, Item 2 — SCOPED 2026-09-05
+into [`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md), not yet implemented)
+**and Phase 5** (open-ended polish, Item 4 remainder) — neither started. · **Started:** 2026-09-04
 
 ## Phase 2 follow-up (2026-09-05): explicit Save/Discard replaces auto-save row editing
 
@@ -505,13 +506,18 @@ as a decision log rather than deleted, per the "date everything, don't rewrite h
   do a broad pass on titles later on, we can." Not scheduled; revisit only if requested. Noted as
   backlog in Phase 5.
 
-### Phase 4 — Dynamic Reports (Item 2)
+### Phase 4 — Dynamic Reports (Item 2) — SCOPED 2026-09-05, split into its own task file
 
 The single biggest item by architectural complexity — all four sub-asks are new work on top of a
 "core mechanism DONE" state, with no prior scoping anywhere for the static↔dynamic conversion piece.
-Given `dynamic-reports-and-route-tags.md` is already large, this should get its **own new task file**
-(cross-linking back to it) once picked up, rather than being appended there. Sequence within the item,
-smallest/least-coupled first:
+Given `dynamic-reports-and-route-tags.md` is already large, this got its **own new task file**
+(cross-linking back to it), per this section's own instruction:
+[`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — current-state grounding
+for all four sub-items. **Sub-item 1 (`%n`/`%y` route-slot name templating) DONE + live-verified
+2026-09-05**, including a real bug found+fixed along the way (`useGraphPublish.js`'s broadcast route
+catalog was missing `catalogRouteName`). Sub-items 2-3 scoped only (file-level, not designed).
+Sub-item 4 (static↔dynamic conversion) intentionally left undesigned pending its own pass. Sequence
+within the item, smallest/least-coupled first:
 
 1. `%n` / `%y` route-slot name variable substitution (template-name resolution only); default a new
    slot's name to `%n`.

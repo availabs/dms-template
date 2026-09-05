@@ -287,6 +287,14 @@ export function useGraphPublish({ item, isEdit, routes, pageState, setActionPara
       // ("Current Year") with no indication of which road it even is.
       groupKey: routeSlotGroupKey(r),
       baseRouteName: r.catalogRouteName,
+      // Also carried under its own name (not just as `baseRouteName` above) so a consumer running
+      // this catalog entry through `resolvedRouteLabel`'s `%n` template substitution
+      // (relativeDateResolution.js) has the same real route name to substitute that
+      // `useDynamicReportRoutes.js`'s own resolved routes carry — found live 2026-09-05: the
+      // header's per-variant pill (ReportPageHeader.jsx) calls `resolvedRouteLabel` on THIS
+      // broadcast catalog, not on `effectiveRoutes` directly, so `%n` silently resolved to empty
+      // without this field.
+      catalogRouteName: r.catalogRouteName,
     }));
     const current = pageState?.filters?.find(f => f.searchKey === ROUTE_CATALOG_PARAM_KEY && f.type === 'action')?.values;
     if (isEqual(current, catalog)) return;

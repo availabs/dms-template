@@ -265,10 +265,11 @@ export default function ReportRouteList() {
 
   // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
   // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
-  // `isPlaceholderName: true` marks this generated name as meaningless (see
-  // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
-  // name with nothing real behind it yet; cleared the moment a human renames it (RouteRow's
-  // own commitName, via `onUpdateRoute`).
+  // Defaults to the literal template string `"%n (%y)"` (dynamic-reports-authoring-gaps.md item 1)
+  // — `resolvedRouteLabel` (relativeDateResolution.js) substitutes `%n`/`%y` for the resolved real
+  // route's name/year once the slot resolves at view time; an author who renames it to anything
+  // without those tokens gets that literal name back, forever (no separate "is this a placeholder"
+  // flag needed — the tokens' presence in the string is the whole signal).
   //
   // Auto-expands the new slot (2026-08-19, item 4A) — `addRoutes` always appends, so the new
   // row lands at today's `routes.length`; setting that BEFORE the async add resolves is safe
@@ -277,7 +278,7 @@ export default function ReportRouteList() {
   // instead of making that a 3rd click.
   const handleAddRouteSlot = () => {
     const newIndex = routes.length;
-    addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
+    addRoutes([{ name: '%n (%y)' }]);
     setExpandedRoutes((prev) => ({ ...prev, [newIndex]: true }));
   };
 

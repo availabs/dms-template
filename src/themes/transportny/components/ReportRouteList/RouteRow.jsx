@@ -211,11 +211,7 @@ export default function RouteRow({
       : { startDate: localStart, endDate: localEnd, dateFormula: undefined, derivedFromRoute: undefined };
     const updates = { ...dateUpdates };
     if (trimmedName !== r.name) {
-      // A deliberate rename — even to something generic — is a real editorial decision from
-      // here on; clears isPlaceholderName so a future Dynamic Report resolution never
-      // overwrites it with the resolved route's own name again.
       updates.name = trimmedName;
-      updates.isPlaceholderName = false;
     }
     onUpdateRoute?.(updates);
     onToggleExpand?.();
