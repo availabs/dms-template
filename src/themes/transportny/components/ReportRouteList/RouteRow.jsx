@@ -60,6 +60,7 @@ export default function RouteRow({
   siblingNames,
   derivedFromRouteName,
   baseForNames,
+  groupInfo,
   derivableSiblings,
   onUpdateRoute,
   onCopyWindow,
@@ -239,9 +240,14 @@ export default function RouteRow({
   const canMutateRow = isEdit;
 
   const rowClass = isExpanded ? t.rowOpen : t.row;
+  // Group border (2026-09-08, Ryan's live feedback): a light, always-visible left-border accent
+  // — collapsed or expanded — so grouped rows read at a glance without opening any of them. Every
+  // row keeps a reserved transparent 3px border (see the theme tokens) so an ungrouped row never
+  // shifts when a sibling row elsewhere gains one; only the colour itself is conditional here.
+  const rowStyle = groupInfo ? { borderLeftColor: groupInfo.color } : undefined;
 
   return (
-    <div className={rowClass} data-row={r.route_comp_id}>
+    <div className={rowClass} style={rowStyle} data-row={r.route_comp_id}>
       <div className={t.rowHeaderWrapper}>
         {canMutateRow && (
           <span className={t.reorderButtons}>
@@ -338,6 +344,20 @@ export default function RouteRow({
         </div>
       ) : (
         <div className={t.expandedContainer}>
+          {/* Group note (2026-09-08, replaces an earlier click-to-expand disclosure per Ryan's
+              live feedback — the old "shares this route with N other views" toggle wasn't legible
+              ("even I don't know what that means") and was invisible while collapsed). The light
+              border on the row itself (rowStyle, above) is the glanceable, always-visible cue —
+              this is a plain, always-shown sentence (no toggle) that explains it once the row is
+              open. This row and its named siblings all resolve against the same real route at
+              view time, just with their own independent dates — identity, not dates, so it comes
+              before the date-span block below. */}
+          {canMutateRow && groupInfo && (
+            <div className={t.groupNote}>
+              <span className={t.groupNoteDot} style={{ backgroundColor: groupInfo.color }} />
+              Same route as {groupInfo.siblingNames.join(', ')} — just its own dates.
+            </div>
+          )}
           {/* ── DATE SPAN: the one window facet a route still owns — weekday mask and
               time-of-day moved to the graph (see QuickControls). ── */}
           <div>

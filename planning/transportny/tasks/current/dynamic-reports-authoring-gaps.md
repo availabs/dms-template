@@ -1,7 +1,7 @@
 # Dynamic Reports — authoring gaps (route-slot naming, add-slot UX, preview-swap, static↔dynamic conversion)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **items 1 and 3 DONE +
-live-verified 2026-09-05** · **Started:** 2026-09-05
+**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **items 1, 2, and 3 DONE +
+live-verified** (1 and 3: 2026-09-05; 2: 2026-09-08) · **Started:** 2026-09-05
 
 ## Objective
 
@@ -127,16 +127,125 @@ sub-item's 4 edited files, reran, identical failures on the clean tree) to confi
 pre-existing environment/baseline-staleness issue, not caused by this change. Not investigated
 further as part of this pass; the targeted live-verification above stands in for it this round.
 
-## Sub-item 2 — Add Route Slot: reuse vs. distinct (not yet designed in detail)
+## Sub-item 2 — Add Route Slot: reuse vs. distinct — DONE + live-verified 2026-09-08
 
-Today `handleAddRouteSlot` always creates a new distinct group. Needs: a picker (reuse
-`RouteTagBrowserModal`'s existing group-list data, or a smaller inline menu) listing the report's
-already-added slot groups by their `catalogRouteName`/first-slot name, so an author can either pick
-"new distinct route" (today's behavior, unchanged) or "another view of `<existing group>`" — which
-sets the new slot's `route_slot_group` to the chosen existing group's key instead of leaving it
-unset. Ryan's note (triage doc): "the json-spec layer can already express this" (confirmed above —
-`route_slot_group` is a plain spec field already) — so this is very likely UI-only, no new
-resolution-side mechanism. Confirm during implementation, not assumed.
+Confirmed UI-only, exactly as scoped: `route_slot_group` was already a fully working field on both
+the resolution side (`useDynamicReportRoutes.js`) and the persistence side (`addRoutes` already
+spreads arbitrary passthrough fields into a new slot) — real converter output (`transforms.py`)
+already produces this shape for old templates like "Year Over Year" (11 comps, one shared
+`routeId`/group, each with its own `dateFormula`). Zero resolution/persistence/converter changes.
+
+**Design decisions, confirmed with Ryan before implementing:**
+- Entry point: an inline `<select>` next to "+ Add Route Slot" (not a modal, not a per-row action)
+  — matches the existing plain-`<select>` vocabulary the date-derive UI already uses
+  (Derive-From/Pattern/Span/Direction). Only rendered once `routeSlotGroups.length > 0` — the first
+  slot on a report is always new, nothing to reuse yet.
+- Group labels: **positional** (`"Slot group 2 (3 views)"`), not the group's real route name — at
+  authoring time there's no `?routes=` yet, so no `catalogRouteName` has resolved; a group's own
+  slots may still carry the literal, unresolved `%n (%y)` template string, which would be a
+  confusing label.
+- A visual "shares this route with: ..." indicator on grouped rows — approved as in-scope, reusing
+  `RouteRow.jsx`'s existing `derivedFromRouteName`/`baseForNames` disclosure vocabulary
+  (`t.dependentsRow`/`t.dependentsToggle`/`t.dependentsPillList`/`t.miniPill`) rather than new
+  tokens.
+
+**Implementation:**
+- `ReportRouteList.jsx` — `newSlotGroupChoice` state (`''` = new route, reset after every add);
+  `routeSlotGroupOptions` (positional labels, built from raw `routes` + `routeSlotGroupKey`);
+  `handleAddRouteSlot` threads `route_slot_group` through to `addRoutes` only when a group was
+  chosen (empty choice reproduces the original call byte-for-byte); the select itself, rendered
+  next to "+ Add Route Slot" inside the `isDynamicReport` branch; `groupSiblingNamesByCompId` (a
+  `baseForNamesByCompId`-shaped lookup, built off `effectiveRoutes` so it works identically for raw
+  authoring and a resolved preview — `resolveRouteDates` is an identity-stable pass-through for
+  `route_slot_group`, confirmed by reading it, not assumed) passed to each `RouteRow` as
+  `sameGroupSiblingNames`.
+- `RouteRow.jsx` — new `groupOpen` disclosure state; a "shares this route with N other view(s)"
+  block at the top of `expandedContainer` (before the date-span block — identity, not dates, so it
+  comes first), reusing the "base for N routes" pattern's exact theme tokens.
+- `ReportRouteList.theme.js` — one new token, `addSlotGroupSelect` (matches `dateFieldInput`'s
+  vocabulary, sized to `addRouteBtn`'s `h-8`).
+- Both edited component files syntax-checked with `esbuild` before live-verifying.
+
+**Live-verified** on the same kept scratch Dynamic Report as sub-items 1 and 3
+(`reports/claude_scratch_pct_template`, page id 2218565, `?routes=2216791` = "Route 5 Part"):
+- Select rendered "New route" + "Slot group 1 (1 view)" (`value="comp-4"`, the existing slot's own
+  fallback group key) — confirmed via direct DOM read (`document.querySelectorAll('select')`), not
+  just visually.
+- Chose the existing group, clicked "+ Add Route Slot": new slot (`comp-5`) persisted with
+  `route_slot_group: "comp-4"` — confirmed via direct DB read (`dms dataset query`). RRL's own
+  panel count went to 2 (raw slot count, unaffected by grouping, as designed); the header's "N
+  routes in this report" stayed at **1** (`routeGroups.length`, sub-item 3's own count) — the first
+  real cross-test of sub-item 3 against a 2-groups-sharing-a-slot report, flagged as untested in
+  sub-item 3's own checklist below.
+- "Change Routes" (sub-item 3's header button) opened asking for exactly **1** more route
+  (`requiredCount = routeSlotGroups.length = 1`), not 2 — confirms `needsRouteSelection`/the entry
+  gate correctly treat 2 grouped slots as one pick.
+- Resolved both slots against the real catalog route "Route 5 Part": header pill/title and both
+  RRL rows' `%n` substitution all read "Route 5 Part," `%y` differing per slot's own date span
+  (2026 vs. 2026, both same year this round — the two slots' underlying dates weren't deliberately
+  offset, not a defect); collapsed-row TMC/mileage (6 TMCs · 5.3 mi) picked up correctly on both
+  rows post-resolution.
+- "Shares this route with 1 other view" disclosure confirmed on **both** rows (bidirectional, not
+  just the newly-created one) — expanding it showed the sibling's raw stored name (not run through
+  `resolvedRouteLabel`, same convention `baseForNames` already uses for the identical reason —
+  worth a future look if it reads confusingly once both are `%n`/`%y` templates, not fixed here).
+- Cleanup: discarded the edit-mode buffer, removed the added `comp-5` slot, confirmed via a second
+  DB read the scratch page is back to its documented single-slot state (`comp-4`, no group) — left
+  exactly as sub-item 3 left it, for reuse by sub-item 4.
+- 0 console errors, confirmed on a **fresh page load** (console tracking only captures from when
+  the tool is first called, so re-loaded before the pass specifically to catch load-time errors,
+  not just interaction-time ones).
+- `traversing-report-pages.md` updated (living-document convention) — new §5 gotcha: driving a
+  plain `<select>` via `claude-in-chrome`'s `computer` tool doesn't work (native OS dropdown, not
+  screenshot/click-able); read/set via `javascript_tool` with React's controlled-input path
+  (native property setter + `dispatchEvent('change')`) instead of a bare `.value =`.
+
+### Sub-item 2 follow-up (2026-09-08, same day): no auto-expand + a light group border replaces the disclosure
+
+Two more rounds of Ryan's live feedback, same session:
+
+1. **Newly added routes/slots should land collapsed (view mode), not auto-expanded into edit
+   mode.** This **reverses** the 2026-08-19 item 4A decision ("auto-expand a newly added route so
+   the author lands straight on its date editor"), and Ryan explicitly widened it beyond just
+   sub-item 2's own new select: "a route in general I guess" — so it applies to BOTH
+   `handleAddRouteSlot` (Dynamic Reports) and `handleConfirmAddRoutes` (the static "+ Add Route"
+   multi-select flow). Flagging the reversal explicitly rather than treating it as a bug, per this
+   doc family's own convention (see `npmrds-reports-routes-feedback-triage.md`'s "Phase 2
+   follow-up" for the identical treatment of an earlier reversal). Both handlers' `setExpandedRoutes`
+   calls are simply gone — `RouteRow`'s own `isExpanded` prop already defaults every row to
+   collapsed, nothing else needed.
+2. **The original "shares this route with N other views" indicator was invisible while collapsed,
+   and Ryan found the wording unclear even when he did see it** ("even I don't know what that
+   means??"). His own proposed fix: "some LIGHT visual border, or something, that shows the
+   groups." Redesigned:
+   - `ReportRouteList.jsx`'s `groupSiblingNamesByCompId` became `routeGroupInfoByCompId` — one
+     combined map (siblings AND a shared colour, built off one grouping pass instead of two) keyed
+     by `route_comp_id`, value `{ siblingNames, color } | undefined`. `color` is the group's
+     earliest-added member's own identity colour, reused directly rather than minting a second
+     palette — a group's anchor row's own colour dot and its border always match.
+   - `RouteRow.jsx` applies `color` as an inline `borderLeftColor` on the row's own outer wrapper
+     (`rowStyle`) — visible in BOTH collapsed and expanded states, the "glanceable without opening
+     anything" fix. `ReportRouteList.theme.js`'s `row`/`rowOpen` tokens gained a permanent, reserved
+     `border-l-[3px] border-l-transparent` baseline so an ungrouped row's width never shifts
+     relative to a grouped sibling elsewhere in the list — only the colour is conditional.
+   - The click-to-expand disclosure (`groupOpen` state, `dependentsRow`/`dependentsToggle`/
+     `dependentsPillList`/`miniPill` reuse) is gone — replaced with one always-shown (no toggle)
+     plain sentence, still expanded-state-only (`"● Same route as X — just its own dates."`, new
+     `t.groupNote`/`t.groupNoteDot` tokens, the dot repeating the same border colour) — clearer
+     wording, and simpler code (one fewer piece of state).
+
+**Live-verified** on the same kept scratch report, same recipe as sub-item 2's original pass (add a
+slot reusing the existing group via the select, screenshot, discard/remove, confirm DB back to the
+original single-slot state):
+- New slot landed collapsed (pencil-icon view state, not the name `<input>`/Save-Discard header) —
+  confirmed visually, both for the reuse-a-group add and (by code inspection — the same removed
+  `setExpandedRoutes` call, not independently re-clicked this round) the static "+ Add Route" path.
+- Both rows (the pre-existing anchor and the new grouped sibling) showed the same green left-border
+  accent, collapsed AND expanded — confirmed via a zoomed screenshot.
+- Expanded the new row: the flat "Same route as %n (%y) (2) — just its own dates." note rendered
+  with a matching colour dot, no toggle.
+- 0 console errors. Cleanup: discarded the edit buffer, removed the added slot, confirmed via a
+  fresh DB read the scratch report is back to its single-slot (`comp-4`, no group) state.
 
 ## Sub-item 3 — Header preview-swap button — DONE + live-verified 2026-09-05
 
@@ -232,11 +341,12 @@ Sub-item 3 (DONE — see above):
   effect carrying RRL's own `routeSourceInfo` so the header never needs its own join-source binding.
 - `ReportRouteList.jsx` — passes its own `routeSourceInfo` into `useGraphPublish`.
 
-Sub-item 2 (not started):
-- `ReportRouteList.jsx` — sub-item 2's reuse-vs-distinct picker; may also touch the
-  `routeSlotGroups`/`needsRouteSelection` computation if reuse changes group cardinality live.
-- `RouteRow.jsx` — sub-item 2's slot-creation entry point if exposed per-row rather than only via
-  the top-level "+ Add Route Slot" button.
+Sub-item 2 (DONE — see above):
+- `ReportRouteList.jsx` — `newSlotGroupChoice` state, `routeSlotGroupOptions`, the select JSX,
+  `handleAddRouteSlot`'s `route_slot_group` passthrough, `groupSiblingNamesByCompId`.
+- `RouteRow.jsx` — `groupOpen` state + the "shares this route with" disclosure block. Entry point
+  ended up staying top-level (the inline select), not per-row — see the design-decision note above.
+- `ReportRouteList.theme.js` — new `addSlotGroupSelect` token.
 
 ## Testing checklist
 
@@ -266,9 +376,31 @@ Sub-item 3:
   live with genuinely different data.
 - [x] No persistence: reloading with the original `?routes=` resolves back to the original route.
 - [x] 0 console errors across every navigation exercised.
-- [ ] Sub-item 2's "reuse an existing group" picker not yet built, so not cross-tested against a
-  report with 2+ route-slot groups (multi-group swap, e.g. an NB/SB Dynamic Report) — only a
-  single-slot-group report was available to test against this pass.
+- [x] Cross-tested against a report with 2 slots sharing 1 group (2026-09-08, once sub-item 2
+  shipped): "Change Routes" correctly asked for 1 pick, not 2 — `requiredCount` counts groups, not
+  raw slots. Still not tested against 2+ DISTINCT groups (e.g. a real NB/SB Dynamic Report) — no
+  such scratch report exists yet.
+
+Sub-item 2:
+- [x] Select renders "New route" + one option per existing group, positional label, once
+  `routeSlotGroups.length > 0`; hidden on the very first slot (nothing to reuse yet) — confirmed via
+  direct DOM read of the select's options.
+- [x] Choosing an existing group and adding a slot persists `route_slot_group` matching the chosen
+  key — confirmed via direct DB read.
+- [x] Grouped slots resolve against the same real catalog route at view time; `%n` agrees across
+  both, `%y` reflects each slot's own date span; collapsed-row TMC/mileage populates on both once
+  resolved.
+- [x] Header's "N routes in this report" / "Change Routes" `requiredCount` both correctly count 2
+  grouped slots as 1 (see sub-item 3's checklist above — this is that cross-test).
+- [x] "Shares this route with N other view(s)" disclosure appears on both sides of a group
+  (bidirectional), expands to show the sibling's name.
+- [x] Cleanup round-trip verified: remove one of two grouped slots, confirm via DB read the report
+  is back to its exact original single-slot state.
+- [x] 0 console errors on a fresh page load through the full add-with-reuse flow.
+- [ ] Not tested: 3+ slots in one group (only 2 were exercised); a group with slots that have
+  genuinely different resolved years (only same-year slots were available on the scratch report
+  this round, so `%y` differing across siblings wasn't visually exercised, just reasoned about from
+  the code path being identical to sub-item 1's already-verified `%y` logic).
 
 Sub-items 2 and 4: not started, no checklist yet.
 
