@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Westchester 2026 Migration Status</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    .tbl { width:100%; border-collapse:collapse; }
+    .tbl th { font-family:'Source Sans 3',system-ui,sans-serif; font-size:11px; font-weight:700; text-transform:uppercase;
+               letter-spacing:0.06em; color:#6D96AE; text-align:left; padding:8px 10px; border-bottom:2px solid #E0EBF0; white-space:nowrap; }
+    .tbl td { font-family:'Source Sans 3',system-ui,sans-serif; font-size:13.5px; line-height:1.5; color:#37576B;
+               padding:9px 10px; border-bottom:1px solid #F3F8F9; vertical-align:top; }
+    .tbl tr:last-child td { border-bottom:none; }
+    .tbl code { font-size:12px; background:#F3F8F9; padding:1px 4px; border-radius:3px; color:#2D3E4C; }
+    .num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .scroller { overflow-x:auto; }
+    h3.sub { font-family:'Oswald',sans-serif; font-weight:500; font-size:22px; color:#2D3E4C; text-transform:uppercase;
+             letter-spacing:-0.01em; line-height:1.15; }
+    p.body { font-family:'Source Sans 3',system-ui,sans-serif; font-size:16px; line-height:1.65; color:#37576B; }
+    p.body strong { color:#2D3E4C; font-weight:600; }
+    p.body code, li code, td code { font-size:13px; }
+    p.body code { background:#F3F8F9; padding:1px 5px; border-radius:3px; color:#2D3E4C; }
+    .kicker { font-family:'Source Sans 3',system-ui,sans-serif; font-size:12px; font-weight:600; text-transform:uppercase;
+              letter-spacing:0.08em; color:#6D96AE; }
+    .pill { display:inline-block; font-family:'Source Sans 3',system-ui,sans-serif; font-size:11px; font-weight:700;
+            text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:99px; white-space:nowrap; }
+    .p-done { background:#54B99B; color:#fff; }
+    .p-open { background:#EAAD43; color:#3a2a05; }
+    .p-void { background:#E0EBF0; color:#37576B; }
+    .p-stop { background:#DD524C; color:#fff; }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Plan to Act &middot; Migration Status Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Westchester<br>2026
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    The annexes are loaded. Every mapping decision is now closed &mdash; no
+                    <code>GAP</code>, no <code>PARTIAL</code>, no <code>LOW</code>. The base plan is
+                    ready to load and has not been written yet.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-mny-grn border border-mny-grn rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">Annexes &middot; 45/45 loaded</span>
+                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-[#3a2a05]">Base plan &middot; 0/174 filled</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">Verified live 8 Sep 2026</span>
+                    <span class="px-3 py-1.5 bg-mny-900 border border-mny-900 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">Crosswalk final &middot; 177 slots</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Annex rows written</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">45 / 45</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">675 column writes, verified</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Base-plan slots filled</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">0 / 174</p>
+              <p class="font-proxima text-[11px] text-mny-y700 font-[600] mt-1">the load never ran</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Doc sections mapped</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">183</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">of 197 content-bearing</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Characters staged</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">327.6k</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">county prose, not yet written</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Decisions open</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">0</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">all closed 8 Sep</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Template changes</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">0</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">per C1 &mdash; all six retired</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+
+          <!-- ============ 1 · WHERE IT STANDS ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="kicker mb-2">Where it stands</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    Two halves,<br>finished very differently.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="body">
+                      Every claim on this page was checked against the live server on
+                      <strong>8 September 2026</strong>, not read out of the task notes.
+                    </p>
+                    <p class="body">
+                      <strong>The jurisdictional annexes are done.</strong> All 45 annex documents are in
+                      the Jurisdictions dataset (<code>internal_source/1346449</code>) &mdash; 675 column
+                      writes across 15 lexical columns, roughly 643,000 characters live, read back and
+                      verified row by row. All 27 <code>census_type=CDP</code> artifact rows were correctly
+                      skipped. That half is closed.
+                    </p>
+                    <p class="body">
+                      <strong>The base plan is crosswalked but not loaded.</strong> I probed all 174 target
+                      Annotation slots on pattern <code>2448336</code>: <strong>none of them contain any
+                      text.</strong> Your read of the site is correct. To be sure that wasn&rsquo;t a false
+                      negative, I ran the same reader against slot <code>2450692</code> &mdash; the one
+                      pre-filled Flooding slot &mdash; and it correctly reports 95 characters. The zeroes
+                      are real.
+                    </p>
+                    <p class="body">
+                      What exists is everything <em>upstream</em> of the write. What does not exist is a
+                      fill spec, a payload builder, or a write script. The tell is in the two working
+                      folders: <code>annex-work/scripts/</code> contains <code>build_payloads.py</code> and
+                      <code>write_annexes.mjs</code>; <code>final-plan-work/scripts/</code> contains
+                      neither. The pipeline stops one step short of &ldquo;here is the JSON to POST.&rdquo;
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">What was actually produced</p>
+                      <div class="space-y-3">
+                        <div class="flex items-baseline gap-3">
+                          <span class="font-display text-[40px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums w-[96px] text-right">271</span>
+                          <span class="font-proxima text-[13px] text-mny-200 leading-tight">crosswalk rows &mdash; one per mapping</span>
+                        </div>
+                        <div class="flex items-baseline gap-3">
+                          <span class="font-display text-[40px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums w-[96px] text-right">173</span>
+                          <span class="font-proxima text-[13px] text-mny-200 leading-tight">exact title-and-position matches, of 183</span>
+                        </div>
+                        <div class="flex items-baseline gap-3">
+                          <span class="font-display text-[40px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums w-[96px] text-right">256</span>
+                          <span class="font-proxima text-[13px] text-mny-200 leading-tight">Annotation slots inventoried with their guidance</span>
+                        </div>
+                        <div class="flex items-baseline gap-3">
+                          <span class="font-display text-[40px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums w-[96px] text-right">1,965</span>
+                          <span class="font-proxima text-[13px] text-mny-200 leading-tight">document blocks extracted, 722 headings</span>
+                        </div>
+                        <div class="flex items-baseline gap-3 pt-2 border-t border-white/15">
+                          <span class="font-display text-[40px] text-mny-y700 font-[500] leading-none tracking-[-0.03em] tabular-nums w-[96px] text-right">0</span>
+                          <span class="font-proxima text-[13px] text-white font-[700] leading-tight">slots written</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- D8 verified -->
+              <div class="border-t border-mny-100 pt-8">
+                <p class="kicker mb-2">Verified live &middot; D8</p>
+                <h3 class="sub mb-4">What moved over the weekend</h3>
+                <p class="body max-w-[900px] mb-5">
+                  Two of the three pattern-level fields that failed to survive duplication have been
+                  repaired &mdash; presumably by you, in the admin UI. One has not.
+                </p>
+                <div class="scroller">
+                  <table class="tbl">
+                    <thead><tr><th>Field</th><th>State on 2448336</th><th>Status</th><th>What it means</th></tr></thead>
+                    <tbody>
+                      <tr>
+                        <td><code>filters</code></td>
+                        <td>geoid <strong style="color:#2D3E4C">36119</strong></td>
+                        <td><span class="pill p-done">Fixed</span></td>
+                        <td>The Sullivan <code>36105</code> placeholder is gone. Data components will resolve to Westchester.</td>
+                      </tr>
+                      <tr>
+                        <td><code>authPermissions</code></td>
+                        <td>users <code>16</code>; groups <code>public: view-page</code>, <code>AVAIL: *</code></td>
+                        <td><span class="pill p-open">Partial</span></td>
+                        <td>Present, and it is why all 49 pages now read cleanly instead of 9 returning <code>no-access</code>. But it is <strong>not</strong> the template&rsquo;s value &mdash; <strong>the <code>DHSES</code> and <code>LHMP Template Editor</code> groups are missing.</strong> Doesn&rsquo;t block the load; does mean DHSES editors cannot edit.</td>
+                      </tr>
+                      <tr>
+                        <td><code>additionalSectionAttributes</code></td>
+                        <td>absent</td>
+                        <td><span class="pill p-stop">Missing</span></td>
+                        <td>The review dropdown. Explained in full below &mdash; this is &ldquo;point 1&rdquo;.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ============ 2 · POINT 1 EXPLAINED ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">Point 1, plainly</p>
+              <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-6">
+                It&rsquo;s a dropdown, not content.
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-7 space-y-4">
+                  <p class="body">
+                    <code>additionalSectionAttributes</code> is a pattern-level field that defines
+                    <strong>one extra editor dropdown</strong> on every component in the admin UI. On
+                    <code>county_template</code> it defines a field called <code>status</code> with six
+                    options. That is a <strong>review-workflow label an editor sees next to a
+                    box</strong> &mdash; it is not a section, not content, and it does not render on the
+                    public site.
+                  </p>
+                  <p class="body">
+                    When pattern <code>2448336</code> was duplicated this definition didn&rsquo;t come
+                    across, so right now Westchester&rsquo;s components have no status dropdown at all.
+                  </p>
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-grn">
+                    <p class="body" style="font-size:15px">
+                      <strong>It is not a <code>county_template</code> change.</strong> Copying it lands on
+                      pattern <code>2448336</code> &mdash; Westchester&rsquo;s own pattern &mdash; exactly like
+                      the geoid <code>36119</code> fix you already made. It is post-duplication repair of a
+                      field that should have copied and didn&rsquo;t. <strong>C1 does not touch it.</strong>
+                      If you&rsquo;d still rather leave it alone, the load simply writes no status and
+                      reviewers lose the &ldquo;which boxes came from the plan&rdquo; marker. That is the
+                      whole cost.
+                    </p>
+                  </div>
+                  <div class="bg-mny-y50 rounded-[10px] p-4 border-l-4 border-mny-y700">
+                    <p class="body" style="font-size:15px">
+                      <strong>Your instruction caught a real mislabeling.</strong> The Schenectady and
+                      Delaware loads tagged their fills <code>status: "shmp_sourced_content"</code>. For
+                      Westchester that label is simply <strong>wrong</strong> &mdash; this prose comes from
+                      the <em>county</em> HMP, not the State plan. Had we followed the old convention you
+                      would have opened the admin UI to 174 boxes of county content stamped &ldquo;SHMP
+                      Sourced Content&rdquo;, which is the <em>appearance</em> of exactly what you said never
+                      to do. The load convention is now <strong><code>local_review_needed</code></strong>,
+                      which is what those boxes genuinely need.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="bg-mny-50 rounded-[12px] p-6 h-full">
+                    <p class="kicker mb-3">The six <code>status</code> options</p>
+                    <div class="space-y-2">
+                      <div class="bg-white rounded-[8px] px-4 py-2.5 font-proxima text-[14px] text-mny-700 shadow-sm">New Component</div>
+                      <div class="bg-white rounded-[8px] px-4 py-2.5 font-proxima text-[14px] text-mny-700 shadow-sm border-l-4 border-mny-red flex items-center justify-between gap-2">
+                        <span>SHMP Sourced Content</span>
+                        <span class="pill p-stop">not used</span>
+                      </div>
+                      <div class="bg-white rounded-[8px] px-4 py-2.5 font-proxima text-[14px] text-mny-700 shadow-sm">Local Input Needed</div>
+                      <div class="bg-white rounded-[8px] px-4 py-2.5 font-proxima text-[14px] text-mny-700 shadow-sm">Refinement Needed</div>
+                      <div class="bg-white rounded-[8px] px-4 py-2.5 font-proxima text-[14px] text-mny-900 font-[700] shadow-sm border-l-4 border-mny-grn flex items-center justify-between gap-2">
+                        <span>Local Review Needed</span>
+                        <span class="pill p-done">this load</span>
+                      </div>
+                      <div class="bg-white rounded-[8px] px-4 py-2.5 font-proxima text-[14px] text-mny-700 shadow-sm">Content Confirmed Final</div>
+                    </div>
+                    <p class="font-proxima text-[13px] leading-[1.55] text-mny-400 mt-4">
+                      Copied verbatim from pattern <code>1300890</code>. Without the definition, whatever
+                      value the load writes has nothing to render it against.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 3 · C2 ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">Constraint C2 &middot; recorded</p>
+              <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-6">
+                Never write into<br>SHMP-sourced sections.
+              </h2>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                  <p class="body">
+                    On the substance, this is <strong>structurally guaranteed already</strong> &mdash; not
+                    merely a promise I&rsquo;m making. The load addresses <strong>only</strong> Annotation
+                    components: <code>element-type: "lexical"</code> with
+                    <code>element-data.isCard === "Annotation"</code>. Those are the grey rich-text boxes.
+                  </p>
+                  <p class="body">
+                    Statewide shared material lives in data-bound <strong>Cards</strong> fed by the
+                    <code>LHMP_IA</code> source (<code>1441680</code>) &mdash; a different component type
+                    that the fill path never targets. There is no code path by which this load reaches
+                    them.
+                  </p>
+                  <p class="body">
+                    The two named do-not-touch blocks stay named regardless:
+                  </p>
+                  <div class="scroller">
+                    <table class="tbl">
+                      <thead><tr><th>Component</th><th>What it is</th><th class="num">Chars</th></tr></thead>
+                      <tbody>
+                        <tr><td><code>2449734</code></td><td>Climate Impacts Matrix &mdash; shared statewide block on page <code>2448369</code>, order 12</td><td class="num">21,347</td></tr>
+                        <tr><td>4 &times; <code>LHMP_IA</code></td><td>Annex-page Cards: Buildings, Prioritization, Actions Database, Progress</td><td class="num">&mdash;</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div>
+                  <div class="bg-mny-900 rounded-[12px] p-7 h-full relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">Two different things, easy to conflate</p>
+                      <div class="space-y-4">
+                        <div class="bg-white/5 rounded-[8px] p-4 border border-white/10">
+                          <p class="font-display text-[15px] text-white uppercase font-[500] mb-1.5">A section whose content is SHMP-sourced</p>
+                          <p class="font-proxima text-[13.5px] leading-[1.55] text-mny-200">
+                            A data-bound Card rendering shared statewide text.
+                            <strong class="text-white">The load never touches these.</strong>
+                          </p>
+                        </div>
+                        <div class="bg-white/5 rounded-[8px] p-4 border border-white/10">
+                          <p class="font-display text-[15px] text-white uppercase font-[500] mb-1.5">A box labelled &ldquo;SHMP Sourced Content&rdquo;</p>
+                          <p class="font-proxima text-[13.5px] leading-[1.55] text-mny-200">
+                            A grey Annotation carrying county prose, with a <em>dropdown value</em> that
+                            claims the content came from the State plan.
+                            <strong class="text-white">This is what the old convention would have produced,
+                            and we are not doing it.</strong>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 4 · C1 ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">Constraint C1 &middot; recorded</p>
+              <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                No template changes &mdash;<br>and it costs less than expected.
+              </h2>
+              <p class="body max-w-[900px] mb-6">
+                All six items on the <code>county_template</code> change list are retired. I re-derived
+                the three dispositions that depended on a new slot, and
+                <strong>nothing ends up homeless</strong> &mdash; each had a defensible answer without one.
+              </p>
+
+              <h3 class="sub mb-3">What C1 retires</h3>
+              <div class="scroller mb-8">
+                <table class="tbl">
+                  <thead><tr><th>#</th><th>Was</th><th>Now</th><th>Note</th></tr></thead>
+                  <tbody>
+                    <tr><td class="num">1</td><td>New Annotation at order 2 on Capabilities Assessment <code>1425510</code></td><td><span class="pill p-void">Void</span></td><td>Replaced &mdash; see D1-SO-1 revised, below</td></tr>
+                    <tr><td class="num">2</td><td>New <code>County Message</code> Annotation on Home</td><td><span class="pill p-void">Void</span></td><td>Costs nothing &mdash; the content is a placeholder</td></tr>
+                    <tr><td class="num">3</td><td>Write The Plan <code>2449721</code>&rsquo;s blank Inline Guidance</td><td><span class="pill p-void">Void</span></td><td>Guidance is template-level</td></tr>
+                    <tr><td class="num">4</td><td><strong>D2</strong> &mdash; add the 3 missing hazard Annotations</td><td><span class="pill p-void">Void</span></td><td><strong>Moot.</strong> The document has no prose for Extreme Cold <code>Local Actions</code>, Snowstorm or Wind <code>Local Hazard Summary</code></td></tr>
+                    <tr><td class="num">5</td><td><strong>D9</strong> &mdash; replace 2 stale guidance blocks</td><td><span class="pill p-void">Void</span></td><td>Guidance is template-level. The <code>2448340</code> parent-pointer fix is <em>not</em> a template change and still stands</td></tr>
+                    <tr><td class="num">6</td><td><strong>D-A7</strong> &mdash; Cards for <code>nfip</code>, <code>lhmp_dams</code>, <code>demographics_description</code></td><td><span class="pill p-void">Void</span></td><td><strong>Resolved by re-routing</strong> &mdash; see the correction below</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="bg-mny-y50 rounded-[10px] p-5 border-l-4 border-mny-red mb-8">
+                <p class="kicker mb-1.5" style="color:#AA2E26">Correction &mdash; an earlier version of this page was wrong</p>
+                <p class="body" style="font-size:15px">
+                  This page previously said annex prose <em>&ldquo;was already loaded into those
+                  columns, so that content will not render anywhere.&rdquo;</em>
+                  <strong>That was incorrect.</strong> The three orphan columns received
+                  <strong>zero</strong> content &mdash; the annex crosswalk covers <strong>15
+                  columns</strong>, and <code>nfip</code>, <code>lhmp_dams</code> and
+                  <code>demographics_description</code> are not among them.
+                </p>
+                <p class="body mt-2" style="font-size:15px">
+                  <strong>Why there was nothing to load:</strong> the IEM annexes carry a heading for
+                  every component on the annex page &mdash; including the data and shared ones &mdash;
+                  with <strong>no prose beneath</strong>. Verified across all 45 files:
+                  <strong>14 of the 36 distinct section headings are 0 characters in every
+                  annex</strong>, <code>21::NFIP Loss</code> among them. There is no NFIP, dams or
+                  demographics prose anywhere in this delivery. Nothing was lost.
+                </p>
+                <p class="body mt-2" style="font-size:15px">
+                  D-A7 is now <strong>resolved by re-routing rather than surfacing</strong> &mdash;
+                  <code>demographics_description</code> &rarr; the annex Jurisdictional Profile box;
+                  <code>nfip</code> &rarr; Problem Areas or the NFIP Participation Summary, by shape;
+                  <code>lhmp_dams</code> &rarr; the <code>NYS_Dams</code> source per dam. Folded into
+                  the annex skill as &sect;7.
+                </p>
+              </div>
+
+              <h3 class="sub mb-3">The three re-derived dispositions</h3>
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="bg-mny-50 rounded-[10px] p-5 border-t-4 border-mny-grn">
+                  <p class="kicker mb-1">D1-SO-1</p>
+                  <p class="font-display text-[17px] text-mny-900 uppercase font-[500] leading-tight mb-2">Capabilities overview</p>
+                  <p class="body" style="font-size:14px">
+                    Doc <code>[1843]</code>, 1,317 ch &mdash; <strong>splits cleanly.</strong>
+                    <code>[1844]</code> is genuine framing (how the partners assessed capability, and why)
+                    &rarr; prepend to <code>2450060</code> under an <em>About this Assessment</em> lead-in.
+                    <code>[1845]</code>&ndash;<code>[1848]</code> are one sentence each naming the page&rsquo;s
+                    four sections &mdash; <strong>pure navigation, skipped</strong>, because the page already
+                    renders those four as Cards with their own Local Context boxes.
+                  </p>
+                  <p class="body mt-2" style="font-size:13.5px;color:#6D96AE">
+                    The split also dissolves the original objection to this fallback &mdash; that
+                    <code>[1845]</code> would announce &ldquo;Planning and Regulatory&rdquo; from
+                    <em>inside</em> the Planning-and-Regulatory box.
+                  </p>
+                </div>
+                <div class="bg-mny-50 rounded-[10px] p-5 border-t-4 border-mny-grn">
+                  <p class="kicker mb-1">D1-SO-5</p>
+                  <p class="font-display text-[17px] text-mny-900 uppercase font-[500] leading-tight mb-2">Letter from the Director</p>
+                  <p class="body" style="font-size:14px">
+                    Doc <code>[580]</code>, 2,150 ch &mdash; <strong>skip, at zero cost.</strong>
+                    <code>[588]</code> reads <em>&ldquo;The County Executive&rsquo;s transmittal letter and
+                    signature will be inserted in the final Plan.&rdquo;</em> It is a drafting placeholder;
+                    there was never final content to load. The slot C1 forbids would have held nothing.
+                  </p>
+                  <p class="body mt-2" style="font-size:13.5px;color:#6D96AE">
+                    Punch-listed for whenever IEM supplies the signed letter.
+                  </p>
+                </div>
+                <div class="bg-mny-50 rounded-[10px] p-5 border-t-4 border-mny-200">
+                  <p class="kicker mb-1">D2</p>
+                  <p class="font-display text-[17px] text-mny-900 uppercase font-[500] leading-tight mb-2">Missing hazard slots</p>
+                  <p class="body" style="font-size:14px">
+                    <strong>Moot.</strong> Extreme Cold lacks <code>Local Actions</code>; Snowstorm and Wind
+                    lack <code>Local Hazard Summary</code>. The document carries no prose for any of the
+                    three, so there is nothing this pass would have written into them.
+                  </p>
+                </div>
+              </div>
+
+              <p class="body max-w-[900px] mt-6" style="font-size:15px;color:#6D96AE">
+                D2, D9&rsquo;s stale guidance and D-A7 remain <strong style="color:#37576B">recorded as
+                <code>county_template</code> findings</strong> for whoever owns the template &mdash; they
+                are simply not this task&rsquo;s work.
+              </p>
+            </div>
+          </div>
+
+          <!-- ============ 5 · D3 + D7 ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <p class="kicker mb-2">D3 &middot; decided</p>
+                  <h3 class="sub mb-4">Climate Change &mdash; confirmed,<br>matches the recommendation</h3>
+                  <p class="body mb-4">
+                    Both document sections land in <code>2449756</code>, the Local Context Annotation on
+                    the Climate Change page <code>2448369</code>:
+                  </p>
+                  <div class="scroller">
+                    <table class="tbl">
+                      <thead><tr><th>Doc</th><th>Section</th><th class="num">Chars</th><th>Placement</th></tr></thead>
+                      <tbody>
+                        <tr><td><code>[1725]</code></td><td>Local Context</td><td class="num">3,382</td><td>first</td></tr>
+                        <tr><td><code>[1730]</code></td><td>Shared Socioeconomic Pathways</td><td class="num">9,999</td><td>under an SSP sub-heading</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-red mt-4">
+                    <p class="body" style="font-size:14.5px">
+                      <code>2449734</code> stays untouched &mdash; that is the shared statewide
+                      <strong>Climate Impacts Matrix</strong>, 21,347 characters, at order 12 on the same
+                      page.
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p class="kicker mb-2">D7 &middot; dropped</p>
+                  <h3 class="sub mb-4">Six empty slots &mdash;<br>not a concern</h3>
+                  <p class="body mb-4">
+                    Closed on your call. The six stay empty and there is no IEM referral. Recorded for
+                    reference only:
+                  </p>
+                  <div class="scroller">
+                    <table class="tbl">
+                      <thead><tr><th>Slot</th><th>Page</th><th>Box</th></tr></thead>
+                      <tbody>
+                        <tr><td><code>2449743</code></td><td>About the Process</td><td>Technical Data and Existing Resources</td></tr>
+                        <tr><td><code>2449745</code></td><td>About the Process</td><td>Continued Public Engagement</td></tr>
+                        <tr><td><code>2449870</code></td><td>People and Communities</td><td>Special Districts</td></tr>
+                        <tr><td><code>2449796</code></td><td>Natural Environment</td><td>Buyouts/Acquisitions Local Context</td></tr>
+                        <tr><td><code>2450116</code></td><td>Track Progress</td><td>Executive Summary</td></tr>
+                        <tr><td>&mdash;</td><td>About the Process</td><td>Organizational Structure &ndash; Planning Teams</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 6 · D4 EXPLAINED ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">D4 &middot; explained properly</p>
+              <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                Prose that narrates data<br>the platform renders itself.
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-6">
+                <div class="lg:col-span-7 space-y-4">
+                  <p class="body">
+                    My earlier one-liner was too compressed. Here is the actual situation.
+                  </p>
+                  <p class="body">
+                    At these five spots, <strong>the document&rsquo;s heading lines up with a place on the
+                    page where the platform has a data component</strong> &mdash; a Card, a table, a
+                    Spreadsheet &mdash; rather than a grey box.
+                  </p>
+                  <p class="body">
+                    We never transcribe the data itself; the platform renders it from geoid-filtered
+                    sources. But the prose under those headings <em>isn&rsquo;t</em> data &mdash; it is
+                    county-authored <strong>narration around</strong> the data. And it has nowhere to go,
+                    because the component sitting next to it isn&rsquo;t writable.
+                  </p>
+                  <p class="body">
+                    So the question for each is just: <strong>fold the narration into the nearest grey
+                    box, or drop it?</strong>
+                  </p>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="bg-mny-50 rounded-[12px] p-6 h-full">
+                    <p class="kicker mb-3">C1 does not affect D4</p>
+                    <p class="body" style="font-size:15px">
+                      Every one of these five was <em>already</em> a fit-into-an-existing-box proposal
+                      &mdash; no new slot was ever requested for D4. So your no-template-changes rule
+                      leaves this section exactly as it was.
+                    </p>
+                    <p class="body mt-3" style="font-size:15px">
+                      Four of the five are straightforward. <strong>Only <code>[757]</code> is a real
+                      question.</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="scroller">
+                <table class="tbl">
+                  <thead><tr><th>Doc</th><th>What the prose actually says</th><th class="num">Chars</th><th>Proposed fold</th><th>How it reads</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><code>[609]</code><br><span style="color:#6D96AE;font-size:12px">Demographic Statistics</span></td>
+                      <td>How age, disability, income, language, housing tenure and transport access affect hazard exposure and recovery; 2020 Census 1,004,457 vs 2024 ACS 1,006,447 vs 2025 estimate 1,015,743 and why they differ; density in southern/central vs northern Westchester</td>
+                      <td class="num">2,432</td>
+                      <td><code>2454034</code><br><span style="color:#6D96AE;font-size:12px">People and Communities &mdash; Local Context</span></td>
+                      <td><span class="pill p-done">Good</span><br><span style="font-size:12.5px">Page-opening box; the data Card sits at order 4</span></td>
+                    </tr>
+                    <tr>
+                      <td><code>[643]</code><br><span style="color:#6D96AE;font-size:12px">Future Population Projections</span></td>
+                      <td>Projections are planning scenarios, not predictions; continued growth, redevelopment and adaptive reuse, and how location and design determine whether that raises vulnerability</td>
+                      <td class="num">1,318</td>
+                      <td><code>2453621</code><br><span style="color:#6D96AE;font-size:12px">Population Change</span></td>
+                      <td><span class="pill p-done">Good</span><br><span style="font-size:12.5px">Its guidance <strong>explicitly asks for projections</strong></span></td>
+                    </tr>
+                    <tr style="background:#FCF6EC">
+                      <td><code>[757]</code><br><span style="color:#6D96AE;font-size:12px">Open Space Parcel Statistics</span></td>
+                      <td>Open space as a defining County feature; ~70,000 acres, more than 24% of land area, from an earlier County land-use summary; what counts as public parkway/park land vs private golf, campground, beach and marina</td>
+                      <td class="num">979</td>
+                      <td><code>2464950</code><br><span style="color:#6D96AE;font-size:12px">County Open Space Plan</span></td>
+                      <td><span class="pill p-open">Your call</span><br><span style="font-size:12.5px">Statistics about an <em>earlier inventory</em>, in a box meant for the Plan itself. Fold, or drop as stale?</span></td>
+                    </tr>
+                    <tr>
+                      <td><code>[1825]</code><br><span style="color:#6D96AE;font-size:12px">Local Funding Capabilities</span></td>
+                      <td>Larger municipalities have capital programs, engineering staff and grant-administration capacity; smaller ones lean on county coordination, consultants and intermunicipal partnerships; keeping scopes, match strategies and cost estimates current improves grant readiness</td>
+                      <td class="num">675</td>
+                      <td><code>2450073</code><br><span style="color:#6D96AE;font-size:12px">Funding Sources &mdash; Local Context</span></td>
+                      <td><span class="pill p-done">Good</span><br><span style="font-size:12.5px">Page order 22 is a Spreadsheet of the same name</span></td>
+                    </tr>
+                    <tr>
+                      <td><code>[1783]</code><br><span style="color:#6D96AE;font-size:12px">Goals and Objectives</span></td>
+                      <td>Defines <em>goal</em> (broad long-term policy statement) against <em>objective</em> (specific supporting statement describing how goals are advanced)</td>
+                      <td class="num">499</td>
+                      <td><code>2450104</code><br><span style="color:#6D96AE;font-size:12px">County Goals and Objectives</span></td>
+                      <td><span class="pill p-done">Good</span><br><span style="font-size:12.5px">Definitional lead-in; alternative is <code>2450098</code></span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 7 · DECISIONS CLOSED ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">Updated 8 September 2026</p>
+              <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                Every mapping decision is closed.
+              </h2>
+              <p class="body max-w-[900px] mb-6">
+                D4 and D1-SO were worked through in order. The crosswalk now has
+                <strong>no <code>GAP</code>, no <code>PARTIAL</code> and no <code>LOW</code>
+                rows</strong> &mdash; every content-bearing section of the document either has a
+                target or is deliberately skipped with a recorded reason.
+              </p>
+
+              <h3 class="sub mb-3">D4 &mdash; all five decided</h3>
+              <div class="scroller mb-8">
+                <table class="tbl">
+                  <thead><tr><th>Doc</th><th>&rarr; Slot</th><th>Decision</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>[609]</code> Demographic Statistics</td><td><code>2449856</code> Local Populations at Highest Risk</td><td><span class="pill p-done">Owner override</span> &mdash; [610] is literally the topic sentence for [620]&rsquo;s enumeration</td></tr>
+                    <tr><td><code>[643]</code> Future Population Projections</td><td><code>2453621</code> Population Change</td><td><span class="pill p-done">Confirmed</span> as recommended</td></tr>
+                    <tr><td><code>[1825]</code> Local Funding Capabilities</td><td><code>2450067</code> Financial Capabilities LC</td><td><span class="pill p-done">Owner override</span> &mdash; corrected two errors in the original row; not split, not Admin/Technical</td></tr>
+                    <tr><td><code>[1783]</code> Goals and Objectives</td><td><strong>split</strong> <code>2450098</code> + <code>2450104</code></td><td><span class="pill p-done">Split</span> at the author&rsquo;s own sentence boundary</td></tr>
+                    <tr><td><code>[757]</code> Open Space Parcel Statistics</td><td><code>2449784</code> Natural Environment Overview LC</td><td><span class="pill p-done">Decided</span> &mdash; closes the last <code>LOW</code> row; the <code>2449792</code> statistics card deliberately left unfilled</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 class="sub mb-3">D1-SO &mdash; all seven closed</h3>
+              <div class="scroller mb-8">
+                <table class="tbl">
+                  <thead><tr><th>Item</th><th>Decision</th><th>Target(s)</th></tr></thead>
+                  <tbody>
+                    <tr><td><strong>SO-1</strong> Capabilities Overview</td><td>C1-revised</td><td><code>[1844]</code> &rarr; <code>2450060</code>; <code>[1845]</code>&ndash;<code>[1848]</code> <strong>skipped as navigation</strong></td></tr>
+                    <tr><td><strong>SO-2</strong> Plan-wide Exec Summary</td><td><span class="pill p-done">Distribute</span></td><td><code>[563]</code>&rarr;<code>2449721</code> &middot; <code>[566]</code>&rarr;<code>2450060</code> &middot; <code>[567]</code>&rarr;<code>2450098</code> &middot; <code>[568]</code>&rarr;<code>2463655</code>; <code>[564]</code>/<code>[565]</code> skipped as duplicative</td></tr>
+                    <tr><td><strong>SO-3</strong> Background</td><td><span class="pill p-done">Distribute</span></td><td><code>[590]+[591]</code>&rarr;<code>2449714</code> &middot; <code>[592]</code>&rarr;<code>2449721</code> &middot; <code>[593]+[598]</code>&rarr;<code>2449737</code>; Stafford Act / DMA 2000 framing skipped</td></tr>
+                    <tr><td><strong>SO-4</strong> Formal Adoption</td><td><span class="pill p-done">Merge</span></td><td><code>[572]</code> &rarr; <code>2463655</code>, after [1919] and [568]; resolution detail only</td></tr>
+                    <tr><td><strong>SO-5</strong> Letter from the Director</td><td>C1-revised</td><td><strong>Skip</strong> &mdash; [588] is a drafting placeholder; punch-listed for the signed letter</td></tr>
+                    <tr><td><strong>SO-6</strong> Risk Assessment Terms</td><td><span class="pill p-done">Skip</span></td><td>Per county; <strong>raise with AVAIL</strong> as a shared <code>LHMP_IA</code> glossary card</td></tr>
+                    <tr><td><strong>SO-7</strong> Track Progress</td><td>unchanged</td><td><code>2450116</code> stays empty</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <h3 class="sub mb-3">Crosswalk, final</h3>
+                  <div class="scroller">
+                    <table class="tbl">
+                      <thead><tr><th>Measure</th><th class="num">Before</th><th class="num">Now</th></tr></thead>
+                      <tbody>
+                        <tr><td>Rows</td><td class="num">271</td><td class="num"><strong>275</strong></td></tr>
+                        <tr><td>HIGH</td><td class="num">173</td><td class="num"><strong>180</strong></td></tr>
+                        <tr><td>MEDIUM</td><td class="num">9</td><td class="num">13</td></tr>
+                        <tr><td>SKIP</td><td class="num">8</td><td class="num">10</td></tr>
+                        <tr><td><strong>LOW</strong></td><td class="num">1</td><td class="num"><strong>0</strong></td></tr>
+                        <tr><td><strong>GAP</strong></td><td class="num">5</td><td class="num"><strong>0</strong></td></tr>
+                        <tr><td><strong>PARTIAL</strong></td><td class="num">1</td><td class="num"><strong>0</strong></td></tr>
+                        <tr><td>Slots receiving content</td><td class="num">174</td><td class="num"><strong>177</strong></td></tr>
+                        <tr><td>Doc sections mapped</td><td class="num">183</td><td class="num"><strong>187</strong></td></tr>
+                        <tr><td>Slots left empty</td><td class="num">73</td><td class="num">71</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="body mt-3" style="font-size:14px;color:#6D96AE">
+                    Three previously-empty chapter landing slots now receive content:
+                    <code>2449714</code>, <code>2449721</code>, <code>2450098</code>.
+                  </p>
+                </div>
+                <div>
+                  <div class="bg-mny-50 rounded-[12px] p-6 h-full">
+                    <p class="kicker mb-3">Read the character totals carefully</p>
+                    <p class="body" style="font-size:15px">
+                      The generated total of <strong>358,881</strong> <strong>double-counts</strong>
+                      the paragraph-level splits: a doc section mapped to <em>n</em> slots contributes
+                      its full length <em>n</em> times &mdash; <code>[562]</code> &times;4,
+                      <code>[589]</code> &times;3, <code>[1783]</code> &times;2.
+                    </p>
+                    <p class="body mt-3" style="font-size:15px">
+                      The distinct-section total is <strong>337,837</strong>, and even that is an
+                      <strong>upper bound</strong> &mdash; it counts all of <code>[562]</code> and
+                      <code>[589]</code> although paragraphs are skipped from both.
+                    </p>
+                    <p class="body mt-3" style="font-size:15px">
+                      The fill spec carries the exact per-paragraph text. Treat these figures as
+                      <strong>routing metadata, not a byte ledger.</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <h3 class="sub mb-3">Emission order verified on every multi-fill slot</h3>
+              <div class="scroller mb-8">
+                <table class="tbl">
+                  <thead><tr><th>Slot</th><th>Box</th><th>Order</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>2449721</code></td><td>The Plan &gt; Executive Summary</td><td><code>[563]</code> &rarr; <code>[592]</code></td></tr>
+                    <tr><td><code>2450060</code></td><td>Capabilities &gt; Planning &amp; Regulatory LC</td><td><code>[566]</code> &rarr; <code>[1844]</code> &rarr; <code>[1851]</code></td></tr>
+                    <tr><td><code>2450098</code></td><td>Strategies &gt; Overview LC</td><td><code>[567]</code> &rarr; <code>[1783]</code>S1</td></tr>
+                    <tr><td><code>2463655</code></td><td>About the Process &gt; Adoption LC</td><td><code>[1919]</code> &rarr; <code>[568]</code> &rarr; <code>[572]</code></td></tr>
+                    <tr><td><code>2449737</code></td><td>About the Process &gt; Overview LC</td><td><code>[1881]</code> &rarr; <code>[593]+[598]</code></td></tr>
+                    <tr><td><code>2449856</code></td><td>Local Populations at Highest Risk</td><td><code>[609]</code> &rarr; <code>[620]</code></td></tr>
+                    <tr><td><code>2450104</code></td><td>County Goals and Objectives</td><td><code>[1783]</code>S2+ &rarr; <code>[1787]</code></td></tr>
+                    <tr><td><code>2450067</code></td><td>Financial Capabilities LC</td><td><code>[1869]</code> &rarr; <code>[1825]</code></td></tr>
+                    <tr><td><code>2449784</code></td><td>Natural Environment Overview LC</td><td><code>[751]</code> &rarr; <code>[757]</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 class="sub mb-4">What is left</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                <div class="bg-white border border-mny-100 rounded-[10px] p-4 shadow-sm" style="border-left:4px solid #EAAD43">
+                  <p class="font-display text-[16px] text-mny-900 uppercase font-[500] leading-tight mb-2">1 &middot; One open question</p>
+                  <p class="body" style="font-size:14px">Should <code>hhpd_1</code>, <code>hhpd_3</code> and <code>hhpd_4</code> be <strong>surfaced</strong> before anything is written to them? Only <code>hhpd_2</code> renders today.</p>
+                </div>
+                <div class="bg-white border border-mny-100 rounded-[10px] p-4 shadow-sm">
+                  <p class="font-display text-[16px] text-mny-900 uppercase font-[500] leading-tight mb-2">2 &middot; Pattern repair</p>
+                  <p class="body" style="font-size:14px">Copy <code>additionalSectionAttributes</code> from <code>1300890</code>; optionally add the missing <code>DHSES</code> and <code>LHMP Template Editor</code> groups.</p>
+                </div>
+                <div class="bg-white border border-mny-100 rounded-[10px] p-4 shadow-sm">
+                  <p class="font-display text-[16px] text-mny-900 uppercase font-[500] leading-tight mb-2">3 &middot; Fill spec</p>
+                  <p class="body" style="font-size:14px">Author <code>{slot_id, md, status}</code> per slot from <code>crosswalk.json</code>, honouring the paragraph-level splits and emission order.</p>
+                </div>
+                <div class="bg-white border border-mny-100 rounded-[10px] p-4 shadow-sm">
+                  <p class="font-display text-[16px] text-mny-900 uppercase font-[500] leading-tight mb-2">4 &middot; Back up, dry-run, apply, verify</p>
+                  <p class="body" style="font-size:14px">To <code>draft_sections</code>, <code>status: local_review_needed</code>. Nothing published &mdash; you review and publish.</p>
+                </div>
+              </div>
+
+              <p class="body max-w-[920px]" style="font-size:15px;color:#6D96AE">
+                Also punch-listed, not blocking: <strong>Mount Pleasant</strong> has no annex
+                (D-A2 &mdash; ask IEM whether it is non-participating); the four surviving 1.0-era
+                columns on <strong>Bedford</strong> (D-A3); whether two annex pages are intended
+                (D-A9); and the shared <code>LHMP_IA</code> glossary card to raise with AVAIL (D1-SO-6).
+              </p>
+            </div>
+          </div>
+
+          <!-- ============ FOOTER META ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-10">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <p class="kicker mb-2">Target</p>
+                  <table class="tbl">
+                    <tbody>
+                      <tr><td style="color:#6D96AE">Pattern</td><td><code>2448336</code> Westchester-2026</td></tr>
+                      <tr><td style="color:#6D96AE">Instance</td><td><code>mitigateny_county_template_v3_copy_2</code></td></tr>
+                      <tr><td style="color:#6D96AE">Site</td><td><a href="https://westchester-2026.mitigateny.org/" style="color:#37576B;text-decoration:underline">westchester-2026.mitigateny.org</a></td></tr>
+                      <tr><td style="color:#6D96AE">Duplicated from</td><td><code>1300890</code> county_template</td></tr>
+                      <tr><td style="color:#6D96AE">Jurisdictions</td><td><code>1346449</code> / view <code>1346450</code></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <p class="kicker mb-2">Source</p>
+                  <table class="tbl">
+                    <tbody>
+                      <tr><td style="color:#6D96AE">Base plan</td><td>2026 Westchester County HMP Base Plan Draft &mdash; IEM, Aug 2026</td></tr>
+                      <tr><td style="color:#6D96AE">Annexes</td><td>45 <code>Westchester_Jurisdictional_Annex_*.docx</code></td></tr>
+                      <tr><td style="color:#6D96AE">Consultant</td><td>IEM &mdash; third profile, first authored against the 2.0 IA</td></tr>
+                      <tr><td style="color:#6D96AE">County geoid</td><td><code>36119</code></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <p class="kicker mb-2">Tracked in</p>
+                  <table class="tbl">
+                    <tbody>
+                      <tr><td><code>planning/mitigateny/tasks/current/westchester-2026-baseplan-crosswalk.md</code></td></tr>
+                      <tr><td><code>planning/mitigateny/tasks/current/westchester-annex-crosswalk.md</code></td></tr>
+                      <tr><td style="color:#6D96AE;font-size:12.5px">Working folders (git-ignored): <code>references/mny-transcribe/westchester/final-plan-work/</code> and <code>annex-work/</code></td></tr>
+                    </tbody>
+                  </table>
+                  <p class="font-proxima text-[12px] text-mny-400 mt-4">
+                    All figures verified against <code>dmsserver.availabs.org</code> on 8 September 2026.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:230px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;max-height:70vh;overflow-y:auto;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="westchester-migration-status.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Westchester 2026 Status</a>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <a href="capability-inventory.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capability Inventory</a>
+    <a href="capabilities-vs-capacity.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capabilities vs. Capacity</a>
+    <a href="state-capability-catalog.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> State Capability Catalog</a>
+    <a href="capacity-assessment-architecture.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capacity Assessment Architecture</a>
+    <a href="county-template-qa-draft.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> County Template QA</a>
+    <a href="mny-transcribe-skills-to-git.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Transcribe Skills</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
