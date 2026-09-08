@@ -1,5 +1,5 @@
 // ReportPageHeader — the report canvas's page-header card (npmrds-report.html):
-// kicker+meta → h1+purpose → action stack → freshness footline. Local-default theme,
+// kicker+meta → h1+purpose → action stack. Local-default theme,
 // same convention as ReportRouteList: no site theme override exists today, so this
 // file is the sole source of truth — see reportRouteListTheme for precedent.
 export const reportPageHeaderTheme = {
@@ -31,10 +31,8 @@ export const reportPageHeaderTheme = {
   actionRow: "flex items-center gap-2 flex-wrap justify-end",
   actionIcon: "size-4 text-[#37576B]",
   actionLabel: "font-display uppercase text-[12.5px] tracking-wide",
-  dataHrefRow: "flex items-center gap-2",
   // Inline tag editor next to Done (2026-09-01, Workstream D) — right-aligned, wraps under the
-  // action buttons naturally rather than a hard width cap (which clipped/misaligned against the
-  // narrower dataHrefRow beneath it — caught live).
+  // action buttons naturally rather than a hard width cap.
   tagsRow: "w-full flex justify-end",
   // TagsEditor theme override, matched to this header's own vocabulary instead of the shared
   // component's generic blue-chip default (which visibly clashed with this design system — caught
@@ -49,14 +47,6 @@ export const reportPageHeaderTheme = {
   tagsEditorInput: "bg-transparent border-b border-dashed border-slate-300 focus:border-[#1F3F8F] focus:outline-none text-[10.5px] font-mono placeholder:text-slate-400 py-0.5 min-w-[6rem]",
   tagsEditorError: "font-mono text-[10px] text-red-600 w-full text-right mt-1",
 
-  // ── freshness footline ──
-  freshnessWrapper: "mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1",
-  freshnessDotWrap: "text-emerald-700 inline-flex items-center gap-1.5",
-  freshnessDot: "size-1.5 rounded-full bg-emerald-500",
-  freshnessSep: "text-slate-300",
-  freshnessValue: "text-[#0f1722]",
-  freshnessEditRow: "mt-4 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2",
-
   // ── "Viewing as of" (Dynamic Reports using the Today anchor only) ──
   asOfRow: "mt-3 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500",
   asOfLabel: "shrink-0",
@@ -66,8 +56,14 @@ export const reportPageHeaderTheme = {
 
   // ── routes-in-this-report disclosure (view mode's only route list — RRL itself is edit-only) ──
   routesWrapper: "mt-3",
+  routesToggleRow: "flex items-center gap-3 flex-wrap",
   routesToggle: "inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 hover:text-[#1F3F8F] cursor-pointer",
   routesToggleIcon: "size-3",
+  // Dynamic Reports only — reopens the route picker to swap the report's `?routes=` for preview
+  // purposes (dynamic-reports-authoring-gaps.md sub-item 3). Same vocabulary as `routesToggle`,
+  // brand-blue like an inline link since it's an action, not a disclosure toggle.
+  changeRoutesBtn: "inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#1F3F8F] hover:underline cursor-pointer disabled:text-slate-300 disabled:no-underline disabled:cursor-default",
+  changeRoutesIcon: "size-3",
   routesGroupList: "flex flex-col gap-2.5 mt-2",
   routeGroup: "flex flex-col gap-1",
   routeGroupName: "font-display text-[13px] font-semibold text-[#0F1722]",

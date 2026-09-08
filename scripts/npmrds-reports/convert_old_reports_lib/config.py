@@ -89,21 +89,33 @@ with open(COLOR_BREAKS_PATH) as _f:
 APPLY_STATIC_BREAKS_TO_MAP = False
 
 # ── New-system constants (npmrdsv5/dev2 dev site) ──────────────────────────
+# npmrdsv5's app/pattern name and the reports_snap_2 catalog's source/view ids
+# are the single source of truth in hooks/reports_snap_ids.json — also read by
+# report_build.mjs, prune_report_snap_orphans.mjs, and dms-server's
+# npmrds_report_page_delete_hook.js. Do not hardcode a second copy here.
+with open(os.path.join(REPO, "hooks/reports_snap_ids.json")) as _f:
+    _REPORTS_SNAP_IDS = json.load(_f)
+
 DMS_ENV = {
     "DMS_HOST": os.environ.get("DMS_HOST", "http://localhost:3001"),
-    "DMS_APP": "npmrdsv5",
+    "DMS_APP": _REPORTS_SNAP_IDS["app"],
     "DMS_TYPE": "dev2",
 }
 TOKEN_FILE = os.path.join(REPO, "scratchpad/npmrds-sub/.dms-auth-token")
-PATTERN = "npmrds_sub"
-PAGE_TYPE = "npmrds_sub|page"
-COMPONENT_TYPE = "npmrds_sub|component"
-GRAPH_TEMPLATE_TYPE = "npmrds_sub|avl_graph_template"
+PATTERN = _REPORTS_SNAP_IDS["pattern"]
+PAGE_TYPE = f"{PATTERN}|page"
+COMPONENT_TYPE = f"{PATTERN}|component"
+GRAPH_TEMPLATE_TYPE = f"{PATTERN}|avl_graph_template"
 PAGE_TEMPLATE_ID = 2187021          # "Report Page" page template row
-REPORTS_SNAP_TYPE = "reports_snap_2|2177440:data"
+REPORTS_SNAP_SOURCE_ID = _REPORTS_SNAP_IDS["reports_snap_source_id"]
+REPORTS_SNAP_VIEW_ID = _REPORTS_SNAP_IDS["reports_snap_view_id"]
+REPORTS_SNAP_TYPE = f"reports_snap_2|{REPORTS_SNAP_VIEW_ID}:data"
 ROUTES_CATALOG_TYPE = "routes_data|2107427:data"
 # Direct-read split tables (read-only checks; writes go through the CLI)
-REPORTS_SNAP_TABLE = "dms_npmrdsv5.data_items__s2177438_v2177440_reports_snap_2"
+REPORTS_SNAP_TABLE = (
+    f"dms_{DMS_ENV['DMS_APP']}.data_items__s{REPORTS_SNAP_SOURCE_ID}"
+    f"_v{REPORTS_SNAP_VIEW_ID}_reports_snap_2"
+)
 ROUTES_CATALOG_TABLE = "dms_npmrdsv5.data_items__s2107426_v2107427_routes_data"
 CONVERTED_PARENT_SLUG = "reports"
 CONVERTED_PARENT_TITLE = "Converted Reports"

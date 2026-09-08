@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TTTR₈₀ · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--tttr80.html · IA page 53 · type measure. Phase 2a, 2026-09-04.
+  Sources: macroview/measures.js tttr_p80 (verbatim strings; no threshold by design; R1 comment), _seed 281670 card,
+  PROVENANCE §7 (195 bins, 297×), precision.js (tttr_p80 curve, 68.80 % / 73.36 %).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Truck Travel Time Reliability at the 80th percentile (TTTR₈₀).</h1>
+          <p class="doc-lede">The same truck ratio as TTTR, read at a percentile the sample can support. This is a platform measure, not a federal one. It assumes you have read the TTTR page.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span>methodology 2026-08 (pm3 analytical series)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p><strong>How unreliable truck travel is, measured at a percentile the sample can support.</strong> The same ratio as TTTR but taken at the 80th percentile instead of the 95th. Reads lower than TTTR by construction; its value is that it needs a far smaller sample for the same confidence, which matters because truck coverage is thin.</p>
+          <p>TTTR₈₀ is not a federal measure and must never be presented as one. 23 CFR 490 requires the 95th-over-50th ratio. This is its diagnostic sibling.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are CY 2025, statewide, freight trucks with an all-vehicle fallback, the full monitored network.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Take the same truck travel-time bins, the same five periods and the same all-vehicle fallback as <a href="measures_and_data--measures--tttr.html">TTTR</a>.</li>
+            <li>Within each period, take the 80th-percentile and the 50th-percentile bin travel time.</li>
+            <li>Divide. Publish per segment, per period, per year, beside TTTR rather than instead of it.</li>
+          </ol>
+          <div class="formula">TTTR₈₀ = p80(TT) ÷ p50(TT)
+            <span class="var">p80(TT) = the 80th-percentile truck travel time of the segment's 15-minute bins in the period</span>
+            <span class="var">p50(TT) = the 50th-percentile (median) truck travel time of the same bins</span>
+            <span class="var">same stream, same bins, same calculator as TTTR · read at a shallower percentile</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>No threshold and no target.</strong> There is no federal or state target at the 80th percentile. The Macro View deliberately shows none, because a threshold would imply a compliance reading this measure cannot carry.</li>
+            <li><strong>Periods, stream and fallback</strong> are TTTR's, unchanged.</li>
+            <li><strong>Minimum sample:</strong> none enforced. The ±0.05 bar is 195 bins and is published per row.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>It exists because the federal measure is not estimable per segment on this network.</strong> TTTR's 95th percentile costs 2.4 to 4.9 times the sample of an 80th percentile for the same confidence, and truck bins reported on only 8.0 % of the network in 2020 and 22.7 % in 2025.</li>
+            <li><strong>Only the percentile moves.</strong> Same truck stream, same periods, same calculator. Any difference from TTTR is purely the depth of the tail being read.</li>
+            <li><strong>Published alongside TTTR rather than replacing it</strong>, so the federal figure stays available and the two can be compared directly.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>It reaches the ±0.05 precision bar at <strong>195 bins</strong>, against TTTR's 57,832: <strong>297 times cheaper</strong>. <strong>68.8 %</strong> of CY 2025 segments clear the bar, against TTTR's 1.15 %. The measured spread of the ratio is 0.057 at 25 bins, 0.018 at 250 bins and 0.005 at 2,000 bins.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is added in the screenshot pass, Phase 8. The statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Its values are lower than TTTR by construction.</strong> Never present a TTTR₈₀ figure as TTTR, and never compare it to the 2.00 target.</li>
+            <li><strong>It reads a shallower tail.</strong> It is less sensitive to rare severe events. That is the point, and it means it is not a substitute when the question is worst-case freight delay.</li>
+            <li>It inherits TTTR's all-vehicle fallback, so it is not a pure truck measure either.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Use the truck era tag, as for TTTR. TTTR₈₀ was added to the analytical series in August 2026 and has no earlier published values. See <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View</a>
+            <a href="npmrds--macro_view--download.html">Macro View download</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08 · added to the analytical series as the diagnostic sibling of TTTR.</li>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Build a Macro View download with <span class="ui">TTTR₈₀</span> selected. The package carries the ratio per period with its bin count, precision band and 195-bin bar. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>pm3 provenance record §7: 195 bins, 297 times cheaper, published alongside TTTR.</li>
+            <li>pm3 precision module: the p80 truck curve; MIN_N 195 bins; 68.80 % of CY 2025 segments.</li>
+            <li>Macro View measure record: the verbatim strings, the 2.4 to 4.9× sample cost, truck bin coverage 8.0 % (2020) and 22.7 % (2025), and the deliberate absence of a threshold.</li>
+            <li>23 CFR 490 subpart F, for what the federal measure requires instead.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--tttr.html">TTTR</a>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

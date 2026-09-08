@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Open a map, read it, share it · Freight Atlas · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="start" data-applies-to="freight_atlas">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Freight Atlas · start</div>
+          <h1 class="doc-title">Open a map, read it, share it.</h1>
+          <p class="doc-lede">About 10 minutes. You open the Freight Atlas, choose one of the 2024 State Freight Plan's maps in the Maps Gallery, read its legend, add a layer of your own and send the result as an address. No account is needed.</p>
+          <div class="stamps">
+            <span class="type">start</span>
+            <span>applies to · Freight Atlas (www/freightatlas)</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-you-will-do">What you will do</h2>
+          <p>Start from a map the plan published, rebuilt as a live view, then make it yours: one more layer, one changed view, and a link a colleague can open to the same layers. On the way you meet the two panels that run the map, <span class="ui">Map layers</span> and <span class="ui">Legend</span>.</p>
+
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Start at the landing page or on any product page. The Freight Atlas reads without sign-in. The map opens with every layer off. Only a gallery tile or a shared address turns layers on for you, so an empty map at the start is normal.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open the Freight Atlas. Select <span class="ui">Freight Atlas</span> in the landing page's side navigation.<span class="result">The Freight Atlas home opens. Its side navigation is headed <span class="ui">Freight Atlas</span> and lists <span class="ui">Home</span>, <span class="ui">Freight Atlas</span>, <span class="ui">Maps Gallery</span>, <span class="ui">Data &amp; Downloads</span> and <span class="ui">About &amp; The Plan</span>.</span></li>
+            <li>Open <span class="ui">Maps Gallery</span>.<span class="result">Seven groups of tiles, 22 tiles in all, one per plan figure the map can draw today. Each tile shows the figure number and plan page, a title, a sentence of context, a layer count and <span class="ui">open in Freight Atlas →</span>.</span></li>
+            <li>Under <span class="ui">Maritime, Air &amp; Pipelines</span> find <span class="ui">New York's Maritime System</span> and select <span class="ui">open in Freight Atlas →</span>.<span class="result">The map opens with that figure's layers on. The <span class="ui">Map layers</span> panel header counts them, for example <span class="ui">3 on</span>, and the <span class="ui">Legend</span> panel shows one block per layer.</span></li>
+            <li>Read the legend. Each block is one layer: its title, then its symbols with their labels. The ports block lists ports by name, the canal block has one symbol. Select the info button beside a title, <span class="ui">About this data — view the source page</span>.<span class="result">The dataset behind that layer opens in Data &amp; Downloads. Use the browser's back button to return to the map.</span></li>
+            <li>Hover a feature on the map.<span class="result">A popup lists the fields configured for that layer, for example <span class="ui">Canal Name</span> on the canal system.</span></li>
+            <li>Add a layer. In <span class="ui">Map layers</span> under <span class="ui">Add layers</span>, open <span class="ui">Rail Network</span> and tick <span class="ui">2024 Core Rail Freight Network</span>.<span class="result">The header count rises by one. The layer appears under <span class="ui">Active map</span> with its category name, and a legend block with <span class="ui">Last Mile</span>, <span class="ui">Statewide</span> and <span class="ui">National</span> appears.</span></li>
+            <li>Try a layer with views. Open <span class="ui">Road Network</span> and tick <span class="ui">Traffic Volume &amp; Road Attributes</span>. In its <span class="ui">Active map</span> row, change <span class="ui">Show</span> from <span class="ui">AADT</span> to <span class="ui">AADT (Combination Trucks)</span>.<span class="result">The road colours and the legend bins change to combination-truck volumes. The layer's row in the list reads <span class="ui">7 views</span>: one layer, seven ways to colour it.</span></li>
+            <li>Share the map. Copy the address from the address bar and paste it into a new tab.<span class="result">The same layers come on. The address carries <code>layers=</code> followed by the ids of the layers that are on, separated by <code>|||</code>. It does not carry the map position, the zoom level or your <span class="ui">Show</span> choice.</span></li>
+            <li>Take a layer off. Select <span class="ui">Remove from map</span>, the <span class="ui">×</span> in its <span class="ui">Active map</span> row, or untick it under <span class="ui">Add layers</span>. <span class="ui">Clear all</span> empties the map.<span class="result">The count falls, the legend block goes, and the address updates.</span></li>
+          </ol>
+
+          <div class="callout note"><span class="k">note</span>Since 2026-08-24 every layer starts off, including the New York State Freight Core Highway Network, which until then drew even when nothing was ticked. A map that shows a layer you did not turn on is now worth reporting.</div>
+
+          <figure class="shot" data-capture="www/freightatlas/freight_atlas opened from the Maps Gallery tile New York's Maritime System · signed out · Map layers panel open with Active map and Add layers · Legend panel with one block per layer" data-alt="The Freight Atlas map with the Maritime System figure's layers on, the Map layers panel listing them under Active map, and the Legend panel showing a block per layer">
+            <!-- captured 2026-09-08 · http://localhost:5231/freightatlas/freight_atlas?layers=2100150|||2100157|||2100158|||2100239 · reached by selecting open in Freight Atlas on the Maps Gallery tile New York&#39;s Maritime System, signed out; the Map layers header reads 4 on because the tile also turns on REDC Regions -->
+            <img src="../../assets/screens/docs/freight_atlas/start-01-maritime-system.png" alt="The Freight Atlas map with the Maritime System figure's layers on, the Map layers panel listing them under Active map, and the Legend panel showing a block per layer"/>
+            <figcaption>Figure 1 · the map as a gallery tile opens it. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="what-you-now-have">What you now have</h2>
+          <p>A plan figure as a live map, one layer of your own on top of it, the meaning of every colour on screen, the dataset behind each layer one click away, and an address that reproduces the layers for anyone. And two rules that save time: the map starts empty by design, and the address remembers layers but not position.</p>
+
+          <h2 id="where-to-go-next">Where to go next</h2>
+          <ul>
+            <li><a href="freight_atlas--map.html">Use the map</a> · every control, the address contract, and the gotchas.</li>
+            <li><a href="freight_atlas--gallery.html">Maps Gallery</a> · the 22 figures, why one category is hidden, why 11 figures are not there yet.</li>
+            <li><a href="freight_atlas--layers.html">Layer reference</a> · all 39 layers, what each shows and which dataset it draws.</li>
+            <li><a href="freight_atlas--downloads.html">Download freight data</a> · the catalog, the source page and the formats.</li>
+            <li><a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a> · what the maps are figures of.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Live Maps Gallery page, published 2026-08-05: the seven category titles, the 22 tile names, the tile fields and the <span class="ui">open in Freight Atlas →</span> link text.</li>
+            <li>Live Freight Atlas map section, read 2026-09-05: 8 categories, 39 layers; the Traffic Volume &amp; Road Attributes layer's seven views; the legend labels quoted above.</li>
+            <li>Map layer panel and legend panel component code (the version being deployed): the labels <span class="ui">Map layers</span>, <span class="ui">N on</span>, <span class="ui">Active map</span>, <span class="ui">Clear all</span>, <span class="ui">Remove from map</span>, <span class="ui">Show</span>, <span class="ui">Add layers</span>, <span class="ui">N views</span>, <span class="ui">Legend</span>, <span class="ui">About this data — view the source page</span>; the <code>layers</code> address variable and its <code>|||</code> separator.</li>
+            <li>Feedback record 2210866 (resolved 2026-08-24): all 39 layers now default off. Record 2192575 (resolved 2026-07-16): the network that drew when nothing was ticked.</li>
+            <li>Freight Atlas navigation configuration: the <span class="ui">Freight Atlas</span> label and the five items.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 5)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

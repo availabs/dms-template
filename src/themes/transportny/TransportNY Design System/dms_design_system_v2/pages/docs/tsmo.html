@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="hub" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · hub</div>
+          <h1 class="doc-title">TSMO.</h1>
+          <p class="doc-lede">How congestion, reliability, incidents and work zones looked in a year, statewide or in one NYSDOT region, and how to dig into one incident or one corridor. Ten pages document the live TSMO pages. Nothing here needs an account.</p>
+          <div class="stamps">
+            <span class="type">hub</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-is-here">What is here</h2>
+          <p>Ten pages: a guided first task, the filter bar, one page per dashboard, one per explorer, and the FAQ. The two Program pages, <span class="ui">About TSMO</span> and <span class="ui">Data &amp; Methodology</span>, are live pages that explain themselves. They are described in the table below and their definitions live in <a href="measures_and_data.html">Measures &amp; Data</a>.</p>
+          <div class="hubgrid">
+            <a class="hubcard" href="tsmo--start.html"><div class="t">Start here</div><div class="d">Pick a year, read the headline numbers with their basis, open the Congestion dashboard, set a region, find the worst corridors, open one in Corridor View.</div><div class="n">start · 10 min</div></a>
+            <a class="hubcard" href="tsmo--filters.html"><div class="t">Using the filter bar</div><div class="d">Year, Region, Category and Type. What a blank control means, why regions do not sum to the state, and what each dashboard leaves out by design.</div><div class="n">how-to</div></a>
+            <a class="hubcard" href="tsmo--congestion.html"><div class="t">The four dashboards</div><div class="d">Congestion, Reliability, Incidents and Work Zones, panel by panel in screen order, with the basis and the method behind every figure.</div><div class="n">screens · 4 pages</div></a>
+            <a class="hubcard" href="tsmo--incident_search.html"><div class="t">The two explorers</div><div class="d">Find an incident by facets and keyword, read its page, and replay one corridor through one day.</div><div class="n">how-to · 3 pages</div></a>
+            <a class="hubcard" href="tsmo--faq.html"><div class="t">TSMO FAQ</div><div class="d">Statewide, annual, $0, the missing maps, the county and MPO questions, in the words people asked them.</div><div class="n">faq</div></a>
+          </div>
+
+          <h3 id="the-live-pages">The live pages</h3>
+          <p>Every TSMO page, where it sits in the side navigation, what it shows, and the docs page that covers it.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Live page</th><th>Where</th><th>What it shows</th><th>Docs page</th></tr></thead>
+            <tbody>
+              <tr><td>TSMO home</td><td><span class="ui">TSMO</span> from the product switcher</td><td>A year chip, the headline cards, the four dashboard cards under <span class="ui">Regional Dashboards</span>, the two explorer cards, and <span class="ui">Data Freshness</span></td><td><a href="tsmo--start.html">Start here</a></td></tr>
+              <tr><td>Congestion</td><td><span class="ui">Dashboards</span> › <span class="ui">Congestion</span></td><td>Excessive delay split into what recurs every day and what events caused, by year, month, region and corridor, with its dollar cost</td><td><a href="tsmo--congestion.html">Congestion dashboard</a></td></tr>
+              <tr><td>Reliability</td><td><span class="ui">Dashboards</span> › <span class="ui">Reliability</span></td><td>The federal PM3 reliability measures against their targets: Interstate and non-Interstate person-miles reliable, and truck travel-time reliability. Annual</td><td><a href="tsmo--reliability.html">Reliability dashboard</a></td></tr>
+              <tr><td>Incidents</td><td><span class="ui">Dashboards</span> › <span class="ui">Incidents</span></td><td>Delay attributed to reactive events, how long they last and clear, the landscape by category and month, the events that hurt most</td><td><a href="tsmo--incidents.html">Incidents dashboard</a></td></tr>
+              <tr><td>Work Zones</td><td><span class="ui">Dashboards</span> › <span class="ui">Work Zones</span></td><td>Delay attributed to construction, maintenance and emergency-operations events, where it lands, how long zones run</td><td><a href="tsmo--work_zones.html">Work Zones dashboard</a></td></tr>
+              <tr><td>Incident Search</td><td><span class="ui">Explorers</span> › <span class="ui">Incident Search</span></td><td>Every TRANSCOM event filtered to New York, found by region, county, time period, category or keyword</td><td><a href="tsmo--incident_search.html">Find an incident</a></td></tr>
+              <tr><td>Incident View</td><td>Opened from a result row or a dashboard table</td><td>One event end to end: facts, response timeline, congestion footprint, corridors, congestion grid, location map</td><td><a href="tsmo--incident_view.html">Read an incident page</a></td></tr>
+              <tr><td>Corridor View</td><td><span class="ui">Explorers</span> › <span class="ui">Corridor View</span></td><td>One corridor on one day as a time-space speed grid, with the day's events drawn over it and a strip map</td><td><a href="tsmo--corridor_view.html">Explore a corridor over time</a></td></tr>
+              <tr><td>About TSMO</td><td><span class="ui">Program</span> › <span class="ui">About TSMO</span></td><td>What TSMO is, the NYSDOT program, a guide to what each page answers, the roadmap of measures not yet built and the feed each needs, partners</td><td>Definitions in <a href="measures_and_data.html">Measures &amp; Data</a></td></tr>
+              <tr><td>Data &amp; Methodology</td><td><span class="ui">Program</span> › <span class="ui">Data &amp; Methodology</span></td><td>The source catalog, one explainer per measure, data coverage and gaps, the refresh-cadence table, a glossary, downloads and API access</td><td><a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="start-here">Start here</h2>
+          <p>One guided task of about 10 minutes: <a href="tsmo--start.html">a year, three numbers, a dashboard</a>. You open the TSMO home, pick a year and read the headline cards with what each one counts. Then you open the Congestion dashboard, set a region, find the worst corridors and open one in Corridor View. No account is needed.</p>
+          <p>If you are about to quote a number, read <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> first. The reliability figures are federal. The delay figures are the platform's own series, revised in June 2026.</p>
+
+          <h2 id="common-tasks">Common tasks</h2>
+          <ul>
+            <li><a href="tsmo--filters.html#steps">Read a statewide figure, then the same figure for one region</a>, and get back to statewide.</li>
+            <li><a href="measures_and_data--concepts--geography.html#what-statewide-means">Find out what "statewide" means</a> when <span class="ui">Region</span> is blank, and why the regions do not add up to it.</li>
+            <li><a href="tsmo--congestion.html#worst-corridors-by-excessive-delay">Find the worst corridors</a> for a year and region.</li>
+            <li><a href="tsmo--reliability.html#three-of-three-federal-targets-met">Quote a CY 2025 reliability figure</a> with its year, system and target.</li>
+            <li><a href="tsmo--incident_search.html#steps">Find an incident</a> by region, county, date, category or keyword, and <a href="tsmo--incident_view.html#steps">read its page</a>.</li>
+            <li><a href="tsmo--incident_view.html#troubleshooting">Read a map that shows a pin but no segment</a>.</li>
+            <li><a href="tsmo--corridor_view.html#steps">Replay a corridor on one day</a>, and <a href="tsmo--corridor_view.html#why-the-region-selection-does-not-carry-into-it">find out why your region did not follow you there</a>.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html#why-a-month-or-a-region-shows-0-or-nothing">Find out why a month or a region shows $0 or nothing</a>.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html#partial-years-show-partial-totals">Check whether a year is partial</a> before quoting its total.</li>
+            <li><a href="tsmo--congestion.html#downloads">Get the delay data out</a> through the <span class="ui">Data &amp; Methodology</span> page.</li>
+          </ul>
+
+          <h2 id="what-each-page-answers">What each page answers</h2>
+          <p>One line per live page. The six dashboard and explorer lines are the <span class="ui">About TSMO</span> page's own dashboard guide, verbatim.</p>
+          <ul>
+            <li><strong>TSMO home</strong> · the headline numbers for a selected year, the door to every dashboard and explorer, and how fresh each source is.</li>
+            <li><strong>Congestion</strong> · "how much delay, where, and why".</li>
+            <li><strong>Reliability</strong> · "how predictable is travel".</li>
+            <li><strong>Incidents</strong> · "what happens on the network &amp; how well we clear it".</li>
+            <li><strong>Work Zones</strong> · "what construction costs drivers".</li>
+            <li><strong>Incident Search</strong> · "find any of 3.7M events since 2015".</li>
+            <li><strong>Incident View</strong> · one event's identity, its response timeline, the delay it added above the recurrent baseline, and where.</li>
+            <li><strong>Corridor View</strong> · "replay any corridor, any day".</li>
+            <li><strong>About TSMO</strong> · what TSMO is, how NYSDOT's program is framed, what each page answers, and which measures are not built yet and why.</li>
+            <li><strong>Data &amp; Methodology</strong> · where every number comes from, how each measure is computed, where the data is thin, how often each feed refreshes.</li>
+          </ul>
+
+          <h2 id="reference">Reference</h2>
+          <ul>
+            <li>The TSMO measures · <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a> · <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a> · <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a> · <a href="measures_and_data--measures--lottr.html">LOTTR</a> · <a href="measures_and_data--measures--tttr.html">TTTR</a> · <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a> · <a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a>.</li>
+            <li><a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a> · what statewide means, the 11 regions, why Corridor View is county-keyed.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a> · span, lag and gaps per source; partial years; the incident timestamp completeness figures.</li>
+            <li><a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> · the CY 2025 reliability figures and their two bases.</li>
+            <li><a href="tsmo--filters.html">Using the filter bar</a> · every control on every TSMO page.</li>
+            <li><a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a> · the event datasheet. Planned.</li>
+            <li><a href="glossary.html">Glossary</a> · every term with the screen it appears on. Planned.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO About page, dashboard guide "What each page answers": the six one-line answers quoted above.</li>
+            <li>TSMO home: band titles <span class="ui">Regional Dashboards</span>, <span class="ui">Dig into a single event or corridor.</span>, <span class="ui">Data Freshness</span>; the explorer card copy.</li>
+            <li>TSMO Data &amp; Methodology page: section list (Source catalog · Measure definitions · Data coverage &amp; gaps · Refresh cadence · Glossary · Downloads &amp; API).</li>
+            <li>TSMO user stories for the home, dashboards, explorers, About and Data &amp; Methodology pages (research corpus, 55 stories).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="start--which_tool.html">Which tool answers my question?</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

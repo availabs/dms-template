@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Incidents dashboard · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="screens" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · screens</div>
+          <h1 class="doc-title">Incidents dashboard.</h1>
+          <p class="doc-lede">The delay that reactive incidents caused, event by event: crashes, road hazards, weather and special events. Construction, maintenance and emergency operations are on Work Zones. What each panel shows, on what basis, and how it is computed.</p>
+          <div class="stamps">
+            <span class="type">screens</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-this-page-answers">What this page answers</h2>
+          <p>"What happens on the network &amp; how well we clear it." How much delay reactive incidents added in a year and region, how long they lasted and how fast lanes reopened, which categories and months carried the delay, and which single events hurt most. The page's own line: it is not the count, it is the delay.</p>
+
+          <h2 id="filters">Filters</h2>
+          <p><span class="ui">Year</span>, <span class="ui">Region</span> and <span class="ui">Category</span>. The bar is annotated <span class="ui">NY-filtered · reactive events</span>. <span class="ui">Category</span> offers Crash, Message, Other, Road Hazard, Special Event, Volume/Delay and Weather Hazard. See <a href="tsmo--filters.html">Using the filter bar</a>.</p>
+          <div class="callout basis"><span class="k">basis</span>Events are TRANSCOM events filtered to New York and classified by NYSDOT sub-category; this page keeps the reactive set and excludes Construction, Maintenance and Emergency Operations. Delay is attributed per event in vehicle-hours and priced at an interim flat $20 per vehicle-hour. The status line's "3.7M events since 2015" counts the whole feed; every panel below follows <span class="ui">Year</span>.</div>
+
+          <h2 id="it-isnt-the-count-its-the-delay">It isn't the count, it's the delay</h2>
+          <p>The headline card gives attributed delay in vehicle-hours and its cost for the filters. <span class="ui">Attributed delay by year · vehicle-hours</span> plots 2019 to 2026 and follows <span class="ui">Region</span>. <span class="ui">Events vs delay by category</span> sets each category's event count beside its delay.</p>
+          <p><strong>How it is computed.</strong> How much delay did incidents cause, and how quickly were they cleared? Each event's footprint is its affected segments and 5-minute slices with delay above the recurrent baseline, summed to vehicle-hours; events without a footprint carry a dash, not a zero. See <a href="measures_and_data--measures--incident_delay_and_clearance.html#how-it-is-computed">Incident delay and clearance</a>.</p>
+          <ul>
+            <li>The axis scales to the data. A small region reads in thousands with full-height bars; it once rounded to nothing below 0.1 million.</li>
+            <li>Bars start at 2019 because attribution is sparse before then. 2026 is a partial year.</li>
+            <li>The caption: reactive incident delay fell with traffic in 2020, then climbed back above pre-pandemic levels.</li>
+          </ul>
+
+          <h2 id="duration-and-clearance">Duration &amp; clearance</h2>
+          <p><span class="ui">Incident duration distribution</span> is a histogram in minutes, with the median, a percentile and the share cleared within thresholds summarised in a card beside it.</p>
+          <ul>
+            <li>Duration is the estimated duration recorded on about 99 % of events. Values cluster at round estimates.</li>
+            <li>Clearance is measured, lanes open minus start, only where the timestamps exist. The <span class="ui">Data &amp; Methodology</span> page gives lanes-open on 42.7 % of events and verification on 20.1 %. This page's method note says about 68 %. The panel's badge names the share it was computed on; the 42.7 % on the Data &amp; Methodology page is the all-events share, and the Incidents page's reactive subset has its own.</li>
+          </ul>
+
+          <h2 id="the-incident-landscape">The incident landscape</h2>
+          <p><span class="ui">Events vs delay by month · share of annual total</span> sets each month's share of the year's events beside its share of the year's attributed delay. Each is normalised to its own annual total. Where the delay bar tops the events bar, that month's incidents ran worse than average. Reacts to <span class="ui">Region</span> and <span class="ui">Year</span>.</p>
+
+          <h2 id="highest-delay-events">Highest-delay events</h2>
+          <p>The <span class="ui">Recent &amp; major events</span> table ranks individual events by attributed vehicle-hours: date, category, facility, county, duration, delay and cost at the interim $20 basis. Only events with a measurable footprint appear. Each row carries a <span class="ui">view →</span> link that opens the incident page.</p>
+          <p>A card headed "Where incidents cluster" describes a map of event points by category. The map is not built; the card carries a placeholder note.</p>
+
+          <h2 id="how-incidents-are-measured">How incidents are measured</h2>
+          <p>The method note at the foot of the page. Counts and categories come from TRANSCOM's feed filtered to New York, and the page keeps the reactive set. Delay is attributed per event against the recurrent baseline; about one in five events carries a footprint, and attribution is reliable from 2019. Dollars are an interim $20, with a class-weighted rate being applied at the data layer. See <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Which pages show which basis</a>.</p>
+
+          <h2 id="downloads">Downloads</h2>
+          <p>No download control on the page. <span class="ui">Data &amp; Methodology</span> › <span class="ui">Downloads &amp; API</span> lists the event-by-segment delay tables. For a row-level list with a view link per event, use <a href="tsmo--incident_search.html">Incident Search</a>.</p>
+
+          <figure class="shot" data-capture="www/tsmo/incidents_v2?year=2025 · Region and Category blank · signed out · headline card and Attributed delay by year in view" data-alt="The Incidents dashboard for 2025 statewide, showing the attributed-delay headline card and the 2019 to 2026 bar chart">
+            <!-- captured 2026-09-08 · http://localhost:5231/tsmo/incidents_v2 · Year 2025 (the page default), Region and Category blank, signed in -->
+            <img src="../../assets/screens/docs/tsmo/incidents-01-2025-statewide.png" alt="The Incidents dashboard for 2025 statewide, showing the attributed-delay headline card and the 2019 to 2026 bar chart"/>
+            <figcaption>Figure 1 · the Incidents dashboard, CY 2025, statewide. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Incidents dashboard, published 2026-07-28: band titles, captions, status line, method note.</li>
+            <li>TSMO Data &amp; Methodology page: TIM timestamp completeness 42.7 / 20.1 / 10.6 / 0.3 % of 3.7 M events, queried 2026-06-22.</li>
+            <li>TSMO About page: "Incidents — what happens on the network &amp; how well we clear it".</li>
+            <li>Feedback records: scope and category list (2195387, 2195001) · adaptive axis (2192555) · statewide label (2195001).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="tsmo--work_zones.html">Work Zones dashboard</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

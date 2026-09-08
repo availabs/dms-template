@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sign in, sessions and accounts · Get started · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  start--accounts_and_sessions.html · IA page 4 · type how-to. Phase 1, 2026-09-04.
+  Sources: plan report §03 (Auth row: public read, login for saved work, ~6 h session), platform-inventory §1/§8,
+  tickets 2214470, 2197778; running fixes 2172529, 2172517, 2172510; design login.html (Email · Password · Forgot?).
+  The how-to shape is extended with "What needs an account" and "How long a session lasts" per the Phase 1 brief.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Get started · how-to</div>
+          <h1 class="doc-title">Sign in, and know what a session does.</h1>
+          <p class="doc-lede">Everything that reads is public. Sign in only to save routes and reports, or to administer data. Here are the sign-in steps, what needs an account, and why the site sometimes asks you to sign in again.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Start from the landing page or any product page. To sign in you need an account: an email address and a password. Reading needs nothing. If your task is in a "No" row below, skip this page.</p>
+          <p> If you do not have an account, request one through <a href="help.html">Help and feedback</a>.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open the sign-in page. Its address is <code>/auth/login</code> on any product.<span class="result">You see a form with <span class="ui">Email</span> and <span class="ui">Password</span>.</span></li>
+            <li>Enter your email address in <span class="ui">Email</span>.</li>
+            <li>Enter your password in <span class="ui">Password</span>. If you have forgotten it, use <span class="ui">Forgot?</span>. It opens the password reset page.</li>
+            <li>Select <span class="ui">Sign In</span>.<span class="result">You are signed in. Saving routes and reports is now available.</span></li>
+            <li>Move to TSMO or the Freight Atlas with the product switcher.<span class="result">You stay signed in. These products share one origin with the landing page.</span></li>
+            <li>Move to NPMRDS. It runs on its own subdomain.<span class="result">You may be asked to sign in again. Use the same email and password.</span></li>
+          </ol>
+
+          <h2 id="what-needs-an-account">What needs an account</h2>
+          <p>The table lists common tasks and whether they need sign-in.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Task</th><th>Needs sign-in?</th></tr></thead>
+            <tbody>
+              <tr><td>Read any dashboard, map or MAP-21 PM3 page</td><td>No</td></tr>
+              <tr><td>Use the Macro View, including its download</td><td>No</td></tr>
+              <tr><td>Open a published report</td><td>No</td></tr>
+              <tr><td>Open a map from the Maps Gallery and share it</td><td>No</td></tr>
+              <tr><td>Create or save a route</td><td>Yes</td></tr>
+              <tr><td>Create, edit or save a report</td><td>Yes</td></tr>
+              <tr><td>Run Route Comparison</td><td>No to open. The routes it compares are saved routes, which need sign-in to create</td></tr>
+              <tr><td>Open Data &amp; Downloads or Data Sources</td><td>No by design. Currently Yes: a known issue, see below</td></tr>
+              <tr><td>Upload or manage a dataset</td><td>Yes, with administrator permission</td></tr>
+              <tr><td>Build a map in the Map Editor</td><td>Yes, with administrator permission</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="how-long-a-session-lasts">How long a session lasts</h2>
+          <p>A session lasts about 6 hours. When it expires, the site returns you to the sign-in page. Sign in again and continue. Anything you saved before the expiry is kept.</p>
+          <p>Since September 2026 the landing page, TSMO and the Freight Atlas share one origin, so one sign-in covers all three. NPMRDS still runs on its own subdomain with its own session, which can expire at a different time.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Signing in does not change the numbers. Public and signed-in readers see the same data. Administrators see extra controls.</li>
+            <li>A session does not renew itself. Expect the sign-in page after about 6 hours, and save before long pauses.</li>
+            <li>The <span class="ui">Data &amp; Downloads</span> catalog and the landing page's <span class="ui">Data Sources</span> entry ask visitors without an account to sign in. Both are meant to be public. This is a known issue.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-site-keeps-logging-me-out">The site keeps logging me out</h3>
+          <p>Two causes are normal. Your session passed 6 hours, or you moved to NPMRDS, which has a separate session. Sign in again. If you are signed out repeatedly well inside 6 hours, <a href="help.html">report it</a> with the time and the page.</p>
+          <h3 id="asked-to-sign-in-again-moving-between-products">I was asked to sign in again when I moved between products</h3>
+          <p>Moving to NPMRDS asks again because it runs on its own subdomain. Moving between the landing page, TSMO and the Freight Atlas should not ask again. If it does, <a href="help.html">report it</a>.</p>
+          <h3 id="data-and-downloads-asked-me-to-sign-in">Data &amp; Downloads asked me to sign in</h3>
+          <p>This is the known issue above. Sign in to open the catalog. If you have no account, request one, or the file you need, through <a href="help.html">Help and feedback</a>.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="start--navigating.html">Navigating the platform</a></li>
+            <li><a href="npmrds--routes--create.html">Create a route</a></li>
+            <li><a href="npmrds--reports--start_from_template.html">Start a report from a template</a></li>
+            <li><a href="admin.html">Admin</a> · uploading data, building maps, users and permissions</li>
+            <li><a href="help.html">Help and feedback</a></li>
+          </ul>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 1)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="start--navigating.html">Navigating the platform</a>
+          <a href="start--faq.html">Platform FAQ</a>
+          <a href="help.html">Help and feedback</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

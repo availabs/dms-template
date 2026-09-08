@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Worked examples · Developers · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  developers--examples.html · IA page 83 · type how-to. Phase 6a, 2026-09-08.
+  Sources: docs-dump 1458899 (the TRANSCOM events example: three path arrays and the row-0 response, verbatim); 1481752 (python client:
+  install commands and transcom.py, verbatim); 1436006 (the reference's notes, which the troubleshooting entries restate); avail-falcor
+  routes/uda.route.js (attribute expressions with `as`; indices from..to) and routes/data_manager/controller/multi-db.js (positional
+  orderBy {"1": 'asc'} as the site itself sends it). The filtered and grouped variants show the request only; no response is invented.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="developers">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Developers · how-to</div>
+          <h1 class="doc-title">Count, read, filter and group a dataset.</h1>
+          <p class="doc-lede">The TRANSCOM events query in full, then two variants, a narrowed filter and a grouped count, then the same query from the python client. Every example shows the exact path sent. This page assumes you have run the <a href="developers--quickstart.html">quick start</a> and know the length-then-rows pattern.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · Developers</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>All examples read the <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a> table in the <code>npmrds2</code> environment, for June 2025 in Region 1. The datasheet's schema names the columns used here: <code>event_id</code>, <code>event_type</code>, <code>facility</code>, <code>region_name</code>, <code>month_year</code>, <code>cost</code>, <code>vehicle_delay</code>, <code>congestion_data</code>. No token is needed. Each path below goes into <code>https://graph.availabs.org/graph?paths=…&amp;method=get</code>, URL-encoded, as the quick start showed. The recorded counts and rows are from 2025-09-10; the live table recomputes.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Write the options string. Two filters, nothing grouped, nothing excluded.
+<pre class="code">{"groupBy":[],"filter":{"month_year":["06-2025"],"region_name":["Region 1 - Capital District"]},"exclude":{},"normalFilter":[]}</pre></li>
+            <li>Ask for the length.
+<pre class="code">[["uda","npmrds2","viewsById",1947,"options",
+  "{\"groupBy\":[],\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"exclude\":{},\"normalFilter\":[]}",
+  "length"]]</pre>
+              <span class="result"><code>{"length":1262}</code> at the end of the mirrored path.</span></li>
+            <li>Ask for rows. Add an order, ask for indices 0 to 4, and list the columns. This is the example's own column list.
+<pre class="code">[["uda","npmrds2","viewsById",1947,"options",
+  "{\"groupBy\":[],\"orderBy\":{\"cost\":\"desc nulls last\"},\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"exclude\":{},\"normalFilter\":[],\"meta\":{}}",
+  "dataByIndex",{"from":0,"to":4},
+  ["event_id as event_id","reporting_organization as reporting_organization","event_class as event_class",
+   "start_date_time as start_date_time","close_date as close_date","facility as facility",
+   "event_duration as event_duration","event_type as event_type","lanes_total_count as lanes_total_count",
+   "lanes_affected_count as lanes_affected_count","lanes_detail as lanes_detail","lanes_status as lanes_status",
+   "description as description","direction as direction","event_location_latitude as event_location_latitude",
+   "event_location_longitude as event_location_longitude","recoverytime as recoverytime","f_system as f_system",
+   "vehicle_delay","cost as cost"]]]</pre></li>
+            <li>Read the first row. The keys are the attribute strings exactly as sent; dates and nulls arrive as atoms.
+<pre class="code">"0": {
+  "event_id as event_id": "ORI1237917919",
+  "reporting_organization as reporting_organization": "NYSDOT TMC - Albany",
+  "event_class as event_class": "Incident",
+  "start_date_time as start_date_time": { "$type": "atom", "value": "2025-06-25T17:01:58.000Z" },
+  "close_date as close_date": { "$type": "atom", "value": "2025-06-25T17:14:16.000Z" },
+  "facility as facility": "I-90",
+  "event_duration as event_duration": "0 - 00:13",
+  "event_type as event_type": "Disabled vehicle",
+  "lanes_total_count as lanes_total_count": 4,
+  "lanes_affected_count as lanes_affected_count": { "$type": "atom", "value": null },
+  "lanes_detail as lanes_detail": "right shoulder",
+  "lanes_status as lanes_status": "closed",
+  "direction as direction": "westbound",
+  "f_system as f_system": 1,
+  "vehicle_delay as vehicle_delay": "4072.8296476032688",
+  "cost as cost": "78062"
+}</pre>
+              <span class="result">The highest-cost event that month in Region 1 was a disabled vehicle on I-90, 13 minutes, $78,062 of delay cost by the platform's estimate.</span></li>
+            <li>Change the columns. The same options with two attributes returns the congestion detail per event.
+<pre class="code">[["uda","npmrds2","viewsById",1947,"options",
+  "{\"groupBy\":[],\"orderBy\":{\"cost\":\"desc nulls last\"},\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"exclude\":{},\"normalFilter\":[],\"meta\":{}}",
+  "dataByIndex",{"from":0,"to":4},
+  ["event_id","congestion_data"]]]</pre></li>
+            <li>Page through the rest. Move the range, <code>{"from":5,"to":9}</code> and so on, until <code>to</code> reaches the length minus one. Indices past the end return nothing.</li>
+          </ol>
+
+          <h2 id="a-filtered-query-and-a-grouped-count">A filtered query and a grouped count</h2>
+          <h3 id="narrow-with-exclude-and-a-comparison">Narrow with exclude and a comparison</h3>
+          <p>Drop construction events and keep only those with a cost of $50,000 or more. Ask for the length first, then the rows; both take the same options string. The response has the shape of step 4; its count depends on the live table.</p>
+<pre class="code">[["uda","npmrds2","viewsById",1947,"options",
+  "{\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"exclude\":{\"event_type\":[\"Construction\"]},\"gte\":{\"cost\":50000},\"orderBy\":{\"cost\":\"desc nulls last\"}}",
+  "dataByIndex",{"from":0,"to":9},
+  ["event_id","event_type","facility","cost"]]]</pre>
+
+          <h3 id="group-and-count">Group and count</h3>
+          <p>Group the month's events by type and count each group. Every attribute is then a grouped column or an aggregate with an alias. Order by position 2, the count. For the length of a grouped query, set <code>aggregatedLen</code> so the count is of groups, not rows.</p>
+<pre class="code">[["uda","npmrds2","viewsById",1947,"options",
+  "{\"groupBy\":[\"event_type\"],\"aggregatedLen\":true,\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"orderBy\":{\"2\":\"desc\"}}",
+  "dataByIndex",{"from":0,"to":19},
+  ["event_type","count(1) as events"]]]</pre>
+
+          <h2 id="the-python-client">The python client</h2>
+          <p>The client is installed from its repository, not from a package index. Cloning it and running the sample script saves a TRANSCOM query to a CSV.</p>
+<pre class="code">git clone git@github.com:availabs/dama-api-client-py.git
+cd dama-api-client-py
+python3 transcom.py</pre>
+          <p>The sample script sends the options and columns of step 3 and writes rows 0 to 100 to <code>transcom_data_direct.csv</code> in one call.</p>
+<pre class="code">#!/usr/bin/env python3
+"""
+Example usage of the Datamanager API Client
+"""
+
+import json
+from datamanager_api_client import (
+    fetch_data_from_api,
+    parse_api_response_to_csv,
+    save_csv_to_file,
+    fetch_and_convert_to_csv
+)
+
+def main():
+    view_id = 1947
+
+    filters = {
+        "groupBy": [],
+        "orderBy": {"cost": "desc nulls last"},
+        "filter": {
+            "month_year": ["06-2025"],
+            "region_name": ["Region 1 - Capital District"]
+        },
+        "exclude": {},
+        "normalFilter": [],
+        "meta": {}
+    }
+
+    columns = [
+        "event_id", "reporting_organization", "event_class", "start_date_time", "close_date",
+        "facility", "event_duration", "event_type", "lanes_total_count", "lanes_affected_count",
+        "lanes_detail", "lanes_status", "description", "direction", "event_location_latitude",
+        "event_location_longitude", "recoverytime", "f_system", "vehicle_delay", "cost"
+    ]
+
+    try:
+        print("\n" + "="*50)
+        print("Fetch and convert in one step...")
+        csv_direct = fetch_and_convert_to_csv(view_id, filters, columns, 0, 100, "transcom_data_direct.csv")
+        print("Direct CSV conversion completed!")
+
+    except Exception as e:
+        print(f"Failed to fetch or convert data: {e}")
+
+if __name__ == "__main__":
+    main()</pre>
+          <p>The published example stops there. It does not show how the client picks its host or its data environment, whether it can send a token, or the signatures of <code>fetch_data_from_api</code>, <code>parse_api_response_to_csv</code> and <code>save_csv_to_file</code>. Those are documented in the repository itself, which needs access to read; this page does not restate them. The clone address uses SSH; a GitHub key is needed, or the HTTPS form of the same address.</p>
+
+          <h2 id="what-each-example-sends">What each example sends</h2>
+          <p>The examples side by side.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Example</th><th>Options keys</th><th>Attributes</th><th>Returns</th></tr></thead>
+            <tbody>
+              <tr><td>Length (step 2)</td><td><code>filter</code></td><td>none; the path ends in <code>length</code></td><td>One number</td></tr>
+              <tr><td>Rows (steps 3 to 5)</td><td><code>filter</code> · <code>orderBy</code></td><td>20 columns, or 2</td><td>5 rows, keyed 0 to 4</td></tr>
+              <tr><td>Narrowed</td><td><code>filter</code> · <code>exclude</code> · <code>gte</code> · <code>orderBy</code></td><td>4 columns</td><td>Up to 10 rows</td></tr>
+              <tr><td>Grouped</td><td><code>groupBy</code> · <code>aggregatedLen</code> · <code>filter</code> · <code>orderBy</code></td><td>1 column and 1 aggregate</td><td>One row per event type</td></tr>
+              <tr><td>Python client</td><td>as step 3</td><td>20 columns</td><td>Rows 0 to 100 as a CSV file</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>The options object is encoded twice: JSON inside the path, then the whole path as a URL. Inner quotes are <code>\"</code>.</li>
+            <li>The index range is inclusive: <code>{"from":0,"to":4}</code> is five rows. The count is what <code>length</code> said, minus one, at the top.</li>
+            <li>An alias is part of the key. Ask for <code>"cost as cost"</code> and read <code>"cost as cost"</code>; ask for <code>"cost"</code> and read <code>"cost"</code>.</li>
+            <li>Numeric columns can arrive as strings, as <code>"cost": "78062"</code> does. Parse before you sum.</li>
+            <li><code>like</code> compares lower-cased text and adds no wildcards. Write <code>"I-9%"</code> yourself.</li>
+            <li>Counts drift. The table is refreshed, so 1,262 is the 2025-09-10 figure, not a constant.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="dataByIndex-comes-back-empty">dataByIndex comes back empty</h3>
+          <p>The range is not of the form <code>{"from": x, "to": y}</code>, or it lies past the length. The reference's own note: the indices parameter must specify a valid range. Ask for <code>length</code> with the same options and re-page.</p>
+          <h3 id="the-request-fails-on-a-column-name">The request fails on a column name</h3>
+          <p>An attribute is not a column of the view. Names are not checked before the query runs. Copy them from the datasheet's schema table or the source page's <span class="ui">Columns</span> list; watch for aliases that hide a typo.</p>
+          <h3 id="the-filter-is-ignored">The filter is ignored</h3>
+          <p>The options value was sent as an object rather than a string, or its quotes were not escaped, so the server read an empty options object. The reference's note: ensure the options parameter is properly JSON stringified. Compare your encoded URL to step 2 of the quick start.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="developers--data_manager_api.html#the-options-object">The options object</a> in the Data Manager API reference.</li>
+            <li><a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a> · the schema behind these columns.</li>
+            <li><a href="developers--downloads_and_formats.html">Bulk downloads and formats</a> · when a file beats a query.</li>
+            <li><a href="tsmo--incident_search.html">Find an incident</a> · the same events, in the tool.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>API request example (docs page, 2025-09-10): the three path arrays and the row-0 response, quoted verbatim in steps 1 to 5; "the number of values that match this query is 1262".</li>
+            <li>Python client examples (docs page, 2025-09-24): the install commands and <code>transcom.py</code>, verbatim; "save a sample transcom query into a csv".</li>
+            <li>Data Manager API reference (docs page, 2025-08-27): the notes restated under Troubleshooting; <code>aggregatedLen</code> with <code>groupBy</code>; <code>like</code> wildcards; <code>groupBy</code> as "column names or numbers".</li>
+            <li>Data server code: <code>routes/uda.route.js</code>, attribute expressions such as <code>substring(geoid, 1, 2) as state_fips</code>; <code>routes/uda_query_sets/helpers.js</code>, lower-cased <code>like</code>; <code>routes/data_manager/controller/multi-db.js</code>, positional <code>orderBy: {"1": 'asc'}</code> as the site sends it.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="developers.html">Developers hub</a>
+          <a href="developers--data_manager_api.html">Data Manager API</a>
+          <a href="developers--quickstart.html">Quick start</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

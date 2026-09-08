@@ -520,6 +520,32 @@ auth/dev-server recipe, including the two traps that each cost a run:
 the token must be minted against the app's real API host, and URL
 parameters do not set macro-view state — drive the UI.
 
+**Documentation (`pages/docs/`, 2026-09-04 → 2026-09-08).** The new TransportNY documentation is written as
+static pages in `pages/docs/` — all 95 pages written and reviewed by 2026-09-08 (build Phases 0–7; lint clean, no
+open `[VERIFY]` marks); the real-tool screenshot pass (Phase 8) and the owner read-through follow, and the migration
+into a `platform_docs` pattern (Phase 9) is owner-gated. The layout is — one flat folder, one file per page named `<hub>--<slug>.html`, hubs as
+`<hub>.html`, home `index.html` — following the 95-page information architecture in
+`reports/platform-documentation-plan.html` §08 and the build task
+`planning/transportny/tasks/current/platform-documentation-build.md`. The folder carries its own shell:
+`_docs-nav.js` (the tree — ONE data structure that drives the sidebar, breadcrumb, prev/next, the lint,
+and later the pattern build), `_template.html` (copy per page), `_docs.css` (docs vocabulary on top of
+`../_shared.css`), `_lint.mjs` (tree ↔ files, header block, ids, links, forbidden strings, figures),
+`_check_layout.mjs` (Playwright overflow/console check), `STYLE.md` (the writing style guide — Replica's
+documentation is the reference; rulings are appended per phase) and `_glossary-queue.md`. Underscore-
+prefixed files are infrastructure or seeds and are not pages. The three earlier docs mockups moved here:
+`docs-overview.html` → `_seed--docs-overview.html`, `npmrds-macro-guide.html` → `npmrds--macro_view.html`
+(IA page 18), `npmrds-measures.html` → `_seed--npmrds-measures.html` (split into the Measures & Data pages in
+phase 2). `ds-nav.js` lists only the docs home; docs pages render their own sidebar. Paths from a docs page
+are one level deeper than from `pages/` (`../_shared.css`, `../../assets/…`, `../<mockup>.html`).
+
+**Reports (`reports/`).** Document-style research reports that use the design system's
+tokens but are not product mockups live in `reports/`, beside `pages/`. They inline the
+`_shared.css` subset they need so they open standalone from the file system, use the `// 01`
+numbered-section grammar, `tny-card` surfaces and `table.tny`, and are NOT registered in
+`ds-nav.js` (that widget is for pages). Current reports: `npmrds-data-quality-report.html`
+(2026-08-13) and `platform-documentation-plan.html` (2026-09-04, the documentation redesign
+research + IA; task `planning/transportny/tasks/current/platform-documentation-plan.md`).
+
 **When you change a token:** update `theme/theme.js`, then mirror the
 new class string into any mockup HTML that demos the affected
 primitive (`grep` for the old string across `design-system/*.html`

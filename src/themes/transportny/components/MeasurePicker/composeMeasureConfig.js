@@ -90,9 +90,14 @@ export const GRAPH_TYPE_OPTIONS = [
 // "mint a brand-new graph section" call sites (`useAddGraphSection.js`, `compose_bridge.mjs`,
 // `report_build.mjs`) — never on a re-pick of an existing section.
 export const DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE = {
-    BarGraph: 'bottom',
-    LineGraph: 'bottom',
-    GridGraph: 'bottom-right',
+    // Flipped bottom → top(-right) 2026-09-04 (Ryan) — the `bottom` build shipped 2026-09-01 and
+    // was live-verified working, but Ryan changed his mind on the default once he saw it live:
+    // top reads better paired with the graph-native title (see the title/legend inline-alignment
+    // work landing alongside this in the same pass). Still just an author-overridable default —
+    // the per-graph Legend Position control (LEGEND_POSITION_OPTIONS(_GRID) below) is unaffected.
+    BarGraph: 'top',
+    LineGraph: 'top',
+    GridGraph: 'top-right',
 };
 
 // Seeds `state.display.legend.position` with this app's own default for `graphType`, once, for a

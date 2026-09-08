@@ -981,6 +981,12 @@ const theme = {
       { name: 'priority_medium', wrapper: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#F1CA87]/20 border border-[#F1CA87] font-['Proxima_Nova'] text-[11px] font-[700] text-[#2D3E4C]" },
       { name: 'priority_low',    wrapper: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#FCF6EC] border border-[#C5D7E0] font-['Proxima_Nova'] text-[11px] font-[700] text-[#37576B]" },
       { name: 'priority_unset',  wrapper: "inline-flex items-center font-['Proxima_Nova'] text-[13px] italic text-[#6D96AE]" },
+
+      // --- mny jurisdiction-kind pills (Jurisdictions page tiles: Town neutral,
+      // Village amber-tinted, County solid dark — jurisdictions.html mockup) ---
+      { name: 'juris_town',    wrapper: "inline-flex items-center px-2 py-0.5 rounded-full bg-[#E0EBF0] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#37576B]" },
+      { name: 'juris_village', wrapper: "inline-flex items-center px-2 py-0.5 rounded-full bg-[#FCF6EC] border border-[#F1CA87]/50 font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#2D3E4C]" },
+      { name: 'juris_county',  wrapper: "inline-flex items-center px-2 py-0.5 rounded-full bg-[#2D3E4C] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-white" },
     ],
   },
   // ───────────────────────────────────────────────────────────────────────────
@@ -1135,6 +1141,10 @@ const theme = {
         // under the value like the design
         statCardSub:
             "w-full font-['Proxima_Nova'] text-[11px] leading-[140%] text-[#6D96AE] mt-1",
+        // amber count chip ("N to tier" — Jurisdictions page tiles). Ink baked in
+        // like metaXXS: uniform across every use in the mockup.
+        chipAmber:
+            "font-['Proxima_Nova'] text-[11px] font-[700] text-[#EAAD43] whitespace-nowrap",
         textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
         textXSReg:
             "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",

@@ -12,11 +12,6 @@
   "header": {
     "kickerLabel": "// REPORT",
     "metaLine": "region · county · agency",
-    "purpose": "What question does this report answer? Describe what it compares and why it matters — then update the copy above to match your own report.",
-    "dataHref": "",
-    "freshnessLabel": "npmrds speeds",
-    "freshnessComplete": "",
-    "freshnessPartial": "",
-    "freshnessSince": ""
+    "purpose": "What question does this report answer? Describe what it compares and why it matters — then update the copy above to match your own report."
   }
 }

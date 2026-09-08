@@ -7,16 +7,17 @@ import { resolveMountPath } from '../../../../dms/packages/dms/src/utils/mountPa
 import { publish, updateTitle } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
 import { getUrlSlug } from '../../../../dms/packages/dms/src/patterns/page/pages/_utils';
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
-import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
+import { ROUTE_CATALOG_PARAM_KEY, ROUTE_SOURCE_INFO_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
 import { resolvedRouteLabel, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from '../ReportRouteList/relativeDateResolution';
 import { useReportCatalogRow } from './useReportCatalogRow';
 import TagsEditor from '../TagsEditor/TagsEditor';
+import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 
 // The report canvas's page-header card (npmrds-report.html): kicker+meta → h1+purpose
-// → action stack → freshness footline. h1 and the published/draft pill read the page's
+// → action stack. h1 and the published/draft pill read the page's
 // own `title`/`published` fields directly (real page data, not duplicated into this
-// section's state); everything else (kicker label, meta line, purpose, freshness, the
-// tag editor, the optional Data link) is this component's own authored state, edited
+// section's state); everything else (kicker label, meta line, purpose, the
+// tag editor) is this component's own authored state, edited
 // inline in place, gated on `editPageMode` ALONE — same "no extra click" convention
 // ReportRouteList already uses (2026-09-01 correction, Workstream D: an author on
 // /edit/... shouldn't have to separately click this section into its own edit mode
@@ -38,6 +39,7 @@ export default function ReportPageHeader() {
   const location = useLocation();
   const [shareCopied, setShareCopied] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(true);
+  const [isRouteSwapOpen, setIsRouteSwapOpen] = useState(false);
 
   // Inline title editor (h1) — same mechanism as the Bottom toolbar's Filter icon → Page Name
   // field (settingsPane.jsx), reused verbatim via the shared `updateTitle` so title/url_slug
@@ -73,6 +75,29 @@ export default function ReportPageHeader() {
     const values = pageState?.filters?.find((f) => f.searchKey === ROUTE_CATALOG_PARAM_KEY && f.type === 'action')?.values;
     return Array.isArray(values) ? values : [];
   }, [pageState?.filters]);
+
+  // Dynamic Reports only (dynamic-reports-authoring-gaps.md sub-item 3): a `type: 'routeSlots'`
+  // page filter marks this report as reusable/shared, same test ReportRouteList.jsx's own
+  // `isDynamicReport` uses. `routeSourceInfo` is broadcast by RRL alongside the route catalog
+  // above (ROUTE_SOURCE_INFO_PARAM_KEY, useGraphPublish.js) — this header has no join source of
+  // its own configured, so it reads RRL's instead rather than needing a second binding authored
+  // on every report.
+  const routeSlotFilter = pageState?.filters?.find((f) => f.type === 'routeSlots');
+  const isDynamicReport = !!routeSlotFilter;
+  const routeSourceInfoValues = pageState?.filters?.find((f) => f.searchKey === ROUTE_SOURCE_INFO_PARAM_KEY && f.type === 'action')?.values;
+  const routeSourceInfo = Array.isArray(routeSourceInfoValues) ? routeSourceInfoValues[0] : routeSourceInfoValues;
+  // Pre-population for the route preview-swap modal below — same catalog entries as
+  // `routeCatalog`, but with `name` run through `resolvedRouteLabel` first: the modal's own
+  // selected-chip display reads `.name` verbatim (it has no other resolution step of its own),
+  // so without this an unresolved slot's `%n`/`%y` template shows up literally in the chip
+  // ("%n (%y)") instead of the same resolved label the routes disclosure/chart legend already
+  // show for the exact same route. `routeCatalog` itself is left untouched — its raw `name`/
+  // `dateFormula` fields are still what the routes-disclosure render below calls
+  // `resolvedRouteLabel` on directly.
+  const swapInitialRoutes = useMemo(
+    () => routeCatalog.map((r) => ({ ...r, name: resolvedRouteLabel(r) })),
+    [routeCatalog]
+  );
 
   // Grouped by `groupKey` (useDynamicReportRoutes.js's routeSlotGroupKey) — several catalog
   // entries are really just date/settings VIEWS of ONE physical route a viewer picked once
@@ -133,6 +158,25 @@ export default function ReportPageHeader() {
       params.set(baseDateFilter.searchKey, nextDate);
     } else {
       params.delete(baseDateFilter.searchKey);
+    }
+    const search = params.toString();
+    navigate(`${location.pathname}${search ? `?${search}` : ''}`);
+  };
+
+  // Route preview-swap (dynamic-reports-authoring-gaps.md sub-item 3): reopens
+  // RouteTagBrowserModal, pre-populated with whatever's currently resolved (`routeCatalog`,
+  // deduped by the modal's own `id`-keyed selection Map), and on a fresh confirm rewrites
+  // `?routes=` — same raw-`location.search` patch approach as `handleAsOfChange` just above, so a
+  // sibling `?asOf=` (if present) survives untouched. Purely a URL/view-time swap: never touches
+  // the page's own persisted `routes[]` slot array, no RRL/`persistRoutes` involvement.
+  const handleRouteSwapConfirm = (selectedRoutes) => {
+    if (!routeSlotFilter) return;
+    const ids = selectedRoutes.map((r) => r.id).filter((id) => id != null);
+    const params = new URLSearchParams(location.search);
+    if (ids.length) {
+      params.set(routeSlotFilter.searchKey, ids.join('|||'));
+    } else {
+      params.delete(routeSlotFilter.searchKey);
     }
     const search = params.toString();
     navigate(`${location.pathname}${search ? `?${search}` : ''}`);
@@ -267,11 +311,6 @@ export default function ReportPageHeader() {
 
         <div className={t.actionCol}>
           <div className={t.actionRow}>
-            {(canEdit || d.dataHref) && Button ? (
-              <Button activeStyle="compact" disabled={!d.dataHref} onClick={() => d.dataHref && window.open(d.dataHref, '_blank')}>
-                <Icon icon="Download" className={t.actionIcon} /><span className={t.actionLabel}>Data</span>
-              </Button>
-            ) : null}
             {Button ? (
               <Button activeStyle="compact" onClick={handleShare}>
                 <Icon icon="LinkSquare" className={t.actionIcon} /><span className={t.actionLabel}>{shareCopied ? 'Copied' : 'Share'}</span>
@@ -293,39 +332,8 @@ export default function ReportPageHeader() {
               <TagsEditor tags={reportTags} onChange={persistReportTags} user={user} Icon={Icon} theme={t} inline />
             </div>
           ) : null}
-          {canEdit ? (
-            <div className={t.dataHrefRow}>
-              <span className={t.inlineFieldLabel}>Data link</span>
-              <input
-                className={`${t.inlineInput} text-[11px] flex-1 min-w-[160px]`}
-                value={d.dataHref ?? ''}
-                placeholder="https://…"
-                onChange={e => set('dataHref', e.target.value)}
-              />
-            </div>
-          ) : null}
         </div>
       </div>
-
-      {canEdit ? (
-        <div className={t.freshnessEditRow}>
-          <span className={t.inlineFieldLabel}>Data source</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessLabel ?? ''} placeholder="npmrds speeds" onChange={e => set('freshnessLabel', e.target.value)} />
-          <span className={t.inlineFieldLabel}>complete through</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessComplete ?? ''} placeholder="jun 2026" onChange={e => set('freshnessComplete', e.target.value)} />
-          <span className={t.inlineFieldLabel}>partial</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessPartial ?? ''} placeholder="jul 2026 partial" onChange={e => set('freshnessPartial', e.target.value)} />
-          <span className={t.inlineFieldLabel}>since</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessSince ?? ''} placeholder="since jan 2017" onChange={e => set('freshnessSince', e.target.value)} />
-        </div>
-      ) : (d.freshnessLabel || d.freshnessComplete || d.freshnessPartial || d.freshnessSince) ? (
-        <div className={t.freshnessWrapper}>
-          {d.freshnessLabel ? <span className={t.freshnessDotWrap}><span className={t.freshnessDot} />{d.freshnessLabel}</span> : null}
-          {d.freshnessComplete ? <>{d.freshnessLabel ? <span className={t.freshnessSep}>·</span> : null}<span>complete through <span className={t.freshnessValue}>{d.freshnessComplete}</span></span></> : null}
-          {d.freshnessPartial ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessPartial}</span></> : null}
-          {d.freshnessSince ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessSince}</span></> : null}
-        </div>
-      ) : null}
 
       {usesTodayAnchor && baseDateFilter ? (
         <div className={t.asOfRow}>
@@ -337,7 +345,7 @@ export default function ReportPageHeader() {
             value={anchorDateStr}
             onChange={(e) => handleAsOfChange(e.target.value)}
           />
-          {asOfOverride ? (
+          {asOfOverride && asOfOverride !== latestAvailableDate ? (
             <button
               type="button"
               className={t.asOfReset}
@@ -354,10 +362,24 @@ export default function ReportPageHeader() {
 
       {routeGroups.length > 0 ? (
         <div className={t.routesWrapper}>
-          <button type="button" className={t.routesToggle} onClick={() => setRoutesOpen((open) => !open)}>
-            <Icon icon={routesOpen ? 'ChevronDown' : 'ChevronRight'} className={t.routesToggleIcon} />
-            <span>{routeGroups.length} route{routeGroups.length === 1 ? '' : 's'} in this report</span>
-          </button>
+          <div className={t.routesToggleRow}>
+            <button type="button" className={t.routesToggle} onClick={() => setRoutesOpen((open) => !open)}>
+              <Icon icon={routesOpen ? 'ChevronDown' : 'ChevronRight'} className={t.routesToggleIcon} />
+              <span>{routeGroups.length} route{routeGroups.length === 1 ? '' : 's'} in this report</span>
+            </button>
+            {isDynamicReport ? (
+              <button
+                type="button"
+                className={t.changeRoutesBtn}
+                disabled={!routeSourceInfo}
+                title={routeSourceInfo ? undefined : 'Route catalog still loading…'}
+                onClick={() => setIsRouteSwapOpen(true)}
+              >
+                <Icon icon="RefreshCw" className={t.changeRoutesIcon} />
+                Change routes
+              </button>
+            ) : null}
+          </div>
           {routesOpen ? (
             <div className={t.routesGroupList}>
               {routeGroups.map((group) => {
@@ -384,6 +406,19 @@ export default function ReportPageHeader() {
             </div>
           ) : null}
         </div>
+      ) : null}
+
+      {isDynamicReport ? (
+        <RouteTagBrowserModal
+          open={isRouteSwapOpen}
+          setOpen={setIsRouteSwapOpen}
+          apiLoad={apiLoad}
+          routeSourceInfo={routeSourceInfo}
+          selectionMode="exact"
+          requiredCount={routeGroups.length}
+          initialSelectedRoutes={swapInitialRoutes}
+          onConfirm={handleRouteSwapConfirm}
+        />
       ) : null}
     </div>
   );

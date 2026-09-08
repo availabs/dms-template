@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Congestion dashboard · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="screens" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · screens</div>
+          <h1 class="doc-title">Congestion dashboard.</h1>
+          <p class="doc-lede">Excessive delay on New York's monitored roads, split into what recurs every day and what events caused, by year, month, region and corridor, with its dollar cost. What each panel shows, on what basis, and how it is computed.</p>
+          <div class="stamps">
+            <span class="type">screens</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-this-page-answers">What this page answers</h2>
+          <p>"How much delay, where, and why." How much time traffic lost in a year, how much recurs every day and how much events added, which months and regions carry it, and which corridors lost the most.</p>
+
+          <h2 id="filters">Filters</h2>
+          <p><span class="ui">Year</span> and <span class="ui">Region</span>. Blank <span class="ui">Region</span> is statewide. See <a href="tsmo--filters.html">Using the filter bar</a>.</p>
+          <div class="callout basis"><span class="k">basis</span>Every figure: the calendar year in <span class="ui">Year</span> · statewide or the selected region · all vehicles · the monitored network with a posted speed and a traffic count. Figures quoted below are CY 2025, statewide, at the June 2026 data revision; the live page recomputes.</div>
+
+          <h2 id="headline-cards">Headline cards</h2>
+          <p>Headline cards under the filter bar carry the year's excessive delay in vehicle-hours with its non-recurrent share, and its cost with recurrent and non-recurrent dollars. Each title names the year and the region, or statewide.</p>
+          <p>At the June 2026 revision, CY 2025 statewide read 310.86 million vehicle-hours, 51 % of it non-recurrent, and $6.2 billion. The page prices delay at a flat $20 per vehicle-hour. Other pages use a class-weighted rate; see <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Which pages show which basis</a>.</p>
+          <p><strong>How it is computed.</strong> Excessive delay is time spent travelling slower than the excessive-delay threshold, the greater of 20 mph or 60 % of the posted speed. It is multiplied by the vehicles present in the 5-minute slice and summed to segment and month. See <a href="measures_and_data--measures--excessive_delay.html#how-it-is-computed">Excessive delay</a>.</p>
+
+          <h2 id="delay-composition-by-year">Delay composition by year</h2>
+          <p>Stacked bars, one per year, in millions of vehicle-hours. The legend reads: recurrent (all delay not attributed to an event) · non-recurrent, other events · non-recurrent, construction · non-recurrent, accident.</p>
+          <p><strong>How it is computed.</strong> Of the delay on a segment in a month, how much would have happened on an ordinary day, and how much did events add? Recurrent is total minus non-recurrent; non-recurrent is split by the TRANSCOM events that overlap the segment and month. See <a href="measures_and_data--measures--delay_attribution.html#how-it-is-computed">Delay attribution</a>.</p>
+          <ul>
+            <li>The grey band is recurrent delay. Its legend entry once read "total − non-recurrent", which read as the opposite; it now says "all delay not attributed to an event".</li>
+            <li>The unit, M veh-hrs, is on the vertical axis. The accident band is thin because accident attribution is small in the series.</li>
+            <li>Bars appear as years are computed. 2019 and 2020 are a gap. A partial year shows a partial total.</li>
+          </ul>
+
+          <h2 id="seasonality-monthly-share-of-each-regions-delay">Seasonality · monthly share of each region's delay</h2>
+          <p>A heat grid, one row per NYSDOT region and one column per month, in millions of vehicle-hours. Darker means more. Beside it, <span class="ui">Delay by NYSDOT region</span> ranks the regions.</p>
+          <ul>
+            <li>The colour key is the caption line, darker = more. There is no legend and no value in the cell.</li>
+            <li>Cells and region rows are not clickable. Sorting is available on the delay column, not on the month columns.</li>
+            <li>The region rows do not sum to the statewide total. See <a href="measures_and_data--concepts--geography.html#what-statewide-means">What statewide means</a>.</li>
+            <li>At the June 2026 revision, CY 2025: Region 11 219.5 M vehicle-hours, 42 % non-recurrent; Region 6 0.3 M, 95 % non-recurrent. Upstate delay is mostly event-driven.</li>
+          </ul>
+
+          <h2 id="worst-corridors-by-excessive-delay">Worst corridors by excessive delay</h2>
+          <p>A table grouped by road name, ranked in millions of vehicle-hours for the year and region. The <span class="ui">Corridor page</span> column holds a <span class="ui">view →</span> link to Corridor View. At the June 2026 revision, CY 2025 statewide led with I-278 at 16.0 M, Belt Pky 9.42 M and I-95 8.90 M.</p>
+          <p>A "drill into a corridor" button was removed in July 2026: Corridor View is county-keyed and could not receive the region.</p>
+
+          <h2 id="tmc-delay-map">TMC delay map</h2>
+          <p>The card describes a per-segment map of excessive delay for the selected year. The map is not built; the card carries a placeholder note and, since the July 2026 drill removal, a neutral link to Corridor View.</p>
+
+          <h2 id="how-delay-is-measured-and-attributed">How delay is measured and attributed</h2>
+          <p>The method note at the foot of the page states the June 2026 revision: thresholds from each segment's posted speed, median baselines, attribution capped at the non-recurrent total, cost at $20 per vehicle-hour. It links to <span class="ui">Data &amp; Methodology</span>. Earlier figures used a different method and are not comparable; see <a href="measures_and_data--measures--excessive_delay.html#comparability-across-years-and-versions">Comparability</a>.</p>
+
+          <h2 id="downloads">Downloads</h2>
+          <p>The dashboard has no download control. On <span class="ui">Data &amp; Methodology</span>, under <span class="ui">Downloads &amp; API</span>, <span class="ui">open data source →</span> leads to the delay-attribution source with a CSV per year. The API card describes key-based access to the same endpoint.</p>
+
+          <figure class="shot" data-capture="www/tsmo/congestion_v2?year=2025 · Region blank · signed out · Delay composition by year and Seasonality in view" data-alt="The Congestion dashboard for 2025 statewide, showing the stacked delay-composition bars and the seasonality heat grid">
+            <!-- captured 2026-09-08 · http://localhost:5231/tsmo/congestion_v2 · Year set to 2025 from the Year list (page default is 2026), Region blank, scrolled to Delay composition by year and Seasonality, signed in -->
+            <img src="../../assets/screens/docs/tsmo/congestion-01-2025-statewide.png" alt="The Congestion dashboard for 2025 statewide, showing the stacked delay-composition bars and the seasonality heat grid"/>
+            <figcaption>Figure 1 · the Congestion dashboard, CY 2025, statewide. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Congestion dashboard, published 2026-07-31: titles, captions, method note.</li>
+            <li>Congestion design header, June 2026 revision: CY 2025 310.86 M vehicle-hours · 51 % non-recurrent · $6.2 B · regions and corridors as quoted.</li>
+            <li>TSMO About page: "Congestion — how much delay, where, and why".</li>
+            <li>Feedback records 2211340 · 2194780 · 2194998 · 2195004 · 2195005 · 2194849 · 2195006 · 2195637.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

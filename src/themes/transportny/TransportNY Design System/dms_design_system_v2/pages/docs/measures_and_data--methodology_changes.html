@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Methodology changes · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--methodology_changes.html · IA page 79 · type log. Phase 3-ii, 2026-09-05.
+  Sources: the Revision log of every measure and data page in this hub; data-types/pm3/PROVENANCE.md §6 (anchor moves 2026-08-21 / 08-23,
+  +1.18 %); pm3-fork-and-measure-implementation.md (created 2026-08-14; Phase 0 fork DONE 2026-08-14; Phases 1–3 DONE 2026-08-18);
+  class-weighted-vot-cost.md (adopted 2026-06-19; confirmed 2026-06-22); site-dump/tsmo/2184101_methodology.md (sections updated 2026-07-27:
+  2019–2020 gap, cadence table, TIM completeness); mockup-extracts/tsmo-congestion.txt (2026-06-13 data revision; #172 removed 2026-07-27);
+  npmrds-mockups-digest.md (52,029 · 52,157 · 52,473); tmc_network datasheet (vintage moved 2026-07-19); subdomain-to-path-consolidation.md
+  (COMPLETE 2026-09-02); tsmo--filters.html (2026-07-20); tickets 2211339/2211538 (2026-08-24), 2214651 (2026-08-25); route-creation design rev 1.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="log" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · log</div>
+          <h1 class="doc-title">Methodology changes.</h1>
+          <p class="doc-lede">Every dated change to the platform's numbers, methods, maps and pages, newest first. For anyone who quoted a figure and needs to know whether it still reproduces, and why not.</p>
+          <div class="stamps">
+            <span class="type">log</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <p>This log is the platform's change record. Each entry carries one of four labels. <strong>Platform</strong>: a page or control changed and no number moved. <strong>Data release</strong>: new months or a recomputation landed. <strong>Map/TMC version</strong>: the segment network changed vintage. <strong>Methodology</strong>: a definition or parameter changed, and figures computed before and after it are not comparable. Every measure and data page in this hub keeps its own Revision log. Those logs feed this one, and the page named in each entry holds the detail.</p>
+
+          <h2 id="2026-09-02-platform">2026-09-02 · Platform</h2>
+          <p>TSMO and the Freight Atlas moved onto the landing page's origin, at <code>/tsmo</code> and <code>/freightatlas</code>. One sign-in now carries across the products that share the origin. Before, each product was a separate session. NPMRDS keeps its own address until it is ready to move. No number moved. See <a href="start--navigating.html">Navigating the platform</a> and <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</p>
+
+          <h2 id="2026-09-01-platform">2026-09-01 · Platform</h2>
+          <p>The Route Creation page published with validated tags. An <code>agency:</code> and <code>user:</code> vocabulary with suggestion chips replaces free-text tags. A new route is seeded with the saver's own tags. See <a href="measures_and_data--data--routes_data.html">Routes data</a>.</p>
+
+          <h2 id="2026-08-28-methodology">2026-08-28 · Methodology</h2>
+          <p>The Measures &amp; Methodology rewrite published. It adds measured precision bands to every measure and defines the nine coverage eras that govern comparability across years. It names two traps: a delay trend is partly an AADT revision history, and "PM peak" means two different windows. It also records that the travel-time feed arrives filtered upstream and that sub-second travel times are correct. No number moved. New figures were published beside the old. The measure pages in this hub were written from it. See <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>, <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a> and <a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a>.</p>
+
+          <h2 id="2026-08-25-platform">2026-08-25 · Platform</h2>
+          <p>Two chart corrections. The TSMO Congestion composition chart's grey legend now reads "recurrent (all delay not attributed to an event)", after a reader took it for non-recurrent. The Freight Atlas home's mode-share chart now reads the 2024 State Freight Plan's own figures instead of deriving shares live. The Freight Atlas agrees with the plan by rule. See <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a> and <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>.</p>
+
+          <h2 id="2026-08-24-platform">2026-08-24 · Platform</h2>
+          <p>The TSMO home's reliability card split. Non-Interstate reliability got its own equal-weight card. TTTR was removed from the home because a unitless index had nothing comparable beside it. TTTR stays on the Reliability dashboard with its 2.00 target. See <a href="tsmo--reliability.html">Reliability dashboard</a>.</p>
+
+          <h2 id="2026-08-23-methodology">2026-08-23 · Methodology</h2>
+          <p>The anchored free-flow reference window moved to June 2023 to July 2024 when the publish scope grew to the full 2017 to 2025 archive. The anchored PHED and TED thresholds moved with it. On identical CY 2025 data, floor included, the anchored variant yields 1.18 % more network delay than the own-year reference. See <a href="measures_and_data--measures--phed.html">PHED</a>.</p>
+
+          <h2 id="2026-08-21-methodology">2026-08-21 · Methodology</h2>
+          <p>The anchored free-flow reference window moved from the era starting December 2024 to the era starting January 2021. The first choice contained all of CY 2025 and was therefore a no-op for that year. Anchored PHED and TED thresholds moved. Own-year figures did not. See <a href="measures_and_data--measures--phed.html">PHED</a>.</p>
+
+          <h2 id="2026-08-18-platform">2026-08-18 · Platform</h2>
+          <p>On the Macro View map the LOTTR target of 1.50 became a colour boundary, with no change to the computation. The Macro View's TTTR threshold was corrected from 1.50 to the 2.00 Interstate target. The share of segments above it changed from 74.1 % to 44.7 %. See <a href="measures_and_data--measures--lottr.html">LOTTR</a> and <a href="measures_and_data--measures--tttr.html">TTTR</a>.</p>
+
+          <h2 id="2026-08-18-methodology">2026-08-18 · Methodology</h2>
+          <p>The analytical series gained its first additive columns. They are truck 80th over 50th percentile beside TTTR (TTTR₈₀), the delay-threshold diagnostics, per-row quality columns, precision bands and per-stream era tags. The anchored free-flow reference was published as a second delay variant beside the own-year one. Data coverage was published as a measure in the same month. No existing number moved. See <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a>, <a href="measures_and_data--measures--coverage.html">Data coverage</a> and <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>.</p>
+
+          <h2 id="2026-08-14-methodology">2026-08-14 · Methodology</h2>
+          <p>The analytical series forked from the MAP-21 code. The federal computation is frozen so the submittal figures stay compliant and reproducible. The analytical series can now change its definitions without touching them. No number moved on the day. Every later Methodology entry applies to the analytical series only. See <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> and <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>.</p>
+
+          <h2 id="2026-07-31-methodology">2026-07-31 · Methodology</h2>
+          <p>The Work Zones dashboard's methodology band published, with the exposure and safety measures marked by status. See <a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a>.</p>
+
+          <h2 id="2026-07-28-platform">2026-07-28 · Platform</h2>
+          <p>Incidents and Work Zones stopped overlapping. Events whose NYSDOT sub-category is Construction, Maintenance or Emergency Operations belong to Work Zones. Incidents keeps the reactive set, and its <span class="ui">Category</span> filter no longer offers Construction. The "active work zones" section was removed. Dashboard counts changed. The underlying store did not. See <a href="tsmo--incidents.html">Incidents dashboard</a> and <a href="tsmo--work_zones.html">Work Zones dashboard</a>.</p>
+
+          <h2 id="2026-07-27-data-release">2026-07-27 · Data release</h2>
+          <p>The TSMO Data &amp; Methodology page published the gap in the excessive-delay series. The current run covers 2018 and 2021 to 2025. The years 2019 and 2020 are not computed. It also published the refresh-cadence table. TRANSCOM events are continuous and travel times a daily batch about 2 weeks behind. Delay attribution is a batch recompute with a monthly target, and PM3 measures are annual on the federal cycle. See <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> and <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>.</p>
+
+          <h2 id="2026-07-27-platform">2026-07-27 · Platform</h2>
+          <p>The Congestion dashboard's "drill into a corridor" link was removed. Congestion filters by NYSDOT region and Corridor View is county-keyed, so the drill could not carry the selection through. A neutral link to the corridor explorer replaces it. See <a href="tsmo--congestion.html">Congestion dashboard</a>.</p>
+
+          <h2 id="2026-07-20-platform">2026-07-20 · Platform</h2>
+          <p>Every TSMO filter control gained a visible border, and panel titles follow the selected region where some had been fixed text. In the same month <span class="ui">Region</span> became single-select on Congestion. It still accepts several regions on Reliability, Incidents and Work Zones. See <a href="tsmo--filters.html">Using the filter bar</a>.</p>
+
+          <h2 id="2026-07-19-map-tmc-version">2026-07-19 · Map/TMC version</h2>
+          <p>The platform's current network moved to the 2026 map, 52,473 segments, as the travel-time data ran into 2026. Per-segment figures for 2026 are computed on this map. Earlier years keep their own. See <a href="measures_and_data--data--tmc_network.html">TMC network</a> and <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a>.</p>
+
+          <h2 id="2026-07-15-data-release">2026-07-15 · Data release</h2>
+          <p>June 2026 landed in the excessive-delay series, the first forward monthly run after the June restart. It attributed 36,574 New York events and extended the event-by-segment table through June. The run confirmed that 2017 was never computed. See <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> and <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a>.</p>
+
+          <h2 id="2026-06-22-methodology">2026-06-22 · Methodology</h2>
+          <p>The class-weighted value of time was confirmed as version 1: $52 per passenger-vehicle hour, $42 per single-unit-truck hour, $77 per combination-truck hour. The rate is applied at the data layer from each segment's AADT split. Recomputation of the published series was pending, so pages show two bases during the transition. See <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Cost of congestion: which pages show which basis</a>.</p>
+
+          <h2 id="2026-06-22-data-release">2026-06-22 · Data release</h2>
+          <p>Timestamp completeness was measured on 3.7 million TRANSCOM events and published. All lanes reopened is present on 42.7 % of events and incident verified on 20.1 %. Incident reported is present on 10.6 % and response on scene on 0.3 %. Clearance time therefore exists for about one event in five. See <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a>.</p>
+
+          <h2 id="2026-06-19-methodology">2026-06-19 · Methodology</h2>
+          <p>The class-weighted value of time was adopted to replace the flat $20 per vehicle-hour, and the occupancy double-count was removed. The network blend is about $50 to $55 per vehicle-hour, roughly 2.5 times the old rate. Every dollar figure recomputed on the new basis rises by that factor. See <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>.</p>
+
+          <h2 id="2026-06-13-data-release">2026-06-13 · Data release</h2>
+          <p>The Congestion dashboard's data revision on the restarted series. CY 2025, statewide, all vehicles: 310.86 million vehicle-hours of excessive delay, 157.07 million of them non-recurrent (51 %). Construction accounts for 46.84 million and accidents for 4.82 million. The cost is $6.2 billion at the $20 per vehicle-hour basis then in force. Years available at the revision: 2024 (November and December, partial), 2025, and 2026 (January to April, partial). See <a href="tsmo--congestion.html">Congestion dashboard</a> and <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>.</p>
+
+          <h2 id="2026-06-10-methodology">2026-06-10 · Methodology</h2>
+          <p>The excessive-delay revision. The threshold became the greater of 20 mph or 60 % of the posted speed limit, with posted limits live per segment. The attribution baseline became the median, and attribution was capped so an event cannot claim more delay than exists. The series was restarted and refilled from the newest complete month backwards. Figures published before this date do not compare with figures after it. See <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a> and <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>.</p>
+
+          <h2 id="2026-02-data-release">2026-02 · Data release</h2>
+          <p>The CY 2025 MAP-21 dataset was computed on the federal cycle. It is the frozen federal computation, not the analytical series. See <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>.</p>
+
+          <h2 id="2025-map-tmc-version">2025 · Map/TMC version</h2>
+          <p>The 2025 network holds 52,157 segments. The day the platform adopted it is not recorded. The count was verified on 2026-07-29. See <a href="measures_and_data--data--tmc_network.html">TMC network</a>.</p>
+
+          <h2 id="2024-map-tmc-version">2024 · Map/TMC version</h2>
+          <p>The 2024 network holds 52,029 segments. The day the platform adopted it is not recorded. The count was verified on 2026-07-29. See <a href="measures_and_data--data--tmc_network.html">TMC network</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>The Revision log section of every measure and data page in this hub; each entry above restates one of them with its page linked.</li>
+            <li>pm3 provenance record §6: the anchor window moved on 2026-08-21 (the December 2024 era contained all of CY 2025) and on 2026-08-23 (to June 2023 to July 2024); +1.18 % network delay, floor included, on CY 2025.</li>
+            <li>Fork and measure-implementation task record: created 2026-08-14; the fork done 2026-08-14; additive columns, precision bands, era tags and the anchored reference done 2026-08-18.</li>
+            <li>Class-weighted value-of-time task record: adopted 2026-06-19; rates $52 / $42 / $77 confirmed 2026-06-22; network blend about $50 to $55 per vehicle-hour.</li>
+            <li>TSMO Data &amp; Methodology page, revision of 2026-07-27: "Delay attribution: 2019–2020 not computed. The current excessive-delay run covers 2018 and 2021–2025"; the refresh-cadence table; the TIM completeness panel (42.7 / 20.1 / 10.6 / 0.3 % of 3.7M, queried 2026-06-22); "the greater of 20 mph or 60% of the posted speed".</li>
+            <li>TSMO Congestion dashboard design record, data revision 2026-06-13: "2025: total 310.86M vh · non-recurrent 157.07M (51%) · construction 46.84M · accident 4.82M · cost $6.2B (= total × $20/veh-hr)"; years 2024* (Nov–Dec), 2025, 2026* (Jan–Apr); "v2 ≠ v1 — never mix with previously published numbers"; "drill into a corridor" removed 2026-07-27.</li>
+            <li>NPMRDS home design header, verified 2026-07-29: 52,029 (2024) · 52,157 (2025) · 52,473 (2026); the TMC network datasheet: the vintage moved to the 2026 map on 2026-07-19.</li>
+            <li>Subdomain consolidation task record, complete 2026-09-02: Freight Atlas and TSMO cut over to the landing origin; NPMRDS stays on its own address; the sign-in token is origin-scoped.</li>
+            <li>Using the filter bar (this hub): visible borders and region-following titles since 2026-07-20; Region single-select on Congestion since July 2026.</li>
+            <li>Tickets 2211339 and 2211538 (resolved 2026-08-24): the TSMO home's non-Interstate card and the removal of TTTR from the home. Ticket 2214651 (resolved 2026-08-25): the Freight Atlas mode-share chart made static. June 2026 run record (2026-07-15): 36,574 events.</li>
+            <li>Route Creation design record, revision 1 (2026-09-01): validated tags shipped.</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28, §05 "Two traps when reading across years and measures".</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>
+          <a href="whats_new.html">What's new</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -10,8 +10,11 @@
 // noted on `trigger`. The look lives HERE as named keys rather than being passed into the shared
 // `Button` primitive's `className` (feedback_no_className_passthrough_to_ui_primitives).
 export const chooseReportButtonTheme = {
-  // The component fills whatever section it is placed in — the mockup's `flex-1`.
-  wrapper: 'flex w-full min-w-0',
+  // The component fills whatever section it is placed in — the mockup's `flex-1`. `flex-1` +
+  // `items-center`: inside a `height: "fill"` section (whose content box is a flex column) the
+  // wrapper grows to the section's height and centres the bar on the row's midline; in an
+  // auto-height section both are inert.
+  wrapper: 'flex flex-1 w-full min-w-0 items-center',
   // `min-w-0`, NOT the mockup's `min-w-[260px]`: a DMS band grid cannot wrap its sections the way
   // the mockup's flex row does below ~1300, so the honest equivalent of "wrap rather than
   // overflow" is "truncate the prompt, never overflow the column".

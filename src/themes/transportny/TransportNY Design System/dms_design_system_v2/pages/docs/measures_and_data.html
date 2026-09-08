@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="hub" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · hub</div>
+          <h1 class="doc-title">Measures &amp; Data.</h1>
+          <p class="doc-lede">One page per measure and per data source: what it answers, how it is computed, how much to trust it, and what changed. Every number on the platform traces back here. Read the two Start here pages first if you are about to quote a figure.</p>
+          <div class="stamps">
+            <span class="type">hub</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-is-here">What is here</h2>
+          <p>Thirty-one pages in five groups. The measure pages are written. The concept and data pages are planned and appear dimmed in the sidebar until they exist.</p>
+          <div class="hubgrid">
+            <a class="hubcard" href="measures_and_data--federal_vs_analytical.html"><div class="t">Start here</div><div class="d">Federal PM3 against the platform's analytical series, and a decision table for which measure answers which question.</div><div class="n">2 pages · read first</div></a>
+            <a class="hubcard" href="#the-measures-by-family"><div class="t">Measures</div><div class="d">Twelve measure pages on one anatomy: what it answers, how it is computed, the choices made, how much to trust it, where it appears. Plus what is in development and what was retired.</div><div class="n">14 pages</div></a>
+            <a class="hubcard" href="measures_and_data--concepts--geography.html"><div class="t">Concepts</div><div class="d">Peak periods and epochs, geography, the TMC network and its vintages, AADT and its vintage, coverage eras and comparability.</div><div class="n">5 pages · 1 written</div></a>
+            <a class="hubcard" href="measures_and_data--data--npmrds_travel_times.html"><div class="t">Data</div><div class="d">Eight datasheets, one per source: overview, coverage and vintage, schema, how it is produced, uses and limits, distribution.</div><div class="n">8 pages · planned</div></a>
+            <a class="hubcard" href="measures_and_data--coverage_and_freshness.html"><div class="t">Reference</div><div class="d">Coverage and freshness for every source, the dated methodology change log, and the glossary.</div><div class="n">3 pages</div></a>
+          </div>
+
+          <h3 id="the-measures-by-family">The measures by family</h3>
+          <p>The first sentence of each row is the measure's own description, as the tool shows it.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Family</th><th>Measure</th><th>What it answers</th><th>Product</th></tr></thead>
+            <tbody>
+              <tr><td>Reliability</td><td><a href="measures_and_data--measures--lottr.html">LOTTR</a></td><td>How much longer a bad trip takes than a typical one</td><td>NPMRDS · federal form on the MAP-21 pages and TSMO Reliability</td></tr>
+              <tr><td>Reliability</td><td><a href="measures_and_data--measures--tttr.html">TTTR</a></td><td>The same question for freight, at a stricter percentile</td><td>NPMRDS · federal index on the MAP-21 pages and TSMO Reliability</td></tr>
+              <tr><td>Reliability</td><td><a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a></td><td>How unreliable truck travel is, measured at a percentile the sample can support</td><td>NPMRDS · not a federal measure</td></tr>
+              <tr><td>Congestion and delay</td><td><a href="measures_and_data--measures--phed.html">PHED</a></td><td>Excessive delay restricted to peak hours and counted per person</td><td>NPMRDS · federal form per urbanized area on the MAP-21 pages</td></tr>
+              <tr><td>Congestion and delay</td><td><a href="measures_and_data--measures--ted.html">TED</a></td><td>How many vehicle-hours are lost below the delay threshold speed</td><td>NPMRDS</td></tr>
+              <tr><td>Congestion and delay</td><td><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></td><td>How much time traffic loses to congestion, where, and in which month</td><td>TSMO</td></tr>
+              <tr><td>Congestion and delay</td><td><a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a></td><td>How much delay is recurrent, and how much events added: construction, accidents, other</td><td>TSMO</td></tr>
+              <tr><td>Congestion and delay</td><td><a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a></td><td>What the delay on the network is worth in dollars</td><td>TSMO</td></tr>
+              <tr><td>Speed</td><td><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></td><td>What speed a chosen share of trips beat, the floating-car view</td><td>NPMRDS · also the Corridor View's 5-minute speed</td></tr>
+              <tr><td>Data quality</td><td><a href="measures_and_data--measures--coverage.html">Data coverage</a></td><td>How much of the underlying data actually arrived for this segment</td><td>NPMRDS · read it before any other measure</td></tr>
+              <tr><td>Operations</td><td><a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a></td><td>How much delay incidents caused, and how quickly they were cleared</td><td>TSMO</td></tr>
+              <tr><td>Operations</td><td><a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a></td><td>How much delay work zones cause, where it lands, and how long zones run</td><td>TSMO</td></tr>
+              <tr><td>In development</td><td><a href="measures_and_data--measures--in_development.html">Measures in development</a></td><td>Free-flow speed, emissions and attributes: what each will be and what blocks it</td><td>NPMRDS</td></tr>
+              <tr><td>Retired</td><td><a href="measures_and_data--measures--retired.html">Measures that used to be here</a></td><td>PTI, Buffer Index, TTI and the RIS attributes: where each capability went</td><td>NPMRDS</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="concepts">Concepts</h3>
+          <ul>
+            <li><a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a> · 5-minute epochs, 15-minute bins, the peak windows, and why "PM peak" means two windows. Planned.</li>
+            <li><a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a> · what each geography word means and why regions do not sum to the state.</li>
+            <li><a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a> · one map per year and what that does to a multi-year series. Planned.</li>
+            <li><a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a> · why a delay trend is partly a traffic-count revision history. Planned.</li>
+            <li><a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> · the nine eras and the rule for comparing across one. Planned.</li>
+          </ul>
+
+          <h3 id="data">Data</h3>
+          <p>Eight datasheets, all planned: <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a> · <a href="measures_and_data--data--tmc_network.html">TMC network</a> · <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a> · <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a> · <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> · <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a> · <a href="measures_and_data--data--routes_data.html">Routes data</a> · <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>.</p>
+
+          <h2 id="start-here">Start here</h2>
+          <ul>
+            <li><a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> · two measure families share the same names. Which to cite where, and the CY 2025 statewide figures with their bases.</li>
+            <li><a href="measures_and_data--which_measure.html">Which measure should I use?</a> · one decision table: if you want to… use… because… not this.</li>
+          </ul>
+
+          <h2 id="common-tasks">Common tasks</h2>
+          <ul>
+            <li><a href="measures_and_data--measures--coverage.html">Check data coverage</a> before you compare two years of anything.</li>
+            <li><a href="measures_and_data--which_measure.html#the-decision-table">Pick the right delay variant</a> for a trend, a cross-class comparison or a federal check.</li>
+            <li><a href="measures_and_data--federal_vs_analytical.html#the-cy-2025-statewide-reliability-figures">Quote a CY 2025 reliability figure</a> with its year, system, target and basis.</li>
+            <li><a href="measures_and_data--concepts--geography.html#what-statewide-means">Find out what "statewide" means</a> when no region is selected.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html#why-a-month-or-a-region-shows-0-or-nothing">Find out why a month or a region shows $0 or nothing</a>.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html#partial-years-show-partial-totals">Check whether a year is partial</a> before quoting its total.</li>
+            <li><a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Check which value-of-time basis a page uses</a> before quoting a dollar figure.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <p>Each measure and the tools that show it, from the measure pages' own <em>Where this appears</em> sections. "Federal" marks the federal roll-up of a measure the analytical series also computes. Reports and Route Comparison chart travel time and speed for a route. Their measure columns are completed when the NPMRDS hub is written.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Measure</th><th>Macro View</th><th>Reports</th><th>Route Comparison</th><th>MAP-21 pages</th><th>TSMO dashboards and explorers</th></tr></thead>
+            <tbody>
+              <tr><td><a href="measures_and_data--measures--lottr.html">LOTTR</a></td><td>analytical</td><td>—</td><td>—</td><td>federal</td><td>Reliability · federal</td></tr>
+              <tr><td><a href="measures_and_data--measures--tttr.html">TTTR</a></td><td>analytical</td><td>—</td><td>—</td><td>federal index</td><td>Reliability · federal index</td></tr>
+              <tr><td><a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a></td><td>yes</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+              <tr><td><a href="measures_and_data--measures--phed.html">PHED</a></td><td>analytical</td><td>—</td><td>—</td><td>federal · per urbanized area</td><td>—</td></tr>
+              <tr><td><a href="measures_and_data--measures--ted.html">TED</a></td><td>yes</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+              <tr><td><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></td><td>yes</td><td>speed over time for a route</td><td>—</td><td>—</td><td>Corridor View · 5-minute segment speed</td></tr>
+              <tr><td><a href="measures_and_data--measures--coverage.html">Data coverage</a></td><td>yes · also the Segment page</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+              <tr><td><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></td><td>—</td><td>—</td><td>—</td><td>—</td><td>Home · Congestion</td></tr>
+              <tr><td><a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a></td><td>—</td><td>—</td><td>—</td><td>—</td><td>Congestion · Incidents · Work Zones · Incident page · Incident Search</td></tr>
+              <tr><td><a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a></td><td>—</td><td>—</td><td>—</td><td>—</td><td>Home · Congestion · Incidents · Work Zones · Incident Search</td></tr>
+              <tr><td><a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a></td><td>—</td><td>—</td><td>—</td><td>—</td><td>Incidents · Incident Search · Incident page</td></tr>
+              <tr><td><a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a></td><td>—</td><td>—</td><td>—</td><td>—</td><td>Work Zones · Home · Incident Search</td></tr>
+            </tbody>
+          </table></div>
+          <p>Every Macro View measure is also in the <a href="npmrds--macro_view--download.html">Macro View download</a>. Tool pages link back to these measure pages, so the links run both ways.</p>
+
+          <h2 id="reference">Reference</h2>
+          <ul>
+            <li><a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a> · span, lag, cadence and gaps per source · partial years · why a month shows nothing · incident timestamp completeness.</li>
+            <li><a href="measures_and_data--methodology_changes.html">Methodology changes</a> · dated entries for every change to a measure's method or numbers. Planned.</li>
+            <li><a href="glossary.html">Glossary</a> · every term, with the product and screen where it appears. Planned.</li>
+            <li><a href="start--which_tool.html">Which tool answers my question?</a> · the decision table across the three products, in Get started.</li>
+          </ul>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="index.html">Documentation home</a>
+          <a href="start.html">Get started</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Excessive-delay series · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--excessive_delay_series.html · IA page 74 · type data. Phase 3, 2026-09-05. OWNS the loaded-months reconciliation.
+  Sources: TSMO Data & Methodology 2184101 (3.4M rows; 2018 + 2021–2025; through 2025-10; batch recompute monthly target; downloads);
+  Congestion page 2175676 + TSMO home 1431215 element-data (bound columns); tsmo-congestion.txt header (2026-06-13 figures; 2024 Nov–Dec,
+  2026 Jan–Apr present; 52,123 TMCs); ED backfill task (2017 0 rows / 2018 419,547 rows, 2026-07-15; speed limits backfilled 2018–2026;
+  2019 legacy series not comparable); June 2026 run record (June landed 2026-07-15; no vot_eff/cost on the live table); VOT task; ticket
+  2214476 (bound span Jan 2018 – Jun 2026, 2026-08-24). Series ids deliberately not on the page.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">Excessive-delay series.</h1>
+          <p class="doc-lede">The segment-by-month delay table behind the TSMO Congestion dashboard and the TSMO home: total excessive delay per segment and month, split into recurrent and non-recurrent, and the non-recurrent part into construction, accident and other. For analysts who download it or need to know which months it holds.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>methodology · excessive delay, June 2026 revision</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>The series is one row per TMC segment per calendar month, in vehicle-hours.</strong> The TSMO Data &amp; Methodology page describes it as "Our TMC × month delay table — replays speeds around events to split delay into cause buckets. The engine behind the Congestion and Work Zones dashboards. 3.4M TMC-month rows · 2018 + 2021–2025 · buckets: recurrent / non-recurrent / construction / accident / other." It is derived in-house from the travel-time table, the network and the TRANSCOM events.</p>
+          <p>The measure is documented on <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a> and the split on <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>. The current series is the June 2026 revision: threshold at the greater of 20 mph and 60 % of the posted limit, median weekday baseline, capped attribution. It is not comparable with figures published before June 2026, which used a flat 20 mph threshold and a mean baseline.</p>
+          <div class="callout basis"><span class="k">basis</span>Statewide, all vehicles, the monitored network with a posted speed limit and an AADT, vehicle-hours, per segment and month. Dollar figures are a conversion made by the page, not a stored value.</div>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Span</th><th>Lag</th><th>Cadence</th><th>Gaps</th></tr></thead>
+            <tbody>
+              <tr><td>Excessive-delay series (June 2026 revision)</td><td>2018 and 2021 to 2025 per the TSMO Data &amp; Methodology page, plus the months of 2026 loaded since. 2017 holds no rows</td><td>Batch; a month appears when its run lands</td><td>Batch recompute, monthly target</td><td>2019 and 2020 not computed in the current series; shown as an explicit gap. Partial years show partial totals</td></tr>
+            </tbody>
+          </table></div>
+          <h3 id="which-months-are-loaded">Which months are loaded</h3>
+          <p>Three records state the loaded months differently, because each was read on a different date while the backfill and the monthly runs were landing. <strong>The refresh-cadence table on the live TSMO Data &amp; Methodology page is the authority for the latest month loaded.</strong> The docs quote the records with their dates and do not reconcile them into one span.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Record</th><th>Date</th><th>What it states</th></tr></thead>
+            <tbody>
+              <tr><td>Congestion dashboard design header</td><td>2026-06-13</td><td>2025 complete; 2024 holds November and December; 2026 holds January to April; the chart grows as the backfill lands</td></tr>
+              <tr><td>Run record, first forward monthly run</td><td>2026-07-15</td><td>Monthly rows present through June 2026; 2017 holds 0 rows and 2018 holds 419,547</td></tr>
+              <tr><td>TSMO Data &amp; Methodology page, coverage panel and cadence table</td><td>2026-07-27 revision</td><td>"The current excessive-delay run covers 2018 and 2021–2025"; "2025 is partial through October"; cadence row "through 2025-10"</td></tr>
+              <tr><td>Partial-years decision record</td><td>2026-08-24</td><td>The bound data ran from January 2018 to June 2026</td></tr>
+            </tbody>
+          </table></div>
+          <p>Read together: the series was filled from the newest complete month backwards after the June 2026 restart, 2019 and 2020 were skipped in the current run and are on the roadmap, 2017 was never run because its speed limits were not backfilled, and forward months land about a month behind the travel-time data. A month with no rows shows nothing on the dashboards, not zero.</p>
+
+          <h2 id="schema">Schema</h2>
+          <p>The columns the live Congestion dashboard and TSMO home bind to. The series is not publicly readable in the Data Manager, so the list is the pages' bound columns; segment attributes are joined from the network of the row's year.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>Sample value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>tmc</code></td><td>string</td><td>—</td><td>The TMC segment id.</td></tr>
+              <tr><td><code>year</code> · <code>month</code></td><td>integer</td><td>2025 · 10</td><td>Calendar year and month of the row.</td></tr>
+              <tr><td><code>total</code></td><td>number</td><td>—</td><td>Total excessive delay in the month, vehicle-hours: time below the threshold times vehicles present, summed over 5-minute slices.</td></tr>
+              <tr><td><code>non_recurrent</code></td><td>number</td><td>—</td><td>Delay above the segment's median weekday baseline, vehicle-hours. Recurrent delay is <code>total</code> minus <code>non_recurrent</code>; it is not stored.</td></tr>
+              <tr><td><code>construction</code> · <code>accident</code> · <code>other</code></td><td>number</td><td>—</td><td>Non-recurrent delay attributed to overlapping TRANSCOM events by category, vehicle-hours. The three sum to at most <code>non_recurrent</code>.</td></tr>
+              <tr><td><code>region_code</code> · <code>region_name</code> · <code>county_code</code></td><td>string</td><td>—</td><td>NYSDOT region and county, from the network. The <span class="ui">Region</span> filter keys on <code>region_code</code>.</td></tr>
+              <tr><td><code>roadname</code> · <code>direction</code> · <code>road_information</code></td><td>string</td><td>—</td><td>Road name, direction and descriptive text; the corridor table groups on <code>roadname</code>.</td></tr>
+              <tr><td><code>length</code></td><td>number</td><td>—</td><td>Segment length in miles.</td></tr>
+              <tr><td><code>f_system</code></td><td>integer</td><td>—</td><td>Functional system, 1 to 7, 0 for the extended set.</td></tr>
+              <tr><td><code>aadt</code> · <code>aadt_singl</code> · <code>aadt_combi</code></td><td>number</td><td>—</td><td>AADT and the two truck classes, for the class-weighted value of time. <code>aadt</code> here is the directional, facility-normalised figure the delay used.</td></tr>
+              <tr><td><code>tmclinear</code> · <code>road_order</code></td><td>integer · number</td><td>—</td><td>Corridor chain keys, from the network.</td></tr>
+              <tr><td><code>wkb_geometry</code> · <code>ogc_fid</code></td><td>geometry · integer</td><td>—</td><td>Segment line and row id.</td></tr>
+            </tbody>
+          </table></div>
+          <p>Two columns designed in June 2026, an effective value of time per row (<code>vot_eff</code>) and a cost, are not on the live table at the 2026-07-15 check. Pages compute dollars themselves: the Congestion dashboard at an interim flat $20 per vehicle-hour, the Data &amp; Methodology page at the class-weighted rates. See <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Cost of congestion</a>.</p>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>Each month's TRANSCOM events are attributed a congestion footprint first, by replaying speeds around each event on the conflated network.</li>
+            <li>The month's 5-minute travel times are compared with the segment's threshold and its median weekday baseline; delay is weighted by directional AADT spread across the day by a fixed profile.</li>
+            <li>Non-recurrent delay is split across the events that overlap the segment and month; bucket sums are capped at the segment-month's non-recurrent delay.</li>
+            <li>Because the fill ran backwards, each year's attribution is re-run once its neighbouring months exist, so events crossing a month boundary are not missed.</li>
+            <li>A month takes about 1.3 to 2 hours of attribution and about a minute of delay computation; dashboards are re-seeded when a period lands.</li>
+          </ol>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>Use it for where, when and why delay occurs: region-month totals, the recurrent share, construction against crash delay, corridor rankings. Do not compare it with the Macro View's TED or PHED, which use 15-minute bins, an annual scope and a free-flow reference; do not compare it with figures published before June 2026; do not add 2019 or 2020 from the older series, which is not comparable. A partial year shows a partial total in the same card as a full year. A month with no rows shows nothing. Delay is linear in AADT and inherits its revision cycle; see <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a>.</p>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>TSMO Data &amp; Methodology, Downloads &amp; API</strong>: "delay attribution" among the bulk tables, CSV or Parquet, per year, New York extract; and the same API endpoint the dashboards render from, key on sign-in. A July 2026 report found the section's links not working; check the live page. See <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a>.</li>
+            <li><strong>Dashboard tables</strong> on the Congestion page carry the corridor and region roll-ups for the selected year.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="tsmo--start.html">TSMO home · annual delay</a>
+            <a href="tsmo--congestion.html">Congestion dashboard</a>
+            <a href="tsmo--work_zones.html">Work Zones · construction bucket</a>
+            <a href="measures_and_data--measures--excessive_delay.html">Excessive delay · measure</a>
+            <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-06-10 · methodology revised and the series restarted from the newest complete month backwards.</li>
+            <li>2026-06-22 · class-weighted value-of-time columns designed for the series; not yet on the live table.</li>
+            <li>2026-07-15 · June 2026 landed, the first forward monthly run; 2017 confirmed as never run.</li>
+            <li>2026-07-27 · the Data &amp; Methodology page published the 2019–2020 gap and the cadence.</li>
+            <li>2026-09-05 · this datasheet created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page: source catalog entry quoted above; excessive-delay card caveat ("2019–2020 were not computed in the current run; 2025 is partial through October"); coverage panel ("recomputing them is on the ETL roadmap"); refresh-cadence table ("batch recompute · monthly target · through 2025-10"); Downloads &amp; API.</li>
+            <li>TSMO Congestion dashboard and TSMO home, section configuration: the bound columns listed in the schema.</li>
+            <li>Congestion dashboard design header, data revision 2026-06-13: 2025 complete, 2024 November to December, 2026 January to April; 52,123 distinct segments in 2025.</li>
+            <li>Excessive-delay backfill record (2026-06-16, corrected 2026-07-15): 2017 0 rows, 2018 419,547 rows; speed limits backfilled 2018 to 2026; the older 2019 series not comparable; run times per month; the boundary re-run.</li>
+            <li>June 2026 run record (2026-07-15): June landed; the live table carries no <code>vot_eff</code> or <code>cost</code> columns.</li>
+            <li>Class-weighted value-of-time record, 2026-06-19 and 2026-06-22: the per-row effective rate and cost design.</li>
+            <li>Ticket 2214476 (decision 2026-08-24): bound data January 2018 to June 2026; partial years. Ticket 2195637: download links not working.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="tsmo--congestion.html">Congestion dashboard</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Manage a dataset · Admin · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  admin--manage_data.html · IA page 89 · type how-to. Phase 6b, 2026-09-08.
+  Labels from code: datasets/pages/dataTypes/default/overview.jsx (Description · Columns · Edit columns · At a glance ·
+  Update interval · Categories · Versions · Download), admin.jsx (Access · Advanced Metadata · Add Version · Allow editing ·
+  Delete Source · Hard Delete · Tasks), version.jsx (Version · Clear Data · Delete Version), ExternalVersionControls.jsx
+  (Create Download · Create Data Download · File Types · Columns · Toggle All · Split data files · Start download creation ·
+  Delete Download · Cache PM Tiles), MetadataComp (name · display name · Column Type · description · Index · Primary Key),
+  DatasetsList/categories.jsx (the category adder). Vocabulary salvaged from docs-dump 1496547.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Admin · how-to</div>
+          <h1 class="doc-title">Manage a dataset.</h1>
+          <p class="doc-lede">Curate a dataset that is already uploaded: the description and categories readers search by, the column display names that make it a data dictionary, a new version, the download files, who may see it, and the two kinds of delete. This page assumes a dataset exists and that your account can edit it.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires an administrator account</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open the dataset from the catalog and read what a reader sees — <a href="freight_atlas--downloads.html">Download freight data</a> describes the same page from the outside. The tab bar reads <span class="ui">Overview</span> · <span class="ui">Table</span> · <span class="ui">Map</span>, with <span class="ui">Admin</span> for administrators. Each task needs its own permission, and a control you cannot use is not shown.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>To do this</th><th>Your account needs</th><th>In the earlier scheme</th></tr></thead>
+            <tbody>
+              <tr><td>Edit the description, categories, update interval, column metadata</td><td><span class="ui">Update source</span></td><td>Level 10, full access</td></tr>
+              <tr><td>Add a version</td><td><span class="ui">Create version</span></td><td>Level 10</td></tr>
+              <tr><td>Create or delete a version's download files</td><td><span class="ui">Manage downloads</span></td><td>Level 10</td></tr>
+              <tr><td>Change who can see the dataset</td><td><span class="ui">Edit permissions</span></td><td>Level 10</td></tr>
+              <tr><td>Delete a version or the dataset</td><td><span class="ui">Delete source</span></td><td>Level 10</td></tr>
+              <tr><td>Read and download it, which is all a reader needs</td><td><span class="ui">View source</span> · <span class="ui">Download source</span></td><td>Levels 1 and 2</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="steps">Steps</h2>
+          <p>The curation pass, on <span class="ui">Overview</span>. Every edit here is public the moment it saves.</p>
+          <ol class="steps">
+            <li>Hover the <span class="ui">Description</span> card and select the pencil.<span class="result">Say what the dataset contains, what it measures, and where it came from with its vintage — the provenance readers look for. It saves as you write.</span></li>
+            <li>Hover <span class="ui">Categories</span>, select its pencil, type a category and press Enter; the cross on a pill removes one, and sub-categories work the same way. The hint reads "Start typing to add new category", then "Press Enter to save or Esc to cancel".<span class="result">Categories place the dataset in the catalog's rail and the product's navigation, so use the ones the product already uses.</span></li>
+            <li>In <span class="ui">At a glance</span>, select the pencil beside <span class="ui">Update interval</span> and say how often the data is replaced; leave it empty only for a one-time load.<span class="result">The rest of that card is fixed, and <span class="ui">Updated</span> is the date the record was edited, not the vintage of the data.</span></li>
+            <li>Select <span class="ui">Edit columns</span> in the <span class="ui">Columns</span> header, or <span class="ui">Advanced Metadata</span> on the <span class="ui">Admin</span> tab. Both open the same metadata page, one row per column.</li>
+            <li id="column-metadata">For each column fill <span class="ui">display name</span> and, in the advanced panel, <span class="ui">description</span>; <span class="ui">name</span> is the stored name and is fixed.<span class="result">Those two are the reader's <span class="ui">Column</span> and <span class="ui">Description</span>. Until you write them, readers see raw column names.</span></li>
+            <li>The advanced panel, opened by the row's <span class="ui">...</span> control, holds <span class="ui">Column Type</span>, <span class="ui">Required</span>, <span class="ui">Index</span>, <span class="ui">Primary Key</span> and <span class="ui">Sort as</span>. Drag rows to reorder; <span class="ui">New field name...</span> adds one and <span class="ui">delete</span> removes one.</li>
+            <li>Read the <span class="ui">Columns</span> table on <span class="ui">Overview</span> as a reader. Anything still unnamed is work left.</li>
+          </ol>
+
+          <h2 id="versions-and-downloads">Versions and downloads</h2>
+          <p>A version is one iteration of the same dataset: same columns, new data. Data whose columns changed needs a new dataset.</p>
+          <ol class="steps">
+            <li>Select <span class="ui">Add Version</span> on the <span class="ui">Admin</span> tab.<span class="result">The upload flow opens attached to this dataset; follow <a href="admin--upload_data.html#steps">Upload a dataset</a> from the file step, matching every column to an existing <span class="ui">Database Column Name</span>.</span></li>
+            <li>Name the version in its <span class="ui">Version</span> field — a year, a release date, the publisher's own version.<span class="result">Newest is first, with a <span class="ui">current</span> badge, its row count and its publication date.</span></li>
+            <li>On the version's page select <span class="ui">Create Download</span>, which opens the <span class="ui">Create Data Download</span> dialog.</li>
+            <li>Tick the formats under <span class="ui">File Types</span> and the columns under <span class="ui">Columns</span>; <span class="ui">Toggle All</span> selects or clears a group, and calculated columns are refused. To split the export, set <span class="ui">Split data files</span> to <span class="ui">Yes</span> and pick a column.</li>
+            <li>Select <span class="ui">Start download creation</span>.<span class="result">When the job finishes a <span class="ui">Download</span> button appears on that version; several formats open a menu. Each is a zip.</span></li>
+            <li>To replace them, select <span class="ui">Delete Download</span> and build again — the dataset and the version are not affected.</li>
+          </ol>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">File Types</span></td><td>Which formats are generated for this version</td><td><span class="ui">CSV</span> · <span class="ui">ESRI Shapefile</span> · <span class="ui">GeoJSON</span> · <span class="ui">GPKG</span></td><td>None selected</td></tr>
+              <tr><td><span class="ui">Columns</span></td><td>Which columns the files carry</td><td>The dataset's columns; calculated ones are refused</td><td>—</td></tr>
+              <tr><td><span class="ui">Split data files</span></td><td>One file per distinct value of a column</td><td><span class="ui">Yes</span> · <span class="ui">No</span>, then a column</td><td><span class="ui">No</span></td></tr>
+              <tr><td><span class="ui">Cache PM Tiles</span></td><td>Prepares this version's map tiles from the columns you pick; reports in a <span class="ui">Progress Window</span></td><td>Per column</td><td>—</td></tr>
+              <tr><td><span class="ui">Clear Data</span> · <span class="ui">Delete Version</span></td><td>Empties a version's rows, keeping the version; or removes the version</td><td>Both confirm first</td><td>—</td></tr>
+              <tr><td><span class="ui">Allow editing</span></td><td>Lets the platform's own tables edit this dataset's rows in place</td><td>On · off; disabled until the dataset has a primary key</td><td>Off</td></tr>
+            </tbody>
+          </table></div>
+          <p>Every download route on the platform is catalogued in <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a>.</p>
+
+          <h2 id="access-and-deletion">Access and deletion</h2>
+          <p>The <span class="ui">Admin</span> tab's <span class="ui">Access</span> panel is where a dataset stops being private. Grant <span class="ui">View source</span> to read and <span class="ui">Download source</span> to add the file, and grant the public group to make it genuinely public. A dataset with no grants is open to any signed-in account, which is not the same as public. <a href="admin--users_and_permissions.html">Users and permissions</a> is the reference.</p>
+          <p><span class="ui">Delete</span> removes the dataset and version records; the data tables and files stay and could be recovered. <span class="ui">Hard Delete</span> also drops each version's table, removes the files and deletes the load history, so it asks you to type the dataset's name.</p>
+          <div class="callout caution"><span class="k">caution</span>Deleting a dataset does not repair the pages that used it: a card or table bound to it stops returning rows. Check what points at it first — see <a href="admin--add_map_to_page.html#keeping-a-pages-map-in-step">Keeping a page's map in step</a>.</div>
+          <p>The <span class="ui">Tasks</span> list at the foot of the tab logs this dataset's loads and jobs — <span class="ui">Task ID</span>, <span class="ui">Type</span>, <span class="ui">Status</span>, <span class="ui">Started</span>, <span class="ui">Duration</span> — and a row opens its events. This is the earlier guidance's Events log.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Overview edits save as you make them. There is no draft and no undo.</li>
+            <li><span class="ui">Type</span> is fixed at upload; a tabular dataset cannot become a GIS one.</li>
+            <li>Download files are built from the columns you ticked; a column added later is missing until you rebuild them.</li>
+            <li>A column deleted on the metadata page disappears from every table, download and map that names it.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-pencil-icons-are-not-there">The pencil icons are not there</h3>
+          <p>Your account does not carry <span class="ui">Update source</span> here, or your session expired. Reload; if they are still missing, ask for the permission or <a href="help.html">report it</a>.</p>
+          <h3 id="start-download-creation-is-disabled">Start download creation is disabled</h3>
+          <p>One group is empty, or a calculated column is selected. Tick at least one format and one column, and clear anything marked calculated.</p>
+          <h3 id="a-new-version-has-no-download">A new version has no Download button</h3>
+          <p>Download files belong to a version, so every new version starts without them; build them with <span class="ui">Create Download</span>. On 2026-07-27 the 23 Freight Atlas versions that had none were generated in <span class="ui">CSV</span>, <span class="ui">ESRI Shapefile</span> and <span class="ui">GPKG</span> — the shape of a normal backfill.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="admin--upload_data.html">Upload a dataset</a></li>
+            <li><a href="admin--users_and_permissions.html">Users and permissions</a></li>
+            <li><a href="admin--map_editor.html">Map Editor</a></li>
+            <li><a href="developers--downloads_and_formats.html">Bulk downloads and formats</a></li>
+            <li><a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Source Overview code (datasets pattern, the build being deployed): <span class="ui">Description</span>, <span class="ui">Columns · N</span> with <span class="ui">Edit columns</span> and <span class="ui">Full metadata</span>, the reader's <span class="ui">Column</span> · <span class="ui">Type</span> · <span class="ui">Description</span> · <span class="ui">Req</span> table, <span class="ui">At a glance</span> (<span class="ui">Type</span> · <span class="ui">Columns</span> · <span class="ui">Versions</span> · <span class="ui">Update interval</span> · <span class="ui">Created</span> · <span class="ui">Updated</span>), <span class="ui">Categories</span>, <span class="ui">Versions</span> with the <span class="ui">current</span> badge and the <span class="ui">Download</span> menu; the pencil affordance and the permission it is gated on.</li>
+            <li>Category editor code: the add-a-category field and its two hint strings; removal by the pill's cross; sub-categories.</li>
+            <li>Metadata page code: <span class="ui">name</span> (not editable) · <span class="ui">display name</span> · <span class="ui">Column Type</span>, the advanced panel (<span class="ui">Index</span> · <span class="ui">Primary Key</span> · <span class="ui">Required</span> · <span class="ui">Behaviour Type</span> · <span class="ui">Default Fn</span> · <span class="ui">Sort as</span> · <span class="ui">Checked Value</span> · <span class="ui">description</span>), drag ordering, <span class="ui">New field name...</span>, <span class="ui">delete</span> with <span class="ui">Confirm Delete</span>, and the validation warning quoted above.</li>
+            <li>Admin tab code: the <span class="ui">Access</span> panel and its permission gate, <span class="ui">Advanced Metadata</span>, <span class="ui">Add Version</span>, <span class="ui">Allow editing</span> with its primary-key requirement, <span class="ui">Delete Source</span> with <span class="ui">Delete</span> / <span class="ui">Hard Delete</span> and the typed-name confirmation, and the <span class="ui">Tasks</span> list.</li>
+            <li>Version page code: the <span class="ui">Version</span> field, <span class="ui">Clear Data</span> and <span class="ui">Delete Version</span> with their confirmations.</li>
+            <li>Version download code: <span class="ui">Create Download</span>, the <span class="ui">Create Data Download</span> dialog (<span class="ui">File Types</span> = <span class="ui">CSV</span> · <span class="ui">ESRI Shapefile</span> · <span class="ui">GeoJSON</span> · <span class="ui">GPKG</span>; <span class="ui">Columns</span>; <span class="ui">Toggle All</span>; "One or more must be selected"; the calculated-column refusal; <span class="ui">Split data files</span> and its column selector; <span class="ui">Start download creation</span> / "Sending request..."), <span class="ui">Delete Download</span> and its wording, and <span class="ui">Cache PM Tiles</span> with its <span class="ui">Progress Window</span>.</li>
+            <li>Task list and task page code: the six list columns and the event columns quoted above.</li>
+            <li>Managing Data (docs page, 2025-09-30): the vocabulary this page keeps — dataset title and description, categories, update interval, versions, creating and deleting downloads, the Events log, Advanced Metadata display names, <span class="ui">Add Version</span> and <span class="ui">Delete</span> — and the three authority levels 1 / 2 / 10.</li>
+            <li>Feedback record 2195719 (resolved 2026-07-27): 23 versions' downloads generated in CSV, ESRI Shapefile and GPKG from each source's own column list.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="admin.html">Admin hub</a>
+          <a href="admin--upload_data.html">Upload a dataset</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>What's new · Reference · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  whats_new.html · IA page 95 · type log. Phase 7, 2026-09-08.
+  Sources: measures_and_data--methodology_changes.html, the entries labelled Platform, Data release and Map/TMC version
+  (its Methodology-labelled entries are deliberately not copied here); developers--changelog.html, the platform and API
+  entries of 2026-09-02, 2026-08-24 and 2026-07-27; reports/platform-documentation-plan.html sections 01-02 and its
+  page inventory (280612 Macro View guide and 281670 Measures & Methodology, both published 2026-08-28) for the Docs
+  entries; the documentation build task record for the 2026-09-08 status. No date is invented: an entry with no sourced
+  day carries YYYY-MM or YYYY, as the Map/TMC version entries for 2025 and 2024 do.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="log" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Reference · log</div>
+          <h1 class="doc-title">What's new.</h1>
+          <p class="doc-lede">What changed on the platform and in this documentation, newest first, one entry per change with a link to the page that carries the detail. For anyone returning to a page and wondering what moved.</p>
+          <div class="stamps">
+            <span class="type">log</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <p>Each entry carries one of four labels. <strong>Platform</strong>: a page, a control or a route changed and no number moved. <strong>Data release</strong>: new months or a recomputation landed. <strong>Map/TMC version</strong>: the segment network changed vintage. <strong>Docs</strong>: documentation was published or rewritten. Changes to a definition or a parameter are the fifth kind, and they are not repeated here: <a href="measures_and_data--methodology_changes.html">Methodology changes</a> is the record of every change to the numbers themselves, and it also holds the platform and data entries below in full. Changes to the APIs and the download routes are in the <a href="developers--changelog.html">API changelog</a>.</p>
+
+          <h2 id="2026-09-08-docs">2026-09-08 · Docs</h2>
+          <p>This documentation set was written, 95 pages covering getting started, the three products, the measures and datasets behind them, the APIs and the administrator's procedures. The pages are drafts awaiting the owner's review, so they are not yet live on the site. See <a href="index.html">the documentation home</a> for what is here.</p>
+
+          <h2 id="2026-09-02-platform">2026-09-02 · Platform</h2>
+          <p>TSMO and the Freight Atlas moved onto the landing page's origin, so one sign-in now carries across the products that share it, while NPMRDS keeps its own address and its own session. No number and no API path changed. See <a href="measures_and_data--methodology_changes.html#2026-09-02-platform">Methodology changes</a> and <a href="developers--changelog.html#2026-09-02-platform">the API changelog</a>.</p>
+
+          <h2 id="2026-09-01-platform">2026-09-01 · Platform</h2>
+          <p>The Route Creation page published with validated tags, replacing free-text tags with an <code>agency:</code> and <code>user:</code> vocabulary and seeding a new route with the saver's own tags. See <a href="measures_and_data--methodology_changes.html#2026-09-01-platform">Methodology changes</a>.</p>
+
+          <h2 id="2026-08-28-docs">2026-08-28 · Docs</h2>
+          <p>Two pages of the earlier documentation were rewritten and published, the Macro View guide and the Measures &amp; Methodology page, and the measure pages in <a href="measures_and_data.html">Measures &amp; Data</a> are written from the second of them. See <a href="measures_and_data--methodology_changes.html#2026-08-28-methodology">Methodology changes</a> for what the rewrite changed about the numbers.</p>
+
+          <h2 id="2026-08-25-platform">2026-08-25 · Platform</h2>
+          <p>Two charts were corrected: the TSMO Congestion composition chart's grey legend now names recurrent delay as all delay not attributed to an event, and the Freight Atlas home's mode-share chart now reads the 2024 State Freight Plan's own figures instead of deriving shares live. See <a href="measures_and_data--methodology_changes.html#2026-08-25-platform">Methodology changes</a>.</p>
+
+          <h2 id="2026-08-24-platform">2026-08-24 · Platform</h2>
+          <p>The TSMO home's reliability card split, giving non-Interstate reliability its own equal-weight card and removing TTTR from the home, where a unitless index had nothing comparable beside it. On the same day the Macro View download route stopped offering JSON and began refusing GeoJSON, leaving CSV and GPKG. See <a href="measures_and_data--methodology_changes.html#2026-08-24-platform">Methodology changes</a> and <a href="developers--changelog.html#2026-08-24-api">the API changelog</a>.</p>
+
+          <h2 id="2026-08-18-platform">2026-08-18 · Platform</h2>
+          <p>On the Macro View map the LOTTR target of 1.50 became a colour boundary, and the TTTR threshold was corrected from 1.50 to the 2.00 Interstate target, which moved the share of segments above it from 74.1 % to 44.7 % with no change to the computation. See <a href="measures_and_data--methodology_changes.html#2026-08-18-platform">Methodology changes</a>.</p>
+
+          <h2 id="2026-07-28-platform">2026-07-28 · Platform</h2>
+          <p>Incidents and Work Zones stopped overlapping, so events whose NYSDOT sub-category is Construction, Maintenance or Emergency Operations belong to Work Zones and the dashboard counts changed while the underlying store did not. See <a href="tsmo--incidents.html">Incidents dashboard</a> and <a href="tsmo--work_zones.html">Work Zones dashboard</a>.</p>
+
+          <h2 id="2026-07-27-data-release">2026-07-27 · Data release</h2>
+          <p>The gap in the excessive-delay series was published: the current run covers 2018 and 2021 to 2025, and 2019 and 2020 are not computed. The same publication carried the refresh-cadence table for every feed. See <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> and <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>.</p>
+
+          <h2 id="2026-07-27-platform">2026-07-27 · Platform</h2>
+          <p>The Congestion dashboard's link into a corridor was removed, because Congestion filters by NYSDOT region and Corridor View is county-keyed, so the selection could not carry through. On the same day downloads were generated for the 23 Freight Atlas dataset versions that had none, and the TSMO Data &amp; Methodology page's downloads band was relinked to the series source page and the API guide. See <a href="tsmo--congestion.html">Congestion dashboard</a> and <a href="developers--changelog.html#2026-07-27-platform">the API changelog</a>.</p>
+
+          <h2 id="2026-07-20-platform">2026-07-20 · Platform</h2>
+          <p>Every TSMO filter control gained a visible border and panel titles began following the selected region, and in the same month <span class="ui">Region</span> became single-select on Congestion while staying multi-select on the other three dashboards. See <a href="tsmo--filters.html">Using the filter bar</a>.</p>
+
+          <h2 id="2026-07-19-map-tmc-version">2026-07-19 · Map/TMC version</h2>
+          <p>The platform's current network moved to the 2026 map of 52,473 segments as the travel-time data ran into 2026, so per-segment figures for 2026 are computed on that map while earlier years keep their own. See <a href="measures_and_data--data--tmc_network.html">TMC network</a> and <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a>.</p>
+
+          <h2 id="2026-07-15-data-release">2026-07-15 · Data release</h2>
+          <p>June 2026 landed in the excessive-delay series, the first forward monthly run after the June restart, attributing 36,574 New York events and extending the event-by-segment table through that month. See <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a>.</p>
+
+          <h2 id="2026-06-22-data-release">2026-06-22 · Data release</h2>
+          <p>Timestamp completeness was measured on 3.7 million TRANSCOM events and published, showing that all lanes reopened is present on 42.7 % of events and incident verified on 20.1 %, so clearance time exists for about one event in five. See <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a>.</p>
+
+          <h2 id="2026-06-13-data-release">2026-06-13 · Data release</h2>
+          <p>The Congestion dashboard's data revision on the restarted series published 310.86 million vehicle-hours of excessive delay for CY 2025, statewide, all vehicles, 157.07 million of them non-recurrent. See <a href="tsmo--congestion.html">Congestion dashboard</a> and <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>.</p>
+
+          <h2 id="2026-02-data-release">2026-02 · Data release</h2>
+          <p>The CY 2025 MAP-21 dataset was computed on the federal cycle, and it is the frozen federal computation rather than the analytical series. See <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>.</p>
+
+          <h2 id="2025-map-tmc-version">2025 · Map/TMC version</h2>
+          <p>The 2025 network holds 52,157 segments, and the day the platform adopted it is not recorded. See <a href="measures_and_data--data--tmc_network.html">TMC network</a>.</p>
+
+          <h2 id="2024-map-tmc-version">2024 · Map/TMC version</h2>
+          <p>The 2024 network holds 52,029 segments, and the day the platform adopted it is not recorded. See <a href="measures_and_data--data--tmc_network.html">TMC network</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li><a href="measures_and_data--methodology_changes.html">Methodology changes</a>: the source of every Platform, Data release and Map/TMC version entry above, each of which restates one of its entries with the same date and figures. Its Methodology-labelled entries stay there.</li>
+            <li><a href="developers--changelog.html">API changelog</a>: the 2026-09-02 platform entry, the 2026-08-24 download-format entry and the 2026-07-27 downloads-and-links entry.</li>
+            <li>Platform documentation plan, sections 01-02 and the page inventory: the Macro View guide and the Measures &amp; Methodology page of the earlier documentation, both published 2026-08-28.</li>
+            <li>The documentation build task record: 95 pages, written 2026-09-04 to 2026-09-08, awaiting the owner's review.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 7)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--methodology_changes.html">Methodology changes</a>
+          <a href="developers--changelog.html">API changelog</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="help.html">Help and feedback</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

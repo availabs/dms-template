@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Look at one segment (TMC) · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Look at one segment (TMC).</h1>
+          <p class="doc-lede">A segment page shows everything the platform knows about one Traffic Message Channel (TMC) segment: its attributes, how much of its data arrived, its speeds by peak period and its PM3 measures year by year. The page is a design and is not live. This page says what it will show and how to reach a single segment today.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+            <span class="upcoming">describes a designed page, not yet built</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>A TMC segment is one directional piece of road, a few hundred metres to a few miles long, identified by a 9-character code such as <code>120N04521</code>. <a href="measures_and_data--concepts--tmc_network_and_vintages.html#what-a-tmc-segment-is">The TMC network and its vintages</a> explains the unit. The segment page is designed but not built, so there is no link to it from the Macro View hover or from a report. Today a single segment is reached through the Macro View, through a one-segment route in Reports, or by filtering a Macro View download. The steps below use those three paths; the section after them describes the designed page.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">Macro View</span> and set the measure and year you care about.</li>
+            <li>In the measure panel under <span class="ui">Get to a segment</span>, type at least three characters of the TMC code, or a county name, into <span class="ui">TMC or county…</span> and select the result.<span class="result">The map zooms to the segment. The search does not know road names.</span></li>
+            <li>Hover the segment.<span class="result">The popup shows the TMC code, the measure's value for the selected period, the county and the region. The road name is not shown.</span></li>
+            <li>Change the measure or its <span class="ui">Peak period</span> and hover again to read another value for the same segment. Each read is one year's annual value.</li>
+            <li>For the segment's history over time, open <span class="ui">Reports</span>, select <span class="ui">New route</span>, add the segment by its code in <span class="ui">TMC search</span>, and save it as a one-segment route. <a href="npmrds--routes--create.html">Create a route</a> walks through it.<span class="result">The route can be put in any report or template. <span class="ui">Snapshot</span> gives an average day; <span class="ui">Year Over Year</span> gives the trend.</span></li>
+            <li>For the segment's row in the data, add its county under <span class="ui">Geography</span> on the Macro View, open <span class="ui">Download N rows</span>, add the columns you need, build the CSV, and filter it by the <code>tmc</code> column in your spreadsheet. <a href="npmrds--macro_view--download.html">Download data from the Macro View</a> has the builder.</li>
+          </ol>
+
+          <h2 id="what-the-designed-page-shows">What the designed page shows</h2>
+          <p>The design is a leaf page for one segment, headed by its code, with four blocks and four page controls. Nothing below is on a live page yet.</p>
+          <dl class="defs">
+            <dt>Attributes</dt><dd>31 fields from the year's network table: geography, geometry and length, AADT for all vehicles, passenger vehicles, single-unit and combination trucks, route signing, functional class, facility type, lanes, direction, NHS and STRAHNET status. <a href="measures_and_data--data--tmc_network.html">TMC network</a> has the fields.</dd>
+            <dt>Completeness</dt><dd>The share of the year's 5-minute epochs that reported, out of 105,120 possible, with the worst month, the best window and a month-by-hour grid. The design's example reads 80.7 %. <a href="measures_and_data--measures--coverage.html">Data coverage</a> defines the measure.</dd>
+            <dt>Speed by peak</dt><dd>The speed distribution for each period: overnight 20:00 to 06:00, AM 06:00 to 10:00, off-peak 10:00 to 16:00, PM 16:00 to 20:00, weekend 06:00 to 20:00, with an outlier control (<span class="ui">Keep all</span> · <span class="ui">Within 3σ</span> · <span class="ui">Within 2σ</span>). <a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a> has the windows.</dd>
+            <dt>PM3 history</dt><dd>LOTTR, TTTR and PHED for the segment, each year from 2016 to the latest, as lines. PHED is labelled as an urbanized-area measure. See <a href="measures_and_data--measures--lottr.html">LOTTR</a>, <a href="measures_and_data--measures--tttr.html">TTTR</a> and <a href="measures_and_data--measures--phed.html">PHED</a>.</dd>
+          </dl>
+          <p>The designed controls are <span class="ui">Year</span>, <span class="ui">Metric</span> (<span class="ui">Speed</span> · <span class="ui">Travel time</span>), <span class="ui">Data source</span> (<span class="ui">All vehicles</span>) and <span class="ui">Resolution</span> (<span class="ui">Hour</span> · <span class="ui">15 min</span> · <span class="ui">5 min</span>), with <span class="ui">Share</span>, <span class="ui">Download</span>, <span class="ui">Add to a route</span> and a CSV per card. The earlier NPMRDS tool had a segment page of this shape; the design transcribes it onto the current data.</p>
+
+          <figure class="shot" data-capture="design only · no live page · leave until the segment page ships" data-alt="The designed segment page for one TMC: attributes, completeness grid, speed by peak period and PM3 history lines">
+            <div class="ph">Segment (TMC) page · design · not live · capture when built</div>
+            <figcaption>Figure 1 · placeholder for the segment page once it exists. Not to be captured from the design.</figcaption>
+          </figure>
+
+          <h2 id="settings">Settings</h2>
+          <p>What each of today's paths gives you for one segment.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Path</th><th>What you get</th><th>Basis</th><th>Sign-in</th></tr></thead>
+            <tbody>
+              <tr><td>Macro View search and hover</td><td>One measure value at a time, plus county and region</td><td>One PM3 year, one period, the analytical series</td><td>No</td></tr>
+              <tr><td>One-segment route in Reports</td><td>Any report card or template on that segment: speeds, travel time, hours of delay, by 5 minutes to by month, any date window</td><td>The 5-minute observations, all-vehicle or truck</td><td>Yes, to save the route</td></tr>
+              <tr><td>Macro View download, filtered by <code>tmc</code></td><td>Every column of the year's dataset for that segment: measures, variants, coverage, precision</td><td>One PM3 year</td><td>No</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>There is no segment page, no link from the hover, and no <span class="ui">Add to a route</span> button today. The hover's TMC code is the handle; copy it.</li>
+            <li>Codes change between yearly maps. A code from the 2026 map may not exist in an earlier year's data, and a segment can be split or merged. <a href="measures_and_data--concepts--tmc_network_and_vintages.html#one-map-per-year-and-two-segment-counts">One map per year and two segment counts</a> explains.</li>
+            <li>The Macro View's dataset carries no road name, length or AADT, so the hover cannot name the road. The TMC network datasheet does.</li>
+            <li>Very short segments are flagged unreliable far more often than long ones. Read a single segment's ratio next to its length.</li>
+            <li>A one-segment route is hidden behind <span class="ui">Show short segments too</span> in the route pickers; see <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a>.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="no-segment-matches">"no segment matches"</h3>
+          <p>The Macro View search matched nothing. Check the code has 9 characters and that the year's dataset holds it; try the county name instead and find the segment on the map.</p>
+          <h3 id="tmc-not-found-in-route-creation">"TMC not found" in Route Creation</h3>
+          <p>The code is not on the 2026 network the route tool draws. Look it up on an earlier year in the Macro View, or click the segment on the route map instead of typing it.</p>
+          <h3 id="the-hover-shows-a-value-i-did-not-expect">The hover shows a value I did not expect</h3>
+          <p>The hover reads the selected measure, period and year. Check the <span class="ui">Peak period</span> control and the <span class="ui">Year</span> before comparing it with another source.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--macro_view.html">Macro View: how to use</a></li>
+            <li><a href="npmrds--routes--create.html">Create a route</a></li>
+            <li><a href="npmrds--reports--templates.html#snapshot">Template reference: Snapshot</a></li>
+            <li><a href="measures_and_data--data--tmc_network.html">TMC network</a> · the datasheet</li>
+            <li><a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Segment page design (npmrds-tmc.html, "Segment 120N04521"; digest 2026-09-04): the four blocks, 31 attribute fields, completeness 84,824 of 105,120 epochs, the five peak windows and outlier options, PM3 lines 2016 to 2025, controls <span class="ui">Year</span> · <span class="ui">Metric</span> · <span class="ui">Data source</span> · <span class="ui">Resolution</span>, <span class="ui">Share</span> · <span class="ui">Download</span> · <span class="ui">Add to a route</span>. Transcribed from the earlier tool's segment page.</li>
+            <li>Documentation plan, IA row 21: "write when the page ships".</li>
+            <li>Macro View panel code (contextPanel.jsx, comp.jsx, 2026-08-24): <span class="ui">Get to a segment</span>, <span class="ui">TMC or county…</span>, three-character minimum, <span class="ui">no segment matches</span>, zoom to the selected segment; live hover fields TMC · measure · County · Region.</li>
+            <li>Route Creation code (2026-09-03): <span class="ui">TMC search</span> · <span class="ui">Add</span> · <span class="ui">TMC not found</span>; the 2026 network.</li>
+            <li>Tickets 2211480 and 2217782: no road name on the dataset or the hover.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="measures_and_data--data--tmc_network.html">TMC network</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

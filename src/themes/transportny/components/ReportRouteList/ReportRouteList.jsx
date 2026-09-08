@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
@@ -7,7 +7,7 @@ import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
-import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
+import { useDynamicReportRoutes, distinctRouteSlotGroups, routeSlotGroupKey } from './useDynamicReportRoutes';
 import { useRouteMileage } from './useRouteMileage';
 import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from './relativeDateResolution';
 import { formatDateShort } from './utils';
@@ -41,16 +41,21 @@ export default function ReportRouteList() {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Icon, ColorPicker, Switch, Popup } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
+  // Also doubles as "this row is in edit mode" (2026-09-04): the combined expand/edit toggle
+  // (RouteRow.jsx) opens name+dates editing in place for whichever rows are expanded — no more
+  // separate single-flight rename buffer (see gap #7 in report-route-ui-parity-gaps.md). Since
+  // 2026-09-05, an explicit Save/Discard commits or reverts each row's own edit buffer; toggling
+  // this same state off (Save, Discard, or the header's own Discard shortcut) collapses the row.
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
-  const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
-  const [editNameValue, setEditNameValue] = useState('');
   // Report settings disclosure (2026-08-19, item 4A) — houses the Dynamic Report switch,
   // collapsed by default. See ReportRouteList.theme.js's settingsDisclosureWrapper comment for why.
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  // Date editing (2026-08-19, item 4A) no longer has a parent-owned single-flight edit buffer —
-  // each RouteRow now owns its own live, always-editable date state and auto-saves (debounced)
-  // through `onUpdateDates` below, so several rows can be mid-edit at once. See RouteRow.jsx.
+  // Name + date editing (2026-09-05: explicit Save/Discard — see RouteRow.jsx's own doc comment
+  // for the full history, including the 2026-08-19/2026-09-04 auto-save designs this replaced) —
+  // no parent-owned edit buffer for either field; each RouteRow owns its own local buffer and
+  // calls `onUpdateRoute` exactly once, at an explicit Save click. Several rows can still be
+  // mid-edit (unsaved) at once. See RouteRow.jsx.
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +65,10 @@ export default function ReportRouteList() {
   // reordering, unlike index). Design push #2 (2026-08-06) shrunk this to date-span only:
   // weekday mask/time-of-day moved off the route entirely (see useGraphPublish.js).
   const [clipboard, setClipboard] = useState(null);
+  // Dynamic Reports authoring gaps sub-item 2 (2026-09-08): which existing route-slot group
+  // "+ Add Route Slot" should join, if any — '' means "new distinct route" (today's unchanged
+  // default). Reset after every add so reuse is a deliberate per-click choice, not a sticky mode.
+  const [newSlotGroupChoice, setNewSlotGroupChoice] = useState('');
 
   // The route CATALOG binding — read-only, backs the "Add Route" tag-browser modal
   // (see `RouteTagBrowserModal`). Bound via the sectionMenu's "Add Join Source" slot rather
@@ -90,8 +99,8 @@ export default function ReportRouteList() {
     routes,
     saving,
     error,
-    setError,
     persistRoutes,
+    persistCounts,
     addRoutes,
     removeRoute,
     reorderRoutes,
@@ -124,6 +133,18 @@ export default function ReportRouteList() {
   // `routes.length`) for every Dynamic Report authored before this field existed.
   const routeSlotGroups = distinctRouteSlotGroups(routes);
   const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routeSlotGroups.length;
+
+  // Dynamic Reports authoring gaps sub-item 2: options for the "reuse an existing route" select
+  // next to "+ Add Route Slot". Positional labels only ("Slot group 2 (3 views)") — at authoring
+  // time there's no `?routes=` yet, so no real catalogRouteName has resolved; a group's own slots
+  // may still carry the unresolved `%n (%y)` template literal, which would be a confusing label.
+  const routeSlotGroupOptions = useMemo(
+    () => routeSlotGroups.map((key, idx) => {
+      const count = routes.filter((rt) => routeSlotGroupKey(rt) === key).length;
+      return { key, label: `Slot group ${idx + 1} (${count} view${count === 1 ? '' : 's'})` };
+    }),
+    [routeSlotGroups, routes]
+  );
 
   // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3): a
   // route can derive its date from a synthetic "Today (view time)" base exactly like it would
@@ -207,12 +228,36 @@ export default function ReportRouteList() {
     pageState,
     setActionParam,
     clearActionParam,
+    routeSourceInfo,
   });
-  const graphCountByCompId = useMemo(() => {
-    const counts = new Map();
-    graphs.forEach((g) => (g.routeIds || []).forEach((id) => counts.set(id, (counts.get(id) || 0) + 1)));
-    return counts;
-  }, [graphs]);
+
+  // Item 5 (2026-09-04, npmrds-reports-routes-feedback-triage.md Phase 2): keeps the "All
+  // Reports" list page's routes/graphs column (`graph_count`/`counts_label` on `reports_snap_2`)
+  // live for a hand-authored report — today those are only ever written once, at spec-build
+  // time, by report_build.mjs/the Python converter. `graphs` (from useGraphPublish, just above)
+  // is already a LIVE discovery off this page's own sections, so this effect re-fires and
+  // catches a graph SECTION being deleted via the normal section-menu too, not just RRL's own
+  // Add Graph flow. Uses raw `routes.length` (the authored/slot count), not
+  // `effectiveRoutes.length` — for a Dynamic Report the slot count is the meaningful catalog
+  // number, matching what a spec-built report's own `routes.length` means; `effectiveRoutes` can
+  // be transiently 0 in edit mode before a `?routes=` preview is picked.
+  // Gated on `reportRow?.id != null` — never fires before the row exists yet, so this can't
+  // race `persistRoutes`'s own `ensuringForRef` create sequence into a duplicate row (see
+  // `persistCounts`'s own guard in useReportRow.js).
+  const lastPersistedCountsRef = useRef(null);
+  useEffect(() => {
+    if (!canMutate || !reportRow?.id) return;
+    const nextGraphCount = graphs.length;
+    const nextCountsLabel = `${routes.length} routes · ${nextGraphCount} graphs`;
+    const last = lastPersistedCountsRef.current;
+    if (last && last.graphCount === nextGraphCount && last.countsLabel === nextCountsLabel) return;
+    if (reportRow.graphCount === nextGraphCount && reportRow.countsLabel === nextCountsLabel) {
+      lastPersistedCountsRef.current = { graphCount: nextGraphCount, countsLabel: nextCountsLabel };
+      return;
+    }
+    lastPersistedCountsRef.current = { graphCount: nextGraphCount, countsLabel: nextCountsLabel };
+    persistCounts({ graphCount: nextGraphCount, countsLabel: nextCountsLabel });
+  }, [canMutate, reportRow?.id, reportRow?.graphCount, reportRow?.countsLabel, routes.length, graphs.length, persistCounts]);
 
   // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
   // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
@@ -237,19 +282,23 @@ export default function ReportRouteList() {
 
   // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
   // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
-  // `isPlaceholderName: true` marks this generated name as meaningless (see
-  // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
-  // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
+  // Defaults to the literal template string `"%n (%y)"` (dynamic-reports-authoring-gaps.md item 1)
+  // — `resolvedRouteLabel` (relativeDateResolution.js) substitutes `%n`/`%y` for the resolved real
+  // route's name/year once the slot resolves at view time; an author who renames it to anything
+  // without those tokens gets that literal name back, forever (no separate "is this a placeholder"
+  // flag needed — the tokens' presence in the string is the whole signal).
   //
-  // Auto-expands the new slot (2026-08-19, item 4A) — `addRoutes` always appends, so the new
-  // row lands at today's `routes.length`; setting that BEFORE the async add resolves is safe
-  // since nothing else in this synchronous handler changes `routes.length` first. The next thing
-  // an author almost always does after adding a route is set its dates, so land there open
-  // instead of making that a 3rd click.
+  // Lands collapsed, in view mode (2026-09-08, Ryan's live feedback — REVERSES the 2026-08-19
+  // item 4A decision to auto-expand a newly added slot/route into edit mode; see the identical
+  // reversal note on handleConfirmAddRoutes below). No more `setExpandedRoutes` call here.
+  // `newSlotGroupChoice` (sub-item 2, 2026-09-08): '' reproduces the original behavior byte-for-
+  // byte (no `route_slot_group` set — `routeSlotGroupKey` falls back to the new slot's own,
+  // always-unique `route_comp_id`, i.e. a distinct group). A real choice threads `route_slot_group`
+  // straight through `addRoutes`' passthrough spread — no other mechanism-side change needed, the
+  // resolver/converter/spec layer already treat this field as a first-class grouping key.
   const handleAddRouteSlot = () => {
-    const newIndex = routes.length;
-    addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
-    setExpandedRoutes((prev) => ({ ...prev, [newIndex]: true }));
+    addRoutes([{ name: '%n (%y)', ...(newSlotGroupChoice ? { route_slot_group: newSlotGroupChoice } : {}) }]);
+    setNewSlotGroupChoice('');
   };
 
   const toggleRoute = (index) => {
@@ -300,6 +349,40 @@ export default function ReportRouteList() {
     return map;
   }, [effectiveRoutes]);
 
+  // Dynamic Reports authoring gaps sub-item 2, extended 2026-09-08 per Ryan's live feedback: the
+  // original expand-only text disclosure wasn't legible ("even I don't know what that means") and
+  // was invisible while collapsed, so grouping needed an always-visible, glanceable cue instead.
+  // Per-row group info — the visual pairing for `route_slot_group` — is now a single map of
+  // `{ siblingNames, color }`, built off `effectiveRoutes` (not raw `routes`) so it works
+  // identically whether authoring raw slots or previewing a resolved view (`resolveRouteDates` is
+  // an identity-stable pass-through for every field it doesn't touch, so `route_slot_group`/
+  // `color` survive into `effectiveRoutes` unchanged). `color` is the group's earliest-added
+  // member's own identity colour, reused as a shared left-border accent on every member's row
+  // (RouteRow.jsx) rather than minting a second, unrelated palette — a group's anchor row's own
+  // colour dot and its border always match; every other member's border points back at it. Absent
+  // (`undefined`) for any row whose group has only 1 member — no visual noise for the common case.
+  const routeGroupInfoByCompId = useMemo(() => {
+    const byGroup = new Map();
+    effectiveRoutes.forEach((rt) => {
+      const key = routeSlotGroupKey(rt);
+      const list = byGroup.get(key) || [];
+      list.push(rt);
+      byGroup.set(key, list);
+    });
+    const map = new Map();
+    byGroup.forEach((members) => {
+      if (members.length < 2) return;
+      const color = members[0].color;
+      members.forEach((m) => {
+        map.set(m.route_comp_id, {
+          siblingNames: members.filter((s) => s.route_comp_id !== m.route_comp_id).map((s) => s.name),
+          color,
+        });
+      });
+    });
+    return map;
+  }, [effectiveRoutes]);
+
   // `id` (the row's own DMS id) is the universal identity — every catalog row has one
   // regardless of provenance. `route_id` only ever existed on legacy-imported rows, kept as a
   // fallback purely to still catch dupes among routes added to a report BEFORE this fix shipped
@@ -312,19 +395,13 @@ export default function ReportRouteList() {
     [routes]
   );
 
-  // Auto-expands every newly added route (2026-08-19, item 4A) — same reasoning as
-  // handleAddRouteSlot above, extended to a multi-select add: `addRoutes` appends the whole
-  // batch in the order `selectedRoutes` was given, so the new rows land at
-  // `[routes.length, routes.length + selectedRoutes.length - 1]`.
+  // Lands collapsed, in view mode (2026-09-08, Ryan's live feedback) — REVERSES the 2026-08-19
+  // item 4A decision to auto-expand every newly added route into edit mode. Ryan: a newly added
+  // route/slot should be added "in view mode," not edit mode. No more `setExpandedRoutes` call
+  // here or in `handleAddRouteSlot` above.
   const handleConfirmAddRoutes = async (selectedRoutes) => {
-    const startIndex = routes.length;
     try {
       await addRoutes(selectedRoutes);
-      setExpandedRoutes((prev) => {
-        const next = { ...prev };
-        selectedRoutes.forEach((_, j) => { next[startIndex + j] = true; });
-        return next;
-      });
     } catch (e) {
       // addRoutes already records the error in useReportRow's `error` state.
     }
@@ -441,9 +518,27 @@ export default function ReportRouteList() {
           {canMutate && (
             <div className={t.actionsRow}>
               {isDynamicReport ? (
-                <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
-                  <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
-                </button>
+                <>
+                  <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
+                    <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
+                  </button>
+                  {/* Sub-item 2: reuse an already-added route's group (another date/settings
+                      view of the same real route) instead of always creating a distinct one.
+                      Only rendered once a group exists to reuse — the first slot is always new. */}
+                  {routeSlotGroupOptions.length > 0 && (
+                    <select
+                      className={t.addSlotGroupSelect}
+                      value={newSlotGroupChoice}
+                      onChange={(e) => setNewSlotGroupChoice(e.target.value)}
+                      title="Reuse an already-added route as another date/settings view, or add a new distinct route"
+                    >
+                      <option value="">New route</option>
+                      {routeSlotGroupOptions.map((g) => (
+                        <option key={g.key} value={g.key}>{g.label}</option>
+                      ))}
+                    </select>
+                  )}
+                </>
               ) : (
                 <>
                   <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
@@ -560,59 +655,47 @@ export default function ReportRouteList() {
                 key={r.route_comp_id ?? i}
                 route={r}
                 miles={mileageByRouteCompId.get(r.route_comp_id)}
-                graphCount={graphCountByCompId.get(r.route_comp_id) || 0}
                 theme={t}
                 Icon={Icon}
                 ColorPicker={ColorPicker}
                 Popup={Popup}
                 onChangeColor={(c) => updateRoute({ index: i, updates: { color: c } })}
-                onCopyWindow={() => setClipboard({
+                // Buffer-based (2026-09-05, Save/Discard restructure): Copy reads whatever's
+                // CURRENTLY in this row's own edit buffer (not necessarily the persisted `r`,
+                // if the author is mid-edit) — RouteRow passes its own local start/end through.
+                // Paste hands the clipboard values back for RouteRow to drop into its buffer;
+                // it does NOT persist here (that's what the old direct `updateRoute` call did,
+                // before this row had a Save/Discard gate of its own).
+                onCopyWindow={(start, end) => setClipboard({
                   from: r.route_comp_id,
                   fromName: r.name,
-                  start: r.startDate,
-                  end: r.endDate,
+                  start,
+                  end,
                 })}
-                onPasteWindow={() => clipboard && updateRoute({
-                  index: i,
-                  updates: { startDate: clipboard.start, endDate: clipboard.end },
-                })}
+                onPasteWindow={() => clipboard ? { startDate: clipboard.start, endDate: clipboard.end } : null}
                 clipboard={clipboard}
                 isEdit={canMutate}
                 saving={saving}
                 isExpanded={!!expandedRoutes[i]}
                 onToggleExpand={() => toggleRoute(i)}
-                isEditingName={editingRouteNameIndex === i}
-                editNameValue={editNameValue}
-                onEditNameValueChange={setEditNameValue}
-                onStartEditName={() => { setEditingRouteNameIndex(i); setEditNameValue(r.name); }}
-                onSaveEditName={() => {
-                  // Unlike addRoute's auto-suffix (the name came from the catalog, not
-                  // typed by the user), a rename is an explicit user choice — block it
-                  // instead of silently rewriting what they typed. See the dedupeRouteName
-                  // comment in useReportRow.js for why names must stay unique at all.
-                  const collision = routes.some((rt, idx) => idx !== i && rt.name === editNameValue);
-                  if (collision) {
-                    setError(`A route named "${editNameValue}" already exists.`);
-                    return;
-                  }
-                  // A deliberate rename — even to something generic — is a real editorial
-                  // decision from here on; clears isPlaceholderName so a future Dynamic Report
-                  // resolution never overwrites it with the resolved route's own name again.
-                  updateRoute({ index: i, updates: { name: editNameValue, isPlaceholderName: false } });
-                  setEditingRouteNameIndex(null);
-                }}
-                onCancelEditName={() => setEditingRouteNameIndex(null)}
+                // Rename's uniqueness check (2026-09-04, replaces the old parent-owned
+                // single-flight rename buffer — see RouteRow.jsx's own doc comment and gap #7
+                // in report-route-ui-parity-gaps.md) now happens INSIDE RouteRow at Save time,
+                // so it just needs the sibling name list, not a callback.
+                siblingNames={routes.filter((rt, idx) => idx !== i).map((rt) => rt.name)}
                 derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
                 baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
+                groupInfo={routeGroupInfoByCompId.get(r.route_comp_id)}
                 derivableSiblings={derivableSiblings}
-                // Date editing (2026-08-19, item 4A: removed the pencil/Save/Cancel gate — dates
-                // are always live-editable whenever the row is expanded, auto-saving through this
-                // one callback). RouteRow owns its own local buffer + debounce now (several rows
-                // can be mid-edit at once, unlike the old single-flight parent-owned buffer) and
-                // always sends a complete, atomic `updates` object here — for Derived mode that
-                // means `dateFormula`+`derivedFromRoute` together, matching the resolver's own
-                // requirement (relativeDateResolution.js only resolves when both are present).
-                onUpdateDates={(updates) => updateRoute({ index: i, updates })}
+                // Name + date editing (2026-09-05: explicit Save/Discard, reversing the prior
+                // auto-save-on-blur/debounce design — see RouteRow.jsx's own doc comment).
+                // RouteRow owns a purely local buffer for both fields and calls this ONE
+                // callback exactly once, at an explicit Save click, with a complete, atomic
+                // `updates` object — for Derived-mode dates that means `dateFormula`+
+                // `derivedFromRoute` together, matching the resolver's own requirement
+                // (relativeDateResolution.js only resolves when both are present). Several rows
+                // can still be mid-edit (unsaved) at once — each has its own buffer.
+                onUpdateRoute={(updates) => updateRoute({ index: i, updates })}
                 canMoveUp={i > 0}
                 canMoveDown={i < effectiveRoutes.length - 1}
                 onReorderUp={() => reorderRoutes(i, 'up')}

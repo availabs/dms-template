@@ -160,8 +160,14 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit,
       // stale snapshot would silently never fetch it. Dropping any stale/absent `tags` entry
       // first, same as that file.
       columns: [
-        ...externalSource.columns.filter(c => c.name !== 'tags').map(c => ({ ...c, show: true })),
+        ...externalSource.columns.filter(c => c.name !== 'tags' && c.name !== 'graph_count' && c.name !== 'counts_label').map(c => ({ ...c, show: true })),
         { name: 'tags', type: 'multiselect', options: null, show: true },
+        // Force-included the same way `tags` is (a stale `externalSource.columns` snapshot
+        // predates these two on any report whose Dataset binding was configured before this
+        // fix) — read back on load so the Item 5 write-path effect (ReportRouteList.jsx) can
+        // skip a no-op write when the catalog is already current.
+        { name: 'graph_count', type: 'number', show: true },
+        { name: 'counts_label', type: 'text', show: true },
         { name: 'id', systemCol: true, show: true, sort: 'desc' },
       ],
       filters: { op: "AND", groups: [{ col: "data->>'report_id'", op: "filter", value: String(forItemId) }] }
@@ -206,16 +212,23 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit,
           parsedRoutes = [];
         }
         reportRowIdRef.current = row.id;
-        setReportRow({ id: row.id, routes: parsedRoutes, tags: parseTags(row.tags), forItemId });
+        setReportRow({
+          id: row.id,
+          routes: parsedRoutes,
+          tags: parseTags(row.tags),
+          graphCount: row.graph_count != null ? Number(row.graph_count) : null,
+          countsLabel: row.counts_label ?? null,
+          forItemId,
+        });
       } else {
         reportRowIdRef.current = null;
-        setReportRow({ id: null, routes: [], tags: [], forItemId });
+        setReportRow({ id: null, routes: [], tags: [], graphCount: null, countsLabel: null, forItemId });
       }
     } catch (e) {
       if (loadTargetIdRef.current !== forItemId) return;
       console.error('<ReportRouteList:loadReportRow>', e);
       reportRowIdRef.current = null;
-      setReportRow({ id: null, routes: [], tags: [], forItemId });
+      setReportRow({ id: null, routes: [], tags: [], graphCount: null, countsLabel: null, forItemId });
     }
   };
 
@@ -271,12 +284,13 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit,
     const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
     const nextId = currentId || res?.id;
     reportRowIdRef.current = nextId;
-    // `tags` carried over from current state, not touched by this write — the underlying
-    // `dms.data.edit` update is a JSONB merge (confirmed: dms.controller.js's `setDataById` does
-    // `data = data || $1`, not a replace), so omitting `tags` from the payload above already left
-    // it untouched in the DB; this just keeps local state in sync with that same reality instead
-    // of dropping it from the UI until the next reload.
-    setReportRow({ id: nextId, routes: nextRoutes, tags, forItemId: item.id });
+    // `tags`/`graphCount`/`countsLabel` carried over from current state, not touched by this
+    // write — the underlying `dms.data.edit` update is a JSONB merge (confirmed:
+    // dms.controller.js's `setDataById` does `data = data || $1`, not a replace), so omitting
+    // them from the payload above already left them untouched in the DB; this just keeps local
+    // state in sync with that same reality instead of dropping them from the UI until the next
+    // reload.
+    setReportRow({ id: nextId, routes: nextRoutes, tags, graphCount: reportRow.graphCount, countsLabel: reportRow.countsLabel, forItemId: item.id });
   };
 
   // Persist a tags mutation — same shape/guards as persistRoutes, `routes` carried over from
@@ -290,7 +304,24 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit,
     const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
     const nextId = currentId || res?.id;
     reportRowIdRef.current = nextId;
-    setReportRow({ id: nextId, routes, tags: nextTags, forItemId: item.id });
+    setReportRow({ id: nextId, routes, tags: nextTags, graphCount: reportRow.graphCount, countsLabel: reportRow.countsLabel, forItemId: item.id });
+  };
+
+  // Item 5 (2026-09-04, npmrds-reports-routes-feedback-triage.md Phase 2): keeps the "All
+  // Reports" list page's routes/graphs column live for a hand-authored report, not just one
+  // built from a spec (`report_build.mjs`/the Python converter already write `graph_count`/
+  // `counts_label` once at build time). Called from ReportRouteList.jsx's own live-count
+  // effect, which computes both numbers from state this hook doesn't have (self-bound graph
+  // discovery lives in useGraphPublish). Deliberately NEVER creates the row itself — gated by
+  // the caller on `reportRow?.id != null`, since row creation is exclusively owned by
+  // `persistRoutes`'s `ensuringForRef` sequence below; racing a create here could double-insert.
+  const persistCounts = async ({ graphCount, countsLabel }) => {
+    if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
+    const currentId = reportRowIdRef.current;
+    if (!currentId) return;
+    const payload = { id: currentId, report_id: String(item.id), graph_count: graphCount, counts_label: countsLabel, name: catalogName, page_path: catalogPagePath };
+    await apiUpdate({ data: payload, config: { format: storageDataFormat } });
+    setReportRow({ id: currentId, routes, tags, graphCount, countsLabel, forItemId: item.id });
   };
 
   // Ensures a report gets its `reports_snap_2` catalog row the moment its edit page is
@@ -333,8 +364,8 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit,
   // authoring boundary instead: names are kept unique across a report's own
   // routes. On ADD (this function) a colliding name is silently disambiguated
   // (catalog names aren't something the user typed, so there's nothing to
-  // "reject"); on RENAME (ReportRouteList.jsx's onSaveEditName) a collision is
-  // blocked instead, since there the user explicitly chose the new name.
+  // "reject"); on RENAME (RouteRow.jsx's own commitName, `siblingNames` prop) a
+  // collision is blocked instead, since there the user explicitly chose the new name.
   //
   // `newRoutesData` are the route objects resolved by the tag-browser modal's own catalog
   // lookup — this hook only owns assigning each a local `route_comp_id`/color/deduped name and
@@ -493,6 +524,7 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit,
     setError,
     persistRoutes,
     persistTags,
+    persistCounts,
     addRoutes,
     removeRoute,
     reorderRoutes,

@@ -688,14 +688,30 @@ explicitly out of scope.
   `src/themes/transportny/components/ReportPickerModal/useReportSearch.js`,
   `src/themes/transportny/components/ReportPickerModal/ReportPickerModal.jsx`.
 
-  **Item (2), NOT STARTED — follow-on/TODO.** The `deletePage` cascade hook (an optional
-  `themeFromContext?.admin?.onPageDeleted?.(page, {...})` call in `pagesEditor.jsx`'s `deletePage`,
-  ~line 815 — `ThemeContext` is already in scope there — wrapped in try/catch so it can never break
-  page deletion for any site; zero behavior change for every site that doesn't define the hook)
-  would close the hole at its source instead of relying solely on item (3)'s safety net. Deferred,
-  not abandoned — item (3) alone is durable enough for now per Ryan's own framing of it as "works
-  indefinitely." Pick this up when there's appetite for a shared-library-touching change (affects
-  every DMS site's page-delete path, not just transportny, even though the hook itself is opt-in).
+  **Item (2), CODE + TESTS DONE 2026-09-04.** Bit again: the new `/npmrds/reports/list` page
+  (native Card/Spreadsheet primitives bound to `reports_snap_2`) has no client-side hook point to
+  attach item (3)'s `checkIdsExist` filter to, so it had *no* band-aid at all — only the manual
+  `prune_report_snap_orphans.mjs` sweep. Ryan asked for the real fix, not another band-aid.
+  Re-scoped away from this entry's original `ThemeContext`-based sketch (a client-only hook that
+  CLI `page delete`/`raw delete` would silently bypass) to a **server-side** extension of
+  `deleteData`'s existing `kind`-based cascade dispatch (`dms.controller.js`) — the same mechanism
+  already proven for the source/view orphan fix above, covering every delete caller (admin UI +
+  CLI + scripts) uniformly. Implemented same session: `cascadePageDelete` + a module-level,
+  opt-in `DMS_PAGE_DELETE_HOOK` registry (same shape as the already-shipped
+  `DMS_EXTRA_DATATYPES`), with the actual `reports_snap_2` cleanup living in a new
+  `hooks/npmrds_report_page_delete_hook.js` (in `dms-template`, not the `src/dms` submodule).
+  Along the way, also consolidated the `npmrdsv5`/`npmrds_sub`/reports_snap_2-source-and-view-id
+  constants that were independently hardcoded 3× (`convert_old_reports_lib/config.py`,
+  `report_build.mjs`, `prune_report_snap_orphans.mjs`) into one `hooks/reports_snap_ids.json` all
+  four now read, per Ryan's request while touching this exact seam. Full design + the exact
+  before/after of every file in
+  `src/dms/planning/tasks/current/page-delete-lifecycle-hook.md` (also indexed in
+  `src/dms/planning/todo.md` under `dms-server`) — that file is the source of truth for this item.
+  Server tests: 16/16 on the extended `test-delete-cascade` suite (was 11/11), 21/21 full
+  `npm test` chain, all green on SQLite. **Still open**: PG run (no docker socket permission in
+  this sandbox), live verification against a real npmrdsv5 deploy (deferred rather than touch the
+  shared dev DB while other sessions were concurrently active on this exact feature), and the
+  actual dms-server redeploy needed for `DMS_PAGE_DELETE_HOOK`/`hooks/` to take effect anywhere.
 
 - **2026-09-01**: User-reported bug — created a report via "Create Report" on `/converted_reports`,
   published it with zero routes, then couldn't find it in "Choose a report" under the "Mine" chip.
