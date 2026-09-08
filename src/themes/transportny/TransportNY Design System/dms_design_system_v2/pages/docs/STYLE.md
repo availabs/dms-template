@@ -328,3 +328,7 @@ Exemplars (verbatim, fetched 2026-09-04):
   quotation inside References.
 - 2026-09-08 · P7 review · **A display setting is not a rule.** A form's page size ("one row a page") does not become "submit one row at a
   time"; the docs state what a control does, not what a layout value implies.
+- 2026-09-08 · P8 review · **A capture is a source.** What the screenshot pass observed on the running tool folds into the pages as a
+  dated observation ("at the 2026-09-08 check …") wherever it contradicts a Steps claim or a default; a figure's caption describes the
+  capture, never the spec. Where the observation contradicts the code the docs describe (the sign-in redirect on pages the pattern and
+  the login copy call public), the page keeps the intended behaviour, adds the dated observation, and the item goes to the owner list.
