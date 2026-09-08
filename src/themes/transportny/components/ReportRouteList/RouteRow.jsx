@@ -5,7 +5,7 @@ import {
   formatDateShort,
 } from './utils';
 import { ROUTE_COLOR_PALETTE } from './useReportRow';
-import { resolveRelativeDateFormula, inferExactSpan } from './relativeDateResolution';
+import { resolveRelativeDateFormula, inferExactSpan, resolvedRouteLabel } from './relativeDateResolution';
 import {
   SPAN_OPTIONS,
   MONTH_OPTIONS,
@@ -222,6 +222,24 @@ export default function RouteRow({
     onToggleExpand?.();
   };
 
+  // Collapsed title: resolved real name vs. raw template (2026-09-08, Ryan's live feedback).
+  // `catalogRouteName` is set ONLY by `useDynamicReportRoutes.js`'s resolve-merge — never present
+  // on a raw, unfilled slot (no `?routes=` yet) and never on a static report's own routes — so it's
+  // a reliable per-row "did a real route actually get supplied via the URL" signal, distinct from
+  // the report-level `isDynamicReport` flag (a Dynamic Report with no `?routes=` yet still has
+  // every row unresolved). Unresolved: show the literal authored/template text as-is (Ryan: "it
+  // would just show the placeholder there") — deliberately NOT run through `resolvedRouteLabel`,
+  // since that would partially substitute `%y` alone (it only needs dates, not a real route) while
+  // `%n` stays empty, which read as a half-filled name rather than an honest placeholder. Resolved:
+  // show the real name as the primary text, with the original template kept visible underneath in
+  // light text — Ryan's own suggestion, "asterisk or their template-name in light text below it" —
+  // so an author can still see/edit the underlying template's shape without losing the resolved
+  // name as the primary, readable text. Clicking into edit mode still shows the raw template in the
+  // input (`localName`, unchanged, initialized from `r.name`) — that's the thing actually stored.
+  const isResolved = r.catalogRouteName != null;
+  const displayName = isResolved ? resolvedRouteLabel(r) : r.name;
+  const showTemplateHint = isResolved && r.name !== displayName;
+
   const tmcCount = parseTmcArray(r.tmc_array).length;
 
   // Collapsed-row summary (2026-09-04 restructure, reweighted 2026-09-05 per feedback): the
@@ -259,77 +277,84 @@ export default function RouteRow({
             </button>
           </span>
         )}
-        {/* Entering edit mode: one Pencil toggle, same as before. While editing (2026-09-05,
-            consolidated per feedback — the bottom Save/Discard row was redundant with a header
-            control): the header itself carries BOTH actions side by side — Discard (X) and Save
-            — instead of a single ambiguous toggle plus a separate bottom action row. A read-only
-            viewer keeps the plain expand/collapse affordance (no edit concept to merge with). */}
-        {canMutateRow && isExpanded ? (
-          <>
-            <button type="button" className={t.expanderOpen} onClick={handleDiscard} title="Discard changes">
-              <Icon icon="XMark" />
-            </button>
-            <button type="button" className={t.saveIconBtn} onClick={handleSave} disabled={!canSave} title="Save changes">
-              <Icon icon="FloppyDisk" />
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            className={isExpanded ? t.expanderOpen : t.expander}
-            onClick={onToggleExpand}
-            title={canMutateRow ? 'Edit route' : (isExpanded ? 'Collapse' : 'Expand')}
-          >
-            {canMutateRow ? <Icon icon="PencilSquare" /> : (isExpanded ? '−' : '+')}
-          </button>
-        )}
-        {canMutateRow && ColorPicker && Popup ? (
-          <Popup
-            button={<button type="button" className={t.colorDotButton} style={{ backgroundColor: r.color }} title={`Identity colour ${r.color} — click to change`} />}
-            preferredPosition="bottom"
-          >
-            {() => (
-              <div className={t.colorPopoverBody}>
-                <div className={t.colorPopoverHead}>
-                  <span className={t.colorPopoverLabel}>identity colour</span>
-                  <span className={t.colorPopoverHex}>{r.color}</span>
+        {/* Colour dot + title/input in their own centered row — see `titleRow`'s theme comment. */}
+        <div className={t.titleRow}>
+          {canMutateRow && ColorPicker && Popup ? (
+            <Popup
+              button={<button type="button" className={t.colorDotButton} style={{ backgroundColor: r.color }} title={`Identity colour ${r.color} — click to change`} />}
+              preferredPosition="bottom"
+            >
+              {() => (
+                <div className={t.colorPopoverBody}>
+                  <div className={t.colorPopoverHead}>
+                    <span className={t.colorPopoverLabel}>identity colour</span>
+                    <span className={t.colorPopoverHex}>{r.color}</span>
+                  </div>
+                  <div className={t.colorSwatchGrid}>
+                    {ROUTE_COLOR_PALETTE.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={c.toLowerCase() === (r.color || '').toLowerCase() ? t.colorSwatchActive : t.colorSwatch}
+                        style={{ backgroundColor: c }}
+                        title={c}
+                        onClick={() => stableOnChangeColor(c)}
+                      />
+                    ))}
+                  </div>
+                  <div className={t.colorPopoverFooter}>Used by every graph this route feeds, so a reader learns the key once.</div>
                 </div>
-                <div className={t.colorSwatchGrid}>
-                  {ROUTE_COLOR_PALETTE.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      className={c.toLowerCase() === (r.color || '').toLowerCase() ? t.colorSwatchActive : t.colorSwatch}
-                      style={{ backgroundColor: c }}
-                      title={c}
-                      onClick={() => stableOnChangeColor(c)}
-                    />
-                  ))}
-                </div>
-                <div className={t.colorPopoverFooter}>Used by every graph this route feeds, so a reader learns the key once.</div>
-              </div>
-            )}
-          </Popup>
-        ) : (
-          <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />
-        )}
-        <div className={t.iconContainer}>
-          {canMutateRow && isExpanded ? (
-            <input
-              autoFocus
-              value={localName}
-              onChange={(e) => setLocalName(e.target.value)}
-              onKeyDown={handleNameKeyDown}
-              className={t.titleInput}
-            />
+              )}
+            </Popup>
           ) : (
-            <span className={t.routeTitle} title={r.name}>{r.name}</span>
+            <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />
           )}
-          {canMutateRow && (
-            <button type="button" className={t.dangerBtn} title="Remove route from report" onClick={onRemove} disabled={saving}>
-              <Icon icon="Trash" />
-            </button>
-          )}
+          <div className={t.iconContainer}>
+            {canMutateRow && isExpanded ? (
+              <input
+                autoFocus
+                value={localName}
+                onChange={(e) => setLocalName(e.target.value)}
+                onKeyDown={handleNameKeyDown}
+                className={t.titleInput}
+              />
+            ) : (
+              // Title + template hint (Dynamic Reports) — see `routeTitleWrap`'s theme comment.
+              <span className={t.routeTitleWrap}>
+                <span className={t.routeTitle} title={displayName}>{displayName}</span>
+                {showTemplateHint && <span className={t.routeTitleTemplate}>{r.name}</span>}
+              </span>
+            )}
+          {/* Edit toggle + delete, grouped together at the end of the row. While editing: Discard
+              (X) and Save side by side, replacing the single pencil toggle. A read-only viewer
+              keeps the plain expand/collapse affordance and never sees delete (canMutateRow-gated). */}
+          <span className={t.rowActionsGroup}>
+            {canMutateRow && isExpanded ? (
+              <>
+                <button type="button" className={t.expanderOpen} onClick={handleDiscard} title="Discard changes">
+                  <Icon icon="XMark" />
+                </button>
+                <button type="button" className={t.saveIconBtn} onClick={handleSave} disabled={!canSave} title="Save changes">
+                  <Icon icon="FloppyDisk" />
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className={isExpanded ? t.expanderOpen : t.expander}
+                onClick={onToggleExpand}
+                title={canMutateRow ? 'Edit route' : (isExpanded ? 'Collapse' : 'Expand')}
+              >
+                {canMutateRow ? <Icon icon="PencilSquare" /> : (isExpanded ? '−' : '+')}
+              </button>
+            )}
+            {canMutateRow && (
+              <button type="button" className={t.dangerBtn} title="Remove route from report" onClick={onRemove} disabled={saving}>
+                <Icon icon="Trash" />
+              </button>
+            )}
+          </span>
+          </div>
         </div>
       </div>
 
@@ -338,7 +363,7 @@ export default function RouteRow({
       )}
 
       {!isExpanded ? (
-        <div className={t.metaIndent}>
+        <div className={`${t.metaIndent} ${showTemplateHint ? t.collapsedSummaryPullUpWithHint : t.collapsedSummaryPullUpNoHint}`}>
           <div className={t.metaProminent}>{dateMeta}</div>
           <div className={t.meta}>{tmcMileageMeta}</div>
         </div>

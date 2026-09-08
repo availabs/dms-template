@@ -23,7 +23,7 @@
       "why": "Current year vs. compare year speed delta — recovered by title, not a marker (old, pre-marker section)." }
   ],
   "routes": [
-    { "id": "current_year", "slot": true, "name": "Current Year", "route_slot_group": "$0",
+    { "id": "current_year", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "graphs": ["yoy_speed"] },
     { "id": "jan_r", "slot": true, "name": "January", "route_slot_group": "$0",
@@ -50,7 +50,7 @@
       "dateFormula": "startDate=>calendar:11-1..11-L", "derivedFromRoute": "__TODAY__", "graphs": ["nov"] },
     { "id": "dec_r", "slot": true, "name": "December", "route_slot_group": "$0",
       "dateFormula": "startDate=>calendar:12-1..12-L", "derivedFromRoute": "__TODAY__", "graphs": ["dec"] },
-    { "id": "compare_year", "slot": true, "name": "Compare Year", "route_slot_group": "$0",
+    { "id": "compare_year", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-1year->1year", "derivedFromRoute": "__TODAY__",
       "graphs": ["yoy_speed"] }
   ]

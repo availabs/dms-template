@@ -723,7 +723,15 @@ for (const r of spec.routes) {
   }
   if (!r.name) fail(`route "${r.id}" needs a \`name\`.`);
   let name = r.name;
-  if (seenNames.has(name)) {
+  // A `%n`/`%y` templated name (dynamic-reports-authoring-gaps.md sub-item 1) isn't the real
+  // identity yet — it's differentiated at VIEW time once the tokens resolve (typically to a
+  // different year per slot), so a literal collision on the unresolved template string alone
+  // (e.g. every slot in "Year Over Year" sharing "%n (%y)") is not a real duplicate-name risk
+  // the way two identical plain names would be. Skip the suffix for templated names; a genuine
+  // duplicate (same template AND same resolved dates) is not caught here, same as it wasn't
+  // before this mechanism existed — an acceptable, pre-existing category of risk.
+  const isTemplated = name.includes('%n') || name.includes('%y');
+  if (seenNames.has(name) && !isTemplated) {
     let n = 2;
     while (seenNames.has(`${r.name} (${n})`)) n++;
     name = `${r.name} (${n})`;

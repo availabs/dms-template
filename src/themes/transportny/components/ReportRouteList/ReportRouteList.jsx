@@ -517,58 +517,63 @@ export default function ReportRouteList() {
         <>
           {canMutate && (
             <div className={t.actionsRow}>
-              {isDynamicReport ? (
-                <>
+              <div className={t.actionsRowButtons}>
+                {isDynamicReport ? (
                   <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
                     <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
                   </button>
-                  {/* Sub-item 2: reuse an already-added route's group (another date/settings
-                      view of the same real route) instead of always creating a distinct one.
-                      Only rendered once a group exists to reuse — the first slot is always new. */}
-                  {routeSlotGroupOptions.length > 0 && (
-                    <select
-                      className={t.addSlotGroupSelect}
-                      value={newSlotGroupChoice}
-                      onChange={(e) => setNewSlotGroupChoice(e.target.value)}
-                      title="Reuse an already-added route as another date/settings view, or add a new distinct route"
-                    >
-                      <option value="">New route</option>
-                      {routeSlotGroupOptions.map((g) => (
-                        <option key={g.key} value={g.key}>{g.label}</option>
-                      ))}
-                    </select>
-                  )}
-                </>
-              ) : (
-                <>
-                  <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
-                    <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route</span>
-                  </button>
-                  <RouteTagBrowserModal
-                    open={isAddModalOpen}
-                    setOpen={setIsAddModalOpen}
-                    apiLoad={apiLoad}
-                    routeSourceInfo={routeSourceInfo}
-                    selectionMode="any"
-                    excludeRouteIds={excludeRouteIds}
-                    onConfirm={handleConfirmAddRoutes}
-                  />
-                </>
+                ) : (
+                  <>
+                    <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
+                      <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route</span>
+                    </button>
+                    <RouteTagBrowserModal
+                      open={isAddModalOpen}
+                      setOpen={setIsAddModalOpen}
+                      apiLoad={apiLoad}
+                      routeSourceInfo={routeSourceInfo}
+                      selectionMode="any"
+                      excludeRouteIds={excludeRouteIds}
+                      onConfirm={handleConfirmAddRoutes}
+                    />
+                  </>
+                )}
+                <button type="button" className={t.addGraphBtn} onClick={() => setIsAddGraphModalOpen(true)}>
+                  <Icon icon="Plus" className={t.addGraphBtnIcon} /><span className={t.addBtnLabel}>Add Graph</span>
+                </button>
+                <AddGraphModal
+                  open={isAddGraphModalOpen}
+                  setOpen={setIsAddGraphModalOpen}
+                  routes={routes}
+                  // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
+                  // already drives the checklist's own display and Dynamic-Report placeholder
+                  // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
+                  // `effectiveRoutes` instead, without changing what the checklist itself shows.
+                  allRoutesResolved={effectiveRoutes}
+                  onConfirm={handleConfirmAddGraph}
+                />
+              </div>
+              {/* Sub-item 2's group-reuse select, own line (2026-09-08 fix): sharing
+                  `actionsRowButtons`' single row with Add Route Slot/Add Graph squeezed both
+                  buttons' labels into wrapping, overlapping text in the narrow rail — found live,
+                  screenshotted by Ryan. On its own row it can't compete with the buttons for width.
+                  Only rendered once a group exists to reuse — the first slot is always new. */}
+              {isDynamicReport && routeSlotGroupOptions.length > 0 && (
+                <div className={t.addSlotGroupRow}>
+                  <span className={t.addSlotGroupLabel}>Add as</span>
+                  <select
+                    className={t.addSlotGroupSelect}
+                    value={newSlotGroupChoice}
+                    onChange={(e) => setNewSlotGroupChoice(e.target.value)}
+                    title="Reuse an already-added route as another date/settings view, or add a new distinct route"
+                  >
+                    <option value="">New route</option>
+                    {routeSlotGroupOptions.map((g) => (
+                      <option key={g.key} value={g.key}>{g.label}</option>
+                    ))}
+                  </select>
+                </div>
               )}
-              <button type="button" className={t.addGraphBtn} onClick={() => setIsAddGraphModalOpen(true)}>
-                <Icon icon="Plus" className={t.addGraphBtnIcon} /><span className={t.addBtnLabel}>Add Graph</span>
-              </button>
-              <AddGraphModal
-                open={isAddGraphModalOpen}
-                setOpen={setIsAddGraphModalOpen}
-                routes={routes}
-                // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
-                // already drives the checklist's own display and Dynamic-Report placeholder
-                // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
-                // `effectiveRoutes` instead, without changing what the checklist itself shows.
-                allRoutesResolved={effectiveRoutes}
-                onConfirm={handleConfirmAddGraph}
-              />
             </div>
           )}
           {canMutate && (

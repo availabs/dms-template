@@ -1,7 +1,15 @@
 # Dynamic Reports — authoring gaps (route-slot naming, add-slot UX, preview-swap, static↔dynamic conversion)
 
 **Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **items 1, 2, and 3 DONE +
-live-verified** (1 and 3: 2026-09-05; 2: 2026-09-08) · **Started:** 2026-09-05
+live-verified** (1 and 3: 2026-09-05; 2: 2026-09-08). **All 12 catalog templates regenerated +
+republished 2026-09-08** (see "Catalog regeneration" under sub-item 1 below) — the deferral note
+that originally blocked this is superseded by Ryan's explicit go-ahead. A second real bug (route-
+name dedup wrongly suffixing `%n`/`%y` templated names) found + fixed same day, 8 templates
+re-published again — see "Dedup-suffix bug on templated names" below. One more bug found, NOT
+fixed (difference-graph subtitle captions baking a static route name at build time) — needs its own
+scoping pass, see that section. **Item 4 SCOPED 2026-09-08, not yet built** — see its own section
+for the full design + open questions needing Ryan's steer before coding starts. · **Started:**
+2026-09-05
 
 ## Objective
 
@@ -127,6 +135,129 @@ sub-item's 4 edited files, reran, identical failures on the clean tree) to confi
 pre-existing environment/baseline-staleness issue, not caused by this change. Not investigated
 further as part of this pass; the targeted live-verification above stands in for it this round.
 
+### Catalog regeneration — all 12 templates — DONE + live-verified 2026-09-08
+
+Ryan's explicit go-ahead, reversing the deferral above: regenerate and publish now rather than
+waiting for all of Phase 4 (item 4 is still unbuilt, but confirmed to touch neither
+`dynamic_report_specs/*.json` nor `report_build.mjs`, so it doesn't block this).
+
+**Audit before touching anything**: the deferral note above named only 4 templates as relying on
+the retired auto year-swap. Re-verified against the actual retired regex (`RELATIVE_DATE_REGEX`'s
+`span` group, git history `fe0064fe~1`) — the swap fired for **any** year-span `dateFormula`
+(`yearof`/`year±Nyear->Myear`), which turned out to hit **all 12** templates, not just 4. Fixed:
+every year-formula route slot, in every template, renamed to `%n (%y)` (Ryan's call — keep it
+basic, don't build fancier date-granularity tokens now; day/week/month/calendar-position slots like
+"Yesterday"/"January"/"This Month" are untouched — `%y`'s year-only granularity would have made
+sibling slots in `monthly_congestion` (12 months), `one_week_study` (5 day-slots),
+`seasonality` (4 seasons) and `single_day_advanced` (6 incident-window slots) collapse into
+identical labels, since most fall within the same year — that's a real information-loss bug, not
+a style choice, so those slots keep their literal descriptive names for now).
+
+**`bi_directional`'s `(NB)`/`(SB)` suffixes dropped entirely** — `%n` already carries the real
+picked route's own name/direction, so the suffix was redundant once templated.
+
+**`seasonality`'s `winter_weekday` route retired** (Ryan's ask: audit every template for a route
+slot made redundant by the routeWindows migration — same dates + same `route_slot_group`,
+differentiated only by resolution prose). Found exactly one instance, confirmed vestigial by the
+spec's own comments: `bar_weekday_allseasons`'s "why" field already documented that Spring/Summer/
+Fall's equivalent dedicated weekday sub-routes were deleted and replaced with `resolution:
+"weekday"` applied directly to the shared season route — `winter_weekday` (feeding only
+`bar_weekday_winter`) was the one never cleaned up. Fix: deleted the route, added
+`bar_weekday_winter` to the `winter` route's own `graphs[]` list (identical pattern to
+`bar_weekday_allseasons`). Also stripped the dead `(Avg Day)`/`(Weekday)` resolution-prose suffix
+from `current_year`/`winter`/`spring`/`summer`/`fall`'s names (Ryan's point 1: resolution now lives
+on the graph, not the route) — `winter`/`spring`/`summer`/`fall` are calendar-position formulas, not
+year-formulas, so they keep plain literal names (`"Winter"`, not `%n (%y)`), just without the
+prose.
+
+**Rebuilt + published all 12** via `report_build.mjs <spec> --update <slug> --publish`: `year_over_
+year`, `annual_average_study`, `single_route`, `monthly_speed_comparisons`, `bi_directional`,
+`monthly_congestion`, `one_week_study`, `seasonality`, `single_day_advanced`, `snapshot`,
+`this_month_vs_last_month_vs_last_year`, `weekly_average` — all 12 passed the script's own
+structural checks, each revision log showing exactly the intended routes modified (and, for
+`seasonality`, `route winter_weekday removed`) and nothing else.
+
+**Verified**: `report_probe.mjs --auth` on all 12 — 0 console/page/sql errors across every one
+(all hit the unresolved "Add Routes" entry gate in that automated pass, so this only proves no
+JS crashes, not real-data rendering). Followed with a live `claude-in-chrome` check against a real
+picked route (catalog id 2216791, "Route 5 Part") on `seasonality` and `year_over_year`: route pills
+correctly read `"Route 5 Part (2026)"` (%n+%y both substituted), season pills read plain
+`"Winter"`/`"Spring"`/`"Summer"`/`"Fall"` (no more resolution prose), and `seasonality`'s
+previously-empty graphs (`Daily Hours of Delay`, `Avg. Hours of Delay per Season by 5-Min`)
+rendered real data once a route was actually picked — confirming those were just the expected
+unresolved-entry-gate state, not a regression. `year_over_year`'s 4 slots initially resolved to
+`"Route 5 Part (2026)"`/`"(2025) (2)"`/`"(2024) (3)"`/`"(2024–2026) (4)"` — the `(N)` suffix turned
+out to be a **real bug**, not a pre-existing disambiguator; see the dedup fix below (same-day,
+same session).
+
+### Dedup-suffix bug on templated names — found + fixed 2026-09-08
+
+Ryan noticed the `(N)` suffixes on `year_over_year`'s pills and asked why, since `%n (%y)` already
+resolves to distinct text per slot (different years). Root cause, confirmed by direct code
+reading: `report_build.mjs:705-733` builds a `Set` of every route's **literal, unresolved** `name`
+string before persisting, and appends `" (2)"`/`" (3)"`/etc. whenever it sees a repeat — this exists
+because a route's stored name doubles as the SQL-alias/legend/color series key, so two routes
+persisted under the identical name risk actually collapsing into one series. It has zero awareness
+that `%n`/`%y` tokens will differentiate the *resolved* output later — 4 routes all literally named
+`"%n (%y)"` look exactly like 4 routes literally named `"Untitled Route"`. The suffix gets baked
+into the **stored** name (`"%n (%y) (2)"`), and `applyNameTemplate`'s substitution runs on top of
+that, which is why the rendered pill showed `"Route 5 Part (2025) (2)"` rather than a bare `(2)`.
+The identical logic, independently duplicated, also lives in the live UI's add-route-slot path
+(`useReportRow.js:392-398`, `dedupeAgainst`) — sub-item 1's own doc had actually documented this
+firing as expected/working, not flagged as a mismatch with the new templating feature.
+
+**Scope**: 8 of the 12 rebuilt templates had 2+ slots sharing the identical literal `"%n (%y)"`
+string and so hit this: `year_over_year`, `annual_average_study`, `single_route`,
+`weekly_average`, `monthly_speed_comparisons`, `snapshot`, `monthly_congestion`, and worst-case
+`bi_directional` (all 8 NB+SB slots chained together, `(2)` through `(8)`, since NB/SB aren't
+scoped separately by this check). Not affected: `seasonality`, `single_day_advanced`,
+`this_month_vs_last_month_vs_last_year`, `one_week_study` (only one year-formula slot each, nothing
+to collide with).
+
+**Fix**: skip the dedup/suffix whenever the candidate name contains `%n` or `%y` — one-line guard
+at both call sites (`report_build.mjs:725` `isTemplated` check; `useReportRow.js:393`'s
+`dedupeAgainst`). Checked before applying: none of the 8 templates have two slots sharing both the
+same template *and* the same `dateFormula` (each year-offset is intentionally distinct), so there's
+no real duplicate-series risk introduced in any of today's 12 templates — the only residual risk is
+a hypothetical future author creating two genuinely identical templated+dated slots, the same
+pre-existing category of risk this dedup exists for generally.
+
+Rebuilt + republished all 8 affected templates via `report_build.mjs --update <slug> --publish`.
+**Verified**: direct DB read of `year_over_year`'s persisted `routes[]` — all 4 entries now store
+the literal `"%n (%y)"` with zero suffix. Live `claude-in-chrome` check on
+`reports/year_over_year?routes=2216791`: pills read `"Route 5 Part (2026)"`, `"(2025)"`, `"(2024)"`,
+`"(2024–2026)"` — clean, no `(N)` suffixes, real map/legend data rendering. (The revision log for
+this rebuild says "no detected change" for all 8 — that's `diffSpecs` comparing the raw `_spec`
+JSON, which is unchanged since this fix lives in the build script, not the spec files; the actual
+persisted `routes[]` field is confirmed changed via the direct DB read above.)
+
+**Real bug found live, NOT fixed — needs its own scoping pass soon (Ryan's call 2026-09-08:
+skip the quick fix, this needs the real fix, not a patch)**: `seasonality`'s 4 difference-mode
+graphs (`diff_winter`/`diff_spring`/`diff_summer`/`diff_fall`) show a literal, unsubstituted
+`"Base: %N (%Y) · Comparison: Winter"` subtitle instead of a resolved name. Root cause:
+`report_build.mjs`'s difference-graph caption builder (~line 1174) bakes
+`anchorRoute.name`/`compareRoutes.map(r => r.name)` into a **static string at build time** — a
+third route-name consumer sub-item 1 never touched (it lives in `report_build.mjs`, not
+`relativeDateResolution.js`), and unlike the header pill/RRL row/chart legend, it never re-resolves
+live. Before this rename it baked in generic-but-readable text ("Base: Current Year (Avg Day)");
+now it bakes in raw token syntax. Affects 3 templates' diff-mode graphs: `seasonality` (4 graphs,
+anchor `current_year`), `single_day_advanced` (1 graph, compare-side `year`), `single_route` (1
+graph, both anchor and compare sides).
+
+A quick fix was floated (swap in the already-imported `resolvedRouteLabel` at that call site —
+provably safe for every other report, since it falls through to the original name whenever no
+`%n`/`%y` token is present) but **explicitly rejected**: at build time there's no real picked
+route and no resolved date window yet (a `dateFormula` route never gets literal dates until live
+view-time resolution), so `%n`/`%y` would both come back empty and the caption would become
+`"Base:  () · Comparison: Winter"` — a cosmetic patch, not a real fix. **What's actually needed**:
+make this caption live-resolving like the other three consumers (header pill/RRL row/chart legend),
+which means it can no longer be a static string baked once at build time — touches the render
+pipeline (`graph_new`/`GraphComponent.jsx`'s difference-mode subtitle path), not just
+`report_build.mjs`. Not scoped yet — needs its own pass (open questions: does the render layer even
+have access to `effectiveRoutes` at the point this subtitle renders, or does it need threading
+through; should a static report's difference caption stay build-time-baked since its names are
+already real forever, with only the Dynamic Report path made live). **TODO: pick this up soon.**
+
 ## Sub-item 2 — Add Route Slot: reuse vs. distinct — DONE + live-verified 2026-09-08
 
 Confirmed UI-only, exactly as scoped: `route_slot_group` was already a fully working field on both
@@ -247,6 +378,224 @@ original single-slot state):
 - 0 console errors. Cleanup: discarded the edit buffer, removed the added slot, confirmed via a
   fresh DB read the scratch report is back to its single-slot (`comp-4`, no group) state.
 
+## RRL follow-up (2026-09-08): resolved-name display in RRL + edit/delete icon grouping
+
+Two more rounds of Ryan's live feedback, same session, both scoped to `RouteRow.jsx`'s collapsed
+row and header layout — not new sub-items, but recorded here since they touch the same file/area:
+
+1. **RRL's own row never showed the resolved real name, only sub-items 1/3's other two consumers
+   did.** The header's routes disclosure and the chart legend both already read through
+   `resolvedRouteLabel` (sub-item 1's choke point); RRL's own collapsed title never did — it always
+   showed the raw authored/template string (`r.name`), even once a real route resolved via
+   `?routes=`. Ryan's ask, clarified over two messages: (1) "when routes are in the URL... I want
+   the RRL to use the actual Route Names when the route... is in view mode. When the user clicks
+   into edit mode for THAT Route, then it should show the template text"; (2) clarifying follow-up —
+   unresolved (no `?routes=` yet, the default state) should keep showing the raw placeholder as-is,
+   not a partially-substituted string, and once resolved, show "their template-name in light text
+   below it" rather than just discarding it.
+   - `RouteRow.jsx`: `isResolved = r.catalogRouteName != null` — this field is set ONLY by
+     `useDynamicReportRoutes.js`'s resolve-merge, never on a raw unfilled slot and never on a static
+     route, so it's a reliable per-row "did a real route actually get supplied via the URL" signal
+     (distinct from the report-level `isDynamicReport` flag, which stays true even before any
+     `?routes=` is picked). Unresolved: `displayName = r.name` verbatim — deliberately NOT run
+     through `resolvedRouteLabel` (that would still partially substitute a lone `%y` off the slot's
+     own formula-derived dates, without needing a real route at all — half-filled, not an honest
+     placeholder). Resolved: `displayName = resolvedRouteLabel(r)`, with the original template kept
+     visible underneath in light text (`showTemplateHint`, new `t.routeTitleTemplate` token) whenever
+     it differs from the resolved value.
+   - Edit-mode input needed NO change — it already showed `localName` (buffered from the raw
+     `r.name`), never the resolved label, so "click into edit mode, see the template" was already
+     true; only the COLLAPSED view was wrong.
+   - New tokens: `routeTitleWrap` (the `flex-1 min-w-0` that used to live on `routeTitle` itself,
+     now on a wrapper so the title can be a 2-line stack), `routeTitleTemplate`.
+2. **Edit and delete icons moved to sit next to each other.** Previously opposite ends of the row
+   header (`[pencil] ... route name ... [trash]`); Ryan: "edit/delete icons should be next to each
+   other." Both are now inside `iconContainer`, after the title, wrapped in a new `rowActionsGroup`
+   span — the pencil (or, mid-edit, the Discard/Save pair) immediately followed by the trash icon.
+   Dropped the now-inapplicable `mt-0.5` from `expander`/`expanderOpen`/`saveIconBtn` (that offset
+   was for sitting directly in the outer `items-start` header row; they're now nested one level
+   deeper, inside `iconContainer`'s own `items-center` row). Reorder buttons and the colour dot were
+   NOT touched — only the edit-toggle/delete pairing moved, per the literal ask.
+
+**Live-verified** on the same kept scratch report (`reports/claude_scratch_pct_template`):
+- Unresolved (`?routes=` empty): row showed the literal placeholder `"%n (%y) (2)"`, unchanged —
+  confirmed via zoomed screenshot; edit/delete icons confirmed grouped together, right side of the
+  header.
+- Resolved (`?routes=2216791`, "Route 5 Part"): row's primary title read `"Route 5 Part (2026) (2)"`
+  with `"%n (%y) (2)"` directly underneath in light grey — matches the header pill/chart legend
+  exactly (all three consumers now agree, closing a real pre-existing 3-way inconsistency, not just
+  a cosmetic ask). Opened edit mode on the same row: input showed the raw `"%n (%y) (2)"`, confirming
+  the "template in edit mode" half of the ask was already correct and stayed correct.
+- Regression check on the real, published, unmodified static report `reports/beacon_9_d_jan_25_vs_26`
+  (2 routes, plain names, no `%n`/`%y`): both rows show their plain name with no template-hint line
+  (correct — `catalogRouteName` is never set on a static route, so `isResolved` is false there by
+  construction), edit/delete icons confirmed grouped there too, and the page's own "NO CHANGES"
+  indicator confirmed viewing didn't mutate anything.
+- Discarded the edit-mode buffer opened during this pass; confirmed via a fresh DB read the scratch
+  report's one persisted slot (`comp-4`) is unchanged. 0 console errors throughout.
+
+### Same-day fix: two layout regressions from the above, both Dynamic-Report-only
+
+Ryan caught both live, screenshotted one: "the identity color dot doesn't seem centered... a bunch
+of small alignment issues" and "the css for the RRL actual header is realllly wonky for dynamic
+reports." Both traced to the two features just above — neither ever showed on a static report,
+which is why Ryan's own read ("we have a bunch of extra/different changes there") was exactly
+right:
+
+1. **Header misalignment.** The template-hint line (`routeTitleTemplate`) was nested INSIDE the
+   header row itself, under the title, making that row 2 lines tall on any resolved Dynamic Report
+   route — but only there (`showTemplateHint` is `false` on every static route and every unresolved
+   slot). `colorDotButton`/`reorderButtons` sit outside that title block as `items-start` siblings
+   with small fixed top-margins (`mt-1`/`mt-0.5`) tuned for a single-line title; against a suddenly
+   2-line-tall sibling, those fixed offsets left them sitting too high. **Fix**: moved the template
+   hint OUT of the header row entirely, into its own line in the collapsed `metaIndent` block
+   (alongside `dateMeta`/`tmcMileageMeta`) — the header row is now unconditionally single-line
+   height again, exactly the shape `colorDotButton`/`reorderButtons`'s offsets were always tuned
+   for, regardless of dynamic/static or resolved/unresolved. Retired the now-unneeded
+   `routeTitleWrap` token (title reverted to a single `<span>`, not a 2-line flex-col).
+2. **Actions-row button wrapping.** Sub-item 2's group-reuse `<select>` shared one `flex` row with
+   the "+ Add Route Slot" and "+ Add Graph" buttons — three items competing for the narrow rail's
+   width squeezed both buttons until their own labels wrapped onto 2 lines inside the fixed-height
+   button, reading as broken/overlapping text (Ryan's screenshot). Static reports never show this
+   row's 3rd item (no select there at all), which is why only Dynamic Reports were affected. **Fix**:
+   `actionsRow` is now `flex-col` — the two buttons stay together on their own row
+   (`actionsRowButtons`, unchanged content/order), and the select drops to a second row
+   (`addSlotGroupRow`, now with an "Add as" label and free width to breathe) only when it renders at
+   all. Added `whitespace-nowrap` to `addBtnLabel` as a defense-in-depth hardening — even if a future
+   change squeezes this row again, a label should overflow/clip, never wrap into overlapping text.
+
+**Live-verified** (same scratch report, `?routes=2216791` for resolved / bare for unresolved):
+- Resolved row: `colorDotButton` vs. the title text measured via `getBoundingClientRect()` (not
+  eyeballed off a screenshot, per this repo's own alignment-verification convention) — vertical
+  centers **1px apart** (244+7=251 vs. 242.25+9.75=252). Template hint now renders as its own line
+  below the header, still present and correct.
+- Unresolved row: single-line header, no stray hint line, unchanged from before either fix.
+- Actions row: "+ Add Route Slot"/"+ Add Graph" render on one clean line, no wrapping; "Add as: New
+  route ▾" renders on its own line below once a group exists to reuse.
+- Regression check on `reports/beacon_9_d_jan_25_vs_26` (static, unaffected by construction):
+  actions row still a single clean line (no select ever rendered there), row headers unchanged,
+  byte-for-byte the same layout as every prior live-verification pass on this report.
+- 0 console errors. No DB writes made this pass (navigation + measurement only).
+
+### Same-day fix, round 2: dot still off while editing, template hint indented + spaced wrong
+
+Ryan, watching live: "the identity color dot doesn't seem centered again [while editing]... prob
+cause the input element looks off compared to just a text element" (correct diagnosis, confirmed);
+then, after the alignment-round-1 fix landed: "im watching ur chrome, the template route name is
+still way too low" plus "theres some space there, under the route title and still next to the color
+dot" — two more real, precisely-measured issues, both DOM-measured (not eyeballed) before and after:
+
+1. **Dot still off-center while editing.** `colorDotButton` sat as a direct sibling of
+   `iconContainer` inside the outer `items-start` `rowHeaderWrapper`, with a fixed `mt-1` nudge
+   tuned against ONE specific sibling height. That height differs between collapsed (a ~19.5px
+   `routeTitle` span) and editing (the 32px-tall `titleInput`) — the same fixed-offset fragility as
+   the earlier header-height bug, just exposed by a different pair of states this time. **Fix**:
+   new `titleRow` wrapper (`flex items-center`) around JUST the colour dot + `iconContainer` —
+   genuine flex centering against whatever `iconContainer` actually contains, correct in both
+   states with no tuned number at all. Dropped the now-redundant `mt-1` from `colorDot`/
+   `colorDotButton`. Reorder buttons deliberately left outside this wrapper (still directly in
+   `rowHeaderWrapper`, still `items-start`) — untouched, never reported as wrong.
+   - **Verified**: dot vs. `titleInput` vertical centers, measured — **0px apart** (both 256).
+2. **Template hint (and, it turns out, dateMeta/tmcMileageMeta too) indented 10px short of the
+   title, PLUS a 10px vertical gap under the title specifically for the hint line.** Two separate,
+   independently-measured causes, same block:
+   - *Horizontal*: `metaIndent`'s `pl-7` (28px) was 10px short of the title's real left edge —
+     measured on ALL THREE lines in the block (title at x=137; hint/dateMeta/tmcMileageMeta all at
+     x=127, a **pre-existing** gap on the two older lines too, just never flagged before the hint
+     line made a direct visual comparison to the title unavoidable). Fixed: `metaIndent` →
+     `pl-[38px]`, the exact measured value, shared by both its usage sites (this block, and the
+     expanded-mode name-error message — both want the corrected indent).
+   - *Vertical*: `rowHeaderWrapper`'s own height is set by its TALLEST child — the reorder
+     up/down-arrow stack, 32px, versus the single-line `titleRow`'s 24px — so the whole collapsed
+     summary block (positioned right after the header row, not right after the title specifically)
+     started 10px below the title's real bottom edge (measured: reorder-buttons bottom at y=274,
+     title-row bottom at y=264). Fixed with a new `collapsedSummaryPullUp` token (`-mt-[10px]`)
+     applied ONLY where the collapsed summary block renders — deliberately NOT folded into the
+     shared `metaIndent` token, since the OTHER place that reuses `metaIndent` (the expanded-mode
+     name-error message, whose own header has an `<input>` only ~2px shorter than the reorder-
+     button stack, not 10px) would overshoot and risk overlapping its own header if pulled up the
+     full 10px.
+   - **Verified**: title left=137, hint/dateMeta/tmcMileageMeta left=137 (**exact match**, was
+     -10px); title bottom=261.75, hint top=266 (**4.25px gap**, a normal tight-caption spacing, was
+     14.25px).
+   - **Regression-checked** on `reports/beacon_9_d_jan_25_vs_26` (static): the fix also tightened
+     dateMeta's own gap under the title there — a general improvement (dateMeta always shared the
+     same underlying bug, just never called out), not a behavior change anyone would object to;
+     confirmed visually, 0 console errors, no DB writes (this report was never edited).
+3. 0 console errors throughout both rounds. No DB writes on the scratch report either — every check
+   this round was navigation + `getBoundingClientRect()`/`getComputedStyle()` measurement only.
+
+### Same-day fix, round 3: the residual gap was on the wrong side of the hint line
+
+After round 2, a screenshot: "the '%n %y' are still too low... that gap above them, should prob
+just be below them, that might fix it." Round 2's measurement (title bottom 261.75, hint top 266)
+was already a tight 4.25px — genuinely small, but Ryan's own diagnosis of the FIX (not just the
+symptom) was exactly right: the hint is conceptually PART of the title (same name, resolved vs.
+template), so it should hug the title tightly above, with the visual breathing room instead
+separating it from the date-range/TMC block below (a different kind of information). `routeTitleTemplate`'s
+own `mt-0.5` (top margin) became `mb-1` (bottom margin) — nothing else changed. **Verified**,
+gap-from-previous-line for all three: hint now 2.25px below the title (was 4.25px above-heavy),
+`dateMeta` now 4px below the hint (was 2px) — the asymmetry is now in the direction Ryan asked for.
+Only touches `routeTitleTemplate`, which renders exclusively inside `showTemplateHint` — zero
+static-report impact (confirmed: token has no other consumer). 0 console errors.
+
+### Same-day fixes, rounds 4-7: the root cause was line-height, then the hint's own container
+
+Four more rounds, fast iteration with Ryan watching live in Chrome:
+
+- **Round 4**: "that 2.25 should be at most 1px... add it to the bottom" — moved 1.25px from
+  `collapsedSummaryPullUp`'s magnitude to `routeTitleTemplate`'s own bottom margin. Verified: 1px
+  above, 5.25px below.
+- **Round 5**: Ryan, inspecting live in Chrome DevTools: "the line height for the title is too
+  big... compared to the font inside." Correct — `routeTitle`'s default line-height baked several
+  invisible px above/below the glyph into its own box, which every `getBoundingClientRect()`
+  measurement had been counting as real distance. Added `leading-none` to `routeTitle` and
+  `routeTitleTemplate`. This shrank the title's box (19.5px → 13px) and threw off every
+  hand-tuned offset calibrated against the old, taller box — expected, given they were tuned
+  against real (if now-outdated) measurements, not guesses.
+- **Round 6**: Ryan named the actual architectural problem: "your problem, is the hint subtitle,
+  is in a different place than the title... it prob needs to be in the same div/container...
+  prob flex-col." Correct diagnosis — the hint had lived in the separate `metaIndent` block this
+  whole time, positioned relative to the ENTIRE header row (dominated by the reorder-button
+  stack), never relative to the title specifically, which is why every fix up to this point was a
+  fragile pixel offset that broke again the moment anything else changed. Moved the hint into
+  `routeTitleWrap`, the SAME flex-col as the title (see that token's theme comment) — normal
+  document flow, no cross-container math needed for title↔hint at all. Safe to do this time
+  (an identical restructuring in round 1 was reverted) because the colour dot's own alignment fix
+  (round 2, `titleRow`'s real flex centering) no longer depends on the title being single-line.
+- **Round 7**: with the hint now living in the header instead of `metaIndent`, the OTHER content
+  that still lives in `metaIndent` (`dateMeta`/`tmcMileageMeta`) inherited the exact bug the hint
+  used to have — and `leading-none` made it worse by tightening the title further. Found on the
+  real, published `beacon_9_d_jan_25_vs_26` (a plain static report, no hint involved at all):
+  reorder-buttons bottom at row-relative 34px, title bottom at 18.5px, a 17.5px gap (Ryan: "theres
+  too much space, in the static RRL, between title and dates"). A single pull-up
+  (`collapsedSummaryPullUp`) undershot on a plain title and overshot into the hint once one was
+  showing (Ryan: "now the space underneath the sub-title is too small") — split into two
+  independently-measured values, `collapsedSummaryPullUpNoHint`/`collapsedSummaryPullUpWithHint`,
+  selected in `RouteRow.jsx` by `showTemplateHint`.
+
+**Final settled state**, live-verified via `getBoundingClientRect()`/`getComputedStyle()` on both
+the scratch Dynamic Report and the real static `beacon_9_d_jan_25_vs_26`, 0 console errors, no DB
+writes made during any of this verification:
+
+- Colour dot vs. title/input: **0px** off, collapsed or editing (real flex centering via
+  `titleRow`, not a tuned offset).
+- Title/hint left edge: **identical** (same container, automatic — no indent math for these two).
+- Title → hint gap: **2px**. Hint → dateMeta, dateMeta → tmcMileageMeta: **2px each** — a
+  consistent rhythm end to end, both with and without a hint present.
+- Static report (`beacon_9_d_jan_25_vs_26`): title → dateMeta now also **2px** (was 17.5px before
+  round 7) — this was always a latent bug on every report, not something introduced by the hint
+  feature; fixing it is a pure improvement, not a behavior change anyone would object to.
+- One known, accepted imperfection, not fixed: the colour dot centers against the FULL title+hint
+  block when a hint is present (not against the title line specifically) — off by ~5.75px from the
+  title's own line. Found during verification, not reported by Ryan; his call once shown: "i think
+  ur good with current state." A proper fix exists (decouple dot+title into their own row,
+  separate from the hint) but wasn't built — flag here for whoever next touches this area, since
+  it's a real, measured gap, just an accepted one.
+- Code cleaned up per Ryan's explicit ask ("clean up the random margins/padding") — comments
+  consolidated to explain the FINAL shape concisely rather than narrate all 7 rounds inline; the
+  round-by-round record lives here instead.
+
 ## Sub-item 3 — Header preview-swap button — DONE + live-verified 2026-09-05
 
 **Real gap found while scoping, fixed as a prerequisite**: `ReportPageHeader.jsx` has no join
@@ -303,14 +652,159 @@ subdomain/mount gotcha):
   `isDynamicReport` gate correctly hides this for every non-Dynamic-Report page.
 - 0 console errors across every navigation in this pass.
 
-## Sub-item 4 — Bidirectional static↔dynamic conversion (deferred, own design pass)
+## Sub-item 4 — Bidirectional static↔dynamic conversion — SCOPED 2026-09-08, not yet built
 
-Not scoped beyond the triage doc's framing: a 1:1 mapping between a static report's `routes[]`
-(concrete tmc_array/dates baked in) and a Dynamic Report's route slots + `?routes=` URL params, so
-toggling the "Dynamic Report" switch (`ReportRouteList.jsx`'s existing `toggleDynamicReport`,
-~line 245) preserves what's currently displayed instead of leaving stale hardcoded routes (dynamic
-→ static) or empty/unresolved slots (static → dynamic). Explicitly the biggest unknown in this
-batch — do not start until 1–3 are done and until this gets its own scoping/design session.
+### The original ask, as fully as it exists anywhere
+
+Traced back to the very first commit of `npmrds-reports-routes-feedback-triage.md` (`5078eec7`,
+2026-09-04) — the wording there is **byte-identical** to the current cross-reference in that file,
+and no fuller/more verbatim capture of Ryan's original message exists anywhere in the repo (no raw
+notes file, nothing in `dynamic-reports-and-route-tags.md`/its archive, which never discusses
+conversion at all — only the toggle mechanism's own build). This is the complete ask, not a lossy
+summary of something richer:
+
+> "Bidirectional static↔dynamic conversion — the 1:1 mapping Ryan describes (routes ⇄ route slots +
+> URL params) so switching modes preserves what's displayed instead of leaving stale hardcoded
+> routes or empty slots."
+
+The problem it names is real and independently confirmed in the current code: `toggleDynamicReport`
+(`ReportRouteList.jsx:269`) only adds/removes the `routeSlots`/`baseDate` page-filter registration —
+its own comment says so directly: **"Does NOT retroactively convert any already-added concrete
+routes into slots — build a Dynamic Report starting from a blank routes list."** Flip the switch on
+today and every already-added route just silently stops resolving (no `tmc_array`, no `id` — a slot
+needs a URL id it never got); flip it off and any resolved-via-URL preview is discarded, the report
+reverts to whatever static `routes[]` happened to be sitting there (usually empty, since a Dynamic
+Report is normally *authored* with slots from the start).
+
+### Current-state grounding: the two shapes, and what actually differs
+
+**Static route** (`useReportRow.js`'s `addRoutes`, and old-converter's `build_route_entry`):
+`name`, `color`, `route_comp_id`, `startDate`/`endDate` (or `dateFormula`+`derivedFromRoute`, same
+Mechanism B every route type already supports), plus **concrete catalog data baked in at add time**:
+`tmc_array`, `id` (the real catalog row's own id — `route_id` as a legacy fallback, per
+`excludeRouteIds`'s own comment: "every catalog row has one regardless of provenance"),
+`description`/`points`/`metadata`/`conflation_array`/`conflation_version`/`created_at`/`created_by`/
+`updated_at`/`isValid`/`graphIds` (the last is dead weight — Design Push #2 moved graph assignment
+off the route entirely).
+
+**Dynamic Report route SLOT** (`handleAddRouteSlot`, old-converter's `build_slot_entry`): exactly
+`name`/`color`/`route_comp_id`/dates-or-formula/`route_slot_group` — **no catalog snapshot at all**.
+`useDynamicReportRoutes.js` resolves a slot against a real catalog row **at view time only**, from
+the URL's `?routes=` ids, merging `{...slot, ...catalogRow}` into `effectiveRoutes` — never
+persisted back to storage.
+
+**A static report can already have 2+ routes sharing one real catalog id** (nothing in `addRoutes`
+prevents re-adding the same route with different dates — its own comment: "a different date range
+is a legitimate use case") — this is the *exact static-side equivalent* of a Dynamic Report's
+`route_slot_group`, which de-risks the static→dynamic direction: grouping-by-shared-id is already a
+real, precedented shape, not a new concept being invented for this conversion.
+
+**Load-bearing finding: graph assignment survives the conversion untouched, in both directions.**
+A graph's `_measurePick.routeIds` (`useGraphPublish.js:233`, `routesByCompId.get(id)`) binds by
+**`route_comp_id`**, never by the catalog `id`/`tmc_array`. Since the conversion (below) never
+touches `route_comp_id` — only adds/strips the catalog-snapshot fields around it — every graph's
+route assignment keeps working with **zero graph-side code changes**, in either direction. This is
+the single biggest de-risking fact for this whole sub-item; confirmed by reading the binding code,
+not assumed.
+
+### Proposed design
+
+**Static → Dynamic** (author flips the switch on):
+1. Compute the distinct real ids currently in use across `routes[]` (`r.id ?? r.route_id`), in
+   first-appearance order.
+2. Build the new slot array from the *same* `routes[]` entries: keep `name`/`color`/
+   `route_comp_id`/dates-or-formula/**`route_comp_ids`** (plural — see the correction below, this
+   was wrongly scoped out in the first draft of this section); strip every catalog-snapshot field
+   (`tmc_array`, `id`, `route_id`, `description`, `points`, `metadata`, `conflation_array`,
+   `conflation_version`, `created_at`, `created_by`, `updated_at`, `isValid`, `graphIds`); set
+   `route_slot_group` on any entry sharing a real id with an earlier entry (group key = that
+   earlier entry's own `route_comp_id` — same convention sub-item 2 already uses).
+3. `persistRoutes(slots)` + register the `routeSlots`/`baseDate` filters (existing
+   `toggleDynamicReport` logic, unchanged).
+4. Immediately `navigate` to `?routes=<the distinct ids>` (same raw-`location.search`-patch
+   approach sub-item 3's "Change Routes" and the "Viewing as of" control already use) — so the
+   author's own view stays visually identical the instant the switch flips, instead of falling
+   through to "Select routes to view this report."
+
+**Dynamic → Static** (author flips the switch off):
+1. Require a fully resolved current preview first (`effectiveRoutes.length === routes.length` —
+   every slot has actually resolved to something, not just URL-id-count matching group-count,
+   which wouldn't catch a stale/bad id). If not resolved, there is nothing displayed to preserve —
+   see the open question below on what happens then.
+2. Build the new static `routes[]` **directly from `effectiveRoutes`** — it's already the fully
+   merged `{...slot, ...catalogRow}` shape (`useDynamicReportRoutes.js`), so this is close to a
+   pass-through: drop only `catalogRouteName` (a resolution-only field `useDynamicReportRoutes.js`
+   adds, never part of the real static-route contract). Any `dateFormula`/`derivedFromRoute` a slot
+   had carries straight through unchanged — Mechanism B is identical on both sides, nothing
+   dynamic-specific about it, so a derived-date relationship stays live and derived, not frozen into
+   a snapshot; `route_slot_group` is left in place too (inert on the static side, same as it already
+   is on old converter-imported static rows).
+3. `persistRoutes(newRoutes)`, then clear the `routeSlots`/`baseDate` filters, then `navigate` back
+   to the bare pathname (`?routes=`/`?asOf=` are no longer meaningful once static).
+
+### Does this match what Ryan asked for?
+
+**Yes, on the core ask** — both directions genuinely preserve what's on screen at the moment of the
+flip (real routes ⇄ real slots, same `route_comp_id`s, same dates, same graph bindings, no stale
+hardcoded leftovers, no empty slots) rather than today's silent data-loss/blank-state behavior. The
+"1:1 mapping" is literal: each static route becomes exactly one slot (or joins an existing slot
+group when it shares a real id with a sibling), and each resolved slot becomes exactly one static
+route.
+
+**One place this proposal adds a condition beyond the original one-sentence ask**, flagged rather
+than silently decided: dynamic→static requires the report to already be resolved (a real `?routes=`
+picked) before allowing the flip — if nothing's been picked yet, there IS no "what's currently
+displayed" to preserve, so the literal ask doesn't fully specify behavior for that case. See open
+question 1.
+
+### Open questions for Ryan
+
+1. **Dynamic → static with nothing resolved yet** (a freshly authored/reused Dynamic Report, no
+   `?routes=` in the address bar): block the toggle-off with a message ("pick routes to convert, or
+   they'll be lost")? Silently fall back to today's behavior (empty `routes[]`)? Or open the
+   blocking picker inline right there so the author resolves it as part of turning the switch off?
+2. **Should this now-real data mutation get a confirm step?** Today the Switch fires
+   `toggleDynamicReport` directly on toggle with no confirmation — that was fine when it only
+   touched page filters, but this makes it a real `routes[]` rewrite (reversible by flipping back,
+   but not obviously so to an author mid-click).
+3. **Static→dynamic naming**: a static route's name (e.g. "Route 5 Part") carries over literally,
+   with no `%n`/`%y` tokens auto-added — so if the author later swaps which real route fills that
+   slot (via the header's "Change Routes"), the display name goes stale (still says "Route 5 Part"
+   even if swapped to a different route). Leaving names exactly as authored (not auto-rewriting
+   them) is my default, but flagging since it's a real, visible quirk, not a bug — an author can
+   already retype a name to include `%n`/`%y` by hand if they want it to adapt, no new mechanism
+   needed.
+
+### Correction (verified 2026-09-08, before presenting this scoping): `route_comp_ids` IS in scope
+
+The first draft of this section claimed `route_comp_ids` (plural — `useGraphPublish.js:87,233`, the
+converter-era comp-merge compatibility field: several old comps sharing one `routeId`+calendar
+dates collapsed into one live `routes[]` entry at conversion time, which then lists every absorbed
+comp id so a graph still bound to one of those old, now-gone ids can still resolve) was "orthogonal,
+nothing here interacts with it," reasoning that "the live UI never produces merged comps." That's
+true, but beside the point — this conversion doesn't need to PRODUCE a merged entry, it needs to not
+DROP one that's already there. **Confirmed live**, not just by reading code: the real, published,
+already-converted `reports/beacon_9_d_jan_25_vs_26` (`report_id` 2216846, queried directly from
+`reports_snap_2` this session) has exactly this shape today —
+`{route_comp_id: "comp-0", route_comp_ids: ["comp-0", "comp-2"], ...}`. If that report were ever
+toggled to Dynamic and the conversion silently dropped `route_comp_ids` (as the original strip-list
+didn't explicitly exclude it, and every other converter-only field around it — `_old_report_id`,
+`_old_settings` — genuinely is safe to drop), any graph still keyed to the absorbed `comp-2` id
+would stop resolving — a real, silent regression on exactly the kind of older-converted report this
+feature is likely to be used on first. Fixed above: `route_comp_ids` is now explicitly on the KEEP
+list for static→dynamic, alongside `route_comp_id`. Dynamic→static needs no equivalent fix — a
+Dynamic Report slot is only ever created by `handleAddRouteSlot` (never produces `route_comp_ids`),
+and freezing `effectiveRoutes` into `routes[]` already carries any field a slot happens to have
+(including `route_comp_ids`, if a report was static→dynamic-converted before and is now being
+converted back) through unchanged — no separate handling needed there, confirmed by reading the
+spread order (`{...slot, ...catalogRow}`) `useDynamicReportRoutes.js` already uses.
+
+### Explicitly not touched by this design
+
+- **Graphs** — zero changes needed once `route_comp_ids` is preserved (see the correction above and
+  the load-bearing finding above it).
+- Sub-item 2's grouping mechanism itself — reused as-is (`routeSlotGroupKey`/
+  `distinctRouteSlotGroups`), not modified.
 
 ## Files touched / likely touched
 
