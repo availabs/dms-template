@@ -423,7 +423,11 @@ fresh replacement row both rendered as separate cards for the same report. 16 or
 accumulated (some templates 3-4 deep, predating `--replace`'s existence) before this was caught;
 `--replace` now looks up and deletes the stale `reports_snap_2` row (via the same `findSnapRow`
 `--update` uses) BEFORE deleting the page itself. `--dry-run` reports what `--replace` would
-delete without deleting it. All 12 catalog templates' dynamic-report spec baselines
+delete without deleting it. (2026-09-04: the underlying root cause — generic page delete not
+cascading to `reports_snap_2` at all — was fixed platform-side, see
+`src/dms/planning/tasks/current/page-delete-lifecycle-hook.md`; this script's own `findSnapRow`
+workaround is now redundant-but-harmless defense in depth rather than the only mitigation, so it's
+left as-is.) All 12 catalog templates' dynamic-report spec baselines
 (`dynamic_report_annual_average_study`, `dynamic_report_monthly_congestion`,
 `dynamic_report_one_week_study`, `dynamic_report_seasonality`) plus the golden-corpus fixtures
 were regenerated against the post-title-block-removal build and committed

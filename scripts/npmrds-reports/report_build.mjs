@@ -54,26 +54,54 @@ import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+// npmrdsv5's app/pattern name and the reports_snap_2 catalog's source/view ids
+// are the single source of truth in hooks/reports_snap_ids.json — also read by
+// convert_old_reports_lib/config.py, prune_report_snap_orphans.mjs, and
+// dms-server's npmrds_report_page_delete_hook.js. Do not hardcode a second copy here.
+const REPORTS_SNAP_IDS = JSON.parse(readFileSync(resolve(REPO, 'hooks/reports_snap_ids.json'), 'utf8'));
+
 // ── DMS content constants (mirrors scripts/npmrds-reports/convert_old_reports.py) ──────────
-const APP = process.env.DMS_APP || 'npmrdsv5';
+const APP = process.env.DMS_APP || REPORTS_SNAP_IDS.app;
 const SITE_TYPE = process.env.DMS_TYPE || 'dev2';
 const HOST = process.env.DMS_HOST || 'http://localhost:3001';
-const PATTERN = 'npmrds_sub';
+const PATTERN = REPORTS_SNAP_IDS.pattern;
 const PAGE_TYPE = `${PATTERN}|page`;
 const COMPONENT_TYPE = `${PATTERN}|component`;
 const PAGE_TEMPLATE_ID = 2187021;                    // "Report Page" page template
-const REPORTS_SNAP_TYPE = 'reports_snap_2|2177440:data';
+// The reports_snap_2 dataset itself — used both to write the routes catalog row
+// and to look a report's own row back up by report_id for --update/--from-page.
+const REPORTS_SNAP_SOURCE_ID = REPORTS_SNAP_IDS.reports_snap_source_id;
+const REPORTS_SNAP_VIEW_ID = REPORTS_SNAP_IDS.reports_snap_view_id;
+const REPORTS_SNAP_TYPE = `reports_snap_2|${REPORTS_SNAP_VIEW_ID}:data`;
 const DEFAULT_PARENT_SLUG = 'reports';
 // The "Routes Data" catalog a spec's `route_id`s refer to.
 const ROUTES_SOURCE_ID = 2107426;
 const ROUTES_VIEW_ID = 2107427;
-// The reports_snap_2 dataset itself — used to look a report's own row back up
-// by report_id for --update/--from-page (source/view ids read off a live row's
-// dataset query response; matches REPORTS_SNAP_TABLE's name in convert_old_reports.py).
-const REPORTS_SNAP_SOURCE_ID = 2177438;
-const REPORTS_SNAP_VIEW_ID = 2177440;
 // Sanity cap on _specRevisions length (see the task file's storage-decisions table).
 const REVISION_CAP = 200;
+
+// Every `dms` CLI call this script makes runs unauthenticated unless given a token — and several
+// commands (section create/delete, page update, raw update --set) do their own internal
+// read-modify-write against the target page/row. `npmrdsv5+npmrds_sub`'s pattern restricts
+// `view-page` via authPermissions; an unauthenticated read of a gated row comes back as the
+// literal string "no-access" (not an error), which those commands' read-modify-write logic
+// silently treats as empty data — discarding whatever was already there (a page's
+// draft_sections, say) with zero error anywhere in the chain. Found + fully reproduced
+// 2026-09-05, see src/dms/planning/tasks/current/auth-permission-chain-and-unguarded-writes.md's
+// "Defect D" for the full mechanism. This doesn't fix that underlying CLI/library gap — it's a
+// library-level issue, not this script's — it just makes sure THIS script always runs
+// authenticated so it can't hit it. Always mints a fresh token (not "reuse the file if present")
+// since a stale token risks the exact same silent-corruption failure mode, just intermittently.
+const AUTH_TOKEN = (() => {
+  const mintScript = resolve(REPO, 'scratchpad/npmrds-sub/mint_token.sh');
+  try {
+    execFileSync('bash', [mintScript], { stdio: 'pipe' });
+  } catch (e) {
+    fail(`could not mint a dev auth token (${mintScript}): ${e.message}\n` +
+      `Every dms CLI call below needs one — see the comment above this block for why.`);
+  }
+  return readFileSync(resolve(REPO, 'scratchpad/npmrds-sub/.dms-auth-token'), 'utf8').trim();
+})();
 
 // A `graphType: "Map"` graph is NOT an AVL Graph — it's built by shelling out
 // to convert_old_reports.py's `--route-map-section` (see composeMapGraphState
@@ -219,7 +247,7 @@ function fail(msg) {
 // resolution and config. Same approach the Python converter uses. Defined
 // early (before spec loading) because --from-page runs without a spec at all.
 function dms(args, data) {
-  const full = ['--host', HOST, '--app', APP, '--type', SITE_TYPE, ...args];
+  const full = ['--host', HOST, '--app', APP, '--type', SITE_TYPE, '--auth-token', AUTH_TOKEN, ...args];
   if (data !== undefined) full.push('--data', JSON.stringify(data));
   const out = execFileSync('dms', full, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   const trimmed = out.trim();
@@ -989,12 +1017,18 @@ const { createServer } = await import('vite');
 const server = await createServer({ root: REPO, server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 
 let composedStates;
+let DEFAULT_GRAPH_SECTION_BORDER;
 try {
   const mp = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/index.js');
   const cmc = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js');
   const graphCfg = await server.ssrLoadModule(
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/graph_new/config.jsx');
   const avlGraph = graphCfg.default;
+  // Shared with useAddGraphSection.js (the UI "+ Add Graph" flow's counterpart to this
+  // function) via reportSectionDefaults.js, loaded through the same ssrLoadModule bridge
+  // already used for composeMeasureConfig.js — one real module, not a duplicated literal.
+  ({ DEFAULT_GRAPH_SECTION_BORDER } = await server.ssrLoadModule(
+    '/src/themes/transportny/components/ReportRouteList/reportSectionDefaults.js'));
 
   // Validate picks against the vocabulary before composing, so a typo fails
   // loudly here instead of producing a silently empty graph.
@@ -1525,15 +1559,26 @@ function clonedSection(tmplSection, trackingId) {
 }
 
 function graphSectionData(g, i, trackingId) {
+  const elementType = g._mapElementType || g._infoBoxElementType || g._routeCompareElementType || 'AVL Graph';
   return {
     type: COMPONENT_TYPE,
     group: 'default',
     title: g.title || '',
     parent: parentRef,
     trackingId,
+    // Rounded card by default (2026-09-04, Ryan) — see reportSectionDefaults.js for why
+    // this is a shared constant, not a literal. Future-default only, not retroactive —
+    // existing reports keep their current chrome until an author (or a future --update
+    // run) touches them.
+    border: DEFAULT_GRAPH_SECTION_BORDER,
+    // Inline title/legend row (2026-09-04, Ryan) — selects the `reportInlineTitle` avlGraph
+    // style (transportny/themev2.js), which is what actually reads `theme.titleInlineWithLegend`
+    // in GraphComponent.jsx. Only meaningful for the real chart component ('AVL Graph' —
+    // Map/Spreadsheet-backed InfoBox/RouteCompare sections have no avlGraph theme to select).
+    ...(elementType === 'AVL Graph' ? { activeStyle: 'reportInlineTitle' } : {}),
     ...(g.size ? { size: String(g.size) } : {}),
     element: {
-      'element-type': g._mapElementType || g._infoBoxElementType || g._routeCompareElementType || 'AVL Graph',
+      'element-type': elementType,
       // element-data is a JSON STRING, not an object (see the CLI skill's
       // element-data gotcha) — a nested object here is silently unusable.
       'element-data': JSON.stringify(composedStates[i]),

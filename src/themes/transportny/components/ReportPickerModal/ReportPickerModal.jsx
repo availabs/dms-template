@@ -206,7 +206,7 @@ export default function ReportPickerModal({ open, setOpen, initialSearchTerm = '
           )}
           {tags.length > 0 && (
             <span className={t.reportTagChips}>
-              {tags.map((tag) => <span key={tag} className={t.reportTagChip}>{tagToLabel(tag)}</span>)}
+              {tags.map((tag) => <span key={tag} className={t.reportTagChip}>{tagToLabel(tag, currentUserId)}</span>)}
             </span>
           )}
         </span>

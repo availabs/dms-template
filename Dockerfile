@@ -1,5 +1,6 @@
 # DMS Template Server — extends the upstream dms-server runtime with this
-# repo's app-owned datatype plugins (data-types/) loaded via DMS_EXTRA_DATATYPES.
+# repo's app-owned datatype plugins (data-types/) loaded via DMS_EXTRA_DATATYPES,
+# and its page-delete side effect (hooks/) loaded via DMS_PAGE_DELETE_HOOK.
 #
 # Build:  docker build -t dms-template-server .
 # Run:    docker run -d --env-file .env -p 5555:5555 \
@@ -15,6 +16,7 @@
 #   DMS_AUTH_DB_ENV       Auth database config name
 #   DMS_STORAGE_TYPE      'local' (default) or 's3'
 #   DMS_EXTRA_DATATYPES   Set by this image to /app/data-types/register-datatypes.js
+#   DMS_PAGE_DELETE_HOOK  Set by this image to /app/hooks/register_page_delete_hooks.js
 
 FROM node:22-bookworm-slim
 
@@ -81,12 +83,19 @@ RUN npm install --omit=dev
 #      ClickHouse + Postgres:     the pgEnv's <env>.config.json (db configs volume/baked per deploy)
 COPY data-types ./data-types
 
+# 4) Template-owned page-delete side effects, loaded via DMS_PAGE_DELETE_HOOK.
+#    The bootstrap (`register_page_delete_hooks.js`) lives inside `hooks/` and
+#    uses sibling-relative requires (`require('./npmrds_report_page_delete_hook')`,
+#    etc.) — same shape as `data-types/register-datatypes.js` above.
+COPY hooks ./hooks
+
 # Persistent storage: host ID, upload temp files, local file storage.
 VOLUME /app/src/dms/packages/dms-server/var
 
 ENV NODE_ENV=production \
     PORT=5555 \
-    DMS_EXTRA_DATATYPES=/app/data-types/register-datatypes.js
+    DMS_EXTRA_DATATYPES=/app/data-types/register-datatypes.js \
+    DMS_PAGE_DELETE_HOOK=/app/hooks/register_page_delete_hooks.js
 
 EXPOSE 5555
 

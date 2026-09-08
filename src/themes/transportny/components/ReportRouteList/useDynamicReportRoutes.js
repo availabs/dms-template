@@ -81,16 +81,15 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
   // (design push #2, 2026-08-06 — see useGraphPublish.js) so there's nothing to carry over here
   // anymore.
   //
-  // `name` is the one field that does NOT simply take the catalog row's value — only a genuinely
-  // meaningless placeholder name should ever be replaced by the resolved route's real name.
-  // `isPlaceholderName` (set only by handleAddRouteSlot's auto-generated "Route Slot N" default,
-  // cleared the moment a human renames it) marks that one case; everything else — a ported
-  // template's descriptive per-comp name (e.g. "2024 - AM Peak - Rochester Inner Loop 2"), or any
-  // deliberate rename — is authoritative and must never be silently overwritten by a resolved
-  // route's own name, same as a route's name is authoritative everywhere else in this component
-  // (see useReportRow.js's rename-collision guard). Found live 2026-08-04: every row of a
-  // multi-comp route_slot_group was showing the identical bare catalog name in view mode, erasing
-  // the very per-row distinction (date window / peak label) the group's rows exist to carry.
+  // `name` is always the slot's own authored name, verbatim — never overwritten here. A slot whose
+  // name contains the `%n`/`%y` template tokens (handleAddRouteSlot's default, or any deliberate
+  // authoring choice) gets those substituted for the resolved route's real name/year downstream, in
+  // `resolvedRouteLabel` (relativeDateResolution.js) — the one place both the header's routes
+  // disclosure and the chart legend read a slot's display name from, so they can't disagree.
+  // Retired 2026-09-05: this used to special-case an `isPlaceholderName` flag to fully replace a
+  // never-renamed slot's name with the bare catalog name; the `%n`/`%y` mechanism is strictly more
+  // general (an author can mix template tokens with literal text, e.g. "%n (%y)") and needs no
+  // separate boolean — the tokens' presence in the string is the whole signal.
   const groups = distinctRouteSlotGroups(slots);
   const resolvedRoutes = !enabled ? [] : (slots || [])
     .map((slot) => {
@@ -103,13 +102,12 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
         ...catalogRow,
         route_comp_id: slot.route_comp_id,
         color: slot.color,
-        name: slot.isPlaceholderName ? (catalogRow.name ?? slot.name) : slot.name,
+        name: slot.name,
         // The resolved catalog row's OWN name — the real corridor ("NY-9D NB"), as opposed to
         // `name` above (the slot's per-variant label, "Current Year"/"1 Year Ago"). Kept as a
-        // separate field rather than folded into `name` so a consumer that wants "which physical
-        // route is this" (ReportPageHeader's routes disclosure, grouping variants under their
-        // shared base route) can read it without disturbing `name`'s existing, load-bearing
-        // slot-label behavior above.
+        // separate field so a consumer that wants "which physical route is this" (the header's
+        // routes disclosure, grouping variants under their shared base route — also the `%n`
+        // substitution source above) can read it without disturbing `name` itself.
         catalogRouteName: catalogRow.name,
       };
     })

@@ -429,15 +429,33 @@ const SECTIONS = [
   // the shared hairline and the outer radii. Active = Templates (this page) — a plain cell,
   // like the mockup's `aria-current` span.
   //
-  // DECISION D2 (task file): the list page (npmrds-reports-list.html) is not built live yet,
-  // so "All reports" ships INERT — a static cell with no href — rather than a 404. Flipping it
-  // to a link later is one cell: `isLink: true, location: "/converted_reports/all_reports",
-  // searchParams: "none"`.
+  // DECISION D2 (task file) RESOLVED 2026-09-03: the list page
+  // (planning/transportny/tasks/current/npmrds-all-reports-list-page.md) is now built at
+  // `reports/list` (page 2217965, a child of this page) — "All reports" is a real link, no
+  // longer inert. `/reports/list` is site-relative (not `/npmrds/reports/list`): the `npmrds_sub`
+  // pattern's own `base_url` ("/npmrds") is prepended automatically, same convention every other
+  // `L.*` target in this file already relies on.
+  //
+  // FIXED 2026-09-04 (was: KNOWN, DEFERRED 2026-09-03): the two cells rendered as two separate
+  // pills with a visible gap rather than one seamless segmented control. Active-left here already
+  // matches what `viewTabOn`/`viewTabOff` bake in ("the active/dark cell is always the LEFT one"),
+  // so the color/radius seam was never the issue on THIS page — the gap was the anchor-tag padding
+  // leak: "All reports" (the LINK cell) has a wrapper `<div>` (theme.value, `px-3 pb-3...`) that is
+  // a SEPARATE parent of the `<a>` the token classes land on, so the token's `!important` padding
+  // can't reach it — a STATIC cell doesn't have this problem (its wrapper classes merge onto the
+  // SAME element the token lands on). Same root cause diagnosed on the list page
+  // (build_npmrds_reports_list.mjs, "SECOND FIX" comment) — fixed here the same way, with
+  // `cardStyle: "flush"` (themev2.js dataCard styles). `cardsVerticalAlign: "stretch"` is REQUIRED
+  // alongside it: `flush` uses `layoutModel: "v2"`, and Card.layout.js's `resolveCardsPackMode`
+  // defaults v2 to "top" packing (v1 defaults to "stretch") — without this the toggle would
+  // top-pack inside its `height:"fill"` section instead of centering.
   { group: B.header, size: "2", padding: { left: "0", right: "0" }, height: "fill", elementType: "Card", data: card(REPORTS, [
     stat("view_templates", "Templates", "viewTabOn"),
-    stat("view_all", "All reports", "viewTabOff"),
+    stat("view_all", "All reports", "viewTabOff", { isLink: true, location: "/reports/list", searchParams: "none" }),
     SEED("view_seed"),
   ], {
+    cardStyle: "flush",
+    cardsVerticalAlign: "stretch",
     cellsGridSize: 2, cellsGridGap: 0, cellsPadding: 0, cardsPadding: 0,
     cellsTracksTemplate: "minmax(0,max-content) minmax(0,max-content)",
     cellsVerticalAlign: "stretch", cellsContentVAlign: "center", totalLength: 1, fetchMode: "force",

@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="%VITE_DMS_FAVICON%" />
+    <!-- Start the DNS+TCP+TLS handshake to these third-party origins immediately,
+      in parallel with the rest of parsing, instead of only once the parser
+      reaches the tags below that actually use them (the CDN Tailwind script,
+      the Google Fonts CSS, and the font files it references from a separate
+      origin). Mitigates occasional latency spikes from these external
+      dependencies without changing what's loaded. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!--
       Moved up from the end of <body> and given `defer`: previously the
       browser didn't even start downloading this until the entire rest of

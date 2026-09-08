@@ -6,6 +6,7 @@ import { CMSContext } from '../../../../dms/packages/dms/src/patterns/page/conte
 import { applyMeasurePickToState } from '../MeasurePicker';
 import { BASE_SOURCE, applyDefaultLegendPosition } from '../MeasurePicker/composeMeasureConfig';
 import { composeMapSectionConfig } from '../MeasurePicker/composeMapConfig';
+import { DEFAULT_GRAPH_SECTION_BORDER } from './reportSectionDefaults';
 
 const AVL_GRAPH_ELEMENT_TYPE = 'AVL Graph';
 const SPREADSHEET_ELEMENT_TYPE = 'Spreadsheet';
@@ -103,6 +104,12 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
       is_draft: true,
       // Same shape sectionArray.jsx's own save() stamps onto every newly-created section.
       parent: JSON.stringify({ id: item.id, ref: `${item.app}+${item.type}` }),
+      border: DEFAULT_GRAPH_SECTION_BORDER,
+      // Inline title/legend row (2026-09-04, Ryan) — selects the `reportInlineTitle` avlGraph
+      // style (transportny/themev2.js), which is what actually reads `theme.titleInlineWithLegend`
+      // in GraphComponent.jsx. Only meaningful for the real chart component ('AVL Graph' — Map has
+      // no avlGraph theme to select, and Table/Spreadsheet has no chart legend at all).
+      ...(elementType === AVL_GRAPH_ELEMENT_TYPE ? { activeStyle: 'reportInlineTitle' } : {}),
       element: { 'element-type': elementType, 'element-data': JSON.stringify(state) },
     };
     const nextSections = [...sectionList, newSection];
