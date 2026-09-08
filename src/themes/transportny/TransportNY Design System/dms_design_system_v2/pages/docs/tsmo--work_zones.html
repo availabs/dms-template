@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Work Zones dashboard · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="screens" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · screens</div>
+          <h1 class="doc-title">Work Zones dashboard.</h1>
+          <p class="doc-lede">The delay attributed to construction, maintenance and emergency-operations events: where it lands, how long zones run, and how much of it is planned work that can be scheduled around. What each panel shows, on what basis, and how it is computed. Also what the page does not show.</p>
+          <div class="stamps">
+            <span class="type">screens</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-this-page-answers">What this page answers</h2>
+          <p>"What construction costs drivers." How much delay work zones caused in a year and region, how it splits between planned and emergency work, which facilities and regions carry it, and how long zones run. The page's lede states that construction is New York's largest source of attributed delay, about twenty-two times the delay attributed to crashes.</p>
+
+          <h2 id="filters">Filters</h2>
+          <p><span class="ui">Year</span>, <span class="ui">Region</span> and <span class="ui">Type</span>. The bar is annotated <span class="ui">NY-filtered · construction &amp; maintenance · reactive incidents → incidents</span>. <span class="ui">Type</span> offers Construction, Maintenance and Emergency Operations. See <a href="tsmo--filters.html">Using the filter bar</a>. At the 2026-09-08 check the dashboard opened on 2026, the current and partial year; set <span class="ui">Year</span> to a complete year before you read a total.</p>
+          <div class="callout basis"><span class="k">basis</span>Events are TRANSCOM events filtered to New York whose NYSDOT sub-category is Construction, Maintenance or Emergency Operations. Delay is attributed per event in vehicle-hours and priced at an interim flat $20 per vehicle-hour. The status line's "1.77M construction events since 2015" counts the whole feed; the panels follow <span class="ui">Year</span>. 2026 is a partial year.</div>
+
+          <h2 id="most-of-it-is-planned">Most of it is planned</h2>
+          <p>The headline card gives work-zone delay in vehicle-hours and its cost for the filters. <span class="ui">Work-zone delay by year · veh-hrs</span> plots 2019 to 2026 and follows <span class="ui">Region</span> and <span class="ui">Type</span>. <span class="ui">Planned vs emergency work</span> sets each type's event count beside its delay.</p>
+          <p><strong>How it is computed.</strong> How much delay work zones cause, where it lands, how long zones run, and how much is planned work. Each event's footprint is its affected segments and 5-minute slices with delay above the recurrent baseline, summed to vehicle-hours and converted to dollars. See <a href="measures_and_data--measures--work_zone_delay.html#how-it-is-computed">Work-zone delay</a>.</p>
+          <ul>
+            <li>The caption: work-zone delay rose through 2021–2022 as lettings ramped. Bars span 2019–2026, 2026 partial; attribution before 2019 is sparse.</li>
+            <li>A zone with no lane closure and no speed drop carries no delay but still counts as an event.</li>
+          </ul>
+
+          <h2 id="where-it-lands">Where it lands</h2>
+          <p><span class="ui">Top facilities by work-zone delay</span> ranks facilities by attributed vehicle-hours, with dollars at the interim $20 basis; the caption notes that New York City corridors dominate. <span class="ui">Work-zone delay by NYSDOT region</span> gives each region's total in millions of vehicle-hours. Both follow <span class="ui">Region</span>, <span class="ui">Year</span> and <span class="ui">Type</span>.</p>
+
+          <h2 id="how-long-they-run">How long they run</h2>
+          <p><span class="ui">Work-zone duration profile</span> is a histogram in hours, with a <span class="ui">Duration &amp; exposure</span> card beside it. Durations are the estimated duration recorded on the event. Most work-zone events carry short estimated durations; the long tail is where the delay accrues.</p>
+
+          <h2 id="how-work-zone-delay-is-measured">How work-zone delay is measured</h2>
+          <p>The method note at the foot of the page. Work-zone events are the three categories, filtered to New York, the planned-work counterpart to the Incidents dashboard. Delay is attributed per zone against the recurrent baseline. Dollars are an interim $20, with a class-weighted rate being applied at the data layer. Exposure in lane-mile-hours is on the backfill list; safety is a separate dashboard in development.</p>
+
+          <h2 id="what-this-page-does-not-show">What this page does not show</h2>
+          <ul>
+            <li><strong>Active work zones.</strong> A band for zones active now, with a map and live counts, was removed on 2026-07-28. The dashboard is historical delay attribution by year. A live count needs a feed the platform does not hold, and a map could only be scoped to a date the rest of the page does not cover.</li>
+            <li><strong>Exposure.</strong> Lane-mile-hours need a length join that is not built.</li>
+            <li><strong>Safety.</strong> Crashes in work zones, secondary crashes and worker injuries are a separate dashboard in development.</li>
+            <li><strong>The monthly construction bucket.</strong> The Congestion dashboard's construction figure is a capped share of a monthly series; this page sums per-event footprints. They differ by construction. See <a href="measures_and_data--measures--work_zone_delay.html#comparability-across-years-and-versions">Comparability</a>.</li>
+          </ul>
+
+          <h2 id="downloads">Downloads</h2>
+          <p>No download control on the page. <span class="ui">Data &amp; Methodology</span> › <span class="ui">Downloads &amp; API</span> lists the event-by-segment delay tables. <a href="tsmo--incident_search.html">Incident Search</a> lists construction events row by row.</p>
+
+          <figure class="shot" data-capture="www/tsmo/workzones_v2?year=2025 · Region and Type blank · signed out · headline card and Work-zone delay by year in view" data-alt="The Work Zones dashboard for 2025 statewide, showing the headline card and the 2019 to 2026 work-zone delay bars">
+            <!-- captured 2026-09-08 · http://localhost:5231/tsmo/workzones_v2 · Year set to 2025 from the Year list (page default is 2026), Region and Type blank, signed in -->
+            <img src="../../assets/screens/docs/tsmo/work_zones-01-2025-statewide.png" alt="The Work Zones dashboard for 2025 statewide, showing the headline card and the 2019 to 2026 work-zone delay bars"/>
+            <figcaption>Figure 1 · the Work Zones dashboard, CY 2025, statewide. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Work Zones dashboard, published 2026-07-31: lede, status line, band titles, captions, method note.</li>
+            <li>TSMO About page: "Work Zones — what construction costs drivers".</li>
+            <li>Feedback records: Type options limited to three (2192571) · active-zones band removed, with the feasibility measurements (2195604) · Incidents made the complement (2195387).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="tsmo--incidents.html">Incidents dashboard</a>
+          <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

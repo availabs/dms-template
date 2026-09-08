@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Coverage eras and comparability · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--concepts--coverage_eras_and_comparability.html · IA page 69 · type concept. Phase 3, 2026-09-05.
+  Sources: _seed §04 (nine eras, 36–52 % / 8–24 %, opposite directions, the rule); PROVENANCE §5 (eras, two calendars, R9), §11 (two
+  percentages, depth ratio); pm3 eras module (era table, truck eras, boundary dates); downloadManifest MEASURED.coverage (~3 % / ~23 %,
+  opposite directions) + the "blends N coverage regimes" warning; data-quality atlas figures via the coverage measure page (88.1 %, 59.6 %).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="concept" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · concept</div>
+          <h1 class="doc-title">Coverage eras and comparability.</h1>
+          <p class="doc-lede">The travel-time feed's completeness is not constant. It moves in nine abrupt eras between 2017 and 2026, and a change in how much data arrived is easy to mistake for a change in traffic. This page carries the era table and the rule for comparing across years. Written for analysts.</p>
+          <div class="stamps">
+            <span class="type">concept</span>
+            <span>applies to · NPMRDS Macro View and every measure built on the feed</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="coverage-is-a-measure">Coverage is a measure</h2>
+          <p><strong>The single most common way to misread this data is to treat a change in how much data arrived as a change in traffic.</strong> Coverage describes the input, not the road. The platform publishes it as a measure in its own right, once per vehicle stream per period, as two percentages on the same 0 to 100 scale.</p>
+          <dl class="defs">
+            <dt>Bins reporting</dt>
+            <dd>The share of a period's 15-minute bins that carried a value for the stream. This is the sample size a percentile measure rests on.</dd>
+            <dt>Epochs reporting</dt>
+            <dd>The share of the period's 5-minute epochs that arrived. Always lower, because a bin counts as present when any one of its three epochs did.</dd>
+          </dl>
+          <p>Their ratio recovers probe depth: epochs reporting divided by bins reporting, times three, is the mean number of epochs behind each bin. That term is what the sparsity bias tracks. <a href="measures_and_data--measures--coverage.html">Data coverage</a> is the measure page; this page is about what the eras do to comparisons.</p>
+          <div class="callout basis"><span class="k">basis</span>Every figure on this page is statewide, the full monitored network, daytime 06:00–19:59 for era coverage, with the stream named in each sentence. Era boundaries are month-aligned.</div>
+
+          <h2 id="the-nine-eras">The nine eras</h2>
+          <p>Across all 14.47 billion records from January 2017 to August 2026, daytime epoch coverage for all vehicles moves in nine month-aligned steps, from 28.0 % to 67.0 %, and steps down as often as up. Across the published years, all-vehicle bins reporting runs 36.3 % to 51.5 % and truck bins reporting 8.0 % to 23.5 %. Four of the nine published years blend two eras.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Era</th><th>Months</th><th class="num">Daytime coverage</th><th>What happened</th></tr></thead>
+            <tbody>
+              <tr><td>E1</td><td>2017-01 to 2018-09</td><td class="num">37.4 %</td><td>Early feed on the 36,000-segment network</td></tr>
+              <tr><td>E2</td><td>2018-10 to 2018-12</td><td class="num">28.0 %</td><td>Late-2018 decline</td></tr>
+              <tr><td>E3</td><td>2019-01 to 2020-02</td><td class="num">34.8 %</td><td>Network expansion to 46,000 segments, +32.7 % on 2019-01-01</td></tr>
+              <tr><td>E4</td><td>2020-03 to 2020-12</td><td class="num">31.0 %</td><td>COVID: traffic fell, not the feed. April 2020 is the worst month in the archive</td></tr>
+              <tr><td>E5</td><td>2021-01 to 2023-05</td><td class="num">43.5 %</td><td>Growth era</td></tr>
+              <tr><td>E6</td><td>2023-06 to 2024-07</td><td class="num">36.3 %</td><td>Step down. The window the anchored free-flow reference is taken from</td></tr>
+              <tr><td>E7</td><td>2024-08 to 2024-11</td><td class="num">67.0 %</td><td>High regime, four months</td></tr>
+              <tr><td>E8</td><td>2024-12 to 2026-01</td><td class="num">41.6 %</td><td>Settled. All of CY 2025 sits here</td></tr>
+              <tr><td>E9</td><td>2026-02 onward</td><td class="num">54.8 %</td><td>New high</td></tr>
+            </tbody>
+          </table></div>
+          <p><strong>The truck stream has its own eras, on different dates.</strong> Truck daytime coverage was 6.4 % through 2020, declining within that span, then 13.4 % from 2021-01, 18.0 % from 2023-06 and 23.0 % from 2026-02. Truck coverage roughly tripled over the archive. At the 2023-06 boundary the two streams moved in opposite directions: all-vehicle coverage fell from 43.5 % to 36.3 % while truck coverage rose from 13.4 % to 18.3 %. One tag cannot describe both, so every published row carries an all-vehicle era tag and a truck era tag.</p>
+          <p>Two eras are traffic events and are labelled as such: E4 is COVID, and the E2 to E3 step is the network growing by a third in one day. The rest read as feed or processing changes, abrupt and month-aligned, moving the probe-density mix as well as the record count. That reading is inferred from shape and is not confirmed with the vendor.</p>
+
+          <h2 id="the-comparability-rule">The comparability rule</h2>
+          <p><strong>Do not compare a measure across an era boundary without a coverage control.</strong> A coverage change of the size actually observed between eras moves LOTTR about 3 % and the flagged-unreliable population about 23 % relative. An un-annotated multi-year trend is therefore partly feed history.</p>
+          <ol class="steps">
+            <li>Before differencing two years, read the era tag on each row for the stream your measure uses: all vehicles for LOTTR, PHED and TED; trucks for TTTR and TTTR₈₀.</li>
+            <li>Read the crosses-boundary flag. A year that crosses a boundary blends regimes and is not one number.</li>
+            <li>If the two years sit in one era, compare. If not, say which eras each touches, and read the coverage columns beside the values.</li>
+          </ol>
+          <p><strong>CY 2024 spans three all-vehicle eras</strong>, E6, E7 and E8. It contains both the August 2024 spike and the December 2024 fall, so an annual 2024 figure blends three regimes and is the least comparable year in the archive. It crosses no truck boundary, so a truck figure for 2024 is era-clean while an all-vehicle figure is not. <strong>CY 2025 sits cleanly inside E8</strong>, which is why the CY 2025 measure analysis is era-clean. CY 2023 and CY 2026 also straddle a boundary, at 2023-06 and 2026-02.</p>
+          <p>The Macro View download carries the tags and the flag on every row, and its <code>PM3_README.txt</code> prints, for a year that crosses a boundary, "blends N coverage regimes" with the instruction not to difference it without a coverage control. Rows that fell back to their own year for a free-flow reference are flagged too, and should be excluded from any trend. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="which-way-the-bias-points">Which way the bias points</h2>
+          <p><strong>Thin data biases the two measure families in opposite directions.</strong> Thinning the probes behind a bin inflates the reliability ratios, because a high percentile of a small sample skews high. Removing reporting bins deflates the delay measures, because a missing slice contributes no delay. Same cause, opposite signs. So when reliability and delay appear to disagree across years, check coverage before concluding anything about the road; they will disagree under a coverage change rather than drift together.</p>
+          <p>Two figures set the scale. 88.1 % of records rest on four probes or fewer, and trucks are absent from 59.6 % of records outright. Those are properties of the feed as delivered, and they are why the truck measures carry their own precision bars and why TTTR₈₀ exists beside TTTR.</p>
+          <p>Coverage itself carries no precision band. It is a count, not an estimate. It also does not measure quality: a bin with one probe counts the same as a bin with forty. Use the epochs-to-bins ratio for depth.</p>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>Every year-over-year sentence about reliability or delay needs an era check first. 2024 against 2025 is the worst case on the network: three regimes against one. Truck trends need the truck calendar, not the all-vehicle one, and any truck trend across 2021 or mid-2023 is a coverage trend unless controlled. Reliability and delay disagreeing across a boundary is expected, not a data error. The <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a> table restates the ranges per source; <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a> and <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a> cover the two other non-traffic reasons a series moves. Every measure page's <em>Comparability</em> section points back here.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Measures &amp; Methodology page, published 2026-08-28, §04 "Coverage is not stationary": nine eras; 36–52 % and 8–24 % ranges; four of nine published years blend two eras; the opposite-direction paragraph; "The rule: compare within a coverage era, or state that you are crossing one."</li>
+            <li>pm3 provenance record §5: 14.47 billion records 2017-01 to 2026-08; 28.0 % to 67.0 %; the two calendars (all-vehicle steps at 2024-08 and 2026-02; truck steps at 2021-01 and 2023-06; 43.5 % → 36.3 % against 13.4 % → 18.3 %); rule R9 with the ~3 % / ~23 % sensitivity; 2024 spans E6, E7, E8; 2025 sits in E8. §11: the two percentages and the depth ratio.</li>
+            <li>pm3 coverage-eras module: the era table with daytime coverage per era; truck eras T1 to T4 (6.4 · 13.4 · 18.0 · 23.0 %); April 2020 the worst month; the vendor confirmation left open.</li>
+            <li>pm3 download manifest, MEASURED block: coverage sensitivity, the opposite-direction statement, and the "blends N coverage regimes" warning text.</li>
+            <li>Macro View measure record, via the Data coverage measure page: bins reporting 36.3 % to 51.5 % (all vehicles) and 8.0 % to 23.5 % (trucks) across published years.</li>
+            <li>NPMRDS data-quality atlas, via the Data coverage measure page: 88.1 % of records on four probes or fewer; trucks absent from 59.6 %.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="measures_and_data--measures--lottr.html#comparability-across-years-and-versions">LOTTR · comparability</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

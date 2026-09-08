@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TED · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--ted.html · IA page 55 · type measure. Phase 2a, 2026-09-04.
+  Sources: macroview/measures.js ted (verbatim; controls threshold · per mile · aadt source), _seed 281670 card + Trap 1 table,
+  PROVENANCE §6 §9 §10, downloadManifest MEASURED.aadtVintage (−14.9 % 2021→2022, +2.3 % 2019→2020, 27.759 mph stable).
+  The 37× tail-weight range is carried from the published 281670 page; not re-verified against an analysis report.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Total Excessive Delay (TED).</h1>
+          <p class="doc-lede">Vehicle-hours lost below a threshold speed over all hours of the year. TED is the all-hours sibling of PHED and shares its threshold, reference and floor. Read the PHED page first; this page covers what differs.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span>methodology 2026-08 (pm3 analytical series)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p><strong>How many vehicle-hours are lost below the delay threshold speed.</strong> Excessive delay is the extra time spent under a speed threshold — 20 mph or 60% of the reference speed, whichever is greater.</p>
+          <p>TED is not a federal measure. It is the platform's all-hours, vehicle-hour form of the federal excessive-delay calculation. <a href="measures_and_data--measures--phed.html">PHED</a> is this measure restricted to peak hours and weighted by occupancy.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are CY 2025, statewide, all vehicles, the segments that qualify for the delay family, unless stated.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Set the threshold speed and threshold travel time exactly as for PHED: the greater of 20 mph and 60 % of the reference speed.</li>
+            <li>For every 15-minute bin of the year, all hours and all days, take the excess travel time over the threshold, floored at zero.</li>
+            <li>Multiply by the vehicles in the bin: directional AADT times the bin's share of daily traffic.</li>
+            <li>Sum over the year. Report in vehicle-hours, optionally per mile of segment.</li>
+          </ol>
+          <div class="formula">threshold = max(0.6 × reference, 20 mph)
+TED = Σ (TT − TT_threshold) × volume
+            <span class="var">reference = the posted speed limit or a free-flow speed, by variant (see the PHED page)</span>
+            <span class="var">TT = the observed travel time of the bin · TT_threshold = segment length ÷ threshold speed · negative excess counts as zero</span>
+            <span class="var">volume = directional AADT × the bin's share of daily traffic · Σ = the sum over every bin of the year</span>
+          </div>
+          <p>The same four variants exist as for PHED: posted speed limit, anchored free-flow (default), relative (unfloored) and own-year free-flow (deprecated). The Macro View's <span class="ui">threshold</span>, <span class="ui">per mile</span> and <span class="ui">AADT source</span> controls select them.</p>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>Period:</strong> all hours, all days of the calendar year.</li>
+            <li><strong>Unit:</strong> vehicle-hours. No occupancy factor is applied.</li>
+            <li><strong>Floor, reference, AADT gate and anchor fallback:</strong> identical to PHED.</li>
+            <li><strong>AADT source:</strong> a Macro View control. Within one year there is one vintage, so single-year comparisons are unaffected by the choice.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>TED shares PHED's threshold, reference choice and floor.</strong> Everything on the PHED page applies here.</li>
+            <li><strong>Reported in vehicle-hours by default</strong>, because an all-hours figure has no single defensible occupancy assumption.</li>
+            <li><strong>Extreme travel times are not screened away.</strong> A heavy tail is what congestion looks like. Absolute speed screens were rejected because a screen below 5 mph removes 23.16 % of the state's real congestion: 3 mph in a jam is the measurement.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>No precision band, for the same reason as PHED. TED is, however, the measure most exposed to outliers of anything published here. Grouping segments by their own tail weight moves median TED across a 37-fold range, against LOTTR's near-immunity. The floor figures on the PHED page apply: 62.7 % of measured delay is computed against 20 mph.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is added in the screenshot pass, Phase 8. The statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>A delay trend is partly an AADT revision history.</strong> Delay scales linearly in volume, and volume comes from an estimated AADT dataset with its own revision cycle. On a fixed panel of identical segments, total directional AADT fell 14.9 % between 2021 and 2022 and rose 2.3 % in 2020. Traffic did not do that in 2020; a revision cycle did. The threshold was stable at 27.759 mph in every one of the nine years.</li>
+            <li><strong>Same 61 % absence as PHED.</strong> A statewide total covers the 39 % of mileage that qualifies.</li>
+            <li><strong>Never compare across functional classes in a floored variant.</strong></li>
+          </ul>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Year</th><th class="num">Directional AADT, fixed panel</th><th class="num">Change against 2017</th></tr></thead>
+            <tbody>
+              <tr><td>2019</td><td class="num">272.07 M</td><td class="num">+1.5 %</td></tr>
+              <tr><td>2020</td><td class="num">274.06 M</td><td class="num">+2.3 %</td></tr>
+              <tr><td>2021</td><td class="num">273.94 M</td><td class="num">+2.2 %</td></tr>
+              <tr><td>2022</td><td class="num">227.92 M</td><td class="num">−14.9 %</td></tr>
+            </tbody>
+          </table></div>
+          <p>Read a multi-year delay series per unit of AADT, or pin a single AADT vintage. Normalised this way the 2021 to 2022 step falls from −18.5 % to −2.2 %. The download package flags the boundary automatically when a requested year range straddles it.</p>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Use the anchored variant, exclude anchor-fallback rows, normalise by AADT, and check the all-vehicle era tag on both years. Coverage biases delay and reliability in opposite directions, so agreement between a TED trend and a LOTTR trend does not corroborate either across years. See <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> and <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View</a>
+            <a href="npmrds--macro_view--download.html">Macro View download</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08-21 and 2026-08-23 · the anchored reference window moved twice (see the PHED page).</li>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Build a Macro View download with <span class="ui">TED</span> selected and the variant set with <span class="ui">threshold</span>. The package's <code>PM3_README.txt</code> lists the AADT revision boundary if the year sits on one. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>pm3 provenance record §6 (yardsticks), §8 (why speed screens are not applied: 23.16 %), §9 (which variant), §10 (the floor).</li>
+            <li>pm3 download manifest, MEASURED block: AADT vintage swings (−14.9 % 2021 to 2022, +2.3 % 2019 to 2020) and the 27.759 mph threshold stability, from the nine-year fixed-panel check.</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28: the fixed-panel AADT table, the −18.5 % to −2.2 % normalisation, and the 37-fold tail-weight range.</li>
+            <li>pm3 analysis recommendations, R14: 61 % of mileage absent from the delay family.</li>
+            <li>Macro View measure record: the verbatim strings and the threshold, per-mile and AADT-source controls.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--phed.html">PHED</a>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="measures_and_data--measures--excessive_delay.html">Excessive delay (TSMO)</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

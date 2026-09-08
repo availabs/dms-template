@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Recipe: a before/after study · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="recipe" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · recipe</div>
+          <h1 class="doc-title">Recipe: a before/after study.</h1>
+          <p class="doc-lede">Did a project change how a corridor performs? One saved route, two date windows, a Difference graph of hours of delay, and a cost at a stated value of time. The worked case is the 2024 study of the Route 787 raised intersections in Cohoes, made reproducible with today's tools. Assumes you can create a route and build a report.</p>
+          <div class="stamps">
+            <span class="type">recipe</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+            <span class="gated">requires sign-in</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="the-question">The question</h2>
+          <p>"We rebuilt this road. Did drivers save time, and how much is that worth?" In 2019 NYSDOT installed raised pavement at the intersection of Route 787 and Dyke Road, part of a $15 million project to convert Route 787, Cohoes Boulevard, into a pedestrian-friendly gateway. The 2024 write-up compared an average day before the project, labelled 2016 to 2018, with an average day after, labelled 2021 to 2023, on the northbound direction. The method is the same one the platform runs today: hours of delay below a threshold speed, multiplied by traffic, summed.</p>
+          <div class="callout basis"><span class="k">basis</span>The 2024 figures: Route 787 (Cohoes Boulevard) northbound, Cohoes, Albany County · before 2016–2018, after 2021–2023 as the write-up labels them · all vehicles · hours of delay against the greater of 20 mph and 60 % of the posted limit, weighted by AADT · cost at $15 per vehicle-hour. Today's tools: the same route drawn on the 2026 map, dates you set, the report Hours of Delay measure.</div>
+
+          <h2 id="what-you-need">What you need</h2>
+          <ul>
+            <li>Sign-in. Saving the route and the report both write to your account.</li>
+            <li><a href="npmrds--routes--create.html">Route Creation</a>, to draw the corridor once.</li>
+            <li><a href="npmrds--reports--build.html">A report</a>, with the same route added twice.</li>
+            <li>Two date windows you can defend: a "before" that ends before construction began and an "after" that starts once traffic settled. The platform's travel times begin in January 2017, so a before window today starts no earlier than that. The 2024 study's 2016 data is not on the platform.</li>
+            <li>A value of time, stated. <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a> has the platform's current class-weighted rates and the flat rate some pages still show.</li>
+          </ul>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">Reports</span> and select <span class="ui">New route</span>. In <span class="ui">TMC Click</span> mode, click the northbound segments of Route 787 through Cohoes in order, from the southern end of the project limits to the northern end. Save the route with a name that carries the direction, for example "NY 787 NB · Cohoes Blvd", and your agency tag. The 2024 write-up names Route 787, Cohoes Boulevard, at Dyke Road but records no segment list; build the route along Cohoes Boulevard through Cohoes and record its extent in the description.</li>
+            <li>Select <span class="ui">Create Report</span>.<span class="result">A new report opens in edit mode with the <span class="ui">Routes</span> rail.</span></li>
+            <li>Select <span class="ui">Add Route</span>, find the route you saved, and add it. Rename the row with the pencil to "Before · 2017–2018" and set <span class="ui">From</span> and <span class="ui">To</span> to the before window.</li>
+            <li>Select <span class="ui">Add Route</span> again, add the same route, rename it "After · 2021–2023" and set its window.<span class="result">Two rows of one route, each with its own dates and colour. Names must be unique within the report.</span></li>
+            <li>Select <span class="ui">Add Graph</span>. Tick both rows under <span class="ui">Routes for this graph</span>. Choose <span class="ui">Line Graph</span>, <span class="ui">Measure</span> <span class="ui">Avg. Hours of Delay</span>, <span class="ui">Resolution</span> <span class="ui">Hour</span>, <span class="ui">Comparison Mode</span> <span class="ui">Plain</span>, and under <span class="ui">When</span> <span class="ui">All Day</span> and <span class="ui">Weekdays</span>. Select <span class="ui">Add Graph</span>.<span class="result">Two lines, one per window: average vehicle-hours of delay per weekday by hour. This is the write-up's "average day" chart.</span></li>
+            <li>Add a second graph: the same two rows, <span class="ui">Bar Graph</span>, <span class="ui">Measure</span> <span class="ui">Avg. Hours of Delay</span>, <span class="ui">Resolution</span> <span class="ui">Hour</span>, <span class="ui">Comparison Mode</span> <span class="ui">Difference</span>, <span class="ui">Anchor Route</span> the before row.<span class="result">One series: before minus after, by hour. A positive bar is delay removed; a negative bar is delay added.</span></li>
+            <li>Add a third graph: both rows, <span class="ui">Bar Graph</span>, <span class="ui">Measure</span> <span class="ui">Hours of Delay</span>, <span class="ui">Resolution</span> <span class="ui">Summary (one bar per route)</span>, <span class="ui">Plain</span>.<span class="result">Two bars: total vehicle-hours of delay in each window. These are the totals the cost is computed from.</span></li>
+            <li>Add a fourth graph: both rows, <span class="ui">Bar Graph</span>, <span class="ui">Measure</span> <span class="ui">Travel Time (min)</span>, <span class="ui">Summary</span>.<span class="result">Average traversal time per window, the write-up's 2 min 47 s against 2 min 38 s.</span></li>
+            <li>Fill the header: a title, a one-line purpose that names the project and the two windows, and the value of time you will apply. Select <span class="ui">Done</span>.<span class="result">The report publishes at its address; readers see the cards without the rail.</span></li>
+            <li>Compute the cost in the report's purpose line or your document: divide each window's total hours of delay by its length in years, multiply by the rate, and subtract. State the rate.</li>
+          </ol>
+          <figure class="shot" data-capture="www/npmrds/edit/&lt;report slug&gt; · signed in · Routes rail with 'Before' and 'After' rows of one NY 787 NB route · Bar Graph card, Avg. Hours of Delay, Hour, Diff, anchor Before" data-alt="A report in edit mode with two rows of the same Route 787 northbound route carrying different date windows, and a Difference bar graph of average hours of delay by hour, before minus after">
+            <!-- captured 2026-09-08 · http://npmrds.localhost:5231/edit/reports/test_report_from_documentation_87_nb_chris_s · an existing report opened in edit mode, nothing changed or saved; the closest live card is Route 87 northbound, 2018 against 2021, and its mode pill reads Overlay, not Diff -->
+            <img src="../../assets/screens/docs/npmrds/recipes-before-after-01-hourly-difference.png" alt="A report in edit mode with the Routes rail listing one Route 87 northbound route under nine date windows, and a bar-graph card of average hours of delay by hour comparing the 2018 window with the 2021 window, its bars below zero"/>
+            <figcaption>Figure 1 · the same shape on an existing report: a bar-graph card of average hours of delay by hour, 2018 against 2021 on Route 87 northbound, with the Routes rail beside it. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="reading-the-result">Reading the result</h2>
+          <p><strong>The Difference card is the finding.</strong> With the before row as anchor, positive bars are hours of delay the corridor no longer loses. The 2024 study found the reduction concentrated in the evening rush northbound, where most of the delay had been. A change spread evenly across the day is more likely traffic growth or a data-coverage shift than a project effect; a change in one period on one direction is a project shape.</p>
+          <p><strong>Totals become dollars at a rate you name.</strong> The write-up used $15 per vehicle-hour: 60,000 hours before and 36,250 after over its two windows became $451,000 and $271,875 per year, a saving of $179,250 per year, about 40 % less delay. The platform's current basis is a class-weighted value of time, $52 for passenger vehicles, $42 for single-unit trucks and $77 for combination trucks, blending to about $53 on the network; some TSMO pages still show a flat $20. Any of these gives a different dollar figure from the same hours. Report hours first, then dollars with the rate.</p>
+          <p><strong>Three things move between 2017 and 2023 besides the project.</strong> The TMC map is re-cut every year, so a route drawn on the 2026 map can lose or split a segment in early years; check the segment count on both rows. Coverage moved through several eras; a thinner feed deflates delay. And AADT, the volume term in every delay figure, has its own revision cycle. <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> and <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a> say how much each can move a figure. A signalised boulevard such as Route 787 also rises and falls with its signals, so windows of a year or more are the right length.</p>
+          <p><strong>Say what else changed.</strong> The 2024 write-up asked whether signal retiming or a changed speed limit explained part of the result, and could not separate them. Neither can the data alone. Name the confounders you know of.</p>
+
+          <h2 id="variations">Variations</h2>
+          <ul>
+            <li><strong>The Single Route template.</strong> If your "after" is the current year and your "before" is three years earlier, open the <a href="npmrds--reports--templates.html#single-route">Single Route</a> template with the route instead of building a report: it draws 3 Years Ago, Current Year and Trailing 3 Years, including a difference grid by segment and hour.</li>
+            <li><strong>Where on the corridor.</strong> Add a <span class="ui">Grid Graph</span> in <span class="ui">Difference</span> mode: segments down, hours across, colour is before minus after. A band along a stretch is a real change; a speckle is noise.</li>
+            <li><strong>Both directions.</strong> Save the southbound route too and repeat. A project that helps one direction and hurts the other is a common finding.</li>
+            <li><strong>Speed instead of delay.</strong> Use <span class="ui">Speed (mph)</span> at <span class="ui">Hour</span> for a corridor where volume is thin and delay is deflated by coverage.</li>
+            <li><strong>An incident or a closure rather than a project.</strong> The <a href="npmrds--reports--templates.html#single-day-advanced">Single Day (Advanced)</a> template places one day against its week, month and year.</li>
+          </ul>
+
+          <h2 id="sample-output">Sample output</h2>
+          <p>The 2024 study's figures, as its write-up stated them. They were computed in the earlier tool on data that included 2016; they are the shape of the deliverable, not a live figure.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Figure</th><th class="num">Before · 2016–2018</th><th class="num">After · 2021–2023</th><th>Change</th></tr></thead>
+            <tbody>
+              <tr><td>Average traversal time, northbound</td><td class="num">2 min 47 s</td><td class="num">2 min 38 s</td><td>−9 s</td></tr>
+              <tr><td>Average hours of delay per day</td><td class="num">54.88</td><td class="num">—</td><td>−21.77 hours per day</td></tr>
+              <tr><td>Hours of delay, northbound, per two-year window</td><td class="num">60,000</td><td class="num">36,250</td><td>about −40 %</td></tr>
+              <tr><td>Annual cost of delay at $15 per vehicle-hour</td><td class="num">$451,000</td><td class="num">$271,875</td><td>−$179,250 per year</td></tr>
+            </tbody>
+          </table></div>
+          <p>Cite it as: "Route 787 (Cohoes Boulevard) northbound, before 2016–2018 and after 2021–2023 as labelled, hours of delay against the greater of 20 mph and 60 % of the posted limit weighted by AADT, $15 per vehicle-hour; NPMRDS documentation discussion, October 2024." A rerun today would carry the report address, the exact windows, the segment count per row, and the current rate.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Legacy NPMRDS documentation, Discussions, "787 Raised Intersections" (September to October 2024): the 2019 project and its $15 million cost, before 2016–2018 and after 2021–2023, 2 min 47 s to 2 min 38 s, 54.88 and −21.77 hours per day, 60,000 to 36,250 hours (about 40 %), $15 per hour, $451,000 · $271,875 · $179,250 per year, the threshold definition, the open questions on signal timing and speed limit.</li>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a>: <span class="ui">Add Route</span>, the same route twice with two windows, unique row names, <span class="ui">Add Graph</span> controls, <span class="ui">Difference</span> needs exactly two routes and an <span class="ui">Anchor Route</span>, <span class="ui">Done</span> publishes.</li>
+            <li><a href="npmrds--reports--graph_types.html#measures-offered">Graph types reference</a>: <span class="ui">Hours of Delay</span> (vehicle-hours, greater of 20 mph or 60 % of the posted limit, AADT-weighted), <span class="ui">Avg. Hours of Delay</span> per day, <span class="ui">Travel Time (min)</span>, <span class="ui">Speed (mph)</span>; anchor minus other.</li>
+            <li><a href="npmrds--reports--templates.html">Template reference</a>: Single Route periods and cards; Single Day (Advanced).</li>
+            <li><a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>: the class-weighted rates $52 / $42 / $77, the network blend of about $53, the flat $20 still shown on some TSMO pages.</li>
+            <li><a href="npmrds.html">NPMRDS hub</a> and <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a>: observations from January 2017; signalised segments; the yearly map re-cut.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2024-10 published as the 787 Raised Intersections discussion · 2026-09-07 rewritten as a recipe (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds--reports--build.html">Build and edit a report</a>
+          <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>
+          <a href="npmrds--recipes.html">Recipes</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

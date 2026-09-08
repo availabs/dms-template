@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Navigating the platform · Get started · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  start--navigating.html · IA page 5 · type how-to. Phase 1, 2026-09-04.
+  Sources: platform-inventory.md §1 (nav groups per product), plan report §03, ticket 2197822 (Platform home = the
+  product-switcher footer link to the www landing), running fix 2172528 (one docs site sectioned per product),
+  280612 "Sharing a view" (Macro View URL rules), inventory §4 (Freight Atlas ?layers=).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Get started · how-to</div>
+          <h1 class="doc-title">Find your way around TransportNY.</h1>
+          <p class="doc-lede">One landing page, three products, one documentation site. How the product switcher, the side navigation and the address bar work, so you can reach any page and share exactly what you see.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Start at the landing page, the platform's front door, or on any product page. No account is needed.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open the landing page.<span class="result">Its side navigation lists <span class="ui">Platform</span>, <span class="ui">NPMRDS</span>, <span class="ui">TSMO</span> and <span class="ui">Freight Atlas</span>. This is the product switcher.</span></li>
+            <li>Select a product, for example <span class="ui">TSMO</span>.<span class="result">Its home page opens with its own side navigation.</span></li>
+            <li>Use the side navigation to reach a page. The entries are listed below.</li>
+            <li>Inside a product, open the product switcher at the top of the side navigation to change product.<span class="result">It lists <span class="ui">NPMRDS</span>, <span class="ui">TSMO</span> and <span class="ui">Freight Atlas</span>, marks the current one, and ends with <span class="ui">Platform home</span>.</span></li>
+            <li>Select <span class="ui">Platform home</span> to return to the landing page.</li>
+            <li>To share a page, copy the address from the address bar and send it.<span class="result">Whoever opens it sees the same page and state.</span></li>
+          </ol>
+          <figure class="shot" data-capture="www/landing · signed out · side navigation showing Platform · NPMRDS · TSMO · Freight Atlas" data-alt="The TransportNY landing page with the side navigation listing Platform, NPMRDS, TSMO and Freight Atlas, and the three product panels">
+            <!-- captured 2026-09-08 · http://localhost:5231/ · the landing page signed out, side navigation and the three product panels -->
+            <img src="../../assets/screens/docs/start/navigating-01-landing.png" alt="The TransportNY landing page with the side navigation listing Platform, NPMRDS, TSMO and Freight Atlas, and the three product panels"/>
+            <figcaption>Figure 1 · the landing page and its side navigation, the product switcher. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="each-products-side-navigation">Each product's side navigation</h2>
+          <p>Every side-navigation entry, in screen order.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Where</th><th>Side navigation entries</th></tr></thead>
+            <tbody>
+              <tr><td>Landing page</td><td><span class="ui">Platform</span> · <span class="ui">NPMRDS</span> · <span class="ui">TSMO</span> · <span class="ui">Freight Atlas</span></td></tr>
+              <tr><td>NPMRDS</td><td><span class="ui">Home</span> · <span class="ui">Macro View</span> · <span class="ui">Reports</span> · <span class="ui">MAP-21 PM3</span>. Route Comparison is not in the navigation: open it from the <span class="ui">Route comparison</span> section of the NPMRDS home page.</td></tr>
+              <tr><td>TSMO</td><td><span class="ui">Dashboards</span>: <span class="ui">Congestion</span> · <span class="ui">Reliability</span> · <span class="ui">Incidents</span> · <span class="ui">Work Zones</span>. <span class="ui">Explorers</span>: <span class="ui">Incident Search</span> · <span class="ui">Corridor View</span>. <span class="ui">Program</span>: <span class="ui">About TSMO</span> · <span class="ui">Data &amp; Methodology</span></td></tr>
+              <tr><td>Freight Atlas</td><td><span class="ui">Home</span> · <span class="ui">Freight Atlas</span> · <span class="ui">Maps Gallery</span> · <span class="ui">Data &amp; Downloads</span> · <span class="ui">About &amp; The Plan</span></td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="navigation-controls">Navigation controls</h2>
+                    <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td>Product switcher (landing page)</td><td>Opens a product</td><td>Platform · NPMRDS · TSMO · Freight Atlas</td><td>Platform (the landing page)</td></tr>
+              <tr><td>Product switcher (top of a product's side navigation)</td><td>Changes product. Sign-in is kept, except for NPMRDS</td><td>NPMRDS · TSMO · Freight Atlas · Platform home</td><td>The current product, marked</td></tr>
+              <tr><td><span class="ui">Platform home</span></td><td>Returns to the landing page</td><td>One link</td><td>The landing page</td></tr>
+              <tr><td>Side navigation</td><td>Moves between a product's pages</td><td>The entries in the table above</td><td><span class="ui">Home</span></td></tr>
+              <tr><td>Docs link (planned)</td><td>Opens this documentation</td><td><code>/docs</code></td><td>The documentation home</td></tr>
+              <tr><td>Address bar</td><td>Carries the page state for sharing</td><td>Filters, layers, view settings</td><td>Clean address</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="where-the-documentation-is">Where the documentation is</h2>
+          <p>One documentation site serves all three products, sectioned by product. The intended path is the <span class="ui">Docs</span> link in each product's navigation. That link is not built yet. Until it is, add <code>/docs</code> to the site address. TSMO also has an in-product <span class="ui">Data &amp; Methodology</span> page. Canonical definitions are in <a href="measures_and_data.html">Measures &amp; Data</a>.</p>
+
+          <h2 id="share-a-page-by-its-address">Share a page by its address</h2>
+          <p>The address is the state. TSMO dashboards keep <span class="ui">Year</span> and <span class="ui">Region</span> in the address, so a colleague opens the same view. The Macro View writes only the settings you changed and drops values that no longer exist, so an old link opens with defaults. A shared link is not a permanent citation: download the figure if it matters. See <a href="npmrds--macro_view.html">Macro View: how to use</a>. The Freight Atlas map encodes its layers with <code>?layers=</code>. See <a href="freight_atlas--map.html">Use the map</a>.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul><li>The landing page\'s <span class="ui">Data Sources</span> link asks visitors without an account to sign in. It is meant to be public; this is a known issue.</li>
+            <li><span class="ui">Platform home</span> does not name its destination: the landing page.</li>
+            <li>NPMRDS runs on its own subdomain. Switching to it may ask you to sign in again. See <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="platform-home-what-does-that-do">"Platform home": what does that do?</h3>
+          <p>It returns you to the landing page.</p>
+          <h3 id="the-docs-link-took-me-to-npmrds-docs">The docs link took me to NPMRDS docs</h3>
+          <p>Older links point at the previous, per-product documentation. This site replaces it. Use <code>/docs</code>.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="start--which_tool.html">Which tool answers my question?</a></li>
+            <li><a href="tsmo--filters.html">Using the filter bar</a></li>
+            <li><a href="npmrds--macro_view.html">Macro View: how to use</a></li>
+          </ul>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 1)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>
+          <a href="start--which_tool.html">Which tool answers my question?</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

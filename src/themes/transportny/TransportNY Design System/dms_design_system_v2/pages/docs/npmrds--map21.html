@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MAP-21 PM3 reporting pages · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">MAP-21 PM3 reporting pages.</h1>
+          <p class="doc-lede">The federal reliability, freight and delay figures New York reports to FHWA, by calendar year, scored against the statewide targets. Two pages are live: the MAP-21 PM3 report and its Level of Travel Time Reliability page. This page says how to read them, what to cite, and where the annual submission file is. Reading is public.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">MAP-21 PM3</span> from the NPMRDS side navigation. No sign-in is needed. These pages show the <strong>federal family</strong>: Level of Travel Time Reliability (LOTTR), Truck Travel Time Reliability (TTTR) and Peak Hour Excessive Delay (PHED) as 23 CFR 490 defines them, computed on the platform from the MAP-21 dataset. Every other tool shows the analytical series; <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> tells them apart.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Page</th><th>Status</th><th>What it shows</th></tr></thead>
+            <tbody>
+              <tr><td>MAP-21 PM3 system performance</td><td>Live; the <span class="ui">MAP-21 PM3</span> navigation item</td><td>Compliance snapshot for the selected year, a trend chart per measure, how targets work, the MPO table, urban congestion for the two reporting urbanized areas, the annual download</td></tr>
+              <tr><td>Level of Travel Time Reliability</td><td>Live; a child page of the report</td><td>A statewide LOTTR map, the two LOTTR cards with context, person-miles by LOTTR bin and by period, the least-reliable segments</td></tr>
+              <tr><td>Per-year report</td><td>Design only</td><td>A year pill, measure tabs, a map workbench, MPO small multiples</td></tr>
+              <tr><td>Multi-year trend</td><td>Design only</td><td>One section per measure with a ten-year chart and the change since 2016</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout note"><span class="k">describes designs not yet live</span>The per-year and multi-year trend pages are designs; their handoff copy carries placeholder figures and targets, and nothing in them is citable.</div>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">MAP-21 PM3</span>.<span class="result">The first band is <span class="ui">Compliance snapshot · CY 2025</span>.</span></li>
+            <li>Pick a year with the <span class="ui">Year</span> selector.<span class="result">Every card, chart and table recomputes for that year.</span></li>
+            <li>Read the LOTTR and TTTR cards against their targets: a status pill, a target bar and the change from the year before. The PHED card is context; its target is per urbanized area.</li>
+            <li>Read the trend chart under each of the four measure headings.</li>
+            <li>Read <span class="ui">How MAP-21 targets work</span> before calling a figure "met". The rules are tabled below.</li>
+            <li>Read the <span class="ui">Regional · MPO</span> table, one row per Metropolitan Planning Organization (MPO) against the statewide target, and <span class="ui">Urban congestion · CMAQ · per UZA</span>, the two reporting urbanized areas against their own.</li>
+            <li>For the submission file, set <span class="ui">Year</span> and use the download under <span class="ui">Annual data · HPMS Travel Time Metrics</span>.</li>
+            <li>Open the Level of Travel Time Reliability page for the map, distribution and least-reliable segments. Its address is /map_21/level_of_travel_time_reliability, a child of the MAP-21 page.</li>
+            <li>Cite a figure with its measure, year, system, target and basis: "83.2 % of non-Interstate NHS person-miles reliable in CY 2025, against a 70 % target, computed on the platform; MAP-21 PM3 page, read 2026-09-07".</li>
+          </ol>
+
+          <h2 id="reading-the-compliance-cards">Reading the compliance cards</h2>
+          <div class="callout basis"><span class="k">basis</span>CY 2025 · statewide · all vehicles for LOTTR, freight trucks for TTTR · Interstate or non-Interstate NHS as named · performance period 2 targets · computed on the platform from the MAP-21 dataset at the 2026-07-03 build; the live page recomputes.</div>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Card</th><th>Target</th><th class="num">CY 2025</th><th class="num">Change on CY 2024</th></tr></thead>
+            <tbody>
+              <tr><td>Interstate person-miles reliable (LOTTR)</td><td>≥ 75 %</td><td class="num">79.8 %</td><td class="num">+1.3 points</td></tr>
+              <tr><td>Non-Interstate NHS person-miles reliable (LOTTR)</td><td>≥ 70 %</td><td class="num">83.2 %</td><td class="num">−3.6 points</td></tr>
+              <tr><td>Interstate TTTR index</td><td>≤ 2.00</td><td class="num">1.46</td><td class="num">—</td></tr>
+              <tr><td>PHED, annual person-hours</td><td>Per urbanized area</td><td class="num">Context only</td><td class="num">—</td></tr>
+            </tbody>
+          </table></div>
+          <p>A segment is reliable when the worst of its four federal periods, weekday AM, midday, PM and the weekend, has a LOTTR below 1.50. The percentage is the share of <strong>person-miles</strong> on reliable segments, each weighted by length, directional AADT and occupancy, so a long, busy segment moves it more than a short, quiet one. <a href="measures_and_data--measures--lottr.html">LOTTR</a> and <a href="measures_and_data--measures--tttr.html">TTTR</a> define the ratios.</p>
+          <p>The TSMO home quotes 80.0 %, 83.3 % and 1.46 for CY 2025, from the file New York resubmitted to FHWA. Both are the federal measure; cite the value the page you point at shows and name its basis. <a href="measures_and_data--data--pm3_and_map21.html#the-two-cy-2025-statewide-figures">PM3 and MAP-21 datasets</a> owns the explanation.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Rule</th><th>What the page says</th></tr></thead>
+            <tbody>
+              <tr><td>Significant progress</td><td>A two-prong test. A measure passes if it meets the 2-year or 4-year target, or if it improved on the period's baseline year while short of target (TTTR by at least 0.01). Statuses: met target · significant progress · not meeting</td></tr>
+              <tr><td>Performance periods</td><td>Four years with a 2-year midpoint check. Period 2 is 2022 to 2025; period 3 is 2026 to 2029</td></tr>
+              <tr><td>MPO adoption</td><td>Within 180 days of the State setting a target, each MPO supports it or sets its own. New York's MPOs support the statewide targets</td></tr>
+              <tr><td>Urban congestion</td><td>PHED and Non-SOV apply only to urbanized areas over 200,000 people in nonattainment or maintenance: New York–Newark and Poughkeepsie–Newburgh. The other 11 New York urbanized areas do not report them</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="the-lottr-page">The LOTTR page</h2>
+          <p>The Level of Travel Time Reliability page is map-first; its <span class="ui">Year</span> selector drives every band. The map draws one layer, <span class="ui">LOTTR NYS 2025</span>, with legend bins <span class="ui">1 - 1.15</span>, <span class="ui">1.15 - 1.3</span>, <span class="ui">1.3 - 1.5</span>, <span class="ui">1.5 - 2.42</span>, <span class="ui">2.42 - 5.08</span> and <span class="ui">No data</span>. The design's period toggle, Worst · AM · Midday · PM · Weekend, is not live. The layer colours the worst of the four period values for each segment, per the page's build record.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Band</th><th>What it shows</th><th>CY 2025 at the 2026-07-03 build</th></tr></thead>
+            <tbody>
+              <tr><td>Compliance snapshot</td><td>The two LOTTR cards, all-NHS person-miles reliable, the unreliable network</td><td>79.8 % · 83.2 % · 81.8 % all NHS · 1,320 directional miles, 5,145 of 20,682 TMC segments unreliable</td></tr>
+              <tr><td>Distribution by bin</td><td>Share of NHS person-miles by worst-period LOTTR bin</td><td>below 1.25 61.3 % · 1.25–1.49 20.5 % · 1.50–1.99 10.8 % · 2.00 and above 7.3 %</td></tr>
+              <tr><td>Distribution by period</td><td>Share of person-miles unreliable in each federal period</td><td>PM 10.9 % · midday 7.6 % · AM 7.5 % · weekend 6.5 %. The PM peak is the binding period</td></tr>
+              <tr><td>Least-reliable segments</td><td>NHS segments with directional AADT above 30,000 and length above 0.25 miles, ranked by worst-period LOTTR, 7 rows per page: road, county, worst period and ratio, TTTR for context, AADT, length</td><td>1,863 segments cleared the thresholds; the top three were on I-81, I-295 and the Belt Parkway</td></tr>
+              <tr><td>How LOTTR works</td><td>The ratio, the 1.50 test, the person-mile weighting</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="the-annual-download">The annual download</h2>
+          <p>The file under <span class="ui">Annual data · HPMS Travel Time Metrics</span> is New York's Highway Performance Monitoring System (HPMS) Travel Time Metrics submission for the selected year: one row per reporting TMC segment, both directions, with the per-period LOTTR and TTTR ratios and their percentile travel times, PHED hours, and the segment's system, length and directional AADT. It is filed with FHWA each June 15 under 23 CFR 490; the <span class="ui">Year</span> selector switches the file. The band's text reads "Download the year's submission file". The button reads <span class="ui">Download CSV</span>; at the 2026-09-08 check its address was a placeholder that did not resolve, so the file is not yet served. <a href="measures_and_data--data--pm3_and_map21.html#schema">The datasheet's schema</a> lists the columns. This file, not a Macro View download, reproduces a federal figure.</p>
+
+          <h2 id="settings">Settings</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Year</span> (report)</td><td>Selects the calendar year for every card, chart, table and the download</td><td>Published MAP-21 years, as chips</td><td>2025</td></tr>
+              <tr><td><span class="ui">Year</span> (LOTTR page)</td><td>Selects the year for the cards, distribution and table</td><td>Published MAP-21 years, as chips</td><td>2025</td></tr>
+              <tr><td><span class="ui">Layers</span> (LOTTR map)</td><td>Lists the map's layers</td><td><span class="ui">LOTTR NYS 2025</span></td><td>—</td></tr>
+              <tr><td>Segments table pages</td><td>Pages through the least-reliable segments</td><td>7 rows per page</td><td>First page</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Targets exist at two geographies, the State and the urbanized area. An MPO row is scored against the statewide target it adopted; a county has no federal target, so county figures are diagnostic.</li>
+            <li>PHED's target is per capita; the dataset holds total person-hours, so the comparison needs the area's population.</li>
+            <li>The pages cover the NHS. Macro View counts cover every monitored segment and are not comparable.</li>
+            <li>The period 3 (2026 to 2029) targets are not on the pages.</li>
+            <li>The header promises an MPO and County breakdown; the live table is by MPO. The LOTTR map has one layer and no period control.</li>
+            <li>Older handoff copy carried 85.0 % and 1.42 for CY 2025; neither reproduces from any dataset, and both are withdrawn.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-figure-differs-from-the-tsmo-home">The figure differs from the TSMO home</h3>
+          <p>The home quotes the FHWA resubmission; these pages compute from the MAP-21 dataset. The gap is 0.2 and 0.1 points on LOTTR, none on TTTR.</p>
+          <h3 id="a-year-shows-empty-cards">A year shows empty cards</h3>
+          <p>The dataset holds calendar years 2016 to 2025. Pick 2025; if that is blank too, <a href="help.html">report it</a>.</p>
+          <h3 id="the-lottr-map-has-no-colour">The LOTTR map has no colour</h3>
+          <p>Wait for the tiles. Grey is <span class="ui">No data</span>, not zero.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a></li>
+            <li><a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a></li>
+            <li><a href="measures_and_data--measures--lottr.html">LOTTR</a> · <a href="measures_and_data--measures--tttr.html">TTTR</a> · <a href="measures_and_data--measures--phed.html">PHED</a></li>
+            <li><a href="tsmo--reliability.html">TSMO Reliability dashboard</a>, the same figures by region</li>
+            <li><a href="npmrds--macro_view.html">Macro View: how to use</a>, for the analytical series</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs"><li>MAP-21 LOTTR page build record (July 2026): the map layer reads the four period columns and colours the greatest of them; bins 1.25 / 1.50 / 2.00.</li><li>Live MAP-21 page, Annual data band: "HPMS Travel Time Metrics — Download the year's submission file"; "Use the Year selector to switch the file".</li>
+            <li>Live MAP-21 PM3 page (published 2026-07-27, 37 sections): header "MAP-21 PM3 system performance"; bands <span class="ui">Compliance snapshot · CY 2025</span>, the four measure headings with targets ≥ 75 %, ≥ 70 %, ≤ 2.00 and per-UZA PHED, <span class="ui">How MAP-21 targets work</span> (two-prong test, periods P2 2022–2025 and P3 2026–2029, MPO 180 days, UZA-only), <span class="ui">Regional · MPO · CY 2025</span> and its scoring note, <span class="ui">Urban congestion · CMAQ · per UZA</span> and the 11 non-reporting areas, <span class="ui">Annual data · HPMS Travel Time Metrics</span> and "filed annually by June 15 … Use the Year selector to switch the file".</li>
+            <li>Live Level of Travel Time Reliability page (child of the report; controls digest 2026-09-05): Card, Filter, Spreadsheet and Map sections; map symbology <span class="ui">LOTTR NYS 2025</span>, layer "Map 21 Extended 2025 v1", legend labels 1 - 1.15 to 2.42 - 5.08 and No data, <span class="ui">Layers</span> tab.</li>
+            <li>LOTTR page build record (2026-07-03): Year filter as chips with default 2025; cards 79.8 % (+1.3) and 83.2 % (−3.6), CY 2024 values 78.5 % and 86.8 %; bins 61.3 / 20.5 / 10.8 / 7.3 %; "5,145 of 20,682 TMC segments" computed live; table filters directional AADT &gt; 30,000 and length &gt; 0.25 mi, 7 rows per page, 1,863 rows, top rows I-81 7.19, I-295 6.27, Belt Parkway 5.76; the hero map added afterwards; no roll-up chip.</li>
+            <li>MAP-21 LOTTR design (map-21-lottr.html, numbers computed 2026-07-03): all-NHS 81.8 %; unreliable 1,320 directional miles; periods PM 10.9 · Midday 7.6 · AM 7.5 · Weekend 6.5 % of person-miles; the period toggle Worst · AM · Midday · PM · Weekend; the reconciliation note on 85.0 against 83.2.</li>
+            <li>NPMRDS design digest (2026-09-04), §12–15: the four-page family; map-21.html and map-21-trend.html carry handoff placeholder KPIs and targets, not citable.</li>
+            <li>MAP-21 reporting plan (2026): targets at two geographies; MPO 180-day adoption; county has no target; PHED per capita against the dataset's totals; the HPMS Field Manual chapter 8 columns; the June 15 cycle.</li>
+            <li>Documentation style ruling of 2026-09-04 on the CY 2025 figures: 79.8 / 83.2 / 1.46 computed on the platform; 80.0 / 83.3 / 1.46 from the FHWA HPMS Travel Time Metrics resubmission on the TSMO home; 85.0 and 1.42 withdrawn.</li>
+            <li>FHWA, Transportation Performance Management: significant-progress procedure (HIF-21-030) and national measures guidance (HIF-18-040); 23 CFR 490 subparts E, F and G.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>
+          <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>
+          <a href="tsmo--reliability.html">TSMO Reliability dashboard</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

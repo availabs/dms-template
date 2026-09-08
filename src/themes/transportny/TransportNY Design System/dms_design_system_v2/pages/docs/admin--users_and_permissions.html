@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Users and permissions · Admin · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  admin--users_and_permissions.html · IA page 93 · type how-to. Phase 6b, 2026-09-08. NEW page — no 2025 predecessor.
+  Labels from code: auth/pages/authUsers.jsx (Users · Add new · Enter user email · Add / Adding · User · Groups · Created ·
+  Last Login · View As / Viewing As · reset password · "Reset password for: <email>?" · reset · search... · filter group... ·
+  "To access this page, you need to login."), authGroups.jsx (Groups · Add new · Group · # Members · search... ·
+  "Please enter Group Name" · Add / Adding), components/ViewAsBar.jsx (Viewing as: · Exit View As), auth/siteConfig.jsx
+  (the Auth menu: Profile · Users · Groups; the permissions the two pages are gated on), utils/auth.js (how a grant is
+  evaluated), datasets/datasets.format.js (the nine permission labels).
+  NOTE for the orchestrator: the sign-up request queue with its Approve / Reject actions is present but COMMENTED OUT in
+  authUsers.jsx, so the page in this build shows no request list. The deployed TransportNY copy of the file carries the same commented block (orchestrator check 2026-09-08).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Admin · how-to</div>
+          <h1 class="doc-title">Users and permissions.</h1>
+          <p class="doc-lede">Give someone an account, put them in a group, send a password reset, and understand what a group's permissions let it do. Accounts are managed in one place; what an account may actually see is granted dataset by dataset. This page assumes your own account can open the Users page.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires an administrator account</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Sign in, then open <span class="ui">Users</span> or <span class="ui">Groups</span> from the platform's <span class="ui">Auth</span> menu, which also holds <span class="ui">Profile</span>. Each is gated separately, and without the right the page is not served. With no session, both read "To access this page, you need to login."</p>
+          <p>Understand the split first. These pages manage <strong>accounts and group membership</strong> and nothing else. What a person can see and do is granted per dataset, on its <span class="ui">Admin</span> tab, and per page in the page's settings. Adding someone to a group grants nothing by itself: it makes them eligible for what that group has been granted elsewhere. Each page on this hub names the permission its task needs, usually <span class="ui">All (*)</span> — level 10 in the earlier scheme.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">Users</span>.<span class="result">Every account on this site: <span class="ui">User</span> (the email address), <span class="ui">Groups</span>, <span class="ui">Created</span> and <span class="ui">Last Login</span>, most recently active first. Empty <span class="ui">Last Login</span> means never.</span></li>
+            <li>Find someone with <span class="ui">search...</span> in the <span class="ui">User</span> header, or list a group's members with <span class="ui">filter group...</span> in the <span class="ui">Groups</span> header.</li>
+            <li>Add an account: <span class="ui">Add new</span>, the address in <span class="ui">Enter user email</span>, then <span class="ui">Add</span>.<span class="result">It reads "Adding" while the request is sent. The invitation carries this site's sign-in address, so send it from the site the person should use.</span></li>
+            <li>Put them in a group: edit the <span class="ui">Groups</span> cell on their row.<span class="result">Adding assigns, removing takes them out. Make one change at a time — the row saves per edit.</span></li>
+            <li>Send a password reset: <span class="ui">reset password</span> on the row, then <span class="ui">reset</span> at "Reset password for: <em>the address</em>?"<span class="result">They get an email linking to this site's sign-in page. You never see or set a password.</span></li>
+            <li>To check what someone sees, select <span class="ui">View As</span> on their row, if your account may.<span class="result">It reads <span class="ui">Viewing As</span> and a bar shows "Viewing as:" with the address and groups; <span class="ui">Exit View As</span> stops it. Use it to confirm a grant before you say it is done.</span></li>
+            <li>Open <span class="ui">Groups</span>.<span class="result">Two columns, <span class="ui">Group</span> and <span class="ui">#&nbsp;Members</span>, with <span class="ui">search...</span> in the first header.</span></li>
+            <li>Add a group: <span class="ui">Add new</span>, the name at "Please enter Group Name", then <span class="ui">Add</span>.<span class="result">Name it for the organisation or role it stands for: that name appears in every dataset's access list from then on. A new group has no access to anything.</span></li>
+            <li>Grant it what it needs on the dataset's <span class="ui">Admin</span> tab, from <a href="#what-a-permission-gates">the table below</a>.<span class="result">The grant takes effect immediately — check it with <span class="ui">View As</span>.</span></li>
+          </ol>
+
+          <h2 id="what-a-permission-gates">What a permission gates</h2>
+          <p>A dataset's <span class="ui">Access</span> list grants named permissions to a group or one person. The nine, labelled as the panel shows them:</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Permission</th><th>What it allows</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">View source</span></td><td>See the dataset: its Overview, its description, its column list, its table and its map</td></tr>
+              <tr><td><span class="ui">Download source</span></td><td>Download the data files generated for a version</td></tr>
+              <tr><td><span class="ui">Update source</span></td><td>Edit the description, the categories, the update interval and the column metadata</td></tr>
+              <tr><td><span class="ui">Create version</span></td><td>Add a version by uploading new data</td></tr>
+              <tr><td><span class="ui">Manage downloads</span></td><td>Create and delete a version's download files, and cache its map tiles</td></tr>
+              <tr><td><span class="ui">View source API</span></td><td>Read the dataset programmatically. See <a href="developers--data_manager_api.html">Data Manager API</a></td></tr>
+              <tr><td><span class="ui">Delete source</span></td><td>Delete a version, or the whole dataset</td></tr>
+              <tr><td><span class="ui">Edit permissions</span></td><td>Change this list — grant and revoke access to this dataset</td></tr>
+              <tr><td><span class="ui">All (*)</span></td><td>Every one of the above</td></tr>
+            </tbody>
+          </table></div>
+          <p>Three behaviours explain most surprises:</p>
+          <ul>
+            <li><strong>A control you cannot use is not shown.</strong> The pencils, <span class="ui">Add Version</span> and the <span class="ui">Access</span> panel appear only with the permission behind them, which is why two administrators describe the same page differently.</li>
+            <li><strong>A dataset with no access list is open to any signed-in account.</strong> That is not the same as public. Grant the public group <span class="ui">View source</span> to make a dataset public, or name the groups that should have it.</li>
+            <li><strong>A dataset's own list overrides the catalog's.</strong> A catalog grants a baseline; a dataset can replace or revoke it, and a newly uploaded one starts revoked.</li>
+          </ul>
+
+          <h3 id="the-three-earlier-levels">The three earlier levels</h3>
+          <p>The earlier guidance described access as one number per group: <strong>1</strong> view only, <strong>2</strong> view and download, <strong>10</strong> full access. Those levels are still the vocabulary people use, so each page on this hub names the level its task needs. The named permissions replaced them — <span class="ui">View source</span> is level 1, <span class="ui">Download source</span> adds level 2, <span class="ui">All (*)</span> is level 10 — and the middle is no longer a ladder: a group can have <span class="ui">Update source</span> without <span class="ui">Delete source</span>.</p>
+
+          <h2 id="what-these-pages-do-not-do">What these pages do not do</h2>
+          <p>Four things administrators expect and will not find.</p>
+          <ul>
+            <li><strong>No queue of sign-up requests.</strong> The <span class="ui">Users</span> page lists accounts, not pending requests, and has no approve or reject action; an account is added by email with <span class="ui">Add new</span>. A site's sign-up form, where enabled, sends the same request to the authentication server; where disabled it reads "Sign up is not available. Please contact an administrator." The deployed TransportNY build carries the same code, so its Users page shows no queue either (checked 2026-09-08).</li>
+            <li><strong>No authority number on a group.</strong> The <span class="ui">Groups</span> page names a group and counts its members; grants live on the datasets and pages.</li>
+            <li><strong>No way to delete an account.</strong> To take away access, remove the person from every group and revoke any grant made by name; the account remains.</li>
+            <li><strong>No names, roles or organisations.</strong> An account is an email address and a set of groups, so the group carries any meaning you need.</li>
+          </ul>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>The list is per site, so someone working in two products may hold two accounts, and an invitation points at the site you sent it from. See <a href="start--accounts_and_sessions.html#how-long-a-session-lasts">How long a session lasts</a>.</li>
+            <li>A group's name is load-bearing: renaming is not offered, and every access list naming it would have to change.</li>
+            <li>Granting access does not put a dataset in front of anyone — a reader still needs a page or the catalog to find it.</li>
+            <li>A permission change reaches someone's browser when their page next loads, not the instant you save it.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="someone-says-they-cannot-see-a-dataset">Someone says they cannot see a dataset</h3>
+          <p>In this order: are they signed in on the right site; which groups does their row show; does the dataset's <span class="ui">Access</span> list name one of those groups with <span class="ui">View source</span>? Then confirm with <span class="ui">View As</span>.</p>
+          <h3 id="i-added-someone-and-nothing-changed">I added someone and nothing changed</h3>
+          <p>Adding an account grants nothing. Put them in a group, then make sure that group appears in the access list of whatever they need — a new group has none anywhere. If the <span class="ui">Users</span> page itself will not open, your session expired or your account lacks the user-administration right.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a></li>
+            <li><a href="admin--manage_data.html#access-and-deletion">Access and deletion</a></li>
+            <li><a href="admin--upload_data.html">Upload a dataset</a></li>
+            <li><a href="developers--data_manager_api.html">Data Manager API</a></li>
+            <li><a href="admin.html">Admin hub</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Users page code (auth pattern, the build being deployed): the title <span class="ui">Users</span>, <span class="ui">Add new</span>, the add dialog's <span class="ui">Enter user email</span> and <span class="ui">Add</span> / "Adding", the columns <span class="ui">User</span> · <span class="ui">Groups</span> · <span class="ui">Created</span> · <span class="ui">Last Login</span>, the header filters <span class="ui">search...</span> and <span class="ui">filter group...</span>, the last-login sort, the editable groups cell and the assign / remove calls it makes, <span class="ui">reset password</span> with "Reset password for: …?" and <span class="ui">reset</span>, <span class="ui">View As</span> / <span class="ui">Viewing As</span> and the gate on it, and "To access this page, you need to login." The pending-request table with <span class="ui">Approve</span> and <span class="ui">Reject</span> is present in the file but commented out, so this build's page shows no request queue.</li>
+            <li>Groups page code: the title <span class="ui">Groups</span>, <span class="ui">Add new</span>, the columns <span class="ui">Group</span> and <span class="ui">#&nbsp;Members</span>, <span class="ui">search...</span>, and the add dialog's "Please enter Group Name" with <span class="ui">Add</span> / "Adding"; a new group is created at the base level with no access.</li>
+            <li>View-as bar code: "Viewing as:", the group pills and <span class="ui">Exit View As</span>.</li>
+            <li>Auth pattern configuration: the <span class="ui">Auth</span> menu (<span class="ui">Profile</span> · <span class="ui">Users</span> · <span class="ui">Groups</span>), the separate permissions the two management pages are gated on, and the sign-in, sign-up and password routes; the disabled sign-up message quoted above.</li>
+            <li>Access evaluation code: a grant is a list of permissions per group or per person; <span class="ui">All (*)</span> satisfies any requirement; an empty list on a dataset revokes the inherited grant; and a signed-in account is allowed where no non-public grant exists at all.</li>
+            <li>Source access vocabulary (datasets source format): the nine permission labels in the table above, including the comment that <span class="ui">Download source</span> is the earlier download level.</li>
+            <li>Managing Data (docs page, 2025-09-30): the earlier model — user and group access controls, the integer authority levels 10 full access / 2 view and download / 1 view only, and the note that only those three existed.</li>
+            <li>Sign-in facts as documented on <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>: the sign-in page, the reset route and the 6-hour session.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="admin.html">Admin hub</a>
+          <a href="admin--manage_data.html">Manage a dataset</a>
+          <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>
