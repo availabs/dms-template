@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Which tool answers my question? · Get started · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  start--which_tool.html · IA page 6 · type reference (decision table, STYLE §4). Phase 1, 2026-09-04.
+  Sources: 280612 §01 routing table ("When another tool is the right one"), 280326 FAQ questions, plan report §03
+  (what a user must learn per product), tickets-analysis §4/§6.1 task list, 225868 "When to use each tool".
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Get started · reference</div>
+          <h1 class="doc-title">Which tool answers my question?</h1>
+          <p class="doc-lede">One decision table across NPMRDS, TSMO and the Freight Atlas. Find your question in the first column and open the tool in the second. Written for planners. No account is assumed.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="how-the-products-divide-the-questions">How the products divide the questions</h2>
+          <p>A road segment or a route over time is <strong>NPMRDS</strong>. A region's operations in a year, month by month, is <strong>TSMO</strong>. Freight networks, facilities and the 2024 State Freight Plan are the <strong>Freight Atlas</strong>.</p>
+
+          <h2 id="the-decision-table">The decision table</h2>
+          <p>One task per row: the tool, the reason, and the common wrong turn.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>If you want to…</th><th>Use</th><th>Because</th><th>Not this</th></tr></thead>
+            <tbody>
+              <tr><td>Rank every segment in a region by one measure for one year</td><td><a href="npmrds--macro_view.html">Macro View</a></td><td>One measure, one year, every segment. <span class="ui">Worst 25 segments</span> ranks the current filter</td><td>Reports, which chart one route at a time</td></tr>
+              <tr><td>Find the bottleneck segments in a county or region</td><td><a href="npmrds--macro_view.html">Macro View</a></td><td>Set the geography first, then read <span class="ui">Worst 25 segments</span></td><td>A TSMO dashboard, which reports a region's totals by month</td></tr>
+              <tr><td>Study one corridor or route over time, in detail</td><td><a href="npmrds--reports--start_from_template.html">Reports</a></td><td>Build a route, then chart it with a template</td><td>Macro View, which gives one annual value per segment</td></tr>
+              <tr><td>Compare a route before and after a change</td><td><a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a></td><td>Reports on one route with two periods</td><td>MAP-21 pages, which are annual and federal</td></tr>
+              <tr><td>Compare several routes across several periods in one table</td><td><a href="npmrds--route_comparison.html">Route Comparison</a></td><td>A routes × periods table with a base period and fixed, own or relative dates</td><td>Several separate reports</td></tr>
+              <tr><td>Jump to one segment (TMC) and read its value</td><td><a href="npmrds--macro_view.html">Macro View</a></td><td>Search a TMC code. The map centres on it</td><td>Reports, which need a saved route</td></tr>
+              <tr><td>Download a measure for every segment in a geography</td><td><a href="npmrds--macro_view--download.html">Download data from the Macro View</a></td><td>CSV or GPKG with the same filters as the map, plus method notes</td><td>Copying values from the map</td></tr>
+              <tr><td>Cite a federal MAP-21 PM3 figure or a target</td><td><a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></td><td>These are the submittal figures and targets</td><td>Macro View or TSMO Reliability, which show the analytical series</td></tr>
+              <tr><td>See how a region's congestion or reliability looked in a year</td><td><a href="tsmo--congestion.html">Congestion</a> and <a href="tsmo--reliability.html">Reliability</a> dashboards</td><td><span class="ui">Year</span> and <span class="ui">Region</span> filters. Delay is monthly, reliability is annual</td><td>Macro View, which is per segment and annual</td></tr>
+              <tr><td>Look up one incident or crash</td><td><a href="tsmo--incident_search.html">Find an incident</a></td><td>Facets and keyword search open the incident page</td><td>NPMRDS tools, which hold travel times and not events</td></tr>
+              <tr><td>Follow one corridor's speeds through a day</td><td><a href="tsmo--corridor_view.html">Corridor View</a></td><td>County, corridor, direction, date. No account needed</td><td>Reports, which need a saved route and sign-in</td></tr>
+              <tr><td>Measure the impact of work zones</td><td><a href="tsmo--work_zones.html">Work Zones dashboard</a></td><td>Construction events are its subject</td><td>Incidents dashboard, which excludes construction</td></tr>
+              <tr><td>Open one of the 2024 State Freight Plan's maps</td><td><a href="freight_atlas--gallery.html">Maps Gallery</a></td><td>The plan's figures, ready-made as presets of the map</td><td>Building the map from scratch</td></tr>
+              <tr><td>Build your own freight map from layers</td><td><a href="freight_atlas--map.html">Use the map</a></td><td>7 categories, 28 layers, per-layer filters. Share it with <code>?layers=</code></td><td>Maps Gallery, whose presets are fixed</td></tr>
+              <tr><td>Download the data behind a freight map</td><td><a href="freight_atlas--downloads.html">Download freight data</a></td><td>Source pages offer CSV, GeoJSON, Shapefile, GeoPackage and XLSX</td><td>A screenshot of the map</td></tr>
+              <tr><td>Read what the freight plan says</td><td><a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a></td><td>Goals, strategies, and what changed since 2019</td><td>The map legend alone</td></tr>
+              <tr><td>Query data from code, or in bulk</td><td><a href="developers--quickstart.html">Developers quick start</a></td><td>The Data Manager API and bulk downloads</td><td>Repeated manual downloads</td></tr>
+              <tr><td>Find what a measure means and how it is computed</td><td><a href="measures_and_data.html">Measures &amp; Data</a></td><td>One page per measure with its basis, method and limits</td><td>A tooltip alone</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="two-rules-before-you-quote-a-number">Two rules before you quote a number</h2>
+          <ul>
+            <li><strong>Federal is not analytical.</strong> Only the MAP-21 PM3 pages carry the figures NYSDOT submits to FHWA. Every other reliability number is the analytical series. See <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</li>
+            <li><strong>Download what you cite.</strong> A shared link is live and can change. A download is fixed and ships its method notes. See <a href="start--navigating.html#share-a-page-by-its-address">Share a page by its address</a>.</li>
+          </ul>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 1)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="start--faq.html">Platform FAQ</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

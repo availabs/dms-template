@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Template reference · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · reference</div>
+          <h1 class="doc-title">Template reference.</h1>
+          <p class="doc-lede">One entry per template on the Reports page: the question it answers, the route and date it asks for, the periods and cards it draws, how to read the result, and which measure pages apply. Written from the template definitions that build the shelf.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="how-templates-work">How templates work</h2>
+          <p>A template is a shared report whose routes are filled by whoever opens it. It asks for one route, two for Bi-directional, and an anchor date from <span class="ui">Viewing as of</span>, which starts at the latest date with data. Every period counts back from the anchor: "Current Year" is its calendar year, "1 Year Ago" the year before, "Trailing 3 Years" the three years ending with it; months and seasons are calendar positions in its year.</p>
+          <div class="callout note"><span class="k">the 2024 walkthroughs</span>The 2024 documentation walked through Snapshot, Seasonality and Bi-directional in the earlier tool, where dates were edited per route and applied with an Update button. Its questions and readings are carried below; its setup steps are not. Unconfirmed card behaviour is marked.</div>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Template</th><th>Group · chip</th><th>Routes</th><th>Periods it draws</th><th>Cards</th></tr></thead>
+            <tbody>
+              <tr><td><a href="#single-route">Single Route</a></td><td>Before &amp; after · beginner</td><td>1</td><td>3 Years Ago · Current Year · Trailing 3 Years</td><td>9</td></tr>
+              <tr><td><a href="#one-week-study">One Week Study</a></td><td>Floating car</td><td>1</td><td>Today · Yesterday · 2, 3, 4 Days Ago · Average for Week · Month · Year</td><td>8</td></tr>
+              <tr><td><a href="#annual-average-study">Annual Average Study</a></td><td>Floating car</td><td>1</td><td>Current Year · 1, 2, 3 Years Ago</td><td>8</td></tr>
+              <tr><td><a href="#single-day-advanced">Single Day (Advanced)</a></td><td>Events · advanced</td><td>1</td><td>Incident Day · 7 Days After · Incident Week · Week After · Incident Month · Month After · Current Year</td><td>6</td></tr>
+              <tr><td><a href="#year-over-year">Year Over Year</a></td><td>Change over time · beginner</td><td>1</td><td>Current Year · 1, 2 Years Ago · Trailing 3 Years</td><td>9</td></tr>
+              <tr><td><a href="#this-month-vs-last-month-vs-last-year">This Month vs. Last Month vs. Last Year</a></td><td>Change over time · advanced</td><td>1</td><td>This Month · Last Month · Same Month Last Year · Trailing 3 Years</td><td>12</td></tr>
+              <tr><td><a href="#monthly-congestion">Monthly Congestion</a></td><td>Change over time · beginner</td><td>1</td><td>Current Year · each of its 12 months · Compare Year</td><td>13</td></tr>
+              <tr><td><a href="#monthly-speed-comparisons">Monthly Speed Comparisons</a></td><td>Change over time</td><td>1</td><td>Current Year · Trailing 6-Year Average</td><td>7</td></tr>
+              <tr><td><a href="#snapshot">Snapshot</a></td><td>Behavioral · beginner</td><td>1</td><td>Current Year · Trailing 3 Years</td><td>13</td></tr>
+              <tr><td><a href="#seasonality">Seasonality</a></td><td>Behavioral · intermediate</td><td>1</td><td>Current Year · Winter · Spring · Summer · Fall (average day), Winter (weekday)</td><td>15</td></tr>
+              <tr><td><a href="#bi-directional">Bi-directional</a></td><td>Behavioral · intermediate</td><td>2</td><td>Per direction: Current Year · 1, 2 Years Ago · Trailing 3 Years</td><td>14</td></tr>
+              <tr><td><a href="#weekly-average">Weekly Average</a></td><td>Behavioral · beginner</td><td>1</td><td>Current Year · 1, 2 Years Ago</td><td>2</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="before-and-after">Before &amp; after</h2>
+          <h3 id="single-route">Single Route</h3>
+          <p><strong>The question.</strong> Did speed and delay on this route change between three years ago and this year?</p>
+          <p><strong>Setup.</strong> One route. Anchor on the end of the "after" year; the "before" year is three calendar years earlier.</p>
+          <p><strong>Reading it.</strong> A line of average hours of delay by 5 minutes, a map, bars of hours of delay and speed by day across the trailing three years, one speed grid per year, a difference grid of the current year against three years ago, and a summary bar. In the difference grid colour is current minus earlier, segment by segment and hour by hour: a band along a stretch is a real change, a speckle is noise. Check the segment count in both years first; a split or merge between maps reads as a change.</p>
+          <p class="where"><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a><a href="measures_and_data--concepts--tmc_network_and_vintages.html">TMC vintages</a></p>
+
+          <h2 id="floating-car">Floating car</h2>
+          <h3 id="one-week-study">One Week Study</h3>
+          <p><strong>The question.</strong> What did each of the last five days look like on this route, against their week, month and year?</p>
+          <p><strong>Setup.</strong> One route. Anchor on the last day you want; the four days before it follow.</p>
+          <p><strong>Reading it.</strong> A table of speed and travel time per period, a speed line by 5 minutes with one line per day and per average, a map, summary bars, a segment grid. Day lines against average lines show which days were ordinary. Single days have the thinnest coverage; expect gaps on a thin route.</p>
+          <p class="where"><a href="measures_and_data--measures--coverage.html">Data coverage</a><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></p>
+          <h3 id="annual-average-study">Annual Average Study</h3>
+          <p><strong>The question.</strong> What is an average day on this route this year, and how does it compare with the three years before?</p>
+          <p><strong>Setup.</strong> One route. Anchor on the end of the year you want as "current".</p>
+          <p><strong>Reading it.</strong> A map, a speed line by 5 minutes with one line per year, a Route Compare table of speed and travel time by year, speed by day of week, by day and by month, and a segment grid. Year lines give the shape of the day; the compare table the size of the change.</p>
+          <p class="where"><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a><a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods</a></p>
+
+          <h2 id="events">Events</h2>
+          <h3 id="single-day-advanced">Single Day (Advanced)</h3>
+          <p><strong>The question.</strong> How did one day, an incident or a closure, differ from the week, month and year around it?</p>
+          <p><strong>Setup.</strong> One route. Set <span class="ui">Viewing as of</span> to the incident date; every other period is placed around it.</p>
+          <p><strong>Reading it.</strong> A speed line by 5 minutes of the day against its week, month and year, a map, a segment grid for the incident day and one for the year's average day, a difference grid of the two, and hours of delay by day. The difference grid is the answer: where and when the day was slower than normal. A queue reads as a wedge spreading across segments over time.</p>
+          <p class="where"><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a><a href="measures_and_data--measures--coverage.html">Data coverage</a></p>
+
+          <h2 id="change-over-time">Change over time</h2>
+          <h3 id="year-over-year">Year Over Year</h3>
+          <p><strong>The question.</strong> How have travel time and delay on this route moved across the last three years?</p>
+          <p><strong>Setup.</strong> One route. Anchor on the end of the latest year.</p>
+          <p><strong>Reading it.</strong> A travel-time map, a segment-length table, a Route Compare table of speed by year, bars of hours of delay and travel time by day across the trailing three years, bars by 5 minutes for the earliest year, a travel-time line with one line per year, and a speed map. The length table is a check: a length change between years is the network map, not the traffic.</p>
+          <p class="where"><a href="measures_and_data--concepts--tmc_network_and_vintages.html">TMC vintages</a><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></p>
+          <h3 id="this-month-vs-last-month-vs-last-year">This Month vs. Last Month vs. Last Year</h3>
+          <p><strong>The question.</strong> Is this month unusual against last month, the same month last year, and the three-year average?</p>
+          <p><strong>Setup.</strong> One route. Anchor inside the month you want as "this month".</p>
+          <p><strong>Reading it.</strong> Six 5-minute lines pair travel time and average hours of delay against each comparison, then maps of hours of delay and travel time, bars of delay, travel time and speed by day of week, and a summary bar of travel time. Same month last year is the fair comparison; last month carries a season change.</p>
+          <p class="where"><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a><a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods</a></p>
+          <h3 id="monthly-congestion">Monthly Congestion</h3>
+          <p><strong>The question.</strong> Which months of the year carry the delay on this route?</p>
+          <p><strong>Setup.</strong> One route. Anchor in the year you want; the twelve months are its calendar months and "Compare Year" is the year before.</p>
+          <p><strong>Reading it.</strong> Twelve bar graphs of hours of delay by day, one per month, then a Route Compare table of speed for the year against the compare year. A month of tall bars is seasonal; a single tall bar is an event.</p>
+          <p class="where"><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></p>
+          <h3 id="monthly-speed-comparisons">Monthly Speed Comparisons</h3>
+          <p><strong>The question.</strong> How does this year's speed on the route compare with the six-year average, by time of day, month and weekday?</p>
+          <p><strong>Setup.</strong> One route. Anchor on the end of the latest full year.</p>
+          <p><strong>Reading it.</strong> Bars of speed and average hours of delay by 5 minutes, speed by month, a speed line, a segment grid, and speed and hours of delay by day of week. The six-year average is the baseline; the current year's departures are the finding.</p>
+          <p class="where"><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></p>
+
+          <h2 id="behavioral">Behavioral</h2>
+          <h3 id="snapshot">Snapshot</h3>
+          <p><strong>The question.</strong> What is an average day on this route in the latest complete year, by time of day, month, weekday and peak?</p>
+          <p><strong>Setup.</strong> One route. Anchor on the end of a complete year; the trailing three years give the comparison.</p>
+          <p><strong>Reading it.</strong> A speed map, speed and average hours of delay by 5 minutes, speed and hours of delay by month and by day of week, a speed line, a segment grid, a Route Compare table of speed and travel time against the trailing three years, a table of the same, and two summary bars by AM, PM and off-peak. In 2024, hovering a map segment highlighted it in the grid and the segment table; check lengths there before reading change over time.</p>
+          <p class="where"><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a><a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods</a></p>
+          <h3 id="seasonality">Seasonality</h3>
+          <p><strong>The question.</strong> Does this route behave differently by season?</p>
+          <p><strong>Setup.</strong> One route. Anchor in the year you want. Seasons are fixed calendar ranges: winter 12-19 to 03-19, spring 03-20 to 06-19, summer 06-20 to 09-19, fall 09-20 to 12-19, plus a weekday-only winter row.</p>
+          <p><strong>Reading it.</strong> Hours of delay by day, average hours of delay and speed by 5 minutes with one line per season, a speed grid per season, a difference grid per season against the year, summary bars of speed and delay by season, and average hours of delay by weekday for winter and for all seasons. In the difference grids colour is season minus year; in 2024 red marked the slowest speeds. Check segment lengths before reading a seasonal shift as behaviour.</p>
+          <p class="where"><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></p>
+          <h3 id="bi-directional">Bi-directional</h3>
+          <p><strong>The question.</strong> How do the two directions of one corridor compare, year by year?</p>
+          <p><strong>Setup.</strong> Two routes, the two directions, ideally where one's start is the other's end. Anchor on the end of the latest year.</p>
+          <p><strong>Reading it.</strong> Per direction: hours of delay and travel time by 5 minutes with one series per year, a Route Compare table of speed by year, a speed map, a segment-length table, and hours of delay and travel time by day across the trailing three years. The 5-minute pairs show how the peaks shifted, the daily bars the high-delay days, the tables the size of the change. In 2024 each year was compared with 2016, green where better and red where worse; today's compare column is a percent against the first row. A longer or shorter segment is a map change.</p>
+          <p class="where"><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a><a href="measures_and_data--concepts--tmc_network_and_vintages.html">TMC vintages</a></p>
+          <h3 id="weekly-average">Weekly Average</h3>
+          <p><strong>The question.</strong> What does a typical week look like on this route, and has its shape changed over three years?</p>
+          <p><strong>Setup.</strong> One route. Anchor on the end of the latest year.</p>
+          <p><strong>Reading it.</strong> Two cards: a speed line by 5 minutes with one line per year, and average speed by day of week. The smallest template and a good first look.</p>
+          <p class="where"><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></p>
+
+          <h2 id="reading-a-route-compare-table">Reading a Route Compare table</h2>
+          <p>Several templates end with a table comparing periods: one row per period, and per measure a value column and a percent column against the first row. Negative on speed is slower; negative on hours of delay is less delay. Read the sign of the change; colour, if shown, is a hint and not the reading.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Template definitions (12 dynamic report specifications in the platform repository, 2026-08 to 09): titles, group tags, difficulty, route slots, anchor formulas (yearof, year-N, monthof, calendar ranges), card lists and titles. Card counts above are those lists.</li>
+            <li>Live Reports page (published 2026-09-02): the five group heads and the twelve cards.</li>
+            <li>Report route rail and header code: <span class="ui">Viewing as of</span>, the "latest available" anchor, the exact-count route gate.</li>
+            <li>Legacy NPMRDS documentation, Route Analysis (2024): the Snapshot, Seasonality and Bi-directional walkthroughs (Introduction · Setup · Interpretation), the Route Compare colour reading, the "check the TMC lengths before making any conclusions about behavioral change over time" caution; Quick Start (2024): the template catalogue and its FAQ.</li>
+            <li>Add Graph dialog code: Route Compare "% vs Main" against the first route in the report's list.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds--reports--start_from_template.html">Start a report from a template</a>
+          <a href="npmrds--reports--graph_types.html">Graph types reference</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

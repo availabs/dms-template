@@ -21,7 +21,14 @@
     ]},
     { key: 'platform', label: 'Platform', landing: 'landing.html', dir: 'pages', pages: [
       { f: 'landing.html', t: 'landing' }, { f: 'login.html', t: 'login' },
-      { f: 'getting-started.html', t: 'getting-started' }, { f: 'docs-overview.html', t: 'docs-overview' },
+      { f: 'getting-started.html', t: 'getting-started' },
+    ]},
+    // 2026-09-04: documentation moved into its own folder, pages/docs/ (95-page tree in pages/docs/_docs-nav.js,
+    // task platform-documentation-build.md). docs-overview.html → docs/_seed--docs-overview.html (seed for index.html),
+    // npmrds-macro-guide.html → docs/npmrds--macro_view.html, npmrds-measures.html → docs/_seed--npmrds-measures.html.
+    // This widget lists only the docs landing; the docs pages carry their own sidebar.
+    { key: 'docs', label: 'Documentation', landing: 'index.html', dir: 'pages/docs', pages: [
+      { f: 'index.html', t: 'docs home' }, { f: 'npmrds--macro_view.html', t: 'macro view · guide' },
     ]},
     // NPMRDS · the category. Absorbed the old standalone `map21` section and pulled
     // route-comparison out of `explorers` — one home per page. map-21-lottr.html existed on
@@ -37,8 +44,6 @@
     // this design system to carry screenshots (../assets/screens/).
     { key: 'npmrds', label: 'NPMRDS', landing: 'npmrds-home.html', dir: 'pages', pages: [
       { f: 'npmrds-home.html', t: 'home' }, { f: 'npmrds-macro.html', t: 'macro view' },
-      { f: 'npmrds-macro-guide.html', t: 'macro view · guide' },
-      { f: 'npmrds-measures.html', t: 'measures & methodology' },
       { f: 'npmrds-tmc.html', t: 'segment · tmc' },
       { f: 'npmrds-reports.html', t: 'reports · templates' },
       { f: 'npmrds-reports-list.html', t: 'reports · all (list)' },
@@ -80,12 +85,15 @@
   // current page + folder
   var path = location.pathname;
   var curFile = (path.split('/').pop() || 'index.html').toLowerCase();
-  var curDir = path.indexOf('/design-system/') !== -1 ? 'design-system' : 'pages';
+  var curDir = path.indexOf('/design-system/') !== -1 ? 'design-system'
+             : path.indexOf('/pages/docs/') !== -1 ? 'pages/docs' : 'pages';
 
-  // href to (dir,file) relative to the current folder (pages/ and design-system/
-  // are siblings under the root, so a cross-folder hop is one '../').
+  // href to (dir,file) relative to the current folder. pages/ and design-system/ are siblings under
+  // the root (one '../' hop); pages/docs/ is one level deeper (two hops up to the root).
   function href(dir, file) {
-    return dir === curDir ? file : '../' + dir + '/' + file;
+    if (dir === curDir) return file;
+    var up = curDir === 'pages/docs' ? '../../' : '../';
+    return up + dir + '/' + file;
   }
 
   // which section owns the current page (match by file, prefer same dir)

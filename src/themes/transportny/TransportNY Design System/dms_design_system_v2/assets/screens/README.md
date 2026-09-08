@@ -3,7 +3,7 @@
 The design system had no image assets before 2026-08-27. These are the first, and this file is the
 convention so a later capture matches.
 
-**Where they are used:** `pages/npmrds-macro-guide.html` (6 figures) and `pages/npmrds-measures.html`
+**Where they are used:** `pages/docs/npmrds--macro_view.html` (6 figures) and `pages/docs/_seed--npmrds-measures.html`
 (1 figure).
 
 ## Rules

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Developers · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  developers.html · IA page 80 · type hub. Phase 6a, 2026-09-08.
+  Sources: docs-dump 1436006 (Data Manager API reference, 2025-08-27), 1458899 (worked example, 2025-09-10), 1481752 (python
+  client, 2025-09-24), 1715527 (Batch Reports API, 2026-02-04), 281807 §APIs (2024-04-04); avail-falcor index.js / routes/uda.route.js
+  (the current route set, no rate limiter); dms-template .env.example (hosts); skills/authenticating-the-dms-cli.md (login); the
+  eight datasheets' Distribution sections; build-route-comparison-page.md (Batch Reports retirement).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="hub" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Developers · hub</div>
+          <h1 class="doc-title">Developers.</h1>
+          <p class="doc-lede">Two APIs and every download route on the platform, for consultants and agency developers who want the numbers behind the dashboards in their own code. Read the quick start first. The reference pages carry the path grammar, the request bodies and the file formats.</p>
+          <div class="stamps">
+            <span class="type">hub</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-is-here">What is here</h2>
+          <p>Six pages. One guided first success, two API references, a page of worked examples, the catalogue of download routes, and a dated change log.</p>
+          <div class="hubgrid">
+            <a class="hubcard" href="developers--quickstart.html"><div class="t">Quick start</div><div class="d">Mint a token, count the rows of a dataset without one, read five rows, and fetch a generated file. About 10 minutes.</div><div class="n">start · read first</div></a>
+            <a class="hubcard" href="developers--data_manager_api.html"><div class="t">Data Manager API</div><div class="d">The read API every dashboard renders from: hosts, the <code>uda</code> path grammar, the options object, attributes, what returns without a token.</div><div class="n">reference</div></a>
+            <a class="hubcard" href="developers--examples.html"><div class="t">Worked examples</div><div class="d">The TRANSCOM events example in full, a filtered query, a grouped count, and the python client.</div><div class="n">how-to</div></a>
+            <a class="hubcard" href="developers--downloads_and_formats.html"><div class="t">Bulk downloads and formats</div><div class="d">Every download route on the platform in one table: what you get, the format, whether it asks for sign-in. And what is not downloadable.</div><div class="n">reference</div></a>
+            <a class="hubcard" href="developers--batch_reports_api.html"><div class="t">Batch Reports API</div><div class="d">The REST endpoint behind the earlier Batch Reports tool: request body, response, column codes, four scenarios. Retires with Route Comparison.</div><div class="n">reference · retiring</div></a>
+            <a class="hubcard" href="developers--changelog.html"><div class="t">API changelog</div><div class="d">Dated changes to the APIs, the download routes and these pages, newest first.</div><div class="n">log</div></a>
+          </div>
+
+          <h2 id="the-two-apis">The two APIs</h2>
+          <p>The platform exposes two programmatic surfaces. Both answer on the data host, <code>https://graph.availabs.org</code>. Neither has an OpenAPI document; these pages are the reference.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>API</th><th>What it is</th><th>Where</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><a href="developers--data_manager_api.html">Data Manager API</a></td><td>A Falcor JSON Graph endpoint. You send a list of paths under the <code>uda</code> root and get back a graph of values. It reads any published dataset by view: its length, its rows, its columns, filtered and grouped.</td><td><code>GET https://graph.availabs.org/graph?paths=…&amp;method=get</code></td><td>Current. The 2025 reference's <code>dama</code> root is the legacy form.</td></tr>
+              <tr><td><a href="developers--batch_reports_api.html">Batch Reports API</a></td><td>One REST endpoint. You post a list of routes as TMC lists with time windows and column definitions; it returns speed, travel time and hours of delay per route and period.</td><td><code>POST https://graph.availabs.org/batchreports/npmrds2/982</code></td><td>Retires when <a href="npmrds--route_comparison.html">Route Comparison</a> is released.</td></tr>
+            </tbody>
+          </table></div>
+          <p>Sign-in is separate from data reads. A token comes from <code>POST https://dmsserver.availabs.org/login</code> and lasts about 6 hours. Public reads need none. See <a href="developers--quickstart.html#steps">the quick start's first step</a> and <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</p>
+
+          <h2 id="where-the-data-comes-from">Where the data comes from</h2>
+          <p>Every dataset the API serves has a datasheet in Measures &amp; Data. Each datasheet's <em>Distribution</em> section names the routes to that data. Read the datasheet before you query: it carries the schema, the coverage eras and the limits that the API does not repeat.</p>
+          <ul>
+            <li><a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a> · the 5-minute probe table; the Macro View download carries computed measures, not epochs.</li>
+            <li><a href="measures_and_data--data--tmc_network.html">TMC network</a> · one vintage per year; geometry travels in the Macro View GeoPackage.</li>
+            <li><a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a> · the analytical series per segment and year; the federal submission file on the MAP-21 pages.</li>
+            <li><a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a> · the dataset the worked examples query.</li>
+            <li><a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> · segment by month; a CSV per year from the TSMO Data &amp; Methodology page.</li>
+            <li><a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a> · travel with the network, not on their own.</li>
+            <li><a href="measures_and_data--data--routes_data.html">Routes data</a> · saved routes; no bulk download.</li>
+            <li><a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a> · the Data &amp; Downloads catalog, per-version exports in four formats.</li>
+          </ul>
+
+          <h2 id="start-here">Start here</h2>
+          <ul>
+            <li><a href="developers--quickstart.html">Quick start</a> · one dataset, four requests, a file on disk. No account needed until the token step.</li>
+            <li><a href="developers--data_manager_api.html#the-options-object">The options object</a> · the filter, exclude, comparison, pattern, group and order grammar in one table.</li>
+          </ul>
+
+          <h2 id="common-tasks">Common tasks</h2>
+          <ul>
+            <li><a href="developers--examples.html#steps">Count then read the rows that match a filter</a>, the length-then-rows pattern.</li>
+            <li><a href="developers--examples.html#a-filtered-query-and-a-grouped-count">Group a dataset and count per group</a>.</li>
+            <li><a href="developers--examples.html#the-python-client">Save a query to CSV with the python client</a>.</li>
+            <li><a href="developers--downloads_and_formats.html#every-download-route">Find the download route for a dataset</a> and its format.</li>
+            <li><a href="npmrds--macro_view--download.html">Export one PM3 year of a measure</a> from the Macro View, with its README.</li>
+            <li><a href="developers--batch_reports_api.html#four-scenarios">Compare a route across two years</a> through the Batch Reports API, while it lasts.</li>
+          </ul>
+
+          <h2 id="reference">Reference</h2>
+          <ul>
+            <li><a href="developers--data_manager_api.html">Data Manager API</a> · paths, options, attributes, sign-in, the legacy form.</li>
+            <li><a href="developers--downloads_and_formats.html">Bulk downloads and formats</a> · the route table; how per-view exports are generated.</li>
+            <li><a href="developers--batch_reports_api.html">Batch Reports API</a> · endpoint, bodies, column codes, scenarios, legacy pages.</li>
+            <li><a href="developers--changelog.html">API changelog</a> · dated entries; undated items listed as such.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a> · span, lag and cadence per source, so a query's empty months are not a surprise.</li>
+          </ul>
+
+          <h2 id="what-is-not-offered">What is not offered</h2>
+          <ul>
+            <li><strong>No OpenAPI or Swagger document.</strong> The Data Manager API is a path grammar, not a set of REST resources. These pages are its description.</li>
+            <li><strong>No published rate limit.</strong> None is published. The data server's own code sets none; what a proxy in front of it enforces is not documented here.</li>
+            <li><strong>No API key apart from the sign-in token.</strong> The TSMO Data &amp; Methodology page's "key on sign-in" is the token the quick start mints.</li>
+            <li><strong>No bulk export of the raw travel-time table.</strong> The routes to that data are the Macro View package and per-view reads through the API. See <a href="developers--downloads_and_formats.html#what-is-not-downloadable">What is not downloadable</a>.</li>
+            <li><strong>No write access to platform data.</strong> Dataset rows are never editable through the API. Source and view descriptions can be edited with a token that carries edit authority.</li>
+            <li><strong>No client library other than the python client</strong>, which is installed from its repository, not a package index.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Data Manager API reference (docs page, 2025-08-27): Get Length by ViewId, Get Attributes By ViewId, the options object; written with the legacy <code>dama</code> root.</li>
+            <li>API request example (docs page, 2025-09-10): the TRANSCOM events query against <code>https://graph.availabs.org/graph</code> with the <code>uda</code> root; 1,262 rows.</li>
+            <li>Python client examples (docs page, 2025-09-24); Batch Reports API (docs page, 2026-02-04): <code>POST https://graph.availabs.org/batchreports/npmrds2/982</code>.</li>
+            <li>Data server code (avail-falcor, the version in the workspace): <code>routes/uda.route.js</code> route set and its header comment; <code>index.js</code> mounts <code>/graph</code> and <code>/batchreports/:pgEnv/:viewId</code> and carries no rate limiter; <code>auth/jwtAuth.js</code> reads the <code>Authorization</code> header and continues without one.</li>
+            <li>Site configuration (dms-template <code>.env.example</code>): <code>VITE_API_HOST</code> and <code>VITE_DAMA_HOST</code> = <code>https://graph.availabs.org</code>. Sign-in skill (<code>authenticating-the-dms-cli.md</code>): <code>POST {API_HOST}/login</code> on the DMS server, about 6 hours.</li>
+            <li>The eight datasheets' Distribution sections, Measures &amp; Data hub. Route Comparison build task: Batch Reports retire when it ships.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="index.html">Documentation home</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

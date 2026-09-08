@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cost of congestion · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--cost_of_congestion.html · IA page 60 · type measure. Phase 2a, 2026-09-04.
+  Sources: data-types/_shared/vot_rates.js (v1 rates $52/$42/$77, network_blend 52, occupancy bundled), class-weighted-vot-cost.md
+  (basis of each rate, ≈$50–55 blend, $58–62 freight corridors, ETL re-run pending), TSMO Data & Methodology cost card (≈$53),
+  live dashboards as of the July 2026 digests (Congestion: "$20 per vehicle-hour"; Incidents and Work Zones: "interim $20/veh-hr"),
+  mockup header tsmo-home/tsmo-congestion (2025 cost $6.2B = 310.86 M × $20, M5), tickets 2191403 / 2214480 (dead "How it's
+  computed" affordances), references/tsmo/06 §1 cost line.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Cost of congestion.</h1>
+          <p class="doc-lede">Delay in vehicle-hours converted to dollars at a value of time. Two bases exist on the site today, a flat $20 per vehicle-hour and a vehicle-class-weighted rate. This page says which is which and which pages show each. It assumes you have read the excessive-delay page.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · TSMO dashboards (www/tsmo)</span>
+            <span>methodology · excessive delay, June 2026 revision</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p>What the delay on the network is worth in dollars. The Data &amp; Methodology page defines the current basis as "Delay monetized at a vehicle-class-weighted value of time. Each segment's vehicle mix comes from its AADT split — passenger cars, single-unit trucks, and combination trucks — and each class carries its own per-vehicle rate."</p>
+          <p>Cost is a conversion of <a href="measures_and_data--measures--excessive_delay.html">excessive delay</a> or of an event's attributed delay. It adds no new measurement. Every caveat on those pages carries over.</p>
+          <div class="callout basis"><span class="k">basis</span>Rates are in 2024–25 dollars per vehicle-hour, with vehicle occupancy already included. Delay figures on this page are CY 2025, statewide, all vehicles, the monitored network.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <h3 id="the-class-weighted-basis">The class-weighted basis (current method)</h3>
+          <ol class="steps">
+            <li>Take the segment's AADT and its single-unit and combination truck counts. Passenger AADT is the remainder.</li>
+            <li>Weight the three class rates by their shares to get the segment's effective value of time.</li>
+            <li>Multiply the segment's delay in vehicle-hours by that rate. For an event, sum the product over the segments in its footprint.</li>
+            <li>Where a segment's AADT split is missing or zero, use the network-blend rate rather than dropping the segment.</li>
+          </ol>
+          <div class="formula">VOT_eff = pass% × $52 + singl% × $42 + combi% × $77
+cost = delay_vh × VOT_eff
+            <span class="var">VOT_eff = the segment's effective value of time, in dollars per vehicle-hour</span>
+            <span class="var">pass% · singl% · combi% = the segment's share of passenger cars, single-unit trucks and combination trucks, from its AADT split</span>
+            <span class="var">delay_vh = delay in vehicle-hours · fallback when the split is missing: the network blend, about $52 per vehicle-hour</span>
+          </div>
+          <h3 id="the-flat-basis">The flat basis (earlier method, still shown on some pages)</h3>
+          <div class="formula">cost = delay_vh × $20
+            <span class="var">$20 = a flat value of time per vehicle-hour, described on the Congestion dashboard as FHWA's value of time</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Vehicle class</th><th class="num">Rate per vehicle-hour</th><th>Basis</th></tr></thead>
+            <tbody>
+              <tr><td>Passenger vehicles</td><td class="num">$52</td><td>Maryland CHART 2022 car rate of $46.50, occupants included, escalated by the consumer price index</td></tr>
+              <tr><td>Single-unit trucks (FHWA classes 4–7)</td><td class="num">$42</td><td>Bureau of Labor Statistics driver wage plus lighter cargo. New York's single-unit class is bus-heavy, so this is the least clean rate</td></tr>
+              <tr><td>Combination trucks (FHWA classes 8–13)</td><td class="num">$77</td><td>CHART driver $23.41 plus cargo $45.40, escalated by the consumer price index; one occupant</td></tr>
+              <tr><td>Network blend (fallback)</td><td class="num">about $52</td><td>New York's AADT-weighted mix, roughly $50–55; $58–62 on freight corridors with 15–20 % combination trucks</td></tr>
+            </tbody>
+          </table></div>
+          <ul>
+            <li><strong>Do not multiply by occupancy again.</strong> The rates are per vehicle-hour with occupants bundled. The earlier method double-counted occupancy on some pages.</li>
+            <li><strong>Rates are versioned.</strong> A future escalation creates a new rate version rather than changing this one, so an old dashboard stays reproducible.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>We replaced the flat $20 with a class-weighted rate</strong>, adopted 2026-06-19 and confirmed 2026-06-22, because a truck-heavy freight corridor and a commuter parkway are not worth the same per vehicle-hour. The blend is about 2.5 times the old rate, so dollar figures roughly 2.5 times higher are a rate change, not a traffic change.</li>
+            <li><strong>Weighting is per segment from its own AADT split</strong>, which the network table already carries, so no new data was needed.</li>
+            <li><strong>Missing splits fall back to the blend</strong> rather than to zero. A segment is never dropped for lacking a truck count.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>A dollar figure inherits the uncertainty of the delay behind it and adds the rate assumption. The rates are point estimates from two published sources, escalated once. The single-unit rate is the weakest: New York's single-unit class carries buses with 10.7 to 16.8 occupants, so a transit value of time may suit bus-dominated urban segments better. That question is open.</p>
+
+          <h2 id="which-pages-show-which-basis">Which pages show which basis</h2>
+          <p>The rate change is applied at the data layer when the delay series and the event footprints are recomputed. Until that recomputation is published, pages show the figure their data carries.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Page</th><th>Basis shown</th><th>As stated on the page</th></tr></thead>
+            <tbody>
+              <tr><td>TSMO Data &amp; Methodology</td><td>class-weighted</td><td>The cost card gives the three rates and the network blend of about $53.</td></tr>
+              <tr><td>Congestion dashboard</td><td>flat $20</td><td>"Cost multiplies vehicle-hours by FHWA's value of time at $20 per vehicle-hour" (July 2026).</td></tr>
+              <tr><td>Incidents dashboard</td><td>flat $20, interim</td><td>"Dollars use an interim $20/veh-hr; a vehicle-class-weighted value of time … is being applied at the data layer" (July 2026).</td></tr>
+              <tr><td>Work Zones dashboard</td><td>flat $20, interim</td><td>Same wording as Incidents (July 2026).</td></tr>
+              <tr><td>TSMO home · cost of congestion</td><td>flat $20 at the June 2026 data revision; the card follows the recomputed series once published</td><td>The design revision of 2026-06-12 computed it as total delay × $20.</td></tr>
+              <tr><td>Incident Search · cost column</td><td>flat $20, interim: the page's "about attributed delay" note says the class-weighted rate is being applied at the data layer</td><td>Cost is shown only for events with a footprint.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>CY 2025, statewide, all vehicles, flat basis: 310.86 million vehicle-hours × $20 = <strong>$6.2 billion</strong>, the figure the Congestion dashboard and the TSMO home carried at the June 2026 data revision. At the class-weighted blend the same delay is worth roughly 2.5 times as much; the exact statewide figure is not yet published; it appears here when the recomputed series is.</p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Two bases coexist.</strong> A dollar figure from one page is not comparable to a dollar figure from another unless both name the same rate.</li>
+            <li><strong>A month or region can show $0.</strong> Cost is delay times a rate, so a month with no delay data shows $0 or nothing. Region 2, August 2025 showed $0 on Incidents for this reason.</li>
+            <li><strong>The rates are national or Maryland sources escalated to New York</strong>, not New York-specific surveys.</li>
+            <li><strong>Cost is not a benefit estimate.</strong> It values time lost; it does not net out anything.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Compare dollars only within one rate version and one delay series. A series recomputed at the class-weighted rate is not comparable to figures published at $20, and neither is comparable to the delay series in use before June 2026. Read <a href="measures_and_data--methodology_changes.html">Methodology changes</a> for the dated switch.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="tsmo--start.html">TSMO home · cost of congestion</a>
+            <a href="tsmo--congestion.html">Congestion dashboard</a>
+            <a href="tsmo--incidents.html">Incidents dashboard</a>
+            <a href="tsmo--work_zones.html">Work Zones dashboard</a>
+            <a href="tsmo--incident_search.html">Incident Search · cost column</a>
+            <a href="tsmo--incident_view.html">Incident page · cost at the flat basis</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-06-19 · class-weighted value of time adopted; Data &amp; Methodology cost card rewritten; occupancy double-count removed.</li>
+            <li>2026-06-22 · rates confirmed as version 1 ($52 / $42 / $77); code applies them at the data layer; recomputation of the series pending.</li>
+            <li>2026-07-16 and 2026-08-24 · dead "How it's computed" and "methodology" chips removed from the TSMO home cost and delay cards. This page is the destination those chips lacked.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Download the delay table for the year from the Data &amp; Methodology page's <span class="ui">Downloads &amp; API</span> section. Recompute cost as delay times the rate you intend to cite, and say which rate. Once published, the recomputed series carries an effective value-of-time column per segment-month.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Shared value-of-time rate table (data types, version 1, 2024–25 dollars): $52 / $42 / $77, network blend $52, occupancy bundled, bus-heavy caveat.</li>
+            <li>Class-weighted value-of-time task record: the basis of each rate, the roughly 2.5× blend, $58–62 on freight corridors, adoption 2026-06-19, confirmation 2026-06-22, recomputation pending.</li>
+            <li>TSMO Data &amp; Methodology page, cost card: the current basis and the network blend of about $53.</li>
+            <li>Congestion, Incidents and Work Zones dashboards, methodology bands (July 2026 digests): the flat and interim $20 wording.</li>
+            <li>TSMO home and Congestion design headers, data revision 2026-06-12/13: $6.2 billion = 310.86 million × $20.</li>
+            <li>Legacy running fix 2172498 (Region 2, August 2025, $0) and tickets 2191403 and 2214480.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

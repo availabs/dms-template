@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Start here: route → report → measure · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="start" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · start</div>
+          <h1 class="doc-title">Build a route, put it in a report, read the measure.</h1>
+          <p class="doc-lede">About 10 minutes. You sign in, draw a route from a few road segments and save it, create a report, add the route with a date window, add one graph of travel time for the weekday AM peak, and read it. Written for a first-time user who knows one road well.</p>
+          <div class="stamps">
+            <span class="type">start</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+            <span class="gated">requires sign-in</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-you-will-do">What you will do</h2>
+          <p>Make the two things every NPMRDS analysis is built from: a route, which is a named, ordered list of segments, and a report, which is a page of graphs about routes over dates. At the end you have a saved route, a published report with one graph, and an address you can share.</p>
+
+          <h2 id="before-you-start">Before you start</h2>
+          <p>You need an account. Reading NPMRDS is public, but saving a route and saving a report both write to your account. If you have none, request one through <a href="help.html">Help and feedback</a>. Pick a road you know, a few miles of one direction, and a month in a complete year, for example January 2025.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Sign in. Open <code>/auth/login</code>, enter <span class="ui">Email</span> and <span class="ui">Password</span>, select <span class="ui">Sign In</span>.<span class="result">You are signed in. NPMRDS runs on its own subdomain and may ask once more; use the same details.</span></li>
+            <li>Open <span class="ui">Reports</span> from the NPMRDS side navigation.<span class="result">You see the header row, then the template shelf titled <span class="ui">Start from a question, not a blank page.</span> The header holds a search bar, <span class="ui">Create Report</span> and <span class="ui">New route</span>.</span></li>
+            <li>Select <span class="ui">New route</span>.<span class="result">Route Creation opens: one map with the network drawn in grey, a <span class="ui">Route</span> panel reading <span class="ui">New route (unsaved)</span>, and a <span class="ui">Route editor</span> panel with the <span class="ui">TMC Click</span> | <span class="ui">Markers</span> toggle. A pill at the bottom reads <span class="ui">Click TMCs to define a route.</span></span></li>
+            <li>Zoom to your road with the map's zoom buttons or a double-click, and click 3 to 5 consecutive segments in the direction of travel. Clicking a segment again removes it.<span class="result">Each click adds a row to <span class="ui">TMC list</span>: the segment code, its length in miles and the cross street it ends at. The panel shows the running total and a <span class="ui">Save route</span> button.</span></li>
+            <li>Select <span class="ui">Save route</span>. In <span class="ui">Save new route</span>, type a <span class="ui">Name</span> that reads well as a chart label, for example the road, direction and end points. Under <span class="ui">Tags</span> select the suggested <span class="ui">+</span> chips for yourself and your agency. Select <span class="ui">Save</span>.<span class="result">The address gains <code>?route_id=</code> and your route's number. The <span class="ui">Route</span> panel shows an <span class="ui">editing</span> badge and the button now reads <span class="ui">Update route</span>. From here on, saving overwrites this route.</span></li>
+            <li>Return to <span class="ui">Reports</span> and select <span class="ui">Create Report</span>.<span class="result">A new report page opens in edit mode. Its address contains <code>/edit/</code>. The header shows a <span class="ui">Report title</span> field and a <span class="ui">draft</span> pill. A <span class="ui">Routes</span> rail reads <span class="ui">No routes added — add one above.</span></span></li>
+            <li>Type a title in the header. In the rail select <span class="ui">Add Route</span>. In <span class="ui">Add Routes</span> select the <span class="ui">Mine</span> chip, tick your route, then <span class="ui">Add 1 Route</span>.<span class="result">Your route appears as a row, already expanded: its colour dot, name, and a line such as "4 TMCs · 2.1 mi · No dates set · 0 graphs".</span></li>
+            <li>Set the window. Under <span class="ui">dates</span> enter <span class="ui">From</span> and <span class="ui">To</span>, for example 2025-01-06 to 2025-01-31.<span class="result">The row saves on its own after a moment; the line now shows the dates. A route carries no dates of its own, so this window belongs to this report only.</span></li>
+            <li>Select <span class="ui">Add Graph</span>. Under <span class="ui">Routes for this graph</span> tick your route. Keep <span class="ui">Line Graph</span>, <span class="ui">Travel Time (min)</span> and <span class="ui">Hour</span>, the defaults. Under <span class="ui">When</span> select <span class="ui">AM Peak</span> and <span class="ui">Weekdays</span>. Select <span class="ui">Add Graph</span>.<span class="result">A card appears below the header. Its pills read your route's name, <span class="ui">Travel Time</span>, <span class="ui">6a–10a · Wd</span>, <span class="ui">1h</span> and <span class="ui">Overlay</span>. The rail's line now ends "1 graph".</span></li>
+            <li>Read the graph. The x-axis is <span class="ui">Time of Day</span> from 06:00 to 10:00 in hourly steps. The y-axis is the average number of minutes to drive the whole route in that hour, averaged over every weekday in your window. A rise from 07:00 to 09:00 is the morning peak. Speed on the same route is length divided by this travel time.<span class="result">You have one number per hour with a stated basis.</span></li>
+            <li>Select <span class="ui">Done</span> in the header.<span class="result">The report publishes and opens in reading mode. The pill reads <span class="ui">published</span>, the rail is gone, and the graph stays. <span class="ui">Share</span> copies the address; the button reads <span class="ui">Copied</span> for a moment.</span></li>
+          </ol>
+
+          <div class="callout basis"><span class="k">basis</span>Your route · your date window · all vehicles · weekdays only · 06:00 to 10:00 · hourly means of 5-minute observations · travel time in minutes for the whole route.</div>
+
+          <figure class="shot" data-capture="www/npmrds/route_creation · signed in · TMC Click mode · four segments selected on one road · TMC list with total · Save route visible" data-alt="The Route Creation page with four selected segments drawn in blue on the grey network, the Route editor panel listing them with lengths and a Save route button">
+            <div class="ph">Route Creation · TMC Click · 4 segments · before Save route</div>
+            <figcaption>Figure 1 · the route after step 4, before it is saved. Capture date to be added when taken.</figcaption>
+          </figure>
+          <figure class="shot" data-capture="www/npmrds/edit/&lt;new report slug&gt; · signed in · one route with dates set · one Line Graph card with Quick Controls pills" data-alt="A new report in edit mode: the Routes rail with one expanded route and its date fields, and one Line Graph card of travel time by hour with its pill row">
+            <div class="ph">Report in edit mode · one route · one Line Graph · AM Peak · Weekdays</div>
+            <figcaption>Figure 2 · the report after step 9. Capture date to be added when taken.</figcaption>
+          </figure>
+
+          <h2 id="what-you-now-have">What you now have</h2>
+          <p>A saved route, findable in every route picker under <span class="ui">Mine</span>. A published report with one graph and an address anyone can open. And the three rules that carry into everything else: a route is a place and carries no dates; the report's route row owns the dates; the graph owns the time of day, the days of the week and the measure.</p>
+
+          <h2 id="where-to-go-next">Where to go next</h2>
+          <ul>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a> · add the same route twice for two periods, add a Difference graph, change measures from the pills.</li>
+            <li><a href="npmrds--reports--start_from_template.html">Start a report from a template</a> · 12 pre-built questions that only need your route.</li>
+            <li><a href="npmrds--routes--create.html">Create a route</a> · Markers mode, the TMC search box, what is saved and what is not.</li>
+            <li><a href="npmrds--reports--graph_types.html">Graph types reference</a> · what each of the five shapes shows.</li>
+            <li><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a> · before you add a Hours of Delay graph.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Route Creation plugin code (RouteEditor, RouteIdentityPanel, SaveRouteModal, ModeHintPill, 2026-09-03): the labels quoted in steps 3 to 5.</li>
+            <li>Reports page revision 3 (published 2026-09-02): header controls <span class="ui">Create Report</span> and <span class="ui">New route</span>; band title.</li>
+            <li>Report route list, Add Routes dialog, Add Graph dialog and Quick Controls code (2026-09-01): the labels quoted in steps 6 to 9; default pick Line Graph · Travel Time (min) · Hour · Plain; edit gate keyed on the page's edit mode since 2026-08-19.</li>
+            <li>Report page header code: <span class="ui">Edit</span> / <span class="ui">Done</span>, <span class="ui">Share</span> → <span class="ui">Copied</span>; leaving edit mode publishes.</li>
+            <li>Sign-in facts: the platform's sign-in ruling of 2026-09-04 and <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

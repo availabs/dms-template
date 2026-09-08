@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Start here: a year, three numbers, a dashboard · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="start" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · start</div>
+          <h1 class="doc-title">A year, three numbers, a dashboard.</h1>
+          <p class="doc-lede">About 10 minutes. You open TSMO, choose a year, read the headline numbers and what each counts, narrow the Congestion dashboard to one region, find its worst corridors, and open one in Corridor View. No account is needed.</p>
+          <div class="stamps">
+            <span class="type">start</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-you-will-do">What you will do</h2>
+          <p>Read three statewide numbers for one calendar year, then narrow one of them to a region and down to a single corridor. On the way you learn the basis of each number, which is what you need before you quote it.</p>
+
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Start at the landing page or on any product page. TSMO reads without sign-in. Have a NYSDOT region in mind, for example Region 8. If you do not know the regions, <a href="measures_and_data--concepts--geography.html#the-four-geographies">Geography</a> lists the 11.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open TSMO. Select <span class="ui">TSMO</span> in the landing page's side navigation.<span class="result">The TSMO home opens. Its side navigation lists <span class="ui">Dashboards</span>, <span class="ui">Explorers</span> and <span class="ui">Program</span>.</span></li>
+            <li>Choose a year. The year control sits in the hero as a row of year chips. Select <span class="ui">2025</span>, the latest complete year.<span class="result">Every card on the page changes to that year. The chips offer every year the delay series holds, and some of those years are partial.</span></li>
+            <li>Read the first headline card, annual excessive delay. It counts vehicle-hours of travel slower than the excessive-delay threshold, summed over the year. Basis: CY 2025, statewide, all vehicles, the monitored network with a posted speed and a traffic count. At the June 2026 data revision it read 310.86 million vehicle-hours, 51 % of it non-recurrent. See <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>.</li>
+            <li>Read the cost card. It is the same delay converted to dollars. The home multiplies vehicle-hours by a flat $20 per vehicle-hour, which gave $6.2 billion at the June 2026 revision. Other pages use a class-weighted rate, so check the basis before you compare dollar figures. See <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Which pages show which basis</a>.</li>
+            <li>Read the reliability cards: the share of person-miles travelled on reliable segments, one card for the Interstate and one for the non-Interstate National Highway System. It is the federal MAP-21 measure, and it is annual. For CY 2025 the home cites the FHWA resubmission: 80.0 % Interstate, target 75 %; 83.3 % non-Interstate, target 70 %. See <a href="measures_and_data--measures--lottr.html">LOTTR</a> and <a href="measures_and_data--federal_vs_analytical.html#the-cy-2025-statewide-reliability-figures">the CY 2025 figures</a>.<span class="result">You have three statewide numbers, each with a year, a unit and a basis.</span></li>
+            <li>Open the Congestion dashboard. Under <span class="ui">Regional Dashboards</span> select the congestion card, <span class="ui">Delay &amp; its causes</span>, or use <span class="ui">Dashboards</span> › <span class="ui">Congestion</span>.<span class="result">The dashboard opens with <span class="ui">Year</span> set and <span class="ui">Region</span> blank. Blank means statewide.</span></li>
+            <li>Set a region. Select the value box of <span class="ui">Region</span> and pick one, for example <span class="ui">Region 8</span>.<span class="result">The list closes, a <span class="ui">✕</span> appears beside the region, the headline card titles name the region, and every panel recomputes. <span class="ui">✕</span> returns you to statewide.</span></li>
+            <li>Scroll to <span class="ui">Worst corridors by excessive delay</span>. It ranks corridors by road name in millions of vehicle-hours for your year and region.<span class="result">The first row is the corridor in that region that lost the most time in that year.</span></li>
+            <li>Open one corridor. In the table's <span class="ui">Corridor page</span> column select <span class="ui">view →</span>.<span class="result">Corridor View opens. The link opens Corridor View on its default corridor; pick the county and corridor there. If it shows a different corridor, pick the county, corridor and direction from its filter bar.</span></li>
+            <li>Read the grid. Rows are the corridor's segments in road order. Columns are 5-minute slices from 05:00 to midnight. Cells are average speed. Pick a date in the filter bar or a day in the month strip above the grid.<span class="result">You are looking at one road on one day.</span></li>
+          </ol>
+
+          <div class="callout basis"><span class="k">basis</span>Delay: CY 2025 · statewide · all vehicles · the monitored network · June 2026 data revision. Reliability: CY 2025 · statewide · all vehicles · Interstate or non-Interstate NHS as named · the FHWA resubmission the home cites.</div>
+
+          <figure class="shot" data-capture="www/tsmo · Year chip 2025 selected · signed out · hero with the headline cards and the Regional Dashboards band" data-alt="The TSMO home with the 2025 year chip selected, the headline cards for excessive delay, cost and reliable person-miles, and the four dashboard cards">
+            <!-- captured 2026-09-08 · http://localhost:5231/tsmo · Year 2025 (the page default), signed in — the tsmo2 pattern currently requires sign-in -->
+            <img src="../../assets/screens/docs/tsmo/start-01-2025-home.png" alt="The TSMO home with the 2025 year chip selected, the headline cards for excessive delay, cost and reliable person-miles, and the four dashboard cards"/>
+            <figcaption>Figure 1 · the TSMO home with 2025 selected. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="what-you-now-have">What you now have</h2>
+          <p>Three statewide figures with their basis. One region's excessive delay and its worst corridors. One corridor's speeds through one day. And the two rules that trip most readers: a blank <span class="ui">Region</span> means statewide, and statewide is not the sum of the regions.</p>
+
+          <h2 id="where-to-go-next">Where to go next</h2>
+          <ul>
+            <li><a href="tsmo--filters.html">Using the filter bar</a> · every control and what blank means.</li>
+            <li><a href="tsmo--congestion.html">Congestion dashboard</a> · every panel, with its method.</li>
+            <li><a href="tsmo--reliability.html">Reliability dashboard</a> · the federal measures and why they are annual.</li>
+            <li><a href="tsmo--corridor_view.html">Explore a corridor over time</a> · the picker, the grid, the overlays.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html#partial-years-show-partial-totals">Partial years show partial totals</a> · before you quote 2026.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO home design header, June 2026 revision: CY 2025 310.86 M vehicle-hours · 51 % non-recurrent · $6.2 B at $20 per vehicle-hour · 80.0 % / 83.3 % from the FHWA HPMS Travel Time Metrics resubmission.</li>
+            <li>TSMO home, published 2026-08-24: band titles, card copy, the year chips.</li>
+            <li>TSMO Congestion dashboard, published 2026-07-31: the worst-corridors table and its <span class="ui">Corridor page</span> column (feedback records 2194849, 2191408, 2194890).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

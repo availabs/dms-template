@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Help and feedback · Reference · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  help.html · IA page 96 · type reference. Phase 7, 2026-09-08.
+  Sources: site-dump/status/_controls.md (the authority for the form and table controls, dumped 2026-09-08: the Card on
+  NYSDOT Running Fixes with add-new enabled, its columns and the seven Status options, the 25-row Alerts table);
+  site-dump/status/2127095_bug_report.md (header "TransportNY · Issue Tracker", heading "Submit an Issue");
+  site-dump/status/2131482_status.md ("Site Status — Data freshness, Alerts & Ticket Tracking", the Alerts table, the
+  NPMRDS Data and Transcom Events cards); site-dump/status/2172710_issue_tracker.md (the whole tracker as one table);
+  site-dump/2173051_landing.md (no link to the status pattern from the landing page); start--accounts_and_sessions.html
+  and admin--users_and_permissions.html (accounts are added by email, no approval queue); STYLE.md ruling 2026-09-04 P1
+  (sign-up may be disabled per site); the FAQ pages of the three products (the recurring answers behind the checklist).
+  No contact address, telephone number or mailbox is stated: no source in reach carries one.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Reference · help</div>
+          <h1 class="doc-title">Help and feedback.</h1>
+          <p class="doc-lede">How to report a problem, ask a question or request an account, and where to look before you do. One form takes every kind of report, and this page says what to put in it and what you will see afterwards.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="the-form-is-the-channel">The form is the channel</h2>
+          <p>Reports and questions go to the platform's issue form. Its address is <code>/status/bug_report</code>. The page reads <span class="ui">TransportNY</span> · <span class="ui">Issue Tracker</span> with the heading <span class="ui">Submit an Issue</span>, and the form writes a row to the tracker the team works from.</p>
+          <p>Nothing on the products links to it, so you reach it by typing the address. A link from the product pages is not promised. No telephone number or mailbox is published for the platform, and this documentation does not name one.</p>
+          <p>Three addresses make up the status pattern, which is mounted at <code>/status</code>:</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Address</th><th>What it is</th><th>Use it to</th></tr></thead>
+            <tbody>
+              <tr><td><code>/status/bug_report</code></td><td>The issue form</td><td>Report a problem, ask a question, request an account or a file</td></tr>
+              <tr><td><code>/status</code></td><td><span class="ui">Site Status</span>: an <span class="ui">Alerts</span> table over the tracker and a <span class="ui">Data Sources</span> band</td><td>Check whether your problem is already known, and how fresh the data is</td></tr>
+              <tr><td><code>/status/issue_tracker</code></td><td>The whole tracker as one table</td><td>Read the tickets, including your own</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="before-you-report">Before you report</h2>
+          <p>Four checks answer most reports, and each is a question the product FAQs answer in full.</p>
+          <ol class="steps">
+            <li>Has your session expired? Everything that reads is public, but saving needs an account and a session lasts about 6 hours, after which the site returns you to the sign-in page. See <a href="start--accounts_and_sessions.html#how-long-a-session-lasts">Sign in, sessions and accounts</a>.<span class="result">A page that suddenly asks you to sign in, or a save that fails, is usually this.</span></li>
+            <li>Which filters are set? A number that looks wrong is often a different year, region or vehicle class from the one you meant. See <a href="tsmo--filters.html">Using the filter bar</a> and <a href="start--faq.html">the platform FAQ</a>.<span class="result">The page address carries the selection, so you can read it back.</span></li>
+            <li>Does the page's own Limits section explain it? Every how-to and screens page states what its numbers do not cover, and the measure pages state their known limits. See <a href="measures_and_data--which_measure.html">Which measure should I use?</a></li>
+            <li>Is it already known? Read the <span class="ui">Alerts</span> table at <code>/status</code>, and the FAQ for your product: <a href="npmrds--faq.html">NPMRDS</a>, <a href="tsmo--faq.html">TSMO</a>, <a href="freight_atlas--faq.html">the Freight Atlas</a>.<span class="result">Those pages carry the answers to the questions asked most often, each linked to the page that should have pre-empted it.</span></li>
+          </ol>
+          <p>If a number disagrees with a number you published elsewhere, read <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> first. Two measure families share the same names, and that is the most common cause.</p>
+
+          <h2 id="what-the-form-asks-for">What the form asks for</h2>
+          <p>The fields are below in the order the form carries them. None of them is described as required.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>What to put in it</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">ID</span></td><td>text</td><td>The form's first field. This documentation does not say who fills it in.</td></tr>
+              <tr><td><span class="ui">Description</span></td><td>textarea</td><td>What you expected, what you saw instead, and the filters that were set. The long field, so use it.</td></tr>
+              <tr><td><span class="ui">URL</span></td><td>text</td><td>The address of the page you were on. Copy it from the browser: it carries the year, region and measure you had selected.</td></tr>
+              <tr><td><span class="ui">Date Reported</span></td><td>date</td><td>The day you are filing. If the problem happened earlier, say when in the description.</td></tr>
+              <tr><td><span class="ui">Page / Component</span></td><td>text</td><td>Which page or panel it was, in the product's own words, such as the Congestion dashboard's delay composition chart.</td></tr>
+              <tr><td><span class="ui">Status</span></td><td>select</td><td>Leave it for the team unless you are updating a row you own.</td></tr>
+            </tbody>
+          </table></div>
+          <p>A report that carries the address, the filters, the expected value, the value shown and the date can be reproduced without a reply. That is advice rather than the form's requirement.</p>
+
+          <h2 id="what-you-will-see-afterwards">What you will see afterwards</h2>
+          <p>Your row appears in the <span class="ui">Alerts</span> table at <code>/status</code> and in the tracker at <code>/status/issue_tracker</code>, 25 rows to a page. Its <span class="ui">Status</span> is one of seven values, read plainly below.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Status</th><th>What it reads as on your ticket</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">New Request</span></td><td>Filed, and not yet sorted into the work</td></tr>
+              <tr><td><span class="ui">Queued Immediate</span></td><td>Accepted, and in the current run of work</td></tr>
+              <tr><td><span class="ui">Queued Scheduled</span></td><td>Accepted, and held for a later run</td></tr>
+              <tr><td><span class="ui">Needs Discussion</span></td><td>Open, and waiting on a decision or on more from you</td></tr>
+              <tr><td><span class="ui">Support Needed</span></td><td>Open, and waiting on someone outside the team</td></tr>
+              <tr><td><span class="ui">Resolved</span></td><td>Done</td></tr>
+              <tr><td><span class="ui">Not Recommended / Retired</span></td><td>Closed without the change, or no longer applicable</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout caution"><span class="k">no dates</span>A status is a label on a row. The tracker states no timings, and this documentation does not promise how long any status lasts or that a reply arrives.</div>
+
+          <h2 id="checking-freshness-and-known-issues">Checking freshness and known issues</h2>
+          <p>The <code>/status</code> page is titled <span class="ui">Site Status</span> and described as <span class="ui">Data freshness, Alerts &amp; Ticket Tracking</span>. Its <span class="ui">Alerts</span> table is the same tracker the form writes to, so a problem someone else reported is visible there. Its <span class="ui">Data Sources</span> band carries two cards, <span class="ui">NPMRDS Data</span> and <span class="ui">Transcom Events</span>, which show how current each feed is.</p>
+          <p>For the fuller picture of what is loaded and how far behind it runs, use <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>, which states the span, lag and cadence of every feed and the gaps in each series.</p>
+
+          <h2 id="the-feedback-buttons-on-these-pages">The feedback buttons on these pages</h2>
+          <p>Every page of this documentation ends with <span class="ui">Was this page helpful?</span> and two buttons. They are not wired up yet: the note beside them says feedback lands in the ticket queue once live. Until then the issue form is the route for anything you want to tell us about a documentation page, and naming the page in <span class="ui">Page / Component</span> is enough for us to find it.</p>
+
+          <h2 id="requesting-an-account">Requesting an account</h2>
+          <p>Reading needs no account. Saving a route or a report, and administering data, do. An administrator adds an account by email address, and adding one grants nothing on its own: the groups on the account carry the permissions. See <a href="admin--users_and_permissions.html">Users and permissions</a>.</p>
+          <p>There is no approval queue in this build. The administrator's <span class="ui">Users</span> page lists accounts, not pending requests, and has no approve or reject action. So ask through the issue form, or ask an administrator in your own agency. Where a site has its own sign-up form enabled, that form sends the request to the authentication server rather than to a person, and the account still has to be given its groups. See <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</p>
+
+          <h2 id="where-else-to-look">Where else to look</h2>
+          <p>One row per question, with the page that answers it and why it is the one to read.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>If you want to…</th><th>Go to</th><th>Because</th></tr></thead>
+            <tbody>
+              <tr><td>Know what changed on the platform</td><td><a href="whats_new.html">What's new</a></td><td>Every dated platform, data and map change, newest first</td></tr>
+              <tr><td>Know why a number moved</td><td><a href="measures_and_data--methodology_changes.html">Methodology changes</a></td><td>It records each change to a definition or a parameter, and which figures stop comparing</td></tr>
+              <tr><td>Know what changed in the APIs</td><td><a href="developers--changelog.html">API changelog</a></td><td>Endpoints, paths, parameters and download formats are logged separately</td></tr>
+              <tr><td>Understand a term on a screen</td><td><a href="glossary.html">Glossary</a></td><td>One sentence per term, with the page that owns it</td></tr>
+              <tr><td>Find the right tool for a question</td><td><a href="start--which_tool.html">Which tool answers my question?</a></td><td>It maps a question to the product and page that answers it</td></tr>
+              <tr><td>Get the data itself</td><td><a href="developers--downloads_and_formats.html">Bulk downloads and formats</a></td><td>It lists what is downloadable, in which format, and from where</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Status pattern controls, dumped 2026-09-08: the issue form is a Card on the <span class="ui">NYSDOT Running Fixes</span> table with add-new enabled and one row a page; its columns are <span class="ui">ID</span>, <span class="ui">Description</span> (textarea), <span class="ui">URL</span>, <span class="ui">Date Reported</span> (date), <span class="ui">Status</span> (select) and <span class="ui">Page / Component</span>; the <span class="ui">Status</span> select carries the seven values listed above; the <span class="ui">Alerts</span> table over the same source paginates at 25 rows.</li>
+            <li>Issue form page digest (page 2127095, published 2026-05-27): the header <span class="ui">TransportNY</span> · <span class="ui">Issue Tracker</span> and the heading <span class="ui">Submit an Issue</span>. Tracker page digest (2172710, published 2026-06-01): the whole tracker as one table.</li>
+            <li>Status page digest (2131482, published 2026-06-02): the header <span class="ui">Site Status</span> with the description <span class="ui">Data freshness, Alerts &amp; Ticket Tracking</span>, the <span class="ui">Alerts</span> band, and the <span class="ui">Data Sources</span> cards <span class="ui">NPMRDS Data</span> and <span class="ui">Transcom Events</span>.</li>
+            <li>Landing page digest (2173051): no link to the status pattern, which is why the address is typed.</li>
+            <li><a href="admin--users_and_permissions.html">Users and permissions</a>: an account is added by email with <span class="ui">Add new</span>, the <span class="ui">Users</span> page has no approve or reject action, and adding an account grants nothing. <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>: reading is public, saving needs an account, a session lasts about 6 hours.</li>
+            <li>Documentation style record, ruling of 2026-09-04: a sign-up route exists in the sign-in pattern but may be disabled per site, so the docs point at this page rather than describing sign-up.</li>
+            <li>The product FAQ pages, <a href="npmrds--faq.html">NPMRDS</a>, <a href="tsmo--faq.html">TSMO</a> and <a href="freight_atlas--faq.html">the Freight Atlas</a>: the recurring answers behind the four checks above, each citing the ticket it came from.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 7)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="whats_new.html">What's new</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

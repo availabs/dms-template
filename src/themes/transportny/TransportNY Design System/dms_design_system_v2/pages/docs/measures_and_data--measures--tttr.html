@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TTTR · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--tttr.html · IA page 52 · type measure. Phase 2a, 2026-09-04.
+  Sources: macroview/measures.js (verbatim strings; target 2.00 corrected 2026-08-18, system-level index), _seed 281670 card,
+  PROVENANCE §5 §7 §11, precision.js (tttr curve, 57,832 / 14,600, 1.15 %), downloadManifest MEASURED, TSMO methodology
+  card (index formula, interstates only), Reliability dashboard band (overnight 8p–6a), STYLE P2-prep ruling (1.46).
+  The seed card's "federal reporting threshold · TTTR ≥ 1.50" is NOT carried: measures.js corrected it to the 2.00 target.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Truck Travel Time Reliability (TTTR).</h1>
+          <p class="doc-lede">The freight version of reliability, read at the 95th percentile. This page defines the per-segment analytical series and explains why its precision bar is unreachable. It assumes you have read the LOTTR page.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span>methodology 2026-08 (pm3 analytical series)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p><strong>The same question for freight, at a stricter percentile.</strong> The 95th-percentile truck travel time divided by the 50th, per segment per peak period.</p>
+          <p>TTTR is a federal measure under 23 CFR 490 subpart F. The federal figure is an Interstate index, not a per-segment value: the length-weighted mean of each segment's worst period. The Macro View shows the per-segment ratio for one period. Both come from the same feed through different pipelines. See <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are CY 2025, statewide, freight trucks with an all-vehicle fallback, the full monitored network, unless stated. The federal index is Interstate only.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Take the segment's freight-truck travel times for the calendar year, one per 5-minute epoch.</li>
+            <li>Where a 15-minute bin has no truck value, substitute the all-vehicle travel time for that bin.</li>
+            <li>Average into 15-minute bins and assign each to a period: AM 06:00–09:59, midday 10:00–15:59, PM 16:00–19:59, weekend 06:00–19:59, overnight 20:00–05:59.</li>
+            <li>Within each period, take the 95th-percentile and 50th-percentile bin travel time and divide.</li>
+            <li>For the federal index only: take each Interstate segment's worst period, weight by segment length, and average statewide.</li>
+          </ol>
+          <div class="formula">TTTR = TT₉₅ ÷ TT₅₀
+            <span class="var">TT₉₅ = the 95th-percentile truck travel time of the segment's 15-minute bins in the period</span>
+            <span class="var">TT₅₀ = the 50th-percentile (median) truck travel time of the same bins</span>
+            <span class="var">federal index = Σ (length × worst-period TTTR) ÷ Σ length, over Interstate segments</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Parameter</th><th>Value</th><th>Source</th></tr></thead>
+            <tbody>
+              <tr><td>Target</td><td>NYSDOT's applicable Interstate TTTR target is 2.00 for every year 2023–2030. It is a system-level index target, not a per-segment pass or fail. On a segment, "above target" means worse than the statewide target.</td><td>FHWA MAP-21 targets table · Macro View measure record</td></tr>
+              <tr><td>Periods</td><td>Five: the four LOTTR periods plus overnight 20:00–05:59. Overnight is the federal reporting period for trucks.</td><td>23 CFR 490.611</td></tr>
+              <tr><td>Vehicle stream</td><td>Freight trucks. A bin with no truck value takes the all-vehicle value.</td><td>pm3 provenance</td></tr>
+              <tr><td>Road system</td><td>Analytical series: every monitored segment. Federal index: Interstate only.</td><td>Macro View · TSMO Data &amp; Methodology</td></tr>
+              <tr><td>Minimum sample</td><td>None enforced. The ±0.05 bar is 57,832 bins and is published per row.</td><td>pm3 precision module</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>The 95/50 pair is kept unchanged.</strong> It is the federal definition.</li>
+            <li><strong>Where a bin has no truck data, an all-vehicle travel time is substituted.</strong> This is a real choice with a measured cost. About 37 % of AM-peak bins carry a substituted value. Removing the substitution moves TTTR by +1.06 % (1.8821 to 1.9020 over 400 segments). Defensible, but TTTR is not a pure truck measure.</li>
+            <li><strong>Reading the 95th percentile of a thin stream is what makes this measure expensive.</strong> That cost is the entire reason <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a> exists alongside it. At matched sample size the truck stream is the easier of the two; the cost is the quantile.</li>
+            <li><strong>Density weighting is retained for trucks only.</strong> For the all-vehicle stream it was no better than a plain count.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p><strong>A per-segment TTTR never meets its own precision bar.</strong> ±0.05 precision on 90 % of segments needs 57,832 overnight bins. An overnight year contains 14,600. The bar is unreachable by construction, and only <strong>1.15 %</strong> of CY 2025 segments clear it in any period. That is the honest signal, not a typo. The measured spread at 25 bins is 0.304, at 250 bins 0.096, at 2,000 bins 0.027.</p>
+          <p>The federal index is a large aggregate and is far more stable. The FHWA HPMS Travel Time Metrics resubmission for CY 2025 gives a statewide Interstate TTTR of <strong>1.46</strong>, against the 2.00 target. The MAP-21 pages compute the same 1.46 on the platform. Both are the federal measure. The per-segment analytical ratio is a different quantity and is not comparable to either.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is added in the screenshot pass, Phase 8. The statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Truck coverage is thin and has changed enormously.</strong> Truck reporting bins run from 8.0 % to 23.5 % across the coverage eras. A year-over-year truck comparison is a coverage comparison unless checked.</li>
+            <li><strong>Overnight is the thinnest data on the network.</strong> Treat a single-segment overnight TTTR as indicative only.</li>
+            <li><strong>Trucks are absent from 59.6 % of records outright</strong>, so the fallback is engaged often.</li>
+            <li><strong>For per-segment or corridor work, prefer TTTR₈₀.</strong> Reserve TTTR for comparison against federal figures and for large aggregates.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>The truck stream has its own era history, on different dates from the all-vehicle stream. Truck coverage steps up at 2021-01, 2023-06 and 2026-02. At the 2023-06 boundary the two streams moved in opposite directions. Use the truck era tag for TTTR, never the all-vehicle one. See <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View · analytical</a>
+            <a href="npmrds--macro_view--download.html">Macro View download</a>
+            <a href="npmrds--map21.html">MAP-21 PM3 pages · federal index</a>
+            <a href="tsmo--reliability.html">TSMO Reliability dashboard · federal index</a>
+            <a href="npmrds--segment.html">Segment (TMC) page · PM3 history</a>
+            <a href="npmrds--reports--graph_types.html">Reports · Reliability columns</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08-18 · the Macro View's threshold corrected from 1.50 to the 2.00 Interstate target; the share of segments above it changed from 74.1 % to 44.7 %.</li>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published with the measured precision and fallback figures.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Build a Macro View download with <span class="ui">TTTR</span> selected. The package carries the ratio per period, the bin count, the precision band, the 57,832-bin bar and the truck era tag. The federal index comes from the MAP-21 annual download. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>23 CFR 490 subpart F, National Performance Management Measures to Assess Freight Movement on the Interstate System.</li>
+            <li>FHWA-HIF-18-040, National Performance Measures for Congestion, Reliability, and Freight, and CMAQ Traffic Congestion: General Guidance and Step-by-Step Metric Calculation Procedures (2018).</li>
+            <li>pm3 provenance record §5 (truck eras), §7 (57,832 against 14,600; 297× for TTTR₈₀), §8 (density weighting retained for trucks).</li>
+            <li>pm3 precision module: the TTTR down-sampling curve and MIN_N (57,832 · 1.15 %).</li>
+            <li>pm3 download manifest, MEASURED block (the TTTR bar).</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28: the 37 % substituted bins and the +1.06 % (1.8821 to 1.9020) fallback cost.</li>
+            <li>Macro View measure record: the 2.00 target and its 2026-08-18 correction note.</li>
+            <li>STYLE ruling of 2026-09-04 (P2-prep): CY 2025 statewide 1.46 from the FHWA HPMS Travel Time Metrics resubmission and from the MAP-21 pages.</li>
+            <li>NPMRDS data-quality atlas: trucks absent from 59.6 % of records.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a>
+          <a href="measures_and_data--measures--lottr.html">LOTTR</a>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TSMO FAQ · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="faq" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · faq</div>
+          <h1 class="doc-title">TSMO FAQ.</h1>
+          <p class="doc-lede">Real questions about the TSMO dashboards and explorers, in the words people asked them, with a short answer and the page that answers in full. Platform-wide questions are in the <a href="start--faq.html">Platform FAQ</a>.</p>
+          <div class="stamps">
+            <span class="type">faq</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-is-actually-being-shown-when-there-is-no-filter-on-region">What is actually being shown when there is no filter on region? Is there anyway to clarify this? <small>ticket 2191486</small></h2>
+          <p>Statewide. No region selected means the full MAP-21 dataset, the same aggregate behind the federal figures. It is deliberately not the sum of the 11 regions. The dataset includes border and unassigned segments that belong to no region, so the regions add up to less. The Reliability filter bar now reads "no region selected = statewide", and clearing a region with its <span class="ui">✕</span> restores the statewide figures. The same rule holds on the delay and event dashboards. See <a href="measures_and_data--concepts--geography.html#what-statewide-means">What statewide means</a>.</p>
+
+          <h2 id="why-are-we-showing-this-on-an-annual-basis">Why are we showing this on an annual basis for all years instead of the year selected???? <small>ticket 2214490</small></h2>
+          <p>Because the measure is annual. Level of Travel Time Reliability (LOTTR) is a federal MAP-21 measure defined on a calendar year. No monthly form exists in any data the platform holds. The delay series is monthly, so its cards follow the year; the reliability series cannot. The home's reliability card is labelled annual for that reason, and the Reliability trend shows every year whatever <span class="ui">Year</span> says. See <a href="tsmo--reliability.html#person-miles-reliable-by-year">Person-miles reliable by year</a>.</p>
+
+          <h2 id="how-its-computed-is-not-clickable">it says "How it's computed ->" at the bottom. This is not clickable and there is no information on how it's computed. <small>ticket 2191403 · ticket 2214480</small></h2>
+          <p>That line, and a similar chip on the excessive-delay card, were static text styled like links. Both were removed, in July and August 2026. Where the method lives now: the <span class="ui">Data &amp; Methodology</span> page in TSMO's <span class="ui">Program</span> group carries one explainer per measure, every formula variable expanded. This documentation has one page per measure. Start with <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a> and <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>.</p>
+
+          <h2 id="region-2-august-2025-incidents-costs-are-0">Region 2, August 2025, Incidents costs are $0. <small>running fix 2172498</small></h2>
+          <p>Incident cost is the sum of per-event footprints, and a footprint exists on about 18.5 % of events. A region and month whose events carry no footprint shows $0. That is the shape Region 2 produced for August 2025. A month that has not been computed at all shows nothing rather than zero. See <a href="measures_and_data--coverage_and_freshness.html#why-a-month-or-a-region-shows-0-or-nothing">Why a month or a region shows $0 or nothing</a>.</p>
+
+          <h2 id="drill-into-a-corridor-does-not-keep-your-regional-selection">When you select drill into a corridor, it does not keep your regional selection. Corridor view switches to Queens county. <small>ticket 2195006</small></h2>
+          <p>The button was removed in July 2026. The Congestion dashboard filters by NYSDOT region. Corridor View is keyed by county, road and direction, and the network it reads carries no region, so the selection could never cross. Open Corridor View from <span class="ui">Explorers</span> and pick the county yourself. See <a href="tsmo--corridor_view.html#why-the-region-selection-does-not-carry-into-it">Why the region selection does not carry into it</a>.</p>
+
+          <h2 id="construction-category-is-excluded-but-still-an-option">It looks like by default (as noted on the page) that the construction category is excluded from this page. However, it is still an option in the category selection box, please remove. <small>ticket 2195387 · ticket 2192571</small></h2>
+          <p>Done on 2026-07-28, and the split was tightened at the same time. Incidents now excludes Construction, Maintenance and Emergency Operations, and its <span class="ui">Category</span> list offers only the seven reactive categories. Work Zones holds exactly those three, and its <span class="ui">Type</span> list offers only them. The two dashboards no longer overlap. Incident Search still searches every category. See <a href="tsmo--filters.html#what-each-dashboard-leaves-out-by-design">What each dashboard leaves out by design</a>.</p>
+
+          <h2 id="where-are-the-maps">A map showing which corridor is selected would be helpful to verify exactly which segments you are looking at. <small>ticket 2195605 · ticket 2195604</small></h2>
+          <p>Three maps exist today. Corridor View has <span class="ui">Corridor strip map</span>, built in July 2026, which draws exactly the segments feeding the grid. Reliability has <span class="ui">Where travel is unreliable</span>, every segment coloured by worst-period LOTTR. The incident page has <span class="ui">Location &amp; affected segment</span>. Two do not exist: the Congestion dashboard's segment delay map and the Incidents dashboard's cluster map, both marked by placeholder notes. The Work Zones active-zones map was removed as out of scope. See <a href="tsmo--work_zones.html#what-this-page-does-not-show">What this page does not show</a>.</p>
+
+          <h2 id="what-is-the-methodology-version-label">what is [the version label on the delay card]? is that supposed to be a link? Is it important to that boxes contents??? <small>ticket 2214480 · ticket 2214495</small></h2>
+          <p>It named the platform's internal version of the delay computation and has been removed from the home, with the "series" wording on the freshness card. It referred to the June 2026 revision of the excessive-delay series: thresholds from each segment's posted speed, median baselines, and event attribution capped at the non-recurrent total. Figures from before that revision are not comparable and should not be mixed with the current ones. See <a href="measures_and_data--measures--excessive_delay.html#comparability-across-years-and-versions">Comparability across years and versions</a>.</p>
+
+          <h2 id="could-we-view-these-same-statistics-by-county">Could we view these same statistics by county? (select one or more). This would be very helpful for MPOs <small>ticket 2194997 · ticket 2214565</small></h2>
+          <p>Not on the dashboards today: they filter by NYSDOT region only. A county view is feasible, because the delay data carries a county code. It needs a county filter and county-grouped panels, and is scoped as a feature. MPO geography does not exist anywhere in TSMO. Adding it needs MPO boundaries and a rule for segments that straddle them; no delivery date has been set. Today, county-level data is in <a href="tsmo--corridor_view.html">Corridor View</a> and the county facet of <a href="tsmo--incident_search.html">Incident Search</a>. See <a href="measures_and_data--concepts--geography.html#order-county-view-and-mpo-filtering">Order, county view and MPO filtering</a>.</p>
+
+          <h2 id="the-filter-allows-the-user-to-select-multiple-years">The filter allows the user to select multiple years but the panels only show the data for the most recent year selected. <small>ticket 2191408</small></h2>
+          <p>Fixed in July 2026. <span class="ui">Year</span> is single-select on every dashboard, because the panels are single-year reads and multi-select only misled. Picking a year replaces the previous one. Incident Search keeps multi-select on its facets, because it is a query tool. See <a href="tsmo--filters.html#limits-and-gotchas">Using the filter bar</a>.</p>
+
+          <h2 id="by-default-region-and-category-are-blank">By default the "region" and "Category" are blank but it looks like the data is representing the same thing as if you were to select all. <small>ticket 2195366</small></h2>
+          <p>Yes. A blank control is no filter: blank <span class="ui">Region</span> is statewide and blank <span class="ui">Category</span> is every reactive category. Since July 2026 the controls have a visible border at rest, <span class="ui">Year</span> always shows its value, and a chosen region carries a <span class="ui">✕</span>. See <a href="tsmo--filters.html#steps">Using the filter bar</a>.</p>
+
+          <h2 id="only-show-a-bar-when-the-value-is-0-1m-or-higher">It says that this chart reacts to the region filter but for many regions the delay does not exceed this .1M threshold which results in missing years or a completely missing bar chart. <small>ticket 2192555</small></h2>
+          <p>Fixed in July 2026. The chart's values were pre-scaled to millions and rounded, so a region under about 50,000 vehicle-hours rounded to nothing. It now plots raw vehicle-hours with an axis that scales to the data: statewide reads in millions, a small region in thousands, both with full-height bars. See <a href="tsmo--incidents.html#it-isnt-the-count-its-the-delay">Incidents dashboard</a>.</p>
+
+          <h2 id="should-grey-area-be-recurrent-congestion">Delay Composition graph is mismarked or misleading ---- should grey area be "recurrent" congestion instead of "non-recurrent" congestion? <small>ticket 2211340</small></h2>
+          <p>Grey is recurrent, and always was. The legend entry read "recurrent (total − non-recurrent)", so the swatch sat next to the word non-recurrent and read as the opposite at a glance. It now reads "recurrent (all delay not attributed to an event)". No data or colour changed. See <a href="tsmo--congestion.html#delay-composition-by-year">Delay composition by year</a>.</p>
+
+          <h2 id="why-are-we-showing-tttr-value-in-here">Why are we showing tttr value in here instead of something comparative to the 'all vehicle' (assumption) value? Can we show % for truck as well? <small>ticket 2214481</small></h2>
+          <p>Truck Travel Time Reliability (TTTR) is a ratio, the 95th-percentile truck travel time over the 50th. It is not a share of reliable person-miles, and no federal "% reliable for trucks" exists. Rather than invent one, TTTR was removed from the home in August 2026. It stays on the Reliability dashboard against its 2.00 target, beside the method note. See <a href="measures_and_data--measures--tttr.html">TTTR</a>.</p>
+
+          <h2 id="option-to-view-all-vs-truck-vs-auto">I wonder why we do not have an option to view all vs truck vs auto <small>ticket 2214482 · ticket 2214508</small></h2>
+          <p>Reliability is the federal page. LOTTR is defined on all vehicles and TTTR on trucks; those are the only federally reportable pairings. A class switch would invite reading an "auto LOTTR" as a federal figure, so it was not built there. The class is stated on each card instead. The Macro View in NPMRDS offers a traffic-type control for its analytical measures. See <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</p>
+
+          <h2 id="probably-taking-the-worst-lottr">I think this is probably taking the worst LOTTR from AM, Midday, PM or weekend, but that's unclear. <small>ticket 2194999</small></h2>
+          <p>Correct. The map colours each segment by its worst-period LOTTR, the highest of the AM, Midday, PM and Weekend ratios. The bins are under 1.25, 1.25–1.49, 1.50–1.99, and 2.00 and above. The legend title now reads in full. There is no period picker. See <a href="tsmo--reliability.html#where-travel-is-unreliable">Where travel is unreliable</a>.</p>
+
+          <h2 id="couldnt-get-any-to-show-the-map">I clicked on several crashes to see the details and couldn't get any to show the map in the "location &amp; affected segment" box <small>ticket 2195391 · ticket 2196812</small></h2>
+          <p>The map works; most events have nothing to draw on it. A footprint of affected segments exists on about one event in five. Since July 2026 the map always shows the event's location as a pin. For an event with no footprint it centres on the pin with no segment highlighted. A pin alone means no affected segments were recorded. See <a href="tsmo--incident_view.html#the-map-shows-a-pin-but-no-segment">The map shows a pin but no segment</a>.</p>
+
+          <h2 id="downloads-and-api-links-not-working">Downloads &amp; API links not working — The links in that section do not work <small>ticket 2195637 · ticket 2191470</small></h2>
+          <p>Fixed in July 2026. On <span class="ui">Data &amp; Methodology</span>, <span class="ui">open data source →</span> now leads to the delay-attribution source, which offers a CSV per year. The API card describes key-based access to the endpoint the dashboards read. See <a href="tsmo--congestion.html#downloads">Downloads</a>.</p>
+
+          <h2 id="we-say-road-segments-for-the-year-but-the-events-are-all-the-years">We say road segments fort the year but the events are …. All the years??? Why <small>ticket 2214496</small></h2>
+          <p>The home's <span class="ui">Data Freshness</span> band once counted every event in the whole multi-state feed beside a year-filtered segment count. Since August 2026 both counts follow the selected year and New York only. The dashboards' status lines still quote the whole feed, "3.7M events since 2015"; their panels follow <span class="ui">Year</span>. See <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>.</p>
+
+          <h2 id="can-we-remove-the-partial-year-option">Year selection – can we remove the partial year option <small>ticket 2214476</small></h2>
+          <p>The year chips offer every year the delay series holds, and some are partial. A partial year's total is a partial total, presented in the same card as a full year. Check the year before you quote it; 2025 is the latest complete year. See <a href="measures_and_data--coverage_and_freshness.html#partial-years-show-partial-totals">Partial years show partial totals</a>.</p>
+
+          <h2 id="clicking-on-this-brought-me-to-the-replay-page">I accidentally found that clicking on this brought me to the "Replay" page but there was no note for it. <small>ticket 2194849</small></h2>
+          <p>In July 2026 the unlabelled three-dot column on the Congestion dashboard's worst-corridors table became a labelled column, <span class="ui">Corridor page</span>. Its <span class="ui">view →</span> link opens Corridor View. Other affordances that did nothing, cell highlights on the seasonality grid and the region table, were removed. See <a href="tsmo--congestion.html#worst-corridors-by-excessive-delay">Worst corridors by excessive delay</a>.</p>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="start--faq.html">Platform FAQ</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

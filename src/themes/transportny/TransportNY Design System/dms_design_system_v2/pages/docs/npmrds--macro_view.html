@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Macro View: how to use · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!-- Re-shelled 2026-09-05 (phase 4b) from the published Macro View guide (280612, 2026-08-28) and its mockup npmrds-macro-guide.html.
+     The six screenshots are real captures of the running tool, 2026-08-27 (../../assets/screens/README.md). -->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Macro View: how to use.</h1>
+          <p class="doc-lede">One map, every segment in the state, one measure at a time. The Macro View is where an analysis starts: rank a region, see where a measure is worst, and export exactly what the map is drawing. This page walks the whole tool in the order you would use it. Reading is public.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Macro View</span> from the NPMRDS side navigation. No sign-in is needed. The page is one map with a controls panel, a measure panel, and a bottom bar that names the data behind the map and opens the download.</p>
+          <p>The Macro View answers "where is this measure worst, across a whole region?", and it is the fastest way to export a measure for every segment in a geography. It is a starting point, not a finishing one: once you know which segments matter, the other tools go deeper.</p>
+          <figure class="shot">
+            <img src="../../assets/screens/macro-01-overview.png" alt="The Macro View showing LOTTR for the AM peak across New York State, with the controls panel, the measure panel with legend and value distribution, and the download bar."/>
+            <figcaption>Figure 1 · the default view: LOTTR, AM peak, statewide, PM3 year 2025. The controls panel drives the query, the measure panel explains the measure and summarises the distribution, and the bar at the bottom exports it. Captured 2026-08-27.</figcaption>
+          </figure>
+          <p>When another tool is the right one:</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>If you want to…</th><th>Use</th></tr></thead>
+            <tbody>
+              <tr><td>Rank or compare every segment in a region</td><td><strong>Macro View</strong>. You are in the right place</td></tr>
+              <tr><td>Study one corridor over time, in detail</td><td><a href="npmrds--reports--start_from_template.html">Reports</a>. Build a route, then chart it</td></tr>
+              <tr><td>Compare two or more routes side by side</td><td><a href="npmrds--route_comparison.html">Route Comparison</a>, a draft tool</td></tr>
+              <tr><td>Look at one segment in full</td><td><a href="npmrds--segment.html">The segment (TMC) page</a>, a design; today's paths are on that page</td></tr>
+              <tr><td>Report a figure to FHWA</td><td><a href="npmrds--map21.html">The MAP-21 PM3 pages</a>, not this tool</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">Measure</span> and pick one. The menu is grouped: reliability, congestion, speed, data quality.<span class="result">The controls below the menu change to the ones that measure uses, and a count such as <span class="ui">1 control</span> or <span class="ui">4 controls</span> says how many.</span></li>
+            <li>Set the measure's own controls: <span class="ui">Peak period</span> for the reliability measures, <span class="ui">Threshold</span> · <span class="ui">Unit</span> · <span class="ui">Traffic type</span> for the delay measures, <span class="ui">Percentile</span> for speed, <span class="ui">Basis</span> for coverage.</li>
+            <li>Under <span class="ui">Geography</span>, type into <span class="ui">add a region, county or MPO…</span> and pick from <span class="ui">Regions</span>, <span class="ui">MPOs</span>, <span class="ui">Urban areas</span> or <span class="ui">Counties</span>. Leave it empty for the whole state.<span class="result">A chip appears. The map, the distribution, the worst-segments list and the download all narrow to it.</span></li>
+            <li>Pick a <span class="ui">Year</span>. The list is the set of published PM3 years, newest first.</li>
+            <li>Read the measure panel: the definition, the legend, <span class="ui">Value distribution</span>, <span class="ui">Median</span>, <span class="ui">80th pctl</span>, the share beyond the threshold, and the no-data count.</li>
+            <li>Switch the measure to <span class="ui">Coverage · data completeness</span> once before you trust a pattern, then switch back.</li>
+            <li>Open <span class="ui">Worst 25 segments</span> to rank the current measure within the current geography.<span class="result">The list fills and the same 25 segments are drawn as points on the map, coloured by their legend bin.</span></li>
+            <li>Select <span class="ui">Download N rows</span> in the bottom bar to export what the map is drawing. <a href="npmrds--macro_view--download.html">Download data from the Macro View</a> has the builder in full.</li>
+            <li>Copy the address from the browser to share the view.</li>
+          </ol>
+
+          <h2 id="the-control-model">The control model</h2>
+          <p><strong>Pick the measure first. The controls below it then change.</strong> Every measure declares which reference controls apply to it, so the panel never shows a control that does nothing. The panel tells you how many are in play: note the count under the measure select.</p>
+          <figure class="shot">
+            <img src="../../assets/screens/macro-02-measure-menu.png" alt="The measure menu open, showing seven measures in four groups: reliability, congestion, speed and data quality."/>
+            <figcaption>Figure 2 · the measure menu, grouped. LOTTR is selected and the panel underneath reads 1 control, peak period. Captured 2026-08-27.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="../../assets/screens/macro-03-phed-controls.png" alt="PHED selected in the Macro View. The controls panel shows four controls: threshold, unit, traffic type and peak period. The map is coloured orange and red along urban corridors."/>
+            <figcaption>Figure 3 · PHED selected. The same panel reads 4 controls: threshold, unit, traffic type, peak period. The map recolours and the measure panel reports 21,209 of 52,127 segments, with 30,918 no data, not coloured. Captured 2026-08-27, PM3 year 2025, statewide.</figcaption>
+          </figure>
+          <div class="callout note"><span class="k">why so many segments go grey on PHED</span>Delay needs traffic volume and a speed reference, and a large share of the network has neither. Those segments are not coloured rather than coloured zero. An absent measure and a measure of zero are different claims, and the map keeps them different. Check the no-data count in the measure panel before reading a delay map as coverage of the whole state.</div>
+
+          <h2 id="geography-and-year">Geography and year</h2>
+          <p><strong>Geography.</strong> Type into <span class="ui">add a region, county or MPO…</span> to filter. The picker groups its options as <span class="ui">Regions</span>, <span class="ui">MPOs</span>, <span class="ui">Urban areas</span> and <span class="ui">Counties</span>, and several can be added. Leave it empty and you get the whole state, which is the right choice when you want the statewide distribution behind the legend. Adding a geography narrows the map, the distribution summary, the worst-segments ranking and the download all at once.</p>
+          <p><strong>Year.</strong> The year list is the set of published PM3 years, not a free date range. Each is a complete annual computation. In the <span class="ui">View</span> control, <span class="ui">Single year</span> is the only mode: <span class="ui">Compare years</span> is drawn but disabled, and its tooltip says it is planned. Before comparing two years by hand, read <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> and <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a>: both move across years for reasons that have nothing to do with traffic, and the 2024 dataset holds fewer than half the segments of 2025.</p>
+
+          <h2 id="reading-the-map-and-the-measure-panel">Reading the map and the measure panel</h2>
+          <p>The measure panel is the measure's own explainer, the same definition text the measure pages use, plus the legend and the distribution of the values on screen.</p>
+          <dl class="defs">
+            <dt>Legend</dt><dd>Seven fixed bins whose edges do not move with the year or the geography. For LOTTR and TTTR the edges are anchored to the federal tests, 1.50 and 2.00, so the colours mean the same thing everywhere. For delay the edges are round decades, because delay spans orders of magnitude; for speed they are 10 mph steps. The top bin is open-ended.</dd>
+            <dt>Value distribution</dt><dd>A histogram of what is currently on the map, sharing the legend's scale, with the threshold marked. It is the fastest check that a filter did what you meant.</dd>
+            <dt>Summary figures</dt><dd><span class="ui">Median</span>, <span class="ui">80th pctl</span>, and the share beyond the threshold, labelled <span class="ui">Unreliable</span> for LOTTR and <span class="ui">Above target</span> for TTTR. They describe the current filter, not the state, unless the filter is empty.</dd>
+            <dt>No data</dt><dd>Counted, stated as <span class="ui">no data · not coloured</span>, and drawn uncoloured. Grey is not zero.</dd>
+            <dt>Get to a segment</dt><dd>Type at least three characters of a TMC code or a county name into <span class="ui">TMC or county…</span> and pick a result. The map zooms to that segment. The search does not know road names.</dd>
+            <dt>Hover</dt><dd>Hovering a segment shows its TMC code, the current measure's value, the county and the region. The road name is not on the hover.</dd>
+          </dl>
+
+          <h2 id="check-coverage-before-you-trust-a-pattern">Check coverage before you trust a pattern</h2>
+          <p>Coverage is a measure in the menu like any other, and it is the one worth looking at first when something surprising shows up. A region that looks unusually unreliable may simply have less data behind it. Its <span class="ui">Basis</span> control offers <span class="ui">Bins reporting</span>, the share of a measure's own 15-minute input that arrived, and <span class="ui">Epochs reporting</span>, the share of the raw 5-minute feed, which is lower by construction.</p>
+          <figure class="shot">
+            <img src="../../assets/screens/macro-04-coverage.png" alt="The Macro View with the Coverage measure selected, showing data completeness across the state."/>
+            <figcaption>Figure 4 · Coverage · data completeness, mapped the same way as any other measure. Thin data inflates the reliability ratios and deflates the delay measures, opposite directions from the same cause. Captured 2026-08-27.</figcaption>
+          </figure>
+
+          <h2 id="worst-segments">Worst segments</h2>
+          <p><span class="ui">Worst 25 segments</span> in the measure panel ranks the current measure over the current filter. The row says <span class="ui">in current filter</span> for exactly that reason. Set your geography first, or you will rank the whole state. Opening the list also draws the same 25 segments as points on the map, so a ranking is visible on the canvas, not only in the list.</p>
+          <figure class="shot">
+            <img src="../../assets/screens/macro-05-worst-segments.png" alt="The worst-segments ranking panel open in the Macro View, listing the highest-value segments for the current measure and filter."/>
+            <figcaption>Figure 5 · the ranking is a view of the same query, not a separate one. Change the measure, period or geography and the list follows. Captured 2026-08-27.</figcaption>
+          </figure>
+          <div class="callout caution"><span class="k">two cautions before you act on a ranking</span><strong>Short segments dominate reliability rankings.</strong> 24.3 % of segments are under 0.05 mi and are flagged unreliable 7.7 times more often than long ones, so a top 25 by LOTTR can be mostly very short segments. <strong>Delay rankings favour high-volume roads by construction</strong>, because delay is multiplied by traffic. That is usually what you want, but it is not the same question as "where is traffic slowest".</div>
+
+          <h2 id="downloading-the-data">Downloading the data</h2>
+          <p>The <span class="ui">Download N rows</span> button carries a row count so you know the size before you ask for it. What you get is exactly what the map is drawing: same filters, same year, same bins. Choose a scope, <span class="ui">Current filters</span> or <span class="ui">Statewide</span>, a format, <span class="ui">csv</span> or <span class="ui">gpkg</span>, and whether to include geometry; <span class="ui">Columns you'll get</span> lists the columns before you commit. Every package ships a README naming the year's coverage era, the free-flow reference window, the delay floor and the AADT caveat. <a href="npmrds--macro_view--download.html">Download data from the Macro View</a> covers the builder, the package and how to cite it.</p>
+          <figure class="shot">
+            <img src="../../assets/screens/macro-06-download-builder.png" alt="The download builder open, showing scope, format, include geometry, and the list of columns that will be exported."/>
+            <figcaption>Figure 6 · the download builder open over the map. Captured 2026-08-27.</figcaption>
+          </figure>
+
+          <h2 id="sharing-a-view">Sharing a view</h2>
+          <p>The address is the state. Copy it from the browser and whoever opens it sees what you saw. Two rules govern it, and both are deliberate.</p>
+          <p><strong>Only what you changed is written.</strong> A fresh Macro View leaves the address clean. Parameters appear only as you move away from the defaults, so a shared link is a readable description of your choices rather than a wall of state.</p>
+          <p><strong>Unknown values degrade, they do not break.</strong> Every value in a link is checked against the live vocabulary and quietly dropped if it no longer resolves. An old link whose measure or year has since retired still opens; it falls back to the default rather than erroring.</p>
+          <p>Because of the second rule, a shared link is not a permanent citation. If a figure matters, download it: the export is fixed, the link is live.</p>
+
+          <h2 id="settings">Settings</h2>
+          <p>Every control on the page. A control appears only when the selected measure uses it.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Geography</span></td><td>Narrows map, panel, ranking and download</td><td><span class="ui">Regions</span> · <span class="ui">MPOs</span> · <span class="ui">Urban areas</span> · <span class="ui">Counties</span>; several chips</td><td>Empty, statewide</td></tr>
+              <tr><td><span class="ui">View</span></td><td>One year, or two compared</td><td><span class="ui">Single year</span> · <span class="ui">Compare years</span> (disabled)</td><td><span class="ui">Single year</span></td></tr>
+              <tr><td><span class="ui">Year</span></td><td>The PM3 year drawn</td><td>Published PM3 years, newest first</td><td>Newest</td></tr>
+              <tr><td><span class="ui">Measure</span></td><td>What colours the map</td><td><a href="measures_and_data--measures--lottr.html">LOTTR</a> · <a href="measures_and_data--measures--tttr.html">TTTR</a> · <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a> · <a href="measures_and_data--measures--ted.html">TED</a> · <a href="measures_and_data--measures--phed.html">PHED</a> · <a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a> · <a href="measures_and_data--measures--coverage.html">Coverage</a></td><td>LOTTR</td></tr>
+              <tr><td><span class="ui">Peak period</span></td><td>The bin the ratio or count is read from</td><td>LOTTR: <span class="ui">AM Peak</span> · <span class="ui">Midday</span> · <span class="ui">PM Peak</span> · <span class="ui">Weekend</span>. TTTR and TTTR₈₀ add <span class="ui">Overnight</span>. PHED: <span class="ui">No Peak</span> · <span class="ui">AM Peak</span> · <span class="ui">PM Peak</span>. Coverage: <span class="ui">All periods</span> and the five windows, <span class="ui">Overnight</span> for trucks only</td><td><span class="ui">AM Peak</span>; PHED <span class="ui">No Peak</span></td></tr>
+              <tr><td><span class="ui">Threshold</span></td><td>Which speed the delay is measured against; TED and PHED</td><td><span class="ui">Free-flow · fixed reference</span> · <span class="ui">Free-flow · unfloored</span> · <span class="ui">Posted speed limit</span> · <span class="ui">Free-flow · own year (deprecated)</span>; see <a href="measures_and_data--which_measure.html">Which measure should I use?</a></td><td><span class="ui">Free-flow · fixed reference</span></td></tr>
+              <tr><td><span class="ui">Unit</span></td><td>How delay is counted; TED and PHED</td><td><span class="ui">Vehicle Hours</span> · <span class="ui">Person Hours</span> · <span class="ui">Xdelay Hours</span></td><td><span class="ui">Person Hours</span></td></tr>
+              <tr><td><span class="ui">Traffic type</span></td><td>Which stream; TED, PHED and Coverage</td><td><span class="ui">All Traffic</span> · <span class="ui">All Trucks</span></td><td><span class="ui">All Traffic</span></td></tr>
+              <tr><td><span class="ui">Percentile</span></td><td>Which speed percentile; Percentile speed</td><td><span class="ui">5th</span> · <span class="ui">20th</span> · <span class="ui">25th</span> · <span class="ui">50th</span> · <span class="ui">75th</span> · <span class="ui">80th</span> · <span class="ui">85th</span> · <span class="ui">95th Percentile</span></td><td><span class="ui">5th Percentile</span></td></tr>
+              <tr><td><span class="ui">Basis</span></td><td>Which completeness; Coverage</td><td><span class="ui">Bins reporting</span> · <span class="ui">Epochs reporting</span></td><td><span class="ui">Bins reporting</span></td></tr>
+              <tr><td><span class="ui">TMC or county…</span></td><td>Zooms to one segment</td><td>Three or more characters</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Worst 25 segments</span></td><td>Ranks the current filter and draws the points</td><td>Open · <span class="ui">hide</span></td><td>Closed</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Three measures the menu once promised are not computed for the current dataset and are kept out of the menu: free-flow speed, emissions and attributes. <a href="measures_and_data--measures--in_development.html">Measures in development</a> explains.</li>
+            <li>The hover and the search know the TMC code, not the road name; the dataset behind the map carries no road name, length or AADT. Asked in September 2026; see References.</li>
+            <li>There is no per-mile control and no filter by NHS status or functional class. Both were requested in August 2026 and are open.</li>
+            <li>The 2024 dataset holds 22,754 segments against 52,127 for 2025, so changing <span class="ui">Year</span> changes the network, not only the values. <a href="measures_and_data--data--pm3_and_map21.html#the-2024-segment-count">The 2024 segment count</a> records the open question.</li>
+            <li>The Macro View shows the analytical series. For a federal figure use the <a href="npmrds--map21.html">MAP-21 PM3 pages</a>; <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> says why the two differ.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-page-showed-an-error-on-first-load">The page showed an error on first load</h3>
+          <p>"Unable to complete your request at the moment. Please try again later." was reported on 2026-09-03; the second attempt succeeded. Reload. If it repeats, <a href="help.html">report it</a> with the time.</p>
+          <h3 id="a-shared-link-opened-on-the-default-view">A shared link opened on the default view</h3>
+          <p>A value in the link no longer resolves, most often a year or a measure, and was dropped. Re-select and share again. To keep a figure, download it.</p>
+          <h3 id="the-map-is-mostly-grey">The map is mostly grey</h3>
+          <p>You are on a delay measure or on trucks, where most segments have no value. Read the <span class="ui">no data · not coloured</span> count, then check <span class="ui">Coverage · data completeness</span> for the same geography.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--macro_view--download.html">Download data from the Macro View</a></li>
+            <li><a href="measures_and_data--which_measure.html">Which measure should I use?</a></li>
+            <li><a href="npmrds--recipes--composite_score.html">Recipe: a composite bottleneck score</a></li>
+            <li><a href="measures_and_data--measures--coverage.html">Data coverage</a></li>
+            <li><a href="npmrds--reports--start_from_template.html">Start a report from a template</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Published Macro View guide, NPMRDS documentation (280612, published 2026-08-28): the eight sections this page re-shells; screenshots captured 2026-08-27 from the running tool, convention in the design system's screens README.</li>
+            <li>Macro View measure vocabulary (measures.js, 2026-08-24): the ten measures, seven available, groups, definitions, thresholds 1.50 and 2.00, and the not-yet-computed state.</li>
+            <li>Macro View filter code (updateFilters.jsx, 2026-08-24): control names and option lists, per-measure activation, defaults; the design's Sum by and AADT source controls are not built.</li>
+            <li>Macro View panel code (controlsPanel.jsx, contextPanel.jsx, mapChrome.jsx, 2026-08-24): <span class="ui">Geography</span> placeholder and groups, <span class="ui">View</span> with <span class="ui">Compare years</span> disabled, control-count label, <span class="ui">Legend</span>, <span class="ui">Value distribution</span>, <span class="ui">Median</span> · <span class="ui">80th pctl</span> · <span class="ui">Unreliable</span> / <span class="ui">Above target</span>, <span class="ui">Get to a segment</span>, <span class="ui">Worst 25 segments</span> · <span class="ui">in current filter</span>, the bottom bar and <span class="ui">Download N rows</span>.</li>
+            <li>Legend break table (breaks.js, 2026-08-18): seven authored bins, policy anchors 1.50 and 2.00, decade and 10 mph edges, open top bin, and the measured ckmeans problems they replaced.</li>
+            <li>Address-state code (urlState.js, constants.js, 2026-08-18): only non-default values written; unknown values dropped.</li>
+            <li>Live Macro View page (published 2026-08-24): hover fields TMC · the measure · County · Region.</li>
+            <li>PM3 provenance notes (PROVENANCE.md §5, §9, §10) and the Macro View alignment task (2026-08-12 to 08-24): short-segment share 24.3 % and 7.7×, coverage directions, controls shipped against the design.</li>
+            <li>Tickets 2211480 and 2217782 (road name in the hover), 2211481 (three measures not computed), 2211482 (2024 segment count), 2211483 (compare years disabled), 2211536 (NHS and functional-class filters), 2217781 (first-load error, 2026-09-03).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-08-28 published as the Macro View guide · 2026-09-04 moved into the docs folder · 2026-09-05 re-shelled as a how-to (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

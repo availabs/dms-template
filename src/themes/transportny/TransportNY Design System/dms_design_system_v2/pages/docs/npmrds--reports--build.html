@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Build and edit a report · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Build and edit a report.</h1>
+          <p class="doc-lede">A report is a page: a header, a Routes rail you see only while editing, and one card per graph. Routes carry dates; graphs carry the measure, the time of day, the days of the week and the comparison mode. Here is how to add both and tune them.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+            <span class="gated">requires sign-in</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Sign in. Open a report you own, or make one with <span class="ui">Create Report</span> on the Reports page, which opens the new page in edit mode. Edit mode is the page's <code>/edit/</code> address; the header button reads <span class="ui">Edit</span> to enter it and <span class="ui">Done</span> to leave. In edit mode the <span class="ui">Routes</span> rail appears and every graph card gains a row of pills, its Quick Controls. Readers never see either.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Select <span class="ui">Edit</span>.<span class="result">The address gains <code>/edit/</code>. The header's title, purpose and kicker become fields, the rail appears, and each card shows its pills.</span></li>
+            <li>Select <span class="ui">Add Route</span>, find a route (see <a href="npmrds--routes--manage.html#steps">Find, edit, tag and share routes</a>) and select <span class="ui">Add N Routes</span>.<span class="result">Each route becomes an expanded row: colour dot, name, and "N TMCs · N mi · No dates set · 0 graphs".</span></li>
+            <li>Set the window. Enter <span class="ui">From</span> and <span class="ui">To</span>. <span class="ui">− 1 year</span> and <span class="ui">+ 1 year</span> move both dates and keep the length.<span class="result">The row saves after a moment and the dates show in its meta line.</span></li>
+            <li>To reuse a window, select the copy icon on one row and the paste icon on another, or <span class="ui">paste into all (N)</span> from the strip that appears.</li>
+            <li>To tie one route's dates to another's, select <span class="ui">Derive from another route instead</span>, pick <span class="ui">Derive From</span> and a <span class="ui">Pattern</span> such as <span class="ui">Offset by whole periods</span>.<span class="result">The row reads "Derived from …" and recomputes whenever the base route's dates change. <span class="ui">Today (view time)</span> is always offered as a base.</span></li>
+            <li>For a before-and-after comparison add the same route twice, one row per period, and rename each row with the pencil so it reads as a legend entry. Names must be unique within the report.</li>
+            <li>Set each row's colour from its dot. The colour follows the route onto every card it feeds.</li>
+            <li>Select <span class="ui">Add Graph</span>. Tick the routes under <span class="ui">Routes for this graph</span>; choose a shape under <span class="ui">What to show</span>; set <span class="ui">Measure</span>, <span class="ui">Resolution</span> and <span class="ui">Comparison Mode</span>; under <span class="ui">When</span> pick a time-of-day preset and the days. Select <span class="ui">Add Graph</span>.<span class="result">A card appears at the bottom, drawing the chosen routes. Its pills read the route, the measure, the window, the aggregate and <span class="ui">Overlay</span> or <span class="ui">Diff</span>.</span></li>
+            <li>Change a card from its pills. <span class="ui">Routes on this card</span> adds or drops routes; the measure pill changes the measure; the <span class="ui">When</span> pill sets the hours and days; the aggregate pill sets the resolution; the mode pill switches Plain and Difference. To the left, arrows move the card, a width pill sets its column span, and a legend pill moves the legend.</li>
+            <li>Fill the header: title, a one-line purpose, the kicker and meta line, tags, and a <span class="ui">Data link</span> if a download exists. The <span class="ui">Data source</span> line takes the data-freshness words readers see.</li>
+            <li>To make the report a reusable template, open <span class="ui">Report settings</span> in the rail and turn on <span class="ui">Dynamic Report</span>. Routes are then picked by whoever opens the report, and the rail offers <span class="ui">Add Route Slot</span> instead of <span class="ui">Add Route</span>.</li>
+            <li>Select <span class="ui">Done</span>.<span class="result">The page publishes and opens in reading mode with a <span class="ui">published</span> pill.</span></li>
+          </ol>
+
+          <h2 id="what-saves-when">What saves when</h2>
+          <p>Two stores are in play. The Routes rail writes each change, a name, a window, a colour, an added or removed route, to the report's own route record the moment you make it. Graph cards, header text and layout are the page's draft until <span class="ui">Done</span> publishes them. A route change therefore reaches readers at once, while a new graph waits for <span class="ui">Done</span>.</p>
+
+          <figure class="shot" data-capture="www/npmrds/edit/&lt;report slug&gt; · signed in · two rows of the same route with different windows · one Bar Graph card in Difference mode with its pill row" data-alt="A report in edit mode: the Routes rail with two rows of one route carrying different date windows, and a Bar Graph card whose pills read 2 routes, Travel Time, 6a–10a · Wd, 1h and Diff">
+            <div class="ph">Edit mode · same route twice · Bar Graph · Diff</div>
+            <figcaption>Figure 1 · a before-and-after card after steps 6 to 9. Capture date to be added when taken.</figcaption>
+          </figure>
+
+          <h2 id="settings">Settings</h2>
+          <p>The rail, the Add Graph dialog and the card pills.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Add Route</span> · <span class="ui">Add Graph</span></td><td>Open the two dialogs</td><td>—</td><td>—</td></tr>
+              <tr><td><span class="ui">Report settings</span> › <span class="ui">Dynamic Report</span></td><td>Routes chosen at view time from the address</td><td>On · off</td><td>Off</td></tr>
+              <tr><td><span class="ui">Search routes…</span></td><td>Filters the rows shown in the rail</td><td>Text</td><td>Empty</td></tr>
+              <tr><td>Row: <span class="ui">From</span> · <span class="ui">To</span> · <span class="ui">shift</span></td><td>The route's date window</td><td>Dates; <span class="ui">− 1 year</span> · <span class="ui">+ 1 year</span></td><td>No dates set</td></tr>
+              <tr><td>Row: <span class="ui">Derive From</span> · <span class="ui">Pattern</span></td><td>Dates computed from another row</td><td><span class="ui">Offset by whole periods</span> · <span class="ui">Same period, aligned</span> · <span class="ui">Fixed calendar month</span> · <span class="ui">Fixed calendar range (e.g. a season)</span> · <span class="ui">Advanced (custom formula)</span></td><td>Fixed dates</td></tr>
+              <tr><td>Row: colour · pencil · arrows · trash</td><td>Identity colour, rename, reorder, <span class="ui">Remove route from report</span></td><td>A 20-colour palette</td><td>Assigned on add</td></tr>
+              <tr><td><span class="ui">What to show</span></td><td>The graph's shape</td><td><span class="ui">Bar Graph</span> · <span class="ui">Line Graph</span> · <span class="ui">Grid Graph</span> · <span class="ui">Table</span> · <span class="ui">Map</span></td><td><span class="ui">Line Graph</span></td></tr>
+              <tr><td><span class="ui">Measure</span></td><td>What is plotted; Table takes several, Map <span class="ui">Color by</span></td><td>Speed, travel time, delay, emissions, route attributes; see the <a href="npmrds--reports--graph_types.html#measures-offered">measures list</a></td><td><span class="ui">Travel Time (min)</span></td></tr>
+              <tr><td><span class="ui">Resolution</span></td><td>The time bucket</td><td><span class="ui">5 Minutes</span> · <span class="ui">15 Minutes</span> · <span class="ui">Hour</span> · <span class="ui">Day</span> · <span class="ui">Weekday</span> · <span class="ui">Month</span> · <span class="ui">Summary (one bar per route)</span></td><td><span class="ui">Hour</span></td></tr>
+              <tr><td><span class="ui">Comparison Mode</span> · <span class="ui">Anchor Route</span></td><td>Overlay the routes, or subtract one from the other</td><td><span class="ui">Plain</span> · <span class="ui">Difference</span>; anchor from the two routes</td><td><span class="ui">Plain</span>; first route in the report</td></tr>
+              <tr><td><span class="ui">When</span></td><td>Time of day and days of the week</td><td><span class="ui">AM Peak</span> 06–10 · <span class="ui">PM Peak</span> 16–20 · <span class="ui">PM Peak (alt)</span> 15–19 · <span class="ui">Midday</span> 10–16 · <span class="ui">All Day</span>; <span class="ui">Su</span> to <span class="ui">Sa</span>, <span class="ui">Weekdays</span> · <span class="ui">Weekends</span> · <span class="ui">All</span></td><td>All day, all days</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li><span class="ui">Difference</span> needs exactly two routes on the card. The dialog warns "Difference mode compares exactly two routes"; the pill disables the option until the count is two. The result is anchor minus the other.</li>
+            <li>A Map has no <span class="ui">When</span> at creation and no aggregate; a Table's <span class="ui">Route Compare</span> and <span class="ui">Reliability</span> extras work only at <span class="ui">Summary</span> resolution, and Reliability only for a peak-period window in a year with published values.</li>
+            <li>Dates belong to the row; hours and days belong to the card. Two cards can read the same row through different windows.</li>
+            <li>A row's rename is local to this report. The saved route keeps its name.</li>
+            <li>A route from one map year can lose a segment in another year's data; see <a href="measures_and_data--concepts--tmc_network_and_vintages.html#how-routes-bind-to-a-vintage">how routes bind to a vintage</a>.</li>
+            <li>Report delay measures use the excessive-delay threshold: the greater of 20 mph or 60 % of the posted limit, weighted by AADT. See <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="i-do-not-see-the-routes-rail">I do not see the Routes rail</h3>
+          <p>You are reading, not editing. Select <span class="ui">Edit</span>. If there is no <span class="ui">Edit</span>, sign in; if there still is none, the report is not yours to edit.</p>
+          <h3 id="a-new-graph-is-blank">A new graph is blank</h3>
+          <p>Wait a few seconds and reload; a card can render empty right after it is added. Then check the row has dates, the card has routes, and the window is not inside the data lag or a weekend-only mask on a weekday route.</p>
+          <h3 id="a-route-named-x-already-exists">"A route named X already exists."</h3>
+          <p>Row names are unique per report. Add the period to the name.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--reports--graph_types.html">Graph types reference</a></li>
+            <li><a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a></li>
+            <li><a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a></li>
+            <li><a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a></li>
+            <li><a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Report route rail code (ReportRouteList, RouteRow, relativeDatePresets, 2026-09-01): panel <span class="ui">Routes</span>, <span class="ui">Add Route</span> · <span class="ui">Add Route Slot</span> · <span class="ui">Add Graph</span>, <span class="ui">Report settings</span> · <span class="ui">Dynamic Report</span>, <span class="ui">Search routes…</span>, the meta line, <span class="ui">From</span> · <span class="ui">To</span>, <span class="ui">− 1 year</span> · <span class="ui">+ 1 year</span> · <span class="ui">keeps the length</span>, copy and paste, <span class="ui">paste into all (N)</span>, the derive controls and pattern list, <span class="ui">Today (view time)</span>, the unique-name check, the edit gate keyed on the page's edit mode since 2026-08-19, rail hidden to readers.</li>
+            <li>Add Graph dialog code (AddGraphModal, composeMeasureConfig, composeMapConfig, graphGuidanceCopy, 2026-08-24 to 09-02): section labels, shapes, measure groups, resolution labels, <span class="ui">Plain</span> · <span class="ui">Difference</span>, <span class="ui">Anchor Route</span>, the two-route warning, <span class="ui">When</span> presets and day toggles, the default pick.</li>
+            <li>Quick Controls code (2026-08-20): the pill set, <span class="ui">Overlay</span> / <span class="ui">Diff</span>, layout pills, the Difference option disabled outside two routes.</li>
+            <li>Report header code: <span class="ui">Edit</span> / <span class="ui">Done</span>, <span class="ui">Done</span> publishes; header fields.</li>
+            <li>Route rail README and storage notes: routes stored in the report's own record, published to graphs live.</li>
+            <li>Measure vocabulary (2026-08-24): the Hours of Delay expression, threshold greatest(20 mph, 60 % of the average posted limit), AADT weighting.</li>
+            <li>Platform report guides (creating-reports, traversing-report-pages): same-season year-over-year rule; blank cards right after a build.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="npmrds--reports--graph_types.html">Graph types reference</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>
