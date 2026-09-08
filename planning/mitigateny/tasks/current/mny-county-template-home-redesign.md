@@ -1,6 +1,6 @@
 # MNY County Template — LHMP plan home redesign
 
-**Project:** MitigateNY · **Topic:** themes · **Status:** BUILT 2026-09-04, pending owner review · **Started:** 2026-09-04
+**Project:** MitigateNY · **Topic:** themes · **Status:** BUILT 2026-09-04 · REV 3 2026-09-08, pending owner review · **Started:** 2026-09-04
 
 ## Objective
 
@@ -342,16 +342,58 @@ in the rail, and `disaster_declaration_threshold` ($349,091) as a rail fact.
    list (23 gets a 30px treatment two bands down, and county-actions' rule is not to print a number
    twice) and the climate narrative now runs in full rather than cut mid-passage.
 
+### Revision 3 (2026-09-08) — geography to the header, breakout illustration cards, navigation restored
+
+Three owner directions, all applied.
+
+| Direction | Change |
+|---|---|
+| *"What if we just put the geography text in the header."* | Done. The header card now runs **eyebrow → county name → `geography_topography` → plan status → search**, and it is the right home for it: the header answers *where am I*, and a photograph of the county beside the county's own description of itself is one thought, not two. The card widened 520 → 600px and the band grew to `lg:min-h-[700px]`. **No new column is needed** — the live component already binds `geography_topography` in `externalSource.columns` and renders nothing with it. |
+| *"Take a bit more from the current homepage — the cards with the isometric images. Those look a lot better when the image actually breaks out of the top of the card."* | Done, using `pages/home.html`'s device verbatim: `pt-[Npx]` on the wrapper reserves the overhang, and the image carries `mt-[-Npx] mx-[-12px] w-[calc(100%+24px)]`. Used **twice** — the three profile cards and the four Explore cards. |
+| *"The page needs to do more to take the user to other places in the plan like it did before."* | Rev 2's 13px index was too quiet — it had traded away the live page's one real strength. The Explore band is now four illustrated cards carrying **every page of the plan**, and routes are threaded through every band above it. |
+
+**The profile band is three cards again.** Geography's promotion to the header freed a slot, and
+`climate_assessment_narrative` — a lexical column on the same row, regional (Catskills) and therefore
+templateable — took it. So the band is **Demography · Major Industries · Climate Outlook**, each an
+isometric breakout card with its prose and a pill to its section. The reference data that had been in
+a sticky rail became a slim four-up strip above the cards (watersheds · climate region · risk
+assessment period · disaster declaration threshold), which suits a card row better than a rail does.
+
+**Navigation reach, counted off the built file** (comments stripped, so commented-out examples don't
+inflate it):
+
+| | Live page | Rev 2 | Rev 3 |
+|---|---|---|---|
+| In-plan links | 14, **3 of them broken** | 27 | **56** |
+| Distinct pages reached | 13 | 24 | **33** |
+
+All 33 slugs were checked against the 2026-09-01 harvest
+(`src/themes/mny/design/reports/pattern-component-catalog.csv`); none is invented. Where they sit:
+1 in the header · 2 lede CTAs · 1 in the facts strip · 3 profile pills · 16 in the risk band (the
+band link, the hurricane card, ten bar rows, four chips) · 7 in the response band · 22 in the Explore
+band. The four TopNav entries became real links too.
+
+**Two sizing findings on the breakout card, worth recording because the next person will hit them:**
+
+1. **`w-[calc(100%+24px)]` is calibrated to a ~290px card.** That is the width of `home.html`'s
+   4-across cards and of the owner's reference image, and at that width the illustration lands at
+   ~255px tall — correct. On the 3-across profile cards (~390px) the same rule scaled it to ~340px
+   and it swamped the prose. Those cards now pin the height (`h-[240px]`) and keep the bleed width.
+2. **`w-auto mx-auto` centres the file, not the drawing.** These renders carry uneven transparent
+   padding, so a centred image sat visibly left of card centre. Giving the image the full bleed width
+   and letting `object-contain` letterbox inside it centres the *drawing*. Both facts belong in
+   whatever theme value carries this treatment in the live build.
+
 ### The nine sections as built
 
 | # | Section (`data-name`) | Kind | Grid | Binding |
 |---|---|---|---|---|
-| 1 | `identity` | `Header: MNY Data` | header group, full-bleed | DHSES_County_Database 953754/v1108098, `geoid[page:geoid]` — **unchanged**, plus three columns for the new status line |
-| 2 | `lede` | lexical (static) | `col-span-12` | — 20px opener + the two primary CTAs |
-| 3 | `county-profile` | **Card** — reading column + rail | `col-span-12` (inner 7 / 5) | **★ the three profile fields**, plus `watershed_s` · `climate_assessment_region` · `risk_assessment_period` · `disaster_declaration_threshold` · `climate_assessment_narrative` — all DHSES 953754/v1108098 |
-| 4 | `hazard-risk` | Card — focus panel + bar list | `col-span-12` (inner 5 / 7) | Fusion Events V2 870/v1648 — **unchanged binding**, redesigned display; the totals row reuses live 2413419's four aggregates |
-| 5 | `plan-response` | Card — two meters | `col-span-12` (inner 7 / 5) | Actions_Revised 1029065/v1074456 · Jurisdictions 1346449/v1346450 |
-| 6 | `explore` | Card, all-static, 4 columns | `col-span-12` | — |
+| 1 | `identity` | `Header: MNY Data` | header group, full-bleed | DHSES 953754/v1108098, `geoid[page:geoid]` — plus **`geography_topography`** (rev 3) and the plan-status columns |
+| 2 | `lede` | lexical (static) | `col-span-12` | — 20px opener + two CTAs |
+| 3 | `county-profile` | **Card, 3 breakout cards** | `col-span-12` (4+4+4) | **★ the three profile cards** — `demographics_population_centers` · `major_industries_…` · `climate_assessment_narrative`, plus a four-up facts strip (`watershed_s` · `climate_assessment_region` · `risk_assessment_period` · `disaster_declaration_threshold`). All DHSES 953754/v1108098 |
+| 4 | `hazard-risk` | Card — focus panel + bar list | `col-span-12` (5+7) | Fusion Events V2 870/v1648 — **unchanged binding**; totals reuse live 2413419's four aggregates |
+| 5 | `plan-response` | Card — two meters | `col-span-12` (7+5) | Actions_Revised 1029065/v1074456 · Jurisdictions 1346449/v1346450 |
+| 6 | `explore` | **Card, 4 breakout cards**, all-static | `col-span-12` | — 22 links, every page of the plan |
 | 7 | footer | `Footer: MNY Footer` | footer group | unchanged |
 
 Eleven sections became **seven**, and two data bindings became **five** (the profile, risk and response bands each bind a source; the header keeps its own).
@@ -400,7 +442,7 @@ Eleven sections became **seven**, and two data bindings became **five** (the pro
 - [x] 6 · Four 1/4 lexical link menus collapsed into one configured section
 - [x] **Also added:** `/the_plan/capabilities_assessment`, a real page the live menu omits
 
-### Platform findings — two, both logged not fixed
+### Platform findings — four, all logged not fixed
 
 1. **A `risk_pill` column type.** The hazard band renders `risk_level` as a colour pill: five values,
    five documented mny tokens (Very High `mny-red` · High `orange-400` · Moderate `yellow-700` ·
@@ -424,6 +466,10 @@ Eleven sections became **seven**, and two data bindings became **five** (the pro
    progress lede and needs-attention panel among them — so they are probably rendering a flat amber
    box where a left edge was intended. Worth a sweep; not done here, since those pages are another
    task's deliverable.
+4. **`mnyHeader`'s `note` is a single string, so the header can hold only one prose slot.** Rev 3
+   puts `geography_topography` in the header, which needs either a second prose slot or for `note` to
+   accept a bound column. The column is already in the section's `externalSource.columns` and already
+   fetched — nothing renders it. Smallest fix: let `note` take a column name. Additive, no migration.
 
 ### Verification run (Playwright, 2026-09-04)
 
@@ -434,7 +480,7 @@ Script kept at `scratchpad/lhmp-home-verify.mjs` (gitignored); screenshot
 - **No horizontal overflow at 1440, 1280 or 1024** (`scrollWidth === clientWidth` at each)
 - **No broken images** (`naturalWidth > 0` on every `<img>`)
 - Three `layoutGroup`s (`header` · `content` · `footer`) and six annotated `section`s in the
-  content flow, as specified (rev 2; rev 1 had seven)
+  content flow, as specified
 - `ds-nav` mounts and resolves the page to **LHMP Design → "plan home (county template)"**, active,
   with jump links to all nine other sections
 
@@ -490,15 +536,16 @@ Answer these against the built page; each one is a small edit, none of them re-o
 4. **`Actions_Revised` (1029065) or `Actions Cleaned` (12453)?** Built on **Revised**, because that
    is what the county-template pages already bind; the statewide dashboards use Cleaned. One-line
    change either way.
-5. **The two illustrated blurbs are gone** ("Take Action", "Cities, Towns and Villages"). They
-   restated what the Actions and Annexes destinations say, and the at-a-glance strip now says it
-   with numbers. Reversible if you want them back.
+5. ~~**The two illustrated blurbs are gone**~~ — **resolved by rev 3.** The isometric illustrations
+   are back, doing a real job: three of them carry the county profile and four carry the Explore
+   navigation, with the image breaking out of the card top per the owner's reference. The two *blurbs*
+   stay gone; what came back is the card treatment.
 6. **`/track_progress/actions_listview`** does not appear in the 2026-09-01 harvest and has been
    replaced with the four Track Progress pages that do exist. **Worth one live check** before the
    live build writes it.
-7. **NEW — the `risk_pill` column type.** The hazard band needs it, and all 16 hazard pages would
+7. **The `risk_pill` column type.** The hazard band needs it, and all 16 hazard pages would
    reuse it. Approve it as a library task, or accept plain text risk labels for now.
-8. **NEW — the header overflow bug.** `mnyHeaderDataDriven.jsx:113` sets `lg:w-[1440px]`, which
+8. **The header overflow bug.** `mnyHeaderDataDriven.jsx:113` sets `lg:w-[1440px]`, which
    scrolls the page sideways at any viewport between 1024 and 1440. This affects every MNY page with
    a full-overlay header. Should it get its own task under `src/dms/planning/`?
 
@@ -524,8 +571,9 @@ Answer these against the built page; each one is a small edit, none of them re-o
       state; the stat strip reads correctly at 1 jurisdiction / 0 actions; the hazard band renders
       whatever categories that county has, and the 12th doorway cell is static so the grid never
       looks truncated; every word of copy is county-independent
-- [ ] Every link on the page resolves to a page that exists in pattern 1300890 — **checked against
-      the 2026-09-01 harvest, not live.** Re-verify live before the live build.
+- [x] Every link on the page resolves to a page that exists in pattern 1300890 — **all 33 distinct
+      slugs checked against the 2026-09-01 harvest** (rev 3; 56 links). Not checked *live* — re-verify
+      before the live build writes them.
 - [x] No base64 image data in the file
 - [x] `design/README.md` updated — folder tree, a new `## pages/lhmp/` section with the
       live-vs-redesign table, and the section table (which was also missing LHMP Admin)
@@ -539,3 +587,11 @@ reviewed it, the live build is its own task: it writes draft sections to page **
 `MitigateNY_Nassau_V2` 2407262) through the
 [propagating-county-template-changes-to-duplicates](../../skills/propagating-county-template-changes-to-duplicates.md)
 skill. Publishing stays a human decision.
+
+9. **NEW (rev 3) — should `mnyHeader.note` accept a bound column?** That is what putting
+   `geography_topography` in the header needs (platform finding 4). Additive and small, but it is a
+   library change, so it wants a decision before the live build.
+10. **NEW (rev 3) — is `disaster_declaration_threshold` safe to publish?** It is on the bound row and
+    reads as a real county figure ($349,091 for Sullivan), but nothing in this task confirms what
+    DHSES means by it. It is in the facts strip, unglossed, and is the one value on the page whose
+    *meaning* I could not verify. Say the word and it comes out.

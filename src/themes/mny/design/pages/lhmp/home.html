@@ -38,43 +38,49 @@
                 `county_template`), page 1300803 (`home`).
   Specimen    : Sullivan County, geoid 36105 — the pattern-level filter.
 
-  REV 2 (2026-09-04) — body rebuilt from scratch in the COUNTY ACTIONS
-  WORKFLOW design language; the header is the only band carried over.
-  What that means concretely, and why each move helps a reader focus:
+  REV 3 (2026-09-08) — three owner directions:
 
-    · ONE boxed `content` LayoutGroup, 12-col grid, nothing on the topo
-      canvas — the section's stated layout rule.
-    · Prose is a READING COLUMN + a STICKY RAIL (action-view.html's
-      `the-case` / `key-facts` split), not a row of equal cards. Rev 1 put
-      three ~400-character paragraphs in three identical boxes: same size,
-      same weight, same colour, no entry point.
-    · One TYPE LADDER carries the focus, largest first:
-        36px  the dominant hazard's name         ← the page's focus object
-        30px  $363,792,448 · 475                 ← the two numbers that matter
-        20px  the page lede, and Geography       ← what you read first
-        16px  band titles, Demography, Industries
-        14px  supporting prose, rail values
-        13px  the Explore index — deliberately the quietest thing here
-    · Hurricane is PULLED OUT of the hazard list. It is 91% of the county's
-      recorded loss, so leaving it in a shared scale flattens the other ten
-      into invisible stubs. Out front it becomes the answer to "why does
-      this plan exist"; the remaining ten then get a scale they can use.
-    · Counts that were flat tiles are now METERS with legends
-      (jurisdiction-prioritization.html's `progress-and-stats` device), so
-      475 reads as a shape, not a number.
+  1. "PUT THE GEOGRAPHY TEXT IN THE HEADER." Done. The header card now runs
+     eyebrow → county name → the county's own description of itself
+     (`geography_topography`) → plan status → search. That is the right home
+     for it: the header answers *where am I*, and a photograph of the county
+     with the county's description beside it is one thought, not two. The
+     profile band keeps Demography and Major Industries and gains Climate
+     Outlook as its third card, so the band is still three cards.
+
+  2. "TAKE MORE FROM THE CURRENT HOMEPAGE — THE CARDS WITH THE ISOMETRIC
+     IMAGES, AND THE IMAGE SHOULD BREAK OUT OF THE TOP OF THE CARD." Done,
+     using `pages/home.html`'s exact device — `pt-[Npx]` on the wrapper,
+     `mt-[-Npx]` + `mx-[-12px]` + `w-[calc(100%+24px)]` on the image, so the
+     illustration bleeds to both card edges and rises above the top one.
+     Used twice: the three profile cards, and the four Explore cards.
+
+  3. "THE PAGE NEEDS TO DO MORE TO TAKE THE USER TO OTHER PLACES IN THE PLAN
+     LIKE IT DID BEFORE." Rev 2's 13px index was too quiet — it had traded
+     away the live page's one real strength. The Explore band is now four
+     illustrated cards carrying **every page of the plan** (21 links, up from
+     the live page's 14), and routes are threaded through every band above it:
+     2 lede CTAs, 3 profile "learn more" pills, 1 header link, 1 facts link,
+     12 hazard links, 2 response links. **42 destinations, and every page of
+     the plan is reachable from this one.**
+
+  Carried from rev 2: the county-actions design language (one boxed content
+  group on a 12-col grid, meters with legends rather than flat tiles, the
+  share-of-max bar list) and the type ladder that carries the focus —
+    36px the dominant hazard · 30px $363,792,448 and 475 · 20px the lede
+    · 16px band and card titles · 14px prose · 12px labels.
 
   EVERY NUMBER, NAME AND SENTENCE IS REAL SULLIVAN DATA.
     · profile prose, plan dates, climate  DHSES_County_Database 953754/v1108098
     · hazard losses, disasters            AVAIL - Fusion Events V2 870/v1648 (hazmit_dama)
     · jurisdiction counts                 Jurisdictions 1346449/v1346450
     · action counts                       Actions_Revised 1029065/v1074456
-  Only the lede paragraph and the Explore headings are authored copy — and
+  Only the lede paragraph and the Explore card titles are authored copy — and
   that copy is IDENTICAL for all 62 counties.
 
   TEMPLATEABILITY RULE (governing constraint): every band is identical for
   every county plan. Only values and the county name vary — never the copy,
-  never which cards appear. Note this holds for the focus panel too: the
-  LABEL is fixed ("Most costly hazard"), the hazard and the figure are values.
+  never which cards appear.
 
   Task: planning/mitigateny/tasks/current/mny-county-template-home-redesign.md
   ============================================================================
@@ -93,10 +99,10 @@
         <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
           <a href="#top"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
           <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
-            <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Local Environment</div>
-            <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Risk</div>
-            <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Plan</div>
-            <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">Track Progress</div>
+            <a href="/the_local_environment" class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 hover:text-mny-900">The Local Environment</a>
+            <a href="/the_risk" class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 hover:text-mny-900">The Risk</a>
+            <a href="/the_plan" class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 hover:text-mny-900">The Plan</a>
+            <a href="/track_progress" class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 hover:text-mny-900">Track Progress</a>
           </div>
           <div class="hidden md:flex h-full items-center justify-end gap-1">
             <div class="flex p-2 justify-center items-center">
@@ -115,19 +121,27 @@
 <div id="top"></div>
 
 <!-- ================================================================
-     LAYOUTGROUP "header" — CARRIED OVER FROM REV 1, unchanged.
+     LAYOUTGROUP "header"
 
-     SECTION 1 · Header: MNY Data  (live 2175337 — binding unchanged)
+     SECTION 1 · Header: MNY Data  (live 2175337)
        source   DHSES_County_Database 953754 / view 1108098
                 env mitigat-ny-prod+test_meta_forms
        filter   geoid[page:geoid] = 36105   (1 row)
        display  overlay 'full' · titleSize 'sm:text-[48px] tracking-[-2px]'
                 showSearchBar true
        columns  county (title) · county_seal_url (logo) · photo (bgImg)
-                + NEW: plan_status · plan_approval_date · expiration_date
+                · geography_topography          ← REV 3, moved up from the body
+                · plan_status · plan_approval_date · expiration_date
+
+     The live component already binds `geography_topography` on this section
+     (it is in `externalSource.columns`) but renders nothing with it — so
+     putting it here needs no new column, only a `note`-shaped slot. The
+     component's `note` prop is a single string today; a second prose slot (or
+     letting `note` take a column) is the one small platform ask this band
+     makes. Logged in the task file.
      ================================================================ -->
 <div data-dms="layoutGroup" data-name="header">
-  <div class="relative w-full h-auto lg:h-[560px] flex flex-col lg:flex-row justify-center"
+  <div class="relative w-full h-auto lg:min-h-[700px] flex flex-col lg:flex-row justify-center"
        style="background:url('../../assets/mny/county/Sullivan County copy.webp') center/cover;">
     <div class="absolute inset-0 bg-gradient-to-r from-[#2D3E4C]/40 to-transparent lg:hidden"></div>
 
@@ -136,23 +150,31 @@
            `lg:w-[1440px]` here, which scrolls the page sideways at every viewport
            between 1024px and 1440px. `w-full lg:max-w-[1440px]` is identical at
            1440 and correct below it. Live bug; logged in the task file. -->
-      <div class="mx-auto px-[15px] xl:px-[64px] lg:pt-[120px] pt-[120px] pb-[40px] w-full lg:max-w-[1440px] h-full flex items-center">
+      <div class="mx-auto px-[15px] xl:px-[64px] lg:pt-[128px] pt-[120px] pb-[48px] w-full lg:max-w-[1440px] h-full flex items-center">
 
         <div data-dms="section" data-name="identity"
-             class="relative w-full lg:w-[520px] px-[32px] py-[32px] bg-white mny-shadow-md rounded-[12px]">
+             class="relative w-full lg:w-[600px] px-[32px] py-[30px] bg-white mny-shadow-md rounded-[12px]">
 
-          <div class="flex gap-3 items-center">
-            <img class="max-w-[64px] max-h-[64px]" alt=""
+          <p class="font-display text-[12px] font-[500] uppercase tracking-[0.12em] text-mny-400 leading-none">County Hazard Mitigation Plan</p>
+
+          <div class="flex gap-3 items-center mt-2">
+            <img class="max-w-[60px] max-h-[60px]" alt=""
                  src="https://www.nysac.org/media/xfokhjv3/sullivan-county-seal.png">
             <div class="font-display font-medium text-mny-900 uppercase text-[36px] sm:text-[48px] tracking-[-2px] leading-[100%]">
               Sullivan County
             </div>
           </div>
 
-          <div class="font-proxima text-[16px] leading-[24px] text-mny-700 pt-3">
-            The county Hazard Mitigation Plan — how this community understands its
-            risk from natural hazards, and what it is doing about it.
-          </div>
+          <!-- geography_topography — the county's own description of itself -->
+          <p class="font-proxima text-[15px] leading-[1.5] text-mny-700 mt-3">
+            Sullivan County is in the southern part of the State, southeast of Binghamton,
+            southwest of Albany and north of New York City. It is separated from Pennsylvania
+            along its southwest boundary by the Delaware River. The County is in the Catskill
+            Mountains and its northeastern corner is within the Catskill Park. The County has
+            a lot of rugged terrain to include high and low elevations, which can lead to very
+            diverse weather patterns across the region.
+          </p>
+          <a href="/the_local_environment/natural_environment" class="inline-block mt-2.5 font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900">The natural environment →</a>
 
           <div class="mt-4 pt-4 border-t border-mny-100 grid grid-cols-3 gap-2">
             <div>
@@ -169,7 +191,7 @@
             </div>
           </div>
 
-          <div class="py-3">
+          <div class="pt-3">
             <div class="bg-white flex justify-between items-center h-[56px] w-full py-[16px] px-[24px] rounded-[1000px] mny-shadow-sm border border-mny-100">
               <input class="w-full focus:outline-none text-mny-700 font-proxima font-normal text-[16px] leading-[140%]" placeholder="Search this plan...">
               <!-- icon: Search -->
@@ -193,16 +215,12 @@
 
         <!-- ==========================================================
              SECTION 2 · lexical — PAGE LEDE (replaces live 2175339 + 2175340)
-
              The live copy describes *the template* ("places for counties and
              jurisdictions to input mitigation planning content") on a public
              landing page. This says what the plan is, at 20px, as the first
-             thing read after the header — the county-actions identity-band
-             shape minus the H1, since the header already names the county.
-
-             Static; identical for every county.
+             thing read after the header. Static; identical for every county.
              ========================================================== -->
-        <div data-dms="section" data-name="lede" class="col-span-12 pb-6 mb-7 border-b border-mny-100">
+        <div data-dms="section" data-name="lede" class="col-span-12 pb-6 mb-2 border-b border-mny-100">
           <div class="flex flex-wrap items-start justify-between gap-6">
             <p class="font-proxima text-[20px] text-mny-900 leading-[1.4] max-w-[720px]">
               A Hazard Mitigation Plan is how a county and its municipalities agree,
@@ -223,11 +241,12 @@
         </div>
 
         <!-- ==========================================================
-             SECTION 3 · Card — THE COUNTY  ★ the three profile fields
+             SECTION 3 · Card — THE COUNTY  ★ the three profile cards
              ==========================================================
-             ONE Card section. The three fields live on ONE row of ONE
-             source, so this is one binding with three value cells — three
-             separate sections would triple the binding for no gain.
+             ONE Card section, three cards across (cards-grid `gridSize: 3`).
+             The three fields live on ONE row of ONE source, so this is one
+             binding with three value cells — three separate sections would
+             triple the binding for no gain.
 
                source  the owner's datasource, /cenrep/source/1161/table/1986
                        → confirmed an EXTERNAL hazmit_dama DAMA source (falcor
@@ -235,39 +254,40 @@
                          absent from dmsEnv 1676363, which backs /cenrep's
                          internal listing). Column names still need a
                          credentialed read.
-               BOUND HERE TO THE CONFIRMED EQUIVALENT — the same three fields
-               on the source the header already uses:
+               BOUND HERE TO THE CONFIRMED EQUIVALENT — the same fields on the
+               source the header already uses:
                        DHSES_County_Database 953754 / view 1108098
                filter  geoid[page:geoid] = 36105   (1 row)
-               columns geography_topography
-                       demographics_population_centers
+               cards   demographics_population_centers
                        major_industries_economic_drivers_and_notable_infrastructure
-                       + rail: watershed_s · climate_assessment_region
-                               · risk_assessment_period
-                               · climate_assessment_narrative (lexical)
-               display reading column + rail; fetchMode 'smart'
+                       climate_assessment_narrative  (lexical) + climate_assessment_region
+               strip   watershed_s · climate_assessment_region
+                       · risk_assessment_period · disaster_declaration_threshold
+               display gridSize 3 · bgColor #F3F8F9 · removeBorder · fetchMode 'smart'
+                       + cardHints.fullBleed on the image cell (see below)
 
-             SWAP NOTE: if 1161/1986 is the DAMA-side copy of the same three
-             narrative fields, only `externalSource` and the three column names
-             change — the layout is unaffected. If it carries *measured*
-             demography / industry figures instead, each block gains a figure
-             line above its paragraph.
+             REV 3 — GEOGRAPHY MOVED TO THE HEADER, and Climate Outlook takes
+             the third slot. `climate_assessment_narrative` is a lexical column
+             on the same row and is regional (Catskills), so it is templateable
+             and it belongs with the county's description rather than in the
+             risk band.
 
-             WHY A READING COLUMN, NOT THREE CARDS SIDE BY SIDE (rev 2):
-             three ~400-character paragraphs set at the same size in three
-             identical boxes give a reader no entry point — it is one grey
-             block three columns wide. Stacked and headed, with Geography at
-             lede weight, they read in order and the eye knows where to start.
-             This is action-view.html's `the-case` band exactly: headed prose
-             blocks, hairline rules between, facts pulled out to a sticky rail.
+             THE BREAKOUT IMAGE is `pages/home.html`'s device, verbatim:
+             `pt-[140px]` on the wrapper reserves the overhang, and the image
+             carries `mt-[-140px] mx-[-12px] w-[calc(100%+24px)]` so it bleeds
+             to both card edges and rises above the top one. In the live build
+             this is a Card image cell with `cardHints.fullBleed` plus the
+             negative top margin — the hint already exists, the negative margin
+             is the part a theme value would have to carry.
 
              EMPTY STATE (open question 2): a county with a null field renders
-             the muted line shown in the comment on the Demography block. It
-             must not collapse to a bare heading — the templateability rule
-             forbids the block disappearing, so it has to say something.
+             the muted line shown in the comment on the Demography card. It must
+             not collapse to a bare heading — the templateability rule forbids
+             the card disappearing, so it has to say something.
              ========================================================== -->
         <div data-dms="section" data-name="county-profile" class="col-span-12">
-          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-5">
+
+          <div class="flex flex-wrap items-baseline justify-between gap-3 pt-6">
             <div>
               <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1]">The county</h2>
               <p class="font-proxima text-[12px] text-mny-400 leading-[140%] mt-1">The place this plan is written for</p>
@@ -275,106 +295,103 @@
             <span class="font-proxima text-[12px] text-mny-400">Sullivan County profile · DHSES County Database</span>
           </div>
 
-          <div class="grid grid-cols-12 gap-0">
+          <!-- county facts strip — the reference data pulled out of the prose -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3 mt-4 py-3.5 border-y border-mny-100">
+            <div>
+              <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 leading-none">Watersheds</p>
+              <p class="font-proxima text-[14px] font-[600] text-mny-900 leading-[1.35] mt-1">Lower Hudson River &amp; Delaware River</p>
+            </div>
+            <div>
+              <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 leading-none">Climate assessment region</p>
+              <p class="font-proxima text-[14px] font-[600] text-mny-900 leading-[1.35] mt-1">
+                <a href="/the_risk/climate_change" class="hover:underline">Catskills</a>
+              </p>
+            </div>
+            <div>
+              <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 leading-none">Risk assessment period</p>
+              <p class="font-proxima text-[14px] font-[600] text-mny-900 leading-[1.35] mt-1 tabular-nums">Dec 2024 – Mar 2026</p>
+            </div>
+            <div>
+              <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 leading-none">Disaster declaration threshold</p>
+              <p class="font-proxima text-[14px] font-[600] text-mny-900 leading-[1.35] mt-1 tabular-nums">$349,091</p>
+            </div>
+          </div>
 
-            <!-- READING COLUMN -->
-            <div class="col-span-12 lg:col-span-7 lg:pr-10">
+          <!-- three breakout cards -->
+          <div class="grid grid-cols-6 md:grid-cols-12 gap-4 mt-2">
 
-              <div>
-                <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">Geography</h3>
-                <p class="font-proxima text-[20px] text-mny-900 leading-[1.4] mt-2 max-w-[640px]">
-                  Sullivan County is in the southern part of the State, southeast of
-                  Binghamton, southwest of Albany and north of New York City. It is
-                  separated from Pennsylvania along its southwest boundary by the
-                  Delaware River. The County is in the Catskill Mountains and its
-                  northeastern corner is within the Catskill Park. The County has a lot
-                  of rugged terrain to include high and low elevations, which can lead to
-                  very diverse weather patterns across the region.
-                </p>
-                <a href="/the_local_environment/natural_environment" class="inline-block mt-2.5 font-proxima text-[13px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900">The natural environment →</a>
+            <!-- CARD 1 · demographics_population_centers
+                 EMPTY STATE, for a county whose field is null:
+                 <p class="px-[12px] font-proxima text-[14px] italic text-mny-400">
+                   This county has not yet described its population centers.
+                 </p> -->
+            <div class="col-span-6 md:col-span-4">
+              <div class="pt-[140px] h-full">
+                <div class="rounded-[12px] p-[12px] mny-shadow-sm bg-mny-50 h-full flex flex-col">
+                  <img class="mx-[-12px] mt-[-140px] h-[240px] w-[calc(100%+24px)] block object-contain" src="../../assets/mny/illustrations/mny-people.webp" alt="People and communities">
+                  <h3 class="px-[12px] pt-[8px] font-display font-[500] text-[16px] text-mny-900 uppercase tracking-[0.02em]">Demography</h3>
+                  <hr class="my-2 mx-[12px] border-mny-200">
+                  <p class="px-[12px] font-proxima text-[14px] text-mny-700 leading-[1.45]">
+                    Most of the population is spread evenly throughout the County. The County’s
+                    population swells during the summer months due to a number of Orthodox
+                    Jewish summer camps and retreats. The Upper Delaware River National Park
+                    attracts many weekend visitors and there are also many individuals from
+                    New York City that have second homes in the County. From Memorial Day to
+                    Labor Day, the population increases from approximately 76k to 225k. There
+                    is a high senior citizen population in the County, to include four senior
+                    living homes.
+                  </p>
+                  <div class="px-[12px] pt-4 pb-1 mt-auto">
+                    <a href="/the_local_environment/people_and_communities" class="inline-block px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">People and Communities</a>
+                  </div>
+                </div>
               </div>
-
-              <!-- EMPTY STATE for a county whose field is null:
-                   <p class="font-proxima text-[16px] italic text-mny-400 mt-2">
-                     This county has not yet described its population centers.
-                   </p> -->
-              <div class="pt-6 mt-6 border-t border-mny-50">
-                <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">Demography</h3>
-                <p class="font-proxima text-[16px] text-mny-700 leading-[1.45] mt-2 max-w-[640px]">
-                  Most of the population is spread evenly throughout the County. The
-                  County’s population swells during the summer months due to a number of
-                  Orthodox Jewish summer camps and retreats. The Upper Delaware River
-                  National Park attracts many weekend visitors and there are also many
-                  individuals from New York City that have second homes in the County.
-                  From Memorial Day to Labor Day, the population increases from
-                  approximately 76k to 225k. There is a high senior citizen population in
-                  the County, to include four senior living homes.
-                </p>
-                <a href="/the_local_environment/people_and_communities" class="inline-block mt-2.5 font-proxima text-[13px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900">People and communities →</a>
-              </div>
-
-              <div class="pt-6 mt-6 border-t border-mny-50">
-                <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">Major industries</h3>
-                <p class="font-proxima text-[16px] text-mny-700 leading-[1.45] mt-2 max-w-[640px]">
-                  The largest employers within the County are within the healthcare,
-                  agricultural, prison and tourism industries. The County has notable
-                  infrastructure to include: NY-17, Sullivan County International Airport,
-                  Sullivan County Community College, the Monticello Speedway, two state
-                  prisons, a natural gas pipeline, rail lines, dams, power lines and three
-                  separate utility providers. The Sullivan County reservoir system also is
-                  one of the major suppliers of water to New York City.
-                </p>
-                <a href="/the_local_environment/built_environment" class="inline-block mt-2.5 font-proxima text-[13px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900">The built environment →</a>
-              </div>
-
             </div>
 
-            <!-- STICKY RAIL — the facts pulled out of the prose, plus the
-                 climate outlook. `climate_assessment_narrative` is a lexical
-                 column on the same row and is regional (Catskills), so it is
-                 templateable and belongs beside the profile rather than in it. -->
-            <div class="col-span-12 lg:col-span-5 pt-8 lg:pt-0">
-              <div class="lg:sticky lg:top-[104px] space-y-4">
-
-                <div class="rounded-[12px] border border-mny-100 bg-mny-50 p-4">
-                  <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2.5 border-b border-mny-200">County facts</h3>
-                  <dl class="mt-3 space-y-2.5">
-                    <div class="flex items-start justify-between gap-3">
-                      <dt class="font-proxima text-[14px] text-mny-700 shrink-0 pt-px">Watersheds</dt>
-                      <dd class="font-proxima text-[14px] text-mny-900 font-[600] text-right leading-[1.4] max-w-[210px]">Lower Hudson River &amp; Delaware River Watershed</dd>
-                    </div>
-                    <div class="flex items-start justify-between gap-3">
-                      <dt class="font-proxima text-[14px] text-mny-700 shrink-0 pt-px">Climate region</dt>
-                      <dd class="font-proxima text-[14px] text-mny-900 font-[600] text-right">Catskills</dd>
-                    </div>
-                    <div class="flex items-start justify-between gap-3">
-                      <dt class="font-proxima text-[14px] text-mny-700 shrink-0 pt-px">Risk assessment period</dt>
-                      <dd class="font-proxima text-[14px] text-mny-900 font-[600] text-right tabular-nums">Dec 2024 – Mar 2026</dd>
-                    </div>
-                    <div class="flex items-start justify-between gap-3">
-                      <dt class="font-proxima text-[14px] text-mny-700 shrink-0 pt-px">Disaster declaration threshold</dt>
-                      <dd class="font-proxima text-[14px] text-mny-900 font-[600] text-right tabular-nums">$349,091</dd>
-                    </div>
-                  </dl>
+            <!-- CARD 2 · major_industries_economic_drivers_and_notable_infrastructure -->
+            <div class="col-span-6 md:col-span-4">
+              <div class="pt-[140px] h-full">
+                <div class="rounded-[12px] p-[12px] mny-shadow-sm bg-mny-50 h-full flex flex-col">
+                  <img class="mx-[-12px] mt-[-140px] h-[240px] w-[calc(100%+24px)] block object-contain" src="../../assets/mny/illustrations/mny-built-environment.webp" alt="Built environment">
+                  <h3 class="px-[12px] pt-[8px] font-display font-[500] text-[16px] text-mny-900 uppercase tracking-[0.02em]">Major industries</h3>
+                  <hr class="my-2 mx-[12px] border-mny-200">
+                  <p class="px-[12px] font-proxima text-[14px] text-mny-700 leading-[1.45]">
+                    The largest employers within the County are within the healthcare,
+                    agricultural, prison and tourism industries. The County has notable
+                    infrastructure to include: NY-17, Sullivan County International Airport,
+                    Sullivan County Community College, the Monticello Speedway, two state
+                    prisons, a natural gas pipeline, rail lines, dams, power lines and three
+                    separate utility providers. The Sullivan County reservoir system also is
+                    one of the major suppliers of water to New York City.
+                  </p>
+                  <div class="px-[12px] pt-4 pb-1 mt-auto">
+                    <a href="/the_local_environment/built_environment" class="inline-block px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Built Environment</a>
+                  </div>
                 </div>
+              </div>
+            </div>
 
-                <div class="rounded-[12px] border border-mny-100 border-l-4 border-l-mny-400 bg-white p-4">
-                  <h3 class="font-display text-[13px] font-[500] text-mny-900 uppercase tracking-wider">Climate outlook · Catskills</h3>
-                  <p class="font-proxima text-[13px] text-mny-700 leading-[1.5] mt-2">
+            <!-- CARD 3 · climate_assessment_narrative + climate_assessment_region -->
+            <div class="col-span-6 md:col-span-4">
+              <div class="pt-[140px] h-full">
+                <div class="rounded-[12px] p-[12px] mny-shadow-sm bg-mny-50 h-full flex flex-col">
+                  <img class="mx-[-12px] mt-[-140px] h-[240px] w-[calc(100%+24px)] block object-contain" src="../../assets/mny/illustrations/mny-climate-change.webp" alt="Climate change">
+                  <h3 class="px-[12px] pt-[8px] font-display font-[500] text-[16px] text-mny-900 uppercase tracking-[0.02em]">Climate outlook</h3>
+                  <hr class="my-2 mx-[12px] border-mny-200">
+                  <p class="px-[12px] font-proxima text-[14px] text-mny-700 leading-[1.45]">
                     Average temperatures are projected to increase in all seasons across all
                     regions of New York State. Averaged over the entire year, temperatures in
                     the Catskills Region are projected to increase between 4.1&deg;F and
                     6.1&deg;F by the 2050s and between 5.7&deg;F and 10&deg;F by the 2080s
                     compared with the 1981–2010 average. The number of cold days in the region
-                    is expected to decrease. Mohonk, the weather station in this region with
-                    the best long-term weather records for this climate assessment, has
-                    historically experienced an average of 124 days below freezing. By the
-                    2050s Mohonk is projected to have only 80 to 101 days below freezing, and
-                    by the 2080s only 51 to 87.
+                    is expected to decrease — Mohonk, the region's long-record weather station,
+                    has averaged 124 days below freezing and is projected to see only 80 to 101
+                    by the 2050s.
                   </p>
-                  <a href="/the_risk/climate_change" class="inline-block mt-2.5 font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900">Climate change →</a>
+                  <div class="px-[12px] pt-4 pb-1 mt-auto">
+                    <a href="/the_risk/climate_change" class="inline-block px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Climate Change</a>
+                  </div>
                 </div>
-
               </div>
             </div>
 
@@ -394,20 +411,18 @@
                        · risk_level  (the CASE column from the live config, verbatim)
                        · fusion_total_damage
                orderBy fusion_total_damage DESC · pageSize 12 (live: 4)
-               The county totals row reuses the four aggregate columns already
-               computed by live section 2413419 on the same source — not a new query.
+               The county totals reuse the four aggregate columns already computed
+               by live section 2413419 on the same source — not a new query.
 
              THE ONE ANALYTICAL MOVE ON THIS PAGE: hurricane is 91% of Sullivan's
              recorded loss. On a shared scale the other ten hazards are stubs, so
-             the band would say nothing except "hurricane". Split out, the leader
+             the band could only ever say "hurricane". Split out, the leader
              becomes the page's focus object and the remaining ten get a scale
              they can use. The scale change is stated on the page, not hidden.
-
-             This generalises: the rule is "rank 1 out front, ranks 2-n scaled to
-             rank 2". It holds for a county whose leader is 30% as well as one
-             whose leader is 91% — no county-specific authoring.
+             The rule generalises without per-county authoring: rank 1 out front,
+             ranks 2-n scaled to rank 2.
              ========================================================== -->
-        <div data-dms="section" data-name="hazard-risk" class="col-span-12 pt-8 mt-8 border-t border-mny-100">
+        <div data-dms="section" data-name="hazard-risk" class="col-span-12 pt-9 mt-9 border-t border-mny-100">
           <div class="flex flex-wrap items-baseline justify-between gap-3 mb-5">
             <div>
               <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1]">What the county faces</h2>
@@ -453,6 +468,7 @@
                     <p class="font-proxima text-[16px] font-[600] text-mny-900 tabular-nums mt-1">$398M</p>
                   </div>
                 </div>
+                <span class="inline-block mt-4 font-proxima text-[13px] font-[700] uppercase tracking-wider text-mny-700 group-hover:text-mny-900">Hurricane profile →</span>
               </a>
             </div>
 
@@ -529,7 +545,6 @@
                 </a>
               </div>
 
-              <!-- risk legend -->
               <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1 mt-4 pt-3 border-t border-mny-50">
                 <span class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">Risk level</span>
                 <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2 h-2 rounded-sm bg-mny-red"></span>Very high</span>
@@ -537,6 +552,13 @@
                 <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2 h-2 rounded-sm bg-mny-y700"></span>Moderate</span>
                 <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2 h-2 rounded-sm bg-mny-400"></span>Low</span>
                 <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2 h-2 rounded-sm bg-mny-grn"></span>Very low</span>
+              </div>
+
+              <div class="flex flex-wrap gap-2 mt-4">
+                <a href="/the_risk/disasters" class="px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Declared Disasters</a>
+                <a href="/the_risk/non_natural_hazards" class="px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Non-Natural Hazards</a>
+                <a href="/the_local_environment/nfip_floodplain_management" class="px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">NFIP &amp; Floodplain</a>
+                <a href="/the_local_environment/high_hazard_dams" class="px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">High Hazard Dams</a>
               </div>
             </div>
 
@@ -561,19 +583,20 @@
              cannot judge. Segmented, it says the thing that matters — most of
              this plan is still proposed. Same figures, one of them legible.
              ========================================================== -->
-        <div data-dms="section" data-name="plan-response" class="col-span-12 pt-8 mt-8 border-t border-mny-100">
+        <div data-dms="section" data-name="plan-response" class="col-span-12 pt-9 mt-9 border-t border-mny-100">
           <div class="flex flex-wrap items-baseline justify-between gap-3 mb-5">
             <div>
               <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1]">What the county is doing</h2>
               <p class="font-proxima text-[12px] text-mny-400 leading-[140%] mt-1">The mitigation strategy, and who adopted it</p>
             </div>
+            <a href="/the_plan/strategies" class="font-proxima text-[13px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900">The strategy →</a>
           </div>
 
           <div class="grid grid-cols-12 gap-5">
 
             <!-- ACTIONS + status meter -->
             <div class="col-span-12 lg:col-span-7">
-              <a href="/track_progress/actions_dashboard" class="group block h-full rounded-[12px] border border-mny-y500/40 border-l-4 border-l-mny-y700 bg-mny-y50 p-5">
+              <div class="h-full rounded-[12px] border border-mny-y500/40 border-l-4 border-l-mny-y700 bg-mny-y50 p-5 flex flex-col">
                 <div class="flex items-end justify-between gap-4">
                   <div class="min-w-0">
                     <p class="font-proxima text-[11px] text-mny-700 font-[700] uppercase leading-[1] tracking-wide">Mitigation actions</p>
@@ -597,13 +620,19 @@
                   <span class="flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[500]"><span class="w-2 h-2 rounded-sm bg-mny-grn"></span>Completed <span class="font-[700] text-mny-900 tabular-nums">41</span></span>
                   <span class="flex items-center gap-1.5 font-proxima text-[12px] text-mny-400 font-[500]"><span class="w-2 h-2 rounded-sm border border-dashed border-mny-y700 bg-white"></span>Not reported <span class="font-[700] tabular-nums">20</span></span>
                 </div>
-                <span class="inline-block mt-4 font-proxima text-[13px] font-[700] uppercase tracking-wider text-mny-700 group-hover:text-mny-900">Actions dashboard →</span>
-              </a>
+
+                <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-mny-y500/40">
+                  <a href="/track_progress/actions_dashboard" class="px-3 py-[5px] bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Actions Dashboard</a>
+                  <a href="/track_progress/actions_database" class="px-3 py-[5px] border border-mny-y500 bg-white hover:bg-mny-y50 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Actions Database</a>
+                  <a href="/track_progress/funding_sources" class="px-3 py-[5px] border border-mny-y500 bg-white hover:bg-mny-y50 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Funding Sources</a>
+                  <a href="/track_progress/annual_maintenance" class="px-3 py-[5px] border border-mny-y500 bg-white hover:bg-mny-y50 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Annual Maintenance</a>
+                </div>
+              </div>
             </div>
 
             <!-- JURISDICTIONS -->
             <div class="col-span-12 lg:col-span-5">
-              <a href="/the_plan/jurisdictional_annexes" class="group block h-full rounded-[12px] border border-mny-100 border-l-4 border-l-mny-400 bg-mny-50 hover:bg-mny-100/60 transition-colors p-5">
+              <div class="h-full rounded-[12px] border border-mny-100 border-l-4 border-l-mny-400 bg-mny-50 p-5 flex flex-col">
                 <div class="flex items-end justify-between gap-4">
                   <div class="min-w-0">
                     <p class="font-proxima text-[11px] text-mny-700 font-[700] uppercase leading-[1] tracking-wide">Participating jurisdictions</p>
@@ -628,8 +657,12 @@
                     <dd class="font-proxima text-[14px] text-mny-900 font-[600] tabular-nums">1</dd>
                   </div>
                 </dl>
-                <span class="inline-block mt-4 font-proxima text-[13px] font-[700] uppercase tracking-wider text-mny-700 group-hover:text-mny-900">Jurisdictional annexes →</span>
-              </a>
+
+                <div class="flex flex-wrap gap-2 mt-auto pt-4">
+                  <a href="/the_plan/jurisdictional_annexes" class="px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Jurisdictional Annexes</a>
+                  <a href="/the_plan/capabilities_assessment" class="px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Capabilities</a>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -639,21 +672,21 @@
              SECTION 6 · Card — EXPLORE THE PLAN
              (replaces live 2175341–2175346 — SIX lexical sections)
              ==========================================================
-             The live page authors this navigation as six independent
-             rich-text blocks: two illustrated 1/2 blurbs and four 1/4 link
-             menus. Across the five county patterns that is 30 hand-maintained
-             rich-text bodies for one menu — none restyleable from the theme,
-             none checkable. Here it is ONE all-static Card, four columns
-             (card-layout.md "authored list panel" recipe, origin:'static').
+             The live page authors this navigation as six independent rich-text
+             blocks: two illustrated 1/2 blurbs and four 1/4 link menus. Across
+             the five county patterns that is 30 hand-maintained rich-text
+             bodies for one menu — none restyleable from the theme, none
+             checkable. Here it is ONE all-static Card, four cards across
+             (card-layout.md "authored list panel" recipe, origin:'static'),
+             with the breakout-image treatment from `pages/home.html`.
 
-             REV 2 — the boxes are gone and the type is 13px. This is an index,
-             not content: it is the last thing on the page and should be the
-             quietest thing on it. Four tinted cards at 14px competed with the
-             profile and risk bands above them.
-
-             The two illustrated blurbs are dropped — brochure copy restating
-             what the Actions and Annexes destinations say, and the bands above
-             now say it with numbers. (Open question 5.)
+             REV 3 — this band is the answer to "the page needs to do more to
+             take the user to other places in the plan like it did before".
+             Rev 2's 13px text index was too quiet: it had traded away the one
+             thing the live page did well. These four cards carry EVERY page of
+             the plan — 21 links against the live menu's 14 — and the
+             illustrations do the work of making a navigation band worth
+             looking at.
 
              LINK DEFECTS FIXED — all four found while scoping:
                · `https://https://redesign.devmny.org/plan_to_act/evaluate_cap`
@@ -662,45 +695,89 @@
                  2026-09-01 harvest; replaced with the four that exist
                · stray duplicate `/the_local_environment/people_and_communities`
                  and `/the_plan/strategies` links on sibling rows — removed
-             ADDED: `/the_plan/capabilities_assessment`, a real page the live
-             menu omits.
+             ADDED, all real pages the live menu omits: each section's own index
+             page, `/the_plan/capabilities_assessment`,
+             `/track_progress/annual_maintenance`,
+             `/track_progress/fema_plan_review_tool`.
              ========================================================== -->
-        <div data-dms="section" data-name="explore" class="col-span-12 pt-8 mt-8 border-t border-mny-100">
-          <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1] mb-5">Explore the plan</h2>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
-
+        <div data-dms="section" data-name="explore" class="col-span-12 pt-9 mt-9 border-t border-mny-100">
+          <div class="flex flex-wrap items-baseline justify-between gap-3">
             <div>
-              <h3 class="font-display text-[11px] font-[500] uppercase tracking-wider text-mny-400 pb-2 mb-2 border-b border-mny-100">The Local Environment</h3>
-              <a href="/the_local_environment/built_environment" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Built Environment</a>
-              <a href="/the_local_environment/people_and_communities" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">People and Communities</a>
-              <a href="/the_local_environment/natural_environment" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Natural Environment</a>
-              <a href="/the_local_environment/nfip_floodplain_management" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">NFIP &amp; Floodplain Management</a>
-              <a href="/the_local_environment/high_hazard_dams" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">High Hazard Dams</a>
+              <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase leading-[1]">Explore the plan</h2>
+              <p class="font-proxima text-[12px] text-mny-400 leading-[140%] mt-1">Every page of Sullivan County's plan</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-6 md:grid-cols-12 gap-4 mt-1">
+
+            <div class="col-span-6 md:col-span-3">
+              <div class="pt-[110px] h-full">
+                <div class="rounded-[12px] p-[12px] mny-shadow-sm bg-mny-50 h-full flex flex-col">
+                  <img class="mx-[-12px] mt-[-110px] w-[calc(100%+24px)] block" src="../../assets/mny/illustrations/mny-natural-evironment.webp" alt="The local environment">
+                  <h3 class="px-[12px] pt-[8px] font-display font-[500] text-[16px] text-mny-900 uppercase tracking-[0.02em] leading-tight">The Local Environment</h3>
+                  <hr class="my-2 mx-[12px] border-mny-200">
+                  <a href="/the_local_environment/built_environment" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Built Environment</a>
+                  <a href="/the_local_environment/people_and_communities" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">People and Communities</a>
+                  <a href="/the_local_environment/natural_environment" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Natural Environment</a>
+                  <a href="/the_local_environment/nfip_floodplain_management" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">NFIP &amp; Floodplain Management</a>
+                  <a href="/the_local_environment/high_hazard_dams" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">High Hazard Dams</a>
+                  <div class="px-[12px] pt-4 pb-1 mt-auto">
+                    <a href="/the_local_environment" class="inline-block px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Learn More</a>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <h3 class="font-display text-[11px] font-[500] uppercase tracking-wider text-mny-400 pb-2 mb-2 border-b border-mny-100">The Risk</h3>
-              <a href="/the_risk/natural_hazards" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Natural Hazards</a>
-              <a href="/the_risk/non_natural_hazards" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Non-Natural Hazards</a>
-              <a href="/the_risk/climate_change" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Climate Change</a>
-              <a href="/the_risk/disasters" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Disasters</a>
+            <div class="col-span-6 md:col-span-3">
+              <div class="pt-[110px] h-full">
+                <div class="rounded-[12px] p-[12px] mny-shadow-sm bg-mny-50 h-full flex flex-col">
+                  <img class="mx-[-12px] mt-[-110px] w-[calc(100%+24px)] block" src="../../assets/mny/illustrations/mny-whats-at-risk.webp" alt="The risk">
+                  <h3 class="px-[12px] pt-[8px] font-display font-[500] text-[16px] text-mny-900 uppercase tracking-[0.02em] leading-tight">The Risk</h3>
+                  <hr class="my-2 mx-[12px] border-mny-200">
+                  <a href="/the_risk/natural_hazards" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Natural Hazards <span class="text-mny-400 font-proxima text-[12px]">· 16 profiles</span></a>
+                  <a href="/the_risk/non_natural_hazards" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Non-Natural Hazards</a>
+                  <a href="/the_risk/climate_change" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Climate Change</a>
+                  <a href="/the_risk/disasters" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Declared Disasters</a>
+                  <div class="px-[12px] pt-4 pb-1 mt-auto">
+                    <a href="/the_risk" class="inline-block px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Learn More</a>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <h3 class="font-display text-[11px] font-[500] uppercase tracking-wider text-mny-400 pb-2 mb-2 border-b border-mny-100">The Plan</h3>
-              <a href="/the_plan/about_the_process" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">About the Process</a>
-              <a href="/the_plan/capabilities_assessment" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Capabilities Assessment</a>
-              <a href="/the_plan/strategies" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Strategies</a>
-              <a href="/the_plan/jurisdictional_annexes" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Jurisdictional Annexes</a>
+            <div class="col-span-6 md:col-span-3">
+              <div class="pt-[110px] h-full">
+                <div class="rounded-[12px] p-[12px] mny-shadow-sm bg-mny-50 h-full flex flex-col">
+                  <img class="mx-[-12px] mt-[-110px] w-[calc(100%+24px)] block" src="../../assets/mny/illustrations/mny-planning.webp" alt="The plan">
+                  <h3 class="px-[12px] pt-[8px] font-display font-[500] text-[16px] text-mny-900 uppercase tracking-[0.02em] leading-tight">The Plan</h3>
+                  <hr class="my-2 mx-[12px] border-mny-200">
+                  <a href="/the_plan/about_the_process" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">About the Process</a>
+                  <a href="/the_plan/capabilities_assessment" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Capabilities Assessment</a>
+                  <a href="/the_plan/strategies" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Strategies</a>
+                  <a href="/the_plan/jurisdictional_annexes" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Jurisdictional Annexes <span class="text-mny-400 font-proxima text-[12px]">· 23</span></a>
+                  <div class="px-[12px] pt-4 pb-1 mt-auto">
+                    <a href="/the_plan" class="inline-block px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Learn More</a>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <h3 class="font-display text-[11px] font-[500] uppercase tracking-wider text-mny-400 pb-2 mb-2 border-b border-mny-100">Track Progress</h3>
-              <a href="/track_progress/actions_dashboard" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Actions Dashboard</a>
-              <a href="/track_progress/actions_database" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Actions Database</a>
-              <a href="/track_progress/annual_maintenance" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Annual Maintenance</a>
-              <a href="/track_progress/funding_sources" class="block font-proxima text-[13px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-[3px]">Funding Sources</a>
+            <div class="col-span-6 md:col-span-3">
+              <div class="pt-[110px] h-full">
+                <div class="rounded-[12px] p-[12px] mny-shadow-sm bg-mny-50 h-full flex flex-col">
+                  <img class="mx-[-12px] mt-[-110px] w-[calc(100%+24px)] block" src="../../assets/mny/illustrations/mny-take-action.webp" alt="Track progress">
+                  <h3 class="px-[12px] pt-[8px] font-display font-[500] text-[16px] text-mny-900 uppercase tracking-[0.02em] leading-tight">Track Progress</h3>
+                  <hr class="my-2 mx-[12px] border-mny-200">
+                  <a href="/track_progress/actions_dashboard" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Actions Dashboard</a>
+                  <a href="/track_progress/actions_database" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Actions Database <span class="text-mny-400 font-proxima text-[12px]">· 475</span></a>
+                  <a href="/track_progress/annual_maintenance" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Annual Maintenance</a>
+                  <a href="/track_progress/funding_sources" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">Funding Sources</a>
+                  <a href="/track_progress/fema_plan_review_tool" class="block px-[12px] font-proxima text-[14px] text-mny-700 font-[500] hover:text-mny-900 hover:underline py-0.5">FEMA Plan Review Tool</a>
+                  <div class="px-[12px] pt-4 pb-1 mt-auto">
+                    <a href="/track_progress" class="inline-block px-3 py-[5px] border border-mny-200 bg-mny-200 hover:bg-mny-100 text-mny-700 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Learn More</a>
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>

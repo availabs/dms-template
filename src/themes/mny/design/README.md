@@ -67,15 +67,16 @@ mny/design/
 │   ├── lhmp/                         ← LHMP DESIGN — the public county plan surfaces
 │   │   └── home.html                   PLAN HOME — redesign of the county template home
 │   │                                   (pattern 1300890, page 1300803, driven by the
-│   │                                   pattern-level `geoid`). Body drawn in the
-│   │                                   county-actions design language: county profile
-│   │                                   (geography · demography · major industries) as a
-│   │                                   reading column + sticky facts rail, the dominant
-│   │                                   hazard pulled out as the page's focus object with
-│   │                                   the other ten as a bar list, actions and
-│   │                                   jurisdictions as meters, and the six lexical nav
-│   │                                   blocks collapsed into one quiet Explore index.
-│   │                                   Every figure is real Sullivan County (geoid 36105).
+│   │                                   pattern-level `geoid`). Geography prose in the
+│   │                                   header beside the county photo; three breakout-
+│   │                                   illustration cards (demography · major industries ·
+│   │                                   climate outlook); the dominant hazard pulled out as
+│   │                                   the page's focus object with the other ten as a bar
+│   │                                   list; actions and jurisdictions as meters; and the
+│   │                                   six lexical nav blocks collapsed into four Explore
+│   │                                   cards carrying every page of the plan (56 links,
+│   │                                   33 pages). Real Sullivan County data throughout
+│   │                                   (geoid 36105).
 │   ├── lhmp-admin/                   ← LHMP ADMIN — plan-status surfaces (2026-08)
 │   │   ├── plan-status-admin.html      plan status · in the admin panel (Direction A)
 │   │   └── plan-status-plan.html       plan status · in the plan (Direction B)
@@ -300,23 +301,34 @@ bar list (`dashboard.html`). Only the photo header is its own thing.
 | No plan status anywhere | Status · approved · expires, in the header card, off three columns already on the bound row |
 | No sense of scale | 475 actions as a **segmented meter** (391 proposed · 23 in progress · 41 complete · 20 not reported) and 23 jurisdictions broken to towns/villages/county — the numbers given a shape rather than a tile |
 | 11 hazards paged **4 at a time**, all tiles the same size | The leader — **hurricane, 91% of all recorded loss** — pulled out as the page's focus object at 36px; the other ten as a bar list scaled to the largest of *them*, so they are legible instead of stubs |
-| **Six** lexical blocks for one nav menu (×5 patterns = 30 hand-maintained rich-text bodies) | **One** all-static Card, four columns at 13px — one configuration, restyleable from the theme, and the link set becomes data an audit can read |
+| **Six** lexical blocks for one nav menu (×5 patterns = 30 hand-maintained rich-text bodies) | **One** all-static Card, four **breakout-illustration cards** — one configuration, restyleable from the theme, and the link set becomes data an audit can read |
 | Base64 PNGs inlined in lexical | Brand assets from `assets/mny/` |
-| Four broken/stray links | Fixed, plus `capabilities_assessment` added — a real page the live menu omits |
+| **14 links, 3 of them broken, reaching 13 pages** | **56 links reaching 33 distinct pages — every page of the plan**, all 33 slugs checked against the 2026-09-01 harvest |
+| Nothing in the header but the county name | The county's own description of itself (`geography_topography`) plus plan status · approved · expires |
 
 The page's focus ladder is its type ladder: **36px** the dominant hazard · **30px** `$363,792,448`
-and `475` · **20px** the lede and Geography · **16px** band titles and the other two profile blocks ·
-**14px** supporting prose and rail values · **13px** the Explore index, deliberately the quietest
-thing on the page.
+and `475` · **20px** the page lede · **16px** band and card titles · **14px** prose and card lists ·
+**12px** labels and pills.
+
+**The breakout-illustration card** is `pages/home.html`'s device, used twice — three cards for the
+county profile, four for the Explore navigation: `pt-[Npx]` on the wrapper reserves the overhang and
+the image carries `mt-[-Npx] mx-[-12px] w-[calc(100%+24px)]`, so the isometric render bleeds to both
+card edges and rises above the top one. **Two calibration facts** for whoever ports this to a theme
+value: `w-[calc(100%+24px)]` is tuned to a ~290px card (the 4-across width) and swamps the prose on a
+390px one, which is why the profile cards pin `h-[240px]`; and `w-auto mx-auto` centres the *file*
+rather than the *drawing* — these renders carry uneven transparent padding, so the bleed width plus
+`object-contain` is what actually centres them.
 
 **The one platform enrichment the page asks for** is a `risk_pill` column type (value → colour, five
 documented risk tokens), which the 16 hazard pages would reuse. Everything else is Card configuration.
 
-**Two live bugs were found building it**, both logged in the task file: `mnyHeaderDataDriven.jsx:113`
+**Three platform findings were logged building it** (see the task file): `mnyHeaderDataDriven.jsx:113`
 sets `lg:w-[1440px]`, which scrolls every page with a full-overlay header sideways between 1024 and
-1440; and `border-l-4 border-<c> border-y border-r border-<c2>` silently loses its coloured edge
-(both utilities set all four sides, the later CSS rule wins) — **several `pages/county-actions/`
-bands use that shape** and are probably rendering flat boxes where an accent edge was intended.
+1440; `border-l-4 border-<c> border-y border-r border-<c2>` silently loses its coloured edge (both
+utilities set all four sides, the later CSS rule wins) — **several `pages/county-actions/` bands use
+that shape** and are probably rendering flat boxes where an accent edge was intended; and
+`mnyHeader`'s `note` is a single string, so the header can hold only one prose slot, which is what
+`geography_topography` in the header needs.
 Full spec, the datasource review and the open questions:
 [`planning/mitigateny/tasks/current/mny-county-template-home-redesign.md`](../../../../planning/mitigateny/tasks/current/mny-county-template-home-redesign.md).
 
