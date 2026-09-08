@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Maps Gallery · Freight Atlas · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="freight_atlas">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Freight Atlas · how-to</div>
+          <h1 class="doc-title">Open one of the plan's maps.</h1>
+          <p class="doc-lede">The Maps Gallery is the 2024 State Freight Plan's map figures rebuilt as presets of the Freight Atlas map. 22 of the plan's 33 maps are tiles today, in seven categories. How a tile opens the map, why an eighth category is hidden, why 11 figures are not there yet, and how to go from a plan map to your own. No account is needed.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · Freight Atlas (www/freightatlas)</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Maps Gallery</span> in the Freight Atlas side navigation. The header says what the page is: "Every map from the 2024 State Freight Plan, rebuilt as a live Freight Atlas view — each tile opens the single map engine preloaded with that figure's layers." Below it, a status line counts the figures that are live and the ones still to come. Have the plan to hand if you want to compare a tile with its printed figure; <a href="freight_atlas--the_plan.html#the-report-library">The report library</a> says where the documents are.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Choose a category. Seven titles run down the page, each with its map count, for example <span class="ui">Maritime, Air &amp; Pipelines</span> · <span class="ui">3 maps</span>.<span class="result">Under each title, one tile per figure.</span></li>
+            <li>Read a tile. It carries the plan's figure number and page, the figure's title, a sentence of the plan's own context, and a footer with the number of layers and <span class="ui">open in Freight Atlas →</span>.<span class="result">The figure number and page let you find the same map in the plan.</span></li>
+            <li>Select <span class="ui">open in Freight Atlas →</span>.<span class="result">The map opens with that figure's layers on, REDC regions behind them where the plan drew a regional background. The <span class="ui">Map layers</span> panel counts them and the <span class="ui">Legend</span> shows a block per layer. The address ends in <code>?layers=</code> and the ids of those layers.</span></li>
+            <li>Read the map with <a href="freight_atlas--map.html#steps">Use the map</a>: hover for a popup, use the legend's info button for the dataset, change a layer's <span class="ui">Show</span> view where it has one.</li>
+            <li>Make it yours. Tick more layers under <span class="ui">Add layers</span>, remove any you do not want, then copy the address.<span class="result">The gallery's last card says the same: "Don't see your view? Build it." A copied address is your own preset.</span></li>
+            <li>Return with <span class="ui">Maps Gallery</span> in the side navigation.<span class="result">The map does not keep your layers when you leave, so keep the address if you want them back.</span></li>
+          </ol>
+
+          <h2 id="the-categories-and-their-maps">The categories and their maps</h2>
+          <p>The seven categories on the page and the 22 tiles under them, with each tile's plan figure. Tile names are as published.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Category</th><th>Tiles (plan figure)</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Freight Economy &amp; Equity</span> · 3 maps</td><td>Freight Industry Activity Level (2021) (4) · Freight-Reliant Industry Hotspots (2021) (5) · Disadvantaged Populations along the FCHN (60)</td></tr>
+              <tr><td><span class="ui">The Multimodal System</span> · 5 maps</td><td>New York's Multimodal Freight System (13) · Strategic Road &amp; Rail Network (19) · National Highway Freight &amp; Core Highway Networks (26) · New York State Thruway (28) · Map of New York State MPOs (74)</td></tr>
+              <tr><td><span class="ui">Trade &amp; Commodity Flows</span> · 3 maps</td><td>Border Crossings, Inbound Volumes (16) · Goods Volume Moved by Truck (2021) (22) · Goods Value Moved by Truck (2021) (23)</td></tr>
+              <tr><td><span class="ui">Rail</span> · 2 maps</td><td>Rail Freight Network by Operator (34) · Freight Core Rail Network (39)</td></tr>
+              <tr><td><span class="ui">Maritime, Air &amp; Pipelines</span> · 3 maps</td><td>New York's Maritime System (42) · Air Cargo Facilities (47) · New York's Pipeline System (49)</td></tr>
+              <tr><td><span class="ui">Safety &amp; Truck Parking</span> · 4 maps</td><td>Truck Parking Facilities (32) · Truck Safety Hotspots (2018–2022) (51) · Undesignated Truck Parking — Statewide (53) · Undesignated Truck Parking — New York City (54)</td></tr>
+              <tr><td><span class="ui">Performance &amp; Investment</span> · 2 maps</td><td>Top 10 Truck Bottlenecks (57) · IRI Ratings on the FCHN (58)</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="why-a-category-can-be-hidden">Why a category can be hidden</h2>
+          <p>The gallery has eight categories in its dataset but shows seven. A category with no live figure is not rendered, and the counts beside each title count live figures only. The eighth, <span class="ui">2050 Outlook</span>, holds the plan's four forecast maps, none of which the map can draw yet. It appears by itself when its first figure goes live. Nothing on the site says "8 themes"; instructions that do are out of date.</p>
+
+          <h2 id="why-some-figures-are-not-there-yet">Why some figures are not there yet</h2>
+          <p>Eleven of the plan's 33 maps have no tile. They stay in the gallery's dataset as the work queue, and each is missing one of two things.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Plan figure</th><th>Map</th><th>What is missing</th><th>Kind</th></tr></thead>
+            <tbody>
+              <tr><td>24 · 25</td><td>Truck Through Movements by Volume · by Value (2021)</td><td>The TRANSEARCH flows are loaded as origin-destination records. Drawing them on roads needs them assigned to network links first.</td><td>Needs processing</td></tr>
+              <tr><td>35 · 36</td><td>Goods Volume · Value Moved by Rail (2021)</td><td>The same assignment, onto the rail network.</td><td>Needs processing</td></tr>
+              <tr><td>66 · 67 · 68 · 69</td><td>Change of Goods Volume and Value by Truck and by Rail, 2021 to 2050</td><td>The 2050 vintages are loaded; the change maps need the same assignment. These four are the hidden <span class="ui">2050 Outlook</span> category.</td><td>Needs processing</td></tr>
+              <tr><td>56</td><td>Highway-Rail Crossing Incidents (2018–2022)</td><td>The incident records are loaded but carry no coordinates. They need joining to the crossing locations.</td><td>Needs processing</td></tr>
+              <tr><td>30</td><td>Buffalo-Niagara Port of Entry trade flows</td><td>State-to-state flow values from the Bureau of Transportation Statistics TransBorder data, and a way to draw flow arrows.</td><td>Needs data</td></tr>
+              <tr><td>86</td><td>NHFP Project Locations</td><td>The funded projects in the plan's Appendix F are a list, not locations. They need geocoding.</td><td>Needs data</td></tr>
+            </tbody>
+          </table></div>
+          <p>Three tiles reproduce their figure only in part. <span class="ui">Freight-Reliant Industry Hotspots (2021)</span> draws a business-density heat map, not the plan's per-industry hotspots. <span class="ui">Border Crossings, Inbound Volumes</span> shows the crossings but not their volumes, which need Bureau of Transportation Statistics border data. <span class="ui">New York's Pipeline System</span> lacks the plan's crude-oil rail terminals, an Energy Information Administration layer not in the plan's data delivery.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>A tile's address carries layers only. <span class="ui">Undesignated Truck Parking — New York City</span> opens at the map's default position; zoom to the city yourself.</li>
+            <li>A tile's layer count counts the layers it turns on, background included.</li>
+            <li>The plan's figures were drawn from the plan's data at the plan's date. A tile draws the live layer, which can carry a later vintage than the printed figure. Check the layer's vintage in the <a href="freight_atlas--layers.html">Layer reference</a> before comparing numbers.</li>
+            <li>The gallery page has a draft and a published version; readers see the published one.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="i-only-see-7-themes-but-expected-8">I only see 7 themes but expected 8</h3>
+          <p>Seven is correct today. The eighth category has no live map and is hidden until it does. See <a href="#why-a-category-can-be-hidden">Why a category can be hidden</a>.</p>
+          <h3 id="a-tile-opened-with-a-road-network-i-did-not-ask-for">A tile opened with a road network I did not ask for</h3>
+          <p>Until 2026-08-24 the Freight Core Highway Network was on by default in the stored map, so every tile drew it under the figure's layers. Every layer now starts off and the address alone decides what draws. If a tile still shows it, reload and <a href="help.html">report it</a> with the address.</p>
+          <h3 id="the-map-does-not-match-the-printed-figure">The map does not match the printed figure</h3>
+          <p>Three tiles are partial by design, listed above. For any other tile, compare the legend labels with the figure's legend and the layer's vintage with the figure's data year. A different colour ramp is a styling choice; a missing class is worth reporting.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="freight_atlas--map.html">Use the map</a></li>
+            <li><a href="freight_atlas--layers.html">Layer reference</a></li>
+            <li><a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a></li>
+            <li><a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a></li>
+            <li><a href="freight_atlas--faq.html">Freight Atlas FAQ</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Live Maps Gallery page, published 2026-08-05: the header lede quoted above; the seven category titles and counts; the 22 tile names; the closing card "Don't see your view? Build it."; the link text <span class="ui">open in Freight Atlas →</span>.</li>
+            <li>The gallery dataset and its build record (2026-07-13): one row per plan figure, 33 rows; status per row; the REDC background convention; the 2050 Outlook category with no live figure; the three partial figures and their gaps; a shared address carries no centre or zoom.</li>
+            <li>2024 Freight Plan maps × data inventory × Freight Atlas crosstab (2026-07-10): the 33 maps with figure and page numbers; the reasons each unbuilt figure is blocked; the gap list G1 to G7.</li>
+            <li>Feedback record 2191404 (resolved 2026-07-15): "7 themes vs 8", categories with no live maps hidden. Records 2192575 and 2210866: the default-on network under gallery figures, fixed 2026-07-16 and 2026-08-24.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 5)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="freight_atlas--map.html">Use the map</a>
+          <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

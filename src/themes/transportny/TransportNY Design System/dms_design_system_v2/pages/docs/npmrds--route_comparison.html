@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Compare routes across periods · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Compare routes across periods.</h1>
+          <p class="doc-lede">Route Comparison puts many saved routes against many time periods in one table, one metric per cell, with one period as the base. It is a draft: the builder rail and the matrix render, but only the route step drives the table today. This page says what works now and what the design adds.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+            <span class="upcoming">describes a draft tool</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Route Comparison is not in the NPMRDS side navigation. The <span class="ui">Route comparison.</span> section of the NPMRDS home links to it, and its address is <code>/route_comparison</code>. It is a draft tool built in July and August 2026 to replace the earlier Batch Reports: the page exists and renders real data, but the period and metric steps of the builder are shells, and the page has not been released. Reading needs no sign-in. You need saved routes to compare; <a href="npmrds--routes--create.html">Create a route</a> if you have none.</p>
+          <p>The page has two parts. The <span class="ui">Build comparison</span> rail holds four blocks: <span class="ui">Scope</span>, then the numbered steps <span class="ui">Routes</span>, <span class="ui">Periods</span> and <span class="ui">Metrics</span>. The <span class="ui">Comparison matrix</span> beside it has one row per route and one column group per period.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open the page from the NPMRDS home.<span class="result">The header reads a purpose line and the data freshness; the rail and the matrix load with two default routes across the years 2019 to 2026.</span></li>
+            <li>Under <span class="ui">Scope</span>, set <span class="ui">Time of day</span> with <span class="ui">Start</span> and <span class="ui">End</span>, pick <span class="ui">Days</span>, and pick <span class="ui">Vehicle class</span>.<span class="result">The rail records the scope. In the draft the matrix does not yet read it.</span></li>
+            <li>Under <span class="ui">1 Routes</span>, type two or more characters into <span class="ui">Search routes or folders…</span> and select a route from the results.<span class="result">A chip appears, the address gains the route, and the matrix re-queries with that route as a new row. Select the chip's remove control, or <span class="ui">Clear all</span>, to take routes out.</span></li>
+            <li>Read <span class="ui">2 Periods</span>. In the draft it reads <span class="ui">No periods yet.</span> and names the three date modes the design specifies: <span class="ui">Fixed</span>, <span class="ui">Each route's own dates</span> and <span class="ui">Relative to Base</span>. The matrix's columns are calendar years until the builder is finished.</li>
+            <li>Under <span class="ui">3 Metrics</span>, tick <span class="ui">Speed</span>, <span class="ui">Travel time</span> or <span class="ui">Hours of delay</span>; each ticked metric offers a <span class="ui">Δ vs Base</span> switch, and <span class="ui">Hours of delay</span> reveals <span class="ui">AADT</span>, <span class="ui">Threshold</span> and <span class="ui">Speed lim</span> overrides.<span class="result">The choices are kept in the rail. In the draft the matrix shows two travel-time leaves per period regardless.</span></li>
+            <li>Read the matrix: one row per route, a column group per period, and within it the metric leaves.</li>
+            <li>Copy the address to share the comparison. The routes you chose travel with it; the scope does not yet.</li>
+          </ol>
+
+          <figure class="shot" data-capture="www/npmrds/route_comparison?routes=&lt;two route ids&gt; · reading mode · rail with two route chips · matrix with year column groups and TT all / TT freight leaves" data-alt="Route Comparison in its draft state: the Build comparison rail with Scope, two route chips under Routes, an empty Periods block and the Metrics checklist, beside a matrix of two route rows against year column groups">
+            <div class="ph">Route Comparison · draft · 2 routes · years as periods · travel-time leaves</div>
+            <figcaption>Figure 1 · the draft page as it renders. Capture date to be added when taken.</figcaption>
+          </figure>
+
+          <h2 id="reading-the-matrix">Reading the matrix</h2>
+          <p>Today each cell is a travel time for one route in one period, computed from the 5-minute observations of the route's segments: <span class="ui">TT all</span> for all vehicles and <span class="ui">TT freight</span> for trucks. Periods are calendar years. A blank cell is a route and period with no observations.</p>
+          <p>The design adds a base period and change columns. The first period is the <span class="ui">Base</span>; a metric with <span class="ui">Δ vs Base</span> on shows each other period's change against it, marked ▲ where the route improved, ▼ where it worsened and ◻ where there is no data. For speed, up is better; for travel time and hours of delay, down is better. Neither the base badge nor the change columns are in the draft matrix, so read the cells as values and compute a change yourself if you need one. The delay metric will use the report delay measure, whose threshold is the greater of 20 mph and 60 % of the posted limit; see <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>. Speed and travel time are the observed averages, not a percentile; <a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a> explains the difference.</p>
+
+          <h2 id="settings">Settings</h2>
+          <p>The rail's controls, and which of them reach the matrix in the draft.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Reset</span></td><td>Clears the rail</td><td>—</td><td>—</td></tr>
+              <tr><td><span class="ui">Time of day</span> · <span class="ui">Start</span> · <span class="ui">End</span></td><td>The hours every cell counts; not yet read by the matrix</td><td>Times</td><td>06:00 to 20:00</td></tr>
+              <tr><td><span class="ui">Days</span></td><td>The days every cell counts; not yet read by the matrix</td><td><span class="ui">Weekdays</span> · <span class="ui">All days</span> · <span class="ui">Weekends</span> · <span class="ui">No days</span> · <span class="ui">Custom</span></td><td><span class="ui">Weekdays</span></td></tr>
+              <tr><td><span class="ui">Vehicle class</span></td><td>Which stream; not yet read by the matrix</td><td><span class="ui">All vehicles</span> · <span class="ui">Passenger</span> · <span class="ui">Freight</span></td><td><span class="ui">All vehicles</span></td></tr>
+              <tr><td><span class="ui">Search routes or folders…</span></td><td>Adds a route row; drives the matrix and the address</td><td>Two or more characters; the first 50 matches by name</td><td>Two default routes</td></tr>
+              <tr><td><span class="ui">Add period</span></td><td>Adds a column group; not built</td><td>Design: <span class="ui">Fixed</span> · <span class="ui">Each route's own dates</span> · <span class="ui">Relative to Base</span></td><td>Calendar years</td></tr>
+              <tr><td><span class="ui">Metrics</span> · <span class="ui">Δ vs Base</span></td><td>The leaves per cell; kept in the rail, not yet read by the matrix</td><td><span class="ui">Speed</span> mph · <span class="ui">Travel time</span> min · <span class="ui">Hours of delay</span> k vh; <span class="ui">Planning-time index</span> disabled</td><td>Speed and travel time</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Only the route step publishes. Scope, periods and metrics are kept in the rail and do not change the query yet; the periods block is a shell.</li>
+            <li>The rail's footer says the whole comparison lives in the address. In the draft, the routes do; the scope, periods and metrics do not.</li>
+            <li>The address carries the routes and their segment codes. A route with many segments makes a long address; that is what keeps the query fast.</li>
+            <li>The matrix does not yet offer a download of its own or a saved comparison. Copy the cells, or build the same question as a report, where a Table card and <span class="ui">Route Compare</span> give one row per route; see <a href="npmrds--reports--graph_types.html">Graph types reference</a>.</li>
+            <li>Route Comparison is a successor to the earlier Batch Reports. Until it is released, the Batch Reports API remains the developer route to the same numbers; see <a href="developers--batch_reports_api.html">Batch Reports API</a>.</li>
+            <li>The picker searches saved routes by name. If a route is missing, check its name and tags in <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a>.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-picker-reads-bind-a-route-catalog">The picker reads "Bind a route catalog to enable the picker."</h3>
+          <p>The rail is not connected to the routes dataset on this page. That is a page-configuration state, not something you can fix as a reader; <a href="help.html">report it</a>.</p>
+          <h3 id="the-matrix-stays-on-loading">The matrix stays on loading</h3>
+          <p>Wait; a route with many segments over eight years is a large query. If it never settles, remove a route and add it again. Three loading defects were fixed in July 2026; if one returns, report the address.</p>
+          <h3 id="a-period-shows-no-value-for-one-route">A period shows no value for one route</h3>
+          <p>The route's segments have no observations in that year, or the route was built on a later map than the year has. <a href="measures_and_data--concepts--tmc_network_and_vintages.html#how-routes-bind-to-a-vintage">How routes bind to a vintage</a> explains.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--routes--create.html">Create a route</a></li>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a>, for a comparison you can publish today</li>
+            <li><a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a></li>
+            <li><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></li>
+            <li><a href="developers--batch_reports_api.html">Batch Reports API</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Route Comparison component code and README (RouteComparison.jsx, 2026-08-07): <span class="ui">Build comparison</span>, <span class="ui">Reset</span>, <span class="ui">Scope</span> with <span class="ui">Time of day</span> · <span class="ui">Start</span> · <span class="ui">End</span> · <span class="ui">Days</span> · <span class="ui">Vehicle class</span>, <span class="ui">Routes</span> with <span class="ui">Search routes or folders…</span> · <span class="ui">Clear all</span>, <span class="ui">Periods</span> with <span class="ui">No periods yet.</span> · <span class="ui">Add period</span> and the three date modes, <span class="ui">Metrics</span> with <span class="ui">Δ vs Base</span> and the delay overrides, the shareable footer; defaults 06:00–20:00, weekdays, all vehicles; the route and scope publishes, the deferred period and metric publishes, the 50-row search cap.</li>
+            <li>Live Route Comparison page (draft, sections of 2026-08-18): header purpose and freshness, the <span class="ui">Comparison matrix</span> Spreadsheet with <span class="ui">Route</span>, a year period column and the <span class="ui">TT all</span> · <span class="ui">TT freight</span> leaves.</li>
+            <li>Route Comparison build task (2026-07-17 to 08-07): status "core renders, not published"; two default routes across 2019 to 2026; %Δ vs Base, relative periods, map preview, no-data state and export listed as not done; the July 2026 loading fixes.</li>
+            <li>Route Comparison design (route-comparison.html): base period, ▲ improved · ▼ worse · ◻ no data, "download this matrix"; illustrative cell values.</li>
+            <li>NPMRDS home (published 2026-09-02), section <span class="ui">Route comparison.</span>: "many routes × many periods · one cross-tab"; metrics, period modes and vehicle classes listed.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="npmrds--reports--build.html">Build and edit a report</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

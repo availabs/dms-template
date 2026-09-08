@@ -30,6 +30,9 @@ export const reportRouteListTheme = {
   addBtnIcon: 'size-3.5 shrink-0',
   addGraphBtnIcon: 'size-3.5 text-[#37576B] shrink-0',
   addBtnLabel: 'font-display uppercase text-[11.5px] tracking-wide',
+  // Sub-item 2 (2026-09-08): "reuse an existing route" select, next to Add Route Slot. Same
+  // vocabulary as dateFieldInput, sized to sit inline in actionsRow at addRouteBtn's h-8.
+  addSlotGroupSelect: 'h-8 max-w-[168px] px-1.5 rounded-[6px] border border-zinc-950/15 bg-white font-mono text-[10.5px] text-slate-600 focus:outline-none focus:border-[#1F3F8F]',
 
   // Report settings disclosure — collapsed by default. Houses the Dynamic Report switch, which
   // used to be reachable only after opening RRL's own pencil edit mode (an incidental extra click
@@ -69,8 +72,11 @@ export const reportRouteListTheme = {
   // ── Row · collapsed rows carry NO background at all (same as the rail's own
   //     background) — only an OPEN row gets a faint tint. This is the specific thing
   //     flagged live: rows used to read as separate bordered cards. ──
-  row: 'px-2 py-2.5',
-  rowOpen: 'px-2 py-2.5 bg-slate-50/60 rounded-[6px]',
+  // border-l-transparent (2026-09-08) is a reserved, always-present 3px slot for the group
+  // border colour RouteRow.jsx sets inline (`rowStyle`) — kept transparent by default so a
+  // singleton (ungrouped) row never shifts pixel-width relative to a grouped sibling.
+  row: 'px-2 py-2.5 border-l-[3px] border-l-transparent',
+  rowOpen: 'px-2 py-2.5 bg-slate-50/60 rounded-[6px] border-l-[3px] border-l-transparent',
   rowHeaderWrapper: 'flex items-start gap-1 min-w-0',
   reorderButtons: 'flex flex-col shrink-0 mt-0.5',
   reorderBtn: 'size-4 flex items-center justify-center text-slate-400 hover:text-slate-700 disabled:text-slate-200 disabled:cursor-not-allowed',
@@ -138,6 +144,11 @@ export const reportRouteListTheme = {
   deriveControlsWrapper: 'space-y-1.5 p-1.5 bg-[#1F3F8F]/5 border border-[#1F3F8F]/15 rounded-[4px]',
   deriveFormulaError: 'font-proxima text-[11px] text-[#b91c1c]',
   dowSummary: 'font-proxima text-[11px] text-slate-500 italic',
+
+  // "Same route as: ..." (2026-09-08) — plain, always-shown note (no toggle) pairing with the
+  // row's own group border colour (see `row`/`rowOpen` above).
+  groupNote: 'flex items-center gap-1.5 pt-1 font-proxima text-[11px] text-slate-500',
+  groupNoteDot: 'size-2 rounded-full shrink-0 ring-1 ring-inset ring-black/10',
 
   // "Base for N routes" — a standing fact about a base row.
   dependentsRow: 'pt-1',

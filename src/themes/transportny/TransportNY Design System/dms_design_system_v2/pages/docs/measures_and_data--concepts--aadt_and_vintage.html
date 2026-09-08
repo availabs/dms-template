@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AADT and its vintage · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--concepts--aadt_and_vintage.html · IA page 68 · type concept. Phase 3, 2026-09-05.
+  Sources: _seed §05 trap 1 (fixed-panel table, −14.9 % / +2.3 %, −18.5 % → −2.2 %); downloadManifest MEASURED.aadtVintage (27.759 mph
+  stable; the year-range warning); Data Manager metadata for the enhanced shapefile (aadt, aadt_singl, aadt_combi, *_unidir,
+  directionality "for AADT disaggregation for the PHED measure"); class-weighted VOT task (FHWA classes 4–7 / 8–13); PROVENANCE §9/§10
+  + R14 (61 % of mileage absent); TSMO Reliability methodology band (occupancy 1.7, via the LOTTR page); legacy overview 225868
+  ("2020 NPMRDS data is accompanied by 2018 AADT data"); running fix 2172519 (2025 RIS request, marked resolved 2025-08-11).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="concept" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · concept</div>
+          <h1 class="doc-title">AADT and its vintage.</h1>
+          <p class="doc-lede">What annual average daily traffic is on this platform, which measures scale with it, and why a multi-year delay chart partly plots the AADT dataset's revision history rather than traffic. Written for anyone charting delay or cost over more than one year.</p>
+          <div class="stamps">
+            <span class="type">concept</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-aadt-is-on-this-platform">What AADT is on this platform</h2>
+          <p><strong>Annual average daily traffic (AADT) is the estimated number of vehicles that pass a point on an average day of the year, both directions combined.</strong> It is an estimate published per road section by the roadway inventory, not a count taken on the segment in the year the travel times were observed. The TMC network shapefile carries it per segment, alongside two truck classes.</p>
+          <dl class="defs">
+            <dt>AADT</dt>
+            <dd>All vehicles, both directions. Column <code>aadt</code> on the network.</dd>
+            <dt>Single-unit truck AADT</dt>
+            <dd>Trucks in Federal Highway Administration (FHWA) vehicle classes 4 to 7, which include buses. Column <code>aadt_singl</code>. In New York this class is bus-heavy on urban segments.</dd>
+            <dt>Combination truck AADT</dt>
+            <dd>Tractor-trailers, FHWA classes 8 to 13. Column <code>aadt_combi</code>.</dd>
+            <dt>Directional AADT</dt>
+            <dd>The share of AADT assigned to one direction of travel. The enhanced shapefile "calculates directionality from NPMRDS data for use in AADT disaggregation for the PHED measure", and publishes <code>aadt_unidir</code>, <code>aadt_singl_unidir</code> and <code>aadt_combi_unidir</code>. A TMC is one direction, so every delay measure uses the directional figure.</dd>
+          </dl>
+          <p>Passenger AADT is not stored; it is AADT minus the two truck classes. <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a> documents where the figures come from.</p>
+
+          <h2 id="which-measures-scale-with-aadt">Which measures scale with AADT</h2>
+          <p>The reliability ratios do not read AADT at all. LOTTR, TTTR and TTTR₈₀ are ratios of travel-time percentiles on one segment, so a revision to AADT leaves them unchanged. Percentile speed and coverage do not read it either.</p>
+          <p>The delay family is <strong>linear</strong> in directional AADT. Total Excessive Delay (TED), Peak Hour Excessive Delay (PHED), the TSMO <a href="measures_and_data--measures--excessive_delay.html">excessive-delay series</a> and every dollar figure built on them multiply a per-vehicle delay by the vehicles present, and the vehicles present come from AADT spread across the day by a fixed profile. Double the AADT and you double the delay. <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a> adds a second AADT dependence: the class-weighted value of time is the segment's passenger, single-unit and combination shares of AADT, each at its own rate.</p>
+          <p>The federal LOTTR roll-up reads AADT once more, as a weight. The statewide reliability percentage is the share of person-miles on reliable segments, and person-miles are length times directional AADT times an occupancy of 1.7. So a revision to AADT moves the statewide percentage a little even though no segment's ratio moved.</p>
+          <p>A segment with no AADT carries no delay. Together with segments lacking a speed limit and those excluded by the AADT gate, 61 % of network mileage is absent from the delay family. A statewide delay total is a total over the 39 % that qualifies.</p>
+
+          <h2 id="the-vintage-revision-trap">The vintage revision trap</h2>
+          <p><strong>A delay trend is partly an AADT revision history.</strong> The AADT dataset has its own revision cycle, and a revision changes every year it touches at once. On a fixed panel of identical segments, total directional AADT fell 14.9 % between 2021 and 2022. It rose 2.3 % in 2020, so the series does not register COVID at all. Traffic does not do that; a revision cycle does. Over the same nine years the delay threshold was stable to three decimals, 27.759 mph in every year, so the delay series' movement at that boundary is volume, not speed.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Year</th><th class="num">Directional AADT, fixed panel</th><th class="num">Against 2017</th></tr></thead>
+            <tbody>
+              <tr><td>2019</td><td class="num">272.07 million</td><td class="num">+1.5 %</td></tr>
+              <tr><td>2020</td><td class="num">274.06 million</td><td class="num">+2.3 %</td></tr>
+              <tr><td>2021</td><td class="num">273.94 million</td><td class="num">+2.2 %</td></tr>
+              <tr><td>2022</td><td class="num">227.92 million</td><td class="num">−14.9 %</td></tr>
+            </tbody>
+          </table></div>
+          <p>The panel is the set of segments present in every year from 2017 to 2025, statewide, all vehicles, summed over both truck classes and passenger traffic. Normalised per unit of AADT, the 2021 to 2022 step in network delay falls from −18.5 % to −2.2 %.</p>
+          <p>The lag is old news in a new form. The 2024 documentation warned that "the AADT data lags two years behind the NPMRDS data. So 2020 NPMRDS data is accompanied by 2018 AADT data", and recommended a caveat, a crosswalk to the matching year, or growth factors. The revision trap is the same fact seen across years: each year's travel times are paired with whichever AADT vintage was current when the network was built.</p>
+
+          <h2 id="pin-one-vintage-or-normalise">Pin one vintage or normalise</h2>
+          <p>Read a multi-year delay series per unit of AADT, or pin a single AADT vintage across every year. Either removes the revision step. Single-year and cross-sectional comparisons are unaffected: within one year there is one vintage, so a Region 8 against Region 11 comparison for CY 2025 is safe.</p>
+          <p>The Macro View download does the checking for you. Its <code>PM3_README.txt</code> restates the rule and, when the requested year range straddles the 2021 to 2022 or the 2019 to 2020 boundary, prints a warning naming the boundary and saying that differencing across it measures the AADT revision. The Macro View's <span class="ui">AADT source</span> control on the TED measure selects which vintage feeds the delay.</p>
+          <div class="callout caution"><span class="k">caution</span>Never present a 2021 to 2022 fall in delay or in cost as a change in congestion without saying that the AADT dataset fell 14.9 % on a fixed panel at the same boundary.</div>
+
+          <h2 id="where-the-aadt-comes-from-and-what-is-pending">Where the AADT comes from, and what is pending</h2>
+          <p>The AADT and truck AADT on the network come from the roadway inventory that accompanies the federal travel-time data, and the enhanced shapefile joins them to each vintage of the TMC map. The exact path from NYSDOT's Roadway Inventory System (RIS) and the Highway Performance Monitoring System (HPMS) to the columns on the current map is documented on <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a>, with what is confirmed and what is not.</p>
+          <p>A request to add 2025 RIS data to the roadway inventory source was recorded in the legacy tracker on 2025-08-11 and marked resolved with a pointer to a newer source. Which vintage feeds the attributes on the current map is not stated in the source metadata. Until that is confirmed, treat the AADT vintage on the current map as unstated.</p>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>A delay or cost figure inherits every property of its AADT: its vintage, its two-year lag, its revision cycle and its 61 % mileage gap. A reliability figure inherits none of them. When two families disagree across years, check AADT and <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">coverage</a> before concluding anything about the road. Charts that cross 2021 to 2022 need a normalisation or a pinned vintage, and a sentence saying so. <a href="measures_and_data--measures--ted.html#known-limits">TED</a> and <a href="measures_and_data--measures--phed.html">PHED</a> carry the measure-level statements; <a href="measures_and_data--which_measure.html">Which measure should I use?</a> tells you which delay variant to chart.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Measures &amp; Methodology page, published 2026-08-28, §05 "Two traps", trap 1: the fixed-panel table (272.07 · 274.06 · 273.94 · 227.92 million; +1.5 · +2.3 · +2.2 · −14.9 %), the normalised step (−18.5 % to −2.2 %), and the download-package warning.</li>
+            <li>pm3 download manifest, MEASURED block, AADT vintage: threshold "27.759 mph in every one of the nine years"; swings −14.9 % (2021 to 2022) and +2.3 % (2019 to 2020); "delay is LINEAR in directional AADT"; the year-range warning text.</li>
+            <li>Data Manager, "NPMRDS TMC Network Shapefile - Enhanced V6": columns aadt, aadt_singl, aadt_combi, aadt_unidir, aadt_singl_unidir, aadt_combi_unidir, directionality; description "calculates directionality from NPMRDS data for use in AADT disaggregation for the PHED measure".</li>
+            <li>Class-weighted value-of-time record, 2026-06-19 and 2026-06-22: single-unit = FHWA classes 4 to 7 (bus-heavy in New York), combination = classes 8 to 13; passenger = AADT minus the two.</li>
+            <li>pm3 provenance record §9 and analysis recommendation R14: 61 % of network mileage absent from the delay family (no AADT, no speed limit, or excluded by the AADT gate).</li>
+            <li>TSMO Reliability dashboard, methodology band, via the LOTTR measure page: person-miles = length × AADT × occupancy 1.7.</li>
+            <li>2024 NPMRDS documentation, Overview: "the AADT data lags two years behind the NPMRDS data. So 2020 NPMRDS data is accompanied by 2018 AADT data".</li>
+            <li>Legacy running fix 2172519, 2025-08-11: "Add 2025 RIS data to the Source", status resolved, with a pointer to a newer source.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--ted.html">TED</a>
+          <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>
+          <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

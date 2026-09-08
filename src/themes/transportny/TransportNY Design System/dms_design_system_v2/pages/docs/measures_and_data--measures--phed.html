@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>PHED · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--phed.html · IA page 54 · type measure. Phase 2a, 2026-09-04.
+  Sources: macroview/measures.js phed (verbatim; controls unit · per mile), _seed 281670 card, PROVENANCE §3 §6 §8 §9 §10 §11,
+  pm3/lib/eras.js (anchor window E6 2023-06..2024-07, selfReferentialYears), downloadManifest MEASURED (floor, anchorFallback),
+  recommendations report R14 (61 % of mileage absent), TSMO methodology PHED card + MAP-21 page (per-UZA, 6–10 / 15–19 weekdays).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Peak Hour Excessive Delay (PHED).</h1>
+          <p class="doc-lede">Person-hours lost below a threshold speed during the peak hours. This page defines the analytical series, its four threshold variants, and the 20 mph floor that decides most of it. It assumes you know what a TMC segment and AADT are.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span>methodology 2026-08 (pm3 analytical series)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p><strong>The same, restricted to peak hours and counted per person.</strong> Excessive delay is the extra time spent under a speed threshold — 20 mph or 60% of the reference speed, whichever is greater.</p>
+          <p>"The same" refers to <a href="measures_and_data--measures--ted.html">Total Excessive Delay (TED)</a>, the all-hours sibling. PHED is a federal measure under 23 CFR 490 subpart G. FHWA reports it as annual person-hours per capita for each urbanized area over 200,000 people in an air-quality nonattainment or maintenance area. The Macro View shows the per-segment analytical value instead. See <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are CY 2025, statewide, all vehicles, the segments that qualify for the delay family, unless stated.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Set the segment's threshold speed: the greater of 20 mph and 60 % of the reference speed. Which reference is used is a variant choice, below.</li>
+            <li>Convert it to a threshold travel time: segment length divided by threshold speed.</li>
+            <li>For each 15-minute bin in the peak hours, weekday 06:00–09:59 and 15:00–18:59, take the excess: observed travel time minus threshold travel time, floored at zero.</li>
+            <li>Multiply the excess by the vehicles present in that bin: directional AADT times the share of daily traffic that falls in the bin.</li>
+            <li>Multiply by an average vehicle occupancy to convert vehicle-hours to person-hours. Sum over the year. The Macro View can also show the figure per mile of segment.</li>
+          </ol>
+          <div class="formula">threshold = max(0.6 × reference, 20 mph)
+delay = max(0, TT_obs − TT_thr)
+PHED = Σ delay × volume × occupancy
+            <span class="var">reference = the speed the threshold is 60 % of: the posted speed limit, or a free-flow speed (see variants)</span>
+            <span class="var">TT_obs = the observed travel time of the 15-minute bin · TT_thr = segment length ÷ threshold speed</span>
+            <span class="var">volume = directional AADT × the bin's share of daily traffic · occupancy = average persons per vehicle</span>
+            <span class="var">Σ = the sum over every peak-hour bin of the calendar year</span>
+          </div>
+          <h3 id="the-four-variants">The four threshold variants</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Variant</th><th>Reference speed</th><th>Floor</th><th>Read it when</th></tr></thead>
+            <tbody>
+              <tr><td>Posted speed limit</td><td>the posted limit</td><td>yes</td><td>You want the federal formula. It measures degradation from a policy number, so a road that cannot reach its limit reports delay in normal operation.</td></tr>
+              <tr><td>Anchored free-flow <strong>(default)</strong></td><td>free-flow from a fixed single-era window</td><td>yes</td><td>You want how much delay there is and whether it is growing. The fixed yardstick makes year-over-year change real.</td></tr>
+              <tr><td>Relative</td><td>free-flow</td><td>no</td><td>You compare delay across functional classes. Required, not optional.</td></tr>
+              <tr><td>Own-year free-flow</td><td>free-flow from the publish year</td><td>yes</td><td>You bridge to previously published figures only. Deprecated for new analysis.</td></tr>
+            </tbody>
+          </table></div>
+          <p>The free-flow reference is the 15th-percentile travel time of the segment. Because speed falls as travel time rises, that is the 85th-percentile speed, the standard convention. The anchored window is one coverage era, currently 2023-06 to 2024-07. Every download names the window in force at the time of the export.</p>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>Peak hours:</strong> weekday 06:00–09:59 and 15:00–18:59. The afternoon window differs from LOTTR's 16:00–19:59 but is published under the same PM-peak label.</li>
+            <li><strong>Floor:</strong> 20 mph, on every variant except Relative.</li>
+            <li><strong>Volume:</strong> directional AADT for the publish year. A segment with no AADT, or excluded by the AADT gate, has no delay value.</li>
+            <li><strong>Occupancy:</strong> the <span class="ui">unit</span> control switches between person-hours and vehicle-hours. The computation multiplies vehicle-hours by the segment's own average vehicle occupancy from the network attributes (a separate truck occupancy serves the truck stream), so the factor varies by segment.</li>
+            <li><strong>Missing bins:</strong> not imputed. A missing bin contributes no delay, so thin data deflates the measure.</li>
+            <li><strong>Anchor fallback:</strong> a segment with no data inside the anchored window falls back to its own year and is flagged. Exclude flagged rows from any trend. The fallback rate is 4.6 % of the 2017 and 2018 networks and under 0.3 % of every other year.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>The threshold is the federal formula. Which reference speed it is 60 % of is a choice, and it changes the number.</strong> Taken over the publish year, the free-flow reference tracks the median travel time at a correlation of +0.998. The yardstick slows down as the network does. We anchor the reference to a fixed window so that a deterioration shows as a deterioration. On identical CY 2025 data the anchored reference yields +1.18 % more network delay with the floor, and +6.69 % without it. The asymmetry, 36.3 % of segments up more than 5 % against 9.6 % down, marks it as bias, not noise.</li>
+            <li><strong>The floor is kept by default.</strong> Without it a street whose achievable free-flow is 13 mph gets a 7.8 mph threshold, and crawling at 9 mph all day registers zero delay. A floor has a real purpose. A single global floor across 65 mph Interstates and 18 mph streets is what distorts.</li>
+            <li><strong>A per-functional-class floor was considered and rejected on the data.</strong> Within-class spread exceeds between-class spread: principal arterials run from a 7.8 mph unfloored threshold at the 5th percentile to 33.0 mph at the 90th. The segment's own achievable speed is the right grouping variable, and 0.6 × reference already is that. So we publish the unfloored variant rather than tune seven constants.</li>
+            <li><strong>No completeness normalisation.</strong> Delay's elasticity to completeness is 0.34 to 0.50, not 1.0, so dividing by completeness would over-correct about 2.5 times.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p><strong>No precision band is published for the delay family</strong>, and that is deliberate. The down-sampling experiment behind the reliability bands was never run for delay. A band without a measurement behind it would be a guess.</p>
+          <p><strong>The floor governs most of what you are looking at.</strong> 62.7 % of all measured delay is computed against a threshold pinned at 20 mph, on 37.4 % of segments. On principal arterials it is 89.7 %. Removing the floor moves network delay −41.4 %, principal arterials −59.9 %, Interstates only −1.3 %. Changing the reference is worth +6.69 % on the unfloored figure. The floor is the larger lever by roughly an order of magnitude, and it applies almost entirely off the freeways.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>Statewide, CY 2025, all hours, floored: measured delay is 816 million person-hours, of which principal arterials carry 542 million, two thirds of the state total.</p>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is added in the screenshot pass, Phase 8. The statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Never compare delay across functional classes in a floored variant.</strong> An arterial figure is about 90 % floored and a freeway's about 3 %, so the comparison compares the floor. Use Relative.</li>
+            <li><strong>61 % of network mileage is absent from the delay family.</strong> No AADT, no speed limit, or excluded by the AADT gate. A statewide delay total is a total over the 39 % that qualifies.</li>
+            <li><strong>Delay is linear in AADT</strong>, and AADT has its own revision cycle. See the TED page's AADT table before charting several years.</li>
+            <li><strong>Two publish years measure themselves.</strong> 2023 and 2024 overlap the anchored window, so their anchored growth is damped. Read their anchored change as a lower bound.</li>
+            <li>The PM-peak window is 15:00–18:59, not LOTTR's 16:00–19:59, under the same label.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Use the anchored variant for any trend. A year-over-year statement computed from the own-year variant understates delay growth by roughly a third of the reported figure. Normalise by AADT or pin one AADT vintage. Check the all-vehicle era tag on both years. 2017 uses a different network metadata family, so its per-functional-class figures are not strictly comparable to 2018–2025. The federal per-UZA figure is frozen by rule and is not affected by any of this.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View · analytical</a>
+            <a href="npmrds--macro_view--download.html">Macro View download</a>
+            <a href="npmrds--map21.html">MAP-21 PM3 pages · federal, per urbanized area</a>
+            <a href="npmrds--segment.html">Segment (TMC) page · PM3 history</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08-21 · the anchored reference window moved from the 2024-12 era to the 2021-01 era, after the first choice turned out to contain all of CY 2025.</li>
+            <li>2026-08-23 · the window moved again to 2023-06 to 2024-07 when the publish scope grew to the full 2017–2025 archive.</li>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published with the floor and reference measurements.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Build a Macro View download with <span class="ui">PHED</span> selected and the <span class="ui">threshold</span> control set to the variant you need. The package's <code>PM3_README.txt</code> names the anchored window, the self-referential years, the floor share and the AADT revision boundaries for that year. The federal per-UZA figure comes from the MAP-21 annual download. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs"><li>pm3 PHED computation (calcPhed): person-hours = vehicle-hours × the segment's <code>avg_vehicle_occupancy</code> × its NHS share; the truck stream uses the truck occupancy attribute.</li>
+            <li>23 CFR 490 subpart G, National Performance Management Measures to Assess the Congestion Mitigation and Air Quality Improvement Program (PHED definition, peak hours, per-capita reporting).</li>
+            <li>FHWA-HIF-18-040, National Performance Measures for Congestion, Reliability, and Freight, and CMAQ Traffic Congestion: General Guidance and Step-by-Step Metric Calculation Procedures (2018).</li>
+            <li>pm3 provenance record §3 (the free-flow reference), §6 (the two yardsticks, +1.18 % and +6.69 %), §8 (no completeness normalisation), §9 (which variant), §10 (the floor: 62.7 %, 89.7 %, −41.4 %, 542M of 816M), §11 (the PM-peak windows).</li>
+            <li>pm3 coverage-eras module: the anchored window (2023-06 to 2024-07) and the self-referential years 2023 and 2024.</li>
+            <li>pm3 download manifest, MEASURED block: floor figures and the anchor-fallback rates (4.6 %, under 0.3 %).</li>
+            <li>pm3 analysis recommendations, R14: 61 % of mileage absent from the delay family.</li>
+            <li>MAP-21 PM3 page and TSMO Data &amp; Methodology page: the federal reading (per urbanized area, 6–10 AM and 3–7 PM weekdays).</li>
+            <li>Macro View measure record: the verbatim strings and the unit and per-mile controls.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--ted.html">TED</a>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="measures_and_data--measures--excessive_delay.html">Excessive delay (TSMO)</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

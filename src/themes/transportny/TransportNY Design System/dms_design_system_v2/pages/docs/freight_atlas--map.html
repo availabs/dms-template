@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Use the map · Freight Atlas · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="freight_atlas">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Freight Atlas · how-to</div>
+          <h1 class="doc-title">Use the map.</h1>
+          <p class="doc-lede">One map, 39 layers in 8 categories, two panels. How to turn layers on, change the view a layer colours by, read a legend block, identify a feature, change the basemap, and share the exact set of layers by address. No account is needed.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · Freight Atlas (www/freightatlas)</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Freight Atlas</span> in the Freight Atlas side navigation, or arrive from a Maps Gallery tile or a shared address. The page is one full-screen map with two floating panels: <span class="ui">Map layers</span>, every layer by category, and <span class="ui">Legend</span>, one block per layer that is on. Zoom, a compass and <span class="ui">Change base map</span> sit at the map's edge. On a plain open every layer is off.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open a category. Under <span class="ui">Add layers</span>, select a category name, for example <span class="ui">Road Network</span>.<span class="result">The category expands. Its row counts its layers and, once something is on, shows a badge such as <span class="ui">2 on</span>.</span></li>
+            <li>Switch a layer on. Tick its checkbox.<span class="result">The header count rises, the layer appears under <span class="ui">Active map</span>, and a block joins the <span class="ui">Legend</span>.</span></li>
+            <li>Set a layer's view. A layer whose row reads <span class="ui">N views</span> colours by more than one field. In its <span class="ui">Active map</span> row, pick from <span class="ui">Show</span>.<span class="result">The map recolours and the legend re-bins. Five layers have views; the <a href="freight_atlas--layers.html">Layer reference</a> lists them.</span></li>
+            <li>Read the legend block: a title, then symbols with labels, value ranges for a shaded layer, names for a categorical one, <span class="ui">Sparse</span> to <span class="ui">Densest</span> for a heat map. The info button beside the title, <span class="ui">About this data — view the source page</span>, opens the dataset in Data &amp; Downloads.</li>
+            <li>Identify a feature. Hover it.<span class="result">A popup lists the fields configured for that layer, for example <span class="ui">Road Name</span>, <span class="ui">Route</span> and <span class="ui">AADT Value</span> on the Freight Core Highway Network. Thirteen layers have no hover fields; the reference marks them.</span></li>
+            <li>Find a road by name or number. Zoom in.<span class="result">Road names and route shields come from the basemap at street zooms, not from a layer. <span class="ui">Default</span> and <span class="ui">Streets</span> show them; <span class="ui">Satellite</span> and <span class="ui">Blank</span> do not.</span></li>
+            <li>Find a layer by name. Type in <span class="ui">Search 39 layers…</span>.<span class="result">Every category opens to show only matching rows.</span></li>
+            <li>Take layers off. Select <span class="ui">Remove from map</span>, the <span class="ui">×</span> in an <span class="ui">Active map</span> row, or untick the layer. <span class="ui">Clear all</span> turns every layer off.</li>
+            <li>Share the map. Copy the address.<span class="result">It carries <code>layers=</code> and the ids of the layers that are on, separated by <code>|||</code>, for example <code>/freight_atlas?layers=2100239|||9001049</code>. Older links with commas still work.</span></li>
+          </ol>
+
+          <div class="callout note"><span class="k">what the address carries</span>The layers that are on, and nothing else: not the position or zoom, not the <span class="ui">Show</span> choice, not the basemap. Say where to look in your message.</div>
+
+          <h2 id="settings">Settings</h2>
+          <p>Every control on the map page.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td>Category rows under <span class="ui">Add layers</span></td><td>Expand a category to its layers; a badge counts what is on</td><td><span class="ui">Geographies</span> · <span class="ui">Freight Facilities</span> · <span class="ui">Maritime Network</span> · <span class="ui">Rail Network</span> · <span class="ui">Road Network</span> · <span class="ui">Network and Commodity Data</span> · <span class="ui">Transearch Freight Movement</span> · <span class="ui">Safety &amp; Performance</span></td><td>First category open on an empty map; on a preset, the categories with a layer on</td></tr>
+              <tr><td>Layer checkbox</td><td>Turns one layer on or off</td><td>39 layers</td><td>All off</td></tr>
+              <tr><td><span class="ui">Show</span> (in an <span class="ui">Active map</span> row)</td><td>Picks the field a layer colours by</td><td>The layer's views; only five layers have any</td><td>The first view: <span class="ui">AADT</span> · <span class="ui">EV</span> · <span class="ui">Farm Products</span> · <span class="ui">Total Tonnage</span></td></tr>
+              <tr><td><span class="ui">Search 39 layers…</span></td><td>Filters the layer list by name</td><td>Text</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Active map</span></td><td>Lists the layers that are on, in category order, with <span class="ui">Remove from map</span> on each</td><td>—</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Clear all</span></td><td>Turns every layer off</td><td>—</td><td>—</td></tr>
+              <tr><td><span class="ui">Collapse panel</span> · <span class="ui">Expand panel</span></td><td>Folds <span class="ui">Map layers</span> to its header line</td><td>—</td><td>Expanded</td></tr>
+              <tr><td><span class="ui">Legend</span></td><td>One block per layer that is on, each with its info button</td><td>—</td><td>Shown once a layer is on</td></tr>
+              <tr><td><span class="ui">Change base map</span></td><td>Switches the background map</td><td><span class="ui">Default</span> · <span class="ui">Satellite</span> · <span class="ui">Streets</span> · <span class="ui">Light</span> · <span class="ui">Dark</span> · <span class="ui">Blank</span></td><td><span class="ui">Default</span>, a road-oriented style with shields and labels since July 2026</td></tr>
+              <tr><td>Address, <code>layers=</code></td><td>The layers that are on, so a link reproduces them</td><td>Layer ids separated by <code>|||</code></td><td>Absent: all off</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li><strong>A layer that stays on.</strong> Until 2026-08-24 the <span class="ui">New York State Freight Core Highway Network</span> was on by default in the stored map. It drew even when nothing was ticked and appeared in neither panel. Every layer now starts off.</li>
+            <li><strong>Version suffixes.</strong> The published map still reads <span class="ui">2024 Core Rail Freight Network v2</span> and <span class="ui">Core Rail Freight Network by Class v4</span>. The suffixes are catalogue history, not different data. The rename awaits publishing.</li>
+            <li><strong>Black "last mile" lines.</strong> Until 2026-07-16 the core rail network drew <span class="ui">Last Mile</span> corridors in black, its darkest colour. Now <span class="ui">National</span> is bold navy, <span class="ui">Statewide</span> blue, <span class="ui">Last Mile</span> light.</li>
+                        <li><strong>No drawing order, no legend toggle.</strong> <span class="ui">Active map</span> keeps category order. The design's drag-to-reorder and legend hide button are not built.</li>
+            <li><strong>Legend titles can differ from panel names.</strong> STRAHNET, STRACNET, the core rail layers, NYC Truck Routes and the Transearch layers are titled with the dataset's own layer name. A layer with views is titled with the view, so <span class="ui">Traffic Volume &amp; Road Attributes</span> appears as <span class="ui">AADT</span>. Match blocks by their labels.</li>
+            <li><strong>Bundled context.</strong> <span class="ui">Pipeline System</span> draws REDC regions behind the pipelines; <span class="ui">USDA Apple Orchard Locations</span> draws counties, REDC regions and rail lines with the orchards.</li>
+            <li><strong>One year.</strong> The Transearch layers draw the 2021 base year of the TRANSEARCH 2023 release. No 2050 forecast layer is on the map.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="a-layer-draws-that-i-did-not-turn-on">A layer draws that I did not turn on</h3>
+          <p>Until 2026-08-24 this was the Freight Core Highway Network, on by default even when a shared address asked for other layers. All 39 layers now default off. Reload at <code>/freight_atlas</code> with no parameters; if a layer persists, <a href="help.html">report it</a> with the address.</p>
+          <h3 id="i-cannot-turn-a-layer-off">I cannot turn a layer off</h3>
+          <p>Three controls turn a layer off: its checkbox, <span class="ui">Remove from map</span> in its <span class="ui">Active map</span> row, and <span class="ui">Clear all</span>. The July 2026 report could not be reproduced. The likeliest cause was the default-on network above, which no control could remove because none had turned it on.</p>
+          <h3 id="the-roads-have-no-route-numbers">The roads have no route numbers</h3>
+          <p>Shields and names are drawn by the basemap at street zooms. Zoom in. The default basemap was switched to a road-oriented style with shields in July 2026 for this reason. Under <span class="ui">Satellite</span> or <span class="ui">Blank</span>, choose <span class="ui">Default</span> or <span class="ui">Streets</span>.</p>
+          <h3 id="i-cannot-find-road-performance-measures">I cannot find "Road Performance Measures"</h3>
+          <p>Renamed on 2026-07-27. It colours roads by volume and attributes, not performance measures, so it is now <span class="ui">Traffic Volume &amp; Road Attributes</span> under <span class="ui">Road Network</span>, views unchanged.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="freight_atlas--layers.html">Layer reference</a></li>
+            <li><a href="freight_atlas--gallery.html">Maps Gallery</a></li>
+            <li><a href="freight_atlas--downloads.html">Download freight data</a></li>
+            <li><a href="start--navigating.html#share-a-page-by-its-address">Share a page by its address</a></li>
+            <li><a href="freight_atlas--faq.html">Freight Atlas FAQ</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Live Freight Atlas map section, read 2026-09-05: 8 categories, 39 layers, each layer's legend labels, hover fields and views; the two rail layer names with their suffixes as published.</li>
+            <li>Map layer panel, legend panel and map component code (the version being deployed): every label quoted in <span class="ui">bold</span>; the <code>layers</code> address variable, its <code>|||</code> separator and the comma fallback; the six basemap names and the <span class="ui">Change base map</span> control; deferred drag-reorder.</li>
+            <li>Feedback records 2192575 (resolved 2026-07-16) and 2210866 (resolved 2026-08-24): the default-on network and the all-off fix. Record 2190960 (closed 2026-07-16, could not reproduce): "Can't deselect layer".</li>
+            <li>Record 2192573 (resolved 2026-07-16): default basemap switched to a road-oriented style with shields. Record 2195603 (resolved 2026-07-29): the basemap control's icon and active marker.</li>
+            <li>Record 2195642 (resolved 2026-07-27): "Road Performance Measures" renamed <span class="ui">Traffic Volume &amp; Road Attributes</span> and moved to <span class="ui">Road Network</span>. Record 2197855 (2026-07-31): version suffixes removed in the draft, publish pending. Record 2192904 (resolved 2026-07-16): the core rail recolour.</li>
+            <li>Freight Atlas map task record (2026-07-10): the shareable address verified end to end; the gallery task record (2026-07-13): a shared address carries no centre or zoom.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 5)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="freight_atlas--layers.html">Layer reference</a>
+          <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

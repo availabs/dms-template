@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Share, print and publish a report · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Share, print and publish a report.</h1>
+          <p class="doc-lede">A report's header carries four actions: <span class="ui">Data</span>, <span class="ui">Share</span>, <span class="ui">Print</span> and <span class="ui">Edit</span>. Sharing is the address, printing is the browser's, and publishing happens when the author selects <span class="ui">Done</span>. What each does, what a reader sees, and why a link is not a citation.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open any report. Reading, sharing and printing need no account. Publishing needs the report to be yours and you to be signed in. The header shows, top to bottom, an <span class="ui">All reports</span> back link, a kicker line with a <span class="ui">published</span> or <span class="ui">draft</span> pill, the title and purpose, the action buttons, and a data line reading <span class="ui">complete through</span> a month.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Select <span class="ui">Share</span>.<span class="result">The page's address is copied and the button reads <span class="ui">Copied</span> for a moment. Paste it anywhere; anyone can open it.</span></li>
+            <li>If the report was opened from a template, keep the whole address. The part after <code>?</code> holds the routes you picked (<code>routes=</code>) and the anchor date (<code>asOf=</code>); without it the recipient is asked to pick routes again.</li>
+            <li>Select <span class="ui">Data</span> to open the download the author linked.<span class="result">It opens in a new tab. The button is present only when the author set a <span class="ui">Data link</span>.</span></li>
+            <li>Select <span class="ui">Print</span>.<span class="result">The browser's print dialog opens. Choose a printer or save as PDF. Landscape suits the wide cards.</span> The report has no print stylesheet of its own yet, so the printed page is the reading page as the browser lays it out.</li>
+            <li>To publish changes, select <span class="ui">Edit</span>, make them, and select <span class="ui">Done</span>.<span class="result">The pill turns from <span class="ui">draft</span> to <span class="ui">published</span> and the reading address shows the new graphs.</span></li>
+            <li>Before you send a number on, write down the address, the date you read it and the data line's <span class="ui">complete through</span> month. See below for why.</li>
+          </ol>
+
+          <h2 id="what-a-reader-sees">What a reader sees</h2>
+          <p>Readers see the published page: header, graph cards, no Routes rail and no pills. Route changes made in the rail reach readers as soon as they are made, because routes are stored with the report and read live; new graphs, header text and layout appear only after <span class="ui">Done</span>. A draft report, one never published, still has a reading address, but its graphs are whatever was last published there.</p>
+
+          <h2 id="settings">Settings</h2>
+          <p>The header actions and status.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Data</span></td><td>Opens the author's <span class="ui">Data link</span> in a new tab</td><td>Shown only when a link is set; disabled in edit mode until one is typed</td><td>No link</td></tr>
+              <tr><td><span class="ui">Share</span></td><td>Copies the current address</td><td>Reads <span class="ui">Copied</span> for about 2 seconds</td><td>—</td></tr>
+              <tr><td><span class="ui">Print</span></td><td>Opens the browser print dialog</td><td>—</td><td>—</td></tr>
+              <tr><td><span class="ui">Edit</span> / <span class="ui">Done</span></td><td>Enters edit mode; leaving it publishes</td><td>Shown to signed-in editors</td><td><span class="ui">Edit</span></td></tr>
+              <tr><td>Status pill</td><td>Whether unpublished changes exist</td><td><span class="ui">published</span> · <span class="ui">draft</span></td><td><span class="ui">draft</span> on a new report</td></tr>
+              <tr><td><span class="ui">Viewing as of</span></td><td>On templates only: the anchor date; <span class="ui">Use latest available</span> resets</td><td>A date</td><td>The latest date with data</td></tr>
+              <tr><td><span class="ui">All reports</span></td><td>Returns to the Reports page</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="the-address-as-a-citation-and-its-limits">The address as a citation, and its limits</h2>
+          <p>The address reproduces the view: the report, and for templates the routes and anchor date. It does not freeze the numbers. Graphs recompute from the data on every open, so a later data revision, a newly loaded month, or an author's edit changes what the link shows. A template anchored to the latest available date drifts forward every month. For a figure you must defend, download the data behind it through <span class="ui">Data</span> where the author provided it, or export the measure from the <a href="npmrds--macro_view--download.html">Macro View</a>, and cite the address with the date you read it and the <span class="ui">complete through</span> month.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li><span class="ui">Done</span> is publish. There is no separate publish button on a report and no way to leave edit mode without publishing.</li>
+            <li><span class="ui">Data</span> points wherever the author pointed it. It is not generated from the graphs.</li>
+            <li>A report cannot be made private. Every report address is public to read.</li>
+            <li>NPMRDS runs on its own subdomain, so a link from another product may ask a signed-in user to sign in again. Reading does not require it.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="share-did-nothing">Share did nothing</h3>
+          <p>The browser refused clipboard access, which happens on an insecure connection or when permission was denied. Copy the address from the address bar instead.</p>
+          <h3 id="the-printed-page-is-missing-graphs">The printed page is missing graphs</h3>
+          <p>Let every card finish loading before you print, and use landscape. If a card is still blank on screen, reload once; a card can render empty right after a change is published.</p>
+          <h3 id="a-colleague-was-asked-to-sign-in-to-open-my-link">A colleague was asked to sign in to open my link</h3>
+          <p>Reports are public to read. If the link came from an <code>/edit/</code> address, send the reading address without <code>/edit/</code>. If a plain address still asks, <a href="help.html">report it</a>; the same problem was recorded against the earlier tool in May 2026.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a></li>
+            <li><a href="npmrds--reports--find.html">Find a report</a></li>
+            <li><a href="npmrds--macro_view--download.html">Download data from the Macro View</a></li>
+            <li><a href="start--navigating.html#share-a-page-by-its-address">Share a page by its address</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Report header code (ReportPageHeader, 2026-09-03): <span class="ui">All reports</span> back link; <span class="ui">published</span> / <span class="ui">draft</span> pill; <span class="ui">Data</span> (opens the <span class="ui">Data link</span> in a new tab, disabled without one), <span class="ui">Share</span> → <span class="ui">Copied</span> (1.8 s, clipboard write), <span class="ui">Print</span> (browser print), <span class="ui">Edit</span> / <span class="ui">Done</span> (leaving edit mode publishes); the data line words; <span class="ui">Viewing as of</span> and <span class="ui">Use latest available</span>.</li>
+            <li>Report route rail README and code: routes stored in the report's own record and read live; the rail hidden to readers.</li>
+            <li>Dynamic Reports design: the route pick and anchor date carried in the address.</li>
+            <li>Report design page (2026-09-01), section "Printed, this is a document.": the intent; the live print layout not verified for this page.</li>
+            <li>Running fix 2173158 (2026-05-27): "Cannot view reports without logging in".</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

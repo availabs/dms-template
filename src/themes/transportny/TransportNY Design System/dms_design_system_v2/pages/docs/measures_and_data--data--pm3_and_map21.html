@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>PM3 and MAP-21 datasets · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--pm3_and_map21.html · IA page 72 · type data. Phase 3, 2026-09-05. OWNS the CY 2025 79.8/83.2 vs 80.0/83.3 explanation.
+  Sources: MAP21_REPORTING_PLAN.md (§1 targets, §3 columns per HPMS Field Manual Ch. 8, June 15 cycle); runbook 1997398 (map21 "used to create
+  2024 submission"; pm3; pm3_aggregate); pm3 fork task (fork DONE 2026-08-14; R1–R14; phases dated); PROVENANCE §5–§11 (column families);
+  Data Manager metadata "PM3" (tile source columns) and "Map 21 FHWA Submittal (legacy)" (submittal columns); TSMO Data & Methodology
+  2184101 (CY 2025 computed Feb 2026); TSMO home design header 2026-06-12 (resubmission 80.0/83.3/1.46); ticket 2211482 (22,754 vs 52,127);
+  STYLE §10 P2-prep ruling (79.8/83.2/1.46). The MAP-21 and targets datasets are not in the public sources dump — schema rows marked.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">PM3 and MAP-21 datasets.</h1>
+          <p class="doc-lede">The three annual datasets behind the federal and analytical reliability figures: the MAP-21 submission dataset, the targets it is scored against, and the analytical series the Macro View maps. This page owns the explanation of why two CY 2025 statewide figures differ. For program staff and analysts.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · NPMRDS (www/npmrds) · TSMO Reliability</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>Two pipelines compute the same three federal measures from the same travel-time table, and they no longer move together.</strong> <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> explains the split; this page documents the datasets.</p>
+          <dl class="defs">
+            <dt>The MAP-21 dataset (federal)</dt>
+            <dd>New York's Highway Performance Monitoring System (HPMS) Travel Time Metrics submission: one row per TMC reporting segment per year, both directions, with the LOTTR, TTTR and PHED metrics as 23 CFR 490 defines them. Built from the travel-time table by selecting a year with every segment included. The runbook records it as the dataset "used to create 2024 submission". Its computation is frozen; the only permitted edits are provably output-neutral.</dd>
+            <dt>The targets dataset</dt>
+            <dd>The statewide targets per year, joined to the MAP-21 dataset on the year. For performance period 2 (2022 to 2025): Interstate LOTTR 75.0 %, non-Interstate LOTTR 70.0 %, TTTR 2.0; PHED per urbanized area, New York–Newark 21.0 and Poughkeepsie–Newburgh 6.5 hours per capita. Between target years the applicable target is carried forward. The period 3 (2026–2029) targets are not yet on this page.</dd>
+            <dt>The analytical series (pm3)</dt>
+            <dd>The platform's own computation, forked from the MAP-21 code on 2026-08-14 so that it could change on evidence. It publishes per TMC per year, adds TTTR₈₀, the delay threshold variants, percentile speed and coverage, and carries precision bands and era tags on every row. An aggregate dataset rolls it up for the MAP-21 sandbox page.</dd>
+          </dl>
+          <div class="callout basis"><span class="k">basis</span>Every statewide reliability figure on this page is CY 2025, statewide, Interstate or non-Interstate NHS as named, all vehicles for LOTTR and freight trucks for TTTR, against the period 2 targets.</div>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Dataset</th><th>Span</th><th>Cadence</th><th>Gaps</th></tr></thead>
+            <tbody>
+              <tr><td>MAP-21 dataset</td><td>Calendar years 2016 to 2025 in one dataset at the 2026 build. CY 2025 computed February 2026</td><td>Annual, on the federal cycle. The HPMS Travel Time Metrics file is due to FHWA each June 15</td><td>NHS only. A CY 2025 correction was made after FHWA validation (below)</td></tr>
+              <tr><td>Targets dataset</td><td>Period 2, 2022 to 2025, with the applicable target filled between target years</td><td>Per performance period, 4 years with a 2-year midpoint</td><td>Period 3 targets not confirmed here</td></tr>
+              <tr><td>Analytical series</td><td>Calendar years 2017 to 2025 published; 2017 carries 32,915 of 36,166 segments</td><td>Recomputed when the method changes; each change dated</td><td>The Macro View's 2024 dataset holds 22,754 segment rows against 52,127 for 2025 (below)</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="the-two-cy-2025-statewide-figures">The two CY 2025 statewide figures</h3>
+          <p>Two live pages publish the federal family for CY 2025 and show slightly different numbers. The MAP-21 PM3 reporting pages and the TSMO Reliability dashboard compute from the MAP-21 dataset on the platform: <strong>79.8 %</strong> of Interstate person-miles reliable, <strong>83.2 %</strong> non-Interstate, TTTR <strong>1.46</strong>. The TSMO home quotes the HPMS Travel Time Metrics resubmission, the corrected file prepared for FHWA after FHWA's validation rejected the first CY 2025 file: <strong>80.0 %</strong>, <strong>83.3 %</strong>, <strong>1.46</strong>. Both clear every target.</p>
+          <p>What is known: they are two files assembled from the same measures. The platform figure is computed live from the all-years MAP-21 dataset. The resubmission is a fixed file that carries the corrections the FHWA fix required. The 0.2 and 0.1 percentage-point gap on LOTTR is the size a small difference in the reporting-segment set or in an attribute vintage would produce, and TTTR, a length-weighted index, does not move. What is known: FHWA rejected New York's first CY 2025 file in June 2026 on two validation rules — 446 segments with a 2010-era urban-area placeholder, and 4,102 partial-NHS segments whose length was reported in full rather than prorated by NHS share. The corrected file re-assigned urban areas to the 2020 boundaries and prorated the lengths; it passes the validator. Segment length enters the person-mile weights, which is enough to move a statewide share by a tenth of a point. Acceptance of the corrected file was pending at the time of writing. Cite the value the page you point at shows, and name its basis. Older handoff copy carried 85.0 % and 1.42; those reproduce from no dataset and are withdrawn.</p>
+
+          <h3 id="the-2024-segment-count">The 2024 segment count</h3>
+          <p>The Macro View's 2024 analytical dataset holds 22,754 segment rows; its 2025 dataset holds 52,127. Switching <span class="ui">Year</span> changes the size of the network mapped, not only its values. Whether the 2024 run is incomplete or the network changed is an open data question, recorded 2026-08-12 and not yet answered. Until it is, do not read a 2024-to-2025 change on the Macro View as a change in traffic. 2024 also spans three coverage eras.</p>
+
+          <h2 id="schema">Schema</h2>
+          <p>The MAP-21 dataset's columns follow the HPMS Field Manual, chapter 8. The dataset is not publicly readable in the Data Manager, so the list is taken from the reporting plan and the legacy submittal file's columns.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>Sample value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>year_record</code></td><td>integer</td><td>2025</td><td>Calendar year of the metrics.</td></tr>
+              <tr><td><code>state_code</code> · <code>travel_time_code</code></td><td>string</td><td>—</td><td>State, and the TMC id of the reporting segment.</td></tr>
+              <tr><td><code>f_system</code> · <code>nhs</code> · <code>facility_type</code> · <code>urban_code</code></td><td>integer</td><td>—</td><td>Functional system 1 to 7; NHS code 1 to 9; facility type 1 to 6; Census urban-area id. The reliability roll-up keeps <code>nhs</code> 1 to 9, <code>facility_type</code> 1, 2 or 6 and a non-null urban code.</td></tr>
+              <tr><td><code>segment_length</code> · <code>dir_aadt</code> · <code>occ_fac</code></td><td>number</td><td>—</td><td>Length in miles, directional AADT and occupancy factor; person-miles = length × AADT × occupancy.</td></tr>
+              <tr><td><code>directionality</code></td><td>string</td><td>—</td><td>How AADT was split by direction (legacy submittal column).</td></tr>
+              <tr><td><code>lottr_amp</code> · <code>lottr_midd</code> · <code>lottr_pmp</code> · <code>lottr_we</code></td><td>number</td><td>—</td><td>LOTTR per period, with <code>tt_&lt;period&gt;_50_pct</code> and <code>tt_&lt;period&gt;_80_pct</code> travel times beside each.</td></tr>
+              <tr><td><code>tttr_amp</code> · <code>tttr_midd</code> · <code>tttr_pmp</code> · <code>tttr_we</code> · <code>tttr_ovn</code></td><td>number</td><td>—</td><td>TTTR per period, with the 50th and 95th-percentile truck travel times beside each.</td></tr>
+              <tr><td><code>phed</code></td><td>number</td><td>—</td><td>Annual person-hours of peak-hour excessive delay for the segment. Total hours, not per capita.</td></tr>
+              <tr><td><code>metric_source</code></td><td>string</td><td>—</td><td>Legacy submittal column.Carried from the submittal file; not read by any page.</td></tr>
+              <tr><td><code>county_name</code> · <code>ua_name</code> · <code>mpo_name</code></td><td>string</td><td>—</td><td>Pipeline enrichments, not federal reporting units. County has no federal target.</td></tr>
+            </tbody>
+          </table></div>
+          <p>The analytical series publishes a wider set. The Data Manager's public "PM3" source, the Macro View's tile source, carries <code>tmc</code>, <code>year</code>, <code>urban_code</code>, <code>region_code</code>, <code>county</code>, <code>ua_name</code>, <code>mpo_code</code>, <code>mpo_name</code>, the geometry, <code>speed_pctl_5</code> to <code>speed_pctl_95</code>, <code>lottr_&lt;period&gt;_lottr</code> with its 80th and 50th percentiles, <code>tttr_&lt;period&gt;_tttr</code> with its 95th and 50th, and <code>phed_&lt;all|amp|pmp&gt;_&lt;all_&gt;xdelay_&lt;phrs|vhrs|hrs&gt;</code> in posted-limit and free-flow variants. It carries no road name, length or AADT; those come from the network. The current series adds, per the provenance record: <code>tttr_p80_*</code>; <code>*_n_bins</code>, <code>*_precision_band</code>, <code>*_min_n_bar</code>; <code>era_all_vehicles</code>, <code>era_truck</code> and a <code>*_crosses_boundary</code> flag each; <code>coverage_&lt;stream&gt;_&lt;bin&gt;_pct_bins_reporting</code> and <code>pct_epochs_reporting</code>; <code>*_freeflow_anchored</code>, <code>*_freeflow_relative</code> and <code>*_anchor_fallback</code>. A download holds about 330 columns.</p>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>An administrator creates a MAP-21 dataset from the travel-time table by choosing one year and keeping the share of segments at 100 %. The frozen code bins to 15 minutes, takes the percentiles per period, and writes the HPMS column order.</li>
+            <li>The submission file is validated and filed with FHWA by June 15. For CY 2025 the first file failed FHWA validation; a corrected file was prepared.</li>
+            <li>The MAP-21 pages join the dataset to the targets dataset on the year and compute reliable person-miles over total person-miles, the length-weighted worst-period TTTR index, and the PHED sum.</li>
+            <li>An analytical dataset is created the same way from one or several years; new years are appended as versions. Since 2026-08-14 its code is a fork with its own modules and a guard test that fails if it imports the frozen code.</li>
+            <li>The fork's changes shipped in dated steps: TTTR₈₀ (2026-08-14); threshold diagnostics and quality columns (2026-08-18); precision bands, era tags and the anchored reference (2026-08-18); coverage as its own measure and the unfloored relative variant (2026-08-21); the anchored window moved (2026-08-21, 2026-08-23). <a href="measures_and_data--methodology_changes.html">Methodology changes</a> lists them.</li>
+          </ol>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>Use the MAP-21 dataset for anything reported to FHWA: targets, significant progress, performance periods. Use the analytical series for analysis, prioritisation and corridor work, and never call it federal. Targets exist at only two geographies, the state and the urbanized area; MPOs support the statewide target and counties have none, so a county figure is diagnostic. PHED targets are per capita and the dataset holds total hours, so the per-capita comparison needs a population join. The MAP-21 dataset covers the NHS; the analytical series covers every monitored segment.</p>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>MAP-21 annual download</strong> on the reporting pages: the submission file's columns for the selected year. See <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a>.</li>
+            <li><strong>Macro View download</strong>: the analytical series per segment for a year, CSV or GeoPackage, with <code>PM3_README.txt</code>. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</li>
+            <li><strong>TSMO Data &amp; Methodology, Downloads &amp; API</strong>: "PM3" among the bulk tables, CSV or Parquet per year, New York extract. See <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a>.</li>
+            <li><strong>FHWA's state reliability report</strong> publishes what New York submitted; it is the external authority for the federal figure.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--map21.html">MAP-21 PM3 reporting pages · federal</a>
+            <a href="tsmo--reliability.html">TSMO Reliability dashboard · federal</a>
+            <a href="tsmo--start.html">TSMO home · resubmission figures</a>
+            <a href="npmrds--macro_view.html">Macro View · analytical</a>
+            <a href="npmrds--segment.html">Segment (TMC) page · PM3 history</a>
+            <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas · truck bottleneck layers (TTTR, TED, 2022)</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-02 · CY 2025 MAP-21 dataset computed.</li>
+            <li>2026-08-14 · the analytical series forked from the MAP-21 code.</li>
+            <li>2026-08-18 to 2026-08-23 · analytical columns added and the anchored reference window set; see Methodology changes.</li>
+            <li>2026-09-05 · this datasheet created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs"><li>HPMS 2025 resubmission fix record (references/hpms/uza/hpms_2025_resubmission_fix.md, June–July 2026): the two FHWA validation failures, the corrected file and validator, acceptance pending.</li>
+            <li>MAP-21 PM3 reporting plan (2026): §1 targets and geographies (75.0 / 70.0 / 2.0; 21.0 and 6.5; MPO adoption; county diagnostic), §2 performance periods, §3 the column list per the HPMS Field Manual chapter 8, the roll-up filters and the person-miles formula, the per-capita gap, the June 15 cycle.</li>
+            <li>HPMS Field Manual, chapter 8, Travel Time Metrics (FHWA): the column definitions.</li>
+            <li>MAP-21 / PM3 sources runbook (2026-03-04): the MAP-21 dataset "used to create 2024 submission"; the pm3 and pm3_aggregate datasets; full years or dates; append as a version.</li>
+            <li>pm3 fork task record: fork done 2026-08-14; R1 2026-08-14; R3, R4, R6, R9, R2 2026-08-18; coverage decoupled and relative variant 2026-08-21; the guard and freeze tests.</li>
+            <li>pm3 provenance record §5, §6, §7, §9, §11: the analytical column families named above; "Federal HPMS submittal: use map21, not pm3."</li>
+            <li>Data Manager, "PM3": the tile source's column list. "Map 21 FHWA Submittal (legacy)": the submittal column order including tt_*, ttt_* and metric_source.</li>
+            <li>TSMO Data &amp; Methodology page, refresh-cadence table: "PM3 measures · annual · federal cycle · CY 2025 · computed Feb 2026".</li>
+            <li>MAP-21 PM3 reporting page and TSMO Reliability dashboard, CY 2025: 79.8 % · 83.2 % · 1.46. TSMO home, data revision 2026-06-12: the HPMS Travel Time Metrics resubmission, 80.0 % · 83.3 % · 1.46. Documentation style ruling of 2026-09-04 on the withdrawn 85.0 % and 1.42.</li>
+            <li>Macro View quality record, 2026-08-12 (ticket 2211482): 22,754 against 52,127 segment rows; re-parked as a data question 2026-08-24.</li>
+            <li>pm3 download manifest, MEASURED block: 2017 publishes 32,915 of 36,166 segments.</li>
+            <li>FHWA Transportation Performance Management, state reliability report for New York (public).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>
+          <a href="measures_and_data--measures--lottr.html">LOTTR</a>
+          <a href="measures_and_data--methodology_changes.html">Methodology changes</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

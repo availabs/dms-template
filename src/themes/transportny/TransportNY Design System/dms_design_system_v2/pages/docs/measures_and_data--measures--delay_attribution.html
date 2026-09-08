@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Delay attribution · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--delay_attribution.html · IA page 59 · type measure. Phase 2a, 2026-09-04.
+  Sources: TSMO Data & Methodology 2184101 (source catalog "Delay attribution" card, coverage panel 18.5 %), references/tsmo/06 §1
+  (per-event footprint: ±1 h padding, interpolation, propagation 25 % / 45 %, ≤ 3-epoch look-ahead) and §2 (bucket split, M2/M3),
+  data-types/excessive_delay/delay.js (category mapping verbatim), ticket 2211340 (composition legend rewording 2026-08-25),
+  Congestion dashboard 2175676 legend, mockup header tsmo-congestion (2025 composition 153.8 / 105.4 / 46.8 / 4.8; regions),
+  Incidents dashboard band ("reliable from 2019").
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Delay attribution.</h1>
+          <p class="doc-lede">How excessive delay is split into what recurs every day and what events cause, and how event-caused delay is assigned to construction, accidents and everything else. It assumes you have read the excessive-delay page.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · TSMO dashboards (www/tsmo)</span>
+            <span>methodology · excessive delay, June 2026 revision</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p>Of the delay on a segment in a month, how much would have happened on an ordinary day, and how much did events add? Of the added part, how much came from construction, how much from crashes, and how much from everything else? The Data &amp; Methodology page describes the table behind it as one that "replays speeds around events to split delay into cause buckets", with buckets recurrent, non-recurrent, construction, accident and other.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are CY 2025, statewide, all vehicles, the monitored network, unless stated. Events are TRANSCOM events filtered to New York.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <h3 id="recurrent-and-non-recurrent">Recurrent and non-recurrent</h3>
+          <ol class="steps">
+            <li>Compute total excessive delay per segment and month, as on the <a href="measures_and_data--measures--excessive_delay.html">excessive-delay page</a>.</li>
+            <li>Compute the same sum against a higher bar: the greater of the threshold travel time and the segment's recurrent baseline, the median weekday travel time for that 5-minute slice over the year. Delay above that bar is <strong>non-recurrent</strong>.</li>
+            <li>Recurrent delay is total minus non-recurrent. It is the delay the segment carries on a typical day.</li>
+          </ol>
+          <h3 id="the-event-footprint">The event footprint</h3>
+          <ol class="steps">
+            <li>For each TRANSCOM event, take its start time and duration, padded by one hour either side.</li>
+            <li>Take the 5-minute travel times of candidate segments around the event's location for those days. Missing slices are filled by straight-line interpolation anchored at free-flow at the start and end of the day.</li>
+            <li>For each slice, delay is the observed travel time minus the greater of the recurrent baseline and the threshold, floored at zero, times the vehicles in the slice.</li>
+            <li>Walk the road network outward from the event, upstream and downstream. A neighbouring segment joins the footprint if it shows delay and its speed drop is at least 25 % on Interstates and freeways, or 45 % elsewhere, looking ahead up to three slices.</li>
+            <li>Sum the footprint to vehicle-hours per event and per segment.</li>
+          </ol>
+          <h3 id="the-cause-buckets">The cause buckets</h3>
+          <ol class="steps">
+            <li>Map each event's NYSDOT general category: Construction to <strong>construction</strong>, Incident to <strong>accident</strong>, Other to <strong>other</strong>. Any other category is unattributed.</li>
+            <li>Sum every event footprint that touches the segment in the month, by bucket.</li>
+            <li>Cap the bucket sums so that together they never exceed the segment-month's non-recurrent delay.</li>
+          </ol>
+          <div class="formula">non-recurrent = Σ max(0, TT_obs − max(TT_thr, TT_base)) × veh_5min
+recurrent = total − non-recurrent
+construction + accident + other ≤ non-recurrent
+            <span class="var">TT_obs = observed travel time · TT_thr = threshold travel time · TT_base = the median weekday travel time for that segment and slice over the year</span>
+            <span class="var">veh_5min = vehicles in the slice · Σ = the sum over the month's slices · the three buckets are sums of overlapping event footprints, capped</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>Footprint threshold:</strong> speed drop of 25 % on functional classes 1 and 2, 45 % on other classes, with delay above zero.</li>
+            <li><strong>Padding:</strong> one hour before and after the event's timeline. Missing durations fall back to an estimated duration or a default.</li>
+            <li><strong>Categories:</strong> the NYSDOT general category, case-sensitive. Weather, hazards and special events fall under Other when so categorised, otherwise they stay unattributed but remain inside non-recurrent.</li>
+            <li><strong>Cap:</strong> per segment and month. The earlier series had no cap, so overlapping events could double count.</li>
+            <li><strong>Coverage:</strong> a footprint is computed only for delay-relevant events. About 18.5 % of events carry one. An event list never implies that every event delayed traffic.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>Median baseline.</strong> A mean over all days includes the disrupted days and undercounts non-recurrent delay. The median is robust to them.</li>
+            <li><strong>Buckets are attributions, not independent measurements.</strong> They share out non-recurrent delay among the events present. That is why the cap exists and why the composition chart adds up.</li>
+            <li><strong>Only three buckets.</strong> The feed's general category is the only classification present on every event. Finer categories are on the Incidents dashboard, not in the monthly series.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>No precision band is published. The footprint depends on probe coverage around the event: interpolated slices are included in the dashboard figures and tracked separately, and each footprint carries its own observed-to-total slice coverage. Probe attribution has matured over time and the Incidents dashboard treats it as reliable from 2019. Recurrent delay is the most stable component, because it is a median-based remainder.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>CY 2025, statewide, all vehicles, as measured for the Congestion dashboard's data revision of 2026-06-13, in million vehicle-hours: total 310.9 = recurrent 153.8 + other 105.4 + construction 46.8 + accident 4.8. Construction causes about ten times the delay of accidents. The share of non-recurrent delay ranges from 42 % in Region 11 to 95 % in Region 6.</p>
+          
+
+          <h3 id="reading-the-composition-chart">Reading the composition chart</h3>
+          <p>On the Congestion dashboard's <span class="ui">Delay composition by year</span>, the grey band is <strong>recurrent</strong> delay: all delay not attributed to an event. The coloured bands are the non-recurrent buckets: other events, construction, accident. The "other events" band is the non-recurrent delay not claimed by construction or accident events. Hatched or missing years are years the backfill has not reached. Partial years show partial totals.</p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>A footprint is not causation.</strong> It is delay in space and time around an event, above the baseline. Two coincident events share the credit through the cap.</li>
+            <li><strong>Most events have no footprint.</strong> About 81.5 % of events show no measurable delay and appear with a dash for delay and cost.</li>
+            <li><strong>Construction as a category is broad.</strong> It includes maintenance and emergency operations events. The Work Zones dashboard is the place to read them.</li>
+            <li><strong>Pre-2019 attribution is sparse</strong>, and 2019–2020 are not in the current series.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>The current series' buckets are capped and its baseline is a median; earlier published splits were neither. Do not compare them. Within the series, compare complete years, and expect the recurrent share to fall as attribution coverage improves.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="tsmo--congestion.html">Congestion dashboard · delay composition</a>
+            <a href="tsmo--incidents.html">Incidents dashboard · attributed delay</a>
+            <a href="tsmo--work_zones.html">Work Zones dashboard · attributed delay</a>
+            <a href="tsmo--incident_view.html">Incident page · congestion footprint</a>
+            <a href="tsmo--incident_search.html">Incident Search</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-06-10 · median baseline and the attribution cap adopted; the series restarted.</li>
+            <li>2026-08-25 · the composition chart's grey legend reworded to "recurrent (all delay not attributed to an event)" after a reader took it for non-recurrent.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>The Data &amp; Methodology page's <span class="ui">Downloads &amp; API</span> section offers the delay-attribution table and the event-by-segment delay table per year. See <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page: source catalog entry for delay attribution; coverage panel (18.5 % footprint share).</li>
+            <li>Congestion and excessive-delay methodology review (references/tsmo/06): §1 per-event attribution, §2 bucket split, findings M2 and M3.</li>
+            <li>Excessive-delay data type, bucket math module: the category mapping Construction / Incident / Other.</li>
+            <li>Congestion dashboard design header, data revision 2026-06-13: the 2025 composition and regional shares.</li>
+            <li>Ticket 2211340: the composition-legend rewording and the verified series-to-colour mapping.</li>
+            <li>Incidents dashboard methodology band: attribution reliable from 2019.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>
+          <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a>
+          <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>
