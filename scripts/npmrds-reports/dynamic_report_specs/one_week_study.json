@@ -68,7 +68,7 @@
       "dateFormula": "startDate=>monthof", "derivedFromRoute": "__TODAY__",
       "color": "#bb16ed",
       "graphs": ["map_all", "avg_line", "avg_bar", "map_single"] },
-    { "id": "r8", "slot": true, "name": "Average for Year", "route_slot_group": "$0",
+    { "id": "r8", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "color": "#10030c",
       "graphs": ["map_all", "avg_line", "avg_bar", "year_grid", "map_single"] }

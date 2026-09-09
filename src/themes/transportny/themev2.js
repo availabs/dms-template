@@ -44,6 +44,7 @@ import RouteComparison from "./components/RouteComparison"
 import CreateReportButton from "./components/CreateReportButton"
 import ChooseReportButton from "./components/ChooseReportButton"
 import ReportsListRail from "./components/ReportsListRail"
+import { resolveReportDisplayText } from "./components/ReportRouteList/resolveReportDisplayText"
 
 import icons from "./icons";
 
@@ -3195,6 +3196,14 @@ const transportnyTheme = {
   sectionMenuExtensions,
   sectionHeaderExtensions,
   widgets,
+
+  // Report graph title/caption live-resolution (dynamic-reports-authoring-gaps.md — "Static
+  // graph text vs. live route resolution") — a plain top-level hook, not namespaced under
+  // `pages`/`avlGraph`, so both section.jsx (core, no `avlGraph` theme scope) and
+  // graph_new/index.jsx (core, scoped to `avlGraph`) can read it directly off the root theme
+  // object they both already have in scope. See resolveReportDisplayText.js's own doc comment
+  // for why calling this unconditionally from core is safe for every other section/site.
+  resolveReportDisplayText,
 };
 
 export default transportnyTheme;

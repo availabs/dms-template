@@ -1187,6 +1187,62 @@ Auth: minted per `src/dms/skills/authenticating-the-dms-cli.md` via `mint-token.
 between anonymous and authenticated on this server, so neither is a usable auth probe — the write
 itself is the only reliable check.
 
+### Pre-write refresh — 2026-09-08 (two weeks after Gates 1-2)
+
+The payloads, match decisions and pre-write backup were all computed against a 2026-08-25
+snapshot. Before Gate 3 the live dumps were re-fetched and diffed row-for-row
+(`diff_live_snapshots.py`). **One dataset had moved, and it was the one that mattered.**
+
+| Dataset | 25 Aug | 8 Sep | Verdict |
+|---|---|---|---|
+| actions | 189 | 189 | unchanged, row-for-row |
+| capabilities | 0 | 0 | unchanged |
+| roles | 0 | 0 | unchanged (statewide grew 516 → 525) |
+| participation | 0 | 0 | unchanged (statewide 324 → 325) |
+| jurisdictions | 70 | 70 | unchanged |
+| **hoc** | 1,190 | 1,190 | **all 1,190 rows CHANGED — `hazard` migrated** |
+
+**Match decisions re-computed and compared: 0 differences across 564 keys.** Still 131 UPDATE /
+440 INSERT on Actions, 0 matches on the other three.
+
+### ⚠ The HOC `hazard` column was migrated from display labels to the declared codes
+
+Every one of the 1,190 rows was rewritten, 1:1, nothing else touched:
+
+    Flooding -> riverine     Ice storm -> icestorm     Snowstorm -> winterweat
+    Extreme Cold -> coldwave  Extreme Heat -> heatwave  Coastal Hazards -> coastal
+    Tsunami/Seiche -> tsunami  ... and 10 more, all to their declared code
+
+**So the schema was right all along and the data has caught up to it.** This retires a finding
+that shaped a lot of Phase 7: the `STORED_VOCAB` override existed *because* stored labels
+disagreed with the declared options. That override is now removed, and `mny_schema.STORED_VOCAB`
+is deliberately left as an empty dict carrying the reason — because the general lesson is the
+opposite of the specific one:
+
+> **A declared-vs-stored disagreement is a snapshot, not a property.** Re-measure it before each
+> load rather than trusting a note from last month.
+
+`hazard_of_concern` is still `Not Reported` on all 1,190, so nothing was loaded — this was a
+vocabulary migration by someone else, not a data load.
+
+**What it broke, and what it did not.** `build_hoc.py` joined the seeded grid on the display
+label, so the join would have found nothing. Row **ids are unchanged** (verified: Glen Cove still
+2354349, 2354350, …), so the 884 updates were never at risk of hitting the wrong row — they
+simply would not have been built. Fixed by keeping display labels as the script's internal
+vocabulary (every owner-decided mapping table is written in them) and converting at the two
+boundaries that touch the database: the join key, and the `hazard` value on an insert. Freeport's
+6 inserts now write `other` rather than `Other`.
+
+**The stale backup was harmless here, by luck worth noting.** Its HOC pre-state recorded the
+pre-migration labels — but a rollback only covers columns the update actually writes, and the HOC
+update never writes `hazard`. Verified explicitly: the rollback touches 8 columns and `hazard` is
+not among them. Had the update touched that column, restoring from the 25 Aug backup would have
+silently reverted someone else's migration.
+
+Backup re-taken as **`backups/20260908T185059Z/`** — 1,085 rows, 10,778 column writes, all
+rollbacks re-verified. Review surfaces regenerated; totals unchanged at **1,849 inserts and
+1,085 updates**.
+
 ### 7d — Prove the write path on ONE throwaway row
 
 Before generating the full set. All four steps, in order:

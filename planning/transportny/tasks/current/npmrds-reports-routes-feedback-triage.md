@@ -7,7 +7,10 @@ graph-theme tuning remain deferred per Ryan's call, see below). **Phase 2 CLOSED
 collapsed-row-reweight follow-up 2026-09-05 — see "Phase 2 follow-up" and "Phase 2 — CLOSED" below).
 Phase 3 resolved (decision log). **Remaining: Phase 4** (Dynamic Reports, Item 2 — SCOPED 2026-09-05
 into [`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — **sub-items 1, 2,
-and 3 DONE + live-verified (1 and 3: 2026-09-05; 2: 2026-09-08), only sub-item 4 remains**) **and
+and 3 DONE + live-verified (1 and 3: 2026-09-05; 2: 2026-09-08), only sub-item 4 remains**;
+**all 12 catalog templates regenerated + republished 2026-09-08 with `%n`/`%y` naming, see that
+file's "Catalog regeneration" section — one real bug found live (difference-graph captions on 3
+templates), fix proposed, pending Ryan's call**) **and
 Phase 5** (open-ended polish, Item 4 remainder) — Phase 5 not started. · **Started:** 2026-09-04
 
 ## Phase 2 follow-up (2026-09-05): explicit Save/Discard replaces auto-save row editing
@@ -521,9 +524,11 @@ live-verified 2026-09-05** — needed RRL to start broadcasting its own `routeSo
 (the header had no join source of its own), see that file's own section for the full record.
 **Sub-item 2 (Add Route Slot: reuse vs. distinct) DONE + live-verified 2026-09-08** — confirmed
 UI-only as scoped, no resolution/persistence/converter change needed; see that file's own section
-for the design decisions and full record. Sub-item 4 (static↔dynamic conversion) intentionally
-left undesigned pending its own pass — the only piece of Phase 4 still open. Sequence within the
-item, smallest/least-coupled first:
+for the design decisions and full record. **Sub-item 4 (static↔dynamic conversion) SCOPED
+2026-09-08** — a full design proposal exists (graphs need zero changes, confirmed by reading the
+`route_comp_id`-keyed binding), with 3 open questions needing Ryan's steer before it's built; see
+that file's own section, the only piece of Phase 4 not yet implemented. Sequence within the item,
+smallest/least-coupled first:
 
 1. `%n` / `%y` route-slot name variable substitution (template-name resolution only); default a new
    slot's name to `%n`.

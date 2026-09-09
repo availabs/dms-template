@@ -39,6 +39,26 @@ export function distinctRouteSlotGroups(slots) {
   return seen;
 }
 
+// Merges one slot with its resolved real catalog row — the exact `{...slot, ...catalogRow, ...}`
+// shape `resolvedRoutes` below needs. Exported so ReportRouteList.jsx's static<->dynamic
+// conversion (dynamic-reports-authoring-gaps.md sub-item 4) can build this same shape itself, off
+// catalog rows it already has in hand (from `RouteTagBrowserModal`'s own onConfirm, or from this
+// hook's own `resolvedGroupRoutes`), instead of round-tripping through a URL navigation + a second
+// fetchCatalogRows call just to get back to a shape it could've built directly.
+export function mergeSlotWithCatalogRow(slot, catalogRow) {
+  if (!slot || !catalogRow) return null;
+  return {
+    ...slot,
+    ...catalogRow,
+    route_comp_id: slot.route_comp_id,
+    color: slot.color,
+    name: slot.name,
+    // The resolved catalog row's OWN name — see resolvedRoutes' own comment below for why this
+    // stays a separate field from `name`.
+    catalogRouteName: catalogRow.name,
+  };
+}
+
 export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeIds, enabled }) {
   const [catalogRowsById, setCatalogRowsById] = useState(new Map());
   const [isResolving, setIsResolving] = useState(false);
@@ -96,20 +116,7 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
       const groupIndex = groups.indexOf(routeSlotGroupKey(slot));
       const id = groupIndex >= 0 ? routeIds?.[groupIndex] : null;
       const catalogRow = id != null ? catalogRowsById.get(String(id)) : null;
-      if (!catalogRow || !slot) return null;
-      return {
-        ...slot,
-        ...catalogRow,
-        route_comp_id: slot.route_comp_id,
-        color: slot.color,
-        name: slot.name,
-        // The resolved catalog row's OWN name — the real corridor ("NY-9D NB"), as opposed to
-        // `name` above (the slot's per-variant label, "Current Year"/"1 Year Ago"). Kept as a
-        // separate field so a consumer that wants "which physical route is this" (the header's
-        // routes disclosure, grouping variants under their shared base route — also the `%n`
-        // substitution source above) can read it without disturbing `name` itself.
-        catalogRouteName: catalogRow.name,
-      };
+      return mergeSlotWithCatalogRow(slot, catalogRow);
     })
     .filter(Boolean);
 

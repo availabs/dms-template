@@ -21,6 +21,40 @@
  * baseline excluded other work zones. That removes the circularity risk this
  * phase was most exposed to.
  *
+ * ── Three thresholds, because prior AVAIL work anchors it differently ─────
+ * `references/tsmo/06_congestion_delay_methodology.md` records how AVAIL's own
+ * congestion and excessive-delay work defines a speed threshold:
+ * `max(20, 0.6 × posted speed limit)` — FHWA's PHED anchor — and measures delay
+ * against `max(free-flow threshold, recurrent baseline)`. The work-zone report
+ * instead recommends an absolute 35 mph and a relative 60% of observed free
+ * flow. Rather than pick, every zone reports all three:
+ *
+ *   m1_absolute  below `speed_threshold_mph`                    (35 mph default)
+ *   m1_relative  below `reference_speed_pct` × PM3 speed_pctl_85
+ *   m1_fhwa      below max(20, 0.6 × avg_speedlimit)            — the PHED anchor,
+ *                which keeps this measure comparable with the congestion series
+ *
+ * Measured on the 8,165 CY2024 anchor TMCs, the three relative anchors agree
+ * closely in aggregate — FHWA-from-metadata 28.9 mph, PM3's own PHED threshold
+ * 29.9, 60% of speed_pctl_85 30.3 — so the choice matters per segment rather
+ * than in the total. The absolute 35 mph sits above all three and will flag
+ * more.
+ *
+ * ── Two divergences from that prior work, deliberate and recorded ─────────
+ * 1. **The PHED threshold is computed from the POSTGRES meta view**, whose
+ *    `avg_speedlimit` is populated on 100% of our anchors. That doc records
+ *    that the CH copy of the field is empty for every year, which silently
+ *    collapsed `max(20, 0.6·limit)` to a uniform 20 mph floor across all
+ *    existing 2021–2025 excessive-delay data. Our threshold is therefore NOT
+ *    the one that series effectively used, and the two are not comparable
+ *    without saying so.
+ * 2. **Missing epochs are excluded, not interpolated.** The congestion work
+ *    synthesizes absent epochs by piecewise-linear interpolation anchored at
+ *    free flow, tracking them so `raw*` variants can drop them. M1 is a share
+ *    of time, so it takes the opposite approach: the denominator is epochs
+ *    OBSERVED, and coverage is reported. Interpolating would invent the very
+ *    quantity being measured.
+ *
  * ── What the baseline here is still for ───────────────────────────────────
  * Context and phase 6. For each TMC: the same hour-of-day and the same
  * day-type (weekday vs weekend) over the twelve months before the measurement
@@ -87,6 +121,16 @@ function baselineWindow({ startDate, months = DEFAULT_BASELINE_MONTHS }) {
   return { baseline_start: iso(from), baseline_end: iso(end), baseline_months: Number(months) };
 }
 
+/**
+ * FHWA's PHED threshold speed: 60% of the posted limit, floored at 20 mph.
+ * The definition AVAIL's congestion work uses — see the module note.
+ */
+function fhwaThresholdSpeed(avgSpeedLimit) {
+  const limit = Number(avgSpeedLimit);
+  if (!Number.isFinite(limit) || limit <= 0) return null;
+  return Math.max(20, 0.6 * limit);
+}
+
 /** ClickHouse expression for speed in mph, given a joined `miles` column. */
 function speedExpr({ milesExpr = 'm.miles', travelTimeExpr = 'n.travel_time_all_vehicles' } = {}) {
   // Guard the divide: a zero or null travel time is no observation, not infinite speed.
@@ -142,6 +186,8 @@ SELECT a.wz_event_id AS wz_event_id,
        countIf(${speed} < ${speedThresholdMph}) AS epochs_below_absolute,
        countIf(m.reference_speed > 0
                AND ${speed} < m.reference_speed * ${referencePct} / 100) AS epochs_below_relative,
+       countIf(m.fhwa_threshold_speed > 0
+               AND ${speed} < m.fhwa_threshold_speed) AS epochs_below_fhwa,
        avg(${speed}) AS speed_mean,
        quantile(0.5)(${speed}) AS speed_median,
        min(${speed}) AS speed_min,
@@ -149,6 +195,7 @@ SELECT a.wz_event_id AS wz_event_id,
        any(b.speed_p85) AS baseline_p85,
        any(m.reference_speed) AS reference_speed,
        any(m.phed_threshold_speed) AS phed_threshold_speed,
+       any(m.fhwa_threshold_speed) AS fhwa_threshold_speed,
        countIf(n.data_density_all_vehicles = 'A') AS density_a,
        countIf(n.data_density_all_vehicles = 'B') AS density_b,
        countIf(n.data_density_all_vehicles = 'C') AS density_c
@@ -174,6 +221,7 @@ module.exports = {
   hourToEpoch,
   epochToClock,
   baselineWindow,
+  fhwaThresholdSpeed,
   speedExpr,
   baselineSQL,
   measureSQL,
