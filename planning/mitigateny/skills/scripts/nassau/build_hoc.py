@@ -12,7 +12,8 @@ Scope: the 52 jurisdictions with an annex. The 18 withdrawn villages are left un
 INPUTS
   extracted/annexes/<geoid>.json    hazard_impacts (11 Hagerty hazards, boolean grid)
   extracted/baseplan.json           hazards_not_profiled, hazard_profile_boxes (county)
-  extracted/hoc_nassau_view*.json   the 1,190 seeded rows -> the ids to update
+  extracted/live_hoc_nassau.json    the 1,190 seeded rows -> the ids to update (CURRENT dump;
+                                    the older hoc_nassau_view*.json cache is pre-migration)
   freeport-hazard-map.csv           Freeport's decided mapping (independent plan)
 
 OUTPUTS  payloads/hoc_<geoid>_updates.json   [{id, hazard, data}]
@@ -110,16 +111,50 @@ COUNTY_BOX_MAP = {
 notes = []          # every judgement call this run made, for the summary
 
 
+# ---------------------------------------------------------------- the stored `hazard` vocabulary
+# BETWEEN 2026-08-25 AND 2026-09-08 THE COLUMN WAS MIGRATED.
+#
+# It used to store DISPLAY LABELS ("Flooding", "Ice storm") which disagreed with the schema's
+# declared options; that disagreement is why mny_schema carried a STORED_VOCAB override. All
+# 1,190 Nassau rows have since been rewritten to the DECLARED CODES, 1:1, with nothing else
+# touched -- so the schema was right all along and the data has caught up to it.
+#
+# The display labels remain the internal vocabulary of this script, because every owner-decided
+# mapping table below is written in them and they are what a human reads. Codes are used at the
+# two boundaries that touch the database: the join key, and the value written for an insert.
+LABEL_TO_CODE = {
+    "Avalanche": "avalanche", "Coastal Hazards": "coastal", "Drought": "drought",
+    "Earthquake": "earthquake", "Extreme Cold": "coldwave", "Extreme Heat": "heatwave",
+    "Flooding": "riverine", "Hail": "hail", "Hurricane": "hurricane",
+    "Ice storm": "icestorm", "Landslide": "landslide", "Lightning": "lightning",
+    "Snowstorm": "winterweat", "Tornado": "tornado", "Tsunami/Seiche": "tsunami",
+    "Wildfire": "wildfire", "Wind": "wind", "Other": "other",
+}
+CODE_TO_LABEL = {v: k for k, v in LABEL_TO_CODE.items()}
+
+
 def load_seeded():
-    """(geoid, hazard label) -> row id, from the committed view dump."""
-    rows = json.load(io.open(os.path.join(EX, "hoc_nassau_view1473471.json"), encoding="utf-8"))
-    idx, byg = {}, collections.defaultdict(set)
-    for r in rows:
-        d = r["data"]
-        gj = d.get("geoid_juris") or []
-        g = str(gj[0]) if isinstance(gj, list) and gj else str(gj)
-        idx[(g, d["hazard"])] = r["id"]
-        byg[g].add(d["hazard"])
+    """
+    (geoid, hazard DISPLAY LABEL) -> row id, read from the CURRENT live dump.
+
+    Reads `live_hoc_nassau.json` rather than the older `hoc_nassau_view1473471.json` cache: a
+    stale dump is what made the label-vs-code migration invisible, and the row ids are identical
+    in both, so there is no reason to prefer the cache.
+    """
+    d0 = json.load(io.open(os.path.join(EX, "live_hoc_nassau.json"), encoding="utf-8"))
+    idx, byg, unknown = {}, collections.defaultdict(set), collections.Counter()
+    for geoid, rows in d0.items():
+        for r in rows:
+            code = str(r["data"].get("hazard") or "")
+            label = CODE_TO_LABEL.get(code)
+            if label is None:
+                unknown[code] += 1
+                continue
+            idx[(str(geoid), label)] = r["id"]
+            byg[str(geoid)].add(label)
+    if unknown:
+        notes.append(f"seeded grid holds {sum(unknown.values())} row(s) with an unrecognised "
+                     f"hazard code {dict(unknown)} -- the vocabulary has moved again")
     return idx, byg
 
 
@@ -165,7 +200,16 @@ def build_named(juris, geoid, impacts):
                          f"resolved to Yes (an affirmative category is the more detailed "
                          f"answer); contradiction recorded in other_comments")
 
-        concern = "Yes" if cats else "No"
+        # "Information not provided" is a DOCUMENTED NON-ANSWER, not silence, so it is the
+        # one case that earns `Not Reported` (owner, 2026-08-24, an explicit exception to the
+        # otherwise-standing Yes-or-No-only rule). Only Atlantic Beach is affected, and its
+        # whole table reads this way -- 11 of its 17 rows.
+        #
+        # Scope of the exception: only rows sourced from the blank table. The three hazards
+        # Nassau excludes county-wide keep `No`, because their authority is base-plan Table 11
+        # and not this jurisdiction's non-answer -- treating them as unreported would discard
+        # a statement the plan actually makes.
+        concern = "Not Reported" if unprovided else ("Yes" if cats else "No")
         flags = {f: NO for f in FLAGS}
         for c in cats:
             f = CATEGORY_TO_FLAG.get(c)
@@ -188,8 +232,8 @@ def build_named(juris, geoid, impacts):
                             "Resolved in favour of the affirmative categories.")
         if unprovided:
             comments.append("The annex records \"Information not provided\" for this "
-                            "hazard. Set to No under the standing silence-is-No rule "
-                            "rather than Not Reported; the non-answer is recorded here.")
+                            "hazard, which is a documented non-answer rather than silence. "
+                            "Recorded as Not Reported.")
         if kind == "split":
             comments.append(f"Derived by splitting the combined source hazard "
                             f"\"{src}\" across {len(targets)} MNY hazards.")
@@ -278,7 +322,7 @@ def build_freeport():
                 **{f: NO for f in FLAGS})
         elif kind == "other":
             inserts.append(dict(
-                hazard="Other",
+                hazard=LABEL_TO_CODE["Other"],   # the column now stores codes, not labels
                 hazard_name_if_other=r["hazard_name_if_other"].strip(),
                 hazard_of_concern="Yes",
                 general_vulnerability=(
@@ -345,10 +389,13 @@ def main():
             json.dump(ins, io.open(os.path.join(OUT, f"hoc_{geoid}_inserts.json"), "w",
                                    encoding="utf-8"), ensure_ascii=False, indent=1)
 
-        yes = sum(1 for u in updates if u["data"].get("hazard_of_concern") == "Yes")
+        # Count all three states explicitly. Deriving No as (total - Yes) silently folded
+        # the 14 Not Reported rows into No and made the tally read as if it summed to 884.
+        tally = collections.Counter(u["data"].get("hazard_of_concern") for u in updates)
         tot_u += len(updates); tot_i += len(ins)
         summary.append(dict(geoid=geoid, jurisdiction=juris, updates=len(updates),
-                            inserts=len(ins), yes=yes, no=len(updates) - yes,
+                            inserts=len(ins), yes=tally["Yes"], no=tally["No"],
+                            not_reported=tally["Not Reported"],
                             pipeline=aliases.get(geoid, {}).get("pipeline", "?")))
 
     json.dump(dict(updates=tot_u, inserts=tot_i, jurisdictions=len(want),
@@ -359,7 +406,10 @@ def main():
     print(f"HOC: {tot_u} updates + {tot_i} inserts across {len(want)} jurisdictions")
     print(f"     expected 52 x 17 = 884 updates + 6 Freeport inserts")
     yes = sum(s["yes"] for s in summary)
-    print(f"     hazard_of_concern  Yes={yes}  No={tot_u - yes}")
+    no = sum(s["no"] for s in summary)
+    nr = sum(s["not_reported"] for s in summary)
+    print(f"     hazard_of_concern  Yes={yes}  No={no}  Not Reported={nr}  "
+          f"(sums to {yes + no + nr})")
     print(f"     {len(notes)} judgement call(s) recorded, {len(errs)} error(s)")
     for e in errs[:15]:
         print("  ERR ", e)
