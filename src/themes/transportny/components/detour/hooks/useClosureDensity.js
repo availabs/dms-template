@@ -53,10 +53,16 @@ export const useClosureDensity = (pgEnv) => {
   // The segment (+ cost objective) the currently-shown `density` belongs to - reset() needs this
   // to know which cache entry to purge, since it only receives no arguments from the caller.
   const activeCacheKeyRef = useRef(null);
+  // Aborts the PREVIOUS request's actual connection (requestIdRef above only stops the client
+  // from acting on a stale reply, not the server from computing it) - see task doc's
+  // "Concurrency/scalability hardening" for why that mattered under real load.
+  const abortControllerRef = useRef(null);
 
   const analyze = useCallback((ogcFid, costObjective = "distance") => {
     const key = cacheKey(ogcFid, costObjective);
     activeCacheKeyRef.current = key;
+
+    abortControllerRef.current?.abort();
 
     const cached = readCache(key);
     if (cached) {
@@ -69,12 +75,14 @@ export const useClosureDensity = (pgEnv) => {
     }
 
     const requestId = ++requestIdRef.current;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     setLoading(true);
     setPhase("points");
     setError(null);
     setDensity(null);
 
-    resolveClosureDensityPoints(ogcFid, pgEnv, DENSITY_NUM_CANDIDATES, costObjective)
+    resolveClosureDensityPoints(ogcFid, pgEnv, DENSITY_NUM_CANDIDATES, costObjective, controller.signal)
       .then((pointsResult) => {
         if (requestIdRef.current !== requestId) return;
         setDensity(pointsResult); // candidate markers can render now, before the tally finishes
@@ -84,7 +92,7 @@ export const useClosureDensity = (pgEnv) => {
         if (!startNodeIds.length || !endNodeIds.length) {
           throw new Error("No valid candidate points found for this segment.");
         }
-        return resolveClosureDensityRoutes(ogcFid, pgEnv, startNodeIds, endNodeIds, costObjective).then((tallyResult) => {
+        return resolveClosureDensityRoutes(ogcFid, pgEnv, startNodeIds, endNodeIds, costObjective, controller.signal).then((tallyResult) => {
           if (requestIdRef.current !== requestId) return;
           const full = { ...pointsResult, ...tallyResult };
           setDensity(full);
@@ -94,6 +102,7 @@ export const useClosureDensity = (pgEnv) => {
         });
       })
       .catch((err) => {
+        if (err.name === "AbortError") return; // superseded by a newer analyze()/reset() - not a real failure
         if (requestIdRef.current !== requestId) return;
         setError(err.message || "Failed to analyze closure coverage.");
         setDensity(null);
@@ -104,6 +113,8 @@ export const useClosureDensity = (pgEnv) => {
 
   const reset = useCallback(() => {
     requestIdRef.current++;
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
     if (activeCacheKeyRef.current) clearCache(activeCacheKeyRef.current);
     activeCacheKeyRef.current = null;
     setDensity(null);

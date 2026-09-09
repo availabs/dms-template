@@ -67,6 +67,7 @@
       { f: 'bridge-detour-report.html', t: 'bridge candidates · report' },
       { f: 'bridge-detour-route.html', t: 'bridge candidates · route' },
       { f: 'detour-coverage-methodology.html', t: 'coverage points · methodology' },
+      { f: 'approach-and-method.html', t: 'approach & method' },
     ]},
     { key: 'fa', label: 'Freight Atlas', landing: 'freight-atlas-home.html', dir: 'pages', pages: [
       { f: 'freight-atlas-home.html', t: 'home' }, { f: 'freight-atlas-map.html', t: 'map' },

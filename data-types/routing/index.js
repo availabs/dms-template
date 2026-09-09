@@ -558,8 +558,20 @@ module.exports = {
         const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv);
         const loadMs = Date.now() - t0;
 
+        // Drops this request's own queued tasks if abandoned - see detour-avoid-segment-routing-
+        // plugin.md's "Concurrency/scalability hardening". Harmless no-op after normal completion.
+        const abortController = new AbortController();
+        const cancelDebugT0 = Date.now();
+        req.on("close", () => {
+          console.log(`[cancel-debug] req 'close' fired for ogc_fid=${ogc_fid} at +${Date.now() - cancelDebugT0}ms, res.writableEnded=${res.writableEnded}`);
+          abortController.abort();
+        });
+        res.on("close", () => {
+          console.log(`[cancel-debug] res 'close' fired for ogc_fid=${ogc_fid} at +${Date.now() - cancelDebugT0}ms, res.writableEnded=${res.writableEnded}`);
+        });
+
         const t1 = Date.now();
-        const result = await memoryGraph.selectClosureDensityCandidates(graph, ogc_fid, num_candidates || 10, cost_objective || "distance");
+        const result = await memoryGraph.selectClosureDensityCandidates(graph, ogc_fid, num_candidates || 10, cost_objective || "distance", abortController.signal);
         const searchMs = Date.now() - t1;
         console.log("[routing/trsp-memory-density-points]", {
           ogc_fid,
@@ -595,8 +607,12 @@ module.exports = {
         const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv);
         const loadMs = Date.now() - t0;
 
+        // See the matching comment in /trsp-memory-density-points above.
+        const abortController = new AbortController();
+        req.on("close", () => abortController.abort());
+
         const t1 = Date.now();
-        const result = await memoryGraph.computeClosureDensityFromPoints(db, graph, ogc_fid, start_node_ids, end_node_ids, cost_objective || "distance");
+        const result = await memoryGraph.computeClosureDensityFromPoints(db, graph, ogc_fid, start_node_ids, end_node_ids, cost_objective || "distance", abortController.signal);
         const searchMs = Date.now() - t1;
         console.log("[routing/trsp-memory-density]", {
           ogc_fid,

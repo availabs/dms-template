@@ -2815,3 +2815,264 @@ legitimately need to detour far to reach the nearest bridge. **Fully reverted** 
 a slow-but-correct search beats a fast-but-wrong one. The original slowness problem this was meant
 to fix is real and still open; a flat straight-line-distance multiplier is now a confirmed-bad
 approach to it and should not be re-attempted as-is.
+
+### Adaptive reference-route cap - second attempt, addresses the regression's root cause
+
+Re-scoped to `computeClosureDensityFromPoints` only (`findRoute`, real point-to-point route
+computation for the `routing`/`detour` plugins, is left fully unbounded as before - no evidence it
+needs a cap, and no reference route available there to scale from safely).
+
+Instead of guessing a cap from straight-line distance, runs ONE reference search first - the
+nearest-start x nearest-end pair (the "trusted" pair rule 3 already accepts without validation) -
+fully unbounded except a generous fixed safety ceiling (150mi-equivalent), then scales every other
+pair's cap off THAT pair's real detour distance (`referenceDistance * 3 + a 5mi floor`). A closure
+whose geography genuinely needs a big detour (the river-crossing case that broke the flat-multiplier
+version) shows that in the reference route itself, so the cap scales up automatically for that
+geography instead of assuming a fixed multiplier works everywhere. If even the reference pair can't
+find a route within the safety ceiling, there's no reliable distance to scale from - stays fully
+unbounded for the rest of the batch (the original, safe baseline) rather than risk capping too
+tight again.
+
+`bidirectionalDijkstra`'s `maxCost` param (early-exit break) is back, same mechanism as the first
+attempt - only the caller-side cap *computation* changed, not the bound-checking itself. Threaded
+through `densitySearchPool.js`/`graphSearchWorker.js` the same way. `node --check`/`eslint` clean
+(same pre-existing findings only, all CJS-global false positives from the ESM-flavored lint config
+plus one unrelated `edgeSource` unused-var).
+
+**Live-tested and reverted same day** - "even toooooo much time" (`searchMs: 195599` in the
+diagnostic log - 195 seconds just for point selection). The reference search itself ran unbounded
+on the main thread, blocking everything before the batch even started - if that one reference pair
+happened to be a slow/hard case, the request paid its full cost PLUS the batch cost, strictly worse
+than no cap at all. Fully reverted (`memoryGraph.js`/`densitySearchPool.js`/`graphSearchWorker.js`
+back to byte-identical with `5fb8cec`), confirmed via `git diff`/`node --check`.
+
+### Third attempt: per-pair adaptive cap from already-computed candidate distances
+
+Both prior attempts needed a NEW piece of information (a straight-line guess, or a fresh reference
+search) to size the cap. This attempt uses data that's already computed and already free: each
+candidate's own real graph-distance (meters, via the flood search) from its seed -
+`selectClosureDensityCandidates` computes this for every candidate already (it's how nearest-first
+ordering and the 1-mile gap work), it was just discarded after point selection. A candidate that
+sat far into the network to be found at all (needed a long flood, e.g. because the only path to it
+crosses a river far from its seed) is itself evidence a route from there might need to go far -
+so its cap scales with that, automatically, per pair, with zero extra searches:
+
+`maxCost = (startCandidate.dist + endCandidate.dist) * 4 + 5mi floor`
+
+Sanity-checked the scaling directly: near/near candidates (0.5mi each) get a tight ~9mi cap; a
+candidate that needed a 6mi flood to be found gets a ~33-53mi cap depending on the other side -
+scales up automatically for exactly the geography that broke both previous attempts, without
+guessing a global multiplier or paying for a blocking reference search.
+
+**Plumbing**: `selectClosureDensityCandidates`'s `toPoint` now includes `dist` in every returned
+candidate point. `computeClosureDensityFromPoints` accepts `{osm_id, dist}` objects (falls back to
+unbounded/`Infinity` for any entry missing a real `dist`, backward-compatible with a bare osm_id
+string). Frontend (`useClosureDensity.js`/`resolveClosureDensity.js`) now passes the FULL point
+objects from step 1 into step 2 instead of stripping to bare ids. `bidirectionalDijkstra`'s
+`maxCost` param is back (same early-exit mechanism as both prior attempts - only the cap
+*computation* differs this time). `node --check`/`eslint` clean (same pre-existing findings only).
+
+**Live-tested and reverted same day** - "that is soo bed" (bad). No diagnostic numbers captured
+this time before the revert request. Fully reverted (`memoryGraph.js`/`densitySearchPool.js`/
+`graphSearchWorker.js`/`useClosureDensity.js`/`resolveClosureDensity.js` all back to
+byte-identical with `5fb8cec`), confirmed via `git diff`/`node --check`.
+
+### Status: 0-for-3 on capping `bidirectionalDijkstra`, direction abandoned for now
+
+Three genuinely different cap-computation strategies tried, all failed live for different
+reasons: a flat straight-line-distance multiplier (false-rejected real river detours), a single
+blocking reference-route search (195s - the reference pair itself was slow, blocking the whole
+request), and a per-pair cap from already-computed candidate flood-distances (rejected live,
+"soo bed", no diagnostic captured). Given this track record, **do not attempt a fourth capping
+variant without a fundamentally different mechanism** (e.g. switching to A* with an admissible
+heuristic instead of bounding plain bidirectional Dijkstra - see the "what can we do to make it
+faster" discussion for the options considered) - repeatedly guessing at cap formulas has cost three
+live-test cycles for zero net improvement. The original 70-90s slowness on river-crossing closures
+remains real, understood, and currently accepted as a known tradeoff rather than something to keep
+patching with variations on the same idea.
+
+## Point-selection validation bug: unreachable candidates scored the same as valid off-closure routes
+
+A live test on a real river-crossing bridge (Albany's South Mall Arterial, `ogc_fid 9249029`)
+showed candidates picked far from the closure with 65/100 tally pairs failing ("no route"). Root
+cause found in `graphSearchWorker.js`'s `batch` handler: when `bidirectionalDijkstra` found NO
+open-network route at all (`result === null`, e.g. candidate genuinely cut off across a river),
+`usesClosedSegment` came out `false` - the exact same value as "found a real route that legitimately
+doesn't cross the closure." Point-selection's validation (`passedFromCells` in `memoryGraph.js`)
+had no way to tell "unreachable" apart from "valid detour candidate."
+
+**Fix**: worker replies now carry `reachable: result !== null` alongside `usesClosedSegment`
+(`graphSearchWorker.js`, `densitySearchPool.js`'s `runBatch`). `passedFromCells` rejects a
+candidate outright if unreachable from >50% of the tested opposite points, before applying the
+existing usesClosedSegment>50% majority-vote rule to the reachable remainder. No extra searches -
+reuses the same validation searches already being run.
+
+**Second live finding on a different segment** (Albany bridge, `ogc_fid 9506168`/`9249029`):
+`candidatesRejected: 0` even with the reachability fix - the real cause there was unrelated:
+`MAX_ATTEMPTS = numCandidates * 30 = 300` tested candidates out of an 80k+ raw pool is a flat
+count regardless of local node density, so on a dense urban grid the nearest 300 pooled nodes span
+only a short physical distance, confining every validated candidate to right next to the closure
+(gap-relaxation collapsed to the 50m floor) - the corridor least likely to have a real detour,
+producing 100%-failed tallies. Not fixed this session (structural fix would be striding the tested
+window by distance/index instead of raw pool order - flagged, not implemented).
+
+**User-proposed alternative selection strategy** (kept as a documented spare, NOT activated):
+`selectSeedThenBranch` in `memoryGraph.js` - only the single nearest (seed) point stays on the
+same road as the closure; the other 9 are drawn from `otherValid` (branched onto a different road)
+first, falling back to more same-road points only if branches can't fill the count. Live-tested on
+the dense urban case above and confirmed it produces genuine geographic spread instead of
+clustering along one arterial. User's call: keep `selectPreferSameRoad` (existing same-road-first
+behavior) as the active default for now, keep `selectSeedThenBranch` defined-but-unused directly
+below it as "the deliberate next thing to try."
+
+## Concurrency/scalability hardening (worker pool correctness, throughput, caching, cancellation)
+
+Triggered by the user asking how the closure-density backend behaves under real concurrent load
+(50-100 simultaneous users). Confirmed via code read a real, pre-existing bug (present on
+`origin/master` too, not introduced by this branch): `densitySearchPool.js`'s pool was ONE shared
+pool of `NUM_WORKERS` (`min(cpus-1, 8)`) long-lived workers, with NO per-request correlation - a
+per-call `worker.on('message', onMessage)` listener resolved on the FIRST matching-type message
+from that worker, which could belong to a DIFFERENT concurrent request. Under concurrency this
+doesn't just risk slower queueing, it risks wrong results being cross-wired between users' requests
+and orphaned replies (a listener that resolved on the wrong message detaches, leaving its own real
+reply undelivered - a silent hang) - this was traced through carefully as an EventEmitter behavior
+(every registered listener fires on a message, not just one), not just a race-condition guess.
+
+**Fix 1 - `batchId`/task correlation** (`graphSearchWorker.js`, `densitySearchPool.js`): every
+worker message and reply now carries a unique `taskId`; the pool resolves exactly that task's own
+pending promise via a `Map<taskId, {resolve,reject}>`, never "whichever call is still listening."
+
+**Fix 2 - shared task queue, not per-request chunks** (`densitySearchPool.js`'s `createTaskQueue`):
+replaced "one message per worker containing that worker's whole chunk of ONE request's tasks" with
+one shared FIFO queue of individual searches from every concurrent request; each worker pulls the
+next queued task the instant it's free. Interleaves fairly - a big analysis can no longer
+monopolize a worker for its whole duration while a smaller/different request waits. Message
+protocol changed to one search per message (was: one chunk per message) - see
+`graphSearchWorker.js`'s updated header comment for the full protocol.
+
+**Fix 3 - admission gate** (`createAdmissionGate`, `MAX_ACTIVE_REQUESTS = 6`): bounds how many
+`runBatch`/`runTallyBatch` calls actively feed the shared queue at once; extra calls queue in
+arrival order and start automatically as a slot frees, rather than a traffic burst flooding the
+queue simultaneously.
+
+**Live load-tested twice** with real HTTP requests against the running local server (`http://
+localhost:3001`), using real distinct `ogc_fid`s collected from ~28 actual NY bridge/river
+crossings statewide (via `GET /routing/edges?bbox=...` at each location) - not synthetic/fake ids:
+- First run had a false-looking low success rate (6/100, then 17/100) - root-caused to MY OWN test
+  artifact: killing a client-side load-test script does NOT cancel already-dispatched server-side
+  work (no cancellation wiring existed yet), so a stopped first test's ~100 leftover requests kept
+  draining through the 6-slot gate underneath a second test, doubling real load. This directly
+  motivated the cancellation work below rather than being a random tangent.
+- Clean re-run (fresh server restart, isolated): 17/100 succeeded within a 5-minute client timeout
+  (p50 147s, p90 268s, max 286s for the ones that finished; 83/100 hadn't gotten a response back
+  at all after 5 min) - **zero cross-wiring**: every completed result was correct and correlated to
+  its own segment; the only "collision" flags were expected forward/reverse-direction edge pairs of
+  the same physical bridge (verified against the diagnostic logs, not assumed).
+- **Conclusion**: the correlation/queue/admission-gate fix makes concurrent load SAFE (no wrong
+  results, no silent hangs) but does not by itself make it FAST - 100 genuinely simultaneous heavy
+  analyses on 8 workers still queues for many minutes. That gap is what the cache below targets.
+
+**Fix 4 - server-side results cache** (`memoryGraph.js`): `pointsResultCache`/`tallyResultCache`,
+two `WeakMap<graph, Map<key, entry>>` caches wrapping `selectClosureDensityCandidates`/
+`computeClosureDensityFromPoints` (renamed to `...Uncached` internally, logic untouched). Same two
+tricks the codebase already used elsewhere (`graphCache`/`getOrLoadGraph`, `poolsByGraph` in
+`densitySearchPool.js`): (a) keyed by the GRAPH OBJECT via `WeakMap` so entries auto-GC whenever
+`invalidateGraph()` evicts that graph - no manual cache-clearing code; (b) the map stores the
+in-flight PROMISE immediately, so concurrent callers for the same key (same segment, possibly
+different users/tabs) join one computation instead of each starting their own. Points cache key:
+`ogcFid:numCandidates:costObjective`. Tally cache key: `ogcFid:costObjective:sortedStartIds:
+sortedEndIds` (keyed by the actual point set passed in, not just ogcFid, so it stays correct
+regardless of whether point-selection ever changes).
+
+**Live-verified with a real before/after A-B test** (10 distinct real bridge `ogc_fid`s, same
+collected list): pass 1 (cold) - 175.1s wall, p50 101.6s, all 10 succeeded. Pass 2 (identical 10
+ogc_fids, re-run immediately after) - **0.1s wall, p50 50ms, max 97ms** - same byte-identical
+results (same 7 distinct fingerprints, same expected same-bridge symmetry). ~2000x speedup
+confirmed, correctness unchanged across cold/warm paths.
+
+**Fix 5 - refcounted cancellation** (client: `AbortController` in `useClosureDensity.js`/
+`resolveClosureDensity.js`; server: `req.on('close')` in `index.js`'s two route handlers;
+`cancelTag` in `densitySearchPool.js`'s task queue; refcounting in `memoryGraph.js`'s
+`memoizeByGraph`). Motivated directly by the test-artifact incident above: an abandoned client
+request (user clears/switches segments, or - as demonstrated - a killed script) previously kept
+consuming worker-pool queue slots to completion for nobody. `cancelTag(requestTag)` drops only
+that request's own still-QUEUED (not yet dispatched to a worker) tasks - tasks already mid-search
+on a worker finish normally (no preemption possible, synchronous JS) and their reply is discarded
+harmlessly. Refcounted specifically because of the cache interaction: two tabs sharing the same
+cached in-flight computation (same segment, same key) must not have one tab's abort cancel the
+other's still-wanted result - cancellation only actually drops queued tasks when the LAST
+subscriber to a given cache entry aborts (`entry.refCount` hits 0).
+
+**Plain-language version of the rule** (came up because the refcount mechanic wasn't obvious from
+the code alone): say Person A clicks "Analyze" on Bridge #123, and a few seconds later Person B (a
+different tab) also clicks "Analyze" on that SAME bridge. Thanks to the cache, B doesn't start a
+second computation - they get hooked up to wait on A's already-running one, so there's one
+computation with two people waiting on it. If A then clicks "Clear," the server checks "is anyone
+else still waiting on this?" - yes (B is) - so it does nothing, keeps computing. Only once BOTH A
+and B have left (refCount reaches 0) does the server actually cancel the remaining unstarted work
+and free the workers for someone else. The refcount is just "how many people are currently waiting
+on this one result" - up when someone joins, down when someone leaves, cancel only at zero.
+
+**Live-verified cancellation actually fires**: fired a fresh (uncached) real `ogc_fid`, aborted
+client-side 3s later (well before the ~15-90s solo completion), confirmed via
+`AbortError` client-side and (server-side, user-confirmed) the `[closure-density cache] cancelled
+N queued tasks for ...` log line appearing.
+
+**Status**: correctness (fixes 1-2, live-verified under real concurrent load) and the results cache
+(fix 4, live-verified ~2000x on repeat/shared segments) are both DONE and live-tested. Cancellation
+(fix 5) is DONE and live-verified to fire correctly. The admission gate (fix 3) is a tunable
+constant (`MAX_ACTIVE_REQUESTS = 6`), not separately load-tested at other values. **Still open**:
+raw per-request search cost (the A* idea from the earlier capping saga) is the only lever that
+would raise the actual throughput ceiling rather than reschedule/cache around it - not started this
+session. Whether the deployed box has spare cores beyond the current `NUM_WORKERS` cap
+(`min(cpus-1, 8)`) was not checked (`nproc` on the real server, not this dev machine).
+
+### Fix #1 (overpass-mismatch matching) ported to the live plugin, fix #3 deprioritized, interchange fake-branch fix re-attempted and reverted again (2026-09-09)
+
+Confirmed via grep which of the 3 standalone-tool improvements (overpass-mismatch matching, whole-
+bridge closure, honest no-route reporting) were actually live in the interactive routing plugin
+(`memoryGraph.js`) vs. only in the standalone `bridge-detour-process` batch tool: only whole-bridge
+closure was live. User asked to port overpass-mismatch matching (fix #1) too, with a plan-first
+requirement; approved starting with fix #1 alone.
+
+**Fix #1 implemented**: `loadGraph()`'s candidate-to-way matching query changed to a
+`UNION ALL ... LIMIT 1` lateral join - prefer the nearest non-freeway-class edge, fall back to the
+nearest edge of any class only if none exists - so a bridge candidate point near a highway overpass
+doesn't wrongly snap onto the freeway passing underneath it. Verified live against the real DB (10
+valid distinct rows, no SQL errors).
+
+User then deprioritized fix #3 (honest no-route reporting): **"yeah for plugin 3 is not tath good
+so just focus on to pick good node for the detoured segment is better"** - redirecting to the
+already-documented highway-interchange fake-branch problem instead (confirmed via AskUserQuestion).
+
+**Interchange fake-branch fix, re-attempted in isolation**: added `edgeOsm` (OSM way id per edge)
+back into `loadGraph`'s edges query/typed-array/graph object, changed both `walkToFirstBranchSimple`
+and `walkToFirstBranchDensity`'s `isBranch` to require a genuinely different OSM way id on at least
+one candidate (not just `candidates.length > 1`), falling back to the old any-fork rule when the
+arrived-on edge's `osm` is unknown (`-1`). Verified via `node --check` and `npx eslint` (same 4 pre-
+existing findings, no new ones). Backend restarted (data-types/ isn't inside nodemon's watched dir,
+so this needs a manual restart every time - `kill` the old `src/index.js` process, then `npm run dev`
+again) to pick up the new graph-loading code; full ~10M-edge graph reload took ~85s.
+
+**Live-tested in isolation** on the exact same interchange closure from the original attempt
+(`ogc_fid 9249029`, Albany South Mall Arterial) - `/trsp-memory-density-points` returned reasonably
+clustered candidates (not the wild 40mi spread from the compounded 2026-09-02 attempt), but
+`/trsp-memory-density` came back **100 of 100 pairs failed to find a route** - the exact same total-
+failure signature as the ORIGINAL (pre-compounding) 2026-09-02 result, this time with nothing else
+active that could be masking or causing it. This resolves the "inconclusive" status from 2026-09-02:
+the OSM-way-id approach itself is the problem, not a side effect of the direction-bias change it was
+tried alongside back then.
+
+**Reverted again**: `edgeOsm` removed from `loadGraph`'s query/typed-array/graph object; both walk
+functions' `isBranch` back to plain `candidates.length > 1`. Backend restarted again to confirm the
+revert take effect (baseline behavior restored). `git diff` confirmed zero remaining `edgeOsm`/
+`arrivingWayOsm` references. Fix #1 (overpass-mismatch) and fix #2 (whole-bridge closure) remain
+live and untouched by this revert.
+
+**Current state**: fix #1 and fix #2 are live in the interactive plugin. Fix #3 (honest no-route
+reporting) remains not started, deprioritized by the user. The interchange fake-branch problem
+remains OPEN and unfixed - two independent attempts (compounded 2026-09-02, isolated 2026-09-09)
+both produced total or near-total route-finding failure on the same real interchange, ruling out
+OSM way identity as the signal for "real junction, not a ramp fork." See
+`documentation/detour-plugin-pipeline.md`'s Known Limitations for the updated writeup and a
+suggested alternate signal (node degree in the untraveled-direction subgraph) to try next.

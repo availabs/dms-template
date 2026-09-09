@@ -149,7 +149,9 @@ origin/destination pairs.
    searches (start x end pairs) - and, for the route-comparison tab, their open-baseline
    counterparts too - across a `worker_threads` pool (`densitySearchPool.js` +
    `graphSearchWorker.js`, sharing the graph via `SharedArrayBuffer`) rather than sequentially on
-   the main thread.
+   the main thread. This pool is SHARED across every concurrent request (not per-request) - see
+   `closure-density-point-selection.md` rules 9-10 for the correlation/queue/admission-gate design
+   that makes that safe under real concurrent load, plus the results cache and cancellation on top.
 3. Every edge that appears in at least one computed route is tallied by how many of the pairs used
    it - this frequency count IS the heatmap (`edgeFrequencies`, rendered as a `step`-colored line
    layer, darkest = most-used).
@@ -157,7 +159,7 @@ origin/destination pairs.
    large cost per closure - see rule 8 in `closure-density-point-selection.md`), not tuned to
    another arbitrary number.
 
-## Known limitations (as of 2026-09-02)
+## Known limitations (as of 2026-09-04)
 
 Several fixes to the rules above were tried live on 2026-09-02 and reverted after real testing
 showed they made results worse, not better - both problems below are real and still open, just
@@ -174,7 +176,16 @@ for the full blow-by-blow (what was tried, what broke, exact user wording at eac
   different way = a real junction, not just a fork) was built and reverted the same day after a
   live test still showed a large asymmetric failure (46/100 no-route on a real interchange) -
   inconclusive whether the fix itself was wrong or whether a compounding change (see next bullet)
-  masked its effect. Revisit with a clean, isolated test.
+  masked its effect. **Retried in isolation on 2026-09-09** (no other change active), on the exact
+  same interchange closure (`ogc_fid 9249029`, Albany South Mall Arterial): 100/100 pairs failed to
+  find a route - same total-failure signature as the original attempt, this time with nothing else
+  that could be masking or compounding it. Reverted again. Read as confirmation the OSM-way-id
+  approach itself is wrong, not an artifact of the earlier compounding change: on a cloverleaf, OSM
+  doesn't always split the way at every ramp junction, so requiring a genuinely different way id
+  makes the walk stop LATER, not more correctly - it walks past real forks deeper into one-way
+  ramp geometry before finally stopping, landing candidates somewhere structurally worse than the
+  plain-topology baseline. A real fix needs a different signal for "is this a real junction" than
+  OSM way identity - e.g. node degree in the untraveled-direction subgraph, not the traveled way.
 - **Small/dead-end-heavy local road networks**: `MAX_CANDIDATE_DISTANCE_M` (8 miles) combined with
   the "accept the first `numCandidates` valid points found" selection can settle for trivially
   local candidates (nearby dead-end streets in a small subdivision) when the real network there is
@@ -183,6 +194,16 @@ for the full blow-by-blow (what was tried, what broke, exact user wording at eac
   Raising the radius (8mi -> 15mi) was tried once already (2026-08-25 era) and reverted for being
   measurably slower without being better - a blanket raise isn't the right fix; an adaptive
   approach (raise the radius only when the local network is genuinely small) hasn't been tried.
+- **Dense urban grids can confine validated candidates too close to the closure** (found
+  2026-09-04, not yet fixed): `MAX_ATTEMPTS` (`numCandidates * 30` = 300) is a flat count of
+  pooled candidates tested, regardless of local node density. On a dense grid (e.g. an urban
+  bridge crossing with an 80k+ node raw pool), the nearest 300 pooled nodes can span only a short
+  physical distance, confining every validated candidate right next to the closure (gap-relaxation
+  collapses to its floor) - the corridor least likely to have a real detour, producing 100%-failed
+  tallies live-tested on a real Albany bridge (`ogc_fid 9506168`). Structural fix would stride the
+  tested window by distance/index instead of raw pool order - flagged, not implemented. (The
+  unreachable-candidate scoring bug that was ALSO present on this same test is fixed - see rule 4
+  above - this is a separate, still-open issue.)
 
 ## Quick reference: the four backend routes this plugin calls
 

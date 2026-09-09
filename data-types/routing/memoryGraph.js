@@ -39,6 +39,44 @@ const DEFAULT_SPEED_MPH = 45.0;
 // resolveConflationTables - no per-version key needed anymore)
 const graphCache = new Map();
 
+// Closure-density RESULTS caches - same two tricks as graphCache/getOrLoadGraph below and
+// densitySearchPool.js's poolsByGraph: WeakMap keyed by the graph object (auto-GC'd on
+// invalidateGraph(), no manual clearing) storing the in-flight PROMISE (concurrent callers for the
+// same segment share one computation). One cache per pipeline step. Full design + live-test
+// results: planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md.
+const pointsResultCache = new WeakMap(); // graph -> Map<"ogcFid:numCandidates:costObjective", entry>
+const tallyResultCache = new WeakMap(); // graph -> Map<"ogcFid:costObjective:startIds:endIds", entry>
+
+// Memoize + refcounted cancellation. `compute(requestTag, onPool)` must call onPool(pool) once
+// resolved and thread requestTag into runBatch/runTallyBatch. If `signal` aborts, only once every
+// caller sharing this entry has aborted (refCount hits 0) do the still-queued tasks get dropped -
+// see the task doc's "plain-language version" for a worked example.
+const memoizeByGraph = (weakMap, graph, key, compute, signal) => {
+  let byKey = weakMap.get(graph);
+  if (!byKey) { byKey = new Map(); weakMap.set(graph, byKey); }
+  let entry = byKey.get(key);
+  if (!entry) {
+    entry = { refCount: 0, requestTag: `${key}#${Date.now()}#${Math.random().toString(36).slice(2)}`, pool: null };
+    entry.promise = compute(entry.requestTag, (pool) => { entry.pool = pool; }).catch((err) => {
+      byKey.delete(key); // don't cache a failed computation
+      throw err;
+    });
+    byKey.set(key, entry);
+  }
+  entry.refCount++;
+  if (signal) {
+    const onAbort = () => {
+      entry.refCount--;
+      if (entry.refCount > 0 || !entry.pool) return; // still has interested callers, or pool not resolved yet - nothing to drop
+      const dropped = entry.pool.taskQueue.cancelTag(entry.requestTag);
+      if (dropped > 0) console.log(`[closure-density cache] cancelled ${dropped} queued tasks for ${entry.requestTag} (last subscriber aborted)`);
+    };
+    if (signal.aborted) onAbort();
+    else signal.addEventListener("abort", onAbort, { once: true });
+  }
+  return entry.promise;
+};
+
 // edgeOgcFid is loaded ORDER BY ogc_fid, so it's sorted ascending - binary search stands in for
 // the Map<ogc_fid, index> that blew V8's map capacity at ~8.2M entries (see file header).
 const findEdgeIndexByOgcFid = (edgeOgcFid, targetOgcFid) => {
@@ -65,12 +103,42 @@ const EDGES_SOURCE_ID = 2097;
 const RELATIONS_SOURCE_ID = 2098;
 const CURRENT_CONFLATION_VERSION = "2025";
 
+// Raw OSM-with-tags source ("OSM v2", source 2074) - used to detect bridge edges (tags ? 'bridge')
+// for the whole-bridge-closure widening in closureContext() below. Version string is that
+// source's own dated-snapshot format (YYMMDD), NOT the conflation version string above - confirmed
+// via a live join test (planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md,
+// "bridge identification" section): "250101" gives a 100% osm-id match rate against the 2025
+// conflation edges (the exact vintage it was conflated against), vs. 99.05% for the newer "260831"
+// snapshot - confirming this is the correct paired version, not just "the latest."
+const OSM_V2_SOURCE_ID = 2074;
+const OSM_V2_VERSION = "250101";
+
+// Bridge candidate points (source 2137) - the standalone bridge-detour-process tool's own
+// verified bridge->edge matches (NYSDOT's 258-bridge inventory, each already snapped to the
+// correct conflation edge by that tool's two-pass matching, including its overpass-mismatch
+// fix - see /home/sarang/Documents/avail/bridge-detour-process/FINDINGS.md). Used here as a
+// SECOND bridge-identification signal alongside the OSM `bridge` tag: a real bridge (e.g. US6/
+// BIN 1003090) can be a legitimate bridge with no `bridge` tag in OSM at all, which silently
+// under-widens the tag-only closure and lets a route bypass through the untagged remainder of
+// the same physical structure. This table has no version string (each reprocess just mints a
+// new sequential view_id), so it resolves by "latest view_id" rather than a pinned version.
+const BRIDGE_CANDIDATE_SOURCE_ID = 2137;
+
 const findViewTableBySourceAndVersion = async (db, sourceId, version) => {
   const { rows } = await db.query(
     `SELECT data_table FROM data_manager.views WHERE source_id = $1 AND version = $2;`,
     [sourceId, version]
   );
   if (!rows.length) throw new Error(`No view found for source_id ${sourceId}, version "${version}"`);
+  return rows[0].data_table;
+};
+
+const findLatestViewTable = async (db, sourceId) => {
+  const { rows } = await db.query(
+    `SELECT data_table FROM data_manager.views WHERE source_id = $1 ORDER BY view_id DESC LIMIT 1;`,
+    [sourceId]
+  );
+  if (!rows.length) throw new Error(`No view found for source_id ${sourceId}`);
   return rows[0].data_table;
 };
 
@@ -91,8 +159,10 @@ const resolveConflationTables = (db) => {
       findViewTableBySourceAndVersion(db, NODES_SOURCE_ID, CURRENT_CONFLATION_VERSION),
       findViewTableBySourceAndVersion(db, EDGES_SOURCE_ID, CURRENT_CONFLATION_VERSION),
       findViewTableBySourceAndVersion(db, RELATIONS_SOURCE_ID, CURRENT_CONFLATION_VERSION),
-    ]).then(([conflationTable, nodesTable, edgesTable, relationsTable]) => ({
-      conflationTable, nodesTable, edgesTable, relationsTable,
+      findViewTableBySourceAndVersion(db, OSM_V2_SOURCE_ID, OSM_V2_VERSION),
+      findLatestViewTable(db, BRIDGE_CANDIDATE_SOURCE_ID),
+    ]).then(([conflationTable, nodesTable, edgesTable, relationsTable, osmWaysTable, bridgeCandidateTable]) => ({
+      conflationTable, nodesTable, edgesTable, relationsTable, osmWaysTable, bridgeCandidateTable,
     })).catch((err) => {
       cachedTablesPromise = null; // don't cache a failed resolution - let the next caller retry
       throw err;
@@ -218,7 +288,7 @@ class MinHeap {
 }
 
 const loadGraph = async (db) => {
-  const { conflationTable, nodesTable, edgesTable, relationsTable } = await resolveConflationTables(db);
+  const { conflationTable, nodesTable, edgesTable, relationsTable, osmWaysTable, bridgeCandidateTable } = await resolveConflationTables(db);
 
   console.log(`[memoryGraph] loading nodes from ${nodesTable}...`);
   const { rows: nodeRows } = await db.query(`SELECT osm_id, lon, lat FROM ${nodesTable};`);
@@ -394,6 +464,123 @@ const loadGraph = async (db) => {
 
   const nodeGrid = new NodeGrid(nodeLon, nodeLat, 0.02); // ~1.5mi cells at these latitudes
 
+  // Whole-bridge closure widening (generalized from the standalone bridge-detour-process tool -
+  // see planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md's "bridge
+  // identification" section): a bridge's OSM way can be split into several one-directional
+  // conflation edges with no same-osm reverse twin on any of them (a forward/backward pair is the
+  // two-way-road norm; these form a small one-directional triangle/loop instead). Closing only the
+  // matched edge + its own reverse twin leaves the rest of the same physical structure open to
+  // route around through. Two independent signals feed this, unioned by OSM way:
+  //   1. OSM's own `bridge` tag (~70k of 10M edges) - the general, statewide signal.
+  //   2. Bridge candidate points (source 2137) - the standalone bridge-detour-process tool's own
+  //      verified 258-bridge inventory, snapped to its correct edge already. Catches real bridges
+  //      with no OSM tag at all (e.g. US6/BIN 1003090, confirmed missing the `bridge` tag on its
+  //      own way - tag-only widening left it under-closed and a route bypassed through the
+  //      untagged remainder of the same structure).
+  console.log(`[memoryGraph] finding bridge edges via ${osmWaysTable} and ${bridgeCandidateTable}...`);
+  const { rows: bridgeEdgeRows } = await db.query(`
+    SELECT e.ogc_fid, e.osm, e.from_node, e.to_node
+      FROM ${edgesTable} e
+      JOIN ${osmWaysTable} o ON o.osm_id = e.osm
+     WHERE o.tags ? 'bridge';
+  `);
+  const bridgeWayGroups = new Map(); // osm -> [{ogcFid, fromNode, toNode}]
+  const addWayEdges = (rows) => {
+    for (const r of rows) {
+      const list = bridgeWayGroups.get(r.osm) || [];
+      list.push({ ogcFid: +r.ogc_fid, fromNode: +r.from_node, toNode: +r.to_node });
+      bridgeWayGroups.set(r.osm, list);
+    }
+  };
+  addWayEdges(bridgeEdgeRows);
+
+  // Overpass-mismatch fix (ported from bridge-detour-process's own matchBridgeToEdge, OSM-only
+  // version - the original NYSDOT FUNCTIONAL_CLASSIFICATION/FEATURE_CODE_1 codes were never
+  // published into bridgeCandidateTable, so this uses OSM's own highway class instead, live-
+  // verified at 81% overlap with the NBI-code-driven version): at an overpass, the bridge deck and
+  // the road it crosses sit directly on top of each other in 2D, so a plain nearest-edge match can
+  // grab the road UNDERNEATH (often a motorway/trunk) instead of the bridge's own local-class deck.
+  // Prefer the nearest LOCAL-class edge first (excluding motorway/motorway_link/trunk/trunk_link);
+  // only fall back to the unrestricted nearest edge if literally no local-class edge exists at all
+  // (a genuine highway bridge, or extremely sparse local network). UNION ALL + LIMIT 1 picks the
+  // first branch that returns a row without a second round-trip.
+  const { rows: candidateMatchRows } = await db.query(`
+    SELECT DISTINCT ON (b.ogc_fid) b.ogc_fid AS candidate_ogc_fid, e.osm
+      FROM ${bridgeCandidateTable} b
+      JOIN LATERAL (
+        (SELECT e2.osm
+           FROM ${edgesTable} e2
+          WHERE e2.highway IS NULL OR NOT (e2.highway = ANY(ARRAY['motorway','motorway_link','trunk','trunk_link']))
+          ORDER BY e2.wkb_geometry <-> b.wkb_geometry
+          LIMIT 1)
+        UNION ALL
+        (SELECT e2.osm
+           FROM ${edgesTable} e2
+          ORDER BY e2.wkb_geometry <-> b.wkb_geometry
+          LIMIT 1)
+        LIMIT 1
+      ) e ON true;
+  `);
+  const candidateWays = new Set(candidateMatchRows.map((r) => r.osm));
+  const newWays = [...candidateWays].filter((osm) => !bridgeWayGroups.has(osm));
+  if (newWays.length) {
+    const { rows: candidateEdgeRows } = await db.query(
+      `SELECT ogc_fid, osm, from_node, to_node FROM ${edgesTable} WHERE osm = ANY($1);`,
+      [newWays]
+    );
+    addWayEdges(candidateEdgeRows);
+  }
+
+  // Branch-bounded local clustering (ported from bridge-detour-process's own
+  // localUnpairedClusterOgcFids - see that tool's FINDINGS.md, 4 rounds of fixing an over-reach):
+  // closing every unpaired edge in the WHOLE way over-reaches on a long corridor (US6's own way is
+  // 274 edges/13.8km - only a short span of it is the actual bridge). Bound each cluster at real
+  // forks (degree > 2 within the way's own unpaired subgraph) and cap its size. Seeded
+  // independently from EVERY unpaired edge in the way (not just one "matched" edge), since this
+  // runs once at load time for the whole graph, before any particular request names an edgeIdx.
+  const MAX_CLOSURE_CLUSTER_EDGES = 30; // backstop for a pure-chain way with no forks (BIN 1051220, 159 edges/8.36km)
+  const bridgeSiblingEdges = new Map(); // edgeIdx -> edgeIdx[] (only for edges needing widening)
+  for (const wayEdges of bridgeWayGroups.values()) {
+    const byDirectedPair = new Set(wayEdges.map((e) => `${e.fromNode}->${e.toNode}`));
+    const unpaired = wayEdges.filter((e) => !byDirectedPair.has(`${e.toNode}->${e.fromNode}`));
+    if (unpaired.length <= 1) continue; // 0 or 1 unpaired edge - nothing extra to fold in
+
+    const nodeToEdges = new Map();
+    for (const e of unpaired) {
+      for (const n of [e.fromNode, e.toNode]) {
+        if (!nodeToEdges.has(n)) nodeToEdges.set(n, []);
+        nodeToEdges.get(n).push(e);
+      }
+    }
+    const degree = new Map();
+    for (const e of unpaired) for (const n of [e.fromNode, e.toNode]) degree.set(n, (degree.get(n) ?? 0) + 1);
+    const isBranchNode = (n) => (degree.get(n) ?? 0) > 2;
+
+    for (const seed of unpaired) {
+      const visited = new Set([seed.ogcFid]);
+      const queue = [seed];
+      while (queue.length) {
+        if (visited.size >= MAX_CLOSURE_CLUSTER_EDGES) break;
+        const current = queue.shift();
+        for (const n of [current.fromNode, current.toNode]) {
+          if (isBranchNode(n)) continue;
+          for (const neighbor of nodeToEdges.get(n) ?? []) {
+            if (visited.has(neighbor.ogcFid)) continue;
+            if (visited.size >= MAX_CLOSURE_CLUSTER_EDGES) break;
+            visited.add(neighbor.ogcFid);
+            queue.push(neighbor);
+          }
+        }
+      }
+      if (visited.size <= 1) continue;
+      const clusterIdxs = [...visited].map((fid) => findEdgeIndexByOgcFid(edgeOgcFid, fid)).filter((i) => i !== -1);
+      if (clusterIdxs.length <= 1) continue;
+      const seedIdx = findEdgeIndexByOgcFid(edgeOgcFid, seed.ogcFid);
+      if (seedIdx !== -1) bridgeSiblingEdges.set(seedIdx, clusterIdxs);
+    }
+  }
+  console.log(`[memoryGraph] ${bridgeEdgeRows.length} tag-based bridge edges + ${candidateWays.size} candidate-point ways (${newWays.length} untagged), ${bridgeSiblingEdges.size} edges need whole-bridge widening`);
+
   return {
     conflationTable, edgesTable, nodesTable,
     numNodes, numEdges,
@@ -401,7 +588,7 @@ const loadGraph = async (db) => {
     edgeSource, edgeTarget, edgeLengthM, edgeDurationS, edgeOgcFid, edgeHighway,
     adjHead, adjEdgeIndex, inAdjHead, inAdjEdgeIndex,
     restrictionSet, edgeCountForEncoding,
-    nodeGrid,
+    nodeGrid, bridgeSiblingEdges,
     restrictionsConsidered: restrictionSet.size,
   };
 };
@@ -641,6 +828,11 @@ const findRoute = async (db, graph, { lon: srcLon, lat: srcLat }, { lon: dstLon,
       excludedEdgeSet.add(idx);
       const reverseIdx = findReverseEdge(graph, idx);
       if (reverseIdx !== -1) excludedEdgeSet.add(reverseIdx);
+      // Whole-bridge closure widening (see closureContext/loadGraph's bridgeSiblingEdges) - a
+      // bridge picked via the simple detour mode must also close its unpaired sibling edges, not
+      // just this one directional segment + its own reverse twin.
+      const siblings = graph.bridgeSiblingEdges?.get(idx);
+      if (siblings) for (const s of siblings) excludedEdgeSet.add(s);
     }
   }
 
@@ -955,16 +1147,83 @@ const walkToFirstBranchDensity = (graph, startNode, blockedNode, excludedEdgeSet
   return { node: current, path, reason: "hop_cap" };
 };
 
+// Ported from the standalone bridge-detour-process tool's own fix (found live-testing Butts Rd -
+// see detour-avoid-segment-routing-plugin.md): once a whole-bridge closure widens excludedEdgeSet
+// beyond one edge + its reverse twin, the ORIGINALLY MATCHED edge's own fromNode/toNode can turn
+// out to be the closed cluster's INTERIOR node (both its edges excluded, zero connections left)
+// rather than one of the cluster's real exterior "gateway" nodes - walkToFirstBranch would then
+// dead-end at hop 0 instead of ever reaching a real branch. This walks OUTWARD through only the
+// excluded edges themselves until it finds a node with at least one non-excluded edge (the
+// cluster's real boundary). A normal single-edge closure's own fromNode/toNode already sits on the
+// boundary (a two-way road's endpoints keep plenty of other connections), so this returns
+// startNode immediately for the vast majority of segments - it only matters for a widened,
+// multi-edge closure whose matched edge happens to be an interior piece.
+// `avoidNode` (optional): a boundary node ALREADY claimed by the other side - without this, both
+// sides can independently walk to the SAME nearest boundary node, collapsing fromNode/toNode onto
+// one point (a degenerate closure with no real start/end). Skipped as a stopping point so the two
+// sides resolve to distinct boundary nodes when more than one exists; if the whole cluster only has
+// ONE real boundary node, still returns it rather than the interior startNode.
+const pushToClusterBoundary = (graph, startNode, excludedEdgeSet, avoidNode = null) => {
+  const { adjHead, adjEdgeIndex, inAdjHead, inAdjEdgeIndex, edgeSource, edgeTarget } = graph;
+  const hasExteriorEdge = (node) => {
+    for (let i = adjHead[node]; i < adjHead[node + 1]; i++) if (!excludedEdgeSet.has(adjEdgeIndex[i])) return true;
+    for (let i = inAdjHead[node]; i < inAdjHead[node + 1]; i++) if (!excludedEdgeSet.has(inAdjEdgeIndex[i])) return true;
+    return false;
+  };
+  if (startNode !== avoidNode && hasExteriorEdge(startNode)) return startNode;
+
+  const visited = new Set([startNode]);
+  const queue = [startNode];
+  let fallback = startNode === avoidNode && hasExteriorEdge(startNode) ? startNode : null;
+  while (queue.length) {
+    const current = queue.shift();
+    for (let i = adjHead[current]; i < adjHead[current + 1]; i++) {
+      const e = adjEdgeIndex[i];
+      if (!excludedEdgeSet.has(e)) continue; // only traverse THROUGH the closed cluster itself
+      const n = edgeTarget[e];
+      if (visited.has(n)) continue;
+      visited.add(n);
+      if (hasExteriorEdge(n)) { if (n !== avoidNode) return n; fallback = fallback ?? n; continue; }
+      queue.push(n);
+    }
+    for (let i = inAdjHead[current]; i < inAdjHead[current + 1]; i++) {
+      const e = inAdjEdgeIndex[i];
+      if (!excludedEdgeSet.has(e)) continue;
+      const n = edgeSource[e];
+      if (visited.has(n)) continue;
+      visited.add(n);
+      if (hasExteriorEdge(n)) { if (n !== avoidNode) return n; fallback = fallback ?? n; continue; }
+      queue.push(n);
+    }
+  }
+  // Every boundary node found was avoidNode (only one real boundary exists) - return it anyway
+  // rather than the original interior startNode; falls back to startNode only if truly nothing
+  // was ever reachable (a fully isolated cluster).
+  return fallback ?? startNode;
+};
+
 // Resolves the closed segment + a same/open-route helper shared by both split steps below.
+// `fromNode`/`toNode` are the segment's real endpoints, boundary-corrected via
+// pushToClusterBoundary when a whole-bridge widening moved the matched edge's own endpoint inside
+// the closed cluster - callers should use THESE, not graph.edgeSource[edgeIdx]/edgeTarget[edgeIdx]
+// directly, so the widening actually takes effect downstream (endpoint-picking, seed-finding).
 const closureContext = (graph, ogcFid, costObjective) => {
   const edgeIdx = findEdgeIndexByOgcFid(graph.edgeOgcFid, +ogcFid);
   if (edgeIdx === -1) throw new Error(`Unknown segment ogc_fid ${ogcFid}`);
   const reverseIdx = findReverseEdge(graph, edgeIdx);
   const excludedEdgeSet = new Set([edgeIdx]);
   if (reverseIdx !== -1) excludedEdgeSet.add(reverseIdx);
+  // Whole-bridge closure widening - see the bridgeSiblingEdges build in loadGraph and
+  // pushToClusterBoundary's comment above.
+  const siblings = graph.bridgeSiblingEdges?.get(edgeIdx);
+  if (siblings) for (const s of siblings) excludedEdgeSet.add(s);
+  // toNode resolved first (usually already exterior, unchanged) so fromNode's push can avoid
+  // collapsing onto whatever toNode already claimed.
+  const toNode = pushToClusterBoundary(graph, graph.edgeTarget[edgeIdx], excludedEdgeSet);
+  const fromNode = pushToClusterBoundary(graph, graph.edgeSource[edgeIdx], excludedEdgeSet, toNode);
   const costArray = costObjective === "time" ? graph.edgeDurationS : graph.edgeLengthM;
   const routeUsesClosedSegment = (edgePath) => edgePath.includes(edgeIdx) || (reverseIdx !== -1 && edgePath.includes(reverseIdx));
-  return { edgeIdx, reverseIdx, excludedEdgeSet, costArray, routeUsesClosedSegment };
+  return { edgeIdx, reverseIdx, excludedEdgeSet, fromNode, toNode, costArray, routeUsesClosedSegment };
 };
 
 // Simple detour mode's endpoint picker, moved server-side - the client-side version (comp.jsx's
@@ -974,9 +1233,7 @@ const closureContext = (graph, ogcFid, costObjective) => {
 // walk-to-first-branch rule (`walkToFirstBranch` above, already used by
 // selectClosureDensityCandidates), just exposed as one fast in-memory call instead of many.
 const resolveDetourEndpoints = (graph, ogcFid) => {
-  const { edgeIdx, excludedEdgeSet } = closureContext(graph, ogcFid, "distance"); // costObjective is irrelevant here - only used for excludedEdgeSet/edgeIdx
-  const fromNode = graph.edgeSource[edgeIdx];
-  const toNode = graph.edgeTarget[edgeIdx];
+  const { excludedEdgeSet, fromNode, toNode } = closureContext(graph, ogcFid, "distance"); // costObjective is irrelevant here - only used for excludedEdgeSet
   const startWalk = walkToFirstBranchSimple(graph, fromNode, toNode, excludedEdgeSet);
   const endWalk = walkToFirstBranchSimple(graph, toNode, fromNode, excludedEdgeSet);
   const toPoint = (n, walk) => ({
@@ -988,10 +1245,15 @@ const resolveDetourEndpoints = (graph, ogcFid) => {
 
 // Step 1/2 - split into two API calls so the frontend can show/confirm candidate points before
 // committing to the expensive full analysis: point SELECTION only, no route tallying.
-const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10, costObjective = "distance") => {
-  const { edgeIdx, reverseIdx, excludedEdgeSet } = closureContext(graph, ogcFid, costObjective);
-  const fromNode = graph.edgeSource[edgeIdx];
-  const toNode = graph.edgeTarget[edgeIdx];
+// Cached (see pointsResultCache above) - re-analyzing the SAME segment, even by a different user,
+// skips the whole worker-pool run and returns the prior result immediately.
+const selectClosureDensityCandidates = (graph, ogcFid, numCandidates = 10, costObjective = "distance", signal) =>
+  memoizeByGraph(pointsResultCache, graph, `${ogcFid}:${numCandidates}:${costObjective}`, (requestTag, onPool) =>
+    selectClosureDensityCandidatesUncached(graph, ogcFid, numCandidates, costObjective, requestTag, onPool),
+  signal);
+
+const selectClosureDensityCandidatesUncached = async (graph, ogcFid, numCandidates = 10, costObjective = "distance", requestTag, onPool) => {
+  const { edgeIdx, reverseIdx, excludedEdgeSet, fromNode, toNode } = closureContext(graph, ogcFid, costObjective);
   const closedHighway = graph.edgeHighway[edgeIdx];
 
   // Seed each side from its FIRST REAL BRANCH past the closed segment - same walk-to-first-branch
@@ -1164,8 +1426,12 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
 
   if (tasks.length > 0) {
     const pool = await densitySearchPool.getPool(graph, costObjective);
-    const resultsMap = await densitySearchPool.runBatch(pool, edgeIdx, reverseIdx, tasks);
-    for (const t of tasks) t._cells[t._ti][t._oi] = !!resultsMap.get(t.id);
+    onPool?.(pool); // lets the memoize layer above cancel THIS request's own queued tasks if every caller sharing it aborts
+    const resultsMap = await densitySearchPool.runBatch(pool, Array.from(excludedEdgeSet), tasks, requestTag);
+    for (const t of tasks) {
+      const r = resultsMap.get(t.id);
+      t._cells[t._ti][t._oi] = r ? { usesClosedSegment: r.usesClosedSegment, reachable: r.reachable } : { usesClosedSegment: false, reachable: false };
+    }
   }
 
   // Same fails/oppositeSet.length <= 0.5 aggregation passesValidation used to do live, now reading
@@ -1176,12 +1442,19 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   // made point-selection noticeably slower (per-candidate BFS on the main thread), and this call
   // needs to stay fast. Revisit as a properly-parallelized version (worker pool, like the >50%
   // check below) rather than re-adding it inline here.
+  //
+  // Unreachable (no route at all) is a hard fail, separate from the usesClosedSegment>50% rule -
+  // it used to score identically to a genuine off-closure route. See task doc's "Point-selection
+  // validation bug" section for the live-tested river-crossing case this fixes.
   const passedFromCells = (testIndices, cells, oppositeCount) => {
     const passed = new Map(); // restPool index -> boolean
     testIndices.forEach((idx, ti) => {
       if (oppositeCount === 0) { passed.set(idx, true); return; } // bootstrap - shouldn't hit (seed excluded from testIndices)
-      const fails = cells[ti].filter((usesClosedSegment) => !usesClosedSegment).length;
-      passed.set(idx, fails / oppositeCount <= 0.5);
+      const unreachable = cells[ti].filter((c) => !c.reachable).length;
+      if (unreachable / oppositeCount > 0.5) { passed.set(idx, false); return; }
+      const fails = cells[ti].filter((c) => c.reachable && !c.usesClosedSegment).length;
+      const reachableCount = oppositeCount - unreachable;
+      passed.set(idx, reachableCount > 0 && fails / reachableCount <= 0.5);
     });
     return passed;
   };
@@ -1211,18 +1484,37 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
   // first-N-found, or index-spacing alone. Falls back to a smaller gap (never a smaller count)
   // if the validated pool can't support both - see pickWithBestEffortGap above.
   //
-  // SAME-ROAD PRIORITY AT SELECTION TIME: try the same-road-validated set ALONE first. Only fall
-  // back to the combined (same-road + branched-onto-other-roads) set if the same road genuinely
-  // can't supply `numCandidates` even after fully relaxing the gap - directional priority first,
-  // branch only once that direction dead-ends. A long road with plenty of its own valid,
-  // spread-out points should never need to touch the branch at all. A "fall back sooner, whenever
-  // same-road needed any relaxation" variant was tried alongside a hard gap floor and reverted:
-  // it collapsed to too few points per side on a small-pool segment.
+  // SAME-ROAD PRIORITY AT SELECTION TIME (ACTIVE): try the same-road-validated set ALONE first.
+  // Only fall back to the combined (same-road + branched-onto-other-roads) set if the same road
+  // genuinely can't supply `numCandidates` even after fully relaxing the gap - directional
+  // priority first, branch only once that direction dead-ends. A long road with plenty of its own
+  // valid, spread-out points should never need to touch the branch at all. A "fall back sooner,
+  // whenever same-road needed any relaxation" variant was tried alongside a hard gap floor and
+  // reverted: it collapsed to too few points per side on a small-pool segment.
   const selectPreferSameRoad = (sameValid, otherValid) => {
     const sameRoadOnly = pickWithBestEffortGap(sameValid, numCandidates, MIN_GAP_M);
     if (sameRoadOnly.picked.length >= numCandidates) return sameRoadOnly;
     const combined = [...sameValid, ...otherValid].sort((a, b) => a.dist - b.dist);
     return pickWithBestEffortGap(combined, numCandidates, MIN_GAP_M);
+  };
+
+  // SPARE, NOT ACTIVE: only the seed point stays on the same road; the rest come from `otherValid`
+  // (branches) first. Live-tested 2026-09-04, fixed a dense-urban clustering case - kept unused as
+  // the deliberate next thing to try. See task doc's "Point-selection validation bug" section.
+  // eslint-disable-next-line no-unused-vars
+  const selectSeedThenBranch = (sameValid, otherValid) => {
+    const seed = sameValid.slice(0, SEED_COUNT);
+    const sameRest = sameValid.slice(SEED_COUNT);
+    const remaining = numCandidates - seed.length;
+    if (remaining <= 0) return { picked: seed, gapUsedM: null };
+
+    const branchOnly = pickWithBestEffortGap(otherValid, remaining, MIN_GAP_M);
+    if (branchOnly.picked.length >= remaining) {
+      return { picked: [...seed, ...branchOnly.picked], gapUsedM: branchOnly.gapUsedM };
+    }
+    const combined = [...sameRest, ...otherValid].sort((a, b) => a.dist - b.dist);
+    const combinedPicked = pickWithBestEffortGap(combined, remaining, MIN_GAP_M);
+    return { picked: [...seed, ...combinedPicked.picked], gapUsedM: combinedPicked.gapUsedM };
   };
 
   const { picked: startCandidates, gapUsedM: startGapUsedM } = selectPreferSameRoad(startSameValid, startOtherValid);
@@ -1264,8 +1556,20 @@ const selectClosureDensityCandidates = async (graph, ogcFid, numCandidates = 10,
 // This is the expensive part (up to numStart*numEnd closed-route searches) - kept separate so a
 // slow analysis doesn't also re-pay for point selection, and so the frontend can show points
 // immediately without waiting on the full tally.
-const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmIds, endNodeOsmIds, costObjective = "distance") => {
-  const { edgeIdx, reverseIdx } = closureContext(graph, ogcFid, costObjective);
+// Cached (see tallyResultCache above), keyed by the ACTUAL start/end ids passed in (not just
+// ogcFid) so the cache stays correct regardless of which points a given caller resolved - a
+// second request with the exact same point set (the common case: re-analyzing the same segment,
+// possibly by a different user) skips the whole tally run.
+const computeClosureDensityFromPoints = (db, graph, ogcFid, startNodeOsmIds, endNodeOsmIds, costObjective = "distance", signal) => {
+  const startKey = [...startNodeOsmIds].sort().join(",");
+  const endKey = [...endNodeOsmIds].sort().join(",");
+  return memoizeByGraph(tallyResultCache, graph, `${ogcFid}:${costObjective}:${startKey}:${endKey}`, (requestTag, onPool) =>
+    computeClosureDensityFromPointsUncached(db, graph, ogcFid, startNodeOsmIds, endNodeOsmIds, costObjective, requestTag, onPool),
+  signal);
+};
+
+const computeClosureDensityFromPointsUncached = async (db, graph, ogcFid, startNodeOsmIds, endNodeOsmIds, costObjective = "distance", requestTag, onPool) => {
+  const { excludedEdgeSet } = closureContext(graph, ogcFid, costObjective);
   const resolve = (osmId) => graph.nodeIdToIndex.get(String(osmId));
   // Route-comparison tab (see planning/transportny/tasks/current/
   // closure-density-route-comparison-tab.md) - keep the original osm_id alongside each resolved
@@ -1299,7 +1603,8 @@ const computeClosureDensityFromPoints = async (db, graph, ogcFid, startNodeOsmId
     }
   }
   const pool = await densitySearchPool.getPool(graph, costObjective);
-  const resultsMap = await densitySearchPool.runTallyBatch(pool, edgeIdx, reverseIdx, tasks);
+  onPool?.(pool); // lets the memoize layer above cancel THIS request's own queued tasks if every caller sharing it aborts
+  const resultsMap = await densitySearchPool.runTallyBatch(pool, Array.from(excludedEdgeSet), tasks, requestTag);
 
   // Sums the edgePath's REAL miles/seconds regardless of costObjective - matches findRoute's own
   // totalLengthM/totalDurationS pattern (the search's cost objective only picks WHICH path wins,

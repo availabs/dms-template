@@ -39,15 +39,25 @@ build the "which surrounding roads absorb the rerouted traffic" heatmap.
      nodes; without this split, validating that loop alone could burn the entire budget and never
      reach the roads that actually expand farther out.
    - **Final selection**: the same-road-validated set is tried ALONE first
-     (`selectPreferSameRoad`). The "other" (branched) set is only merged in as a fallback if the
-     same road genuinely can't reach `numCandidates` even after fully relaxing the minimum gap. A
-     long road with enough of its own spread-out valid points never touches the branch at all.
+     (`selectPreferSameRoad`, the active default). The "other" (branched) set is only merged in as
+     a fallback if the same road genuinely can't reach `numCandidates` even after fully relaxing
+     the minimum gap. A long road with enough of its own spread-out valid points never touches the
+     branch at all. An alternative (`selectSeedThenBranch`, defined but NOT active) keeps only the
+     single seed on the same road and prefers branches for the rest - live-tested to fix a dense
+     urban case where `selectPreferSameRoad` clustered all 10 points along one arterial with no
+     real detour; kept as the deliberate next thing to try, not the default.
 
-4. **A candidate only counts if it's genuinely relevant.** For each candidate, compute the OPEN
-   (non-excluded) route to a reference seed point on the opposite side (`passesValidation`). The
-   candidate is accepted only if that route actually passes through the closed segment. The seed
-   itself (the single nearest node on each side) is accepted unconditionally as the bootstrap
-   reference, since being immediately adjacent to the closure makes it reliably relevant.
+4. **A candidate only counts if it's genuinely relevant AND actually reachable.** For each
+   candidate, compute the OPEN (non-excluded) route to a reference seed point on the opposite side
+   (`passedFromCells`). Two separate checks, not one: (a) if the candidate is unreachable from >50%
+   of the tested opposite points (no route exists at all - e.g. cut off across a river), it's
+   rejected outright; (b) among the reachable remainder, the candidate is accepted only if the
+   route actually passes through the closed segment (`usesClosedSegment`) for >50% of them. These
+   used to collapse into one check - an unreachable candidate and a genuine off-closure route both
+   scored `usesClosedSegment: false`, so unreachable candidates could still pass. Fixed 2026-09-04
+   after a live test showed candidates picked across a river with no real route to most of the
+   opposite side. The seed itself (the single nearest node on each side) is accepted unconditionally
+   as the bootstrap reference.
 
 5. **Real minimum spacing between picks, not index spacing.** `MIN_GAP_M` (currently 1 mile) is
    enforced as actual real-world network distance (`candidate.dist`, accumulated in the search)
@@ -76,13 +86,27 @@ build the "which surrounding roads absorb the rerouted traffic" heatmap.
    `closure-density-performance.md`) - re-apply it after any fresh submodule pull/checkout if it's
    gone missing.
 
-9. **Validation searches run in parallel across a worker_threads pool.** Point selection used to
-   run every validation search sequentially on the main thread; `densitySearchPool.js` +
-   `graphSearchWorker.js` now dispatch the whole request's searches (both sides, all attempts) in
-   one combined batch across a pool of workers sharing the graph via `SharedArrayBuffer`. Same
-   exact `bidirectionalDijkstra` algorithm, just parallelized - see
-   `closure-density-performance.md` for the full design and measured speedup (~60s+ -> ~18s on a
-   real closure at the time it was built).
+9. **Validation searches run in parallel across a shared worker_threads pool.** Point selection
+   dispatches its searches across `densitySearchPool.js` + `graphSearchWorker.js` (same exact
+   `bidirectionalDijkstra` algorithm, sharing the graph via `SharedArrayBuffer`). ONE pool is
+   shared by every concurrent request, not per-request - three things make that safe and fair:
+   every search carries a unique `taskId` so a reply resolves only its own caller's promise (a
+   confirmed live cross-wiring/hang bug when this was missing); a shared FIFO task queue
+   interleaves individual searches across whatever requests currently have work outstanding
+   (instead of one request's chunk monopolizing a worker); and an admission gate
+   (`MAX_ACTIVE_REQUESTS`) bounds how many requests feed the queue at once, queueing the rest.
+   Full design + live load-test numbers: `detour-avoid-segment-routing-plugin.md`'s
+   "Concurrency/scalability hardening" section.
+
+10. **Repeated/shared requests skip the search entirely via a results cache.** Both
+    `selectClosureDensityCandidates` and `computeClosureDensityFromPoints` are memoized
+    (`pointsResultCache`/`tallyResultCache` in `memoryGraph.js`) keyed by segment+params - a second
+    request for the same closure (by the same or a different user) returns the prior result
+    instead of recomputing. Live-tested: ~2000x speedup on a repeat (175s -> 0.1s for 10 segments).
+    An abandoned/superseded request drops its own still-queued tasks via a refcounted cancellation
+    path (client `AbortController` -> server `req.on('close')` -> `cancelTag`) - refcounted so a
+    second caller still waiting on the SAME cached computation is never cancelled by a different
+    caller giving up.
 
 ## Current tunable values
 
@@ -95,6 +119,7 @@ build the "which surrounding roads absorb the rerouted traffic" heatmap.
 | `SEED_COUNT` (bootstrap reference points) | 1 | `selectClosureDensityCandidates` |
 | Request timeout | bypassed (uncommitted, see rule 8) | `src/dms/packages/dms-server/src/index.js` |
 | Worker pool size | `min(cpus-1, 8)` | `densitySearchPool.js` |
+| `MAX_ACTIVE_REQUESTS` (concurrent requests actively feeding the shared queue) | 6 | `densitySearchPool.js` |
 
 ## Diagnostics available in the response
 
