@@ -12,6 +12,24 @@
 //
 // DRAFT-ONLY. It never publishes and never touches `sections`/`section_groups`.
 //
+// ⚠ **STALE / DRIFTED — DO NOT RE-RUN WITHOUT BACKPORTING FIRST (measured 2026-09-09).**
+// Static parity against live draft 2211341 (23 vs 23 sections, so the count guard would NOT
+// fire) shows 7 of 23 sections differ:
+//   · [0] 2213644 — the hero lede was REWRITTEN live ("…across New York State — the NHS plus
+//     the expanded network NYSDOT licenses beyond it…"); this script still carries the
+//     NHS-only sentence and a re-run would revert it.
+//   · [22] 2213666 — the footer's reports link is `/reports/reports` live, `/reports` here.
+//   · [4][5][8][9][10] 2213648/49/52/53/54 — `useDataSource`'s runtime reconcile after someone
+//     opened /edit: `externalSource.baseUrl` blanked, the 7 authored column defs replaced by
+//     the source's full 60-column catalog (`display_name` → `display`), a cached `data` row
+//     added, and `display.fetchMode` "force" → "cache" (a behaviour change: the spine cards
+//     no longer bypass the cache). See builds/README.md "VIEWING A PAGE IN /edit MUTATES ITS
+//     SECTIONS".
+// Because of this, the Phase 9b docs-link cutover (2026-09-09) patched the LIVE published AND
+// draft rows directly (2216768/69/71/77/78 + 2213656/57/59/65/66) and patched this script's
+// link table to match — it was NOT re-run. Backport the five items above, re-prove parity with
+// scratch harness `parity_migrated.mjs`, and only then re-run.
+//
 // Discipline (qa_skills/tools/builds/README.md):
 //  · find-or-create the page BY SLUG, then address everything BY PAGE ID;
 //  · a RUNTIME PARITY GUARD refuses to wipe when the live draft section count
@@ -160,16 +178,23 @@ const L = {
   map21: "/map_21",
   lottr: "/map_21/level_of_travel_time_reliability",
   dataSources: "/datasources",
-  // npmrds_docs pattern 1411813, base_url /docs
-  docOverview: "/docs/npmrds/overview",
-  docQuickStart: "/docs/npmrds/quick_start",
-  docRoute: "/docs/npmrds/route_analysis",
-  docRegional: "/docs/npmrds/regional_analysis",
-  docPm3: "/docs/npmrds/p_m_3_measures",
-  docBatch: "/docs/npmrds/batch_reports",
-  docBatchApi: "/docs/ap_is/batch_reports_api",
-  docVideos: "/docs/npmrds/training_videos",
-  docAppendix: "/docs/npmrds/appendix",
+  // DOCS — repointed 2026-09-09 at the NEW documentation pattern `platform_docs` (2218952),
+  // base_url `/docs`. The old `npmrds_docs` pattern (1411813) was moved aside to
+  // `/docs_legacy` in the same pass and nothing links to it any more; every old address
+  // below is dead, so do not resurrect one. Mapping =
+  // planning/transportny/research/docs-redesign/redirects.json plus the owner's label rules
+  // (a link's text must match its destination). Phase 9b of
+  // planning/transportny/tasks/current/platform-documentation-build.md.
+  docHome: "/docs",                                     // ← "all documentation" (was /docs/npmrds/overview)
+  docNpmrds: "/docs/npmrds",                            // ← "NPMRDS overview" / footer "docs" (was /docs/npmrds/overview)
+  docQuickStart: "/docs/npmrds/start",                  // was /docs/npmrds/quick_start
+  docRoute: "/docs/npmrds/reports/start_from_template", // was /docs/npmrds/route_analysis
+  docRegional: "/docs/npmrds/macro_view",               // was /docs/npmrds/regional_analysis
+  docPm3: "/docs/measures_and_data",                    // was /docs/npmrds/p_m_3_measures
+  docBatch: "/docs/developers/batch_reports_api",       // was /docs/npmrds/batch_reports (legacy tool page, retired)
+  docBatchApi: "/docs/developers/batch_reports_api",    // was /docs/ap_is/batch_reports_api
+  docVideos: "/docs/help",                              // was /docs/npmrds/training_videos (retired)
+  docAppendix: "/docs/glossary",                        // ← "Appendix & glossary" (was /docs/npmrds/appendix)
   // ready-made reports — real reports/* children (renamed 2026-09-02 from converted_reports/*)
   rSnapshot: "/reports/snapshot",
   rSeasonality: "/reports/seasonality",
@@ -4511,7 +4536,7 @@ const SECTIONS = [
     hr(),
     // Every npmrds_docs page — a docs index's completeness is its content.
     ...[
-      ["NPMRDS overview", L.docOverview],
+      ["NPMRDS overview", L.docNpmrds],
       ["Quick start", L.docQuickStart],
       ["Route analysis", L.docRoute],
       ["Regional analysis", L.docRegional],
@@ -4522,7 +4547,7 @@ const SECTIONS = [
       ["Appendix & glossary", L.docAppendix],
     ].map(([t, p]) => para(button(t, p, "cardlink"))),
     hr(),
-    para(button("all documentation", L.docOverview, "linkMono")),
+    para(button("all documentation", L.docHome, "linkMono")),
   )},
 
   // ══════════ FOOTER ══════════
@@ -4534,7 +4559,7 @@ const SECTIONS = [
         button("report", L.reportIndex, "plain"),
         button("route-comparison", L.comparison, "plain"),
         button("map-21", L.map21, "plain"),
-        button("docs", L.docOverview, "plain"),
+        button("docs", L.docNpmrds, "plain"),
       )),
       litem(para(text(""))),
       litem(styled("metaXS", text("© NYSDOT · TransportNY DMS v0.2"))),

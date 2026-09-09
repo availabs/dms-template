@@ -952,6 +952,23 @@ if (UPDATE_PAGE) {
   // only `raw get` returns the full row. Needed to decide whether this page
   // already has the routeSlots/baseDate pair `dynamicReport: true` requires.
   const rawPage = dms(['raw', 'get', String(pageId)]);
+  // Real bug, found + fixed 2026-09-09 (dynamic-reports-authoring-gaps.md sub-item 4's own
+  // investigation has the full repro): the CLI's `page dump --sections` (page.js) builds
+  // `_expanded_sections` as `[...sections (published) ids, ...draft_sections ids]`, deduped only
+  // by ROW id — NOT by trackingId. Since Publish (the DO_PUBLISH block below) mints an entirely
+  // NEW set of published-row copies on every run while keeping each graph's original trackingId,
+  // `_expanded_sections` ends up holding TWO rows per graph under the identical trackingId: a
+  // (possibly stale) published copy AND the real draft row `draft_sections` actually points at —
+  // with the published one listed FIRST. Every consumer below does
+  // `.find(s => s.data?.trackingId === tid)` (or matches by element-type), which therefore always
+  // matched the PUBLISHED row, never the draft one. Confirmed live: a spec-driven title/size change
+  // on an already-existing graph silently never reached the draft copy across repeated --update
+  // runs, while Publish always looked correct regardless — Publish independently rebuilds straight
+  // from the spec every time, so it never depended on this lookup at all, masking the bug. Filtering
+  // to just the ids actually present in `draft_sections` (the one array every consumer below is
+  // really trying to reconcile) fixes all three call sites — the framework-section match, the
+  // per-graph match, and the orphan-deletion sweep — at once.
+  const draftSectionIds = new Set((dump?.data?.draft_sections || []).map((s) => String(s?.id ?? s)));
   updateCtx = {
     pageId,
     slug: page.url_slug,
@@ -960,7 +977,7 @@ if (UPDATE_PAGE) {
     oldSpec: snap.data._spec ? JSON.parse(snap.data._spec) : null,
     oldKeyMap: JSON.parse(snap.data._specKeyMap),
     oldRevisions: snap.data._specRevisions ? JSON.parse(snap.data._specRevisions) : [],
-    sections: dump?._expanded_sections || [],
+    sections: (dump?._expanded_sections || []).filter((s) => draftSectionIds.has(String(s.id))),
     existingFilters: rawPage?.data?.filters || [],
   };
   console.log(`reconciling into existing page ${pageId} (${updateCtx.slug})`);

@@ -68,9 +68,10 @@ mny/design/
 │   │   └── home.html                   PLAN HOME — redesign of the county template home
 │   │                                   (pattern 1300890, page 1300803, driven by the
 │   │                                   pattern-level `geoid`). Geography prose in the
-│   │                                   header beside the county photo; three breakout-
-│   │                                   illustration cards (demography · major industries ·
-│   │                                   climate outlook); the dominant hazard pulled out as
+│   │                                   header beside the county photo; three stacked 9-wide
+│   │                                   prose sections (demography · major industries ·
+│   │                                   climate outlook) with a County facts card beside
+│   │                                   them; the dominant hazard pulled out as
 │   │                                   the page's focus object with the other ten as a bar
 │   │                                   list; actions and jurisdictions as meters; and the
 │   │                                   six lexical nav blocks collapsed into four Explore
@@ -297,7 +298,7 @@ bar list (`dashboard.html`). Only the photo header is its own thing.
 |---|---|
 | 11 sections, **2** of them data-bound | 7 sections, **5** data-bound — the page now answers *what is this county* and *what shape is its plan in* from data, not prose |
 | A paragraph describing **the template** ("places for counties … to input content") | A 20px lede describing **the plan** — what an HMP is, who adopts it, why it matters |
-| No county profile | **Geography · demography · major industries**, the section this redesign exists for — a reading column with the facts pulled out to a rail, not three equal boxes |
+| No county profile | **Geography in the header; demography · major industries · climate outlook as three stacked 9-wide prose sections** (each set in two CSS columns) with a County facts card spanning them — the section this redesign exists for |
 | No plan status anywhere | Status · approved · expires, in the header card, off three columns already on the bound row |
 | No sense of scale | 475 actions as a **segmented meter** (391 proposed · 23 in progress · 41 complete · 20 not reported) and 23 jurisdictions broken to towns/villages/county — the numbers given a shape rather than a tile |
 | 11 hazards paged **4 at a time**, all tiles the same size | The leader — **hurricane, 91% of all recorded loss** — pulled out as the page's focus object at 36px; the other ten as a bar list scaled to the largest of *them*, so they are legible instead of stubs |
@@ -305,6 +306,7 @@ bar list (`dashboard.html`). Only the photo header is its own thing.
 | Base64 PNGs inlined in lexical | Brand assets from `assets/mny/` |
 | **14 links, 3 of them broken, reaching 13 pages** | **56 links reaching 33 distinct pages — every page of the plan**, all 33 slugs checked against the 2026-09-01 harvest |
 | Nothing in the header but the county name | The county's own description of itself (`geography_topography`) plus plan status · approved · expires |
+| Profile prose in one unbroken run | 2–3 paragraphs per card, each running the **full** DHSES field. **The breaks are not in the data** — all three text fields hold zero newlines and the lexical one is a single paragraph node — so the live build needs authors to add them, or a `formatFn` that splits on sentence groups |
 
 The page's focus ladder is its type ladder: **36px** the dominant hazard · **30px** `$363,792,448`
 and `475` · **20px** the page lede · **16px** band and card titles · **14px** prose and card lists ·
@@ -313,11 +315,36 @@ and `475` · **20px** the page lede · **16px** band and card titles · **14px**
 **The breakout-illustration card** is `pages/home.html`'s device, used twice — three cards for the
 county profile, four for the Explore navigation: `pt-[Npx]` on the wrapper reserves the overhang and
 the image carries `mt-[-Npx] mx-[-12px] w-[calc(100%+24px)]`, so the isometric render bleeds to both
-card edges and rises above the top one. **Two calibration facts** for whoever ports this to a theme
-value: `w-[calc(100%+24px)]` is tuned to a ~290px card (the 4-across width) and swamps the prose on a
-390px one, which is why the profile cards pin `h-[240px]`; and `w-auto mx-auto` centres the *file*
-rather than the *drawing* — these renders carry uneven transparent padding, so the bleed width plus
-`object-contain` is what actually centres them.
+card edges and rises above the top one.
+
+**The breakout-illustration card is a DOORWAY form** — an illustration, a title, a short link list,
+one destination. On this page that is the Explore band at the foot, and only that. Four revisions
+went into resizing, cropping and re-scaling it to hold 750 characters of county profile prose before
+the container itself turned out to be the problem: at 304px such a card is ~700px tall, and three
+side by side own the page. It was never the card that was wrong — it was the card *plus a 1024²
+illustration at 304px*. Prose wants a wide card with no render: the LHMP home stacks three Card
+sections at 9 columns with the text full width. **Reach for the ILLUSTRATED card when the content is
+a list of links.**
+
+**Give the breakout card a ~290–305px column and it needs no correction at all.** That is the width
+`home.html`'s 4-across cards and the client's reference image were drawn at, and the width the
+LHMP home now uses for *both* its card rows — three profile cards and one info card at 3 columns
+each, four Explore cards at 3 columns each. At that width a full-bleed square lands at the right
+proportion on its own: `mx-[-12px] mt-[-110px] w-[calc(100%+24px)]`, nothing else.
+
+**Read the rest of this only if a card has to be wider than that.** Every file in
+`assets/mny/illustrations/` is **1024×1024 — a square, with a variable amount of transparent padding
+baked in**, and that one fact defeats both obvious CSS approaches. `h-[Npx] object-contain` scales the
+square to N×N, so on a 414px card the drawing is only 240px wide and floats in ~170px of air, reading
+as off-centre and unaligned card to card (each file pads differently). Plain full bleed gets the width
+right but makes the image as *tall* as the card is *wide*, which swamps the prose. What works is a
+**clipped window**: the image inset and wrapped in a shorter `overflow-hidden flex items-center` box,
+so the square's dead top and bottom are cropped. **Use an aspect ratio, not a px height** — a fixed
+height is correct at exactly one card width, and the same value that crops 17px at 1440 crops nothing
+at 1024 (the float returns) and decapitates the windmill on a wider card. The only card on the LHMP
+home that still needs this is the hurricane focus panel, which is 5 columns wide by design: inset to
+70% and cropped `aspect-[10/9]`, which lands it at roughly the same *graphic* size as the 304px cards
+even though its card is wider.
 
 **The one platform enrichment the page asks for** is a `risk_pill` column type (value → colour, five
 documented risk tokens), which the 16 hazard pages would reuse. Everything else is Card configuration.

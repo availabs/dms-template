@@ -223,6 +223,20 @@ Owner direction (2026-08-28):
 | external | `smart` | DAMA content changes on a publication cycle. Smart re-fetches when the query changes and otherwise reuses the cache — cheap, and stale only within a cycle. |
 | internal | `force` | A DMS dataset is edited by the same authors browsing the site. They must see their own edit, so re-query every mount. |
 
+### Exception: `DHSES_County_Database` (953754) is **smart**, internal or not
+
+Owner direction (2026-09-09), taken on the LHMP plan-home build. The DHSES county row carries
+reference and narrative fields that change on an editing cycle, not per page view, and the plan home
+alone hits that one row from **nine** sections (header, facts strip, three profile cards, four
+Explore cards). Under the general rule that is nine uncached round-trips for one unchanged row on
+every page load — the exact cost the "the rule is not the scope" section below warns about, arriving
+on a single page.
+
+So: **every component bound to source 953754 is `smart`.** Encode it as an explicit
+source-id exception rather than as a judgement call per row —
+`build_lhmp_home_new.mjs` carries it as `SMART_SOURCES = new Set([953754])`. When a future sweep
+scores this dataset, a stored `smart` on it is **correct**, not outstanding.
+
 This means a **stored `smart` on an internal source is still a fix**, not a pass. Encode
 "already correct" as *stored value equals the target for this row's class*, never as "stored value is
 not null" — 46 of `county_template`'s internal components were explicitly `smart` and all 46 need
