@@ -1019,6 +1019,15 @@ question 1.
 3. Leave static→dynamic naming as scoped (literal carryover, no auto-`%n`/`%y`) — "I think we will
    end up circling back on this."
 
+**Reversal, same day (2026-09-09), the predicted circle-back**: Ryan hit this live on his own
+scratch report (`reports/page_26`, a real route "Ocean Pkwy" picked, then toggled static→dynamic)
+and reported it as a bug: the resulting slot's `name` froze permanently to the literal "Ocean Pkwy"
+text — including staying "Ocean Pkwy" even fully UNRESOLVED (no `?routes=`), never showing a
+template. Ryan's ask: static→dynamic should default every resulting slot's name to `"%n (%y)"`,
+identical to `handleAddRouteSlot`'s own default for a brand-new slot, not preserve the old literal
+name. Implemented: `convertStaticToDynamic` now sets `slot.name = '%n (%y)'` unconditionally for
+every entry (see Implementation below) — supersedes decision 3 above.
+
 ### Correction (verified 2026-09-08, before presenting this scoping): `route_comp_ids` IS in scope
 
 The first draft of this section claimed `route_comp_ids` (plural — `useGraphPublish.js:87,233`, the
@@ -1353,6 +1362,31 @@ than needing another hand-fix.
 
 **Files changed**: `scripts/npmrds-reports/report_build.mjs` (the `updateCtx.sections` filter fix,
 inside the `--update` preflight block, ~line 950-965).
+
+### Static→dynamic naming reversal — DONE + live-verified 2026-09-09
+
+Implements the reversal of open question 3's decision (above): `convertStaticToDynamic`
+(`ReportRouteList.jsx`) now builds every slot as `{ ...r, name: '%n (%y)' }` — an unconditional
+override, before the `CATALOG_SNAPSHOT_FIELDS` strip — rather than carrying the static route's own
+literal `name` through unchanged. Applies uniformly to every route in the conversion, grouped or
+not; matches `handleAddRouteSlot`'s own default for a brand-new slot exactly, so converting a route
+into a slot now behaves identically to it having always been a freshly-added, untouched slot.
+
+**Live-verified** on Ryan's own scratch page (`reports/page_26`, real route "Ocean Pkwy" already
+picked, per his direction — "You can use this page to test, its garbage/scratch," never touched
+`bi_directional` for this): round-tripped dynamic → static → dynamic. Before the fix (his own live
+repro, matching the bug report exactly): the slot's `name` froze to the literal `"OCEAN PKWY
+(FRONTAGE) S"` and stayed that way even fully unresolved. After the fix: converting static→dynamic
+set `name` to `"%n (%y)"` (confirmed via direct DB read: `reports_snap_2`'s `routes[]` shows
+`name: "%n (%y)"`, no catalog-snapshot fields); resolved view (`?routes=2207390`) showed the header
+pill/legend/graph title all correctly reading `"OCEAN PKWY (FRONTAGE) S (2026)"`; the UNRESOLVED
+view (`?routes=` stripped) — Ryan's exact original complaint — now correctly shows the RRL row's raw
+template `"%n (%y)"` and the header pill `"(2026)"` (blank `%n`, no route picked yet), never falling
+back to the old frozen "Ocean Pkwy" text. 0 console errors throughout. Ryan: "looks good, excellent
+work."
+
+**Files changed**: `src/themes/transportny/components/ReportRouteList/ReportRouteList.jsx`
+(`convertStaticToDynamic`'s slot-name assignment).
 
 ## Files touched / likely touched
 

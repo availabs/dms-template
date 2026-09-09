@@ -364,10 +364,22 @@ export default function ReportRouteList() {
     // both directions). Only a plain, never-been-dynamic static report (no route ever carries
     // `route_slot_group`) needs the shared-id heuristic at all — this is the fallback for that
     // case only, unchanged from before.
+    // Sub-item 4's own open question 3 ("static→dynamic naming: leave a static route's name
+    // exactly as authored, no auto-`%n`/`%y`") — reversed 2026-09-09 per Ryan's live bug report on
+    // a real converted route: a static route's literal name (e.g. "Ocean Pkwy," carried over from
+    // when it was picked via "+ Add Route") froze permanently into the new slot instead of
+    // templating, so it never re-resolved to whichever real route a viewer later picks, and showed
+    // that same stale literal name even fully unresolved. Every new slot now defaults to `"%n
+    // (%y)"`, identical to `handleAddRouteSlot`'s own default for a brand-new slot — converting a
+    // route into a slot now behaves exactly like it was always an untouched, freshly-added slot,
+    // not a special "keep the old name frozen" case. `%n`/`%y`-templated names are already exempt
+    // from the add-time dedup collision check (`useReportRow.js`'s `dedupeAgainst`) precisely
+    // because several slots literally named `"%n (%y)"` is the norm, not a collision — same as
+    // every catalog template's own multi-slot groups.
     const seenIdToGroupCompId = new Map();
     const slots = routes.map((r) => {
       const realId = r.id ?? r.route_id;
-      const slot = { ...r };
+      const slot = { ...r, name: '%n (%y)' };
       CATALOG_SNAPSHOT_FIELDS.forEach((f) => delete slot[f]);
       if (r.route_slot_group == null && realId != null) {
         if (seenIdToGroupCompId.has(realId)) {
