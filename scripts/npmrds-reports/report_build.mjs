@@ -1172,14 +1172,20 @@ try {
       // doesn't say which route is the base and which is the comparison —
       // the single plotted series is a delta, and neither raw value survives
       // to the client (see clickhouse.js's diff-mode join), so nothing else on
-      // the page states it either. Auto-fill the same base-vs-comparison
-      // wording the query itself computes (anchor − compare, or the reverse
-      // under `_invert`) so a spec that skips `caption` still gets a
-      // self-explanatory subtitle instead of none.
-      const anchorRoute = g._invert ? g._assigned[1] : g._assigned[0];
-      const compareRoutes = g._invert ? [g._assigned[0]] : g._assigned.slice(1);
-      state.display.description =
-        `Base: ${anchorRoute.name} · Comparison: ${compareRoutes.map(r => r.name).join(', ')}`;
+      // the page states it either. A spec that skips `caption` gets this
+      // base-vs-comparison wording auto-filled — but NOT baked as a static
+      // string here: a route's own `name` can be a Dynamic Report `%n`/`%y`
+      // template (dynamic-reports-authoring-gaps.md's "Static graph text vs.
+      // live route resolution") that only resolves once a real route is
+      // picked at view time. `_autoDiffCaption` tells the render-time
+      // resolver (transportny/components/ReportRouteList/
+      // resolveReportDisplayText.js, wired in via graph_new/index.jsx) to
+      // rebuild this exact phrase live from `_measurePick.routeIds`/
+      // `comparisonSeries.combine.invert` (already written just above/below)
+      // against whichever routes are actually resolved — anchor/compare
+      // selection here (`g._invert`/`g._assigned`) must stay index-for-index
+      // identical to that resolver's own mirrored logic.
+      state.display._autoDiffCaption = true;
     }
     return state;
   });

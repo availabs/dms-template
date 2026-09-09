@@ -5,9 +5,13 @@ live-verified** (1 and 3: 2026-09-05; 2: 2026-09-08). **All 12 catalog templates
 republished 2026-09-08** (see "Catalog regeneration" under sub-item 1 below) — the deferral note
 that originally blocked this is superseded by Ryan's explicit go-ahead. A second real bug (route-
 name dedup wrongly suffixing `%n`/`%y` templated names) found + fixed same day, 8 templates
-re-published again — see "Dedup-suffix bug on templated names" below. One more bug found, NOT
-fixed (difference-graph subtitle captions baking a static route name at build time) — needs its own
-scoping pass, see that section. **Item 4 SCOPED 2026-09-08, not yet built** — see its own section
+re-published again — see "Dedup-suffix bug on templated names" below. **Two more bugs found, both
+FIXED + live-verified 2026-09-08** — same root cause (graph title/caption text baked as a static
+string at build time instead of resolving live): difference-graph captions on 3 templates
+(`seasonality`/`single_day_advanced`/`single_route`), and all 14 of `bi_directional`'s graph titles
+hardcoding an unenforced "Northbound"/"Southbound" claim — see "Combined fix — scoped + built +
+live-verified 2026-09-08" under sub-item 1 below for the full design + live-verification.
+**Item 4 SCOPED 2026-09-08, not yet built** — see its own section
 for the full design + open questions needing Ryan's steer before coding starts. · **Started:**
 2026-09-05
 
@@ -231,8 +235,10 @@ this rebuild says "no detected change" for all 8 — that's `diffSpecs` comparin
 JSON, which is unchanged since this fix lives in the build script, not the spec files; the actual
 persisted `routes[]` field is confirmed changed via the direct DB read above.)
 
-**Real bug found live, NOT fixed — needs its own scoping pass soon (Ryan's call 2026-09-08:
-skip the quick fix, this needs the real fix, not a patch)**: `seasonality`'s 4 difference-mode
+### Static graph text vs. live route resolution — two bugs found, NOT fixed, needs one scoping pass
+
+**Bug A — difference-graph caption, found 2026-09-08 (Ryan's call: skip the quick fix, this needs
+the real fix, not a patch)**: `seasonality`'s 4 difference-mode
 graphs (`diff_winter`/`diff_spring`/`diff_summer`/`diff_fall`) show a literal, unsubstituted
 `"Base: %N (%Y) · Comparison: Winter"` subtitle instead of a resolved name. Root cause:
 `report_build.mjs`'s difference-graph caption builder (~line 1174) bakes
@@ -256,7 +262,233 @@ pipeline (`graph_new`/`GraphComponent.jsx`'s difference-mode subtitle path), not
 `report_build.mjs`. Not scoped yet — needs its own pass (open questions: does the render layer even
 have access to `effectiveRoutes` at the point this subtitle renders, or does it need threading
 through; should a static report's difference caption stay build-time-baked since its names are
-already real forever, with only the Dynamic Report path made live). **TODO: pick this up soon.**
+already real forever, with only the Dynamic Report path made live).
+
+**Bug B — `bi_directional`'s graph titles hardcode an unenforced direction claim, found
+2026-09-08.** All 14 of `bi_directional.json`'s graph titles bake in "Northbound"/"Southbound"
+literally (`"Hours of Delay - Northbound"`, `"Route Compare Component - Southbound"`, etc.) —
+but nothing in the platform enforces that the two route groups an author picks at view time are
+actually opposite directions of the same corridor; they could pick the same route for both, or two
+unrelated routes entirely. **Proven live**: picked the identical real route (`2216791`, "Route 5
+Part") for both the NB and SB groups via `?routes=2216791|||2216791` — both sets of graphs still
+confidently labeled themselves Northbound/Southbound. Scanned all 12 templates' graph titles for
+directional language (`north|south|east|west|nb|sb|eb|wb`) — **only `bi_directional` has this**,
+none of the other 11 assert anything about route identity in a title (their titles reference time
+windows like "Trailing 3 Years," which stay accurate regardless of which real route fills a slot).
+Checked route→graph bindings: every one of the 14 graphs draws from exactly one route group each
+(never mixes NB+SB into one graph), so a `%n` token in the title would be completely unambiguous —
+`"Hours of Delay - %n"` would cleanly resolve to whichever real corridor the author picked.
+
+**Same root cause as Bug A**: a graph's `title` (like its `caption`) is a static string baked once
+at build time (`report_build.mjs`) and never re-resolves live — `%n`/`%y` tokens in a title would
+suffer the identical empty-token problem a build-time quick-fix would have for captions. **Do not
+fix these as two separate patches** — one mechanism ("live-resolve `%n`/`%y` in any graph-rendered
+text sourced from the spec — title or caption") covers both. Of the two, Bug B is the more valuable
+half to build first: it's the only thing standing between `bi_directional` and being a trustworthy
+template (an author *will* eventually pick non-directional or swapped routes and get a visibly
+wrong title), whereas Bug A only degrades a subtitle's cosmetics. **TODO: scope and build this
+combined fix soon** — open questions: does the render layer even have access to `effectiveRoutes`
+at the point titles/captions render, or does it need threading through; should a static report's
+titles/captions stay build-time-baked (their route identity is real and permanent) with only the
+Dynamic Report path made live.
+
+### Combined fix — scoped + built + live-verified 2026-09-08
+
+Traced the actual render pipeline by reading the real files (not guessed) to answer both open
+questions above. No code written this pass — this is scoping only.
+
+**Two separate render sites, not one:**
+- **A) Section-level `title`** (bi_directional's 14 hardcoded "Northbound"/"Southbound" strings) is
+  generic DMS-core, section-type-agnostic code: `report_build.mjs`'s `graphSectionData()` (~line
+  1574) writes it into the section row's `element-data.title`; rendered by `TitleComp` in
+  `src/dms/packages/dms/src/patterns/page/components/sections/section_components.jsx:24-27`,
+  invoked from `SectionView` in `section.jsx:385,552-558`. (Per `report_build.mjs:1159-1166`'s own
+  comment, this section title is deliberately the ONLY place a graph's title shows —
+  `state.display.title` is left blank on purpose to avoid doubling it.)
+- **B) Difference-mode `caption`** (`state.display.description`, the "Base: X · Comparison: Y"
+  string, baked at `report_build.mjs:1167-1182`) is rendered by `GraphTitle` inside
+  `src/dms/packages/dms/src/ui/components/graph_new/GraphComponent.jsx:23-50` (the `description`
+  div, line 46), fed from `graph_new/index.jsx:171`'s `mergeChartDefaults`.
+
+**Both sites already have everything they need except the resolution call itself — no missing React
+plumbing:**
+- Both already sit inside `PageContext` (`section.jsx:355`; `graph_new/index.jsx:71-77` via its
+  parent `ComponentRegistry/graph_new/index.jsx:40`) and already read the live `state.display`
+  object (`_measurePick.routeIds`, `comparisonSeries.combine.invert`) — the exact fields needed to
+  know which route(s) a graph belongs to.
+- The catalog broadcast (`ROUTE_CATALOG_PARAM_KEY`, already carrying `catalogRouteName`/
+  `dateFormula`/etc.) rides on the same generic page-filter/`setActionParam` channel every DMS page
+  filter already uses — reading a named `pageState.filters` entry from core code isn't a layering
+  violation by itself. What WOULD be a violation is core calling `resolvedRouteLabel`/
+  `applyNameTemplate` directly, since those live in the transportny theme (`relativeDateResolution.js`),
+  not `@availabs/dms` core — per `src/dms/CLAUDE.md`, core never imports theme code. The existing
+  pattern for exactly this problem is a theme-supplied hook read off `theme` (already used for
+  `theme.chartDefaults`/`theme.titleInlineWithLegend` in `graph_new/index.jsx:102-103`) — e.g.
+  `theme.resolveDisplayText?.(rawText, {routeIds, invert, pageState}) ?? rawText`, called from both
+  `section.jsx` (before handing `value.title` to `TitleComp`) and `graph_new/index.jsx` (before
+  `mergeChartDefaults`). Core stays route-name-agnostic; transportny's implementation is the only
+  thing that knows `%n`/`%y`/`resolvedRouteLabel` exist.
+
+**Which route(s) a graph is "about" is already stored — no new spec field needed:**
+`state.display._measurePick.routeIds`, an ordered array of `route_comp_id`s written by
+`report_build.mjs:1479,1495-1499`. For a difference graph, index 0 is anchor / rest are compare,
+unless `comparisonSeries.combine.invert === true` swaps them (mirrors `report_build.mjs`'s own
+`g._invert ? g._assigned[1] : g._assigned[0]` at lines 1179-1180). bi_directional's 14 single-route
+graphs have exactly one id here each — unambiguous which route a title token would resolve against.
+
+**`resolvedRouteLabel`/`applyNameTemplate` (`relativeDateResolution.js:223-245`) as-is:**
+- **Title fix (single route, bi_directional) is a near-zero-cost reuse**: once the render site
+  resolves `routeIds[0]` against the broadcast catalog to get a route object, it needs to run
+  token substitution against arbitrary text (`"Hours of Delay - %n"`), not just a route's own
+  `name` field — `applyNameTemplate(route)` today only does the latter. Needs one small factor-out:
+  extract the substitution core so it runs against an arbitrary string + route object
+  (`substituteTokens(text, route)`, with `applyNameTemplate(route) = substituteTokens(route.name,
+  route)` becoming a thin wrapper) — a ~5-line refactor, not a redesign.
+- **Caption fix (two routes) is not a token-substitution problem** — the "Base: X · Comparison: Y"
+  phrase is a fixed wrapper built from two independently-resolved labels, not a spec string with
+  tokens embedded in it. Two real options:
+  1. Stop baking the caption as a finished string at build time; mark it auto-generated (e.g.
+     `description: null` + a flag) and have the render site rebuild the identical phrase live from
+     `routeIds`/`invert` + the broadcast catalog — a near-verbatim port of
+     `report_build.mjs:1181-1182`'s own expression, swapping `.name` for `resolvedRouteLabel(...)`
+     and moving it to render time. Duplicates ~2 lines of wrapper-phrase text between the build
+     script and the theme runtime (acceptable — one fixed phrase, not business logic likely to drift).
+  2. Keep the wrapper phrase in the baked string but store per-route-id placeholders instead of
+     names (e.g. `"Base: {{route:comp_4}} · Comparison: {{route:comp_9}}"`), and give the render
+     site one generic `{{route:ID}}`-scanning resolver that could ALSO subsume the title case (one
+     mechanism for both A and B, not two). More general, but introduces a second token syntax
+     alongside `%n`/`%y` for one narrow use today.
+
+  Leaning option 1 (no new token syntax, smaller diff, the caption phrasing only has this one shape
+  today) — flagging for Ryan's steer since option 2 generalizes better if a third
+  static-text-with-routes case shows up later.
+
+**No existing precedent for template-resolution-at-render-time inside any graph-rendering code** —
+confirmed zero calls to `resolvedRouteLabel`/`applyNameTemplate` (or any other template mechanism)
+inside `GraphComponent.jsx`, `graph_new/index.jsx`, `section.jsx`, `section_components.jsx`. The
+three existing consumers — header pill, chart legend, and RRL's own row label
+(`RouteRow.jsx:240`, a third consumer the original bug write-up above didn't name) — are all
+theme-layer components already inside the transportny tree; this would be the first time resolution
+crosses into DMS-core rendering code, hence the new `theme.resolveDisplayText` hook rather than
+reusing an existing wired path.
+
+**Static-report behavior must stay unaffected**: `theme.resolveDisplayText`/the caption-rebuild path
+should be a no-op passthrough whenever a route's `name` has no `%n`/`%y` tokens (real, permanent
+names on static reports) and whenever `_measurePick.routeIds` doesn't resolve against a live
+broadcast catalog (i.e., not a Dynamic Report) — `resolvedRouteLabel` already falls back to the bare
+name when no tokens are found, so this should hold by construction with zero special-casing, but
+worth confirming live once built (static reports must render byte-identical titles/captions to today).
+
+**Decisions, confirmed with Ryan 2026-09-08:**
+1. Caption rebuild: **option 1** — no new token syntax; rebuild the "Base: X · Comparison: Y" phrase
+   live at render time from `routeIds`/`invert`, near-verbatim port of `report_build.mjs:1181-1182`
+   with `.name` swapped for `resolvedRouteLabel(...)`.
+2. **One combined change** — both the title fix (bi_directional) and the caption fix ship together,
+   not staged, since they share the same `theme.resolveDisplayText`-style hook and core/theme
+   boundary work.
+
+### Implementation — DONE + live-verified 2026-09-08
+
+**Real architectural question resolved before writing code**: could a theme-supplied FUNCTION
+actually survive to the live client, or would SSR hydration serialize the theme through JSON (which
+drops functions)? Traced `src/main.jsx`: the client re-runs the SAME dynamic `import()` for the
+theme module on hydration (`await loadThemes(...)`) — only `defaultData`/`hydrationData` (real DMS
+content) round-trip through `window.__dmsSSRData`; the theme itself is always a live, freshly-
+imported JS module on both server and client. A function-valued theme key is safe. (The admin theme
+EDITOR's `JSON.stringify` in `editTheme.jsx` is a separate DB-override path this hook is never meant
+to go through — irrelevant here.)
+
+**`relativeDateResolution.js`** — extracted `substituteTokens(text, route)` (the `%n`/`%y`
+substitution core, now operating on ANY text string, not just `route.name`) out of
+`applyNameTemplate(route)`, which is now a thin wrapper (`substituteTokens(route?.name, route)`).
+Guards `typeof text !== 'string'` — load-bearing, since `substituteTokens` will be called
+unconditionally from DMS-core on section titles that are normally Lexical rich-text objects on
+every OTHER (non-report) section, on transportny and every other site.
+
+**New file `resolveReportDisplayText.js`** (same directory) — the one function that live-resolves
+both bugs, reusing the SAME `ROUTE_CATALOG_PARAM_KEY` broadcast catalog the header pill/chart
+legend/RRL row already read through `resolvedRouteLabel`:
+- Title / explicit-caption case: look up `routeIds[0]` in the catalog, `substituteTokens(rawText,
+  that route)`, fall back to `rawText` unchanged if no catalog entry or no tokens present (safe
+  no-op for static reports and for anything not yet resolved).
+- Auto-diff-caption case (`isAutoDiffCaption: true`): ignore `rawText` entirely (there is none —
+  see below); rebuild `` `Base: ${resolvedRouteLabel(anchor)} · Comparison:
+  ${compares.map(resolvedRouteLabel).join(', ')}` `` from `routeIds`/`invert`, index-for-index
+  identical to `report_build.mjs`'s own retired `g._invert ? g._assigned[1] : g._assigned[0]` /
+  `g._invert ? [g._assigned[0]] : g._assigned.slice(1)` logic. Returns `null` (renders nothing) if
+  the catalog hasn't broadcast yet or fewer than 2 routes resolve — a transient, self-correcting
+  state, not an error.
+
+**`themev2.js`** — wired in as a plain **top-level** theme key, `resolveReportDisplayText` (not
+namespaced under `avlGraph`/`pages` — both call sites already have the ROOT theme object in scope
+before narrowing to a namespace, and a shared top-level hook avoids defining the same function
+twice under two different namespaces).
+
+**`section.jsx` (DMS-core)** — before handing `value.title` to `TitleComp`, calls
+`fullTheme?.resolveReportDisplayText(value?.title, { routeIds, invert, pageState })` using
+`dwHandle?.state?.display?._measurePick`/`comparisonSeries?.combine?.invert` — already tracked here
+via `dwHandle` (same object read for the pre-existing `hideSection` check), no new plumbing needed.
+Builds a `headerValue` (original `value` with just `title` swapped) rather than changing
+`ViewSectionHeader`'s own signature. No-op on every other DMS site (hook undefined) and on every
+other transportny section type (hook itself no-ops on non-templated/non-string text).
+
+**`graph_new/index.jsx` (DMS-core)** — before `mergeChartDefaults`, calls
+`contextTheme?.resolveReportDisplayText(display.description, { routeIds: display._measurePick
+?.routeIds, invert: display?.comparisonSeries?.combine?.invert, isAutoDiffCaption:
+Boolean(display._autoDiffCaption), pageState })` (`pageState` already destructured from
+`pageContext` here); patches `description` into a copy of `display` only when it actually changed.
+
+**`report_build.mjs`** — the difference-mode auto-caption branch no longer bakes
+`"Base: ... · Comparison: ..."` as a literal string; it sets `state.display._autoDiffCaption =
+true` instead and leaves `description` unset. The explicit-`g.caption` branch is untouched (still
+bakes literal text — now also opportunistically run through `substituteTokens` at render time, a
+free capability for any future author who types `%n`/`%y` into a custom caption; a no-op today
+since no spec's `caption` field uses tokens). Checked both other consumers of `state.display.
+description` (`--from-page`'s drift check at line ~477, its spec-recovery capture at line ~592) —
+both come out MORE correct with this change: a genuinely-unedited auto-diff graph no longer
+registers as spuriously "drifted," and `--from-page` recovery no longer accidentally freezes the
+auto phrase into an explicit `caption` forever after one round-trip.
+
+**`bi_directional.json`** — all 14 graph `title` fields changed from a literal `"...
+Northbound"`/`"... Southbound"` suffix to `"... - %n"`. Confirmed safe even though several of these
+graphs are fed by 4 routes at once (e.g. `routecompare_nb`: `current_nb`+`y1ago_nb`+`y2ago_nb`
++`trailing_nb`) — all 4 share the same `route_slot_group`, so they always resolve to the identical
+real `catalogRouteName`; `routeIds[0]` is representative of the whole group by construction (the
+mechanism sub-item 2 of this same doc built).
+
+**Rebuilt + republished all 4 affected templates** via `report_build.mjs <spec> --update <slug>
+--publish`: `bi_directional` (14 graphs modified, structural checks passed), `seasonality`,
+`single_day_advanced`, `single_route` (each: reconciled cleanly, structural checks passed).
+`report_probe.mjs` on all 4: 0 console/page/SQL errors (unresolved-entry-gate state only, same as
+every prior automated pass in this doc).
+
+**Live-verified** via `claude-in-chrome` against real picked routes:
+- `bi_directional?routes=2216791|||2216791` (the exact repro from the original bug report — the
+  SAME real route picked for both NB and SB): every one of the 14 section titles now reads
+  `"... - ROUTE 5 PART"` — correctly reflects that the same route was picked for both groups,
+  instead of the old false, unenforced `"... - Northbound"`/`"... - Southbound"` claim.
+- `bi_directional?routes=2216791|||2207838` (two DIFFERENT real routes): each group's 7 titles
+  correctly resolved to its OWN route's name (`"ROUTE 5 PART"` for the first group, `"35E QUEENS
+  MIDTOWN EXPY WESTBOUND"` for the second) — no cross-group mixing, across every graph type
+  (AVL Graph, Map, Route Compare, Info Box). 0 console errors on a fresh load.
+- `seasonality?routes=2216791`: all 4 difference-graph captions now read `"BASE: ROUTE 5 PART
+  (2026) · COMPARISON: WINTER"` / `"...SPRING"` / `"...SUMMER"` / `"...FALL"` — the exact literal-
+  token bug (`"Base: %N (%Y) · Comparison: Winter"`) is gone. 0 console errors.
+- `single_route?routes=2216791` (the one template needing BOTH anchor and compare sides resolved):
+  `"SPEED - CURRENT YEAR COMPARED TO 3 YEARS AGO"` graph's caption reads `"BASE: ROUTE 5 PART
+  (2023) · COMPARISON: ROUTE 5 PART (2026)"` — both sides correctly resolved to the same real
+  route's name with their own distinct years. 0 console errors.
+- Regression check on the real, published, unmodified STATIC report `reports/
+  beacon_9_d_jan_25_vs_26` (built by the old converter, not `report_build.mjs` — its difference
+  graph has no `_autoDiffCaption` flag at all): every title/caption renders exactly as before,
+  byte-identical, no stray `%n`/`%y`/`"Base: ... · Comparison: ..."` text anywhere. 0 console errors.
+
+**Files changed**: `src/themes/transportny/components/ReportRouteList/relativeDateResolution.js`,
+`resolveReportDisplayText.js` (new), `src/themes/transportny/themev2.js`,
+`src/dms/packages/dms/src/patterns/page/components/sections/section.jsx`,
+`src/dms/packages/dms/src/ui/components/graph_new/index.jsx`,
+`scripts/npmrds-reports/report_build.mjs`,
+`scripts/npmrds-reports/dynamic_report_specs/bi_directional.json`.
 
 ## Sub-item 2 — Add Route Slot: reuse vs. distinct — DONE + live-verified 2026-09-08
 
