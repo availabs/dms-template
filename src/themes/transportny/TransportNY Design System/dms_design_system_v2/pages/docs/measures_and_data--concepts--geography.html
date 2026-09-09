@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Geography: regions, counties, MPOs, statewide · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="concept" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · concept</div>
+          <h1 class="doc-title">Geography: regions, counties, MPOs, statewide.</h1>
+          <p class="doc-lede">What the geography words on the platform mean: NYSDOT's 11 regions, the 62 counties, the 14 metropolitan planning organizations and the urbanized areas. What a figure means when no geography is selected, and which pages let you choose which geography. Written for anyone who quotes a number.</p>
+          <div class="stamps">
+            <span class="type">concept</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="the-four-geographies">The four geographies</h2>
+          <p><strong>"Statewide" on a TSMO dashboard is every segment in the dataset, deliberately not the sum of the 11 regions.</strong> The rest of this page explains that sentence and the four geographies around it.</p>
+          <dl class="defs">
+            <dt>NYSDOT region</dt>
+            <dd>One of the 11 administrative regions of the New York State Department of Transportation, written "Region 8". Region 1 is the Capital District and Region 11 is New York City. The eleven, by NYSDOT's regional offices: 1 Capital District (Albany), 2 Mohawk Valley (Utica), 3 Central New York (Syracuse), 4 Genesee Valley (Rochester), 5 Western New York (Buffalo), 6 Southern Tier Central (Hornell), 7 North Country (Watertown), 8 Hudson Valley (Poughkeepsie), 9 Southern Tier East (Binghamton), 10 Long Island (Hauppauge), 11 New York City. Every TSMO dashboard's <span class="ui">Region</span> filter rolls up to these.</dd>
+            <dt>County</dt>
+            <dd>One of New York's 62 counties, written "Albany County". The TMC network carries a county for each segment, so counties are the finest geography the operations pages key on.</dd>
+            <dt>Metropolitan planning organization (MPO)</dt>
+            <dd>One of the 14 federally designated planning bodies for New York's urbanized areas, written by acronym then name on first use. MPO boundaries do not follow region boundaries, so a segment can sit in one region and one MPO independently. New York's MPOs support the statewide MAP-21 targets rather than setting their own.</dd>
+            <dt>Urbanized area (UZA)</dt>
+            <dd>A Census-defined urban area. Peak Hour Excessive Delay (PHED) is reported per urbanized area over 200,000 people in an air-quality nonattainment or maintenance area. In New York only two report: New York–Newark and Poughkeepsie–Newburgh. Buffalo, Rochester, Albany–Schenectady and Syracuse exceed 200,000 people but are in attainment. Seven others are below the threshold.</dd>
+          </dl>
+          <p>Two other words often sit beside a geography and are not geographies. <strong>System</strong> is Interstate or non-Interstate National Highway System (NHS), the split the federal reliability figures use. <strong>Stream</strong> is all vehicles, passenger vehicles or freight trucks. State both when you quote a number.</p>
+
+          <h2 id="what-statewide-means">What statewide means</h2>
+          <p>On the TSMO dashboards, no region selected means statewide. The filter bar says so: <span class="ui">no region selected = statewide</span>. The trend chart's label reads <span class="ui">statewide unless a region is selected</span>. Clearing a region with its <span class="ui">✕</span> restores the statewide query.</p>
+          <p>Statewide on the <span class="ui">Reliability</span> dashboard is the full MAP-21 submission dataset, the same aggregate as the federal figures. It is intentionally not the sum of the 11 regions. The submission includes border and unassigned segments, rows with out-of-state county codes and rows with a blank county, and those segments belong to no region. Selecting every region one by one would leave them out. On the delay and event dashboards the same rule holds: statewide is every row, including segments assigned to no region.</p>
+          <p>The federal targets are statewide floors. A dense region can sit below the 75 % Interstate or 70 % non-Interstate reliability target while the state as a whole clears it. A region's figure is not scored against a regional target, because none exists.</p>
+          <p>On the <span class="ui">Macro View</span>, an empty geography box means the whole state. That is the right choice when you want the statewide distribution behind the legend. Adding a region, county or MPO narrows the map, the distribution summary, the worst-segments ranking and the download at once.</p>
+          <div class="callout basis"><span class="k">basis</span>Whenever you quote a number, write the geography: statewide · Region 8 · Albany County · the MPO by name. "Statewide" is written, never implied by a blank.</div>
+
+          <h2 id="which-pages-use-which-geography">Which pages use which geography</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Page</th><th>Geography</th><th>How you set it</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><a href="tsmo--congestion.html">Congestion</a>, <a href="tsmo--reliability.html">Reliability</a>, <a href="tsmo--incidents.html">Incidents</a>, <a href="tsmo--work_zones.html">Work Zones</a> dashboards</td><td>NYSDOT region</td><td><span class="ui">Region</span> filter: one region, or cleared for statewide</td><td>Region-keyed. No county or MPO filter. See <a href="tsmo--filters.html">Using the filter bar</a></td></tr>
+              <tr><td><a href="tsmo--incident_search.html">Incident Search</a></td><td>Region and county</td><td>Facets for region, county, date range, category, facility and keyword</td><td>Keeps multi-select</td></tr>
+              <tr><td><a href="tsmo--corridor_view.html">Corridor View</a></td><td>County</td><td>County, then corridor, direction and date</td><td>County-keyed. The corridor data carries no region, so a region cannot be carried into it</td></tr>
+              <tr><td><a href="tsmo--incident_view.html">Incident page</a></td><td>The event's own location</td><td>Opened from Incident Search or a dashboard</td><td>Shows the event's county and affected segments</td></tr>
+              <tr><td><a href="npmrds--macro_view.html">Macro View</a></td><td>Region, county or MPO</td><td><span class="ui">add a region, county or MPO</span>; empty means the whole state</td><td>The only page today where MPO is a filter</td></tr>
+              <tr><td><a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></td><td>Statewide, then MPO or county, then urbanized area</td><td>Statewide compliance first · an <span class="ui">MPO</span> | <span class="ui">County</span> table · PHED per urbanized area</td><td>MPOs are scored against the statewide targets. PHED has no MPO target</td></tr>
+              <tr><td><a href="npmrds--reports--start_from_template.html">Reports</a>, <a href="npmrds--route_comparison.html">Route Comparison</a></td><td>A route</td><td>You build the route from segments</td><td>A route is a geography you define, not one you select</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="order-county-view-and-mpo-filtering">Order, county view and MPO filtering</h2>
+          <p><strong>Region order.</strong> Region lists once sorted as text, so Region 10 and Region 11 followed Region 1. Since July 2026 every filter list on the platform sorts numerically, Region 2 before Region 10.</p>
+          <p><strong>County view of the dashboards.</strong> A county filter for the TSMO statistics has been requested, for MPO use. The delay data carries a county code, so it is feasible, but it needs a county filter, county-grouped panels and a code-to-name lookup. It is scoped as a feature and is not built. Today, county-level operations data is in <a href="tsmo--corridor_view.html">Corridor View</a> and the county facet of <a href="tsmo--incident_search.html">Incident Search</a>.</p>
+          <p><strong>MPO filtering of the dashboards.</strong> MPOs asked for MPO geography in the dashboards' selector, and for a date. No MPO geography exists in the TSMO dashboards today. Adding it needs an MPO boundary set, a rule for segments that straddle a boundary, and a source the filters can bind to. No delivery date has been set. Until then, the two MPO geographies on the platform are the <span class="ui">Macro View</span>'s MPO filter and the MAP-21 pages' per-MPO table.</p>
+          <p><strong>The removed corridor drill.</strong> The Congestion dashboard once offered a "drill into a corridor" button. It was removed in July 2026. Corridor View is county-keyed, so the region selection could not carry across and the page landed on a default county. Open Corridor View from the side navigation or the corridor-explorer link instead, and choose the county yourself.</p>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>Regions do not sum to the state. Do not add them to get a statewide figure, and do not expect the statewide figure to match the sum. A region below a federal target is not out of compliance, because the target is statewide. A corridor is a county question. An MPO question is answered today on the Macro View or the MAP-21 pages, not on a TSMO dashboard. A region-month with no attributed events shows a cost of $0, which <a href="measures_and_data--coverage_and_freshness.html#why-a-month-or-a-region-shows-0-or-nothing">Coverage and freshness</a> explains. <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> explains why the statewide figure carries two bases.</p>
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page, glossary: "NYSDOT region: the eleven administrative regions (R1 Capital District … R11 New York City) every dashboard's region selector rolls up to."</li>
+            <li>TSMO Reliability dashboard: the filter-bar label, the trend label and the caption on statewide floors; the recorded resolution of the statewide question, 2026-07-16 (ticket 2191486).</li>
+            <li>MAP-21 PM3 reporting page: MPO adoption of the statewide targets, the MPO | County table, the two reporting urbanized areas and the eleven that do not report.</li>
+            <li>Macro View, Geography and year: "add a region, county or MPO"; empty means the whole state.</li>
+            <li>Platform documentation plan, §03: 11 NYSDOT regions, 62 counties, 14 MPOs.</li><li>NYSDOT regional offices (public list of the eleven regions and their headquarters cities).</li>
+            <li>TSMO feedback of July and August 2026: region order (2191406, fixed 2026-07-16); the county view request (2194997); MPO geography scope (2214565, 2214487); the corridor drill removal (2195006, 2026-07-27).</li>
+            <li>TSMO home: Incident Search "by region, county, date range, category, facility, or keyword"; Corridor View "replay any corridor on any day".</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="tsmo--filters.html">Using the filter bar</a>
+          <a href="start--faq.html#what-is-actually-being-shown-when-there-is-no-filter-on-region">Platform FAQ · statewide</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

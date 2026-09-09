@@ -7,7 +7,7 @@ import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
-import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
+import { useDynamicReportRoutes, distinctRouteSlotGroups, routeSlotGroupKey } from './useDynamicReportRoutes';
 import { useRouteMileage } from './useRouteMileage';
 import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from './relativeDateResolution';
 import { formatDateShort } from './utils';
@@ -65,6 +65,10 @@ export default function ReportRouteList() {
   // reordering, unlike index). Design push #2 (2026-08-06) shrunk this to date-span only:
   // weekday mask/time-of-day moved off the route entirely (see useGraphPublish.js).
   const [clipboard, setClipboard] = useState(null);
+  // Dynamic Reports authoring gaps sub-item 2 (2026-09-08): which existing route-slot group
+  // "+ Add Route Slot" should join, if any — '' means "new distinct route" (today's unchanged
+  // default). Reset after every add so reuse is a deliberate per-click choice, not a sticky mode.
+  const [newSlotGroupChoice, setNewSlotGroupChoice] = useState('');
 
   // The route CATALOG binding — read-only, backs the "Add Route" tag-browser modal
   // (see `RouteTagBrowserModal`). Bound via the sectionMenu's "Add Join Source" slot rather
@@ -129,6 +133,18 @@ export default function ReportRouteList() {
   // `routes.length`) for every Dynamic Report authored before this field existed.
   const routeSlotGroups = distinctRouteSlotGroups(routes);
   const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routeSlotGroups.length;
+
+  // Dynamic Reports authoring gaps sub-item 2: options for the "reuse an existing route" select
+  // next to "+ Add Route Slot". Positional labels only ("Slot group 2 (3 views)") — at authoring
+  // time there's no `?routes=` yet, so no real catalogRouteName has resolved; a group's own slots
+  // may still carry the unresolved `%n (%y)` template literal, which would be a confusing label.
+  const routeSlotGroupOptions = useMemo(
+    () => routeSlotGroups.map((key, idx) => {
+      const count = routes.filter((rt) => routeSlotGroupKey(rt) === key).length;
+      return { key, label: `Slot group ${idx + 1} (${count} view${count === 1 ? '' : 's'})` };
+    }),
+    [routeSlotGroups, routes]
+  );
 
   // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3): a
   // route can derive its date from a synthetic "Today (view time)" base exactly like it would
@@ -212,6 +228,7 @@ export default function ReportRouteList() {
     pageState,
     setActionParam,
     clearActionParam,
+    routeSourceInfo,
   });
 
   // Item 5 (2026-09-04, npmrds-reports-routes-feedback-triage.md Phase 2): keeps the "All
@@ -265,20 +282,23 @@ export default function ReportRouteList() {
 
   // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
   // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
-  // `isPlaceholderName: true` marks this generated name as meaningless (see
-  // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
-  // name with nothing real behind it yet; cleared the moment a human renames it (RouteRow's
-  // own commitName, via `onUpdateRoute`).
+  // Defaults to the literal template string `"%n (%y)"` (dynamic-reports-authoring-gaps.md item 1)
+  // — `resolvedRouteLabel` (relativeDateResolution.js) substitutes `%n`/`%y` for the resolved real
+  // route's name/year once the slot resolves at view time; an author who renames it to anything
+  // without those tokens gets that literal name back, forever (no separate "is this a placeholder"
+  // flag needed — the tokens' presence in the string is the whole signal).
   //
-  // Auto-expands the new slot (2026-08-19, item 4A) — `addRoutes` always appends, so the new
-  // row lands at today's `routes.length`; setting that BEFORE the async add resolves is safe
-  // since nothing else in this synchronous handler changes `routes.length` first. The next thing
-  // an author almost always does after adding a route is set its dates, so land there open
-  // instead of making that a 3rd click.
+  // Lands collapsed, in view mode (2026-09-08, Ryan's live feedback — REVERSES the 2026-08-19
+  // item 4A decision to auto-expand a newly added slot/route into edit mode; see the identical
+  // reversal note on handleConfirmAddRoutes below). No more `setExpandedRoutes` call here.
+  // `newSlotGroupChoice` (sub-item 2, 2026-09-08): '' reproduces the original behavior byte-for-
+  // byte (no `route_slot_group` set — `routeSlotGroupKey` falls back to the new slot's own,
+  // always-unique `route_comp_id`, i.e. a distinct group). A real choice threads `route_slot_group`
+  // straight through `addRoutes`' passthrough spread — no other mechanism-side change needed, the
+  // resolver/converter/spec layer already treat this field as a first-class grouping key.
   const handleAddRouteSlot = () => {
-    const newIndex = routes.length;
-    addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
-    setExpandedRoutes((prev) => ({ ...prev, [newIndex]: true }));
+    addRoutes([{ name: '%n (%y)', ...(newSlotGroupChoice ? { route_slot_group: newSlotGroupChoice } : {}) }]);
+    setNewSlotGroupChoice('');
   };
 
   const toggleRoute = (index) => {
@@ -329,6 +349,40 @@ export default function ReportRouteList() {
     return map;
   }, [effectiveRoutes]);
 
+  // Dynamic Reports authoring gaps sub-item 2, extended 2026-09-08 per Ryan's live feedback: the
+  // original expand-only text disclosure wasn't legible ("even I don't know what that means") and
+  // was invisible while collapsed, so grouping needed an always-visible, glanceable cue instead.
+  // Per-row group info — the visual pairing for `route_slot_group` — is now a single map of
+  // `{ siblingNames, color }`, built off `effectiveRoutes` (not raw `routes`) so it works
+  // identically whether authoring raw slots or previewing a resolved view (`resolveRouteDates` is
+  // an identity-stable pass-through for every field it doesn't touch, so `route_slot_group`/
+  // `color` survive into `effectiveRoutes` unchanged). `color` is the group's earliest-added
+  // member's own identity colour, reused as a shared left-border accent on every member's row
+  // (RouteRow.jsx) rather than minting a second, unrelated palette — a group's anchor row's own
+  // colour dot and its border always match; every other member's border points back at it. Absent
+  // (`undefined`) for any row whose group has only 1 member — no visual noise for the common case.
+  const routeGroupInfoByCompId = useMemo(() => {
+    const byGroup = new Map();
+    effectiveRoutes.forEach((rt) => {
+      const key = routeSlotGroupKey(rt);
+      const list = byGroup.get(key) || [];
+      list.push(rt);
+      byGroup.set(key, list);
+    });
+    const map = new Map();
+    byGroup.forEach((members) => {
+      if (members.length < 2) return;
+      const color = members[0].color;
+      members.forEach((m) => {
+        map.set(m.route_comp_id, {
+          siblingNames: members.filter((s) => s.route_comp_id !== m.route_comp_id).map((s) => s.name),
+          color,
+        });
+      });
+    });
+    return map;
+  }, [effectiveRoutes]);
+
   // `id` (the row's own DMS id) is the universal identity — every catalog row has one
   // regardless of provenance. `route_id` only ever existed on legacy-imported rows, kept as a
   // fallback purely to still catch dupes among routes added to a report BEFORE this fix shipped
@@ -341,19 +395,13 @@ export default function ReportRouteList() {
     [routes]
   );
 
-  // Auto-expands every newly added route (2026-08-19, item 4A) — same reasoning as
-  // handleAddRouteSlot above, extended to a multi-select add: `addRoutes` appends the whole
-  // batch in the order `selectedRoutes` was given, so the new rows land at
-  // `[routes.length, routes.length + selectedRoutes.length - 1]`.
+  // Lands collapsed, in view mode (2026-09-08, Ryan's live feedback) — REVERSES the 2026-08-19
+  // item 4A decision to auto-expand every newly added route into edit mode. Ryan: a newly added
+  // route/slot should be added "in view mode," not edit mode. No more `setExpandedRoutes` call
+  // here or in `handleAddRouteSlot` above.
   const handleConfirmAddRoutes = async (selectedRoutes) => {
-    const startIndex = routes.length;
     try {
       await addRoutes(selectedRoutes);
-      setExpandedRoutes((prev) => {
-        const next = { ...prev };
-        selectedRoutes.forEach((_, j) => { next[startIndex + j] = true; });
-        return next;
-      });
     } catch (e) {
       // addRoutes already records the error in useReportRow's `error` state.
     }
@@ -469,40 +517,63 @@ export default function ReportRouteList() {
         <>
           {canMutate && (
             <div className={t.actionsRow}>
-              {isDynamicReport ? (
-                <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
-                  <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
-                </button>
-              ) : (
-                <>
-                  <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
-                    <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route</span>
+              <div className={t.actionsRowButtons}>
+                {isDynamicReport ? (
+                  <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
+                    <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
                   </button>
-                  <RouteTagBrowserModal
-                    open={isAddModalOpen}
-                    setOpen={setIsAddModalOpen}
-                    apiLoad={apiLoad}
-                    routeSourceInfo={routeSourceInfo}
-                    selectionMode="any"
-                    excludeRouteIds={excludeRouteIds}
-                    onConfirm={handleConfirmAddRoutes}
-                  />
-                </>
+                ) : (
+                  <>
+                    <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
+                      <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route</span>
+                    </button>
+                    <RouteTagBrowserModal
+                      open={isAddModalOpen}
+                      setOpen={setIsAddModalOpen}
+                      apiLoad={apiLoad}
+                      routeSourceInfo={routeSourceInfo}
+                      selectionMode="any"
+                      excludeRouteIds={excludeRouteIds}
+                      onConfirm={handleConfirmAddRoutes}
+                    />
+                  </>
+                )}
+                <button type="button" className={t.addGraphBtn} onClick={() => setIsAddGraphModalOpen(true)}>
+                  <Icon icon="Plus" className={t.addGraphBtnIcon} /><span className={t.addBtnLabel}>Add Graph</span>
+                </button>
+                <AddGraphModal
+                  open={isAddGraphModalOpen}
+                  setOpen={setIsAddGraphModalOpen}
+                  routes={routes}
+                  // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
+                  // already drives the checklist's own display and Dynamic-Report placeholder
+                  // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
+                  // `effectiveRoutes` instead, without changing what the checklist itself shows.
+                  allRoutesResolved={effectiveRoutes}
+                  onConfirm={handleConfirmAddGraph}
+                />
+              </div>
+              {/* Sub-item 2's group-reuse select, own line (2026-09-08 fix): sharing
+                  `actionsRowButtons`' single row with Add Route Slot/Add Graph squeezed both
+                  buttons' labels into wrapping, overlapping text in the narrow rail — found live,
+                  screenshotted by Ryan. On its own row it can't compete with the buttons for width.
+                  Only rendered once a group exists to reuse — the first slot is always new. */}
+              {isDynamicReport && routeSlotGroupOptions.length > 0 && (
+                <div className={t.addSlotGroupRow}>
+                  <span className={t.addSlotGroupLabel}>Add as</span>
+                  <select
+                    className={t.addSlotGroupSelect}
+                    value={newSlotGroupChoice}
+                    onChange={(e) => setNewSlotGroupChoice(e.target.value)}
+                    title="Reuse an already-added route as another date/settings view, or add a new distinct route"
+                  >
+                    <option value="">New route</option>
+                    {routeSlotGroupOptions.map((g) => (
+                      <option key={g.key} value={g.key}>{g.label}</option>
+                    ))}
+                  </select>
+                </div>
               )}
-              <button type="button" className={t.addGraphBtn} onClick={() => setIsAddGraphModalOpen(true)}>
-                <Icon icon="Plus" className={t.addGraphBtnIcon} /><span className={t.addBtnLabel}>Add Graph</span>
-              </button>
-              <AddGraphModal
-                open={isAddGraphModalOpen}
-                setOpen={setIsAddGraphModalOpen}
-                routes={routes}
-                // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
-                // already drives the checklist's own display and Dynamic-Report placeholder
-                // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
-                // `effectiveRoutes` instead, without changing what the checklist itself shows.
-                allRoutesResolved={effectiveRoutes}
-                onConfirm={handleConfirmAddGraph}
-              />
             </div>
           )}
           {canMutate && (
@@ -619,6 +690,7 @@ export default function ReportRouteList() {
                 siblingNames={routes.filter((rt, idx) => idx !== i).map((rt) => rt.name)}
                 derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
                 baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
+                groupInfo={routeGroupInfoByCompId.get(r.route_comp_id)}
                 derivableSiblings={derivableSiblings}
                 // Name + date editing (2026-09-05: explicit Save/Discard, reversing the prior
                 // auto-save-on-blur/debounce design — see RouteRow.jsx's own doc comment).

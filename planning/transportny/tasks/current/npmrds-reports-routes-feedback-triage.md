@@ -5,8 +5,13 @@
 graph-theme tuning remain deferred per Ryan's call, see below). **Phase 2 CLOSED 2026-09-05**
 (RRL panel restructure, DONE + live-verified 2026-09-04, plus a same-day-after-ship Save/Discard +
 collapsed-row-reweight follow-up 2026-09-05 — see "Phase 2 follow-up" and "Phase 2 — CLOSED" below).
-Phase 3 resolved (decision log). **Remaining: Phase 4** (Dynamic Reports, Item 2) **and Phase 5**
-(open-ended polish, Item 4 remainder) — neither started. · **Started:** 2026-09-04
+Phase 3 resolved (decision log). **Remaining: Phase 4** (Dynamic Reports, Item 2 — SCOPED 2026-09-05
+into [`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — **sub-items 1, 2,
+and 3 DONE + live-verified (1 and 3: 2026-09-05; 2: 2026-09-08), only sub-item 4 remains**;
+**all 12 catalog templates regenerated + republished 2026-09-08 with `%n`/`%y` naming, see that
+file's "Catalog regeneration" section — one real bug found live (difference-graph captions on 3
+templates), fix proposed, pending Ryan's call**) **and
+Phase 5** (open-ended polish, Item 4 remainder) — Phase 5 not started. · **Started:** 2026-09-04
 
 ## Phase 2 follow-up (2026-09-05): explicit Save/Discard replaces auto-save row editing
 
@@ -505,12 +510,24 @@ as a decision log rather than deleted, per the "date everything, don't rewrite h
   do a broad pass on titles later on, we can." Not scheduled; revisit only if requested. Noted as
   backlog in Phase 5.
 
-### Phase 4 — Dynamic Reports (Item 2)
+### Phase 4 — Dynamic Reports (Item 2) — SCOPED 2026-09-05, split into its own task file
 
 The single biggest item by architectural complexity — all four sub-asks are new work on top of a
 "core mechanism DONE" state, with no prior scoping anywhere for the static↔dynamic conversion piece.
-Given `dynamic-reports-and-route-tags.md` is already large, this should get its **own new task file**
-(cross-linking back to it) once picked up, rather than being appended there. Sequence within the item,
+Given `dynamic-reports-and-route-tags.md` is already large, this got its **own new task file**
+(cross-linking back to it), per this section's own instruction:
+[`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — current-state grounding
+for all four sub-items. **Sub-item 1 (`%n`/`%y` route-slot name templating) DONE + live-verified
+2026-09-05**, including a real bug found+fixed along the way (`useGraphPublish.js`'s broadcast route
+catalog was missing `catalogRouteName`). **Sub-item 3 (header preview-swap button) DONE +
+live-verified 2026-09-05** — needed RRL to start broadcasting its own `routeSourceInfo`/route `id`s
+(the header had no join source of its own), see that file's own section for the full record.
+**Sub-item 2 (Add Route Slot: reuse vs. distinct) DONE + live-verified 2026-09-08** — confirmed
+UI-only as scoped, no resolution/persistence/converter change needed; see that file's own section
+for the design decisions and full record. **Sub-item 4 (static↔dynamic conversion) SCOPED
+2026-09-08** — a full design proposal exists (graphs need zero changes, confirmed by reading the
+`route_comp_id`-keyed binding), with 3 open questions needing Ryan's steer before it's built; see
+that file's own section, the only piece of Phase 4 not yet implemented. Sequence within the item,
 smallest/least-coupled first:
 
 1. `%n` / `%y` route-slot name variable substitution (template-name resolution only); default a new

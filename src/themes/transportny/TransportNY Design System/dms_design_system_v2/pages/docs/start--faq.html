@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Platform FAQ · Get started · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  start--faq.html · IA page 7 · type faq. Phase 1, 2026-09-04.
+  Question wording is verbatim from tickets (data/tickets.json, running_fixes.json) with the ticket id in a small element, or from
+  the legacy Quick Start FAQ 280326 with the answer retargeted to the current tools. Questions from 280326 that could
+  not be retargeted from the sources are listed in the phase report, not here.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="faq" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Get started · faq</div>
+          <h1 class="doc-title">Platform FAQ.</h1>
+          <p class="doc-lede">Real questions, in the words people asked them, with a short answer and the page that answers in full. Product-specific questions are in each product's own FAQ.</p>
+          <div class="stamps">
+            <span class="type">faq</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="do-i-need-an-account">Do I need an account?</h2>
+          <p>Not to read. Every dashboard, map, published report and MAP-21 PM3 page opens without one. You need an account to save routes and reports, and to administer data: uploading datasets and building maps. The <span class="ui">Data &amp; Downloads</span> catalog currently asks for sign-in by mistake. Full detail: <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</p>
+
+          <h2 id="site-keeps-logging-me-out">Site keeps logging me out <small>ticket 2214470</small></h2>
+          <p>A session lasts about 6 hours. When it expires, the site returns you to the sign-in page. A second cause is moving to NPMRDS, which runs on its own subdomain and keeps its own session. Since September 2026, the landing page, TSMO and the Freight Atlas share one sign-in. If you are signed out repeatedly well inside 6 hours, report it with the time and page. See <a href="start--accounts_and_sessions.html#how-long-a-session-lasts">How long a session lasts</a>.</p>
+
+          <h2 id="using-links-from-main-transportny-still-needs-extra-login">Using links from main TransportNY still needs extra login. Also from TSMO to NPMRDS requires continuous login <small>running fix 2172529</small></h2>
+          <p>Fixed for two of the three products. Since September 2026 the landing page, TSMO and the Freight Atlas live on one origin, so one sign-in covers them. NPMRDS still runs on its own subdomain. Moving to it can ask you to sign in again, with the same email and password. See <a href="start--accounts_and_sessions.html#troubleshooting">Troubleshooting sign-in</a>.</p>
+
+          <h2 id="left-nav-platform-home-option-what-does-that-do">left nav "platform home" option....what does that do??? <small>ticket 2197822</small></h2>
+          <p><span class="ui">Platform home</span> is the last entry of the product switcher at the top of every side navigation. It returns you to the landing page, the front door where the three products are listed. Nothing is lost by selecting it. See <a href="start--navigating.html#platform-home-what-does-that-do">Navigating the platform</a>.</p>
+
+          <h2 id="docs-page-link-goes-to-npmrds-docs">Docs page link goes to NPMRDS Docs? <small>running fix 2172528</small></h2>
+          <p>It used to. There is now one documentation site for all three products, sectioned by product, at <code>/docs</code>. The intended path is a <span class="ui">Docs</span> link in each product's navigation, which is not built yet. Until it is, add <code>/docs</code> to the site address. See <a href="start--navigating.html#where-the-documentation-is">Where the documentation is</a>.</p>
+
+          <h2 id="what-is-actually-being-shown-when-there-is-no-filter-on-region">What is actually being shown when there is no filter on region? Is there anyway to clarify this? <small>ticket 2191486</small></h2>
+          <p>Statewide. With no region selected, a TSMO dashboard shows the full PM3 submission dataset, the same aggregate behind the federal figures. That is deliberately not the sum of the 11 regions. The submission includes border and unassigned segments that belong to no region, so the regions add up to less than statewide. The filter bar now says "no region selected = statewide", and clearing a region restores the statewide figures. See <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a>.</p>
+
+          <h2 id="why-are-we-showing-this-on-an-annual-basis">Why are we showing this on an annual basis for all years instead of the year selected???? <small>ticket 2214490</small></h2>
+          <p>Because the measure is annual. Level of Travel Time Reliability (LOTTR) is a federal MAP-21 measure defined on a calendar year. A monthly LOTTR does not exist in any data the platform holds. The reliability series therefore cannot follow the year selector month by month as the delay series does. The tile is labelled annual for that reason. See <a href="measures_and_data--measures--lottr.html">LOTTR</a>.</p>
+
+          <h2 id="albany-international-airport-is-not-listed">Albany International Airport is not listed on the legend and not identified on the map. <small>ticket 2192902</small></h2>
+          <p>The <span class="ui">Maps Gallery</span> reproduces the figures of the 2024 State Freight Plan. The plan did not classify Albany International or Schenectady County as freight airports, so the Major Airports map follows the plan. See <a href="freight_atlas--gallery.html">Maps Gallery</a> and <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a>.</p>
+
+          <h2 id="how-do-i-report-a-problem">How do I report a problem or ask a question?</h2>
+          <p>Use the platform's status pages at <code>/status</code>, which carry the bug report form and the list of known issues. The form is at <code>/status/bug_report</code>; known issues are listed at <code>/status</code>. Give the page address, the filters you had set, and what you expected. Once live, the <span class="ui">Was this page helpful?</span> buttons at the foot of every docs page also land in the same queue. See <a href="help.html">Help and feedback</a>.</p>
+
+          <h2 id="how-can-i-find-a-routes-recent-behavior">How can I find a route's recent behavior?</h2>
+          <p>Open <span class="ui">Reports</span> in NPMRDS and start a report from a template on your route. Templates cover an average day, a week, a season, month by month, year over year, and before and after. If you have no saved route yet, create one first. See <a href="npmrds--reports--start_from_template.html">Start a report from a template</a> and <a href="npmrds--reports--templates.html">Template reference</a>.</p>
+
+          <h2 id="can-i-analyze-a-route-before-and-after">Can I analyze a route before and after a specific time period to evaluate a change?</h2>
+          <p>Yes. In <span class="ui">Reports</span>, chart one route with a period before the change and a period after it. The recipe walks through a real project with the route and dates, so you can reproduce it. See <a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a>.</p>
+
+          <h2 id="how-can-i-look-at-and-compare-a-routes-long-term-behavior-patterns">How can I look at and compare a routes long-term behavior patterns?</h2>
+          <p>Two tools. A year-over-year report in <span class="ui">Reports</span> charts one route across the years. <span class="ui">Route Comparison</span> puts several routes and several periods in one table with a base period. Each cell gives speed, travel time, delay and the percent change against the base. See <a href="npmrds--route_comparison.html">Compare routes across periods</a>.</p>
+
+          <h2 id="which-segments-have-the-highest-amount-of-excessive-delay">Which segments have the highest amount of excessive delay?</h2>
+          <p>Open the <span class="ui">Macro View</span>, choose a delay measure, set your geography, and open <span class="ui">Worst 25 segments</span>. Total Excessive Delay (TED) counts all hours of the day. Peak Hour Excessive Delay (PHED) counts the federally defined peak periods only. Check the no-data count first: delay needs traffic volume, and many segments have none. See <a href="npmrds--macro_view.html">Macro View: how to use</a>.</p>
+
+          <h2 id="which-segments-have-the-highest-amount-of-excessive-delay-during-peak-hours">Which segments have the highest amount of excessive delay during peak hours?</h2>
+          <p>The same steps with <span class="ui">PHED</span> as the measure. Peak Hour Excessive Delay is the MAP-21 PM3 measure that counts delay inside the federal peak periods only. See <a href="measures_and_data--measures--phed.html">PHED</a>.</p>
+
+          <h2 id="which-segments-have-the-highest-amount-of-excessive-delay-for-trucks">Which segments have the highest amount of excessive delay for Trucks?</h2>
+          <p>In the <span class="ui">Macro View</span>, choose <span class="ui">PHED</span>. Its <span class="ui">Traffic Type</span> control offers <span class="ui">All Traffic</span> and <span class="ui">All Trucks</span>. Choose <span class="ui">All Trucks</span>, then open <span class="ui">Worst 25 segments</span>. For truck reliability rather than delay, choose <span class="ui">TTTR</span>. See <a href="npmrds--macro_view.html">Macro View: how to use</a>.</p>
+
+          <h2 id="where-are-peak-hour-travel-times-most-variable-for-commuters">Where are peak hour travel times most variable for commuters?</h2>
+          <p>Open the <span class="ui">Macro View</span> with <span class="ui">LOTTR</span>, its default measure. Level of Travel Time Reliability is the 80th-percentile travel time divided by the 50th, for all vehicles in a peak period. Higher means less predictable. Pick the peak period, then read the map or <span class="ui">Worst 25 segments</span>. See <a href="measures_and_data--measures--lottr.html">LOTTR</a>.</p>
+
+          <h2 id="where-are-peak-hour-travel-times-most-variable-for-freight-delivery">Where are peak hour travel times most variable for freight delivery?</h2>
+          <p>The same view with <span class="ui">TTTR</span>. Truck Travel Time Reliability is the 95th-percentile truck travel time divided by the 50th. It flags the segments most likely to upset a delivery schedule. See <a href="measures_and_data--measures--tttr.html">TTTR</a>.</p>
+
+          <h2 id="which-segments-have-the-highest-amount-of-recurrent-delay">Which segments have the highest amount of recurrent (regular/normal) delay?</h2>
+          <p>Recurrent delay is the everyday pattern. Non-recurrent delay comes from incidents, weather and work zones. The split is on the TSMO <span class="ui">Congestion</span> dashboard, in its delay composition chart, by region and month. The Macro View's measure menu does not include it. See <a href="tsmo--congestion.html">Congestion dashboard</a> and <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>.</p>
+
+          <h2 id="i-need-to-export-data-to-perform-analyses-in-different-software">I need to export data to perform analyses in different software.</h2>
+          <p>Three routes. The <span class="ui">Macro View</span> download gives every segment in your geography as CSV or GPKG, with method notes. <span class="ui">Data &amp; Downloads</span> in the Freight Atlas offers each dataset as CSV, GeoJSON, Shapefile, GeoPackage or XLSX. Developers can query the Data Manager API. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>, <a href="freight_atlas--downloads.html">Download freight data</a> and the <a href="developers--quickstart.html">Developers quick start</a>.</p>
+
+          <h2 id="i-need-to-find-the-definitions-or-calculations">I need to find the definitions or calculations associated with terminology found within these tools.</h2>
+          <p><a href="measures_and_data.html">Measures &amp; Data</a> has one page per measure. Each says what it answers, how it is computed with every variable expanded, how much to trust it, and where it appears. The <a href="glossary.html">Glossary</a> lists every term with the screen it appears on.</p>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 1)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds--faq.html">NPMRDS FAQ</a>
+          <a href="tsmo--faq.html">TSMO FAQ</a>
+          <a href="freight_atlas--faq.html">Freight Atlas FAQ</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

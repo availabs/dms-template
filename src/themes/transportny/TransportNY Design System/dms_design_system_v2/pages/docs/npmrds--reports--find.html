@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Find a report · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Find a report.</h1>
+          <p class="doc-lede">Two ways in: the search dialog opened from the Reports header, and the <span class="ui">All reports</span> list. Both search names and descriptions, browse by county, region and agency tags, and rank your own reports first. Reading a report needs no account.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Reports</span>. Only reports that exist as pages are listed. The earlier tool's library of 869 reports is not searchable here; at the August 2026 reading 32 of them had been rebuilt as pages, and reports made since then are pages from the start. Signing in adds two things: your reports rank first and carry a <span class="ui">Mine</span> badge, and the default view narrows to reports you or your agency own.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Select the search bar, <span class="ui">Find a report — search N by name, road, route or description…</span>.<span class="result">The <span class="ui">Choose a report</span> dialog opens on <span class="ui">All Reports</span> with a search box, a <span class="ui">Browse by tag</span> row and a ranked list.</span></li>
+            <li>Type at least 2 characters in <span class="ui">Search by name or description…</span>.<span class="result">Rows show the name, badges (<span class="ui">Mine</span>, <span class="ui">Possible draft</span>), the description, and tag chips. A report with no description reads <span class="ui">Nothing was written down — matched on the title alone.</span></span></li>
+            <li>Or browse. Select <span class="ui">County</span>, <span class="ui">Region</span> or <span class="ui">Agency</span>, then a value.<span class="result">The breadcrumb reads <span class="ui">All Reports</span> / Agency / NYSDOT, for example. <span class="ui">Other tags</span> takes a free-text tag such as a project number.</span></li>
+            <li>Narrow with the chips beside <span class="ui">narrow by</span>: <span class="ui">Mine</span>, <span class="ui">Hide incomplete-looking</span>, <span class="ui">Show everyone's</span>.<span class="result">The count line reads "N reports". <span class="ui">clear</span> resets the first two.</span></li>
+            <li>Change the order with <span class="ui">sort</span>: <span class="ui">Best match</span>, <span class="ui">Recently updated</span> or <span class="ui">Name (A–Z)</span>.</li>
+            <li>Select a row.<span class="result">The dialog closes and the report opens.</span></li>
+            <li>To search from a link, add <code>?search=</code> and a term to the Reports address.<span class="result">The bar shows the term and <span class="ui">N matches · show results</span>; selecting it opens the dialog on those results.</span></li>
+            <li>For the full list, select <span class="ui">All reports</span> in the header toggle, or open <code>/reports/list</code>.<span class="result">A page with a search box, a filter rail and a table. Columns: <span class="ui">Report</span>, <span class="ui">Tags</span>, <span class="ui">Routes · graphs</span>, <span class="ui">Updated</span>. Select a row to open the report.</span></li>
+          </ol>
+
+          <figure class="shot" data-capture="www/npmrds/reports · signed in · Choose a report dialog · search term typed · facets and count bar visible" data-alt="The Choose a report dialog with a search term entered, the narrow-by chips, the count and sort bar, and a ranked list of reports with badges and tag chips">
+            <!-- captured 2026-09-08 · http://npmrds.localhost:5231/reports · Choose a report opened from the search bar, 787 typed, 2 reports, sort Best match, signed in — rows carry badges and tag chips but no last-updated date -->
+            <img src="../../assets/screens/docs/npmrds/reports-find-01-search-787.png" alt="The Choose a report dialog with a search term entered, the narrow-by chips, the count and sort bar, and a ranked list of reports with badges and tag chips"/>
+            <figcaption>Figure 1 · the search dialog after step 2. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="public-and-mine">Public and mine</h2>
+          <p>Every report page is public to read. What the pickers list by default depends on who you are. Signed out, the list is the whole catalogue. Signed in, it narrows to reports you created, reports tagged with your user or agency tags, and the shared templates; <span class="ui">Show everyone's</span> widens it back. For agency users the restricted view is the default; the wider view is the default only for the platform's own staff accounts. <span class="ui">Mine</span> is stricter: only reports you created. Ownership is read from your account on your side; it is a convenience, not a permission.</p>
+
+          <h2 id="settings">Settings</h2>
+          <p>Every control in the dialog and on the list page.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Search by name or description…</span></td><td>Filters by name or description; also the list page's search box</td><td>Text, 2 characters or more</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Browse by tag</span></td><td>Drills into a tag category, then a value</td><td><span class="ui">County</span> (62) · <span class="ui">Region</span> (11) · <span class="ui">Agency</span> (30) · <span class="ui">Other tags</span></td><td>None</td></tr>
+              <tr><td><span class="ui">narrow by</span> chips</td><td>Ownership and quality filters</td><td><span class="ui">Mine</span> · <span class="ui">Hide incomplete-looking</span> · <span class="ui">Show everyone's</span></td><td>See above</td></tr>
+              <tr><td><span class="ui">sort</span></td><td>Orders the results</td><td><span class="ui">Best match</span> · <span class="ui">Recently updated</span> · <span class="ui">Name (A–Z)</span></td><td><span class="ui">Best match</span>: yours, then described, then recent</td></tr>
+              <tr><td>Row</td><td>Opens the report</td><td>—</td><td>—</td></tr>
+              <tr><td>List page rail</td><td>The same facets and tag tree as the dialog, kept open beside the table</td><td></td><td>—</td></tr>
+              <tr><td>List page table</td><td>One row per report</td><td><span class="ui">Report</span> · <span class="ui">Tags</span> · <span class="ui">Routes · graphs</span> · <span class="ui">Updated</span>; pages of 25</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>One typed character does nothing; two start the search.</li>
+            <li><span class="ui">Best match</span> is a score, not a date: your own reports, then reports with a description, then recent ones. A name containing test, testing, delete, bug or saving is pushed down and badged <span class="ui">Possible draft</span>; <span class="ui">Hide incomplete-looking</span> drops those rows.</li>
+            <li>A report whose page was deleted is dropped from results even if the catalogue still lists it, so the dialog can show slightly fewer than the count in the search bar.</li>
+            <li>Only <span class="ui">Agency</span> tags are set automatically on rebuilt reports. County and region tags appear only where an author added them.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="i-cannot-find-my-report">I cannot find my report</h3>
+          <p>Select <span class="ui">Mine</span>. If its name contains a word like test, turn off <span class="ui">Hide incomplete-looking</span>. If a colleague made it, browse by their agency or select <span class="ui">Show everyone's</span>.</p>
+          <h3 id="i-was-asked-to-sign-in-to-view-a-report">I was asked to sign in to view a report</h3>
+          <p>Reports are public to read. A sign-in prompt on a plain report address was reported against the earlier tool in May 2026. If it happens on the current pages, <a href="help.html">report it</a> with the address.</p>
+          <h3 id="the-report-opened-but-shows-no-graphs">The report opened but shows no graphs</h3>
+          <p>It is a template. It needs a route from you first; see <a href="npmrds--reports--start_from_template.html#steps">Start a report from a template</a>.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--reports--start_from_template.html">Start a report from a template</a></li>
+            <li><a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a></li>
+            <li><a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a> · the same tag vocabulary, for routes</li>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Report picker code (ReportPickerModal, reportScore, useReportSearch, pickerScoring, 2026-09-03): title <span class="ui">Choose a report</span>, breadcrumb, placeholders, facet chips, sort options, badges, the empty-description line, the 2-character minimum, the score weights, the deleted-page check, the visibility allow-list and its default.</li>
+            <li>Search trigger code (ChooseReportButton, 2026-09-02): resting prompt, live count, <span class="ui">N matches · show results</span>.</li>
+            <li>Live All Reports page (published 2026-09-04): search filter placeholder <span class="ui">Search by name or description…</span>; table columns <span class="ui">Report</span> · <span class="ui">Tags</span> · <span class="ui">Routes · graphs</span> · <span class="ui">Updated</span>; a rail section whose labels are not in the repository read for this page.</li>
+            <li>All-reports design (2026-09-02): rail facets, tag tree counts, pages of 25.</li>
+            <li>NPMRDS design digest: 869 legacy reports, 32 rebuilt (August 2026).</li>
+            <li>Running fix 2173158 (2026-05-27): "Cannot view reports without logging in".</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="npmrds--reports--templates.html">Template reference</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

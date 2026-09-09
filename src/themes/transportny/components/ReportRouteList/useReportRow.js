@@ -390,8 +390,14 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit,
       });
 
       const existingNames = new Set(routes.map(r => r.name));
+      // A `%n`/`%y` templated name (dynamic-reports-authoring-gaps.md sub-item 1) isn't the real
+      // identity yet — it differentiates at VIEW time once the tokens resolve (typically to a
+      // different year per slot), so a literal collision on the unresolved template string alone
+      // (e.g. every new Dynamic Report slot defaulting to "%n (%y)") is not a real duplicate-name
+      // risk the way two identical plain names would be. Mirrors the same guard in
+      // report_build.mjs's own route-name dedup.
       const dedupeAgainst = (name) => {
-        if (!name || !existingNames.has(name)) return name;
+        if (!name || name.includes('%n') || name.includes('%y') || !existingNames.has(name)) return name;
         let n = 2;
         while (existingNames.has(`${name} (${n})`)) n++;
         return `${name} (${n})`;

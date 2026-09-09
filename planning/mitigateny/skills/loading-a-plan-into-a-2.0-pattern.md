@@ -56,8 +56,107 @@ The county pattern's page rows share an instance slug (e.g. `mitigateny_county_t
   leave it empty (the plan is intentionally sparse; ~46 of ~255 slots filled for Schenectady).
 - **Jurisdictional annexes are DEFERRED.** They are 2.0 *form* pages (a separate mechanism), not Annotation
   slots — not loaded during this pass.
-- **Landing-page Executive Summaries** (The Risk / The Local Environment / The Plan) are auth-gated; skip.
-- Everything writes to `draft_sections`, `status=shmp_sourced_content`, **unpublished**.
+- ~~**Landing-page Executive Summaries** (The Risk / The Local Environment / The Plan) are
+  auth-gated; skip.~~ **Corrected 2026-09-08 (Westchester).** They are **not** inherently auth-gated
+  — they were unreadable because the pattern was **missing `authPermissions`** after duplication.
+  With that set, all three fill normally, and on Westchester all three received content. Fix the
+  pattern's permissions and re-enumerate before concluding a slot or page is unavailable.
+- Everything writes to `draft_sections`, **unpublished**.
+- **Pick the `status` value honestly.** Schenectady and Delaware used
+  `status=shmp_sourced_content`, and that is right only when the content really came from the
+  **State** plan. For prose transcribed from a **county** HMP it is a false provenance claim —
+  reviewers open the admin UI to boxes stamped "SHMP Sourced Content" that hold county text. Use
+  **`local_review_needed`** for consultant/county prose (Westchester 2026). The value is defined by
+  the pattern's `additionalSectionAttributes`; if that field did not survive duplication there is no
+  status control in the admin UI at all (see the post-duplication check below).
+
+## Before you write: two checks that have each cost a load
+
+### 1. The lexical shape — `{text:{root}}` for components, `{root}` for dataset columns
+
+`lexical.mjs`'s builders (`buildRoot`, `buildRootBlocks`, `buildRootBlocks2`) all return the **bare
+root node**. The two write paths wrap it differently:
+
+| Target | Shape |
+|---|---|
+| **Page component** `element-data` | **`{text: {root: <node>}}`** |
+| **Dataset column** value (the annex path) | **`{root: <node>}`** |
+
+Assign the node straight to `ed.text` — the habit the annex path teaches — and it is stored **one
+level too shallow**. What you then see:
+
+- the write **returns success**
+- `status`, `isCard`, `element-type` are all set correctly
+- **every character is present** in the row
+- and the box **renders empty**, because nothing resolves `text.root`
+
+**A dry run cannot catch this.** The dry run measures the node it built, not the shape it would
+store. So:
+
+> **Write ONE slot, read it back, then write the rest.**
+
+A wrong-shape canary reads back unmistakably: `ed.text.type === 'root'`, `chars: 0`,
+`children: undefined`.
+
+### 2. Merge into `element-data`, never replace it
+
+Read the component, set `ed.text`, write the whole `ed` back. Replacing `element-data` wholesale
+drops `isCard` / `bgColor` / `showToolbar`, and the grey Annotation stops rendering as one. Have the
+writer **refuse** anything whose `isCard !== 'Annotation'` — that turns "we never touch shared cards
+or data components" from a promise into a structural guarantee, and it is one line.
+
+## Post-duplication check: run `pattern_diff` before trusting any enumeration
+
+Three pattern-level fields have failed to survive duplication (found on Westchester 2448336 vs
+`county_template` 1300890 — `pattern_diff.mjs` in
+[`scripts/westchester/baseplan/`](./scripts/westchester/baseplan/)):
+
+| Field | Symptom if missing |
+|---|---|
+| `filters` | carries the template's **placeholder geoid** (`36105`, Sullivan). Every data component resolves to the wrong county. |
+| `authPermissions` | pages read back **`no-access`** anonymously — 9 of 58 on Westchester. |
+| `additionalSectionAttributes` | the `status` select has no definition, so the pattern shows **no status control** in the admin UI. Consumed at `patterns/page/siteConfig.jsx:121`; editable in the pattern editor's format manager. |
+
+The middle one is the trap: **an auth gap presents as a structural difference.** On Westchester the
+missing permissions made the slot enumeration miss a page entirely, which was then written up as
+"the copy lacks a page the template has" — and it was wrong. It also produced the stale "landing-page
+Executive Summaries are auth-gated" rule corrected above. **Fix permissions first, re-enumerate, then
+draw conclusions.**
+
+## Prove "nothing published" rather than asserting it
+
+Component rows are shared objects, so a claim to have written only drafts deserves a check. Draft
+and published are in fact **separate component rows** — but verify it per run: fetch each affected
+page and confirm that none of the ids you wrote appears in that page's published `sections` list.
+Two lines of script, and it converts a claim into a fact.
+
+## Merging two sources into one box: the lead-in rule
+
+When two or more source sections land in one Annotation, an h3 above source A followed by an
+**unheaded** source B makes B read as part of A.
+
+**Headed sources must form a contiguous suffix** — once one source carries an h3, every later source
+in that box must too. That admits the three correct shapes and rejects only the mislabelling case:
+
+| Shape | When to use it |
+|---|---|
+| none headed | the sources are genuinely continuous prose |
+| only the last headed | native prose first, merged addition after |
+| unheaded intro, then all headed | a bare framing paragraph, then headed subsections |
+
+Assert it in the spec builder rather than eyeballing it; on Westchester the first run got it wrong in
+four boxes, each of which read plausibly in isolation.
+
+**And let the source document's own styling decide list markup.** Promote only the styles the author
+used for lists (`Bullet 1`, `List Paragraph`); leave everything else as paragraphs. Never invent list
+structure the document doesn't have, even where a list would read better.
+
+## Character counts are routing metadata, not a byte ledger
+
+Once a source section is distributed **paragraph-wise** across several slots, it contributes its full
+length once per slot to any naive sum. On Westchester the generated total read 358,881 against a
+distinct-section total of 337,837, while the spec's own measured total — the only figure that matched
+the read-back — was **334,761**. Report the spec's measure, and say which one you mean.
 
 ## Rich-text formatting for presentation (REQUIRED — applies to every filled Annotation box)
 

@@ -200,19 +200,11 @@ export function resolveRelativeDateFormula(formula, baseStartDate, baseEndDate) 
   return { start: formatDateOnly(start), end: formatDateOnly(end) };
 }
 
-// A route named "Current Year"/"1 Year Ago"/"Trailing 3 Years" is only meaningful during
-// authoring — once `resolveRouteDates` has resolved its formula against a real (possibly
-// viewer-`?asOf=`-picked) anchor date, the actual calendar year(s) it landed on is strictly more
-// informative for a chart legend than the relative phrase, and report-spec.md's "route names are
-// the only series discriminator" means that legend has nowhere else to get it from. Only fires
-// for a `year`-span formula (`yearof` or `year±Nyear->Myear`) — day/week/month/calendar-span
-// derived routes ("Yesterday", "This Month", "Winter (Avg Day)") already carry a literal,
-// non-relative name and are left alone. A trailing non-relative annotation on the authored name
-// (bi_directional's "(NB)"/"(SB)") is preserved by reattaching it after the computed label, since
-// nothing about the year-ness of a formula says anything about a direction suffix.
-export function yearRangeForDateFormula(dateFormula, startDate, endDate) {
-  const m = RELATIVE_DATE_REGEX.exec(dateFormula || '');
-  if (!m || m.groups.span !== 'year') return null;
+// The resolved calendar year(s) spanned by a pair of "YYYY-MM-DD" dates — e.g. "2026" for a
+// same-year span, "2024–2026" across a boundary. Used by `applyNameTemplate`'s `%y` token; works
+// off whatever dates a slot actually resolved to, regardless of whether that came from a
+// relative-date formula or a plain literal pick.
+function yearSpanOf(startDate, endDate) {
   const start = parseDateOnly(startDate);
   const end = parseDateOnly(endDate);
   if (!start || !end) return null;
@@ -221,13 +213,35 @@ export function yearRangeForDateFormula(dateFormula, startDate, endDate) {
   return startYear === endYear ? String(startYear) : `${startYear}–${endYear}`;
 }
 
-// Convenience over `yearRangeForDateFormula` for the common call site (a resolved route object) —
-// falls back to the route's own authored `name` when the formula isn't year-span, or has none.
+// Route-slot name template substitution (dynamic-reports-authoring-gaps.md item 1) — an author
+// can type `%n`/`%y` literally anywhere in a slot's name; at view time (once the slot has resolved
+// against a real catalog route) `%n` is replaced by that route's own real name and `%y` by the
+// resolved calendar year(s) of the slot's own dates. Both are opt-in string tokens, not a name-wide
+// replace, so surrounding literal text (e.g. `"%n (%y)"`, `"%y (NB)"`) survives untouched. Returns
+// `null` (not the original name) when neither token is present, so callers can tell "no template
+// here" apart from "templated to an empty/falsy result".
+export function applyNameTemplate(route) {
+  const name = route?.name;
+  if (!name || (!name.includes('%n') && !name.includes('%y'))) return null;
+  let result = name;
+  if (result.includes('%n')) {
+    result = result.split('%n').join(route?.catalogRouteName ?? '');
+  }
+  if (result.includes('%y')) {
+    result = result.split('%y').join(yearSpanOf(route?.startDate, route?.endDate) ?? '');
+  }
+  return result;
+}
+
+// The single choke point both the header's routes disclosure and the chart legend read through —
+// so they can never disagree. Template substitution (above) takes priority when present; otherwise
+// the route's own authored `name` is authoritative as-is (this used to also auto-swap a year-span
+// `dateFormula`'s name for its resolved year with no token needed — retired 2026-09-05 in favor of
+// the one general `%y` mechanism above; the handful of catalog specs that relied on the old
+// automatic behavior show their literal spec name until re-authored with an explicit `%y`, see
+// dynamic-reports-authoring-gaps.md).
 export function resolvedRouteLabel(route) {
-  const yearRange = route?.dateFormula ? yearRangeForDateFormula(route.dateFormula, route.startDate, route.endDate) : null;
-  if (!yearRange) return route?.name;
-  const suffix = /(\s*\([^)]*\))\s*$/.exec(route.name || '');
-  return suffix ? `${yearRange}${suffix[1]}` : yearRange;
+  return applyNameTemplate(route) ?? route?.name;
 }
 
 // Resolves every formula-bearing route entry against its base (found by

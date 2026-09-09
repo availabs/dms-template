@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Map Editor · Admin · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  admin--map_editor.html · IA page 90 · type how-to. Phase 6b, 2026-09-08. Merges docs-dump 1496554 (Mapmaking and Symbology)
+  and 1516806 (Updating Maps), which were duplicates.
+  Labels from code: mapeditor/MapEditor/components/LayerManager/index.jsx (Legend · Layers · Plugins), SymbologyControl
+  (Select / Create New Map), SymbologyControl/components (Create New Map · Map Name · Manage Changes · Discard / Save / Save As ·
+  Save Changes · Save and Open · Discard Changes · Delete Symbology), SymbologySelector (Select Symbology · Search symbologies ·
+  Open Symbology), SourceSelector (Add Layer · Search datasources · Name / Date uploaded / Last modified · Add layer · Circle /
+  Heat Map), LayerEditor/index.jsx (Layer Name · Style · Legend · Popup · Filter · Join), typeConfigs.jsx (every style label and
+  the Type options), Controls.jsx (Showing · Method · Show missing data), LegendEditor.jsx (Legend Type), ViewGroupControl
+  (View Group · Add Data View), LayerPanel (zoom-to-fit · duplicate · Remove). Order of steps from skills/editing-map-symbologies.md.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Admin · how-to</div>
+          <h1 class="doc-title">Build a map in the Map Editor.</h1>
+          <p class="doc-lede">Create a saved map, add a layer from a dataset version, colour it, write its legend, and save it so pages can use it. A saved map is a named style over one or more dataset versions; it is not a page. This page assumes the data is already uploaded.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires an administrator account</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Sign in and open <span class="ui">Map Editor</span> from the data administration navigation. You need an administrator account and <span class="ui">View source</span> on the dataset you draw — carried by full access, level 10 in the earlier scheme.</p>
+          <p>Know which dataset and version you are drawing, and check it has geometry — a tabular dataset cannot be a layer. If the data is not loaded, start at <a href="admin--upload_data.html">Upload a dataset</a>.</p>
+          <p>Two panels. The map's own is at the top left: its name, its save controls and the tabs <span class="ui">Legend</span> · <span class="ui">Layers</span> · <span class="ui">Plugins</span>. Select a layer and a second panel opens with <span class="ui">Style</span> · <span class="ui">Legend</span> · <span class="ui">Popup</span> · <span class="ui">Filter</span> · <span class="ui">Join</span>.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Select the plus in the map panel.<span class="result">In <span class="ui">Create New Map</span>, type a <span class="ui">Map Name</span> of four characters or more and select <span class="ui">Create</span>. For an existing map, use the <span class="ui">Select / Create New Map</span> control and <span class="ui">Select Symbology</span> › <span class="ui">Open Symbology</span>.</span></li>
+            <li>Select the plus beside the tabs.<span class="result">The <span class="ui">Add Layer</span> dialog opens on the catalog, with <span class="ui">Search datasources</span>.</span></li>
+            <li>Select a dataset.<span class="result">Its versions appear by <span class="ui">Name</span>, <span class="ui">Date uploaded</span> and <span class="ui">Last modified</span>.</span></li>
+            <li>Select the version, then <span class="ui">Add layer</span>.<span class="result">The layer appears on <span class="ui">Layers</span> in a default style. A version with no tiles is refused: "This view has no tile layers and can't be added to the map." Point data asks for <span class="ui">Circle</span> or <span class="ui">Heat Map</span>.</span></li>
+            <li>Select the layer on <span class="ui">Layers</span> and rename it in <span class="ui">Layer Name</span>, which the legend and the page's layer list show.</li>
+            <li>On <span class="ui">Style</span>, set <span class="ui">Type</span>: <span class="ui">Simple</span> for one colour, <span class="ui">Categories</span> for one colour per value, <span class="ui">Color Range</span> for a graduated ramp, <span class="ui">Interactive</span> for several styles a viewer switches between. The last two then need a column in <span class="ui">Color By</span>.<span class="result">The map redraws, the legend fills with one row per class or bin, and the rows below change with the type and the geometry; <a href="#the-style-controls">The style controls</a> is the whole set.</span></li>
+            <li>Set the colours in <span class="ui">Fill</span>, the bins in <span class="ui">Scale</span>, and the line work in <span class="ui">Stroke</span>, <span class="ui">Size</span>, <span class="ui">Casing</span>, <span class="ui">Offset</span> and <span class="ui">Opacity</span>.<span class="result">Offset matters on road networks: both directions lie on one line, so without it only one colour shows.</span></li>
+            <li>On the layer's <span class="ui">Legend</span> tab, set <span class="ui">Legend Type:</span> to <span class="ui">Vertical</span>, <span class="ui">Horizontal</span> or <span class="ui">None</span> and edit each class label.<span class="result">Those labels are the only words a reader gets for your bins: write "60 % and above", not "0.6-1".</span></li>
+            <li>Optional: on <span class="ui">Popup</span> set the popover to <span class="ui">Hover</span> and add fields with <span class="ui">Add Column</span>, each taking a <span class="ui">Show Column Name</span> and a <span class="ui">Format</span>.</li>
+            <li>Select the save control and, in <span class="ui">Manage Changes</span>, choose <span class="ui">Save</span> then <span class="ui">Save Changes</span>. To keep the original and copy it, choose <span class="ui">Save As</span>, type a <span class="ui">New Map Name</span> and select <span class="ui">Save and Open</span>; to abandon the edits, <span class="ui">Discard</span> then <span class="ui">Discard Changes</span>.<span class="result">The dialog first says "No pending changes" or "You have unsaved changes".</span></li>
+          </ol>
+
+          <figure class="shot" data-capture="Map Editor · a saved map open with one graduated layer selected, the layer panel on Style" data-alt="The Map Editor with the map panel at the top left, its Layers tab listing one layer, and the layer panel beside it showing the Style controls for a graduated layer.">
+            <!-- captured 2026-09-08 · http://localhost:5231/mapeditor · the saved map FDI - NPRMDS Performance Measures 2022 opened through Select Symbology, its one layer selected on Layers, the layer panel on Style; the layer's Type is Interactive and the selected interactive filter, 2022 Level of Travel Time Reliability, is a Color Range on lottr. Nothing saved. -->
+            <img src="../../assets/screens/docs/admin/map_editor-01-graduated-style.png" alt="The Map Editor with the map panel at the top left, its Layers tab listing one layer, and the layer panel beside it showing the Style controls for a graduated layer."/>
+            <figcaption>Figure 1 · the two panels and the style controls on a real saved map. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="what-you-now-have">What you now have</h2>
+          <p>A saved map in the editor's catalog, with styled layers over specific dataset versions. No page has changed: a page holds its own copy, so the map reaches readers only once a page is edited and published — <a href="admin--add_map_to_page.html">Add a saved map to a page</a>, whose result is <a href="freight_atlas--map.html">a map like the Freight Atlas map</a>.</p>
+
+          <h2 id="the-style-controls">The style controls</h2>
+          <p>Which rows appear depends on the geometry and on <span class="ui">Type</span>.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Appears on</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Type</span></td><td>How the layer is coloured</td><td><span class="ui">Simple</span> · <span class="ui">Categories</span> · <span class="ui">Color Range</span> · <span class="ui">Interactive</span>; points add <span class="ui">Circles</span></td><td>Every layer</td></tr>
+              <tr><td><span class="ui">Color By</span></td><td>The column the colours are read from</td><td>The version's columns</td><td><span class="ui">Categories</span> · <span class="ui">Color Range</span></td></tr>
+              <tr><td><span class="ui">Categories</span></td><td>The list of values, their colours and their order</td><td>Per value</td><td><span class="ui">Categories</span></td></tr>
+              <tr><td><span class="ui">Fill</span></td><td>The palette, the ramp, or the one colour</td><td>A palette; or a colour and a hex value</td><td>Every layer</td></tr>
+              <tr><td><span class="ui">Scale</span></td><td>The bins: <span class="ui">Showing</span> (how many), <span class="ui">Method</span>, <span class="ui">Show missing data</span></td><td><span class="ui">ck-means</span> · <span class="ui">Quantile</span> · <span class="ui">Equal Interval</span> · <span class="ui">Standard Deviation</span> · <span class="ui">Custom</span></td><td><span class="ui">Color Range</span></td></tr>
+              <tr><td><span class="ui">Stroke</span></td><td>Outline colour and width</td><td>A colour; 0 to 10 px</td><td>Fills and points</td></tr>
+              <tr><td><span class="ui">Size</span> · <span class="ui">Casing</span> · <span class="ui">Offset</span> · <span class="ui">Hover Casing</span></td><td>Line width, its border, its sideways shift, and the border on hover</td><td>Widths and colours</td><td>Lines</td></tr>
+              <tr><td><span class="ui">Radius</span> · <span class="ui">Intensity</span> · <span class="ui">Weight By</span> · <span class="ui">Color Bins</span></td><td>The heat-map controls</td><td>Numbers; a column; a palette</td><td>Heat maps</td></tr>
+              <tr><td><span class="ui">Opacity</span></td><td>How solid the layer draws</td><td>0 to 100 %</td><td>Every layer</td></tr>
+              <tr><td><span class="ui">Interactive Filters</span></td><td>The alternative styles a viewer switches between</td><td>One entry per variant</td><td><span class="ui">Interactive</span></td></tr>
+              <tr><td><span class="ui">Filter Group</span> · <span class="ui">View Group</span></td><td>Colour by several columns at once; collect several versions behind one layer</td><td>Columns; versions</td><td><span class="ui">Categories</span> · <span class="ui">Color Range</span></td></tr>
+            </tbody>
+          </table></div>
+          <p>A layer's own menu holds <span class="ui">zoom-to-fit</span>, <span class="ui">duplicate</span> and <span class="ui">Remove</span>, and layers draw in the order the list shows. The trash control in the map panel deletes the saved map, after a <span class="ui">Delete Symbology</span> confirmation.</p>
+
+          <h2 id="pointing-a-map-at-a-newer-version">Pointing a map at a newer version</h2>
+          <p>A layer is bound to one version of one dataset, so a new version does not appear by itself. Either <strong>replace the layer</strong> — add one from the new version, copy the style across, <span class="ui">Remove</span> the old one, which is the only way when the columns differ — or <strong>collect the versions</strong>: on <span class="ui">Style</span> turn on <span class="ui">View Group</span>, name it, and add each with <span class="ui">Add Data View</span>, one marked as the one it opens on.</p>
+          <p>Either way, save the map and then refresh and publish every page that uses it. Renaming is the same: on 2026-07-31 two rail-network maps were renamed to drop a version number, and the page showing them still needed publishing.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>The map draws from tiles, so a column must be in them to be drawn or shown in a popup: one omitted at upload, or not ticked for <span class="ui">Mbtile</span>, is unavailable here.</li>
+            <li>The legend does not write itself: bin labels are raw numbers until you edit them.</li>
+            <li>An <span class="ui">Interactive</span> layer holds a copy of the style per variant, so restyle every variant or the style reverts when a viewer switches.</li>
+            <li>Saving the map saves the style, not the data: a restyle never changes a dataset, and vice versa.</li>
+            <li>The editor's map is the author's view; readers get the page's copy, at the page's height and legend position.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-layer-is-there-but-nothing-is-coloured">The layer is there but nothing is coloured</h3>
+          <p>Either <span class="ui">Color By</span> names a column that is not in the tiles, or every feature has no value. Check the column on the dataset's <span class="ui">Columns</span> table, then <span class="ui">Show missing data</span> — with it off, valueless features are not drawn.</p>
+          <h3 id="only-one-direction-of-a-road-shows">Only one direction of a road shows</h3>
+          <p>The two directions lie on top of each other. Set <span class="ui">Offset</span> so each draws to its own side, scaled with the line's width.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="admin--add_map_to_page.html">Add a saved map to a page</a></li>
+            <li><a href="admin--manage_data.html#versions-and-downloads">Versions and downloads</a></li>
+            <li><a href="freight_atlas--map.html">Use the map</a></li>
+            <li><a href="freight_atlas--layers.html">Layer reference</a></li>
+            <li><a href="admin--upload_data.html">Upload a dataset</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Map editor code (the build being deployed): the map panel with <span class="ui">Select / Create New Map</span> and the tabs <span class="ui">Legend</span> · <span class="ui">Layers</span> · <span class="ui">Plugins</span>; <span class="ui">Create New Map</span> with <span class="ui">Map Name</span> and its four-character minimum; <span class="ui">Select Symbology</span> with <span class="ui">Search symbologies</span>, <span class="ui">Delete</span>, <span class="ui">Cancel</span> and <span class="ui">Open Symbology</span>; <span class="ui">Manage Changes</span> with "No pending changes" / "You have unsaved changes", <span class="ui">Discard</span> · <span class="ui">Save</span> · <span class="ui">Save As</span>, <span class="ui">New Map Name</span>, and the buttons <span class="ui">Discard Changes</span> · <span class="ui">Save Changes</span> · <span class="ui">Save and Open</span>; <span class="ui">Delete Symbology</span>.</li>
+            <li>Add-layer code: <span class="ui">Add Layer</span>, <span class="ui">Search datasources</span>, the version list's <span class="ui">Name</span> · <span class="ui">Date uploaded</span> · <span class="ui">Last modified</span>, <span class="ui">Add layer</span>, the no-tile-layers message quoted above, and the <span class="ui">Circle</span> / <span class="ui">Heat Map</span> choice for point data.</li>
+            <li>Layer editor code: <span class="ui">Layer Name</span>; the tabs <span class="ui">Style</span> · <span class="ui">Legend</span> · <span class="ui">Popup</span> · <span class="ui">Filter</span> · <span class="ui">Join</span>; the plugin-controlled message; the layer menu's <span class="ui">zoom-to-fit</span> · <span class="ui">duplicate</span> · <span class="ui">Remove</span>.</li>
+            <li>Style control definitions (per geometry: fill, line, circle, heatmap): the <span class="ui">Type</span> options <span class="ui">Simple</span> · <span class="ui">Categories</span> · <span class="ui">Color Range</span> · <span class="ui">Interactive</span> (points add <span class="ui">Circles</span>), and every row named in the table above.</li>
+            <li>Bin controls: <span class="ui">Showing</span>, <span class="ui">Method</span> with <span class="ui">ck-means</span> · <span class="ui">Quantile</span> · <span class="ui">Equal Interval</span> · <span class="ui">Standard Deviation</span> · <span class="ui">Custom</span>, and <span class="ui">Show missing data</span>. Legend editor: <span class="ui">Legend Type:</span> with <span class="ui">Vertical</span> · <span class="ui">Horizontal</span> · <span class="ui">None</span> and the editable class labels. Popup editor: <span class="ui">None</span> / <span class="ui">Hover</span>, <span class="ui">Add Column</span>, <span class="ui">Show Column Name</span>, <span class="ui">Format</span>. View group: <span class="ui">Add Data View</span> and the ordered list.</li>
+            <li>Symbology authoring notes (platform skill, editing map symbologies): the two homes of a saved map and the drift between them, the tiles-only rule, the per-variant style copies, the legend rows that only render for categorical and graduated layers, and the directional-line offset recipe.</li>
+            <li>Mapmaking and Symbology (docs page, 2025-10-24) and Updating Maps (2025-10-31), a duplicate pair merged here: the earlier wording of the same flow — loading the editor, the layers panel, the <span class="ui">Style</span> section with <span class="ui">Type</span> · <span class="ui">Color By</span> · <span class="ui">Scale</span> · <span class="ui">Fill</span> · <span class="ui">Stroke</span> · <span class="ui">Opacity</span> and the line-only size, casing and offset, adding a layer, and saving.</li>
+            <li>Feedback record 2197855 (resolved 2026-07-31): two saved maps renamed in the library; the page showing them still needed publishing.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="admin.html">Admin hub</a>
+          <a href="admin--add_map_to_page.html">Add a saved map to a page</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

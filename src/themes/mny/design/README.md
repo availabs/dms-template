@@ -64,6 +64,22 @@ mny/design/
 │   │                                   15 tier-duplicated Actions pages (2026-07 Phase 1;
 │   │                                   superseded shape — see the redesign task doc)
 │   ├── plan-status-dashboard.html      county plan-health metrics (adoption, coverage, NFIP)
+│   ├── lhmp/                         ← LHMP DESIGN — the public county plan surfaces
+│   │   └── home.html                   PLAN HOME — redesign of the county template home
+│   │                                   (pattern 1300890, page 1300803, driven by the
+│   │                                   pattern-level `geoid`). Geography prose in the
+│   │                                   header beside the county photo; three breakout-
+│   │                                   illustration cards (demography · major industries ·
+│   │                                   climate outlook); the dominant hazard pulled out as
+│   │                                   the page's focus object with the other ten as a bar
+│   │                                   list; actions and jurisdictions as meters; and the
+│   │                                   six lexical nav blocks collapsed into four Explore
+│   │                                   cards carrying every page of the plan (56 links,
+│   │                                   33 pages). Real Sullivan County data throughout
+│   │                                   (geoid 36105).
+│   ├── lhmp-admin/                   ← LHMP ADMIN — plan-status surfaces (2026-08)
+│   │   ├── plan-status-admin.html      plan status · in the admin panel (Direction A)
+│   │   └── plan-status-plan.html       plan status · in the plan (Direction B)
 │   └── county-actions/               ← COUNTY ACTIONS WORKFLOW — one linked 6-page flow
 │       ├── dashboard.html              1 · county actions dashboard (stats + map + table + gap hand-off)
 │       ├── jurisdictions.html          2 · pick a jurisdiction, or tier the whole county
@@ -180,6 +196,8 @@ any page is at most two hops from any other. The sections are the site's real IA
 | Admin Panel | `pages/` | `admin-home-v2.html` |
 | Site Management | `pages/` | `site-management-v2.html` |
 | Authoring Reference | `pages/` | `page-templates.html` |
+| LHMP Admin | `pages/lhmp-admin/` | `plan-status-admin.html` |
+| LHMP Design | `pages/lhmp/` | `home.html` |
 | Reports | `reports/` | `actions-qa.html` |
 
 **Adding a page: add one line to that section's `pages` array in `ds-nav.js`, and the script tag
@@ -244,6 +262,75 @@ empty on every row and point-of-contact on 439 of 475, so pages 4–5 double as 
 `.mny-field-empty` inputs on edit).
 
 Full rationale, per-page section tables and the figures: `planning/mitigateny/tasks/current/county-actions-workflow-design.md`.
+
+---
+
+## `pages/lhmp/` — LHMP Design
+
+The **public plan surfaces** — what a resident sees when they open their county's Local Hazard
+Mitigation Plan. Distinct from `pages/` (the statewide MitigateNY site), from `pages/lhmp-admin/`
+(plan-status surfaces for planners) and from the Admin Panel section (the authoring console).
+
+`home.html` is the redesign of the county template home — live pattern **1300890**
+(`MitigateNY_County_Template_V3`, subdomain `county_template`), page **1300803**, driven by the
+pattern-level filter `geoid`. **Every number, name and sentence on it is real Sullivan County data**
+(geoid 36105): profile prose and plan dates from `DHSES_County_Database` (953754 / v1108098),
+hazard losses and disaster counts from `AVAIL - Fusion Events V2` (870 / v1648, `hazmit_dama`),
+23 jurisdictions from `Jurisdictions` (1346449 / v1346450), 475 actions from `Actions_Revised`
+(1029065 / v1074456). Only the one-paragraph lede and the four Explore column headings are authored
+copy — and that copy is identical for all 62 counties.
+
+**The governing constraint is templateability**, carried over from the admin home redesign: *every
+band is identical for every county plan; only values and the county name vary — never the copy,
+never which cards appear.* This pattern is duplicated into `suffolk_draft` (2249247),
+`schenectady_draft` (2304223), `delaware_draft` (2323808) and `MitigateNY_Nassau_V2` (2407262), so a
+band that has to be re-authored per county is not a design, it's five maintenance jobs.
+
+What changed from the live page, and why:
+
+**The body is drawn in the `pages/county-actions/` design language** — one boxed content group on a
+12-column grid, a reading column beside a sticky facts rail (`action-view.html`), counts rendered as
+meters with legends rather than flat tiles (`jurisdiction-prioritization.html`), and a share-of-max
+bar list (`dashboard.html`). Only the photo header is its own thing.
+
+| Live | Redesign |
+|---|---|
+| 11 sections, **2** of them data-bound | 7 sections, **5** data-bound — the page now answers *what is this county* and *what shape is its plan in* from data, not prose |
+| A paragraph describing **the template** ("places for counties … to input content") | A 20px lede describing **the plan** — what an HMP is, who adopts it, why it matters |
+| No county profile | **Geography · demography · major industries**, the section this redesign exists for — a reading column with the facts pulled out to a rail, not three equal boxes |
+| No plan status anywhere | Status · approved · expires, in the header card, off three columns already on the bound row |
+| No sense of scale | 475 actions as a **segmented meter** (391 proposed · 23 in progress · 41 complete · 20 not reported) and 23 jurisdictions broken to towns/villages/county — the numbers given a shape rather than a tile |
+| 11 hazards paged **4 at a time**, all tiles the same size | The leader — **hurricane, 91% of all recorded loss** — pulled out as the page's focus object at 36px; the other ten as a bar list scaled to the largest of *them*, so they are legible instead of stubs |
+| **Six** lexical blocks for one nav menu (×5 patterns = 30 hand-maintained rich-text bodies) | **One** all-static Card, four **breakout-illustration cards** — one configuration, restyleable from the theme, and the link set becomes data an audit can read |
+| Base64 PNGs inlined in lexical | Brand assets from `assets/mny/` |
+| **14 links, 3 of them broken, reaching 13 pages** | **56 links reaching 33 distinct pages — every page of the plan**, all 33 slugs checked against the 2026-09-01 harvest |
+| Nothing in the header but the county name | The county's own description of itself (`geography_topography`) plus plan status · approved · expires |
+
+The page's focus ladder is its type ladder: **36px** the dominant hazard · **30px** `$363,792,448`
+and `475` · **20px** the page lede · **16px** band and card titles · **14px** prose and card lists ·
+**12px** labels and pills.
+
+**The breakout-illustration card** is `pages/home.html`'s device, used twice — three cards for the
+county profile, four for the Explore navigation: `pt-[Npx]` on the wrapper reserves the overhang and
+the image carries `mt-[-Npx] mx-[-12px] w-[calc(100%+24px)]`, so the isometric render bleeds to both
+card edges and rises above the top one. **Two calibration facts** for whoever ports this to a theme
+value: `w-[calc(100%+24px)]` is tuned to a ~290px card (the 4-across width) and swamps the prose on a
+390px one, which is why the profile cards pin `h-[240px]`; and `w-auto mx-auto` centres the *file*
+rather than the *drawing* — these renders carry uneven transparent padding, so the bleed width plus
+`object-contain` is what actually centres them.
+
+**The one platform enrichment the page asks for** is a `risk_pill` column type (value → colour, five
+documented risk tokens), which the 16 hazard pages would reuse. Everything else is Card configuration.
+
+**Three platform findings were logged building it** (see the task file): `mnyHeaderDataDriven.jsx:113`
+sets `lg:w-[1440px]`, which scrolls every page with a full-overlay header sideways between 1024 and
+1440; `border-l-4 border-<c> border-y border-r border-<c2>` silently loses its coloured edge (both
+utilities set all four sides, the later CSS rule wins) — **several `pages/county-actions/` bands use
+that shape** and are probably rendering flat boxes where an accent edge was intended; and
+`mnyHeader`'s `note` is a single string, so the header can hold only one prose slot, which is what
+`geography_topography` in the header needs.
+Full spec, the datasource review and the open questions:
+[`planning/mitigateny/tasks/current/mny-county-template-home-redesign.md`](../../../../planning/mitigateny/tasks/current/mny-county-template-home-redesign.md).
 
 ---
 
