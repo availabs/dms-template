@@ -50,9 +50,10 @@ function m1ForZone(cells, opts = {}) {
   const rows = (cells || []).filter(Boolean);
   if (!rows.length) {
     return {
-      epochs_observed: 0, epochs_below_absolute: null, epochs_below_relative: null,
-      epochs_below_fhwa: null,
-      m1_absolute: null, m1_relative: null, m1_fhwa: null, speed_mean: null, speed_min: null,
+      epochs_observed: 0, epochs_below_posted: null, epochs_below_absolute: null,
+      epochs_below_relative: null, epochs_below_fhwa: null,
+      m1_posted: null, m1_absolute: null, m1_relative: null, m1_fhwa: null,
+      speed_mean: null, speed_min: null,
       baseline_speed: null, reference_speed: null, phed_threshold_speed: null,
       fhwa_threshold_speed: null,
       density_a: 0, density_b: 0, density_c: 0, pct_density_c: null,
@@ -61,6 +62,7 @@ function m1ForZone(cells, opts = {}) {
   }
 
   const observed = sum(rows, 'epochs_observed');
+  const belowPosted = sum(rows, 'epochs_below_posted');
   const below = sum(rows, 'epochs_below_absolute');
   const belowRel = sum(rows, 'epochs_below_relative');
   const belowFhwa = sum(rows, 'epochs_below_fhwa');
@@ -90,10 +92,13 @@ function m1ForZone(cells, opts = {}) {
 
   return {
     epochs_observed: observed,
+    epochs_below_posted: belowPosted,
     epochs_below_absolute: below,
     epochs_below_relative: belowRel,
     epochs_below_fhwa: belowFhwa,
     // The measure itself: the share of observed active time below threshold.
+    // The primary measure (owner decision): below max(20, posted limit - 10).
+    m1_posted: observed > 0 ? round(belowPosted / observed) : null,
     m1_absolute: observed > 0 ? round(below / observed) : null,
     m1_relative: observed > 0 ? round(belowRel / observed) : null,
     m1_fhwa: observed > 0 ? round(belowFhwa / observed) : null,
@@ -147,8 +152,10 @@ function rollupM1(zoneRows, opts = {}) {
   if (!rows.length) {
     return {
       zones: 0, zones_skipped: skipped, epochs_observed: 0,
+      m1_posted_epoch_weighted: null,
       m1_absolute_epoch_weighted: null, m1_relative_epoch_weighted: null,
       m1_fhwa_epoch_weighted: null,
+      m1_posted_zone_mean: null,
       m1_absolute_zone_mean: null, m1_relative_zone_mean: null, m1_fhwa_zone_mean: null,
       active_hours: null,
     };
@@ -162,9 +169,11 @@ function rollupM1(zoneRows, opts = {}) {
     zones: rows.length,
     zones_skipped: skipped,
     epochs_observed: observed,
+    m1_posted_epoch_weighted: observed > 0 ? round(sum(rows, 'epochs_below_posted') / observed) : null,
     m1_absolute_epoch_weighted: observed > 0 ? round(sum(rows, 'epochs_below_absolute') / observed) : null,
     m1_relative_epoch_weighted: observed > 0 ? round(sum(rows, 'epochs_below_relative') / observed) : null,
     m1_fhwa_epoch_weighted: observed > 0 ? round(sum(rows, 'epochs_below_fhwa') / observed) : null,
+    m1_posted_zone_mean: mean('m1_posted'),
     m1_absolute_zone_mean: mean('m1_absolute'),
     m1_relative_zone_mean: mean('m1_relative'),
     m1_fhwa_zone_mean: mean('m1_fhwa'),

@@ -4,8 +4,9 @@
 
 Split out of [`mny-lhmp-home-live-build.md`](./mny-lhmp-home-live-build.md) **work item B**, on the
 recommendation recorded there: this is a theme-and-content migration across every mny pattern with a
-live-render blast radius, and it should not be the tail of a page build. That build took the
-**4 + 8 interim** and needs nothing from this task.
+live-render blast radius, and it should not be the tail of a page build. **That build no longer needs
+anything from this task** — see the status update below: it took two additive keys instead of the
+interim.
 
 ## Objective
 
@@ -23,12 +24,24 @@ Three different `sizes` conventions are live in this repo:
 | **library default** (`sectionArray.theme.jsx:32-37`) | An older, narrower set on a **6-column** basis — only `1/3`→`md:col-span-2`, `1/2`→3, `2/3`→4, `1`→6. |
 | **`mny`** (`theme.js:499-510`) | A fractional hybrid on a 12-col grid: `1/12`, `1/6`, `1/4`, `1/3`, `1/2`, `2/3`, `1`(=**9**), `2`(=**12**). |
 
-mny is the outlier. It has **no 5-step and no 7-step**, which is what forced the LHMP plan home's
-hazard band onto 4 + 8 instead of the design's 5 + 7. It also reads differently from every other
-theme: an mny `"1"` is 75% and an mny `"2"` is full width.
+mny is the outlier. It reads differently from every other theme: an mny `"1"` is 75% and an mny `"2"`
+is full width. Its gaps get patched one key at a time as designs need them (`1/12` and `1/6` in
+August, `5/12` and `7/12` in September) — which works, and is exactly the symptom: every addition is
+another entry in a private vocabulary no other theme shares.
 
 mny already runs a 12-column grid (`container: "w-full grid grid-cols-6 md:grid-cols-12"`,
 `gridSize: 12`), so the grid needs no change — only the size vocabulary.
+
+## Status update 2026-09-09 — two steps landed additively; the migration is unchanged
+
+The LHMP plan home needed the design's 5 + 7 hazard band, so **`"5/12"` and `"7/12"` were added to
+mny's existing fractional map**. That was safe on its own terms: no stored section uses either key,
+so it is purely additive with no re-render risk — which is *not* true of the migration below.
+
+This does not reduce the case for the migration; it removes the deadline. mny still reads
+differently from every other theme (`"1"` = col-span-9, `"2"` = col-span-12), still has no 9/12 or
+11/12, and still forces every author to think in a private vocabulary. When the migration runs, the
+two new keys map straight through: `5/12` → `"5"`, `7/12` → `"7"`.
 
 ## ⚠ This is a breaking data migration, not an additive theme edit
 
@@ -84,8 +97,8 @@ The two conventions cannot coexist in one map, so this is **not** a two-step mig
   row the rewrite misses silently falls back to `defaultSize` rather than erroring** — a missed row
   looks like a layout bug, not a failure. **Validate by count, not by eyeball.**
 - Sections written by the LHMP plan-home build (`scratchpad/mitigat-ny-prod-prod/build_lhmp_home_new.mjs`)
-  use `1/3`, `1/4`, `2/3` and `2`; the script's `size` values must be updated in the same pass, or a
-  re-run will reintroduce fractional values after the migration.
+  use `1/3`, `1/4`, `5/12`, `7/12` and `2`; the script's `size` values must be updated in the same
+  pass, or a re-run will reintroduce fractional values after the migration.
 - The related question — whether the **library default** should also move to 1–12 — is settled in
   direction and out of scope here: the owner confirmed 2026-09-09 that it probably should, but not as
   part of this work. It is recorded under `## patterns/page — sections` in
@@ -98,4 +111,5 @@ The two conventions cannot coexist in one map, so this is **not** a two-step mig
 - [ ] Theme flipped with `_replace: ["sizes"]` + `defaultSize: "12"` + `iconSize` on every step
 - [ ] Before/after render diff clean on a sample of pages in **every** mny pattern
 - [ ] `build_lhmp_home_new.mjs` size values updated
-- [ ] The LHMP plan home's hazard band re-checked — it can now take the design's 5 + 7
+- [ ] The LHMP plan home's hazard band re-checked — it already renders 5 + 7 via the added keys,
+      so this is a no-visual-change conversion (`5/12`→`"5"`, `7/12`→`"7"`)

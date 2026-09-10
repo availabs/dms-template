@@ -229,8 +229,13 @@ function makeExposure(depOverrides = {}) {
     // ── metadata ──
     const viewsTable = tableFor(db, 'views');
     await db.query(
-      `UPDATE ${viewsTable} SET table_schema = $1, table_name = $2, data_table = $3 WHERE view_id = $4`,
-      [schema, table, `${schema}.${table}`, view.view_id]);
+      // The vintage label goes on in the same statement as the table name. It
+      // used to be applied by hand afterwards, which meant a re-run silently
+      // published an unlabelled view.
+      `UPDATE ${viewsTable} SET table_schema = $1, table_name = $2, data_table = $3, version = $5
+        WHERE view_id = $4`,
+      [schema, table, `${schema}.${table}`, view.view_id,
+       sql.vintageVersion({ startDate: d.start_date, endDate: d.end_date })]);
 
     const sum = (k) => rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
     const runMeta = {

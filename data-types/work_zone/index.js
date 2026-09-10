@@ -38,6 +38,8 @@ const { THRESHOLD_SPECS, DEFAULT_THRESHOLDS, resolveThresholds } = require('./li
 
 const spineWorker = require('./workers/spine.js');
 const exposureWorker = require('./workers/exposure.js');
+const speedWorker = require('./workers/speed.js');
+const delayWorker = require('./workers/delay.js');
 
 /**
  * workerPath → handler. One entry lands per phase; `stages.js` lists the rest
@@ -46,6 +48,8 @@ const exposureWorker = require('./workers/exposure.js');
 const workers = {
   'work_zone/spine': spineWorker,
   'work_zone/exposure': exposureWorker,
+  'work_zone/speed': speedWorker,
+  'work_zone/delay': delayWorker,
 };
 
 const isRunnable = (stage) => Boolean(STAGES[stage] && workers[STAGES[stage].workerPath]);

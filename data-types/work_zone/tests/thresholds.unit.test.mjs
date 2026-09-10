@@ -18,8 +18,11 @@ import {
 } from '../lib/thresholds.js';
 
 describe('defaults', () => {
-  it('are the values recommended in the report', () => {
+  it('are the values recommended in the report, plus the owner-chosen primary', () => {
     expect(DEFAULT_THRESHOLDS).toEqual({
+      // The PRIMARY M1 threshold (owner decision 2026-09-09): observed speed
+      // more than 10 mph below the segment's posted limit, floored at 20.
+      posted_speed_drop_mph: 10,
       speed_threshold_mph: 35,
       reference_speed_pct: 60,
       queue_speed_mph: 35,

@@ -30,6 +30,7 @@ const UPSTREAM = {
   transcom_source_id: Number(process.env.TRANSCOM_SOURCE_ID || 956),
   npmrds_meta_source_id: Number(process.env.NPMRDS_META_SOURCE_ID || 582),
   transcom_event_tmc_source_id: Number(process.env.EVENT_TMC_SOURCE_ID || 1635),
+  npmrds_source_id: Number(process.env.NPMRDS_SOURCE_ID || 583),
 };
 
 async function main() {
@@ -73,6 +74,13 @@ async function main() {
   if (process.env.WZ_EVENT_SOURCE_ID) descriptor.wz_event_source_id = Number(process.env.WZ_EVENT_SOURCE_ID);
   if (process.env.WZ_EVENT_TMC_SOURCE_ID) descriptor.wz_event_tmc_source_id = Number(process.env.WZ_EVENT_TMC_SOURCE_ID);
   if (process.env.WZ_DURATION_BASIS) descriptor.duration_basis = process.env.WZ_DURATION_BASIS;
+  // phase 3 also needs PM3 (the reference speed) and the view-2799 table whose
+  // epoch bounds define each zone's active window.
+  if (process.env.PM3_SOURCE_ID) descriptor.pm3_source_id = Number(process.env.PM3_SOURCE_ID);
+  if (process.env.EVENT_TMC_TABLE) descriptor.event_tmc_table = process.env.EVENT_TMC_TABLE;
+  if (process.env.WZ_EXPOSURE_SOURCE_ID) descriptor.wz_exposure_source_id = Number(process.env.WZ_EXPOSURE_SOURCE_ID);
+  if (process.env.EXCESSIVE_DELAY_SOURCE_ID) descriptor.excessive_delay_source_id = Number(process.env.EXCESSIVE_DELAY_SOURCE_ID);
+  if (process.env.WZ_THRESHOLDS) descriptor.thresholds = JSON.parse(process.env.WZ_THRESHOLDS);
 
   const t0 = Date.now();
   const result = await worker({

@@ -32,6 +32,23 @@ function tableNameFor({ source_id, view_id, stage }) {
 }
 
 /**
+ * The DAMA `version` label for a run's window — the vintage convention.
+ *
+ * A source is the unit of schema and a view is the unit of vintage, so every
+ * work_zone stage publishes one view per calendar year and labels it here. A
+ * window that stops short of 31 December says so in the label, because a
+ * partial year silently compared against full ones is how the phase-1 report's
+ * seasonality got contaminated: a `vintage <> 'CY2026'` filter did not match
+ * `'CY2026 (partial to 2026-08-31)'`, and the incomplete year was averaged in.
+ * Making the partiality part of the label is what makes that filterable at all.
+ */
+function vintageVersion({ startDate, endDate }) {
+  const year = String(startDate).slice(0, 4);
+  const end = String(endDate).slice(0, 10);
+  return end < `${year}-12-31` ? `CY${year} (partial to ${end})` : `CY${year}`;
+}
+
+/**
  * The two DDL rules every work_zone table follows, applied by each phase's DDL:
  *
  *  1. `ogc_fid SERIAL PRIMARY KEY` — DAMA tiles carry ONLY ogc_fid, so a table
@@ -310,8 +327,11 @@ const WZ_EVENT_TABLE_COLUMNS = [
   { name: 'in_tma', display_name: 'In TMA', type: 'BOOLEAN', desc: null },
   { name: 'tma_name', display_name: 'TMA', type: 'TEXT', desc: null },
   { name: 'tma_basis', display_name: 'TMA Basis', type: 'TEXT', desc: 'ua_code | county_approx | none' },
+  { name: 'meets_closure_duration', display_name: 'Meets closure duration', type: 'BOOLEAN', desc: '>= 3 consecutive days with a reported lane closure — the component of the significance rule that the lane-count reporting gap suppresses' },
+  { name: 'meets_activity_duration', display_name: 'Meets activity duration', type: 'BOOLEAN', desc: '>= 3 consecutive ACTIVE days, whether or not a closure was reported — the upper-bound variant' },
   { name: 'is_significant_candidate', display_name: 'Significant Candidate', type: 'BOOLEAN', desc: 'Interstate AND TMA AND >= 3 consecutive closure days' },
   { name: 'is_significant_candidate_any_activity', display_name: 'Significant (any activity)', type: 'BOOLEAN', desc: 'Same rule with duration measured on active days — an upper bound given the lane-count gap' },
+  { name: 'chain_key', display_name: 'Chain key', type: 'TEXT', desc: 'What the dedupe grouped on: activity class + facility + direction + county + normalised description. Two zones sharing a key on non-adjacent dates were split by the 14-day gap rule.' },
 ];
 
 /** metadata.columns for the wz_event_tmc source. */
@@ -464,11 +484,300 @@ const WZ_EXPOSURE_TABLE_COLUMNS = [
   { name: 'exposure_complete', display_name: 'Exposure Complete', type: 'BOOLEAN', desc: 'Both E2 and E3 computable — filter on this before aggregating' },
 ];
 
+
+// ── phase 4: delay and M2 ───────────────────────────────────────────────────
+
+/**
+ * `wz_delay` — one row per work zone, the `wz_exposure` shape.
+ *
+ * Vehicle-hours of delay attributed to the zone by TRANSCOM's event-to-TMC
+ * conflation, plus delay per vehicle using phase 2's vehicle count.
+ *
+ * The `delay_anchor` / `delay_impact` split is on the row on purpose: M2 sums
+ * ALL TMC roles, which is the inverse of phases 2 and 3, and 91% of the total
+ * falls on the impact segments. Keeping the split visible is what stops the
+ * rule from becoming folklore. See lib/delay.js.
+ */
+function wzDelayTableDDL(schema, table) {
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+    wz_event_id TEXT UNIQUE NOT NULL,
+    first_start TIMESTAMP,
+    last_end TIMESTAMP,
+    region_name TEXT,
+    county_name TEXT,
+    facility TEXT,
+    work_activity_class TEXT,
+    is_interstate BOOLEAN,
+    in_tma BOOLEAN,
+    is_significant_candidate BOOLEAN,
+    -- M2
+    delay_vehicle_hours DOUBLE PRECISION,
+    raw_delay_vehicle_hours DOUBLE PRECISION,
+    delay_anchor DOUBLE PRECISION,
+    delay_impact DOUBLE PRECISION,
+    delay_impact_share DOUBLE PRECISION,
+    delay_per_vehicle_min DOUBLE PRECISION,
+    exceeds_delay_per_vehicle BOOLEAN,
+    -- the exposure denominator, carried so the rate is reproducible on the row
+    veh_through_wz DOUBLE PRECISION,
+    -- extent and completeness
+    n_delay_rows INTEGER,
+    n_delay_tmcs INTEGER,
+    n_delay_tmcs_anchor INTEGER,
+    rows_delay_missing INTEGER,
+    rows_raw_delay_missing INTEGER,
+    delay_complete BOOLEAN,
+    -- FALSE where the zone has no 2799 conflation at all, so its delay is
+    -- UNKNOWN rather than zero. 17,616 of CY2024's 42,688 zones. Filter on it
+    -- before averaging anything.
+    delay_measured BOOLEAN,
+    delay_per_veh_min_threshold DOUBLE PRECISION,
+    wkb_geometry public.geometry(Geometry, 4326)
+);
+CREATE INDEX IF NOT EXISTS ${table}_first_start_idx ON ${schema}.${table} (first_start);
+CREATE INDEX IF NOT EXISTS ${table}_delay_idx ON ${schema}.${table} (delay_vehicle_hours);
+CREATE INDEX IF NOT EXISTS ${table}_signif_idx ON ${schema}.${table} (is_significant_candidate);
+CREATE INDEX IF NOT EXISTS ${table}_gix ON ${schema}.${table} USING gist (wkb_geometry);`;
+}
+
+/** Insert column order for wz_delay, with the cast each needs out of a VALUES subquery. */
+const WZ_DELAY_COLUMN_TYPES = [
+  ['wz_event_id', 'text'], ['first_start', 'timestamp'], ['last_end', 'timestamp'],
+  ['region_name', 'text'], ['county_name', 'text'], ['facility', 'text'],
+  ['work_activity_class', 'text'], ['is_interstate', 'boolean'], ['in_tma', 'boolean'],
+  ['is_significant_candidate', 'boolean'],
+  ['delay_vehicle_hours', 'double precision'], ['raw_delay_vehicle_hours', 'double precision'],
+  ['delay_anchor', 'double precision'], ['delay_impact', 'double precision'],
+  ['delay_impact_share', 'double precision'], ['delay_per_vehicle_min', 'double precision'],
+  ['exceeds_delay_per_vehicle', 'boolean'], ['veh_through_wz', 'double precision'],
+  ['n_delay_rows', 'integer'], ['n_delay_tmcs', 'integer'], ['n_delay_tmcs_anchor', 'integer'],
+  ['rows_delay_missing', 'integer'], ['rows_raw_delay_missing', 'integer'],
+  ['delay_complete', 'boolean'], ['delay_measured', 'boolean'],
+  ['delay_per_veh_min_threshold', 'double precision'],
+];
+const WZ_DELAY_COLUMNS = WZ_DELAY_COLUMN_TYPES.map(([c]) => c);
+
+/** Batch insert for wz_delay, taking each zone's geometry from the spine. */
+function wzDelayInsertSQL({ schema = WORK_ZONE_SCHEMA, table, rows, eventTable }) {
+  if (!rows.length) return null;
+  const values = rows
+    .map((r) => `(${WZ_DELAY_COLUMNS.map((c) => sqlLiteral(r[c])).join(', ')})`)
+    .join(',\n');
+  const selectList = WZ_DELAY_COLUMN_TYPES
+    .map(([c, t]) => (t === 'text' ? `v.${c}` : `v.${c}::${t}`)).join(', ');
+  const updates = WZ_DELAY_COLUMNS.filter((c) => c !== 'wz_event_id')
+    .map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `INSERT INTO ${schema}.${table} (${WZ_DELAY_COLUMNS.join(', ')}, wkb_geometry)
+SELECT ${selectList}, e.wkb_geometry
+  FROM (VALUES ${values}) AS v(${WZ_DELAY_COLUMNS.join(', ')})
+  LEFT JOIN ${schema}.${eventTable} e ON e.wz_event_id = v.wz_event_id
+ON CONFLICT (wz_event_id) DO UPDATE SET ${updates}, wkb_geometry = EXCLUDED.wkb_geometry;`;
+}
+
+/** metadata.columns for the wz_delay source. */
+const WZ_DELAY_TABLE_COLUMNS = [
+  { name: 'wz_event_id', display_name: 'Work Zone ID', type: 'TEXT', desc: 'Joins wz_event' },
+  { name: 'first_start', display_name: 'First Start', type: 'TIMESTAMP', desc: null },
+  { name: 'last_end', display_name: 'Last End', type: 'TIMESTAMP', desc: null },
+  { name: 'region_name', display_name: 'NYSDOT Region', type: 'TEXT', desc: null },
+  { name: 'county_name', display_name: 'County', type: 'TEXT', desc: null },
+  { name: 'facility', display_name: 'Facility', type: 'TEXT', desc: null },
+  { name: 'work_activity_class', display_name: 'Work Activity', type: 'TEXT', desc: null },
+  { name: 'is_interstate', display_name: 'Interstate', type: 'BOOLEAN', desc: null },
+  { name: 'in_tma', display_name: 'In TMA', type: 'BOOLEAN', desc: null },
+  { name: 'is_significant_candidate', display_name: 'Significant Candidate', type: 'BOOLEAN', desc: null },
+  { name: 'delay_vehicle_hours', display_name: 'Delay (veh-hrs)', type: 'DOUBLE PRECISION', desc: 'M2. Vehicle-hours attributed to this zone across ALL its TMCs, anchor and impact. Sums TRANSCOM view 2799 delay over the zone member events.' },
+  { name: 'raw_delay_vehicle_hours', display_name: 'Raw delay (veh-hrs)', type: 'DOUBLE PRECISION', desc: "2799's raw_delay. Always <= delay; how one is derived from the other is not documented in the references, so both are published." },
+  { name: 'delay_anchor', display_name: 'Delay on the work extent', type: 'DOUBLE PRECISION', desc: 'The ~9% of delay that accrues on the segments being worked on' },
+  { name: 'delay_impact', display_name: 'Delay on the queue', type: 'DOUBLE PRECISION', desc: 'The ~91% that accrues downstream. Phases 2-3 exclude these TMCs; M2 must include them.' },
+  { name: 'delay_impact_share', display_name: 'Share of delay downstream', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'delay_per_vehicle_min', display_name: 'Delay per vehicle (min)', type: 'DOUBLE PRECISION', desc: 'delay_vehicle_hours x 60 / veh_through_wz. NULL where exposure could not compute a vehicle count -- never 0.' },
+  { name: 'exceeds_delay_per_vehicle', display_name: 'Over the per-vehicle threshold', type: 'BOOLEAN', desc: 'Against delay_per_veh_min_threshold. NULL where the rate is unknown.' },
+  { name: 'veh_through_wz', display_name: 'Vehicles through the zone', type: 'DOUBLE PRECISION', desc: 'From phase 2 wz_exposure, carried so the rate is reproducible on the row' },
+  { name: 'n_delay_rows', display_name: 'Delay rows', type: 'INTEGER', desc: '2799 (event x tmc) rows rolled up' },
+  { name: 'n_delay_tmcs', display_name: 'TMCs with delay', type: 'INTEGER', desc: null },
+  { name: 'n_delay_tmcs_anchor', display_name: 'Anchor TMCs with delay', type: 'INTEGER', desc: null },
+  { name: 'rows_delay_missing', display_name: 'Rows missing delay', type: 'INTEGER', desc: 'Counted as a gap, not a zero' },
+  { name: 'rows_raw_delay_missing', display_name: 'Rows missing raw delay', type: 'INTEGER', desc: null },
+  { name: 'delay_complete', display_name: 'Delay complete', type: 'BOOLEAN', desc: 'Filter on this before aggregating' },
+  { name: 'delay_measured', display_name: 'Delay measured', type: 'BOOLEAN', desc: 'FALSE where the zone has no TRANSCOM conflation row at all — its delay is UNKNOWN, not zero. Filter on this before averaging.' },
+  { name: 'delay_per_veh_min_threshold', display_name: 'Per-vehicle threshold used', type: 'DOUBLE PRECISION', desc: null },
+];
+
+// ── phase 3: speeds and M1 ──────────────────────────────────────────────────
+
+/**
+ * `wz_speed` — one row per (work zone × TMC × hour-of-day).
+ *
+ * The hour cell pools every active day: a zone running 13:00–19:00 for
+ * 43 nights is seven rows, not 301. That keeps a year at ~300k rows while
+ * preserving the hour-of-day shape M1 and phase 6 both need.
+ *
+ * ⚠ **The phase-6 differential columns are created here, in phase 3.** All
+ * views of a DAMA source share one `metadata.columns` list, so adding columns
+ * when phase 6 lands would force a NEW source and orphan every phase-3 view.
+ * They are nullable and filled later by the `differential` stage.
+ *
+ * No geometry: at this grain it would repeat per hour for no cartographic
+ * gain. Join `wz_event_tmc` on (wz_event_id, tmc) for the segment geometry.
+ */
+function wzSpeedTableDDL(schema, table) {
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+    wz_event_id TEXT NOT NULL,
+    tmc TEXT NOT NULL,
+    hour SMALLINT NOT NULL,
+    first_start TIMESTAMP,
+    last_end TIMESTAMP,
+    region_name TEXT,
+    county_name TEXT,
+    facility TEXT,
+    work_activity_class TEXT,
+    is_interstate BOOLEAN,
+    in_tma BOOLEAN,
+    is_significant_candidate BOOLEAN,
+    -- observation
+    -- Which source gave this cell its active window: '2799' (the TRANSCOM
+    -- event->TMC conflation) or 'event' (the work zone's own clock times, used
+    -- where the conflation has no row — it has none at all for 2019 and 2020).
+    -- Filter on it to restrict any aggregate to the conflated windows.
+    window_source TEXT,
+    epochs_observed INTEGER,
+    density_a INTEGER,
+    density_b INTEGER,
+    density_c INTEGER,
+    -- M1 at four thresholds, all four always. m1_posted is the PRIMARY
+    -- measure (owner decision 2026-09-09): below max(20, posted limit - 10).
+    epochs_below_posted INTEGER,
+    epochs_below_absolute INTEGER,
+    epochs_below_relative INTEGER,
+    epochs_below_fhwa INTEGER,
+    m1_posted DOUBLE PRECISION,
+    m1_absolute DOUBLE PRECISION,
+    m1_relative DOUBLE PRECISION,
+    m1_fhwa DOUBLE PRECISION,
+    -- observed speeds
+    speed_mean DOUBLE PRECISION,
+    speed_median DOUBLE PRECISION,
+    speed_min DOUBLE PRECISION,
+    -- what they are compared against
+    baseline_speed DOUBLE PRECISION,
+    baseline_p85 DOUBLE PRECISION,
+    reference_speed DOUBLE PRECISION,
+    posted_threshold_speed DOUBLE PRECISION,
+    phed_threshold_speed DOUBLE PRECISION,
+    fhwa_threshold_speed DOUBLE PRECISION,
+    -- the thresholds this row was measured with, so it is self-describing
+    posted_speed_drop_mph DOUBLE PRECISION,
+    speed_threshold_mph DOUBLE PRECISION,
+    reference_speed_pct DOUBLE PRECISION,
+    -- phase 6 (M4) — created now, filled by the differential stage
+    approach_tmc TEXT,
+    approach_speed DOUBLE PRECISION,
+    differential_approach DOUBLE PRECISION,
+    differential_baseline DOUBLE PRECISION,
+    exceeds_differential BOOLEAN,
+    UNIQUE (wz_event_id, tmc, hour)
+);
+CREATE INDEX IF NOT EXISTS ${table}_event_idx ON ${schema}.${table} (wz_event_id);
+CREATE INDEX IF NOT EXISTS ${table}_start_idx ON ${schema}.${table} (first_start);
+CREATE INDEX IF NOT EXISTS ${table}_signif_idx ON ${schema}.${table} (is_significant_candidate);`;
+}
+
+/** Insert column order for wz_speed, with the cast each needs out of a VALUES subquery. */
+const WZ_SPEED_COLUMN_TYPES = [
+  ['wz_event_id', 'text'], ['tmc', 'text'], ['hour', 'smallint'],
+  ['first_start', 'timestamp'], ['last_end', 'timestamp'],
+  ['region_name', 'text'], ['county_name', 'text'], ['facility', 'text'],
+  ['work_activity_class', 'text'], ['is_interstate', 'boolean'], ['in_tma', 'boolean'],
+  ['is_significant_candidate', 'boolean'],
+  ['window_source', 'text'], ['epochs_observed', 'integer'], ['density_a', 'integer'], ['density_b', 'integer'], ['density_c', 'integer'],
+  ['epochs_below_posted', 'integer'],
+  ['epochs_below_absolute', 'integer'], ['epochs_below_relative', 'integer'], ['epochs_below_fhwa', 'integer'],
+  ['m1_posted', 'double precision'],
+  ['m1_absolute', 'double precision'], ['m1_relative', 'double precision'], ['m1_fhwa', 'double precision'],
+  ['speed_mean', 'double precision'], ['speed_median', 'double precision'], ['speed_min', 'double precision'],
+  ['baseline_speed', 'double precision'], ['baseline_p85', 'double precision'],
+  ['reference_speed', 'double precision'], ['posted_threshold_speed', 'double precision'],
+  ['phed_threshold_speed', 'double precision'], ['fhwa_threshold_speed', 'double precision'],
+  ['posted_speed_drop_mph', 'double precision'],
+  ['speed_threshold_mph', 'double precision'], ['reference_speed_pct', 'double precision'],
+];
+const WZ_SPEED_COLUMNS = WZ_SPEED_COLUMN_TYPES.map(([c]) => c);
+
+/** Batch insert for wz_speed. Idempotent on (wz_event_id, tmc, hour). */
+function wzSpeedInsertSQL({ schema = WORK_ZONE_SCHEMA, table, rows }) {
+  if (!rows.length) return null;
+  const values = rows
+    .map((r) => `(${WZ_SPEED_COLUMNS.map((c) => sqlLiteral(r[c])).join(', ')})`)
+    .join(',\n');
+  const selectList = WZ_SPEED_COLUMN_TYPES
+    .map(([c, t]) => (t === 'text' ? `v.${c}` : `v.${c}::${t}`)).join(', ');
+  const updates = WZ_SPEED_COLUMNS.filter((c) => !['wz_event_id', 'tmc', 'hour'].includes(c))
+    .map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `INSERT INTO ${schema}.${table} (${WZ_SPEED_COLUMNS.join(', ')})
+SELECT ${selectList}
+  FROM (VALUES ${values}) AS v(${WZ_SPEED_COLUMNS.join(', ')})
+ON CONFLICT (wz_event_id, tmc, hour) DO UPDATE SET ${updates};`;
+}
+
+/** metadata.columns for the wz_speed source. */
+const WZ_SPEED_TABLE_COLUMNS = [
+  { name: 'wz_event_id', display_name: 'Work Zone ID', type: 'TEXT', desc: 'Joins wz_event' },
+  { name: 'tmc', display_name: 'TMC', type: 'TEXT', desc: 'Anchor TMC — join wz_event_tmc for geometry' },
+  { name: 'hour', display_name: 'Hour of Day', type: 'SMALLINT', desc: '0-23, pooling every active day' },
+  { name: 'first_start', display_name: 'First Start', type: 'TIMESTAMP', desc: null },
+  { name: 'last_end', display_name: 'Last End', type: 'TIMESTAMP', desc: null },
+  { name: 'region_name', display_name: 'NYSDOT Region', type: 'TEXT', desc: null },
+  { name: 'county_name', display_name: 'County', type: 'TEXT', desc: null },
+  { name: 'facility', display_name: 'Facility', type: 'TEXT', desc: null },
+  { name: 'work_activity_class', display_name: 'Work Activity', type: 'TEXT', desc: null },
+  { name: 'is_interstate', display_name: 'Interstate', type: 'BOOLEAN', desc: null },
+  { name: 'in_tma', display_name: 'In TMA', type: 'BOOLEAN', desc: null },
+  { name: 'is_significant_candidate', display_name: 'Significant Candidate', type: 'BOOLEAN', desc: null },
+  { name: 'window_source', display_name: 'Active-window source', type: 'TEXT', desc: "'2799' = the TRANSCOM event->TMC conflation; 'event' = the zone's own reported clock times, used where the conflation has no row (it has none at all for 2019-2020). Filter on '2799' to restrict an aggregate to the conflated windows." },
+  { name: 'epochs_observed', display_name: 'Epochs Observed', type: 'INTEGER', desc: 'Five-minute observations while active — the M1 denominator. Never 288: NPMRDS has gaps.' },
+  { name: 'density_a', display_name: 'Density A', type: 'INTEGER', desc: 'Highest observation confidence' },
+  { name: 'density_b', display_name: 'Density B', type: 'INTEGER', desc: null },
+  { name: 'density_c', display_name: 'Density C', type: 'INTEGER', desc: 'Lowest confidence — included by decision, counted so it stays visible' },
+  { name: 'epochs_below_posted', display_name: 'Epochs < posted−10 threshold', type: 'INTEGER', desc: 'The primary measure numerator' },
+  { name: 'epochs_below_absolute', display_name: 'Epochs < absolute threshold', type: 'INTEGER', desc: null },
+  { name: 'epochs_below_relative', display_name: 'Epochs < relative threshold', type: 'INTEGER', desc: null },
+  { name: 'epochs_below_fhwa', display_name: 'Epochs < FHWA threshold', type: 'INTEGER', desc: null },
+  { name: 'm1_posted', display_name: 'M1 · posted −10 (PRIMARY)', type: 'DOUBLE PRECISION', desc: 'PRIMARY MEASURE. Share of observed active epochs below max(20, posted speed limit − posted_speed_drop_mph). Scales with the road, so unlike the absolute threshold it is comparable across facility types, Regions and years.' },
+  { name: 'm1_absolute', display_name: 'M1 · absolute', type: 'DOUBLE PRECISION', desc: 'Share of observed active epochs below speed_threshold_mph' },
+  { name: 'm1_relative', display_name: 'M1 · relative', type: 'DOUBLE PRECISION', desc: 'Share below reference_speed_pct of the PM3 85th-percentile speed' },
+  { name: 'm1_fhwa', display_name: 'M1 · FHWA/PHED', type: 'DOUBLE PRECISION', desc: 'Share below max(20, 0.6 × posted limit) — the anchor AVAIL congestion work uses' },
+  { name: 'speed_mean', display_name: 'Speed (mean)', type: 'DOUBLE PRECISION', desc: 'Derived: miles × 3600 / travel time, all vehicles' },
+  { name: 'speed_median', display_name: 'Speed (median)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'speed_min', display_name: 'Speed (min)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'baseline_speed', display_name: 'Baseline speed', type: 'DOUBLE PRECISION', desc: 'Median at the same hour and day-type over the baseline window, contaminated days removed' },
+  { name: 'baseline_p85', display_name: 'Baseline 85th pct', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'reference_speed', display_name: 'Reference speed', type: 'DOUBLE PRECISION', desc: 'PM3 speed_pctl_85 for the TMC and year' },
+  { name: 'posted_threshold_speed', display_name: 'Posted −10 threshold', type: 'DOUBLE PRECISION', desc: 'max(20, avg_speedlimit − posted_speed_drop_mph), capped at the posted limit — the primary measure threshold for this segment' },
+  { name: 'phed_threshold_speed', display_name: 'PM3 PHED threshold', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'fhwa_threshold_speed', display_name: 'FHWA threshold', type: 'DOUBLE PRECISION', desc: 'max(20, 0.6 × avg_speedlimit) from the Postgres meta view' },
+  { name: 'posted_speed_drop_mph', display_name: 'Posted drop used (mph)', type: 'DOUBLE PRECISION', desc: 'mph below the posted limit, for the primary measure' },
+  { name: 'speed_threshold_mph', display_name: 'Absolute threshold used', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'reference_speed_pct', display_name: 'Relative threshold used (%)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'approach_tmc', display_name: 'Approach TMC', type: 'TEXT', desc: 'Phase 6 (M4)' },
+  { name: 'approach_speed', display_name: 'Approach speed', type: 'DOUBLE PRECISION', desc: 'Phase 6 (M4)' },
+  { name: 'differential_approach', display_name: 'Differential · approach − zone', type: 'DOUBLE PRECISION', desc: 'Phase 6 (M4)' },
+  { name: 'differential_baseline', display_name: 'Differential · baseline − during', type: 'DOUBLE PRECISION', desc: 'Phase 6 (M4)' },
+  { name: 'exceeds_differential', display_name: 'Exceeds differential threshold', type: 'BOOLEAN', desc: 'Phase 6 (M4)' },
+];
+
 module.exports = {
   WORK_ZONE_SCHEMA,
   DDL_RULES,
   sqlLiteral,
   tableNameFor,
+  vintageVersion,
   createSchemaSQL,
   deleteWindowSQL,
   wzEventTableDDL,
@@ -484,7 +793,17 @@ module.exports = {
   WZ_EVENT_TMC_TABLE_COLUMNS,
   wzExposureTableDDL,
   wzExposureInsertSQL,
+  wzDelayTableDDL,
+  wzDelayInsertSQL,
+  WZ_DELAY_COLUMNS,
+  WZ_DELAY_COLUMN_TYPES,
+  WZ_DELAY_TABLE_COLUMNS,
   WZ_EXPOSURE_COLUMNS,
   WZ_EXPOSURE_COLUMN_TYPES,
   WZ_EXPOSURE_TABLE_COLUMNS,
+  wzSpeedTableDDL,
+  wzSpeedInsertSQL,
+  WZ_SPEED_COLUMNS,
+  WZ_SPEED_COLUMN_TYPES,
+  WZ_SPEED_TABLE_COLUMNS,
 };

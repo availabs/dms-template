@@ -27,6 +27,15 @@ const THRESHOLD_SPECS = [
     desc: 'Absolute speed threshold: an epoch counts as an exceedance when the observed speed is below this.',
   },
   {
+    name: 'posted_speed_drop_mph',
+    default: 10,
+    min: 1,
+    max: 40,
+    unit: 'mph',
+    measure: 'M1',
+    desc: 'PRIMARY M1 threshold: an epoch counts as an exceedance when the observed speed is more than this far below the segment\'s posted speed limit. Scales with the road, so it is comparable across facility types in a way the absolute threshold is not.',
+  },
+  {
     name: 'reference_speed_pct',
     default: 60,
     min: 1,
