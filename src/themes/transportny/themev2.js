@@ -1984,8 +1984,16 @@ const graph = {
     axis:         "stroke-zinc-950/15",
     grid:         "stroke-zinc-950/5",
     tooltip:      "rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima",
-    legend:       "flex items-center gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
-    legendSwatch: "h-0.5 w-4",
+    // These two were authored as DEAD scaffolding and went live 2026-09-10 when the legend
+    // gained its class-token layer. Layout is component-owned now (the legend picks grid vs
+    // flex from its own orientation), so `legend` must carry NO display/alignment class: the
+    // original value led with `flex items-center`, which fought `grid grid-cols-1` on the
+    // vertical variant. Spacing and typography only.
+    legend:       "gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
+    // A thin rule rather than a block swatch, as authored — but the token REPLACES the
+    // historical `w-4 h-4 rounded mr-1`, so it has to carry its own gap or the dash abuts
+    // the label.
+    legendSwatch: "h-0.5 w-4 mr-2",
     catPalette:     ["#6F6F6F", "#E5A646", "#94C24E", "#E160A4", "#F2CB3D"],
     seqSpeedPalette:["#D6453B", "#E8843F", "#F2E18A", "#A8D26B", "#3FA34D"],
     primary:        "#1F3F8F",
