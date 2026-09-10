@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { resolveEdgesInBbox } from "./resolveEdgesInBbox";
+import { useEffect, useState, useCallback } from "react";
 import { nearestFeatureToPoint } from "./nearestFeatureToPoint";
 import {
-  EDGES_SOURCE_ID, EDGES_LAYER_ID,
   SELECTED_SEGMENT_SOURCE_ID, SELECTED_SEGMENT_LAYER_ID,
   HOVER_SEGMENT_SOURCE_ID, HOVER_SEGMENT_LAYER_ID,
   CLICK_TOLERANCE_PX,
@@ -10,102 +8,55 @@ import {
 } from "../constants";
 import { runWhenStyleReady } from "./runWhenStyleReady";
 
-// Bbox chunking (2026-08-26, "it is taking a lot of time and got timeout, divided full state into
-// multiple like how the layer is calling apis" - the /routing/edges query has no row cap anymore
-// [it must return everything in view, not an arbitrary subset], so a single huge bbox at a wide
-// zoom could mean one enormous, slow query). Same idea as vector-tile loading: split the current
-// viewport into fixed-size cells and fetch each one separately (in parallel) instead of one
-// request for the whole thing - bounds any single request's cost regardless of how far zoomed out
-// the map is.
-const EDGE_CHUNK_SIZE_DEG = 0.1; // ~10km cells - keeps a single chunk's row count in the range already confirmed fast
-const MAX_EDGE_CHUNKS = 128; // safety ceiling - beyond this the viewport is too large to load the pickable network at all; zoom in instead of firing hundreds of parallel requests
-
-const splitBboxIntoChunks = ([minLon, minLat, maxLon, maxLat], chunkSize) => {
-  const chunks = [];
-  for (let lon = minLon; lon < maxLon; lon += chunkSize) {
-    for (let lat = minLat; lat < maxLat; lat += chunkSize) {
-      chunks.push([lon, lat, Math.min(lon + chunkSize, maxLon), Math.min(lat + chunkSize, maxLat)]);
-    }
-  }
-  return chunks;
-};
-
-// Renders the conflation network for the current viewport as a clickable line layer, lets the
-// user pick ONE segment (corrected flow, 2026-08-19 - see the task file's "Flow correction":
-// single-segment only for this pass, multi-select deferred).
+// Base network layer, author-selected via internalPanel.jsx - replaces the plugin's own
+// bbox-chunked fetch, see the task file's "Base layer: author-selected DMS layer" section. This
+// hook no longer owns/fetches the pickable network's data at all - `edgesLayerId` is the maplibre
+// layer id of an ALREADY-RENDERED, author-added DMS layer (same convention as
+// ../routecreation/hooks/useMapTmcHandler.js: the symbology layerKey IS the maplibre layer id).
+// Only the click/hover selection machinery and the plugin's own selection/hover overlay layers
+// stay here.
 //
 // Picking uses a screen-pixel TOLERANCE BOX around the cursor (queryRenderedFeatures over a small
-// rect, not exact hit-testing against the rendered line's thin stroke) - 2026-08-20 follow-up:
-// "on hover closeby it will allow to pick the segment," since exact-pixel clicking required
-// fully zooming in. The same tolerance drives a hover preview (amber) shown before the click, so
-// the user can see what they're about to pick.
+// rect, not exact hit-testing against the rendered line's thin stroke), since exact-pixel clicking
+// required fully zooming in. The same tolerance drives a hover preview (amber) shown before the
+// click, so the user can see what they're about to pick.
 //
-// `isActive` gates BOTH the pickable network's visibility and its click/hover handling -
-// comp.jsx passes `!hasResult` (once "Get detour" is pressed, the pickable network hides
-// entirely). "Clear detour" flips isActive back on to resume picking.
-export const useEdgeLayer = (map, conflationViewId, pgEnv, isActive) => {
-  const [selectedSegment, setSelectedSegment] = useState(null); // { ogcFid, osm, fromNode, toNode, geometry } | null
-  const edgesRef = useRef([]);
+// `isActive` gates click/hover handling AND the author-selected layer's visibility - comp.jsx
+// passes `!hasResult` (once "Get detour" is pressed, the pickable network hides entirely).
+// "Clear detour" flips isActive back on to resume picking.
+export const useEdgeLayer = (map, edgesLayerId, isActive) => {
+  const [selectedSegment, setSelectedSegment] = useState(null); // { ogcFid, geometry } | null
 
-  // Mirrors `isActive` in a ref so the async continuation below can re-check the CURRENT value,
-  // not the one captured when the fetch started - 2026-08-21 bug fix. `refreshEdges` only checked
-  // `isActive` before its `await`; if a fetch was still in flight when the user pressed "Analyze
-  // coverage" (isActive flips to false, the pickable network gets removed), the stale fetch would
-  // resolve afterward and unconditionally re-add the network layer, undoing the removal - the
-  // "grey network doesn't go away" report.
-  const isActiveRef = useRef(isActive);
-  useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
-
-  const refreshEdges = useCallback(async () => {
-    if (!map || !isActive) return;
-    const b = map.getBounds();
-    const bbox = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
-    try {
-      const chunks = splitBboxIntoChunks(bbox, EDGE_CHUNK_SIZE_DEG);
-      if (chunks.length > MAX_EDGE_CHUNKS) return; // viewport too large - zoom in to load the pickable network (avoids firing hundreds of parallel requests)
-      const chunkResults = await Promise.all(chunks.map((c) => resolveEdgesInBbox(c, conflationViewId, pgEnv)));
-      // Dedupe by ogc_fid (2026-08-26, "divided full state into multiple like how the layer is
-      // calling apis" - the &&-bbox-intersection query in a neighboring chunk can also match an
-      // edge whose geometry spans the chunk boundary, so the same edge can come back from more
-      // than one chunk).
-      const edgeById = new Map();
-      for (const chunkEdges of chunkResults) for (const e of chunkEdges) edgeById.set(e.id, e);
-      const edges = [...edgeById.values()];
-      if (!isActiveRef.current) return; // went inactive while this fetch was in flight - don't re-add
-      edgesRef.current = edges;
-      const data = { type: "FeatureCollection", features: edges };
-      const ensureLayer = () => {
-        if (!isActiveRef.current) return; // re-check once more - style-ready wait can also span the flip
-        if (!map.getSource(EDGES_SOURCE_ID)) {
-          map.addSource(EDGES_SOURCE_ID, { type: "geojson", data });
-          map.addLayer({
-            id: EDGES_LAYER_ID,
-            type: "line",
-            source: EDGES_SOURCE_ID,
-            paint: {
-              // Flat line-offset (not data-driven) - matches the convention confirmed live in
-              // the data source's own default Map view (view 3699's tile symbology is just
-              // {"line-offset": 1.25}, no direction expression). MapLibre's line-offset is
-              // relative to each FEATURE's own vertex direction, and a bidirectional road's two
-              // rows store their coordinates in opposite order (confirmed via a direct query -
-              // `reversed=false` is A->B, `reversed=true` is B->A) - so the identical flat value
-              // pushes the two directions to opposite physical sides automatically. A one-way
-              // road (only one row) just gets a small, barely visible constant nudge.
-              // 2026-08-21: bumped to 1.5 for testing (view 3699 itself uses 1.25) - not yet
-              // confirmed as the final value, just easier to eyeball while verifying live.
-              "line-color": SEGMENT_COLORS.pickable, "line-width": 2, "line-opacity": 0.5,
-              "line-offset": 1.5,
-            },
-          });
-        } else {
-          map.getSource(EDGES_SOURCE_ID).setData(data);
-        }
-      };
-      runWhenStyleReady(map, ensureLayer);
-    } catch (err) {
-      console.error("[detour useEdgeLayer] failed to load edges:", err);
-    }
-  }, [map, conflationViewId, pgEnv, isActive]);
+  // Toggle the author-selected layer's visibility instead of adding/removing a plugin-owned
+  // source - the plugin doesn't own this layer, only reads from it.
+  //
+  // Re-asserted on a short interval while hidden, not applied once and not just on 'styledata' -
+  // the layer's own author-side rendering pipeline (SymbologyViewLayer's layerProps-driven
+  // re-sync) keeps reasserting the layer's own default visibility on symbology state changes this
+  // plugin fires constantly while a result is showing (density progress, candidate-point
+  // updates). A single 'styledata' listener loses that fight. Polling every 300ms while
+  // `!isActive` guarantees this plugin's intent converges within one tick of whatever the other
+  // side just did, regardless of whether that reassert happens via a maplibre style event, a
+  // React re-render, or something else this plugin has no visibility into - without touching any
+  // shared layer/map code.
+  useEffect(() => {
+    if (!map || !edgesLayerId) return;
+    // A line-type DMS layer renders as TWO maplibre layers sharing one symbology config: the
+    // unsuffixed id (fill) and `${id}_case` (the casing/outline, its own paint - color, width,
+    // opacity - independent of the fill's). Toggling only `edgesLayerId` leaves the casing (grey,
+    // full opacity) visible even when the fill is correctly hidden, since its casing sub-layer is
+    // never touched. Both ids need the same visibility.
+    const caseLayerId = `${edgesLayerId}_case`;
+    const applyVisibility = () => {
+      const visibility = isActive ? "visible" : "none";
+      if (map.getLayer(edgesLayerId)) map.setLayoutProperty(edgesLayerId, "visibility", visibility);
+      if (map.getLayer(caseLayerId)) map.setLayoutProperty(caseLayerId, "visibility", visibility);
+    };
+    runWhenStyleReady(map, applyVisibility);
+    if (isActive) return; // no fight to win while the layer is supposed to be visible anyway
+    const intervalId = setInterval(applyVisibility, 300);
+    return () => clearInterval(intervalId);
+  }, [map, edgesLayerId, isActive]);
 
   // Highlights the selected/excluded segment itself (the "what's closed" reference line) - the
   // derived start/end markers are a separate concern, rendered by useStartEndMarkers.js.
@@ -163,41 +114,20 @@ export const useEdgeLayer = (map, conflationViewId, pgEnv, isActive) => {
   // Finds the nearest pickable edge within CLICK_TOLERANCE_PX screen pixels of `point`
   // ({x,y} in the map container, e.g. from a mouse event) - shared by both hover and click.
   const queryNearbyEdge = useCallback((point) => {
-    // Guard against a race (2026-08-26 - "layer does not exist in the map's style"): the
-    // mousemove/click listeners attach as soon as `isActive` is true, but the layer itself is
-    // only added once the bbox-chunked fetch actually resolves and runWhenStyleReady's callback
-    // runs - a mousemove/click during that window queried a layer id that isn't in the style yet.
-    if (!map.getLayer(EDGES_LAYER_ID)) return null;
+    if (!edgesLayerId || !map.getLayer(edgesLayerId)) return null;
     const box = [
       [point.x - CLICK_TOLERANCE_PX, point.y - CLICK_TOLERANCE_PX],
       [point.x + CLICK_TOLERANCE_PX, point.y + CLICK_TOLERANCE_PX],
     ];
-    const candidates = map.queryRenderedFeatures(box, { layers: [EDGES_LAYER_ID] });
+    const candidates = map.queryRenderedFeatures(box, { layers: [edgesLayerId] });
     if (!candidates.length) return null;
     return nearestFeatureToPoint(candidates, point, (coord) => map.project(coord));
-  }, [map]);
-
-  useEffect(() => {
-    if (!map || !isActive) return;
-    refreshEdges();
-    map.on("moveend", refreshEdges);
-    return () => map.off("moveend", refreshEdges);
-  }, [map, isActive, refreshEdges]);
-
-  // Hides the pickable network layer whenever this phase is inactive (either before any
-  // selection completes its round-trip, or - the new case - once a detour result is showing).
-  useEffect(() => {
-    if (!map) return;
-    if (isActive) return;
-    if (map.getLayer(EDGES_LAYER_ID)) map.removeLayer(EDGES_LAYER_ID);
-    if (map.getSource(EDGES_SOURCE_ID)) map.removeSource(EDGES_SOURCE_ID);
-    renderHover(null);
-  }, [map, isActive, renderHover]);
+  }, [map, edgesLayerId]);
 
   // Hover preview + pointer cursor - map-wide (not layer-scoped), since the whole point is to
   // pick up nearby clicks the exact line geometry itself wouldn't register.
   useEffect(() => {
-    if (!map || !isActive) return;
+    if (!map || !isActive || !edgesLayerId) return;
     const canvas = map.getCanvas();
     const onMouseMove = (e) => {
       const nearby = queryNearbyEdge(e.point);
@@ -215,36 +145,42 @@ export const useEdgeLayer = (map, conflationViewId, pgEnv, isActive) => {
       map.off("mouseout", onMouseLeave);
       canvas.style.cursor = "";
     };
-  }, [map, isActive, queryNearbyEdge, renderHover]);
+  }, [map, isActive, edgesLayerId, queryNearbyEdge, renderHover]);
 
   // Click near a segment to select it (same tolerance as hover); click near the SAME segment
   // again to deselect. Clicking near a DIFFERENT segment replaces the selection outright -
   // single-segment only for this pass, see the task file.
   useEffect(() => {
-    if (!map || !isActive) return;
+    if (!map || !isActive || !edgesLayerId) return;
     const onClick = (e) => {
       const feature = queryNearbyEdge(e.point);
       if (!feature) return;
-      const ogcFid = feature.properties.ogc_fid;
+      // ogc_fid comes back as the vector tile's FEATURE ID (`feature.id`), not a `properties`
+      // key - `feature.properties.ogc_fid` is undefined. PostGIS's `ST_AsMVT` keeps ogc_fid as the
+      // MVT feature id specifically - ../routecreation never hit this because it only reads a
+      // real property (`tmc`, via its `data-column` trick), never `ogc_fid`.
+      const ogcFid = feature.id;
       setSelectedSegment((prev) => {
         if (prev?.ogcFid === ogcFid) {
           renderSelection(null);
           return null;
         }
-        const next = { ogcFid, osm: feature.properties.osm, fromNode: feature.properties.from_node, toNode: feature.properties.to_node, highway: feature.properties.highway, geometry: feature.geometry };
+        const next = { ogcFid, geometry: feature.geometry };
         renderSelection(next);
         return next;
       });
     };
     map.on("click", onClick);
     return () => map.off("click", onClick);
-  }, [map, isActive, queryNearbyEdge, renderSelection]);
+  }, [map, isActive, edgesLayerId, queryNearbyEdge, renderSelection]);
 
   useEffect(() => {
     return () => {
-      if (!map) return;
-      if (map.getLayer(EDGES_LAYER_ID)) map.removeLayer(EDGES_LAYER_ID);
-      if (map.getSource(EDGES_SOURCE_ID)) map.removeSource(EDGES_SOURCE_ID);
+      // `.loaded()`, not just truthiness: by unmount time the underlying maplibre instance can
+      // already have been torn down (map.remove() called elsewhere) while `map` itself is still a
+      // truthy reference - maplibre's own getLayer() throws internally once its style is gone.
+      // Same guard useClosureDensityLayer.js's cleanup already established in this plugin.
+      if (!map || !map.loaded()) return;
       if (map.getLayer(SELECTED_SEGMENT_LAYER_ID)) map.removeLayer(SELECTED_SEGMENT_LAYER_ID);
       if (map.getSource(SELECTED_SEGMENT_SOURCE_ID)) map.removeSource(SELECTED_SEGMENT_SOURCE_ID);
       if (map.getLayer(HOVER_SEGMENT_LAYER_ID)) map.removeLayer(HOVER_SEGMENT_LAYER_ID);
