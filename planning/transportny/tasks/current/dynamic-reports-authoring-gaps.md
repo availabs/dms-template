@@ -1,15 +1,20 @@
 # Dynamic Reports — authoring gaps (route-slot naming, add-slot UX, preview-swap, static↔dynamic conversion)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **items 1, 2, and 3 DONE +
-live-verified** (1 and 3: 2026-09-05; 2: 2026-09-08). **All 12 catalog templates regenerated +
-republished 2026-09-08** (see "Catalog regeneration" under sub-item 1 below) — the deferral note
-that originally blocked this is superseded by Ryan's explicit go-ahead. A second real bug (route-
-name dedup wrongly suffixing `%n`/`%y` templated names) found + fixed same day, 8 templates
-re-published again — see "Dedup-suffix bug on templated names" below. One more bug found, NOT
-fixed (difference-graph subtitle captions baking a static route name at build time) — needs its own
-scoping pass, see that section. **Item 4 SCOPED 2026-09-08, not yet built** — see its own section
-for the full design + open questions needing Ryan's steer before coding starts. · **Started:**
-2026-09-05
+**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **all four sub-items DONE +
+live-verified** (1 and 3: 2026-09-05; 2: 2026-09-08; 4: 2026-09-09). **All 12 catalog templates
+regenerated + republished 2026-09-08** (see "Catalog regeneration" under sub-item 1 below) — the
+deferral note that originally blocked this is superseded by Ryan's explicit go-ahead. A second real
+bug (route-name dedup wrongly suffixing `%n`/`%y` templated names) found + fixed same day, 8
+templates re-published again — see "Dedup-suffix bug on templated names" below. **Two more bugs
+found, both FIXED + live-verified 2026-09-08** — same root cause (graph title/caption text baked as
+a static string at build time instead of resolving live): difference-graph captions on 3 templates
+(`seasonality`/`single_day_advanced`/`single_route`), and all 14 of `bi_directional`'s graph titles
+hardcoding an unenforced "Northbound"/"Southbound" claim — see "Combined fix — scoped + built +
+live-verified 2026-09-08" under sub-item 1 below for the full design + live-verification. **Sub-item
+4 (bidirectional static↔dynamic conversion) built + live-verified 2026-09-09** — see its own section
+for the full design, Ryan's 3 answered open questions, implementation, a real bug found + fixed
+during live-verification (frozen `%n`/`%y` tokens going permanently blank), and the verification
+record. · **Started:** 2026-09-05
 
 ## Objective
 
@@ -231,8 +236,10 @@ this rebuild says "no detected change" for all 8 — that's `diffSpecs` comparin
 JSON, which is unchanged since this fix lives in the build script, not the spec files; the actual
 persisted `routes[]` field is confirmed changed via the direct DB read above.)
 
-**Real bug found live, NOT fixed — needs its own scoping pass soon (Ryan's call 2026-09-08:
-skip the quick fix, this needs the real fix, not a patch)**: `seasonality`'s 4 difference-mode
+### Static graph text vs. live route resolution — two bugs found, NOT fixed, needs one scoping pass
+
+**Bug A — difference-graph caption, found 2026-09-08 (Ryan's call: skip the quick fix, this needs
+the real fix, not a patch)**: `seasonality`'s 4 difference-mode
 graphs (`diff_winter`/`diff_spring`/`diff_summer`/`diff_fall`) show a literal, unsubstituted
 `"Base: %N (%Y) · Comparison: Winter"` subtitle instead of a resolved name. Root cause:
 `report_build.mjs`'s difference-graph caption builder (~line 1174) bakes
@@ -256,7 +263,233 @@ pipeline (`graph_new`/`GraphComponent.jsx`'s difference-mode subtitle path), not
 `report_build.mjs`. Not scoped yet — needs its own pass (open questions: does the render layer even
 have access to `effectiveRoutes` at the point this subtitle renders, or does it need threading
 through; should a static report's difference caption stay build-time-baked since its names are
-already real forever, with only the Dynamic Report path made live). **TODO: pick this up soon.**
+already real forever, with only the Dynamic Report path made live).
+
+**Bug B — `bi_directional`'s graph titles hardcode an unenforced direction claim, found
+2026-09-08.** All 14 of `bi_directional.json`'s graph titles bake in "Northbound"/"Southbound"
+literally (`"Hours of Delay - Northbound"`, `"Route Compare Component - Southbound"`, etc.) —
+but nothing in the platform enforces that the two route groups an author picks at view time are
+actually opposite directions of the same corridor; they could pick the same route for both, or two
+unrelated routes entirely. **Proven live**: picked the identical real route (`2216791`, "Route 5
+Part") for both the NB and SB groups via `?routes=2216791|||2216791` — both sets of graphs still
+confidently labeled themselves Northbound/Southbound. Scanned all 12 templates' graph titles for
+directional language (`north|south|east|west|nb|sb|eb|wb`) — **only `bi_directional` has this**,
+none of the other 11 assert anything about route identity in a title (their titles reference time
+windows like "Trailing 3 Years," which stay accurate regardless of which real route fills a slot).
+Checked route→graph bindings: every one of the 14 graphs draws from exactly one route group each
+(never mixes NB+SB into one graph), so a `%n` token in the title would be completely unambiguous —
+`"Hours of Delay - %n"` would cleanly resolve to whichever real corridor the author picked.
+
+**Same root cause as Bug A**: a graph's `title` (like its `caption`) is a static string baked once
+at build time (`report_build.mjs`) and never re-resolves live — `%n`/`%y` tokens in a title would
+suffer the identical empty-token problem a build-time quick-fix would have for captions. **Do not
+fix these as two separate patches** — one mechanism ("live-resolve `%n`/`%y` in any graph-rendered
+text sourced from the spec — title or caption") covers both. Of the two, Bug B is the more valuable
+half to build first: it's the only thing standing between `bi_directional` and being a trustworthy
+template (an author *will* eventually pick non-directional or swapped routes and get a visibly
+wrong title), whereas Bug A only degrades a subtitle's cosmetics. **TODO: scope and build this
+combined fix soon** — open questions: does the render layer even have access to `effectiveRoutes`
+at the point titles/captions render, or does it need threading through; should a static report's
+titles/captions stay build-time-baked (their route identity is real and permanent) with only the
+Dynamic Report path made live.
+
+### Combined fix — scoped + built + live-verified 2026-09-08
+
+Traced the actual render pipeline by reading the real files (not guessed) to answer both open
+questions above. No code written this pass — this is scoping only.
+
+**Two separate render sites, not one:**
+- **A) Section-level `title`** (bi_directional's 14 hardcoded "Northbound"/"Southbound" strings) is
+  generic DMS-core, section-type-agnostic code: `report_build.mjs`'s `graphSectionData()` (~line
+  1574) writes it into the section row's `element-data.title`; rendered by `TitleComp` in
+  `src/dms/packages/dms/src/patterns/page/components/sections/section_components.jsx:24-27`,
+  invoked from `SectionView` in `section.jsx:385,552-558`. (Per `report_build.mjs:1159-1166`'s own
+  comment, this section title is deliberately the ONLY place a graph's title shows —
+  `state.display.title` is left blank on purpose to avoid doubling it.)
+- **B) Difference-mode `caption`** (`state.display.description`, the "Base: X · Comparison: Y"
+  string, baked at `report_build.mjs:1167-1182`) is rendered by `GraphTitle` inside
+  `src/dms/packages/dms/src/ui/components/graph_new/GraphComponent.jsx:23-50` (the `description`
+  div, line 46), fed from `graph_new/index.jsx:171`'s `mergeChartDefaults`.
+
+**Both sites already have everything they need except the resolution call itself — no missing React
+plumbing:**
+- Both already sit inside `PageContext` (`section.jsx:355`; `graph_new/index.jsx:71-77` via its
+  parent `ComponentRegistry/graph_new/index.jsx:40`) and already read the live `state.display`
+  object (`_measurePick.routeIds`, `comparisonSeries.combine.invert`) — the exact fields needed to
+  know which route(s) a graph belongs to.
+- The catalog broadcast (`ROUTE_CATALOG_PARAM_KEY`, already carrying `catalogRouteName`/
+  `dateFormula`/etc.) rides on the same generic page-filter/`setActionParam` channel every DMS page
+  filter already uses — reading a named `pageState.filters` entry from core code isn't a layering
+  violation by itself. What WOULD be a violation is core calling `resolvedRouteLabel`/
+  `applyNameTemplate` directly, since those live in the transportny theme (`relativeDateResolution.js`),
+  not `@availabs/dms` core — per `src/dms/CLAUDE.md`, core never imports theme code. The existing
+  pattern for exactly this problem is a theme-supplied hook read off `theme` (already used for
+  `theme.chartDefaults`/`theme.titleInlineWithLegend` in `graph_new/index.jsx:102-103`) — e.g.
+  `theme.resolveDisplayText?.(rawText, {routeIds, invert, pageState}) ?? rawText`, called from both
+  `section.jsx` (before handing `value.title` to `TitleComp`) and `graph_new/index.jsx` (before
+  `mergeChartDefaults`). Core stays route-name-agnostic; transportny's implementation is the only
+  thing that knows `%n`/`%y`/`resolvedRouteLabel` exist.
+
+**Which route(s) a graph is "about" is already stored — no new spec field needed:**
+`state.display._measurePick.routeIds`, an ordered array of `route_comp_id`s written by
+`report_build.mjs:1479,1495-1499`. For a difference graph, index 0 is anchor / rest are compare,
+unless `comparisonSeries.combine.invert === true` swaps them (mirrors `report_build.mjs`'s own
+`g._invert ? g._assigned[1] : g._assigned[0]` at lines 1179-1180). bi_directional's 14 single-route
+graphs have exactly one id here each — unambiguous which route a title token would resolve against.
+
+**`resolvedRouteLabel`/`applyNameTemplate` (`relativeDateResolution.js:223-245`) as-is:**
+- **Title fix (single route, bi_directional) is a near-zero-cost reuse**: once the render site
+  resolves `routeIds[0]` against the broadcast catalog to get a route object, it needs to run
+  token substitution against arbitrary text (`"Hours of Delay - %n"`), not just a route's own
+  `name` field — `applyNameTemplate(route)` today only does the latter. Needs one small factor-out:
+  extract the substitution core so it runs against an arbitrary string + route object
+  (`substituteTokens(text, route)`, with `applyNameTemplate(route) = substituteTokens(route.name,
+  route)` becoming a thin wrapper) — a ~5-line refactor, not a redesign.
+- **Caption fix (two routes) is not a token-substitution problem** — the "Base: X · Comparison: Y"
+  phrase is a fixed wrapper built from two independently-resolved labels, not a spec string with
+  tokens embedded in it. Two real options:
+  1. Stop baking the caption as a finished string at build time; mark it auto-generated (e.g.
+     `description: null` + a flag) and have the render site rebuild the identical phrase live from
+     `routeIds`/`invert` + the broadcast catalog — a near-verbatim port of
+     `report_build.mjs:1181-1182`'s own expression, swapping `.name` for `resolvedRouteLabel(...)`
+     and moving it to render time. Duplicates ~2 lines of wrapper-phrase text between the build
+     script and the theme runtime (acceptable — one fixed phrase, not business logic likely to drift).
+  2. Keep the wrapper phrase in the baked string but store per-route-id placeholders instead of
+     names (e.g. `"Base: {{route:comp_4}} · Comparison: {{route:comp_9}}"`), and give the render
+     site one generic `{{route:ID}}`-scanning resolver that could ALSO subsume the title case (one
+     mechanism for both A and B, not two). More general, but introduces a second token syntax
+     alongside `%n`/`%y` for one narrow use today.
+
+  Leaning option 1 (no new token syntax, smaller diff, the caption phrasing only has this one shape
+  today) — flagging for Ryan's steer since option 2 generalizes better if a third
+  static-text-with-routes case shows up later.
+
+**No existing precedent for template-resolution-at-render-time inside any graph-rendering code** —
+confirmed zero calls to `resolvedRouteLabel`/`applyNameTemplate` (or any other template mechanism)
+inside `GraphComponent.jsx`, `graph_new/index.jsx`, `section.jsx`, `section_components.jsx`. The
+three existing consumers — header pill, chart legend, and RRL's own row label
+(`RouteRow.jsx:240`, a third consumer the original bug write-up above didn't name) — are all
+theme-layer components already inside the transportny tree; this would be the first time resolution
+crosses into DMS-core rendering code, hence the new `theme.resolveDisplayText` hook rather than
+reusing an existing wired path.
+
+**Static-report behavior must stay unaffected**: `theme.resolveDisplayText`/the caption-rebuild path
+should be a no-op passthrough whenever a route's `name` has no `%n`/`%y` tokens (real, permanent
+names on static reports) and whenever `_measurePick.routeIds` doesn't resolve against a live
+broadcast catalog (i.e., not a Dynamic Report) — `resolvedRouteLabel` already falls back to the bare
+name when no tokens are found, so this should hold by construction with zero special-casing, but
+worth confirming live once built (static reports must render byte-identical titles/captions to today).
+
+**Decisions, confirmed with Ryan 2026-09-08:**
+1. Caption rebuild: **option 1** — no new token syntax; rebuild the "Base: X · Comparison: Y" phrase
+   live at render time from `routeIds`/`invert`, near-verbatim port of `report_build.mjs:1181-1182`
+   with `.name` swapped for `resolvedRouteLabel(...)`.
+2. **One combined change** — both the title fix (bi_directional) and the caption fix ship together,
+   not staged, since they share the same `theme.resolveDisplayText`-style hook and core/theme
+   boundary work.
+
+### Implementation — DONE + live-verified 2026-09-08
+
+**Real architectural question resolved before writing code**: could a theme-supplied FUNCTION
+actually survive to the live client, or would SSR hydration serialize the theme through JSON (which
+drops functions)? Traced `src/main.jsx`: the client re-runs the SAME dynamic `import()` for the
+theme module on hydration (`await loadThemes(...)`) — only `defaultData`/`hydrationData` (real DMS
+content) round-trip through `window.__dmsSSRData`; the theme itself is always a live, freshly-
+imported JS module on both server and client. A function-valued theme key is safe. (The admin theme
+EDITOR's `JSON.stringify` in `editTheme.jsx` is a separate DB-override path this hook is never meant
+to go through — irrelevant here.)
+
+**`relativeDateResolution.js`** — extracted `substituteTokens(text, route)` (the `%n`/`%y`
+substitution core, now operating on ANY text string, not just `route.name`) out of
+`applyNameTemplate(route)`, which is now a thin wrapper (`substituteTokens(route?.name, route)`).
+Guards `typeof text !== 'string'` — load-bearing, since `substituteTokens` will be called
+unconditionally from DMS-core on section titles that are normally Lexical rich-text objects on
+every OTHER (non-report) section, on transportny and every other site.
+
+**New file `resolveReportDisplayText.js`** (same directory) — the one function that live-resolves
+both bugs, reusing the SAME `ROUTE_CATALOG_PARAM_KEY` broadcast catalog the header pill/chart
+legend/RRL row already read through `resolvedRouteLabel`:
+- Title / explicit-caption case: look up `routeIds[0]` in the catalog, `substituteTokens(rawText,
+  that route)`, fall back to `rawText` unchanged if no catalog entry or no tokens present (safe
+  no-op for static reports and for anything not yet resolved).
+- Auto-diff-caption case (`isAutoDiffCaption: true`): ignore `rawText` entirely (there is none —
+  see below); rebuild `` `Base: ${resolvedRouteLabel(anchor)} · Comparison:
+  ${compares.map(resolvedRouteLabel).join(', ')}` `` from `routeIds`/`invert`, index-for-index
+  identical to `report_build.mjs`'s own retired `g._invert ? g._assigned[1] : g._assigned[0]` /
+  `g._invert ? [g._assigned[0]] : g._assigned.slice(1)` logic. Returns `null` (renders nothing) if
+  the catalog hasn't broadcast yet or fewer than 2 routes resolve — a transient, self-correcting
+  state, not an error.
+
+**`themev2.js`** — wired in as a plain **top-level** theme key, `resolveReportDisplayText` (not
+namespaced under `avlGraph`/`pages` — both call sites already have the ROOT theme object in scope
+before narrowing to a namespace, and a shared top-level hook avoids defining the same function
+twice under two different namespaces).
+
+**`section.jsx` (DMS-core)** — before handing `value.title` to `TitleComp`, calls
+`fullTheme?.resolveReportDisplayText(value?.title, { routeIds, invert, pageState })` using
+`dwHandle?.state?.display?._measurePick`/`comparisonSeries?.combine?.invert` — already tracked here
+via `dwHandle` (same object read for the pre-existing `hideSection` check), no new plumbing needed.
+Builds a `headerValue` (original `value` with just `title` swapped) rather than changing
+`ViewSectionHeader`'s own signature. No-op on every other DMS site (hook undefined) and on every
+other transportny section type (hook itself no-ops on non-templated/non-string text).
+
+**`graph_new/index.jsx` (DMS-core)** — before `mergeChartDefaults`, calls
+`contextTheme?.resolveReportDisplayText(display.description, { routeIds: display._measurePick
+?.routeIds, invert: display?.comparisonSeries?.combine?.invert, isAutoDiffCaption:
+Boolean(display._autoDiffCaption), pageState })` (`pageState` already destructured from
+`pageContext` here); patches `description` into a copy of `display` only when it actually changed.
+
+**`report_build.mjs`** — the difference-mode auto-caption branch no longer bakes
+`"Base: ... · Comparison: ..."` as a literal string; it sets `state.display._autoDiffCaption =
+true` instead and leaves `description` unset. The explicit-`g.caption` branch is untouched (still
+bakes literal text — now also opportunistically run through `substituteTokens` at render time, a
+free capability for any future author who types `%n`/`%y` into a custom caption; a no-op today
+since no spec's `caption` field uses tokens). Checked both other consumers of `state.display.
+description` (`--from-page`'s drift check at line ~477, its spec-recovery capture at line ~592) —
+both come out MORE correct with this change: a genuinely-unedited auto-diff graph no longer
+registers as spuriously "drifted," and `--from-page` recovery no longer accidentally freezes the
+auto phrase into an explicit `caption` forever after one round-trip.
+
+**`bi_directional.json`** — all 14 graph `title` fields changed from a literal `"...
+Northbound"`/`"... Southbound"` suffix to `"... - %n"`. Confirmed safe even though several of these
+graphs are fed by 4 routes at once (e.g. `routecompare_nb`: `current_nb`+`y1ago_nb`+`y2ago_nb`
++`trailing_nb`) — all 4 share the same `route_slot_group`, so they always resolve to the identical
+real `catalogRouteName`; `routeIds[0]` is representative of the whole group by construction (the
+mechanism sub-item 2 of this same doc built).
+
+**Rebuilt + republished all 4 affected templates** via `report_build.mjs <spec> --update <slug>
+--publish`: `bi_directional` (14 graphs modified, structural checks passed), `seasonality`,
+`single_day_advanced`, `single_route` (each: reconciled cleanly, structural checks passed).
+`report_probe.mjs` on all 4: 0 console/page/SQL errors (unresolved-entry-gate state only, same as
+every prior automated pass in this doc).
+
+**Live-verified** via `claude-in-chrome` against real picked routes:
+- `bi_directional?routes=2216791|||2216791` (the exact repro from the original bug report — the
+  SAME real route picked for both NB and SB): every one of the 14 section titles now reads
+  `"... - ROUTE 5 PART"` — correctly reflects that the same route was picked for both groups,
+  instead of the old false, unenforced `"... - Northbound"`/`"... - Southbound"` claim.
+- `bi_directional?routes=2216791|||2207838` (two DIFFERENT real routes): each group's 7 titles
+  correctly resolved to its OWN route's name (`"ROUTE 5 PART"` for the first group, `"35E QUEENS
+  MIDTOWN EXPY WESTBOUND"` for the second) — no cross-group mixing, across every graph type
+  (AVL Graph, Map, Route Compare, Info Box). 0 console errors on a fresh load.
+- `seasonality?routes=2216791`: all 4 difference-graph captions now read `"BASE: ROUTE 5 PART
+  (2026) · COMPARISON: WINTER"` / `"...SPRING"` / `"...SUMMER"` / `"...FALL"` — the exact literal-
+  token bug (`"Base: %N (%Y) · Comparison: Winter"`) is gone. 0 console errors.
+- `single_route?routes=2216791` (the one template needing BOTH anchor and compare sides resolved):
+  `"SPEED - CURRENT YEAR COMPARED TO 3 YEARS AGO"` graph's caption reads `"BASE: ROUTE 5 PART
+  (2023) · COMPARISON: ROUTE 5 PART (2026)"` — both sides correctly resolved to the same real
+  route's name with their own distinct years. 0 console errors.
+- Regression check on the real, published, unmodified STATIC report `reports/
+  beacon_9_d_jan_25_vs_26` (built by the old converter, not `report_build.mjs` — its difference
+  graph has no `_autoDiffCaption` flag at all): every title/caption renders exactly as before,
+  byte-identical, no stray `%n`/`%y`/`"Base: ... · Comparison: ..."` text anywhere. 0 console errors.
+
+**Files changed**: `src/themes/transportny/components/ReportRouteList/relativeDateResolution.js`,
+`resolveReportDisplayText.js` (new), `src/themes/transportny/themev2.js`,
+`src/dms/packages/dms/src/patterns/page/components/sections/section.jsx`,
+`src/dms/packages/dms/src/ui/components/graph_new/index.jsx`,
+`scripts/npmrds-reports/report_build.mjs`,
+`scripts/npmrds-reports/dynamic_report_specs/bi_directional.json`.
 
 ## Sub-item 2 — Add Route Slot: reuse vs. distinct — DONE + live-verified 2026-09-08
 
@@ -775,6 +1008,26 @@ question 1.
    already retype a name to include `%n`/`%y` by hand if they want it to adapt, no new mechanism
    needed.
 
+**Ryan's answers (2026-09-09):**
+1. **Open the picker** (the modal, `RouteTagBrowserModal` — Ryan's explicit correction mid-session:
+   "by picker — thats the modal, right? inline would look AWFUL in just the sidebar, dont inline
+   it"), with an additional message explaining why it opened.
+2. **No confirm step required — IF the conversion is built so switching modes is genuinely
+   lossless/nothing-changing** when routes are already in the report or already in the URL. Not "no
+   confirm step, accept some risk" — the bar is zero data loss, full stop; a confirm step becomes
+   unnecessary once that bar is met, not despite not meeting it.
+3. Leave static→dynamic naming as scoped (literal carryover, no auto-`%n`/`%y`) — "I think we will
+   end up circling back on this."
+
+**Reversal, same day (2026-09-09), the predicted circle-back**: Ryan hit this live on his own
+scratch report (`reports/page_26`, a real route "Ocean Pkwy" picked, then toggled static→dynamic)
+and reported it as a bug: the resulting slot's `name` froze permanently to the literal "Ocean Pkwy"
+text — including staying "Ocean Pkwy" even fully UNRESOLVED (no `?routes=`), never showing a
+template. Ryan's ask: static→dynamic should default every resulting slot's name to `"%n (%y)"`,
+identical to `handleAddRouteSlot`'s own default for a brand-new slot, not preserve the old literal
+name. Implemented: `convertStaticToDynamic` now sets `slot.name = '%n (%y)'` unconditionally for
+every entry (see Implementation below) — supersedes decision 3 above.
+
 ### Correction (verified 2026-09-08, before presenting this scoping): `route_comp_ids` IS in scope
 
 The first draft of this section claimed `route_comp_ids` (plural — `useGraphPublish.js:87,233`, the
@@ -805,6 +1058,335 @@ spread order (`{...slot, ...catalogRow}`) `useDynamicReportRoutes.js` already us
   the load-bearing finding above it).
 - Sub-item 2's grouping mechanism itself — reused as-is (`routeSlotGroupKey`/
   `distinctRouteSlotGroups`), not modified.
+
+### Implementation — DONE + live-verified 2026-09-09
+
+**`mergeSlotWithCatalogRow(slot, catalogRow)`** extracted from `useDynamicReportRoutes.js`'s own
+`resolvedRoutes` construction into a standalone exported function (the hook now just calls it) — so
+the conversion below can build the exact same `{...slot, ...catalogRow, route_comp_id, color, name,
+catalogRouteName}` merge shape off catalog rows it already has in hand, instead of round-tripping
+through a URL navigation + a second `fetchCatalogRows` call just to get back to a shape it could
+build directly.
+
+**`convertStaticToDynamic()`** (`ReportRouteList.jsx`) — static → dynamic: builds slots from
+`routes[]`, grouping any two entries that share a real catalog id (`r.id ?? r.route_id`, first-
+appearance order) via `route_slot_group` (mirrors sub-item 2's own convention exactly — the later
+entry gets the earlier entry's `route_comp_id` as its group key); strips `CATALOG_SNAPSHOT_FIELDS`
+(`tmc_array`/`id`/`route_id`/`description`/`points`/`metadata`/`conflation_array`/
+`conflation_version`/`created_at`/`created_by`/`updated_at`/`isValid`/`graphIds` — deliberately
+excludes `route_comp_ids`, see the Correction above). `persistRoutes(slots)`, then registers the
+`routeSlots`/`baseDate` filters (unchanged from the old `toggleDynamicReport`), then **immediately
+navigates to `?routes=<the distinct real ids>`** — built via `URLSearchParams(location.search)` +
+`.set('routes', ...)`, the same raw-search-patch convention `ReportPageHeader.jsx`'s "Change
+Routes"/"Viewing as of" controls already use, so any unrelated sibling query param survives. A blank
+report (no routes yet) skips the navigate — nothing to preview, matches the original "start from a
+blank routes list" behavior.
+
+**`convertDynamicToStatic(resolvedList)`** — dynamic → static: takes an already-fully-resolved list
+(the `{...slot, ...catalogRow}` shape) and does the reverse — persists it as the new static
+`routes[]` (dropping only `catalogRouteName`), clears the `routeSlots`/`baseDate` filters, then
+strips just the `routes`/`asOf` search-param keys (same raw-search-patch approach, not a full
+query-string replace). Two callers hand it a resolved list: `toggleDynamicReport` itself (passing
+`effectiveRoutes`, already `resolveRouteDates()`'d, when every group is already resolved) and
+`handleConvertToStaticConfirm` (below, when it wasn't).
+
+**`groupsFullyResolved`** — `routeSlotGroups.length > 0 && resolvedGroupRoutes.length ===
+routeSlotGroups.length`. Deliberately NOT a raw `routeIds.length` count match (per this doc's own
+earlier design note: that wouldn't catch a stale/bad id that never resolved to a real catalog row —
+`resolvedGroupRoutes` already drops those).
+
+**`toggleDynamicReport(enabled)`** rewritten as the dispatcher: `enabled` → `convertStaticToDynamic`.
+`!enabled` → if `groupsFullyResolved`, convert directly (`convertDynamicToStatic(effectiveRoutes)`);
+otherwise **open the blocking picker** (`isConvertToStaticModalOpen`) instead of converting — per
+Ryan's answer to open question 1. `isDynamicReport` (derived from `pageState.filters`) doesn't
+change until a conversion actually persists, so the Switch itself visually stays "on" while the
+picker is open — no separate pending/loading UI needed.
+
+**The picker** — reuses `RouteTagBrowserModal` (**Ryan's explicit correction mid-session**: "by
+picker — thats the modal, right? inline would look AWFUL in just the sidebar, dont inline it" — the
+design as scoped already called for the modal, this just confirms it), `selectionMode="exact"`,
+`requiredCount={routeSlotGroups.length}`, `initialSelectedRoutes={resolvedGroupRoutes}` (identical
+props to the existing view-mode entry gate). New `message` prop added to `RouteTagBrowserModal.jsx`
+(rendered under the header, new `headerMessage` theme token) — every other caller omits it and is
+unaffected; this caller passes "Switching to a static report freezes today's picked routes in place
+— pick a route for every slot below first, or the un-picked ones will be lost." Cancel (dismissible,
+default) is a true no-op — confirmed live: nothing persists, Switch stays on.
+
+**`handleConvertToStaticConfirm(selectedRoutes)`** — rebuilds by GROUP POSITION (mirrors the existing
+view-mode entry gate's own `onConfirm`), but keyed off actual row PRESENCE in the modal's returned
+selection (`rowById.has(priorId)`) rather than bare `routeIds[j]` truthiness — the existing gate's
+own logic would let a stale/never-resolved id silently claim a slot with no real row behind it;
+this version can't, since it only trusts a group's prior id if that id is actually among the
+freshly-returned catalog rows. Groups not claimed that way are filled from whichever selected rows
+are left over, in selection order. Result is run through `resolveRouteDates()` (with
+`todayAnchorEntry` in the mix, filtered back out) before handing to `convertDynamicToStatic` — same
+live-date-resolution pass `effectiveRoutes` already gets, so a Today-anchor-derived slot picked via
+this path gets real resolved dates too, not stale/absent ones.
+
+**Real bug found live, fixed same pass**: converting to static left the header pill/chart legend
+reading a blank, broken label (`" (2026) (2)"` instead of `"Route 5 Part (2026) (2)"`). Root cause:
+a slot's `name` can still carry unresolved `%n`/`%y` tokens (the default `"%n (%y)"` an author never
+customized away from) — `resolvedRouteLabel`/`substituteTokens` substitutes `%n` from
+`route.catalogRouteName`, which `convertDynamicToStatic` deliberately drops (it's a resolution-only
+field, never part of the real static-route contract) — so any consumer that later calls
+`resolvedRouteLabel` on the now-static route (the header pill, chart legend — RRL's own row is
+unaffected, it gates on `catalogRouteName != null` and shows the raw name verbatim when absent)
+silently blanks the token forever, since a static route has no live mechanism left to ever fill it
+back in. This is the SAME underlying blank-`%n` behavior sub-item 1 already documented and accepted
+for an *unresolved Dynamic Report* ("self-consistent, no crash") — but there it's transient (fixes
+itself the moment a route resolves); here it would be **permanent**, which fails Ryan's explicit
+"zero data loss / nothing changing or going wrong" bar for this conversion. **Fix**: `convertDynamic
+ToStatic` now runs each route through `resolvedRouteLabel(r)` (using its still-present
+`catalogRouteName`) and freezes the RESULT into the new static `name` field, before dropping
+`catalogRouteName` — the frozen text becomes the permanent literal name, matching the semantics of
+"switching to static freezes routes in place" extended to the display name, not just the TMC/date
+data. Safe no-op for any name with no tokens (a custom literal name, or an already-frozen one from a
+prior conversion, carries straight through unchanged) — confirmed by `resolvedRouteLabel`'s own
+existing fallback behavior, not a new code path.
+
+**Live-verified** on the same kept scratch Dynamic Report (`reports/claude_scratch_pct_template`,
+page id 2218565), logged in via the dev creds (`r.k.dubowsky@gmail.com` / `test123`, project
+`npmrdsv5`), full round-trips both directions:
+- **Dynamic → static, unresolved (no `?routes=` yet)**: clicking the Switch off opened the picker
+  (not inline — confirmed visually, matches the modal precedent), showing the explanatory message
+  and "Select 1 more (0/1)". Picked "Route 5 Part," confirmed: Switch flipped off, "+Add Route Slot"
+  replaced by "+Add Route," "Change Routes" gone, URL back to bare pathname, row shows real "6 TMCs ·
+  5.3 mi" — **before the fix**, header pill read the broken `" (2026) (2)"`; **after the fix**,
+  header pill AND chart legend both correctly read `"Route 5 Part (2026) (2)"`. 0 console errors.
+- **Direct DB read** (`dms dataset query reports_snap_2 --filter "report_id=2218565"`) confirmed the
+  exact persisted shape: `name: "Route 5 Part (2026) (2)"` (frozen, post-fix), `dateFormula:
+  "startDate=>yearof"` / `derivedFromRoute: "__TODAY__"` carried through unchanged (Mechanism B
+  preserved, not snapshotted), real `tmc_array`/`id`/`created_at`/`metadata`/etc. all correctly
+  baked in from the catalog row, no leftover `route_slot_group` (single ungrouped slot, as expected).
+- **Static → dynamic**: clicking the Switch on immediately navigated to `?routes=2216791` with zero
+  manual picking needed — header pill/chart legend/RRL row all showed "Route 5 Part (2026) (2)" in
+  the same render, genuinely different real ClickHouse data plotted (same as sub-item 3's precedent
+  check). 0 console errors.
+- **Dynamic → static, ALREADY resolved** (`?routes=2216791` present): clicking the Switch off
+  converted directly, no picker — Switch off, URL back to bare pathname, header pill/chart legend
+  both correctly read the frozen resolved name. 0 console errors.
+- **Cancel**: opened the picker (unresolved state), clicked Cancel — Switch stayed ON, "+Add Route
+  Slot" still shown, `0 TMCs · 0.0 mi` unchanged, "NO CHANGES" indicator confirmed nothing persisted
+  — a true no-op.
+- **Regression check** on the real, published, unmodified static report
+  `reports/beacon_9_d_jan_25_vs_26`: renders byte-identical to every prior pass in this doc (2 real
+  routes, real difference-graph data), Report Settings' Dynamic Report switch shows OFF as before,
+  0 console errors — confirms the rewritten `toggleDynamicReport` is inert for a report nobody
+  touches the switch on.
+- **Cleanup**: retyped the scratch slot's name back to the documented `"%n (%y) (2)"` template
+  (frozen from testing back to `"Route 5 Part (2026) (2)"` mid-session, then restored) via the
+  normal RouteRow edit UI — confirmed via a final DB read the scratch report is back to its
+  documented single-slot, unresolved-template baseline (`comp-4`, no `route_slot_group`, no catalog
+  snapshot fields), ready for reuse by future work in this arc.
+- Not yet exercised live: 2+ DISTINCT route groups (a real NB/SB-shaped report) through either
+  conversion direction — same gap sub-item 3's own checklist already flags as untested (no such
+  scratch report exists yet); the grouping logic itself (`seenIdToGroupCompId` for static→dynamic,
+  the group-position rebuild for dynamic→static) is unit-reasoned but only exercised here against a
+  single-group report.
+
+### Three more real bugs, found live on the actual `bi_directional` template — all fixed 2026-09-09
+
+The scratch-page testing above caught the `%n`/`%y`-freeze bug. Testing the SAME feature against
+the real, published `bi_directional` template (Ryan: "I tried to toggle bi_directional, from
+dynamic to static") surfaced three more real bugs, none reachable from the scratch page's simpler
+single-slot shape:
+
+**Bug 1 — `item.filters` isn't always a real array.** `TypeError: (item.filters || []).filter is
+not a function`, thrown inside `convertDynamicToStatic`. Root cause: on a FRESH page load (not yet
+through a local `updateAttribute` round-trip), `item.filters` can arrive as the raw JSON STRING the
+DB stores it as, not a parsed array — the exact same gotcha `getPageVariableRegistry`/
+`mergeFilters` (DMS core) already defend against for `pageState.filters` via a `parseIfJSON`
+helper, which this new code never reused. The scratch page never hit this because every test on it
+stayed within one page session (so `item.filters` was always the locally-set real array from a
+prior `updateAttribute` call, never a fresh DB fetch) — `bi_directional`, loaded fresh, hit the DB
+string directly. **Fix**: both `convertStaticToDynamic` and `convertDynamicToStatic` now read
+`item.filters` through `parseIfJSON(item.filters, [])` (imported from DMS core's own
+`pages/_utils`) instead of `(item.filters || [])` — a safe no-op when it's already a real
+array/object.
+
+**Consequence of Bug 1, found while diagnosing**: the crash happened AFTER `persistRoutes(newRoutes)`
+had already succeeded, so `bi_directional`'s `routes[]` was left genuinely converted to the static
+shape while its `filters` stayed registered as Dynamic — a real inconsistent intermediate state on
+a live, published report. Resolved (Ryan's call, "complete the conversion") by re-running the
+now-fixed toggle live rather than hand-patching the DB.
+
+**Bug 2 — a route/section's `%n`/`%y` tokens go permanently blank once frozen, in a SECOND
+location the route-name fix never covered.** Confirmed live: every one of `bi_directional`'s 14
+graph titles (`"Hours of Delay - %n"`, from sub-item 1's own "Combined fix") rendered as
+`"HOURS OF DELAY -"` on the published view after converting to static — same root cause as the
+route-name bug (the broadcast catalog's `catalogRouteName` no longer exists once static, so `%n`
+silently substitutes to empty), but a different consumer: a graph SECTION's own `title`/caption
+fields (`draft_sections`/`sections` on the PAGE row), not anything `routes[]` touches.
+  - **Fix, scoped to what the app's own architecture supports**: new `freezeSectionDisplayText
+    (sectionList, catalog)` (`ReportRouteList.jsx`) reuses `resolveReportDisplayText` — the SAME
+    mechanism a live Dynamic Report already resolves titles/captions through — fed a `pageState`-
+    shaped catalog built from `resolvedList` instead of the live broadcast, so no new substitution
+    logic. Called from `convertDynamicToStatic` on `item.draft_sections` **only**. Handles both the
+    plain-title case and the auto-diff-caption case (`_autoDiffCaption: true` → rebuilds the "Base:
+    X · Comparison: Y" phrase live and freezes it, clearing the flag), reusing the exact
+    `resolveReportDisplayText` contract other report pages already depend on.
+  - **Deliberately draft-only, not published, after a second real finding**: an attempt to also
+    directly overwrite `item.sections` (published) via the same `apiUpdate` call was **silently a
+    no-op** — confirmed live (wrote it, re-read the DB, unchanged). Traced the reason: every OTHER
+    section edit in this codebase (`sectionGroup.jsx`'s `updateSections()`, `useAddGraphSection.js`)
+    writes `draft_sections` exclusively; published section CONTENT only ever changes through the
+    page's own explicit Publish action, which mints entirely NEW published-row ids (confirmed:
+    `report_build.mjs --publish` produced brand-new published section ids on every rebuild this
+    session, never editing the existing ones in place) — not something a generic attribute write
+    can do. This matches how every OTHER edit on a report page already behaves (a draft change
+    needs an explicit Publish to go live); the `routes[]` freeze is the one exception, only because
+    `reports_snap_2` has no draft/published split at all. **Consequence, not yet built**: converting
+    a Dynamic Report with `%n`/`%y` titles to static freezes the DRAFT titles correctly, but the
+    PUBLISHED copy keeps showing blank titles until the author separately clicks Publish — same as
+    any other edit, but worth flagging since it's not obviously the same rule to someone expecting
+    the toggle to be fully self-contained. No auto-publish step was built (Ryan: "focus on getting
+    the feature working," not scope this further this pass).
+
+**Bug 3 — static→dynamic grouping collapsed two real, distinct route-slot groups into one.**
+Found while round-tripping `bi_directional` back to dynamic to re-test Bug 2's fix: "Change Routes"
+went from asking for 2 picks to 1. Root cause: `convertStaticToDynamic`'s grouping logic groups
+purely by "do two routes share a real catalog id right now" — with no awareness that
+`bi_directional`'s own NB (`route_slot_group: "$0"`) and SB (`"$1"`) groups had both temporarily
+been resolved against the SAME test route (`Route 5 Part`, id 2216791, from sub-item 1's own
+2026-09-08 verification pass: `?routes=2216791|||2216791`) when they were converted to static. Re-
+deriving grouping purely by shared id silently merged them — a real viewer would then only be
+asked to pick ONE route, and both directions would show identical data, permanently discarding the
+NB/SB split. **Fix**: `convertStaticToDynamic` now only auto-derives grouping-by-shared-id for
+routes with NO existing `route_slot_group` marker; an existing one (meaning this report was already
+Dynamic once, went static, and is converting back) is preserved verbatim, independent of whether
+the routes it names currently happen to share a real id. Only a plain, never-been-dynamic static
+report (no route ever carries `route_slot_group`) needs the shared-id heuristic at all — unchanged
+behavior for that case. The preview-URL builder (`orderedIds`) was also corrected to build one id
+per DISTINCT GROUP (not per distinct real id), since two distinct groups can legitimately share one
+real id.
+
+**`bi_directional` itself**: rather than hand-reconstruct the exact live DB state through this
+sequence of bugs, Ryan's call — "we can always just remake bi_directional from the json... focus on
+getting the feature working... use one of the report building scripts to re-gen from the known good
+json spec" — rebuilt + republished 3 times over the course of this diagnosis (each time via
+`node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/dynamic_report_specs/
+bi_directional.json --update 2216541 --publish`, `--update` given the numeric page id since
+`--update bi_directional` alone doesn't resolve — the CLI's own `dms page show` needs either the
+full slug or the id), each time confirmed via `report_probe.mjs reports/bi_directional --auth`
+(0 console/page/SQL errors) and a direct DB read (`dms raw get`/`dms dataset query`). Left at the
+clean spec baseline (2 groups, `route_slot_group: "$0"`/`"$1"`, templated `"%n (%y)"` route names,
+templated `"... - %n"` section titles, Dynamic Report ON) — not touched further after the final
+rebuild.
+
+**Full live-verification, this round** (real dev-site login, `r.k.dubowsky@gmail.com`/`test123`,
+project `npmrdsv5`, both `localhost:5173` and the correct `www.localhost:5173` host — Ryan caught a
+navigation to the wrong host mid-session, which is why `bi_directional` briefly rendered with zero
+routes; corrected and unrelated to any of the three bugs above):
+- Static → dynamic with 2 genuinely different real routes (`Route 5 Part` id 2216791, `35E Queens
+  Midtown Expy Westbound` id 2207838): immediate `?routes=2216791|||2207838` preview, both groups
+  correctly distinct, both real datasets plotted, titles correctly resolved to each group's own
+  route name (`"HOURS OF DELAY - ROUTE 5 PART"` / `"...- 35E QUEENS MIDTOWN EXPY WESTBOUND"`).
+  0 console errors.
+- Dynamic → static from that fully-resolved state: converted directly (no picker), 0 console
+  errors. Direct DB read confirmed: `filters: []`, both groups preserved (`$0`/`$1`, not
+  collapsed), both route names correctly frozen to their own real, distinct text.
+- Repeated the identical round-trip a second time (this was the pass that caught Bug 3, before its
+  fix): confirmed the grouping-collapse regression concretely (2 groups → 1), then confirmed after
+  the fix that a repeat of the same round-trip preserves 2 groups correctly.
+
+**Files changed** (supersedes the file list above — same files, three more edits): adds
+`parseIfJSON` to `ReportRouteList.jsx`'s existing `pages/_utils` import; adds
+`freezeSectionDisplayText` (module-level) plus its `resolveReportDisplayText`/
+`ROUTE_CATALOG_PARAM_KEY` imports; `convertStaticToDynamic`'s grouping loop and `orderedIds`
+construction rewritten as described in Bug 3.
+
+**Living-doc fix, same session**: `src/dms/skills/traversing-report-pages.md`'s Dynamic Reports
+section had a stale 2026-08-11 note claiming `?routes=` is silently inert on any `/edit/...` URL —
+that was true then but was changed 2026-08-19 (report-authoring-ux-overhaul.md item 7) and this
+session's own live testing repeatedly confirmed the current, correct behavior (edit-mode `?routes=`
+resolves fully). Corrected in place per that doc's own living-document convention.
+
+**Files changed**: `src/themes/transportny/components/ReportRouteList/ReportRouteList.jsx`,
+`useDynamicReportRoutes.js`, `src/themes/transportny/components/RouteTagBrowserModal/
+RouteTagBrowserModal.jsx`, `RouteTagBrowserModal.theme.js`,
+`src/dms/skills/traversing-report-pages.md`.
+
+### Unrelated bug, root-caused + FIXED: `report_build.mjs --update` silently never reconciled draft sections
+
+Found while answering Ryan's question about `bi_directional`'s draft view showing stale literal
+"Northbound"/"Southbound" titles — NOT caused by anything in this sub-item, and confirmed
+independent of the spec file (the spec correctly has `"Hours of Delay - %n"` etc. for all 14
+graphs, verified by reading `dynamic_report_specs/bi_directional.json` directly).
+
+**Root cause, fully isolated** (Ryan: "i would like to know full scope / cause", "please stop
+messing with bi_directional, make/use a scratch test page" — all further investigation and the fix
+verification below used a disposable scratch page, `reports/claude_scratch_report_build_test`,
+built from a copy of `weekly_average.json` with a different title; deleted after):
+
+1. Manually running `dms section update <draftId> --data '{"title":"...","size":"..."}'` — even
+   with the FULL payload shape `report_build.mjs` itself sends (`element`/`parent`/`trackingId`/
+   `border`/`activeStyle` included) — always correctly persists. So the CLI/server write path
+   itself is fine.
+2. Added temporary debug logging to `report_build.mjs`'s own reconcile loop (reverted after) to
+   print the exact section id it was calling `dms section update` on. **It was a different id than
+   the one `draft_sections` actually references** — despite matching by the correct `trackingId`.
+3. Traced why: the CLI's own `dms page dump --sections` (`packages/dms/cli/src/commands/page.js:
+   149-152`) builds its `_expanded_sections` candidate list as `[...sections (published) ids,
+   ...draft_sections ids]`, deduped only by **row id** — never by `trackingId`. Since Publish (the
+   `DO_PUBLISH` block) mints an entirely NEW set of published-row copies on every single run while
+   deliberately keeping each graph's original `trackingId` (its own comment says so: "Publishing
+   creates a SEPARATE set of component rows sharing trackingIds"), `_expanded_sections` ends up
+   holding TWO rows per graph under the identical trackingId — a (possibly stale) published copy
+   AND the real draft row — with the published one listed FIRST. `report_build.mjs`'s reconcile
+   does `updateCtx.sections.find(s => s.data?.trackingId === tid)` in three places (the framework-
+   section match, the per-graph match, the orphan-deletion sweep) — all three therefore always
+   matched the PUBLISHED row, never the actual draft one `draft_sections` points at.
+4. This is why `bi_directional`'s PUBLISHED copy was never affected: Publish doesn't depend on this
+   lookup at all — it independently rebuilds fresh rows straight from the spec every time,
+   completely masking the bug for anyone only ever checking the published page.
+
+**Scope**: not title-specific — confirmed on the scratch page that `size` (a second spec-driven
+field) had the identical problem, and the mechanism (a `.find()` picking the wrong row) would affect
+any field any of the three reconcile call sites write, on ANY already-existing section on ANY
+`report_build.mjs --update`-managed report — not just `bi_directional`, and not just cosmetic title
+text.
+
+**Fix, verified**: `report_build.mjs`'s `--update` preflight now filters `_expanded_sections` down to
+only the ids actually present in `dump.data.draft_sections` (`new Set(...).has(...)`) before it's
+stored as `updateCtx.sections` — the one array all three reconcile call sites read from. Verified on
+the scratch page: changed a graph's `title` AND `size` in a copy of the spec, reran `--update
+--publish` — this time the DRAFT row (same id throughout, `2221379`) picked up both new values
+correctly (previously it never had); reran again with an unchanged spec to confirm no reversion/
+flapping; `report_probe.mjs edit/... --auth` showed the new title rendering live in the real app (not
+just via a raw DB read), 0 console/page/SQL errors. Scratch page deleted after.
+
+**`bi_directional` itself**: was hand-patched (all 14 draft titles set directly via `dms section
+update`) BEFORE this root cause was found — that hand-fix is real and already verified, and this
+`report_build.mjs` fix means it will keep reconciling correctly on any future `--update` run rather
+than needing another hand-fix.
+
+**Files changed**: `scripts/npmrds-reports/report_build.mjs` (the `updateCtx.sections` filter fix,
+inside the `--update` preflight block, ~line 950-965).
+
+### Static→dynamic naming reversal — DONE + live-verified 2026-09-09
+
+Implements the reversal of open question 3's decision (above): `convertStaticToDynamic`
+(`ReportRouteList.jsx`) now builds every slot as `{ ...r, name: '%n (%y)' }` — an unconditional
+override, before the `CATALOG_SNAPSHOT_FIELDS` strip — rather than carrying the static route's own
+literal `name` through unchanged. Applies uniformly to every route in the conversion, grouped or
+not; matches `handleAddRouteSlot`'s own default for a brand-new slot exactly, so converting a route
+into a slot now behaves identically to it having always been a freshly-added, untouched slot.
+
+**Live-verified** on Ryan's own scratch page (`reports/page_26`, real route "Ocean Pkwy" already
+picked, per his direction — "You can use this page to test, its garbage/scratch," never touched
+`bi_directional` for this): round-tripped dynamic → static → dynamic. Before the fix (his own live
+repro, matching the bug report exactly): the slot's `name` froze to the literal `"OCEAN PKWY
+(FRONTAGE) S"` and stayed that way even fully unresolved. After the fix: converting static→dynamic
+set `name` to `"%n (%y)"` (confirmed via direct DB read: `reports_snap_2`'s `routes[]` shows
+`name: "%n (%y)"`, no catalog-snapshot fields); resolved view (`?routes=2207390`) showed the header
+pill/legend/graph title all correctly reading `"OCEAN PKWY (FRONTAGE) S (2026)"`; the UNRESOLVED
+view (`?routes=` stripped) — Ryan's exact original complaint — now correctly shows the RRL row's raw
+template `"%n (%y)"` and the header pill `"(2026)"` (blank `%n`, no route picked yet), never falling
+back to the old frozen "Ocean Pkwy" text. 0 console errors throughout. Ryan: "looks good, excellent
+work."
+
+**Files changed**: `src/themes/transportny/components/ReportRouteList/ReportRouteList.jsx`
+(`convertStaticToDynamic`'s slot-name assignment).
 
 ## Files touched / likely touched
 
@@ -841,6 +1423,16 @@ Sub-item 2 (DONE — see above):
 - `RouteRow.jsx` — `groupOpen` state + the "shares this route with" disclosure block. Entry point
   ended up staying top-level (the inline select), not per-row — see the design-decision note above.
 - `ReportRouteList.theme.js` — new `addSlotGroupSelect` token.
+
+Sub-item 4 (DONE — see above):
+- `ReportRouteList.jsx` — `CATALOG_SNAPSHOT_FIELDS`, `groupsFullyResolved`,
+  `isConvertToStaticModalOpen` state, `convertStaticToDynamic`/`convertDynamicToStatic`/
+  `handleConvertToStaticConfirm`, `toggleDynamicReport` rewritten as the dispatcher, the new picker
+  modal render.
+- `useDynamicReportRoutes.js` — `mergeSlotWithCatalogRow` extracted and exported.
+- `RouteTagBrowserModal.jsx`/`.theme.js` — new `message` prop / `headerMessage` token.
+- `src/dms/skills/traversing-report-pages.md` — stale-note fix (see above), unrelated to the
+  conversion mechanism itself but touched the same session.
 
 ## Testing checklist
 
@@ -896,7 +1488,28 @@ Sub-item 2:
   this round, so `%y` differing across siblings wasn't visually exercised, just reasoned about from
   the code path being identical to sub-item 1's already-verified `%y` logic).
 
-Sub-items 2 and 4: not started, no checklist yet.
+Sub-item 4:
+- [x] Static → dynamic converts every route into a slot, groups any sharing a real catalog id,
+  strips catalog-snapshot fields, immediately previews via `?routes=<ids>` — confirmed live, header
+  pill/legend/RRL row all resolve correctly in the same render.
+- [x] Dynamic → static, already fully resolved: converts directly, no picker — confirmed live +
+  via direct DB read (frozen name, `dateFormula`/`derivedFromRoute` preserved, real catalog fields
+  baked in).
+- [x] Dynamic → static, NOT fully resolved: opens the blocking picker (the modal, not inline —
+  Ryan's explicit correction) with an explanatory message, pre-populated with whatever's already
+  resolved; confirming converts correctly (same frozen-name fix applies via the shared
+  `convertDynamicToStatic` function).
+- [x] Cancel on the picker is a true no-op — Switch stays on, nothing persists, confirmed live.
+- [x] Real bug found + fixed: unsubstituted `%n`/`%y` tokens going permanently blank once frozen to
+  static — fixed by freezing the RESOLVED label into `name` at conversion time, verified both via
+  the picker path and the already-resolved path.
+- [x] Regression check on a real, published, unmodified static report
+  (`reports/beacon_9_d_jan_25_vs_26`) — byte-identical render, Switch shows OFF as before, 0 console
+  errors.
+- [x] 0 console errors across every conversion direction/path exercised.
+- [ ] Not tested: 2+ DISTINCT route groups (e.g. a real NB/SB Dynamic Report) through either
+  conversion direction — no such scratch report exists yet (same gap sub-item 3's own checklist
+  flags).
 
 Scratch page: `reports/claude_scratch_pct_template` (id 2218565) — **kept, not deleted, per Ryan's
 2026-09-05 call**, for reuse across the rest of this Phase 4 arc. Left in a clean one-slot state.

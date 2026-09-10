@@ -522,11 +522,12 @@ parameters do not set macro-view state — drive the UI.
 
 **Documentation (`pages/docs/`, 2026-09-04 → 2026-09-08).** The new TransportNY documentation is written as
 static pages in `pages/docs/` — all 95 pages written and reviewed by 2026-09-08 (build Phases 0–7; lint clean, no
-open `[VERIFY]` marks); the real-tool screenshot pass (Phase 8) and the owner read-through follow, and the migration
-into a `platform_docs` pattern (Phase 9) is owner-gated. The layout is — one flat folder, one file per page named `<hub>--<slug>.html`, hubs as
+open `[VERIFY]` marks), illustrated from the running tool (Phase 8), and **live since 2026-09-09 as the `platform_docs`
+pattern at `www.devtny.org/docs`** (built from these files by `qa_skills/tools/builds/build_docs_pattern.mjs`; the old
+`npmrds_docs` pattern is parked at `/docs_legacy`). These static pages remain the source: edit here, re-run the build, publish. The layout is — one flat folder, one file per page named `<hub>--<slug>.html`, hubs as
 `<hub>.html`, home `index.html` — following the 95-page information architecture in
 `reports/platform-documentation-plan.html` §08 and the build task
-`planning/transportny/tasks/current/platform-documentation-build.md`. The folder carries its own shell:
+`planning/transportny/tasks/completed/platform-documentation-build.md`. The folder carries its own shell:
 `_docs-nav.js` (the tree — ONE data structure that drives the sidebar, breadcrumb, prev/next, the lint,
 and later the pattern build), `_template.html` (copy per page), `_docs.css` (docs vocabulary on top of
 `../_shared.css`), `_lint.mjs` (tree ↔ files, header block, ids, links, forbidden strings, figures),

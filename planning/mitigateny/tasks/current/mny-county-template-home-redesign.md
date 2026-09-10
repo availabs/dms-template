@@ -1,6 +1,6 @@
 # MNY County Template — LHMP plan home redesign
 
-**Project:** MitigateNY · **Topic:** themes · **Status:** BUILT 2026-09-04 · REV 3 2026-09-08, pending owner review · **Started:** 2026-09-04
+**Project:** MitigateNY · **Topic:** themes · **Status:** BUILT 2026-09-04 · REV 3 base + paragraph break + hurricane card rebuilt, 2026-09-08 · pending owner review · **Started:** 2026-09-04
 
 ## Objective
 
@@ -384,13 +384,284 @@ band. The four TopNav entries became real links too.
    and letting `object-contain` letterbox inside it centres the *drawing*. Both facts belong in
    whatever theme value carries this treatment in the live build.
 
+### Revision 4 (2026-09-08) — paragraphs in the profile cards, and the illustration framing fixed
+
+Owner: *"Break the 3 text cards at the top into paragraphs. Make the graphic for the hurricane card
+come out of the top of the card and make it bigger."* Then, on review: *"I don't think we need
+paragraph structure in the one in the header, but the layout of the other three still feels quite bad
+to look at even though I like the cards."*
+
+**The header keeps its single block.** Geography reads as one paragraph there and stays that way.
+
+**The three profile cards are now 2–3 paragraphs each, running the FULL field.** All three had been
+trimmed to fit a single block; with paragraph breaks there is no reason to trim, so Demography,
+Major Industries and Climate Outlook now carry every sentence DHSES holds. Prose went 14px → **15px /
+1.5** — 14px over a 366px measure was cramped for three paragraphs.
+
+> **LIVE-BUILD REQUIREMENT — the paragraph breaks are not in the data.** Checked directly:
+> `geography_topography`, `demographics_population_centers` and
+> `major_industries_economic_drivers_and_notable_infrastructure` each contain **zero newlines**
+> (452 / 758 / 810 characters, one run), and `climate_assessment_narrative` — though it is a
+> **lexical** column and so already capable of carrying them — has a single `paragraph` node. So the
+> breaks on this page are a design proposal, and the live build needs one of:
+>   1. **authors add the breaks** — free for `climate_assessment_narrative` today, and the cleanest
+>      answer since only the county knows where its own paragraphs go; or
+>   2. **a `formatFn` that splits on sentence groups** — templateable, but it will guess.
+> Recommend (1), with (2) as the fallback for counties that never revisit the field.
+
+**Why the cards looked bad, and the actual fix.** Every file in `assets/mny/illustrations/` is
+**1024×1024 — a square, with a variable amount of transparent padding baked in**. That single fact
+explains it:
+
+| Treatment | What happens on a 414px card |
+|---|---|
+| `h-[240px] object-contain` (rev 3) | The square scales to 240×240 — **240px wide inside a 414px box.** The drawing floats in ~170px of horizontal air, and because each file pads differently it also reads as off-centre and unaligned card to card. **This was the "bad to look at".** |
+| plain full bleed, no height | Width is right, but the image is as **tall as the card is wide** — 414px — which swamped the prose on the first pass. |
+| **a clipped window** (rev 4) | Full bleed width, wrapped in a shorter `overflow-hidden` box that crops the square's dead top and bottom. Full width, no air, identical height on every card, and the crop lands in the padding rather than the drawing. |
+
+Neither of the first two can work, because the asset's aspect ratio is the problem, not the CSS.
+
+**And the window must be proportional, not fixed px.** The first cut used `h-[380px]`, correct only
+at 1440: at 1024 the image is *shorter* than the window, so the float comes straight back, and on a
+wider card the same value cut the windmill off `mny-built-environment`. It is now
+`aspect-[13/12]` on the profile cards and `aspect-[10/9]` on the hurricane card — ~4–5% off each
+edge at **any** width. Verified at 1440, 1280 and 1024 with the drawings intact.
+
+**The hurricane graphic** swapped the 44px `hazards/` glyph for the isometric `illustrations/`
+render, full bleed, breaking 230px out of the card top — **the biggest graphic on the page**, which
+is what the page's focus object should have.
+
+**Data-quality artifacts found in the source prose** (worth a county fix, not a design problem):
+all three text fields end in a stray `?`, each carries 7 non-breaking spaces mid-sentence, and the
+industries field reads *"There Vera Health Spa was recently opened"* — almost certainly *"The Vera
+Health Spa"*. The mockup drops the trailing `?` and otherwise quotes verbatim, including that
+sentence.
+
+### Revision 5 (2026-09-08) — one card size for the whole page
+
+Owner: *"The cards on the very bottom look great. Maybe we set the cards at the top to be 9 columns
+so they size similar to the 4 cards at the bottom, then we put the county info in an info card next
+to them."* Plus, from the pass before: *"the illustrations and the cards are too big almost"* and
+*"the hurricane card now creates a ton of white space above and below the graph."*
+
+**The profile cards went from 4 columns to 3** (9 of 12), which makes them **exactly 304px — the same
+as the four Explore cards** — and the county facts moved out of the strip above them into an **info
+card in the remaining 3 columns**. One card size now governs the page.
+
+**That deleted rev 4's whole crop apparatus for those cards.** The `aspect-[13/12] overflow-hidden`
+window existed only because a 414px card makes a full-bleed square 414px tall. At ~290px the square
+lands at ~314px, which is the proportion `home.html` and the client's reference image were drawn at —
+so the three profile cards now use the Explore cards' treatment verbatim
+(`mx-[-12px] mt-[-110px] w-[calc(100%+24px)]`, no window, no crop). **The lesson generalises: the
+breakout card wants a ~290–305px column. Give it that width and it needs no correction at all.**
+
+The clipped window survives on one card only — the hurricane focus panel, which is 5 columns wide by
+design. There the illustration is inset to 70% and cropped `aspect-[10/9]`, which lands it at roughly
+the same *graphic* size as the 304px cards even though its card is wider.
+
+**The whitespace around the bar list is gone, and the cause is worth recording.** It was
+`lg:pt-[230px]` on the bar-list column, which I had added to line the bar list up with the hurricane
+*card's* top. That pushed 230px of white above the bars and left the column short at the bottom. But
+the illustration lives *inside* the left column, so it cannot collide with the right one — the bar
+list simply starts at the row top and sits alongside the overhang. The chip row then takes `mt-auto`,
+and the bar rows went `space-y-2` → `space-y-3`, so the remaining slack is spent on the bars rather
+than dumped in one gap. **Band height 853 → 690.**
+
+The band's own totals: `county-profile` 1022 → **991** (and it now carries a fourth card), and the
+page lost ~200px overall.
+
+### Revision 6 (2026-09-08) — the profile stops being cards
+
+Owner: *"This still doesn't look very good. Maybe we try making these just 3 lexical sections with
+width 9 and the stat card next to them instead of being cards"* … *"each of the sections should be
+width 9 and they should be vertically stacked."*
+
+**The county profile is now three stacked sections at `size: 3/4` (9 of 12), with no card chrome and
+no illustration**, and the County facts card beside them. That was the right call and it is worth
+being clear about why the card form kept failing here: at 304px a card holding an illustration and
+three paragraphs is ~700px tall, and three of them side by side own the page. **The illustrated
+breakout card is a doorway form — short link list, one destination — which is exactly the Explore
+band at the foot of the page, and it stays there.** It was never the right container for 750
+characters of prose. Four revisions went into resizing, cropping and re-scaling it before the
+container itself turned out to be the problem.
+
+Three specifics:
+
+- **The facts card is placed FIRST in the section array**, pinned to columns 10–12 with
+  `row-span-3`, so it stands beside the three stacked sections rather than under them. Same trick
+  `dashboard.html` uses for its map (`lg:col-span-7 lg:row-span-2` ahead of two 5-wide siblings): the
+  spanning item comes first and auto-placement fills the remaining track. In DMS this is a `1/4`
+  section carrying a rowspan.
+- **Each section's prose runs in two CSS columns.** A 9-wide block is ~790px — about 110 characters
+  at 15px, well past readable — so `md:columns-2 md:gap-x-10` with `break-inside-avoid` on the
+  paragraphs gives ~380px measures and fills the width instead of leaving a ragged right edge.
+- **The facts card distributes down its full height** (`justify-between` + `divide-y`), because
+  spanning three sections stretched it to ~560px while four facts filled ~290px and it read as an
+  empty card with a pill stranded at the bottom. It now reads as a spec table that is meant to be
+  that tall.
+
+> **OWNER DECISION — `Card` styled as prose, or true `lexical` sections?** The owner said "lexical",
+> and it matters for more than markup. As drawn these are **`Card` sections with `removeBorder: true`
+> and no `bgColor`**, which renders a bound value as bare prose and keeps all three fields coming
+> from one row of one source. Built as **true `lexical` sections** the prose stops being data-bound
+> and becomes **authored per county — 62 copies to maintain**, and the DHSES row stops being the
+> source of truth. The one real argument for lexical: the paragraph breaks are not in the data
+> either way (rev 4), so an author has to touch this text regardless. I have drawn the bound version
+> because it preserves the templateability rule; say the word and it becomes lexical.
+
+### Revision 7 (2026-09-08) — start simple
+
+Owner: *"Let's get rid of the columns and just lay it out like normal text"* … *"we don't need the
+hrs, we can try to add back in the iso images if we want, but let's just start simple."*
+
+- **The two CSS columns are gone.** Normal single-column flow. A 9-wide section is ~916px of text
+  width — about 125 characters at 15px — so the text column is capped at **`max-w-[660px]`**, the
+  same measure `dashboard.html` uses for its intro copy, with the heading ending on the same line as
+  the prose. The section stays 9 wide in the grid.
+- **All the rules are gone** from the profile band — the heading underlines and the separators
+  between blocks. Spacing alone separates them.
+- **The facts card sizes to its content** instead of stretching across all three sections. Spanning
+  them had forced a choice between an empty card and four rows distributed down 640px with dividers;
+  a compact card at the top of the span needs neither.
+- **The isometric illustrations are out of the profile band** and live only in the Explore band at
+  the foot. Owner may put them back; the treatment is documented in `design/README.md` either way.
+
+So the county band is now: a band head, three prose blocks (heading · paragraphs · one link), and a
+County facts card top right. Nothing else.
+
+### Revision 8 (2026-09-08) — width-9 card sections, full-width text
+
+Owner: *"These look width 6 to me, not width 9"* … *"the text should be full width in their cards
+which should be width 9"* … *"they should be card sections."*
+
+**The width-6 look was my `max-w-[660px]` cap.** The sections were `col-span-9` in the grid all
+along, but capping the text at 660px out of the 948px available made the block read as ~6 of 12. The
+cap was there because a single run across 9 columns is ~120 characters a line at 15px. Removed — the
+text now fills the card.
+
+**They are Card sections again, at width 9, stacked, with the text full width inside the card and no
+illustration.** Worth being precise about what went wrong before: it was never the card, it was the
+card *plus a 1024² illustration at 304px*, which makes a ~700px-tall object, three of which own the
+page. At 9 wide with no render, the card is the right container.
+
+> **OPEN QUESTION 11 — CLOSED.** The owner confirmed *"they should be card sections"*, so the prose
+> stays **bound to the DHSES row** rather than becoming 62 authored `lexical` copies. The
+> paragraph-break finding from rev 4 still stands: the breaks are not in the data, so adding them
+> remains an authoring step on the source (or a `formatFn`).
+
+**One trade-off, recorded rather than silently fixed:** full-width text in a 9-wide card is ~876px,
+about 120 characters a line at 15px, past the comfortable 45–75. This is the owner's explicit call.
+The levers if it reads long in review, least disruptive first: **16px** prose (the brand's `prose`
+token) with `leading-[1.6]`; a `max-w` on the text; or two CSS columns. Noted in the file at the
+band.
+
+### Revision 9 (2026-09-08) — reverted to rev 3, plus one paragraph break
+
+Owner: *"This still just takes up too much space. I think the best version we have for this is
+actually `http://mercury.availabs.org/mny-design/pages/lhmp/home.html` — can we go back to that and
+just add one paragraph break?"* … *"I am open to other suggestions, I just can't get this to feel
+right."*
+
+**Done.** That deployed URL is **rev 3** — three profile cards at `col-span-4` with
+`h-[240px] object-contain` illustrations, the four-up facts strip above them, and the hurricane card
+with its small inline `hazards/` glyph. It was pulled down (`curl`), diffed to confirm the revision,
+and copied back over `pages/lhmp/home.html`. Each of the three profile cards then got **one**
+paragraph break at its natural seam — wording untouched, only the split is new:
+
+| Card | Break after |
+|---|---|
+| Demography | "…summer camps and retreats." |
+| Major industries | "…prison and tourism industries." |
+| Climate outlook | "…the 1981–2010 average." |
+
+**The deployed file already carried the rev-4 border fix** (`border-mny-100 border-l-4
+border-l-mny-red`, not the broken all-sides form), so reverting did not reintroduce that defect. It
+also already has the header overflow fix.
+
+**Revisions 4–8 are therefore rolled back.** Everything they *learned* is kept in this file and in
+`design/README.md`; what is gone from the page is: the paragraph-per-sentence-group prose, the
+clipped/proportional illustration window, the width-9 stacked sections, the info card, and — flagged
+for the owner, because they had asked for it — **the enlarged breakout hurricane graphic**. That one
+is a small standalone re-apply if wanted.
+
+**Standing suggestion for the "too much space" problem, since the owner asked for one.** The three
+fields are ~500 characters each, and all three destinations already exist in the pattern
+(`/the_local_environment/people_and_communities`, `/…/built_environment`, `/the_risk/climate_change`).
+So the honest question is a **content** one, not a layout one: *does the full profile prose belong on
+the landing page at all, now that geography sits in the header?* If each card carried its **first
+sentence or two plus the link**, the band would halve and the cards would sit at the same proportion
+as the four Explore cards the owner already likes — the doorway form doing doorway work, with the
+full text on the page it belongs to. That is one small edit away and nothing else on the page moves.
+
+### Revision 10 (2026-09-08) — the hurricane card
+
+Owner: *"Add the hurricane graphic to be larger again, but remove the editorial text in that card
+('91% of every …') because we can't automate that kind of copy. I want the hurricane and the amount
+to be on the same line so the card, even with the iso image coming out the top, is the same height
+it is now."* … *"the iso image in the hurricane card should aim to be the same size as all the other
+iso images on the page."*
+
+**The editorial paragraph is gone, and the owner is right about why** — it was the one piece of copy
+on the page that could not be generated for another county, which is a straight violation of the
+templateability rule this task opens with. I wrote it and should have caught it.
+
+**Hurricane and the amount now share a line** (`flex items-baseline justify-between`), 36px name left
+and 30px figure right.
+
+**The iso image is sized off a measurement, not a guess.** Every illustration on the page was
+measured: the three profile cards render at **240px**, the four Explore cards at **280px**. The
+hurricane render is set to **240px** — it matches three of the seven and costs the least height. If
+280 is preferred it is a one-token change and costs ~40px more.
+
+**The height arithmetic, and where it landed.** The two removals free exactly 111px — the editorial
+paragraph (59px + 6px margin) and the amount moving up onto the title's line (30px + 16px margin) —
+so `mt-[-149px]` leaves 111px of the 240px render inside the card and 129px overhanging above it.
+Measured result:
+
+| | Before | After |
+|---|---|---|
+| Card box | 393px | **305px** (shorter) |
+| Card + overhang | 391px | 433px |
+| Band | 487px | 527px |
+
+So the **card box shrank**, but the whole object is **42px taller** than the card was. That gap is
+arithmetic, not styling: total height = card content + image height, and a 240px image against 111px
+of freed space cannot come out even. **The lever, if the 42px matters:** collapse the three-stat
+block (17 declared disasters · 537 other events · $398M) from label-over-value in three columns to
+one inline line — about 30px — which lands it within ~12px. Not done unasked, since the block reads
+well as it is.
+
+The 129px of overhang is added to the **column**, not the card, so the bar list still starts at the
+row top and there is no dead space above it (the rev-5 fix holds).
+
+**Follow-up the same day — the chip row lost its bottom alignment, and the owner spotted the cause
+correctly:** *"even though the card part is smaller the card plus the iso is still taller."* Exactly
+right. The overhang goes on the left column, so that column is taller than the bar list's natural
+content, the bar column stretches, and the chip row — sitting at its natural position after the
+legend — no longer landed on the card's bottom edge.
+
+Owner: *"I want the buttons to align with the bottom, it would be ok to make the graph be a bit
+bigger or slightly more spaced."* So **the bar list became the flexible element**: the column is
+`flex flex-col` and the eleven rows sit in a `flex-1 flex flex-col justify-between gap-2.5`
+container, absorbing whatever height the card's overhang adds to the row, with the legend and chips
+riding at the bottom. Bar tracks also went 14px → 16px now that they have the room. Measured:
+**chip-row bottom minus card bottom = 0px.** Band unchanged at 527px, so the alignment cost nothing.
+
+This is the general fix for the pattern, worth keeping: **when one column in a row carries a
+breakout overhang, the other column needs one flexible element** — otherwise it stretches and
+everything in it floats away from the shared bottom edge. Padding the second column to match (what
+rev 4 did with `lg:pt-[230px]`) produces the dead space the owner rejected at rev 5; making its
+list flexible produces alignment instead.
+
 ### The nine sections as built
 
 | # | Section (`data-name`) | Kind | Grid | Binding |
 |---|---|---|---|---|
 | 1 | `identity` | `Header: MNY Data` | header group, full-bleed | DHSES 953754/v1108098, `geoid[page:geoid]` — plus **`geography_topography`** (rev 3) and the plan-status columns |
 | 2 | `lede` | lexical (static) | `col-span-12` | — 20px opener + two CTAs |
-| 3 | `county-profile` | **Card, 3 breakout cards** | `col-span-12` (4+4+4) | **★ the three profile cards** — `demographics_population_centers` · `major_industries_…` · `climate_assessment_narrative`, plus a four-up facts strip (`watershed_s` · `climate_assessment_region` · `risk_assessment_period` · `disaster_declaration_threshold`). All DHSES 953754/v1108098 |
+| 3 | `county-band-head` | lexical | `col-span-12` | — |
+| 4 | `county-facts` | Card | `col-span-3`, `col-start-10`, **`row-span-3`** | DHSES 953754/v1108098 — `watershed_s` · `climate_assessment_region` · `risk_assessment_period` · `disaster_declaration_threshold` · `county_profile_link` |
+| 5–7 | `profile-demography` · `profile-industries` · `profile-climate` | **3 stacked Card sections**, card chrome, text full width | `col-span-9` each | **★ the three profile fields** — `demographics_population_centers` · `major_industries_…` · `climate_assessment_narrative`. All DHSES 953754/v1108098 |
 | 4 | `hazard-risk` | Card — focus panel + bar list | `col-span-12` (5+7) | Fusion Events V2 870/v1648 — **unchanged binding**; totals reuse live 2413419's four aggregates |
 | 5 | `plan-response` | Card — two meters | `col-span-12` (7+5) | Actions_Revised 1029065/v1074456 · Jurisdictions 1346449/v1346450 |
 | 6 | `explore` | **Card, 4 breakout cards**, all-static | `col-span-12` | — 22 links, every page of the plan |
@@ -578,7 +849,21 @@ Answer these against the built page; each one is a small edit, none of them re-o
 - [x] `design/README.md` updated — folder tree, a new `## pages/lhmp/` section with the
       live-vs-redesign table, and the section table (which was also missing LHMP Admin)
 
-## Next
+## Next — the live build has its own task
+
+**[`mny-lhmp-home-live-build.md`](./mny-lhmp-home-live-build.md)** (scoped 2026-09-09) converts this
+design into a live DMS page at slug **`home_new`** in pattern 1300890, hidden in nav, draft only,
+built alongside `home` (1300803) rather than replacing it. It carries the section→size→binding table,
+the inherited gotchas from the county-actions builds, and the seven findings this design pass
+produced. **One correction it makes to this file:** platform finding 4 below (`mnyHeader.note` is a
+single string prop, so geography in the header needs a library change) is **wrong** — the component
+already resolves the note from the first column flagged `note: true`
+(`mnyHeaderDataDriven.jsx:208-220`), and section 2175337 already carries `geography_topography` with
+`note: false`. It is one flag, not a library ask.
+
+**Also settled there:** the design's 5/7 hazard split is not expressible in the mny size map (no 5 or
+7 step, and `"1"` is col-span-9 not full), so it becomes `1/3` + `2/3`; and the breakout illustration
+cannot ride on `cardHints.fullBleed`, whose wrapper is `overflow-hidden`.
 
 The design is a mockup, as scoped — **nothing was written to `mitigat-ny-prod`.** Once the owner has
 reviewed it, the live build is its own task: it writes draft sections to page **1300803** in pattern

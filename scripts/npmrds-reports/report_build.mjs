@@ -952,6 +952,23 @@ if (UPDATE_PAGE) {
   // only `raw get` returns the full row. Needed to decide whether this page
   // already has the routeSlots/baseDate pair `dynamicReport: true` requires.
   const rawPage = dms(['raw', 'get', String(pageId)]);
+  // Real bug, found + fixed 2026-09-09 (dynamic-reports-authoring-gaps.md sub-item 4's own
+  // investigation has the full repro): the CLI's `page dump --sections` (page.js) builds
+  // `_expanded_sections` as `[...sections (published) ids, ...draft_sections ids]`, deduped only
+  // by ROW id — NOT by trackingId. Since Publish (the DO_PUBLISH block below) mints an entirely
+  // NEW set of published-row copies on every run while keeping each graph's original trackingId,
+  // `_expanded_sections` ends up holding TWO rows per graph under the identical trackingId: a
+  // (possibly stale) published copy AND the real draft row `draft_sections` actually points at —
+  // with the published one listed FIRST. Every consumer below does
+  // `.find(s => s.data?.trackingId === tid)` (or matches by element-type), which therefore always
+  // matched the PUBLISHED row, never the draft one. Confirmed live: a spec-driven title/size change
+  // on an already-existing graph silently never reached the draft copy across repeated --update
+  // runs, while Publish always looked correct regardless — Publish independently rebuilds straight
+  // from the spec every time, so it never depended on this lookup at all, masking the bug. Filtering
+  // to just the ids actually present in `draft_sections` (the one array every consumer below is
+  // really trying to reconcile) fixes all three call sites — the framework-section match, the
+  // per-graph match, and the orphan-deletion sweep — at once.
+  const draftSectionIds = new Set((dump?.data?.draft_sections || []).map((s) => String(s?.id ?? s)));
   updateCtx = {
     pageId,
     slug: page.url_slug,
@@ -960,7 +977,7 @@ if (UPDATE_PAGE) {
     oldSpec: snap.data._spec ? JSON.parse(snap.data._spec) : null,
     oldKeyMap: JSON.parse(snap.data._specKeyMap),
     oldRevisions: snap.data._specRevisions ? JSON.parse(snap.data._specRevisions) : [],
-    sections: dump?._expanded_sections || [],
+    sections: (dump?._expanded_sections || []).filter((s) => draftSectionIds.has(String(s.id))),
     existingFilters: rawPage?.data?.filters || [],
   };
   console.log(`reconciling into existing page ${pageId} (${updateCtx.slug})`);
@@ -1172,14 +1189,20 @@ try {
       // doesn't say which route is the base and which is the comparison —
       // the single plotted series is a delta, and neither raw value survives
       // to the client (see clickhouse.js's diff-mode join), so nothing else on
-      // the page states it either. Auto-fill the same base-vs-comparison
-      // wording the query itself computes (anchor − compare, or the reverse
-      // under `_invert`) so a spec that skips `caption` still gets a
-      // self-explanatory subtitle instead of none.
-      const anchorRoute = g._invert ? g._assigned[1] : g._assigned[0];
-      const compareRoutes = g._invert ? [g._assigned[0]] : g._assigned.slice(1);
-      state.display.description =
-        `Base: ${anchorRoute.name} · Comparison: ${compareRoutes.map(r => r.name).join(', ')}`;
+      // the page states it either. A spec that skips `caption` gets this
+      // base-vs-comparison wording auto-filled — but NOT baked as a static
+      // string here: a route's own `name` can be a Dynamic Report `%n`/`%y`
+      // template (dynamic-reports-authoring-gaps.md's "Static graph text vs.
+      // live route resolution") that only resolves once a real route is
+      // picked at view time. `_autoDiffCaption` tells the render-time
+      // resolver (transportny/components/ReportRouteList/
+      // resolveReportDisplayText.js, wired in via graph_new/index.jsx) to
+      // rebuild this exact phrase live from `_measurePick.routeIds`/
+      // `comparisonSeries.combine.invert` (already written just above/below)
+      // against whichever routes are actually resolved — anchor/compare
+      // selection here (`g._invert`/`g._assigned`) must stay index-for-index
+      // identical to that resolver's own mirrored logic.
+      state.display._autoDiffCaption = true;
     }
     return state;
   });
