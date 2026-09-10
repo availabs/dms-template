@@ -299,6 +299,87 @@ can bind the grid.
 
 ---
 
+## FAF: the federal picture, beside the state's own (2026-09-10)
+
+A tenth family joined `pages/` — **ten `faf-*.html` surfaces** for the FHWA/BTS **Freight Analysis
+Framework**, registered as their own `ds-nav.js` section. This is the catalogue's **second freight
+family**, and the relationship to the first is the point: `freight-atlas-*` is the public skin of
+NYSDOT's own plan data (S&P Global TRANSEARCH); `faf-*` is the *federal modelled* picture of the
+same state, on a different universe, with different numbers.
+
+The set is a geographic ladder plus the categorical axes the database actually carries:
+
+| page | level / axis |
+|---|---|
+| `faf-home.html` | national front door, doorways, and "read this before you cite a number" |
+| `faf-state.html` | New York — the five workbook tables, drawn, plus the decomposition they omit |
+| `faf-zone.html` | the FAF zone — the level FAF is *estimated* at; level-2 sub-nav of NY's five |
+| `faf-county.html` | the experimental county product, built to resist misuse |
+| `faf-commodity.html` | all 42 SCTG groups, three rankings |
+| `faf-mode.html` | 8 modes × 3 measures + average haul; the rail-definition break |
+| `faf-flows.html` | trade lanes, trade type, the eight foreign regions, gateways |
+| `faf-forecast.html` | 13 year-columns that are not one series |
+| `faf-network.html` | the assignment — the only FAF product with a location in it |
+| `faf-methodology.html` | every code table in full; the long-form reference the other nine link to |
+
+**Content is computed, not transcribed.** Every figure came out of the files already in
+`references/faf/` — `FAF5.7.1.csv` (2,671,386 rows × 56 columns), the experimental county package
+(4.9M rows across four tables), the six 2017 assignment flow tables (316,070 rows × 79 columns
+each) joined to the network geometry on `ID`, and the nine FHWA/BTS/ORNL documents. Two
+cross-checks anchor the whole family: the national domestic modal series **reproduces FHWA's
+published FAF5.2 table to the unit** in both 2017 and 2050, and the county product's four tables
+reconcile to FAF5.7.1's own 2022 national total **within 0.006%**. Every table on every page also
+sums to its own published total — asserted in a validation script, not assumed.
+
+**Units are the load-bearing detail and every card states them.** `tons` = *thousand* short tons,
+`value` = *million* constant-2017 dollars, `tmiles` = *million* ton-miles on the US leg only. A
+figure read at face value is wrong by 1,000×.
+
+Four things the family specifies that no FAF document does:
+
+1. **True endpoint versus gateway** (`faf-state.html` § 03). `dms_orig` is documented as the US
+   *entry* region for an import and `dms_dest` as the US *exit* region for an export — so the
+   standard basis reports **66,210 kt of "New York imports"** when the state actually receives
+   **32,956**. Seven disjoint classes, one identity that reproduces the involved total exactly.
+   This caught the build itself once: a first pass published the raw-field totals under
+   true-endpoint headings, and only the sum-check found it.
+2. **The Port of New York and New Jersey is FAF zone 341, which is New Jersey.** It is also New
+   York's number-one partner in both directions on both measures. Stated on the state and lane
+   pages, because a NY-zone-only harbour analysis understates the harbour and nothing warns you.
+3. **The vintage strip is a version, not a date.** NPMRDS contract item 4 is "complete through Jun
+   2026"; FAF carries a benchmark year, seven annual estimates and five forecasts in one file, so
+   the strip reads version → base → annual → forecast instead.
+4. **The two freight families deliberately do not share a total.** The Atlas headlines 936.5M tons
+   for 2021; FAF gives 729.8M. Through movements explain most of the gap — FAF's regional database
+   has no through concept at all — but not the modal detail (water 159.3 Mt against 7.9 Mt), which
+   implies a different underlying dataset. The difference is stated on `faf-home`, `faf-state` and
+   `faf-methodology`; **no crosswalk is asserted, and the two must never share a chart.**
+
+**Two escalations, named rather than patched** — the `npmrds-tmc.html` precedent:
+
+- **`graph.catPalette` holds five colours and FAF has eight modes.** A by-mode series cannot bind
+  to it without three modes sharing a colour with three others. `faf-mode.html` draws eight hues to
+  show what is needed and says on the page that only five are brand tokens. **A build task on that
+  page is blocked until `graph.catPaletteExtended` exists in `theme/theme.js`.**
+- **Still no `graph.seqNeutralPalette`.** Every FAF choropleth is a magnitude, and `seqSpeedPalette`
+  is a red→green *judgement* ramp. The county and zone pages draw the same 7-step single-hue ramp
+  off `graph.primary` that `npmrds-tmc.html` drew, and name the same missing token.
+
+**One layout defect found and fixed here, which `npmrds-tmc.html` still has.** The NPMRDS header
+shape overflows a 400-px viewport by 8 px (`min-w-[360px]` on the text column against a band that
+leaves 320 px) and by up to 64 px more (`shrink-0` on the action stack, which refuses to compress
+even though it already carries `flex-wrap`). The `faf-*` pages use `min-w-0 sm:min-w-[360px]` and
+`sm:shrink-0`. `npmrds-tmc.html` is another category's page and was left alone; verified with a
+headless render at 400/1280/1600 px, all ten pages clean at all three.
+
+**Verification note.** `cdn.tailwindcss.com` and the Google Fonts hosts are **blocked by this
+container's egress allowlist**, so opening any page in this workspace renders it unstyled — that
+applies to all 53 pages, not just these ten. The render check served Tailwind from npm
+(`@tailwindcss/browser`) and intercepted the CDN request; `_shared.css` already `@font-face`s the
+real brand files out of `pages/fonts/`, so the fonts are correct offline either way.
+
+---
+
 ## Layout
 
 ```
@@ -336,6 +417,17 @@ dms_design_system_v2/
     ├── freight-atlas-data.html    · data catalog (datasets pattern over npmrds2, category rail)
     ├── freight-atlas-dataset.html · single Source page (Overview/Table/Map/Metadata + downloads)
     ├── freight-atlas-about.html   · About & The Plan (six goals, report library, what-changed)
+    │   ── FAF (the federal modelled picture — 10 surfaces, all figures computed) ──
+    ├── faf-home.html              · front door · national numbers, 9 doorways, fitness-for-purpose
+    ├── faf-state.html             · New York · the 5 workbook tables + true-endpoint vs gateway
+    ├── faf-zone.html              · the FAF zone · 5×5 intra-state matrix (level-2 zone sub-nav)
+    ├── faf-county.html            · the experimental county product, built to resist misuse
+    ├── faf-commodity.html         · all 42 SCTG groups · tons, value, and dollars per ton
+    ├── faf-mode.html              · 8 modes × 3 measures + average haul; the rail-definition break
+    ├── faf-flows.html             · trade lanes · partners, trade type, 8 foreign regions, gateways
+    ├── faf-forecast.html          · 13 year-columns that are not one series
+    ├── faf-network.html           · the assignment · the only FAF product with a location in it
+    ├── faf-methodology.html       · every code table in full · the long-form reference (sticky TOC)
     │   ── Datasets (the datasets pattern as its own product surface) ──
     ├── datasets-catalog.html      · data catalog · rail + source cards (public + auth-gated admin)
     ├── datasets-source.html       · single Source page · Overview tab (description, metadata, downloads)
@@ -423,7 +515,7 @@ so they read like real product surfaces.
 
 | Spec section                  | This folder                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
-| §7 deliverable structure      | `theme/` + `design-system/` (5 pages) + `pages/` (**43** product mockups across 8 families: platform · **NPMRDS ×9** · Freight Atlas ×7 · TSMO ×10 · explorers · Site Management ×5 · Datasets ×2) ✓ |
+| §7 deliverable structure      | `theme/` + `design-system/` (5 pages) + `pages/` (**53** product mockups across 9 families: platform · **NPMRDS ×9** · Freight Atlas ×7 · **FAF ×10** · TSMO ×10 · explorers · Site Management ×5 · Datasets ×2) ✓ |
 | §7.2 design-system/theme      | `design-system/theme.html` — brand, palette, data viz, surface, type, icons, elevation ✓ |
 | §7.3 design-system/layouts    | `design-system/layouts.html` — hierarchy diagram + 3 Layout variants + 8 LayoutGroup variants + nesting + naming reference ✓ |
 | §7.4 design-system/grid       | `design-system/grid.html` — `gridSize`, `defaultSize`, the `sizes` vocabulary, span examples, row-span examples, in-editor overlay, picker rules ✓ |

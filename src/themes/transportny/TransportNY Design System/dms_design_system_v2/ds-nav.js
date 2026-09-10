@@ -55,6 +55,24 @@
       { f: 'freight-atlas-data.html', t: 'data' }, { f: 'freight-atlas-dataset.html', t: 'dataset' },
       { f: 'freight-atlas-about.html', t: 'about' },
     ]},
+    // FAF · the Freight Analysis Framework family, 2026-09-10. The second freight
+    // category: where `freight-atlas-*` is the public skin of NYSDOT's own plan data
+    // (S&P Global TRANSEARCH), this set is the FEDERAL modelled picture — FHWA/BTS's
+    // FAF5.7.1. Ten pages on a geographic ladder (national → state → FAF zone → county)
+    // plus the four categorical axes the database actually carries (commodity · mode ·
+    // trade type · distance band), a network-assignment page, and the reference page
+    // every other one links back to.
+    // The two families deliberately DO NOT share a total: FAF has no through movements
+    // and TRANSEARCH does, so the reconciliation is stated on faf-home, faf-state and
+    // faf-methodology rather than papered over. Never chart the two together.
+    { key: 'faf', label: 'FAF', landing: 'faf-home.html', dir: 'pages', pages: [
+      { f: 'faf-home.html', t: 'overview' }, { f: 'faf-state.html', t: 'state profile' },
+      { f: 'faf-zone.html', t: 'faf zones' }, { f: 'faf-county.html', t: 'counties · experimental' },
+      { f: 'faf-commodity.html', t: 'commodities' }, { f: 'faf-mode.html', t: 'modes' },
+      { f: 'faf-flows.html', t: 'trade lanes' }, { f: 'faf-forecast.html', t: 'forecast' },
+      { f: 'faf-network.html', t: 'highway assignment' },
+      { f: 'faf-methodology.html', t: 'method & codes' },
+    ]},
     { key: 'tsmo', label: 'TSMO', landing: 'tsmo-home.html', dir: 'pages', pages: [
       { f: 'tsmo-home.html', t: 'home' }, { f: 'tsmo-congestion.html', t: 'congestion' },
       { f: 'tsmo-reliability.html', t: 'reliability' }, { f: 'tsmo-incidents.html', t: 'incidents' },
