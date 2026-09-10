@@ -168,9 +168,14 @@ GRAPH_TEMPLATE_MAP = {
 # filter scoping (real tmc+date WHERE clause), not to produce multiple
 # series/rows.
 INFO_BOX_GRAIN = {"Route Info Box": "route", "TMC Info Box": "tmc"}
-# The one (measure, dataColumn) bucket the join currently supports (round 18's
-# two demo reports both fell in this bucket) — a graph outside it still
-# gap-logs as unmapped, same as any uncovered GRAPH_TEMPLATE_MAP combination.
+# [Round 85, 2026-08-31: this bucket no longer dispatches to the pm3
+# reliability join described below — see convert_report.py's own comment on
+# its INFO_BOX_BUCKET branch, and INFO_BOX_SPEED_TITLES' comment further down
+# this file, for why. It now maps unconditionally to the real plain-speed
+# template — a graph outside it still gap-logs as unmapped, same as any
+# uncovered GRAPH_TEMPLATE_MAP combination, but nothing inside it does
+# anymore (no year/bin gate).] The one (measure, dataColumn) bucket the join
+# currently supports (round 18's two demo reports both fell in this bucket).
 # Deliberately NOT resolution (round 30, 2026-07-10, user-caught): confirmed by
 # reading transportNY's real RouteInfoBox.jsx/TmcInfoBox.jsx directly —
 # generateGraphData never reads `resolution` at all (each row's value comes

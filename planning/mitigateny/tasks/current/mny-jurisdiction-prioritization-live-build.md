@@ -1,6 +1,10 @@
 # Build the Jurisdiction Prioritization page live in MitigateNY
 
-**Status:** NOT STARTED — plan only
+**Status:** SUPERSEDED 2026-08-31 — folded into the JOINT task
+[`planning/mitigateny/tasks/current/jurisdiction-prioritization-county-workspace-live-build.md`](../../../../planning/mitigateny/tasks/current/jurisdiction-prioritization-county-workspace-live-build.md)
+(root hub), which builds JP + the County Workspace together on the post-dashboard stack
+(actions_cleaned 13272 reads, filter_control band, mny-inventory worklist, section auth gates).
+The section-by-section analysis below is still useful; the BINDINGS are stale (predates 13272).
 **Topic:** content (+ themes, + dms library escalation)
 **Design source:** `src/themes/mny/design/pages/county-actions/jurisdiction-prioritization.html`
 **Design task:** [`mny-county-actions-jurisdiction-prioritization.md`](./mny-county-actions-jurisdiction-prioritization.md)

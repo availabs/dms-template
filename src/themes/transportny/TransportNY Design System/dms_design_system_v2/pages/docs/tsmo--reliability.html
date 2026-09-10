@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Reliability dashboard · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="screens" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · screens</div>
+          <h1 class="doc-title">Reliability dashboard.</h1>
+          <p class="doc-lede">The federal PM3 reliability measures for New York against their targets: how consistent travel times are, not how long they take. The same measures NYSDOT reports to FHWA under MAP-21, so they are annual. What each panel shows, on what basis, and how it is computed.</p>
+          <div class="stamps">
+            <span class="type">screens</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-this-page-answers">What this page answers</h2>
+          <p>"How predictable is travel." Whether New York meets the three federal reliability targets, how the share of reliable person-miles has moved since 2016, where the least reliable segments and corridors are, and how the Interstate, the non-Interstate NHS and trucks compare.</p>
+
+          <h2 id="filters">Filters</h2>
+          <p><span class="ui">Year</span> and <span class="ui">Region</span>. The bar reads <span class="ui">LOTTR threshold 1.50 · periods AM / Midday / PM / Weekend</span> and <span class="ui">no region selected = statewide</span>. No system or vehicle-class control: the systems are separate cards and each measure's class is fixed by federal definition. See <a href="tsmo--filters.html">Using the filter bar</a>.</p>
+          <div class="callout basis"><span class="k">basis</span>The calendar year in <span class="ui">Year</span> · statewide or the selected region · all vehicles for LOTTR, freight trucks for TTTR · Interstate or non-Interstate NHS as each card names · scored against the statewide targets: Interstate ≥ 75 %, non-Interstate ≥ 70 %, TTTR ≤ 2.00. Statewide is the full MAP-21 dataset, not the sum of the regions.</div>
+
+          <h2 id="three-of-three-federal-targets-met">Three of three federal targets met</h2>
+          <p>The compliance band for the 2022–2025 performance period. Three cards against their targets: reliable Interstate person-miles, reliable non-Interstate NHS person-miles, and the truck travel-time reliability index. FHWA counts a measure as making significant progress when it meets its target or beats its baseline.</p>
+          <p>For CY 2025, statewide, computed on the platform from the MAP-21 dataset: 79.8 % Interstate against ≥ 75 %, 83.2 % non-Interstate against ≥ 70 %, TTTR 1.46 against ≤ 2.00. The TSMO home cites the FHWA resubmission instead, 80.0 % and 83.3 %; <a href="measures_and_data--federal_vs_analytical.html#the-cy-2025-statewide-reliability-figures">the CY 2025 figures</a> explains the two bases.</p>
+          <p><strong>How it is computed.</strong> LOTTR is how much longer a bad trip takes than a typical one: the 80th-percentile travel time divided by the 50th, per segment per period. A segment is reliable when every period stays below 1.50, and the card reports the share of person-miles on reliable segments. See <a href="measures_and_data--measures--lottr.html#how-it-is-computed">LOTTR</a>. TTTR is the same question for freight at the 95th percentile, rolled up as a length-weighted Interstate index. See <a href="measures_and_data--measures--tttr.html#how-it-is-computed">TTTR</a>.</p>
+
+          <h2 id="person-miles-reliable-by-year">Person-miles reliable by year</h2>
+          <p>Two lines, 2016 to 2025, Interstate and non-Interstate NHS, with the two target rules drawn at 75 % and 70 %. Statewide unless a region is selected.</p>
+          <ul>
+            <li>The chart shows every year whatever <span class="ui">Year</span> says. LOTTR is a calendar-year measure with no monthly form; the year selects the cards, not the trend.</li>
+            <li>The 2020 spike is real but misleading: with volumes collapsed, almost everything ran reliably. Both systems eased back as volumes returned and have stayed above target since 2019.</li>
+            <li>The targets are statewide floors. A dense region can sit below one while the state clears it. No regional target exists.</li>
+          </ul>
+
+          <h2 id="where-travel-is-unreliable">Where travel is unreliable</h2>
+          <p>Every segment coloured by its worst-period LOTTR for the selected year and region, with the NYSDOT region boundaries. Bins: under 1.25, 1.25–1.49, 1.50–1.99, 2.00 and above, no data. A card beside it gives the mileage in each bin.</p>
+          <ul>
+            <li>Worst period means the highest of the four period ratios, AM, Midday, PM and Weekend. There is no period picker.</li>
+            <li>Both directions of a segment draw side by side. <span class="ui">Year</span> selects the network vintage; <span class="ui">Region</span> zooms the map to the region.</li>
+          </ul>
+
+          <h2 id="least-reliable-corridors">Least-reliable corridors</h2>
+          <p>A table of corridors ranked by worst-period LOTTR for the selected year. Below it, two cards put the Interstate and non-Interstate figures side by side with the truck TTTR figure.</p>
+
+          <h2 id="how-reliability-is-measured">How reliability is measured</h2>
+          <p>The method note at the foot of the page. LOTTR is computed per segment for weekday AM 06:00–10:00, Midday 10:00–16:00, PM 16:00–20:00 and Weekend 06:00–20:00, reliable below 1.50 in every period. Person-miles weight each segment by traffic count, an occupancy of 1.7 and length. TTTR adds Overnight 20:00–06:00 and takes each segment's worst period. Both are defined at 23 CFR 490 subparts E and F. The 2024 submission is final; 2025 publishes after the federal cycle closes.</p>
+
+          <h2 id="downloads">Downloads</h2>
+          <p>No download control on the page. <span class="ui">Data &amp; Methodology</span> › <span class="ui">Downloads &amp; API</span> lists the PM3 bulk tables. Figures per MPO and county are on the <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a>.</p>
+
+          <figure class="shot" data-capture="www/tsmo/reliability_v2?year_record=2025 · Region blank · signed out · compliance cards and the person-miles trend in view" data-alt="The Reliability dashboard for 2025 statewide, showing the three compliance cards against their targets and the person-miles reliable trend with target lines">
+            <!-- captured 2026-09-08 · http://localhost:5231/tsmo/reliability_v2 · Year 2025 (the page default), Region blank, scrolled to the compliance cards and Person-miles reliable by year, signed in -->
+            <img src="../../assets/screens/docs/tsmo/reliability-01-2025-statewide.png" alt="The Reliability dashboard for 2025 statewide, showing the three compliance cards against their targets and the person-miles reliable trend with target lines"/>
+            <figcaption>Figure 1 · the Reliability dashboard, CY 2025, statewide. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Reliability dashboard, published 2026-07-17: filter-bar labels, band titles, trend legend and caption, method note.</li>
+            <li>Reliability page build record: CY 2025 79.8 % · 83.2 % · 1.46, computed on the platform (style guide ruling, 2026-09-04).</li>
+            <li>TSMO home design header: FHWA HPMS Travel Time Metrics resubmission, CY 2025, 80.0 % · 83.3 % · 1.46.</li>
+            <li>Feedback records 2191486 · 2214490 · 2191744 · 2194999 · 2191485 · 2214482.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="measures_and_data--measures--lottr.html">LOTTR</a>
+          <a href="measures_and_data--measures--tttr.html">TTTR</a>
+          <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

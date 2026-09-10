@@ -21,23 +21,34 @@
     ]},
     { key: 'platform', label: 'Platform', landing: 'landing.html', dir: 'pages', pages: [
       { f: 'landing.html', t: 'landing' }, { f: 'login.html', t: 'login' },
-      { f: 'getting-started.html', t: 'getting-started' }, { f: 'docs-overview.html', t: 'docs-overview' },
+      { f: 'getting-started.html', t: 'getting-started' },
+    ]},
+    // 2026-09-04: documentation moved into its own folder, pages/docs/ (95-page tree in pages/docs/_docs-nav.js,
+    // task platform-documentation-build.md). docs-overview.html → docs/_seed--docs-overview.html (seed for index.html),
+    // npmrds-macro-guide.html → docs/npmrds--macro_view.html, npmrds-measures.html → docs/_seed--npmrds-measures.html.
+    // This widget lists only the docs landing; the docs pages carry their own sidebar.
+    { key: 'docs', label: 'Documentation', landing: 'index.html', dir: 'pages/docs', pages: [
+      { f: 'index.html', t: 'docs home' }, { f: 'npmrds--macro_view.html', t: 'macro view · guide' },
     ]},
     // NPMRDS · the category. Absorbed the old standalone `map21` section and pulled
     // route-comparison out of `explorers` — one home per page. map-21-lottr.html existed on
     // disk but was never registered here; it is now.
     // 2026-08-19: two pages added — `npmrds-route-creation` (the tool that MAKES a route, which
     // four pages consumed and none documented) and `npmrds-tmc` (the leaf: one segment, in full).
+    // 2026-09-02: `npmrds-reports-list` — the report library as a filtered table (the
+    // ReportPickerModal, un-modaled). `npmrds-reports` is relabelled 'reports · templates'
+    // because it is now the templates band and nothing below it.
     // 2026-08-27: the documentation pair — `npmrds-macro-guide` (how to drive the macro view) and
     // `npmrds-measures` (what every measure means and the choices behind it). They are the mockups
     // for the live rewrites of npmrds_docs rows 280612 and 281670, and they are the first pages in
     // this design system to carry screenshots (../assets/screens/).
     { key: 'npmrds', label: 'NPMRDS', landing: 'npmrds-home.html', dir: 'pages', pages: [
       { f: 'npmrds-home.html', t: 'home' }, { f: 'npmrds-macro.html', t: 'macro view' },
-      { f: 'npmrds-macro-guide.html', t: 'macro view · guide' },
-      { f: 'npmrds-measures.html', t: 'measures & methodology' },
       { f: 'npmrds-tmc.html', t: 'segment · tmc' },
-      { f: 'npmrds-reports.html', t: 'reports' }, { f: 'npmrds-report.html', t: 'report' },
+      { f: 'npmrds-reports.html', t: 'reports · templates' },
+      { f: 'npmrds-reports-list.html', t: 'reports · all (list)' },
+      { f: 'npmrds-reports-combined.html', t: 'reports · combined (proposal)' },
+      { f: 'npmrds-report.html', t: 'report' },
       { f: 'npmrds-picker-modals.html', t: 'picker modals (proposal)' },
       { f: 'npmrds-route-creation.html', t: 'route creation' },
       { f: 'route-comparison.html', t: 'route comparison' },
@@ -48,6 +59,15 @@
       { f: 'congestion.html', t: 'congestion' }, { f: 'work-zones.html', t: 'work-zones' },
       { f: 'floating-car.html', t: 'floating-car' }, { f: 'employment-estimates.html', t: 'employment-estimates' },
       { f: 'employment-estimates-mpo.html', t: 'employment · mpo' }, { f: 'lehd-od.html', t: 'lehd-od' },
+    ]},
+    // `bridge-detour-report`/`bridge-detour-route` existed on disk but were never registered here
+    // (missing from every SECTIONS entry). Grouped with the coverage methodology page since all
+    // three document the same detour/avoid-segment plugin.
+    { key: 'detour', label: 'Detour', landing: 'bridge-detour-report.html', dir: 'pages', pages: [
+      { f: 'bridge-detour-report.html', t: 'bridge candidates · report' },
+      { f: 'bridge-detour-route.html', t: 'bridge candidates · route' },
+      { f: 'detour-coverage-methodology.html', t: 'coverage points · methodology' },
+      { f: 'approach-and-method.html', t: 'approach & method' },
     ]},
     { key: 'fa', label: 'Freight Atlas', landing: 'freight-atlas-home.html', dir: 'pages', pages: [
       { f: 'freight-atlas-home.html', t: 'home' }, { f: 'freight-atlas-map.html', t: 'map' },
@@ -93,12 +113,15 @@
   // current page + folder
   var path = location.pathname;
   var curFile = (path.split('/').pop() || 'index.html').toLowerCase();
-  var curDir = path.indexOf('/design-system/') !== -1 ? 'design-system' : 'pages';
+  var curDir = path.indexOf('/design-system/') !== -1 ? 'design-system'
+             : path.indexOf('/pages/docs/') !== -1 ? 'pages/docs' : 'pages';
 
-  // href to (dir,file) relative to the current folder (pages/ and design-system/
-  // are siblings under the root, so a cross-folder hop is one '../').
+  // href to (dir,file) relative to the current folder. pages/ and design-system/ are siblings under
+  // the root (one '../' hop); pages/docs/ is one level deeper (two hops up to the root).
   function href(dir, file) {
-    return dir === curDir ? file : '../' + dir + '/' + file;
+    if (dir === curDir) return file;
+    var up = curDir === 'pages/docs' ? '../../' : '../';
+    return up + dir + '/' + file;
   }
 
   // which section owns the current page (match by file, prefer same dir)

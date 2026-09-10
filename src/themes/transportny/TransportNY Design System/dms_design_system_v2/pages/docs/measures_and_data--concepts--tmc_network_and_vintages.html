@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>The TMC network and its vintages · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--concepts--tmc_network_and_vintages.html · IA page 67 · type concept. Phase 3, 2026-09-05.
+  Sources: TSMO Data & Methodology 2184101 (TMC definition, 54,249, network table keys); _seed §08 glossary (52,000, 0.28 mi, 24.3 %);
+  NPMRDS home design header 2026-07-29 (52,029 / 52,157 / 52,473; 2022 network 51,227); pm3 eras module + PROVENANCE §5 (36k → 46k,
+  +32.7 % on 2019-01-01); downloadManifest MEASURED.meta2017; Data Manager metadata for the enhanced shapefile, the TMC speed-limit
+  input and the conflation sources (columns id · year · dir · n · osm · osm_fwd · ris · tmc · miles); OSM Conflation essay 281807 §281915
+  (seven steps, outputs); 2024 route-analysis docs 280610 (the TMC-length caveat); route-creation design (2022 / v0_6_0 pinned).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="concept" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · concept</div>
+          <h1 class="doc-title">The TMC network and its vintages.</h1>
+          <p class="doc-lede">What a TMC segment is, why there is a new map every year, which segment count to quote, what the enhanced network shapefile adds, and how segments are matched to OpenStreetMap and NYSDOT's linear referencing system. Written for analysts who compare years or build routes.</p>
+          <div class="stamps">
+            <span class="type">concept</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-a-tmc-segment-is">What a TMC segment is</h2>
+          <p><strong>A Traffic Message Channel (TMC) segment is the half-mile to two-mile piece of road that every probe record keys on.</strong> Every travel time in the feed names one TMC. Segments are direction-specific: a two-way road is two segments, one per direction. New York's current map holds roughly 52,000 of them. The median length is about 0.28 miles, and 24.3 % are under 0.05 miles.</p>
+          <p>A TMC is not a road. Corridors are chains of segments joined by the network attributes <code>tmclinear</code> (the linear road a segment belongs to), <code>road_order</code> (its position along that road) and <code>direction</code>. The TSMO Corridor View and the Congestion dashboard's corridor table are built on that chain.</p>
+
+          <h2 id="one-map-per-year-and-two-segment-counts">One map per year, and two segment counts</h2>
+          <p>The vendor re-cuts the TMC network every year. A segment can be split, merged, lengthened or retired between vintages, and a new segment can appear where none existed. The 2024 route analysis documentation put the consequence plainly: "The TMC network is updated annually and sometimes TMC segments change in length. It is good to check the TMC lengths before making any conclusions about behavioral change over time." That caveat still holds.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Map year</th><th class="num">Segments</th><th>Source of the count</th></tr></thead>
+            <tbody>
+              <tr><td>2017</td><td class="num">about 36,000</td><td>Coverage-era record; 36,166 feed segments, of which 32,915 carry network attributes</td></tr>
+              <tr><td>2019</td><td class="num">about 46,000</td><td>Coverage-era record: the network grew 32.7 % on 2019-01-01</td></tr>
+              <tr><td>2022</td><td class="num">51,227</td><td>NPMRDS home design header, verified 2026-07-29</td></tr>
+              <tr><td>2024</td><td class="num">52,029</td><td>NPMRDS home design header, verified 2026-07-29</td></tr>
+              <tr><td>2025</td><td class="num">52,157</td><td>NPMRDS home design header, verified 2026-07-29 against three stores</td></tr>
+              <tr><td>2026</td><td class="num">52,473</td><td>NPMRDS home design header; the current map</td></tr>
+            </tbody>
+          </table></div>
+          <p>The TSMO Data &amp; Methodology page counts <strong>54,249</strong> segments. That is a different quantity. Its network table accumulates every segment that has ever carried data, across all vintages, so a segment retired in 2020 still has a row. One year's map counts only the segments in that vintage. Both numbers are right; they answer different questions.</p>
+          <div class="callout basis"><span class="k">basis</span>Quote the per-year count with its year: "52,157 segments on the 2025 map". Quote 54,249 only when you mean every segment that has ever appeared in the archive. A bare "52,000 TMCs" goes stale within a year.</div>
+          <p>A multi-year series is therefore not a fixed panel. The 2019 expansion added about 10,000 segments, most of them off the Interstate system, and the 2017 attributes come from a different family of network metadata that disagrees materially on functional class with 2018 to 2025. The <a href="measures_and_data--measures--coverage.html">coverage eras</a> record both events because each moved the feed's completeness.</p>
+
+          <h2 id="the-enhanced-network-shapefile">The enhanced network shapefile</h2>
+          <p>The map the platform uses is not the vendor's file as delivered. The Data Manager describes it as "the enhanced TMC Network Shapefile that is built each time Raw NPMRDS data is processed into the Production database. This shapefile includes a variety of spatial datasets that provide additional network attributes (e.g., speed limits, MPO boundaries, NYSDOT region boundaries). This shapefile also calculates directionality from NPMRDS data for use in AADT disaggregation for the PHED measure."</p>
+          <p>So each vintage carries, per segment: geometry and length; road name, direction and cross-street; county and ZIP; functional system, National Highway System (NHS) flag and facility type; AADT with single-unit and combination truck AADT, and directional versions of each; the posted speed limit averaged from OpenStreetMap speed limits; NYSDOT region, MPO and urbanized-area codes; and the average vehicle occupancy PHED uses. <a href="measures_and_data--data--tmc_network.html">The TMC network datasheet</a> lists the columns. <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a> covers where the roadway attributes come from and how they lag.</p>
+
+          <h2 id="how-segments-are-matched-to-openstreetmap-and-the-lrs">How segments are matched to OpenStreetMap and the LRS</h2>
+          <p>NYSDOT keeps its own road network in a linear referencing system (LRS), and many programs report attributes into it. Using LRS data beside NPMRDS data is valuable and was hard, because the two geometries differ. The LRS is centreline, one line for both directions; TMC geometries are directional. The LRS also simplifies ramps, interchanges and traffic circles. Neither is a routable graph. A direct TMC-to-LRS conflation was tried and produced difficult edge cases.</p>
+          <p>OpenStreetMap (OSM) was chosen as the common base. Its network is built as a routable graph, represents ramps and circles accurately, and carries private roads, sidewalks and bike paths beyond the public roads the LRS holds. A growing set of tools and data providers publish on OSM links. SharedStreets, a linear referencing system designed to conflate other networks onto OSM and an evolution of TomTom's OpenLR, gave the method. Both TMC ids and LRS ids are mapped onto OSM geometry, so the three networks can be crossed consistently.</p>
+          <p>The process, as documented in 2024:</p>
+          <ol class="steps">
+            <li>Create a directional OSM file by adding a flipped geometry for every segment that is not one-way, with a direction flag (forward: true or false).</li>
+            <li>Load the directional OSM data into the SharedStreets tool set.</li>
+            <li>Use NPMRDS as input to SharedStreets to match each TMC segment to directional OSM segments.</li>
+            <li>Use the LRS as input to SharedStreets to match each LRS segment to directional OSM segments.</li>
+            <li>Use custom code to choose the correct match for each destination segment.</li>
+            <li>Use custom code to split the output segments so each one ends where an input segment ends.</li>
+            <li>Assign directional sections from LRS data, falling back on start and end orientation.</li>
+          </ol>
+          <p>The output is a directional shapefile. Direction is recorded both in the attributes (<code>dir</code>, <code>osm_fwd</code>) and in the orientation of the line, so an offset draws both directions. Each output segment carries one OSM id, one LRS (RIS) id and one TMC id. Many output segments map to each source id, so selecting by id reconstitutes the source segment in OSM geometry. The published conflation table carries <code>id</code>, <code>year</code>, <code>dir</code>, <code>n</code>, <code>osm</code>, <code>osm_fwd</code>, <code>ris</code>, <code>tmc</code>, <code>miles</code> and the geometry. There is one conflation per network vintage.</p>
+
+          <h2 id="how-routes-bind-to-a-vintage">How routes bind to a vintage</h2>
+          <p>A saved route is an ordered list of TMC ids. It is therefore tied to the vintage whose ids it names. Route creation's marker mode, which auto-routes between dropped points, runs against the 2022 network and conflation version v0_6_0, pinned, because only 2020 to 2022 resolved in a live test near Albany in July 2026. The year shows as a static chip, not a select. A route drawn segment by segment names whatever ids the map shows. If a later vintage retires one of those ids, that segment of the route stops matching data. Check the segment list and its lengths before reading a route's trend across years. <a href="measures_and_data--data--routes_data.html">Routes data</a> documents the saved fields.</p>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>Before you compare two years of any per-segment figure, confirm the segment exists in both vintages with the same length. Before you sum a network total, name the vintage, because the network grew from about 36,000 to about 52,000 segments over the archive. Quote 54,249 only for the accumulated table. Treat a route as a 2022-vintage object unless you know otherwise. When you need NYSDOT's own roadway attributes beside probe data, the OSM conflation is the crosswalk, and it exists per year. <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> and <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a> cover the two other reasons a multi-year chart moves for reasons other than traffic.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page, glossary and source catalog: "Traffic Message Channel segment — the ½–2 mile road piece every probe record keys on. New York's network has 54,249 of them"; network table keys tmclinear · road_order · direction · county · miles · aadt · intersection; "annual conflation".</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28, glossary: roughly 52,000 segments, median 0.28 miles, 24.3 % under 0.05 miles.</li>
+            <li>NPMRDS home design header, verified 2026-07-29: 52,029 (2024) · 52,157 (2025) · 52,473 (2026); 51,227 for the 2022 network.</li>
+            <li>pm3 coverage-eras module and provenance record §5: 36,000-segment early network; expansion to 46,000, +32.7 % on 2019-01-01.</li>
+            <li>pm3 download manifest, MEASURED block: 2017 publishes 32,915 of 36,166 feed segments; the 2017 attribute family disagrees on functional class with 2018 to 2025.</li>
+            <li>Data Manager, "NPMRDS TMC Network Shapefile - Enhanced V6": the description quoted above and its column list; "TMC Average Speed Limit": speed limits calculated from OpenStreetMap, an input to the enhanced shapefile; "Conflation v0_6_0": columns id · year · dir · n · osm · osm_fwd · ris · tmc · miles · geometry.</li>
+            <li>2024 NPMRDS documentation, Appendix, "OSM Conflation": problem statement, why OSM, SharedStreets and OpenLR, the seven-step approach, the output description (dir, osm_fwd).</li>
+            <li>2024 NPMRDS documentation, Route analysis: "The TMC network is updated annually and sometimes TMC segments change in length. It is good to check the TMC lengths before making any conclusions about behavioral change over time."</li>
+            <li>Route creation design, revision 1 (2026-09-01): routing year 2022 and conflation v0_6_0 pinned; the July 2026 test resolving only 2020 to 2022 near Albany.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--data--tmc_network.html">TMC network · datasheet</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="npmrds--routes--create.html">Create a route</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

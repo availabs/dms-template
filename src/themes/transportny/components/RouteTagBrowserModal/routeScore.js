@@ -11,8 +11,8 @@ import { parseTmcArray } from '../ReportRouteList/utils';
 // fragment penalty, summed) is what matters.
 //
 // There is no separate "road" column on the real routes catalog — road is embedded in `name`
-// (e.g. "I-87 36001 NORTHBOUND #12000212 (2024)") — so road class is read via a name-prefix
-// regex, not a dedicated field.
+// (e.g. "I-87 ALB N #12000212") — so road class is read via a name-prefix regex, not a
+// dedicated field.
 const ROAD_CLASS = [
   [/^I-\d/i, 40],
   [/^US-\d/i, 28],

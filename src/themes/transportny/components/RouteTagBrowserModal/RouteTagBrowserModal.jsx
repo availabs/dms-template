@@ -6,7 +6,7 @@ import { useTagBrowser } from './useTagBrowser';
 import { TAG_CATEGORIES, AUTO_GENERATED_TAG, parseTags, tagToLabel } from './tagCategories';
 import { parseTmcArray } from '../ReportRouteList/utils';
 import { routeScore, isFragment, EXCLUDE_FRAGMENTS_FILTER } from './routeScore';
-import { rankByScore, isOwnedByCurrentUser } from '../PickerModal/pickerScoring';
+import { sortRows, SORT_MODE_OPTIONS, isOwnedByCurrentUser, isAvailUser, buildVisibilityAllowListFilterGroup } from '../PickerModal/pickerScoring';
 import { PickerSearchInput, PickerFacetChips, PickerCountBar } from '../PickerModal/PickerModalParts';
 
 // Shared route-picker modal — mirrors the old tool's folder-browser *organizing effect* (drill
@@ -42,6 +42,12 @@ export default function RouteTagBrowserModal({
   // back to. Only affects Cancel's disabled styling here — the caller's own no-op `setOpen`
   // already makes backdrop-click/Escape (see Modal.jsx/useModalOverlay.js) inert either way.
   dismissible = true,
+  // Optional explanatory line under the header — used by ReportRouteList.jsx's dynamic→static
+  // conversion (sub-item 4 of dynamic-reports-authoring-gaps.md) to say WHY this picker just
+  // opened (an unresolved route slot needs a real route before the switch can flip off) rather
+  // than silently reusing this modal's normal "Add Routes" framing with no context. Every other
+  // caller omits it and gets the unchanged plain header.
+  message,
   // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3):
   // ReportRouteList.jsx's blocking entry gate is the one place a Dynamic Report viewer can
   // override the "Today (view time)" anchor a route's date might derive from — Ryan's call was to
@@ -73,9 +79,16 @@ export default function RouteTagBrowserModal({
   // value comes from CMSContext's signed-in user, never server-verified against an auth token
   // (Ryan's own explicit v1 scope call — not an oversight to harden later).
   const [routeFacets, setRouteFacets] = useState({ mine: false, curated: false, autogen: false });
+  // Default picker visibility (routes-reports-users-mesh.md, Workstream D item 5): an allow-list
+  // applied server-side unless toggled off. Defaults to OFF (i.e. already showing everyone's) for
+  // an AVAIL user — see isAvailUser — and ON (restricted) for everyone else.
+  const [showEverything, setShowEverything] = useState(() => isAvailUser(user));
   // Single-TMC "fragment" routes collapse behind this toggle in any unscoped (non-search) view;
   // reset at each navigation point below so a stale expansion doesn't survive into a new list.
   const [fragmentsExpanded, setFragmentsExpanded] = useState(false);
+  // 2026-09-03 (Ryan's correction): same fix as ReportPickerModal.jsx — the footer's "sort: Best
+  // match" label used to be static, not a real control. See SORT_MODE_OPTIONS (pickerScoring.js).
+  const [sortMode, setSortMode] = useState('best');
 
   // Reset all transient state on open — a stale drill-down/selection from a previous open would
   // otherwise persist across unrelated add-route sessions. `selected` seeds from
@@ -94,7 +107,9 @@ export default function RouteTagBrowserModal({
     setSelected(new Map((initialSelectedRoutes || []).filter((r) => r?.id != null).map((r) => [r.id, r])));
     setAsOfDate(asOfDateValue || '');
     setRouteFacets({ mine: false, curated: false, autogen: false });
+    setShowEverything(isAvailUser(user));
     setFragmentsExpanded(false);
+    setSortMode('best');
   }, [open]);
 
   const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
@@ -118,9 +133,13 @@ export default function RouteTagBrowserModal({
     if (routeFacets.mine && currentUserId) groups.push({ col: 'created_by', op: 'filter', value: [String(currentUserId)] });
     if (routeFacets.curated) groups.push({ col: 'tags', op: 'exclude', value: [AUTO_GENERATED_TAG] });
     if (routeFacets.autogen) groups.push({ col: 'tags', op: 'filter', value: [AUTO_GENERATED_TAG] });
+    if (!showEverything) {
+      const allowList = buildVisibilityAllowListFilterGroup(user, AUTO_GENERATED_TAG);
+      if (allowList) groups.push(allowList);
+    }
     if (collapseFragments && !fragmentsExpanded) groups.push(EXCLUDE_FRAGMENTS_FILTER);
     return groups;
-  }, [routeFacets, currentUserId, collapseFragments, fragmentsExpanded]);
+  }, [routeFacets, currentUserId, showEverything, user, collapseFragments, fragmentsExpanded]);
 
   const { results, loading, error } = useTagBrowser({
     apiLoad,
@@ -153,8 +172,8 @@ export default function RouteTagBrowserModal({
     const scoped = isUnscopedRecentView
       ? withIds.filter((r) => !excludeSet.has(String(r.id)))
       : withIds.map((r) => ({ ...r, alreadyAdded: excludeSet.has(String(r.id)) }));
-    return rankByScore(scoped, (r) => routeScore(r, { currentUserId }));
-  }, [results, excludeSet, isUnscopedRecentView, currentUserId]);
+    return sortRows(scoped, sortMode, { scoreFn: (r) => routeScore(r, { currentUserId }), dateField: 'created_at' });
+  }, [results, excludeSet, isUnscopedRecentView, currentUserId, sortMode]);
 
   const visibleCategoryValues = useMemo(() => {
     if (!activeCategory) return [];
@@ -178,12 +197,19 @@ export default function RouteTagBrowserModal({
   const goOther = () => { setView('other'); setOtherTagTerm(''); setFragmentsExpanded(false); };
   const goAutoGenerated = () => { setView('value'); setActiveValue({ value: AUTO_GENERATED_TAG, label: 'Auto-generated' }); setWithinSearchTerm(''); setFragmentsExpanded(false); };
 
-  const toggleFacet = (key) => setRouteFacets((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggleFacet = (key) => {
+    if (key === 'showEverything') { setShowEverything((v) => !v); return; }
+    setRouteFacets((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
   const clearFacets = () => setRouteFacets({ mine: false, curated: false, autogen: false });
   const facetChips = [
     { key: 'mine', label: 'Mine', active: routeFacets.mine },
     { key: 'curated', label: 'Curated', active: routeFacets.curated },
     { key: 'autogen', label: 'Auto-generated', active: routeFacets.autogen },
+    // Default visibility toggle (routes-reports-users-mesh.md, Workstream D) — deliberately kept
+    // OUT of clearFacets/routeFacets: it's a "widen the default" switch, not a manual narrowing
+    // facet grouped with the three above, and "Clear all" shouldn't silently drop the restriction.
+    { key: 'showEverything', label: "Show everyone's", active: showEverything },
   ];
 
   const selectedCount = selected.size;
@@ -234,7 +260,7 @@ export default function RouteTagBrowserModal({
           </span>
           {tags.length > 0 && (
             <span className={t.routeTagChips}>
-              {tags.map((tag) => <span key={tag} className={t.routeTagChip}>{tagToLabel(tag)}</span>)}
+              {tags.map((tag) => <span key={tag} className={t.routeTagChip}>{tagToLabel(tag, currentUserId)}</span>)}
             </span>
           )}
         </span>
@@ -296,6 +322,7 @@ export default function RouteTagBrowserModal({
     <Modal open={open} setOpen={setOpen} activeStyle="wide">
       <div className={t.wrapper}>
         <div className={t.header}>Add Routes</div>
+        {message ? <div className={t.headerMessage}>{message}</div> : null}
         {breadcrumb}
 
         {selected.size > 0 ? (
@@ -337,6 +364,7 @@ export default function RouteTagBrowserModal({
         {showFacetsAndCount && !loading && !error ? (
           <PickerCountBar t={t}
             countLabel={`${visibleResults.length} route${visibleResults.length === 1 ? '' : 's'}${showFragmentsToggle ? ' (short segments hidden)' : ''}`}
+            sortValue={sortMode} sortOptions={SORT_MODE_OPTIONS} onSortChange={setSortMode}
           />
         ) : null}
 

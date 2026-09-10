@@ -1,6 +1,5 @@
 {
   "title": "Annual Average Study",
-  "slug": "converted_reports/annual_average_study",
   "dynamicReport": true,
   "description": "This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.",
   "tags": ["category:floating_car"],
@@ -53,19 +52,19 @@
       "why": "Current year grouped by month — same re-pointing as bar_weekday/bar_by_day." }
   ],
   "routes": [
-    { "id": "r1", "slot": true, "name": "Current Year", "route_slot_group": "163181",
+    { "id": "r1", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "color": "#666666",
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary", "bar_weekday", "bar_by_day", "grid_current", "bar_by_month"] },
-    { "id": "r2", "slot": true, "name": "1 Year Ago", "route_slot_group": "163181",
+    { "id": "r2", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-1year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#1b9e77",
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary"] },
-    { "id": "r3", "slot": true, "name": "2 Years Ago", "route_slot_group": "163181",
+    { "id": "r3", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-2year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#666666",
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary"] },
-    { "id": "r4", "slot": true, "name": "3 Years Ago", "route_slot_group": "163181",
+    { "id": "r4", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-3year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#a6761d",
       "graphs": ["map_years", "line_current", "compare_years", "bar_summary"] }

@@ -41,6 +41,7 @@ import {
 } from './admin.columnTypes';
 
 import editorMockup from './EditorMockup.config';
+import landingHero from './LandingHero.config';
 import NavLinkWidget from './NavLinkWidget';
 
 import { icons } from './design_system_v6/theme/icons.js';
@@ -136,6 +137,10 @@ const textSettings = {
       'proseLG', 'prose', 'proseSM', 'proseXS',
       'metaLG', 'metaMD', 'metaSM', 'metaXS',
       'noteLG', 'noteMD',
+      // color variants (see the token-variant block below)
+      'proseMuted', 'proseSMMuted', 'metaSMAccent',
+      'displayXLChalk', 'proseChalkDim',
+      'metaSMChalk', 'metaSMChalkDim', 'metaMDChalk', 'metaMDChalkDim', 'metaXSChalkDim',
     ],
   },
   styles: [{
@@ -157,6 +162,31 @@ const textSettings = {
     metaXS:      T.metaXS,
     noteLG:      T.noteLG,
     noteMD:      T.noteMD,
+
+    // ----- Token color variants ---------------------------------------------
+    // The design applies color as a call-site axis on the base tokens
+    // (theme.html#type: "modifier axes: color … applied at the call site").
+    // Styled paragraphs have no separate color control — the styleKey IS the
+    // call site — so the recurring pairings get named variants:
+    //   *Muted     → graphite (card/lede body copy on paper)
+    //   *Accent    → cobalt   (step eyebrows, numbered designators)
+    //   *Chalk/Dim → board voice (the dark band is dark in BOTH lamps, so
+    //                ink-colored tokens vanish there in light mode)
+    // The `!` on the color is load-bearing: styled paragraphs LAYER these
+    // token classes on top of the editor's base paragraph class, which sets
+    // its own ink color — two equal-specificity color utilities, so
+    // stylesheet order (not class order) decides, and the built CSS puts ink
+    // later. Important wins regardless of bundle ordering.
+    proseMuted:    `t-prose   text-[${c.graphite}]!`,
+    proseSMMuted:  `t-proseSM text-[${c.graphite}]!`,
+    metaSMAccent:  `t-metaSM text-[${c.cobalt}]!`,
+    displayXLChalk: `t-displayXL text-[${c.chalk}]! scroll-mt-36`,
+    proseChalkDim:  `t-prose text-[${c.chalkDim}]!`,
+    metaSMChalk:    `t-metaSM text-[${c.chalk}]!`,
+    metaSMChalkDim: `t-metaSM text-[${c.chalkDim}]!`,
+    metaMDChalk:    `t-metaMD text-[${c.chalk}]!`,
+    metaMDChalkDim: `t-metaMD text-[${c.chalkDim}]!`,
+    metaXSChalkDim: `t-metaXS text-[${c.chalkDim}]!`,
 
     // ----- Heading roles — h1..h6 across the display ladder -----------------
     // v6 has five display sizes; h5 and h6 share displaySM (the smallest).
@@ -358,7 +388,7 @@ const topnav = {
 
     leftMenuContainer: `flex items-center gap-6`,
     centerMenuContainer: `hidden lg:flex items-center flex-1 h-full overflow-visible gap-1`,
-    rightMenuContainer: `hidden md:flex h-full items-center gap-3 min-w-[200px] justify-end`,
+    rightMenuContainer: `hidden md:flex h-full items-center gap-3 min-w-[320px] justify-end shrink-0`,
     mobileNavContainer: `px-6 py-3 bg-[${c.paper}] border-b border-[${c.rule}]`,
 
     mobileButton: `lg:hidden inline-flex items-center justify-center w-8 h-8 rounded-md border border-[${c.rule}] text-[${c.graphite}] hover:text-[${c.ink}] hover:border-[${c.ruleStrong}] cursor-pointer transition-colors duration-150`,
@@ -553,6 +583,15 @@ const logo = {
       title: '',
       titleWrapper: `sr-only`,
       linkPath: '/',
+    },
+    {
+      // SideNav header row (docs pattern) — the mockup's h-14 px-5 hairline
+      // header. Widget instances opt in via {type:'Logo',
+      // options:{activeStyle:'sidenav'}}; unset keys inherit from 'default'.
+      name: 'sidenav',
+      logoWrapper: `flex w-full items-center gap-2.5 h-14 px-5 border-b border-[${c.rule}] bg-[${c.paper}]`,
+      imgClass: `h-6 w-auto`,
+      logoAltImg: `inline-flex h-6 w-6 t6-logo-mark shrink-0`,
     },
   ],
 };
@@ -1000,6 +1039,34 @@ const pagesTheme = {
      "browser window with a live canvas" illustration used for the landing
      hero's mid-drag editor, features' "edit in place", and features' "the
      sheet" mini-diagram. */
+  // The landing hero, straight from beta-landing.html's hero band: displayHero
+  // lockup + blinking caret (t6-caret), marketing CTAs, beta-stat rail, the
+  // editor illustration, and the sketch-layer canvas behind it all.
+  landingHero: {
+    wrapper: `relative grid grid-cols-12 gap-0`,
+    copyCol: `col-span-12 lg:col-span-9 p-3 relative`,
+    eyebrow: `t-metaSM text-[${c.cobalt}]`,
+    heading: `mt-4`,
+    title: `t-displayHero block`,
+    subtitle: `t-displayXL block mt-1 max-w-[16ch] t6-caret`,
+    lede: `t-proseLG text-[${c.graphite}] mt-5 max-w-[640px]`,
+    ledeMark: `t6-mark`,
+    ledeLink: `underline hover:text-[${c.ink}]`,
+    ctaRow: `mt-7 flex flex-wrap items-center gap-3`,
+    ctaPrimary: `inline-flex items-center gap-2 t-prose font-medium text-[${c.accentInk}] bg-[${c.cobalt}] hover:bg-[${c.cobaltDeep}] rounded-md px-5 py-2.5`,
+    ctaSecondary: `inline-flex items-center gap-2 t-prose font-medium text-[${c.ink}] border border-[${c.ruleStrong}] bg-[${c.panel}] hover:border-[${c.ink}] rounded-md px-5 py-2.5`,
+    ctaIcon: `w-4 h-4`,
+    footnote: `t-metaSM text-[${c.pencil}] mt-5`,
+    statsCol: `col-span-12 lg:col-span-3 p-3 relative`,
+    statsStack: `h-full flex lg:flex-col gap-0 lg:justify-end`,
+    stat: `flex-1 lg:flex-none border-l-2 border-[${c.rule}] pl-4 py-1 mb-0 lg:mb-5 lg:last:mb-0`,
+    statAccent: `flex-1 lg:flex-none border-l-2 border-[${c.cobalt}] pl-4 py-1 mb-0 lg:mb-5 lg:last:mb-0`,
+    statValue: `t-displayLG tabular-nums`,
+    statLabel: `t-metaSM text-[${c.pencil}] mt-1`,
+    editorCol: `col-span-12 p-3 mt-4 relative`,
+    caption: `t-proseXS text-[${c.pencil}] mt-4 text-center lg:text-right lg:pr-2`,
+  },
+
   // UserMenu widget (avatar + identity + auth dropdown + edit toggle) in the
   // v6 voice: mono identity text, hairline-bordered avatar/login chrome,
   // cobalt only on hover. Read via getComponentTheme('pages.userMenu').
@@ -1008,18 +1075,21 @@ const pagesTheme = {
     styles: [{
       name: 'default',
 
-      // UserMenu (avatar + identity)
-      userMenuContainer: `flex flex-1 w-full items-center gap-2 min-w-0`,
-      avatarWrapper: `flex justify-center items-center p-1`,
-      avatar: `size-7 rounded-full border border-[${c.ruleStrong}] bg-[${c.panel}] flex items-center justify-center`,
+      // UserMenu (avatar + identity). Content-sized, no flex-1/w-full — the
+      // avatar and the edit control sit as an evenly-spaced pair (gap on
+      // authWrapper is the single spacing knob).
+      userMenuContainer: `flex items-center gap-2 min-w-0`,
+      avatarWrapper: `flex justify-center items-center`,
+      avatar: `w-8 h-8 shrink-0 rounded-full border border-[${c.ruleStrong}] bg-[${c.panel}] flex items-center justify-center`,
       avatarIcon: `size-4 text-[${c.graphite}]`,
-      infoWrapper: `flex-1 min-w-0 py-1 pr-1 @max-[150px]:hidden text-left`,
+      infoWrapper: `min-w-0 max-w-[180px] text-left`,
       emailText: `${FONT_MONO} text-[11px] leading-tight text-[${c.ink}] truncate`,
       groupText: `${FONT_MONO} text-[10px] uppercase tracking-[0.06em] text-[${c.pencil}] truncate`,
 
-      // EditControl (edit/view page toggle)
+      // EditControl (edit/view page toggle) — same 8-unit box as the avatar
+      // and the ThemeToggle, so the control row reads as one evenly-spaced set.
       editControlWrapper: `flex justify-center items-center`,
-      iconWrapper: `size-8 flex items-center justify-center rounded-md border border-[${c.rule}] bg-[${c.panel}] text-[${c.graphite}] hover:text-[${c.cobalt}] hover:border-[${c.ruleStrong}] cursor-pointer transition-colors duration-150`,
+      iconWrapper: `w-8 h-8 shrink-0 flex items-center justify-center rounded-md border border-[${c.rule}] bg-[${c.panel}] text-[${c.graphite}] hover:text-[${c.cobalt}] hover:border-[${c.ruleStrong}] cursor-pointer transition-colors duration-150`,
       icon: `size-[18px]`,
       viewIcon: 'ViewPage',
       editIcon: 'EditPage',
@@ -1030,10 +1100,22 @@ const pagesTheme = {
       loginIcon: `size-[18px]`,
       loginText: `hidden`,
 
-      // Auth-ed shell
-      authContainer: `@container w-full`,
-      authWrapper: `flex items-center gap-1`,
-      userMenuWrapper: `flex items-center flex-1 w-full min-w-0 rounded-md cursor-pointer hover:bg-[${c.well}] transition-colors duration-150`,
+      // Auth-ed shell — content-sized so it doesn't spread in a wide menu row.
+      // NOT a CSS `@container`: container-type's inline-size containment
+      // computes the box's width WITHOUT its contents, which collapses an
+      // auto-width flex item to zero and piles the avatar onto the edit
+      // button. Plain flex sizes from content.
+      authContainer: ``,
+      authWrapper: `flex items-center gap-3`,
+      userMenuWrapper: `flex items-center min-w-0 rounded-md cursor-pointer hover:bg-[${c.well}] transition-colors duration-150`,
+    },
+    {
+      // TopNav variant: avatar + edit toggle only, identity text hidden —
+      // widget instances opt in via {type:'UserMenu',
+      // options:{activeStyle:'compact'}}; unset keys inherit from 'default'.
+      name: 'compact',
+      infoWrapper: `hidden`,
+      authWrapper: `flex items-center gap-2`,
     }],
   },
 
@@ -1048,7 +1130,7 @@ const pagesTheme = {
     cta: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[12px] text-[${c.accentInk}] bg-[${c.cobalt}] rounded-md px-2.5 py-1`,
     ctaIcon: `w-3.5 h-3.5`,
     body: `flex`,
-    sidebar: `hidden md:flex flex-col w-48 flex-none border-r border-[${c.rule}] py-3 px-2.5 gap-0.5`,
+    sidebar: `hidden md:flex flex-col w-48 flex-none border-l border-[${c.rule}] py-3 px-2.5 gap-0.5`,
     sidebarItem: `flex items-center gap-2 px-2 py-1.5 rounded-md ${FONT_SANS} text-sm text-[${c.graphite}]`,
     sidebarItemActive: `flex items-center gap-2 px-2 py-1.5 rounded-md bg-[${c.cobaltSoft}] text-[${c.cobalt}] ${FONT_SANS} text-sm font-medium`,
     sidebarIcon: `w-3.5 h-3.5`,
@@ -1206,10 +1288,20 @@ const pagesTheme = {
         none:  '',
         white: `bg-[${c.panel}]`,
         tint:  `bg-[${c.well}]`,
+        board: `bg-[${c.board2}]`,   // raised pane on the dark board band
       },
       border: {
         none:        '',
         full:        `border border-[${c.rule}] rounded-lg`,
+        // Card with the hover-lift affordance (capability tiles, production
+        // cards — beta-landing's `t6-lift` treatment; FAQ cards stay `full`).
+        fullLift:    `border border-[${c.rule}] rounded-lg t6-lift`,
+        // Top-rule step treatment (the how-it-works columns): a 2px rule
+        // above, no box. `topAccent` is the cobalt lead step.
+        top:         `border-t-2 border-[${c.rule}]`,
+        topAccent:   `border-t-2 border-[${c.cobalt}]`,
+        // Card chrome for the dark board band (hairline `full` reads wrong there).
+        fullBoard:   `border border-[${c.board2}] rounded-lg`,
         openLeft:    `border border-[${c.rule}] border-l-transparent`,
         openRight:   `border border-[${c.rule}] border-r-transparent`,
         openTop:     `border border-[${c.rule}] border-t-transparent`,
@@ -1361,6 +1453,7 @@ const columnTypes = {
 // its config, and its skin all live in this theme folder, not in the library.
 const pageComponents = {
   EditorMockup: editorMockup,
+  LandingHero: landingHero,
 };
 
 // Theme-shipped nav-menu widgets — merged over the library's default widgets
@@ -1388,11 +1481,18 @@ const navOptions = {
   },
 };
 
+// Sun/moon toggle in the chrome voice; shrink-0 so it never squishes when
+// nav-menu rows tighten.
+const themeToggle = {
+  button: `w-8 h-8 shrink-0 rounded-md border border-[${c.rule}] flex items-center justify-center text-[${c.graphite}] hover:text-[${c.ink}] hover:border-[${c.ruleStrong}] cursor-pointer transition-colors duration-150`,
+  icon: `w-4 h-4`,
+};
+
 // Skin for the NavLink widget: the TopNav's mono chrome voice, plus the
 // cobalt CTA treatment for style:'button' instances.
 const navLinkWidget = {
-  plain: `${FONT_MONO} text-[13px] font-medium px-3 py-1.5 text-[${c.graphite}] hover:text-[${c.ink}] transition-colors duration-150`,
-  button: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[13px] font-medium text-[${c.accentInk}] bg-[${c.cobalt}] hover:bg-[${c.cobaltDeep}] rounded-md px-3.5 py-2 transition-colors duration-150`,
+  plain: `${FONT_MONO} text-[13px] font-medium whitespace-nowrap px-3 py-1.5 text-[${c.graphite}] hover:text-[${c.ink}] transition-colors duration-150`,
+  button: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[13px] font-medium whitespace-nowrap text-[${c.accentInk}] bg-[${c.cobalt}] hover:bg-[${c.cobaltDeep}] rounded-md px-3.5 py-1.5 transition-colors duration-150`,
 };
 
 /* ---------- Fonts + injected CSS ------------------------------------------ */
@@ -1670,6 +1770,7 @@ const tesseraThemeV6 = {
   pageComponents,
   widgets,
   navLinkWidget,
+  themeToggle,
   navOptions,
 };
 

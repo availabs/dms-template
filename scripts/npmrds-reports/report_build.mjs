@@ -54,26 +54,54 @@ import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+// npmrdsv5's app/pattern name and the reports_snap_2 catalog's source/view ids
+// are the single source of truth in hooks/reports_snap_ids.json — also read by
+// convert_old_reports_lib/config.py, prune_report_snap_orphans.mjs, and
+// dms-server's npmrds_report_page_delete_hook.js. Do not hardcode a second copy here.
+const REPORTS_SNAP_IDS = JSON.parse(readFileSync(resolve(REPO, 'hooks/reports_snap_ids.json'), 'utf8'));
+
 // ── DMS content constants (mirrors scripts/npmrds-reports/convert_old_reports.py) ──────────
-const APP = process.env.DMS_APP || 'npmrdsv5';
+const APP = process.env.DMS_APP || REPORTS_SNAP_IDS.app;
 const SITE_TYPE = process.env.DMS_TYPE || 'dev2';
 const HOST = process.env.DMS_HOST || 'http://localhost:3001';
-const PATTERN = 'npmrds_sub';
+const PATTERN = REPORTS_SNAP_IDS.pattern;
 const PAGE_TYPE = `${PATTERN}|page`;
 const COMPONENT_TYPE = `${PATTERN}|component`;
 const PAGE_TEMPLATE_ID = 2187021;                    // "Report Page" page template
-const REPORTS_SNAP_TYPE = 'reports_snap_2|2177440:data';
-const DEFAULT_PARENT_SLUG = 'converted_reports';
+// The reports_snap_2 dataset itself — used both to write the routes catalog row
+// and to look a report's own row back up by report_id for --update/--from-page.
+const REPORTS_SNAP_SOURCE_ID = REPORTS_SNAP_IDS.reports_snap_source_id;
+const REPORTS_SNAP_VIEW_ID = REPORTS_SNAP_IDS.reports_snap_view_id;
+const REPORTS_SNAP_TYPE = `reports_snap_2|${REPORTS_SNAP_VIEW_ID}:data`;
+const DEFAULT_PARENT_SLUG = 'reports';
 // The "Routes Data" catalog a spec's `route_id`s refer to.
 const ROUTES_SOURCE_ID = 2107426;
 const ROUTES_VIEW_ID = 2107427;
-// The reports_snap_2 dataset itself — used to look a report's own row back up
-// by report_id for --update/--from-page (source/view ids read off a live row's
-// dataset query response; matches REPORTS_SNAP_TABLE's name in convert_old_reports.py).
-const REPORTS_SNAP_SOURCE_ID = 2177438;
-const REPORTS_SNAP_VIEW_ID = 2177440;
 // Sanity cap on _specRevisions length (see the task file's storage-decisions table).
 const REVISION_CAP = 200;
+
+// Every `dms` CLI call this script makes runs unauthenticated unless given a token — and several
+// commands (section create/delete, page update, raw update --set) do their own internal
+// read-modify-write against the target page/row. `npmrdsv5+npmrds_sub`'s pattern restricts
+// `view-page` via authPermissions; an unauthenticated read of a gated row comes back as the
+// literal string "no-access" (not an error), which those commands' read-modify-write logic
+// silently treats as empty data — discarding whatever was already there (a page's
+// draft_sections, say) with zero error anywhere in the chain. Found + fully reproduced
+// 2026-09-05, see src/dms/planning/tasks/current/auth-permission-chain-and-unguarded-writes.md's
+// "Defect D" for the full mechanism. This doesn't fix that underlying CLI/library gap — it's a
+// library-level issue, not this script's — it just makes sure THIS script always runs
+// authenticated so it can't hit it. Always mints a fresh token (not "reuse the file if present")
+// since a stale token risks the exact same silent-corruption failure mode, just intermittently.
+const AUTH_TOKEN = (() => {
+  const mintScript = resolve(REPO, 'scratchpad/npmrds-sub/mint_token.sh');
+  try {
+    execFileSync('bash', [mintScript], { stdio: 'pipe' });
+  } catch (e) {
+    fail(`could not mint a dev auth token (${mintScript}): ${e.message}\n` +
+      `Every dms CLI call below needs one — see the comment above this block for why.`);
+  }
+  return readFileSync(resolve(REPO, 'scratchpad/npmrds-sub/.dms-auth-token'), 'utf8').trim();
+})();
 
 // A `graphType: "Map"` graph is NOT an AVL Graph — it's built by shelling out
 // to convert_old_reports.py's `--route-map-section` (see composeMapGraphState
@@ -219,7 +247,7 @@ function fail(msg) {
 // resolution and config. Same approach the Python converter uses. Defined
 // early (before spec loading) because --from-page runs without a spec at all.
 function dms(args, data) {
-  const full = ['--host', HOST, '--app', APP, '--type', SITE_TYPE, ...args];
+  const full = ['--host', HOST, '--app', APP, '--type', SITE_TYPE, '--auth-token', AUTH_TOKEN, ...args];
   if (data !== undefined) full.push('--data', JSON.stringify(data));
   const out = execFileSync('dms', full, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   const trimmed = out.trim();
@@ -236,14 +264,38 @@ function findSnapRow(pageId) {
   return res?.items?.[0] || null;
 }
 
+// Exact port of the DMS page editor's own toSnakeCase()
+// (packages/dms/src/patterns/page/pages/_utils/index.js) — same regex, same
+// behavior. Same port convention as the Python converter's to_snake_case()
+// (convert_old_reports_lib/pages.py).
+function toSnakeCase(str) {
+  if (!str) return str;
+  const parts = String(str).match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g);
+  return parts ? parts.map((x) => x.toLowerCase()).join('_') : str;
+}
+
 // The page slug this spec builds to, absent an explicit `--update` target —
 // shared by the fresh-create branch and the `--replace` preflight above it,
 // so the two can never compute a different slug for the same spec (which
 // would make --replace delete the wrong page, or fail to delete the right
-// one).
+// one). ALWAYS derived from `spec.title` via toSnakeCase — same algorithm the
+// admin UI's own getUrlSlug() uses, and the same one the DMS page editor
+// recomputes url_slug to on every title save (round 63/65 of
+// old-reports-conversion.md). A spec used to be able to hardcode a `slug`
+// field that diverged from its own title (`spec.slug || ...`, and a
+// different, non-matching fallback algorithm besides) — that divergence is
+// exactly what silently broke the moment anyone saved the page in the admin
+// UI (title save wins, no warning), which is what caused the golden-corpus
+// probe manifest to drift out from under 4 real pages 3 times
+// (2026-08-24/25/31). Computing the same slug the UI converges to means a
+// save is a no-op on the slug — it can never drift again. `spec.slug` is no
+// longer read; existing specs that set it are unaffected as long as it
+// already matched toSnakeCase(title) (true for every real production spec in
+// dynamic_report_specs/ as of 2026-08-31 — only the 4 probe-fixture
+// golden-corpus specs actually diverged).
 function computeTargetSlug() {
   const parentSlug = spec.parent || DEFAULT_PARENT_SLUG;
-  return spec.slug || `${parentSlug}/${String(spec.title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+  return `${parentSlug}/${toSnakeCase(spec.title)}`;
 }
 
 // Strips the `_`-prefixed working fields this script adds onto the spec
@@ -671,7 +723,15 @@ for (const r of spec.routes) {
   }
   if (!r.name) fail(`route "${r.id}" needs a \`name\`.`);
   let name = r.name;
-  if (seenNames.has(name)) {
+  // A `%n`/`%y` templated name (dynamic-reports-authoring-gaps.md sub-item 1) isn't the real
+  // identity yet — it's differentiated at VIEW time once the tokens resolve (typically to a
+  // different year per slot), so a literal collision on the unresolved template string alone
+  // (e.g. every slot in "Year Over Year" sharing "%n (%y)") is not a real duplicate-name risk
+  // the way two identical plain names would be. Skip the suffix for templated names; a genuine
+  // duplicate (same template AND same resolved dates) is not caught here, same as it wasn't
+  // before this mechanism existed — an acceptable, pre-existing category of risk.
+  const isTemplated = name.includes('%n') || name.includes('%y');
+  if (seenNames.has(name) && !isTemplated) {
     let n = 2;
     while (seenNames.has(`${r.name} (${n})`)) n++;
     name = `${r.name} (${n})`;
@@ -817,7 +877,7 @@ const RES_LABEL = { '5-minutes': '5-minute', '15-minutes': '15-minute', hour: 'h
 
 if (SUMMARY_ONLY) {
   console.log(`\n${spec.title}`);
-  if (spec.slug) console.log(`  slug: ${spec.slug}`);
+  console.log(`  slug: ${computeTargetSlug()}`);
   if (spec.request) console.log(`\nClient request:\n  "${spec.request}"`);
   console.log(`\nRoutes (${spec.routes.length} instance${spec.routes.length === 1 ? '' : 's'}):`);
   for (const r of spec.routes) {
@@ -892,6 +952,23 @@ if (UPDATE_PAGE) {
   // only `raw get` returns the full row. Needed to decide whether this page
   // already has the routeSlots/baseDate pair `dynamicReport: true` requires.
   const rawPage = dms(['raw', 'get', String(pageId)]);
+  // Real bug, found + fixed 2026-09-09 (dynamic-reports-authoring-gaps.md sub-item 4's own
+  // investigation has the full repro): the CLI's `page dump --sections` (page.js) builds
+  // `_expanded_sections` as `[...sections (published) ids, ...draft_sections ids]`, deduped only
+  // by ROW id — NOT by trackingId. Since Publish (the DO_PUBLISH block below) mints an entirely
+  // NEW set of published-row copies on every run while keeping each graph's original trackingId,
+  // `_expanded_sections` ends up holding TWO rows per graph under the identical trackingId: a
+  // (possibly stale) published copy AND the real draft row `draft_sections` actually points at —
+  // with the published one listed FIRST. Every consumer below does
+  // `.find(s => s.data?.trackingId === tid)` (or matches by element-type), which therefore always
+  // matched the PUBLISHED row, never the draft one. Confirmed live: a spec-driven title/size change
+  // on an already-existing graph silently never reached the draft copy across repeated --update
+  // runs, while Publish always looked correct regardless — Publish independently rebuilds straight
+  // from the spec every time, so it never depended on this lookup at all, masking the bug. Filtering
+  // to just the ids actually present in `draft_sections` (the one array every consumer below is
+  // really trying to reconcile) fixes all three call sites — the framework-section match, the
+  // per-graph match, and the orphan-deletion sweep — at once.
+  const draftSectionIds = new Set((dump?.data?.draft_sections || []).map((s) => String(s?.id ?? s)));
   updateCtx = {
     pageId,
     slug: page.url_slug,
@@ -900,7 +977,7 @@ if (UPDATE_PAGE) {
     oldSpec: snap.data._spec ? JSON.parse(snap.data._spec) : null,
     oldKeyMap: JSON.parse(snap.data._specKeyMap),
     oldRevisions: snap.data._specRevisions ? JSON.parse(snap.data._specRevisions) : [],
-    sections: dump?._expanded_sections || [],
+    sections: (dump?._expanded_sections || []).filter((s) => draftSectionIds.has(String(s.id))),
     existingFilters: rawPage?.data?.filters || [],
   };
   console.log(`reconciling into existing page ${pageId} (${updateCtx.slug})`);
@@ -965,12 +1042,18 @@ const { createServer } = await import('vite');
 const server = await createServer({ root: REPO, server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 
 let composedStates;
+let DEFAULT_GRAPH_SECTION_BORDER;
 try {
   const mp = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/index.js');
   const cmc = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js');
   const graphCfg = await server.ssrLoadModule(
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/graph_new/config.jsx');
   const avlGraph = graphCfg.default;
+  // Shared with useAddGraphSection.js (the UI "+ Add Graph" flow's counterpart to this
+  // function) via reportSectionDefaults.js, loaded through the same ssrLoadModule bridge
+  // already used for composeMeasureConfig.js — one real module, not a duplicated literal.
+  ({ DEFAULT_GRAPH_SECTION_BORDER } = await server.ssrLoadModule(
+    '/src/themes/transportny/components/ReportRouteList/reportSectionDefaults.js'));
 
   // Validate picks against the vocabulary before composing, so a typo fails
   // loudly here instead of producing a silently empty graph.
@@ -1062,6 +1145,10 @@ try {
     // Start from the component's own defaultState (which already includes the
     // `data: []` that BarGraph crashes without — see the converter's note).
     const state = structuredClone(avlGraph.defaultState);
+    // NPMRDS's own per-graph-type default legend position — seeded once, here, at composition
+    // time, same seed point + reasoning as useAddGraphSection.js's own call (see
+    // composeMeasureConfig.js's DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE doc comment).
+    cmc.applyDefaultLegendPosition(state, g.graphType);
     const dwAPI = {
       setState: (fn) => fn(state),
       reconcileComparisonSeriesColumn: () => reconcileComparisonSeriesColumn(state),
@@ -1102,14 +1189,20 @@ try {
       // doesn't say which route is the base and which is the comparison —
       // the single plotted series is a delta, and neither raw value survives
       // to the client (see clickhouse.js's diff-mode join), so nothing else on
-      // the page states it either. Auto-fill the same base-vs-comparison
-      // wording the query itself computes (anchor − compare, or the reverse
-      // under `_invert`) so a spec that skips `caption` still gets a
-      // self-explanatory subtitle instead of none.
-      const anchorRoute = g._invert ? g._assigned[1] : g._assigned[0];
-      const compareRoutes = g._invert ? [g._assigned[0]] : g._assigned.slice(1);
-      state.display.description =
-        `Base: ${anchorRoute.name} · Comparison: ${compareRoutes.map(r => r.name).join(', ')}`;
+      // the page states it either. A spec that skips `caption` gets this
+      // base-vs-comparison wording auto-filled — but NOT baked as a static
+      // string here: a route's own `name` can be a Dynamic Report `%n`/`%y`
+      // template (dynamic-reports-authoring-gaps.md's "Static graph text vs.
+      // live route resolution") that only resolves once a real route is
+      // picked at view time. `_autoDiffCaption` tells the render-time
+      // resolver (transportny/components/ReportRouteList/
+      // resolveReportDisplayText.js, wired in via graph_new/index.jsx) to
+      // rebuild this exact phrase live from `_measurePick.routeIds`/
+      // `comparisonSeries.combine.invert` (already written just above/below)
+      // against whichever routes are actually resolved — anchor/compare
+      // selection here (`g._invert`/`g._assigned`) must stay index-for-index
+      // identical to that resolver's own mirrored logic.
+      state.display._autoDiffCaption = true;
     }
     return state;
   });
@@ -1466,7 +1559,7 @@ let pageId, slug, parentRef, graphTrackingIds, sectionDatas;
 // `sidebarGroup` lookup (`groupSource.find(g => g?.position === 'sidebar' ||
 // g?.name === 'sidebar')`) falls back to a synthetic `{name:'sidebar',
 // position:'sidebar', theme:'content'}` when the groups array has no explicit
-// sidebar entry — exactly what `converted_reports/snapshot`'s own real
+// sidebar entry — exactly what `reports/snapshot`'s own real
 // `section_groups` (a single content-position entry) relies on. A first, WRONG
 // attempt at this part of the fix (forcing every section's `group` to
 // 'default') broke the rail entirely — RRL rendered as a full-width stacked
@@ -1497,15 +1590,26 @@ function clonedSection(tmplSection, trackingId) {
 }
 
 function graphSectionData(g, i, trackingId) {
+  const elementType = g._mapElementType || g._infoBoxElementType || g._routeCompareElementType || 'AVL Graph';
   return {
     type: COMPONENT_TYPE,
     group: 'default',
     title: g.title || '',
     parent: parentRef,
     trackingId,
+    // Rounded card by default (2026-09-04, Ryan) — see reportSectionDefaults.js for why
+    // this is a shared constant, not a literal. Future-default only, not retroactive —
+    // existing reports keep their current chrome until an author (or a future --update
+    // run) touches them.
+    border: DEFAULT_GRAPH_SECTION_BORDER,
+    // Inline title/legend row (2026-09-04, Ryan) — selects the `reportInlineTitle` avlGraph
+    // style (transportny/themev2.js), which is what actually reads `theme.titleInlineWithLegend`
+    // in GraphComponent.jsx. Only meaningful for the real chart component ('AVL Graph' —
+    // Map/Spreadsheet-backed InfoBox/RouteCompare sections have no avlGraph theme to select).
+    ...(elementType === 'AVL Graph' ? { activeStyle: 'reportInlineTitle' } : {}),
     ...(g.size ? { size: String(g.size) } : {}),
     element: {
-      'element-type': g._mapElementType || g._infoBoxElementType || g._routeCompareElementType || 'AVL Graph',
+      'element-type': elementType,
       // element-data is a JSON STRING, not an object (see the CLI skill's
       // element-data gotcha) — a nested object here is silently unusable.
       'element-data': JSON.stringify(composedStates[i]),
@@ -1649,6 +1753,12 @@ if (updateCtx) {
     sidebar: pageTemplate.sidebar || 'left',
     ...(pageTemplate.sidebarHideInView !== undefined ? { sidebarHideInView: pageTemplate.sidebarHideInView } : {}),
     ...(pageTemplate.draft_section_groups ? { draft_section_groups: pageTemplate.draft_section_groups } : {}),
+    // Compact-sidenav override (`layout.options.sideNav.activeStyle: 1`) — the
+    // template carries this but it was never copied here, so any page this
+    // script creates (or a --replace-style recreate of an existing one) lost
+    // it even though the 2026-08-07 rollout had hand-patched it onto the
+    // original 16 template pages. See compact-sidenav-margin-bug.md.
+    ...(pageTemplate.theme ? { theme: pageTemplate.theme } : {}),
     // `dynamicReport: true` is the ONLY thing that turns a page into a Dynamic
     // Report — mirrors `toggleDynamicReport` (ReportRouteList.jsx) exactly: both
     // filters always register together, `baseDate` included even though it's only
@@ -1741,8 +1851,9 @@ const routeEntries = spec.routes.map((r, i) => {
 const cleanSpec = stripInternal(spec);
 const specKeyMap = Object.fromEntries(spec.graphs.map((g, i) => [g.key, graphTrackingIds[i]]));
 
-// Catalog metadata (`/reports`'s category tiles, e.g. `converted_reports/reports` id
-// 2208581) — read directly from each Card section's `filterGroups`: every one of the 5
+// Catalog metadata (category tiles filtering by tag, formerly on the `converted_reports/reports`
+// id 2208581 landing page — destroyed 2026-09-02, see rename-converted-reports-url-to-reports.md)
+// — read directly from each Card section's `filterGroups`: every one of the 5
 // category tiles filters `reports_snap_2` on `{col: 'tags', op: 'filter', value:
 // ['category:<x>']}`, so `tags` is the actual row-selection mechanism, not just display —
 // a spec-built row missing it is invisible on the catalog, not just under-labeled.

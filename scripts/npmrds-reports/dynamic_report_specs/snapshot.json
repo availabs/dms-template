@@ -1,6 +1,5 @@
 {
   "title": "Snapshot",
-  "slug": "converted_reports/snapshot",
   "dynamicReport": true,
   "description": "The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.",
   "tags": ["category:behavioral"],
@@ -73,11 +72,11 @@
       "why": "Added 2026-08-14 — same reconstruction as bar_speed_peak_summary, reproduces graph-comp-12 ('Average Avg. Hours of Delay by Peak'). Uses hoursOfDelay (total), not avgHoursOfDelay — resolution:summary doesn't support avgHoursOfDelay (its whole-range value depends on which time grain it would have been averaged from; confirmed by the build's own rejection, not assumed), same reason bar_delay_weekday elsewhere on this page already uses hoursOfDelay over avgHoursOfDelay." }
   ],
   "routes": [
-    { "id": "current_year", "slot": true, "name": "Current Year", "route_slot_group": "$0",
+    { "id": "current_year", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "color": "#360030",
       "graphs": ["map_speed", "bar_speed_wholeday", "bar_avgdelay_wholeday", "bar_speed_month", "bar_delay_month", "line_speed", "grid_speed", "bar_speed_weekday", "bar_delay_weekday", "compare_years", "info_box_snapshot", "bar_speed_peak_summary", "bar_delay_peak_summary"] },
-    { "id": "trailing_3yr", "slot": true, "name": "Trailing 3 Years", "route_slot_group": "$0",
+    { "id": "trailing_3yr", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
       "color": "#038203",
       "graphs": ["map_speed", "line_speed", "compare_years", "info_box_snapshot"] }

@@ -43,6 +43,8 @@ import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 import CreateReportButton from "./components/CreateReportButton"
 import ChooseReportButton from "./components/ChooseReportButton"
+import ReportsListRail from "./components/ReportsListRail"
+import { resolveReportDisplayText } from "./components/ReportRouteList/resolveReportDisplayText"
 
 import icons from "./icons";
 
@@ -71,6 +73,7 @@ const textSettings = {
       "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
       "kicker", "cardTitle", "cardTitleSM", "labelSM", "labelMD", "btnPrimary", "btnOutline", "toggleOn", "toggleOff",
+      "viewTabOn", "viewTabOff", "viewTabOffLeft", "viewTabOnRight", "btnOutlineLG", "hairline",
       "statNum", "statXL", "statLG", "statMD", "buttonRow", "kickerXS",
     ],
   },
@@ -208,6 +211,44 @@ const textSettings = {
     btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
     // Secondary/outline action link-as-button — quiet neighbor to btnPrimary ("All tickets").
     btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+    // ── The Reports header's 40px CONTROLS ROW (npmrds-reports.html revision 3, 2026-09-02).
+    // Three ADDITIVE tokens; nothing existing moves (btnOutline stays h-9 for the control
+    // room's "All tickets", toggleOn/Off stay the CR detail pages' 28px mono chips).
+    // viewTabOn / viewTabOff — the `Templates | All reports` VIEW TOGGLE: two abutting static
+    // Card cells in a gap-0 cells grid (max-content tracks) read as ONE segmented control —
+    // the filled cell is the current surface, the white one the other. Oswald 12px uppercase
+    // on h-10, #37576B fill; the outer corners carry the 6px radius, the left cell owns the
+    // seam (`border-l-0` on the right one), so the pair shares a single hairline. `w-fit`
+    // because a Card value div is a column-flex item and would otherwise stretch. Same
+    // `px!`/`py-0!` trick as btnPrimary to beat the injected value-cell paddings.
+    viewTabOn:  `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-[#37576B] text-white! no-underline! rounded-l-[6px]`,
+    viewTabOff: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-l-0 border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-r-[6px] transition-colors`,
+    // viewTabOffLeft / viewTabOnRight — POSITION-aware siblings of viewTabOn/viewTabOff, for a
+    // toggle where the DARK/active cell is on the RIGHT (the list page: "Templates" stays left
+    // per the mockup's fixed toggle order, but "All reports" is the active one there). The
+    // original pair bakes "active = left cell" into the same class as the color (left cell
+    // owns the full border + left radius, right cell drops its left border + owns the right
+    // radius) — reusing them with the active cell on the right put the radius/seam on the WRONG
+    // sides (found live, 2026-09-03: gap between the two pills, each one's rounded corner facing
+    // OUT instead of the two square corners meeting in the middle). These two mirror the same
+    // "whichever cell is on the left keeps its full border + left radius; whichever is on the
+    // right drops its left border + owns the right radius" rule, just with the color swapped.
+    viewTabOffLeft: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-l-[6px] transition-colors`,
+    viewTabOnRight: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-l-0 border-[#37576B] text-white! no-underline! rounded-r-[6px]`,
+    // btnOutlineLG — the header's "New route": btnOutline's shape at the controls row's h-10,
+    // ink text, hover border in the Reports field colour (mockup: `h-10 px-3.5 rounded-[6px]
+    // bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]`).
+    // `whitespace-nowrap` (2026-09-03): the owner put New route in a size-1 section (92px at
+    // 1440, 79px at 1280) and the 84.7px button wrapped to "NEW / ROUTE"; a button label never
+    // wraps, so it overflows its column instead — 5.7px / 19px into the band's 32px right margin.
+    btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! whitespace-nowrap bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
+    // hairline — a 1px rule drawn by an EMPTY styled paragraph, for the "rule fills the rest of
+    // the line" idiom (npmrds-reports.html group heads: `<span class="flex-1 h-px bg-zinc-950/10">`).
+    // A lexical paragraph cannot draw a rule that stops at its own line, but a layout-container
+    // ITEM can: put this paragraph in a `minmax(0,1fr)` column beside the head's runs and it
+    // stretches to the remaining width. `h-px!` + `overflow-hidden` clip the `<br>` Lexical emits
+    // for an empty paragraph; `my-0!` beats the paragraph's own vertical margin.
+    hairline: `block w-full h-px! min-h-0! my-0! overflow-hidden leading-none bg-zinc-950/10`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
@@ -487,6 +528,19 @@ const layoutGroup = {
       wrapper3: "",
     },
     {
+      // footer_full — `footer` for a band that HOSTS SECTIONS. `footer`'s wrapper2 is the mockup's
+      // own inner div (`flex items-center justify-between`), right for hand-placed children but
+      // a flex ROW that SHRINK-WRAPS a sectionArray grid to its content (measured 799.5px inside
+      // a 1104px column on npmrds/reports, 2026-09-03), so a footer section could never reach the
+      // column's right edge. This one stacks, like `content`. ADDITIVE — the five other pages on
+      // `footer` (npmrds home/macro, tsmo home/reliability/incident_search) are untouched until
+      // they opt in.
+      name: "footer_full",
+      wrapper1: "w-full bg-white border-t border-zinc-950/10",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex flex-col",
+      wrapper3: "",
+    },
+    {
       name: "workbench",
       wrapper1: "w-full bg-[#ECEEF2] py-6",
       wrapper2: "w-full px-0 flex flex-col gap-6",
@@ -699,7 +753,9 @@ const logo = {
 // planning/transportny/tasks/current/subdomain-to-path-consolidation.md.
 const logoNav = {
   sites: [
-    { name: "NPMRDS",        path: "/npmrds",       subdomain: "npmrds",        icon: "ProductNpmrds",       chip: "bg-[#0F2D4D]", tag: "travel time" },
+    // NPMRDS stays on its OWN SUBDOMAIN — it is not part of the path cutover (owner
+    // call 2026-09-01). No `path`, so siteHref falls through to the subdomain hop.
+    { name: "NPMRDS",                               subdomain: "npmrds",        icon: "ProductNpmrds",       chip: "bg-[#0F2D4D]", tag: "travel time" },
     { name: "TSMO",          path: "/tsmo",         subdomain: "tsmo2",         icon: "ProductTsmo",         chip: "bg-[#37576B]", tag: "operations" },
     { name: "Freight Atlas", path: "/freightatlas", subdomain: "freightatlas2", icon: "ProductFreightAtlas", chip: "bg-[#1F3F8F]", tag: "freight" },
   ],
@@ -1261,6 +1317,11 @@ const dataCard = {
       // the brand's `proseSM` rung; `text-slate-600` is the design's body ink, the
       // same disagreement proseSMInk exists to resolve.
       proseSMClamp2: `${F_SANS} text-[12.5px]! leading-[1.5]! text-slate-600! line-clamp-2`,
+      // proseSMClamp3 — the same run at THREE lines: the template card's description once the
+      // "N routes · N graphs" line was dropped (npmrds-reports.html REVISION 3.1, 2026-09-03) and
+      // its row given to the copy. ADDITIVE beside proseSMClamp2, which the picker's result rows
+      // still use at two lines.
+      proseSMClamp3: `${F_SANS} text-[12.5px]! leading-[1.5]! text-slate-600! line-clamp-3`,
       // proseSMClamp2's ONE-LINE sibling, in the placeholder colour — the search trigger's
       // prompt. The mockup gives that prompt `truncate` (one line, ellipsis) because the
       // trigger is a fixed-height control; a Card value cell has no truncation knob at all
@@ -1387,6 +1448,12 @@ const dataCard = {
       // theme's linkMono* styles are only reachable from a Lexical button node.
       // ADDITIVE: metaXS is unchanged, so every meta cell renders as before.
       metaXSLink: `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-[#1F3F8F]! no-underline!`,
+      // linkMonoFoot — the page FOOTER's link run as a Card LINK cell (npmrds-reports.html
+      // footer: `font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500
+      // hover:text-slate-900`). Same reason metaXSLink exists: a link cell's token lands on
+      // the anchor and only THIS map is reachable; the `button` theme's linkMono* styles are
+      // Lexical-only. Additive (2026-09-03).
+      linkMonoFoot: `${F_MONO} text-[10.5px]! uppercase tracking-[0.16em] text-slate-500! hover:text-slate-900 no-underline!`,
       // plateEmpty — patterns.html §14's "no preview" tile: the 4:5 plate footprint,
       // kept so the row stays on rhythm, saying what is missing rather than showing a
       // broken image. Box-shaped tokens must carry their own width (`w-full!`) and
@@ -1402,6 +1469,18 @@ const dataCard = {
       displayMDCaps: `${F_DISP} font-semibold text-[26px]! leading-[1.05] tracking-tight uppercase ${INK}`,
       btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
       btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+      // Parity with textSettings — the Reports header's controls-row tokens (see there). A Card
+      // cell resolves valueFontStyle HERE, and these three exist FOR Card cells (the view
+      // toggle's two static cells and the "New route" link cell), so this mirror is the one
+      // that renders; the textSettings copy keeps the Lexical picker and the dropdown in sync.
+      viewTabOn:  `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-[#37576B] text-white! no-underline! rounded-l-[6px]`,
+      viewTabOff: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-l-0 border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-r-[6px] transition-colors`,
+      // Parity with textSettings — see there for why these two POSITION-aware siblings exist
+      // (the reports LIST page's toggle has the dark/active cell on the right).
+      viewTabOffLeft: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-white hover:bg-slate-50 border border-zinc-950/15 text-slate-500! hover:text-[#0f1722] no-underline! rounded-l-[6px] transition-colors`,
+      viewTabOnRight: `inline-flex items-center w-fit h-10 px-3.5! py-0! ${F_DISP} uppercase text-[12px]! tracking-wide bg-[#37576B] border border-l-0 border-[#37576B] text-white! no-underline! rounded-r-[6px]`,
+      btnOutlineLG: `inline-flex items-center w-fit h-10 px-3.5! py-0! whitespace-nowrap bg-white border border-zinc-950/15 hover:border-[#37576B] ${INK}! no-underline! ${F_DISP} uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer transition-colors`,
+      hairline: `block w-full h-px! min-h-0! my-0! overflow-hidden leading-none bg-zinc-950/10`,
       // ── Unit suffix in a list row (npmrds-home § 01: `ratio` / `veh-hr` / `tons/yr`).
       // ADDITIVE, not a change to metaXS: the design draws this run at `text-[9px]`
       // where metaXS is 9.5px, and metaXS is shared by as-of badges and card meta all
@@ -1545,6 +1624,38 @@ const dataCard = {
       name: "rowaligned",
       header: "px-3",
       value:  "px-3",
+    },
+    {
+      // "flush" — for cells that must sit with ZERO gap against a neighbor (a segmented-control
+      // pair like the reports view toggle: `cellsGridGap:0`, the cells' own borders/rounding
+      // carry the seam). Found live, 2026-09-04: a LINK cell's wrapper div is a SEPARATE parent
+      // of the <a> (`<div class="px-3 pb-3 ...">` wrapping `<a class="...px-3.5! ...">`), so the
+      // token's own `!important` padding can only win on the <a> itself — it can't neutralize the
+      // wrapper's `px-3`. A STATIC (non-link) cell doesn't have this problem: its wrapper classes
+      // merge onto the SAME element the token classes land on, so `px-3.5!`/`py-0!` beat the
+      // wrapper's plain `px-3 pb-3` there. `rowaligned` (above) only drops the vertical half
+      // (`pb-3`); this drops both, so a link cell's pill sits flush against a `cellsGridGap:0`
+      // neighbor exactly like a static cell's does. Pick via the section "Card style"
+      // (`display.cardStyle:'flush'`). Only appropriate for a cell whose own token fully
+      // self-styles (background/text/border) — unlike `rowaligned`, `value:""` drops the
+      // default's `text-[14px] text-[#0F1722]` too, so a cell relying on that inherited text
+      // styling (rather than its own valueFontStyle) would render unstyled text.
+      //
+      // `layoutModel:'v2'` — the SECOND, deeper layer of the same gap (found live, 2026-09-04,
+      // after the `value:""` fix above still left ~2px). Card.layout.js's v1 model (the default
+      // everywhere else in this theme) gives every cell an always-on `border border-transparent`
+      // — reserved space for the edit-mode hover outline, +2px on every cell, undocumented at the
+      // call site but explained in Card.layout.js's own header comment. v2 drops that border
+      // entirely and draws edit-hover as a CSS `outline` instead, which takes no layout space.
+      // Safe here because `cellBorder:false` is already this Card's default (`card()` helper) —
+      // v2's `resolveCellBorderClass` only emits `theme.itemBorder` when `cellBorder` is true, so
+      // with it false the cell chrome class is empty either way; only the +2px reservation goes
+      // away in v2. (v2 also changes card-ROW packing for a multi-row `cardsGrid`, per that file's
+      // own comment — irrelevant here, this Card has one row.)
+      name: "flush",
+      layoutModel: "v2",
+      header: "",
+      value: "",
     },
   ],
 };
@@ -1914,6 +2025,22 @@ const graph = {
         labelFontFamily: "Proxima Nova, 'Source Sans 3', system-ui, sans-serif", labelFontSize: "13px", labelFontWeight: "600", labelColor: "#334155" },
       legend: { show: false },
     },
+  }, {
+    // Report-page-only variant (2026-09-04, Ryan) — selected per-section via that
+    // section's own `activeStyle` field (see `section.jsx`'s `value?.activeStyle` →
+    // `graph_new/index.jsx`'s `getComponentTheme(contextTheme, 'avlGraph', activeStyle)`),
+    // set ONLY by the two places that mint a brand-new Report-page graph section
+    // (`report_build.mjs`'s `graphSectionData()` and `ReportRouteList/useAddGraphSection.js`).
+    // Every other NPMRDS graph (Macro View, MAP-21 PM3, anything hand-authored elsewhere)
+    // never sets `activeStyle`, so it stays on `"default"` above, untouched — this is
+    // deliberately NOT the site-wide avlGraph default, because other NPMRDS graphs may
+    // still want the old stacked title/legend look. Inherits every other key from
+    // `"default"` (styles[0]) except the one below — NOT `headerWrapper`: GraphComponent.jsx
+    // falls back to the normal standalone title render (using the default headerWrapper)
+    // whenever there's no top-row legend to actually share a row with (legend hidden, or
+    // positioned somewhere other than top/top-*), so the title is never silently dropped.
+    name: "reportInlineTitle",
+    titleInlineWithLegend: true,
   }],
 };
 
@@ -2110,6 +2237,38 @@ const filters = {
       filterSettingsWrapperStacked: "w-full",
       filtersWrapper:               "w-full",
       input:                        "w-full h-10 px-3 flex items-center text-[13px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/10 rounded-[6px] bg-white focus:outline-none focus:border-[#1F3F8F]",
+    },
+    { // 6 · header_search — a page CONTROLS ROW search box (npmrds-reports-list.html "the
+      // search control"): the mockup draws ONE plain h-10 bordered box with the guidance copy
+      // AS THE PLACEHOLDER (`<input placeholder="Search by name or description…">`), not a
+      // separate label row — this style hides the label wrapper the other styles show above/
+      // beside the control (the leaf's own `filter.placeholder`, RenderFilterValueSelector.jsx,
+      // carries the copy instead) and fills+centers so the control lands on the row's mid-line beside
+      // its h-10 neighbors (view toggle / New report / New route) instead of pinned to the
+      // section's top — same `h-full` + flex-centering trick as `tone_bar` above, just on the
+      // vertical (flex-col) axis since this band is white, not a `tone_bar`'s horizontal band.
+      // NOTE: does NOT touch `input:` — the actual `<input>` box for a 'like' leaf is styled by
+      // the top-level `input` theme (Input.jsx → theme.input, a flat h-11 map here, not h-10 like
+      // this row's other controls), not this key — `theme.filters.input` is dropped unused by
+      // TextEdit (columnTypes/text.jsx destructures `className` but never applies it). Left as a
+      // known, minor (4px) residual rather than restructuring the shared `input` theme.
+      //
+      // `filterRowWrapper: ""` — this section's config is authored in the v1 `columns[].filters[]`
+      // shape (full-text-search-filter.md's recipe), which routes through
+      // `RenderFilterValueSelector.jsx`, NOT `ExternalFilters.jsx`/`ConditionValueInput.jsx` (this
+      // page's `filters.groups` tree is empty, so `ExternalFilters` renders null). That component
+      // wraps every row in `theme.filters.filterRowWrapper` (default `p-1 relative text-xs`,
+      // +8px). FOUND LIVE, 2026-09-04: this override was initially a no-op —
+      // `RenderFilterValueSelector.jsx` re-resolved its OWN `theme` with no style selector
+      // (`getComponentTheme(themeFromContext,'filters')`, dropping every key of this named style
+      // except `controlStyle`, which `RenderFilters.jsx` threads separately) — FIXED at the
+      // source (`RenderFilterValueSelector.jsx`/`RenderFilters.jsx`, same session): `RenderFilters`
+      // now passes its own already-selector-resolved `theme` down as a prop instead of the child
+      // re-deriving one. This key now actually reaches the rendered row.
+      name: "header_search",
+      labelWrapperStacked: "hidden",
+      filtersWrapper: "h-full w-full flex flex-col justify-center",
+      filterRowWrapper: "",
     },
   ],
 };
@@ -2800,6 +2959,7 @@ const pageComponents = {
   RouteComparison,
   CreateReportButton,
   ChooseReportButton,
+  ReportsListRail,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3036,6 +3196,14 @@ const transportnyTheme = {
   sectionMenuExtensions,
   sectionHeaderExtensions,
   widgets,
+
+  // Report graph title/caption live-resolution (dynamic-reports-authoring-gaps.md — "Static
+  // graph text vs. live route resolution") — a plain top-level hook, not namespaced under
+  // `pages`/`avlGraph`, so both section.jsx (core, no `avlGraph` theme scope) and
+  // graph_new/index.jsx (core, scoped to `avlGraph`) can read it directly off the root theme
+  // object they both already have in scope. See resolveReportDisplayText.js's own doc comment
+  // for why calling this unconditionally from core is safe for every other section/site.
+  resolveReportDisplayText,
 };
 
 export default transportnyTheme;

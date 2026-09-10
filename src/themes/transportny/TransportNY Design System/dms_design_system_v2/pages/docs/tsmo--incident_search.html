@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Find an incident · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · how-to</div>
+          <h1 class="doc-title">Find an incident.</h1>
+          <p class="doc-lede">Find any TRANSCOM event on New York roads by region, county, time period, category or keyword. Read what the results table says about its delay, and open the event's page. No account is needed.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Explorers</span> › <span class="ui">Incident Search</span>. The search covers the whole TRANSCOM feed filtered to New York, every category including construction, about 3.7 million events since 2015. Attributed delay and cost exist on about 18.5 % of them. Facets react as you set them; there is no submit button.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open Incident Search.<span class="result">You see the facet bar, one keyword box, and <span class="ui">Matching events</span>: a count and a table, one row per event.</span></li>
+            <li>Pick a region.<span class="result">The count and table update. The county options narrow to that region.</span></li>
+            <li>Pick a county, if you have one.</li>
+            <li>Pick a year, or several. This page keeps multi-select because it is a query tool. Add a month to narrow further.<span class="result">The count updates with each pick.</span></li>
+            <li>Pick a category, if you want one kind of event. Every category is offered here, Construction included.</li>
+            <li>Type a word in the keyword box, for example a road name or an event id.<span class="result">Rows whose facility, description, category, county or event id contain the word remain. One box searches all five columns.</span></li>
+            <li>Read the table. Rows are ranked by attributed delay. A row with a measured footprint shows delay and cost; a row without one shows <span class="ui">—</span> in both and still appears.</li>
+            <li>Select a row's view link.<span class="result">The event's page opens. See <a href="tsmo--incident_view.html">Read an incident page</a>.</span></li>
+          </ol>
+
+          <h2 id="settings">Settings</h2>
+          <p>The facets, in bar order. The facets are <span class="ui">Region</span>, <span class="ui">County</span>, <span class="ui">Year</span>, <span class="ui">Month</span> and <span class="ui">Category</span>, each multi-select, followed by the search box labelled <span class="ui">Search · facility · description · category · county · id</span>.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td>Region</td><td>Keeps events in one NYSDOT region</td><td>Region 1 to Region 11</td><td>None</td></tr>
+              <tr><td>County</td><td>Keeps events in one county; the list narrows to the region and year</td><td>New York counties</td><td>None</td></tr>
+              <tr><td>Year</td><td>Keeps events that started in the years chosen</td><td>Years in the feed, multi-select</td><td>None</td></tr>
+              <tr><td>Month</td><td>Keeps events that started in one month</td><td>January to December</td><td>None</td></tr>
+              <tr><td>Category</td><td>Keeps one NYSDOT sub-category</td><td>Every category, Construction included</td><td>None</td></tr>
+              <tr><td>Keyword</td><td>Keeps rows containing the text in facility, description, category, county or event id</td><td>Free text</td><td>Empty</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="what-the-delay-and-cost-columns-mean">What the delay and cost columns mean</h2>
+          <p>Delay is the event's footprint: the vehicle-hours lost on its affected segments above what those segments carry on an ordinary day. A footprint is computed only where probe speeds around the event fell below that baseline on matched segments. About 18.5 % of events have one. The rest show <span class="ui">—</span>, which means no measured footprint, not zero delay. An event list never implies that every event delayed traffic. See <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>.</p>
+          <p>Cost is the footprint priced at an interim flat $20 per vehicle-hour. The page says it will re-base to the class-weighted value of time as that data lands. Do not compare it with a dollar figure from a page on the other basis. See <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Which pages show which basis</a>.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Facets combine. Region and category and keyword together can leave nothing.</li>
+            <li>One keyword box, no per-field search. A road name also matches descriptions that mention it.</li>
+            <li>The feed is multi-state; this page keeps New York. Category names are the feed's own.</li>
+            <li>There is no map on the search page. The event's page carries the location map.</li>
+            <li>Ranking by delay puts footprinted events first; a recent event with no footprint sits low.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="no-results">No results</h3>
+          <p>Clear one facet at a time, starting with the keyword and the month. A county with a year it had no events in returns nothing.</p>
+          <h3 id="delay-and-cost-show-a-dash">Delay and cost show a dash</h3>
+          <p>The event has no measured footprint. That is the case for about four events in five. It is not an error and not a zero.</p>
+          <h3 id="the-county-list-is-short">The county list is short</h3>
+          <p>Counties narrow to the region and years already chosen. Clear the region to see every county.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="tsmo--incident_view.html">Read an incident page</a></li>
+            <li><a href="tsmo--incidents.html">Incidents dashboard</a></li>
+            <li><a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a></li>
+            <li><a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a> · the datasheet, planned</li>
+            <li><a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a> · what the Construction category's delay is</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Incident Search page, published 2026-07-17: lede ("by region, county, time period, category or keyword", "3.7M events since 2015"), the status line "attributed delay &amp; cost on ~18.5% of events", the <span class="ui">Matching events</span> caption, the "about attributed delay" note.</li>
+            <li>Incident Search user stories: live facets, keyword across facility, description, category, county and event id, scoped county options, view link.</li>
+            <li>Filter decisions, July 2026: Incident Search keeps multi-select (feedback record 2191408).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="tsmo--incident_view.html">Read an incident page</a>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

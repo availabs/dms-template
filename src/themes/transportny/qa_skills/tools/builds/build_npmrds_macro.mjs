@@ -162,7 +162,7 @@ const SECTIONS = [
     data: lexical(
       para(
         button("home", "/", "plain"),
-        button("  reports", "/converted_reports/reports", "plain"),
+        button("  reports", "/reports", "plain"),
         button("  route-comparison", "/route_comparison", "plain"),
         button("  map-21", "/map_21", "plain"),
       ),

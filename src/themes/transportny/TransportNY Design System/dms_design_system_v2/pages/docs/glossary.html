@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Glossary · Reference · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  glossary.html · IA page 94 · type glossary. Phase 7, 2026-09-08.
+  Sources: _glossary-queue.md (237 queued lines from Phases 0-6b, merged to one entry per term; every definition restates the
+  page it links to); the Vocabulary section of freight_atlas--layers.html (the Freight Atlas acronyms, verbatim in substance);
+  the Glossary section of the 2026-08-28 measures documentation (docs-dump 281670: TMC, epoch, reporting bin, stream, precision
+  band, minimum-n bar, free-flow reference, the floor, coverage era); the Glossary section of the TSMO Data & Methodology page,
+  revision 2026-07-27 (site-dump/tsmo/2184101: TMC, LOTTR, TTTR, PHED, vehicle-hours, functional class, NYSDOT region).
+  Terms no page in this documentation uses were dropped (change label, API changelog labels, symbology type, bin method).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="glossary" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Reference · glossary</div>
+          <h1 class="doc-title">Glossary.</h1>
+          <p class="doc-lede">Every term this documentation uses, defined in one sentence, with the product and screen where you meet it and a link to the page that owns it. For anyone reading a dashboard label, a column name or a measure for the first time.</p>
+          <div class="stamps">
+            <span class="type">glossary</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <p>One entry per term. The meaning comes first, then <em>Pathway</em>, the product and screen the term belongs to, then the page that defines it in full. Acronyms are filed by their letters, and an entry that starts with "the" is filed under the word after it. Where a term names a control, the page it links to prints the label as the screen prints it.</p>
+
+          <div class="letter-index" aria-label="Jump to a letter">
+<a href="#letter-num">#</a><a href="#letter-a">A</a><a href="#letter-b">B</a><a href="#letter-c">C</a><a href="#letter-d">D</a><a href="#letter-e">E</a><a href="#letter-f">F</a><a href="#letter-g">G</a><a href="#letter-h">H</a><a href="#letter-i">I</a><a href="#letter-j">J</a><a href="#letter-k">K</a><a href="#letter-l">L</a><a href="#letter-m">M</a><a href="#letter-n">N</a><a href="#letter-o">O</a><a href="#letter-p">P</a><a href="#letter-q">Q</a><a href="#letter-r">R</a><a href="#letter-s">S</a><a href="#letter-t">T</a><a href="#letter-u">U</a><a href="#letter-v">V</a><a href="#letter-w">W</a><a href="#letter-y">Y</a>
+          </div>
+
+          <h2 id="letter-num">Numbers and symbols</h2>
+          <dl class="defs">
+            <dt id="g-2024-state-freight-plan">2024 State Freight Plan</dt>
+            <dd>NYSDOT's freight plan, whose figures the Maps Gallery reproduces. <span class="pathway">Pathway: Freight Atlas › About &amp; The Plan</span> <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a></dd>
+            <dt id="g-2050-outlook">2050 Outlook</dt>
+            <dd>The gallery's eighth category, hidden because none of its four change maps is live. <span class="pathway">Pathway: Freight Atlas › Maps Gallery</span> <a href="freight_atlas--gallery.html#why-a-category-can-be-hidden">Maps Gallery</a></dd>
+            <dt id="g-30-reporting-screen">30 % reporting screen</dt>
+            <dd>Dropping segments with under 30 % of bins reporting in every daytime period before anything is ranked. <span class="pathway">Pathway: Docs › Recipes</span> <a href="npmrds--recipes--composite_score.html">Recipe: a composite bottleneck score</a></dd>
+          </dl>
+
+          <h2 id="letter-a">A</h2>
+          <dl class="defs">
+            <dt id="g-aadt">AADT</dt>
+            <dd>Annual average daily traffic, the average number of vehicles a day on a road segment. <span class="pathway">Pathway: Freight Atlas › Traffic Volume &amp; Road Attributes</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-access-dataset">Access (dataset)</dt>
+            <dd>The per-dataset list that grants named permissions to a group or to one person. <span class="pathway">Pathway: Admin › a dataset's Admin tab</span> <a href="admin--users_and_permissions.html#what-a-permission-gates">Users and permissions</a></dd>
+            <dt id="g-active-corridor">active corridor</dt>
+            <dd>The corridor an incident page's per-segment table and congestion grid are scoped to, switched by selecting another row of the corridors table. <span class="pathway">Pathway: TSMO › Incident View</span> <a href="tsmo--incident_view.html">Read an incident page</a></dd>
+            <dt id="g-active-map">Active map</dt>
+            <dd>The panel's list of the layers that are on, in category order, each with its remove control and, where it has views, its field select. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--map.html">Use the map</a></dd>
+            <dt id="g-add-graph-dialog">Add Graph (dialog)</dt>
+            <dd>The guided card builder, which asks for routes, what to show, measure, resolution, comparison mode, anchor route and window. <span class="pathway">Pathway: NPMRDS › Routes rail</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+            <dt id="g-add-layers">Add layers</dt>
+            <dd>The panel's library, the eight categories each holding a row of checkboxes with a badge counting what is on. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--map.html">Use the map</a></dd>
+            <dt id="g-add-routes-dialog">Add Routes (dialog)</dt>
+            <dd>The route picker, which searches, browses by tag, narrows by ownership and offers short segments. <span class="pathway">Pathway: NPMRDS › Routes rail</span> <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></dd>
+            <dt id="g-advanced-metadata">Advanced Metadata</dt>
+            <dd>The per-column editor behind a column's display name, description, type, index and primary key. <span class="pathway">Pathway: Admin › a dataset's Admin tab</span> <a href="admin--manage_data.html#steps">Manage a dataset</a></dd>
+            <dt id="g-aggregatedlen">aggregatedLen</dt>
+            <dd>The option that, with a group-by, makes a length read count groups rather than rows. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-all-reports-list">All reports (list)</dt>
+            <dd>The full report table, one row per report with its tags, route and graph counts and the date it was updated. <span class="pathway">Pathway: NPMRDS › Reports toggle</span> <a href="npmrds--reports--find.html">Find a report</a></dd>
+            <dt id="g-the-analytical-series">the analytical series</dt>
+            <dd>The platform's own computation of the measures, shown per segment and per region. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a></dd>
+            <dt id="g-anchor-route">Anchor Route</dt>
+            <dd>The route row that is subtracted from in difference mode, so with the earlier window as anchor a positive bar is an improvement. <span class="pathway">Pathway: NPMRDS › Add Graph</span> <a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a></dd>
+            <dt id="g-anchored-free-flow-reference">anchored free-flow reference</dt>
+            <dd>The delay threshold's 60 % base taken from a fixed window, June 2023 to July 2024 since August 2026, so year-over-year change is measurable. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--phed.html#the-four-variants">PHED</a></dd>
+            <dt id="g-atom">atom</dt>
+            <dd>Falcor's wrapper around an object, date or null value, which a client has to unwrap. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-atri">ATRI</dt>
+            <dd>The American Transportation Research Institute, whose licensed truck-parking clusters the undesignated parking layer draws. <span class="pathway">Pathway: Freight Atlas › Safety &amp; Performance</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-attributed-delay">attributed delay</dt>
+            <dd>An event's footprint of segments and 5-minute slices summed to vehicle-hours, which exists on about 18.5 % of events and reads "—" otherwise. <span class="pathway">Pathway: TSMO › Incidents · Incident View</span> <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a></dd>
+            <dt id="g-attributes-measure">Attributes (measure)</dt>
+            <dd>Colouring the map by a network field such as functional class, AADT or ownership, and the intended home for the RIS attributes. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--in_development.html">Measures in development</a></dd>
+            <dt id="g-authority-level">authority level</dt>
+            <dd>The earlier one-number-per-group scheme, view only, view and download, or full access, which the named permissions replace. <span class="pathway">Pathway: Admin › Users</span> <a href="admin--users_and_permissions.html#the-three-earlier-levels">Users and permissions</a></dd>
+            <dt id="g-auto-generated-route-badge">Auto-generated (route badge)</dt>
+            <dd>A route written by a service account. <span class="pathway">Pathway: NPMRDS › Add Routes</span> <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></dd>
+          </dl>
+
+          <h2 id="letter-b">B</h2>
+          <dl class="defs">
+            <dt id="g-base-period-vs-base">Base period · Δ vs Base</dt>
+            <dd>The first period of a comparison and the change columns read against it. <span class="pathway">Pathway: NPMRDS › Route Comparison</span> <a href="npmrds--route_comparison.html#reading-the-matrix">Compare routes across periods</a></dd>
+            <dt id="g-batch-reports-api">Batch Reports API</dt>
+            <dd>The endpoint that takes routes as TMC lists with time windows and column definitions and returns speed, travel time and hours of delay per route, and that retires when Route Comparison is released. <span class="pathway">Pathway: Developers › Batch Reports API</span> <a href="developers--batch_reports_api.html">Batch Reports API</a></dd>
+            <dt id="g-before-after-study">before/after study</dt>
+            <dd>One route added twice with two date windows and a difference graph, so the bars read as delay removed. <span class="pathway">Pathway: Docs › Recipes</span> <a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a></dd>
+            <dt id="g-best-match">Best match</dt>
+            <dd>The pickers' default sort: yours first, then the described or the larger, then the most recent. <span class="pathway">Pathway: NPMRDS › pickers</span> <a href="npmrds--reports--find.html">Find a report</a></dd>
+            <dt id="g-buffer-index">Buffer Index</dt>
+            <dd>A retired reliability index, the 95th-percentile travel time minus the mean, divided by the mean, not computed today. <span class="pathway">Pathway: NPMRDS › 2024 documentation</span> <a href="measures_and_data--measures--retired.html">Measures that used to be here</a></dd>
+            <dt id="g-build-comparison-rail">Build comparison rail</dt>
+            <dd>Route Comparison's builder, whose scope, routes, periods and metrics steps set up the matrix. <span class="pathway">Pathway: NPMRDS › Route Comparison</span> <a href="npmrds--route_comparison.html">Compare routes across periods</a></dd>
+          </dl>
+
+          <h2 id="letter-c">C</h2>
+          <dl class="defs">
+            <dt id="g-category-filter">Category (filter)</dt>
+            <dd>The Incidents dashboard's event-category control, offering Crash, Message, Other, Road Hazard, Special Event, Volume/Delay and Weather Hazard. <span class="pathway">Pathway: TSMO › Incidents</span> <a href="tsmo--filters.html">Using the filter bar</a></dd>
+            <dt id="g-category-freight-atlas-map">category (Freight Atlas map)</dt>
+            <dd>One of the eight groups the layer library is divided into, from geographies through the networks to safety and performance. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--layers.html">Layer reference</a></dd>
+<dt id="g-cfr-23-cfr-490">CFR (23 CFR 490)</dt>
+            <dd>Title 23 of the Code of Federal Regulations, Part 490, the federal rule that defines the PM3 measures and the annual Travel Time Metrics filing. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></dd>
+            <dt id="g-change-base-map">Change base map</dt>
+            <dd>The control that switches the background between the default, satellite, streets, light, dark and blank, which is where road names and shields come from. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--map.html">Use the map</a></dd>
+            <dt id="g-choose-a-report-dialog">Choose a report (dialog)</dt>
+            <dd>The report search opened from the Reports search bar, which browses by tag and narrows by ownership. <span class="pathway">Pathway: NPMRDS › Reports</span> <a href="npmrds--reports--find.html">Find a report</a></dd>
+            <dt id="g-clcpa">CLCPA</dt>
+            <dd>The Climate Leadership and Community Protection Act, the frame of the plan's environment goal. <span class="pathway">Pathway: Freight Atlas › About &amp; The Plan</span> <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a></dd>
+            <dt id="g-clear-all">Clear all</dt>
+            <dd>The control that turns every layer off. <span class="pathway">Pathway: Freight Atlas › Active map</span> <a href="freight_atlas--map.html">Use the map</a></dd>
+            <dt id="g-column-name-scheme">column-name scheme</dt>
+            <dd>How a download's columns are named, measure then variant then period then unit, as in <code>lottr_amp_lottr</code>. <span class="pathway">Pathway: NPMRDS › download</span> <a href="npmrds--macro_view--download.html">Download data from the Macro View</a></dd>
+            <dt id="g-comparison-matrix">Comparison matrix</dt>
+            <dd>Route Comparison's table, one row per route with a column group per period. <span class="pathway">Pathway: NPMRDS › Route Comparison</span> <a href="npmrds--route_comparison.html">Compare routes across periods</a></dd>
+            <dt id="g-comparison-mode-plain-difference">comparison mode (Plain · Difference)</dt>
+            <dd>Whether a card overlays every route or subtracts one from another, where the difference needs exactly two routes and an anchor. <span class="pathway">Pathway: NPMRDS › Add Graph</span> <a href="npmrds--reports--graph_types.html">Graph types reference</a></dd>
+            <dt id="g-compliance-card">compliance card</dt>
+            <dd>A MAP-21 figure card with a status pill, a target bar and the change from the year before. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="npmrds--map21.html#reading-the-compliance-cards">MAP-21 PM3 reporting pages</a></dd>
+            <dt id="g-composite-score-composite-rank">composite score · composite rank</dt>
+            <dd>A weighted sum of measures normalised to a 1-to-5 scale, and its descending rank, which is a ranking device and not a measure. <span class="pathway">Pathway: Docs › Recipes</span> <a href="npmrds--recipes--composite_score.html">Recipe: a composite bottleneck score</a></dd>
+            <dt id="g-congestion-grid">congestion grid</dt>
+            <dd>The incident page's grid of segments against 5-minute slices, shaded by attributed delay. <span class="pathway">Pathway: TSMO › Incident View</span> <a href="tsmo--incident_view.html">Read an incident page</a></dd>
+            <dt id="g-congestion-management-process-cmp">Congestion Management Process (CMP)</dt>
+            <dd>The federally required process for Transportation Management Areas under 23 CFR 450.322, of whose eight FHWA actions the platform serves five. <span class="pathway">Pathway: Docs › Recipes</span> <a href="npmrds--recipes--congestion_management_process.html">Recipe: a Congestion Management Process</a></dd>
+            <dt id="g-corridor-page-view">Corridor page · view →</dt>
+            <dd>The link column of the Congestion worst-corridors table, which opens Corridor View. <span class="pathway">Pathway: TSMO › Congestion</span> <a href="tsmo--congestion.html">Congestion dashboard</a></dd>
+            <dt id="g-corridor-strip-map">corridor strip map</dt>
+            <dd>The map of exactly the segments feeding the Corridor View grid, zoomed to the corridor. <span class="pathway">Pathway: TSMO › Corridor View</span> <a href="tsmo--corridor_view.html">Explore a corridor over time</a></dd>
+            <dt id="g-corridor-view">Corridor View</dt>
+            <dd>The TSMO explorer that follows one corridor through a day. <span class="pathway">Pathway: TSMO › Explorers</span> <a href="tsmo--corridor_view.html">Explore a corridor over time</a></dd>
+            <dt id="g-county-geography">county (geography)</dt>
+            <dd>One of New York's 62 counties, the key of Corridor View and a facet of Incident Search. <span class="pathway">Pathway: TSMO › Corridor View</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+            <dt id="g-coverage-era">coverage era</dt>
+            <dd>A period over which the feed's completeness is stable, of which there are nine between 2017 and 2026, so a comparison across one needs stating. <span class="pathway">Pathway: NPMRDS › PM3 measures</span> <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a></dd>
+<dt id="g-csv">CSV</dt>
+            <dd>Comma-separated values, the plain-text table format every download route offers: one row per line, fields separated by commas. <span class="pathway">Pathway: Developers › Bulk downloads and formats</span> <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a></dd>
+            <dt id="g-cufc-crfc">CUFC · CRFC</dt>
+            <dd>Critical Urban and Critical Rural Freight Corridors, the state-designated components of the National Highway Freight Network. <span class="pathway">Pathway: Freight Atlas › Road Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-curated-route-badge">Curated (route badge)</dt>
+            <dd>A route drawn by a person rather than generated. <span class="pathway">Pathway: NPMRDS › Add Routes</span> <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></dd>
+            <dt id="g-current-filters-statewide-year-scope">Current filters · Statewide, &lt;year&gt; (scope)</dt>
+            <dd>The two export scopes, the geography now on the map or every segment in the year, each shown with its row count. <span class="pathway">Pathway: NPMRDS › download builder</span> <a href="npmrds--macro_view--download.html">Download data from the Macro View</a></dd>
+          </dl>
+
+          <h2 id="letter-d">D</h2>
+          <dl class="defs">
+            <dt id="g-d-factor">D factor</dt>
+            <dd>The peak-direction share of design-hour traffic. <span class="pathway">Pathway: NPMRDS › retired attributes</span> <a href="measures_and_data--measures--retired.html">Measures that used to be here</a></dd>
+            <dt id="g-dac-rank">DAC rank</dt>
+            <dd>The percentile rank of a disadvantaged-communities index built from Environmental Protection Agency indicators of locational disadvantage. <span class="pathway">Pathway: Freight Atlas › Network and Commodity Data</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-dama-root">dama (root)</dt>
+            <dd>The legacy root of the 2025 reference, still served, against which no new code should be written. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html#the-legacy-form">Data Manager API</a></dd>
+            <dt id="g-data-and-downloads">Data &amp; Downloads</dt>
+            <dd>The Freight Atlas dataset catalog, one source page per dataset with its versions and their download files. <span class="pathway">Pathway: Freight Atlas › Data &amp; Downloads</span> <a href="freight_atlas--downloads.html">Download freight data</a></dd>
+            <dt id="g-data-columns-batch-reports">data columns (Batch Reports)</dt>
+            <dd>The six column keys the endpoint accepts, speed, travel time and delay, each with a percent-change form. <span class="pathway">Pathway: Developers › Batch Reports API</span> <a href="developers--batch_reports_api.html">Batch Reports API</a></dd>
+            <dt id="g-data-coverage">Data coverage</dt>
+            <dd>How much of the travel-time feed actually arrived for a segment, published as two percentages per stream and period. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--coverage.html">Data coverage</a></dd>
+            <dt id="g-data-environment">data environment</dt>
+            <dd>The second segment of every path, which names the data environment a view lives in. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-data-link">Data link</dt>
+            <dd>The download address an author sets in the report header, which the data button opens. <span class="pathway">Pathway: NPMRDS › report header</span> <a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a></dd>
+            <dt id="g-data-manager">Data Manager</dt>
+            <dd>The platform's data catalog, one source page per dataset with its tabs, its version selector and its downloads. <span class="pathway">Pathway: all › Data &amp; Downloads</span> <a href="admin--manage_data.html">Manage a dataset</a></dd>
+            <dt id="g-data-manager-api">Data Manager API</dt>
+            <dd>The platform's read API, a Falcor endpoint on the data host whose paths sit under the <code>uda</code> root. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-data-source-batch-reports">data source (Batch Reports)</dt>
+            <dd>Which vehicle stream a column is read from, all vehicles, freight trucks or passenger vehicles. <span class="pathway">Pathway: Developers › Batch Reports API</span> <a href="developers--batch_reports_api.html">Batch Reports API</a></dd>
+            <dt id="g-data-type">data type</dt>
+            <dd>What a dataset is and how it is loaded, chosen once when the dataset is created and fixed afterwards. <span class="pathway">Pathway: Admin › Create Dataset</span> <a href="admin--upload_data.html#the-data-types-on-offer">Upload a dataset</a></dd>
+            <dt id="g-data-as-of-badge">data-as-of badge</dt>
+            <dd>The per-panel date on the TSMO pages, which the home's Data Freshness band states per source. <span class="pathway">Pathway: TSMO › every panel</span> <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></dd>
+            <dt id="g-databyindex">dataByIndex</dt>
+            <dd>The row read, an inclusive index range with a list of attributes, whose response keys are the attribute strings as sent. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-dataset-source">dataset (source)</dt>
+            <dd>One named body of data on the platform, with a description, a column list and one or more versions. <span class="pathway">Pathway: Admin › the dataset catalog</span> <a href="admin--upload_data.html">Upload a dataset</a></dd>
+            <dt id="g-date-window">date window</dt>
+            <dd>A route row's <span class="ui">From</span> and <span class="ui">To</span> dates, which can be shifted a year at a time and copied between rows. <span class="pathway">Pathway: NPMRDS › Routes rail</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+            <dt id="g-ddhv">DDHV</dt>
+            <dd>Directional design-hour volume, the traffic in the design hour in one direction. <span class="pathway">Pathway: NPMRDS › retired attributes</span> <a href="measures_and_data--measures--retired.html">Measures that used to be here</a></dd>
+            <dt id="g-derived-dates">derived dates</dt>
+            <dd>A route row's dates computed live from another row's, by whole-period offset, aligned period, fixed calendar month or fixed calendar range. <span class="pathway">Pathway: NPMRDS › Routes rail</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+            <dt id="g-difficulty-chip">difficulty chip</dt>
+            <dd>The beginner, intermediate or advanced chip on 9 of the 12 template cards. <span class="pathway">Pathway: NPMRDS › Reports</span> <a href="npmrds--reports--start_from_template.html">Start a report from a template</a></dd>
+            <dt id="g-display-name-column">display name (column)</dt>
+            <dd>The name readers see for a column, which until an administrator writes it is the stored column name. <span class="pathway">Pathway: Admin › Advanced Metadata</span> <a href="admin--manage_data.html#column-metadata">Manage a dataset</a></dd>
+            <dt id="g-download-builder">download builder</dt>
+            <dd>The Macro View dialog that turns what is on the map into a file, choosing scope, format, geometry and extra columns before it builds. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="npmrds--macro_view--download.html">Download data from the Macro View</a></dd>
+            <dt id="g-download-formats">download formats</dt>
+            <dd>CSV, ESRI Shapefile, GeoJSON and GPKG, as generated for each version. <span class="pathway">Pathway: Freight Atlas › source page</span> <a href="freight_atlas--downloads.html#formats-and-what-was-generated">Download freight data</a></dd>
+            <dt id="g-dynamic-report">Dynamic Report</dt>
+            <dd>A report whose routes are chosen from the address by whoever opens it, which is what the templates are. <span class="pathway">Pathway: NPMRDS › Report settings</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+          </dl>
+
+          <h2 id="letter-e">E</h2>
+          <dl class="defs">
+            <dt id="g-edit-mode-report">edit mode (report)</dt>
+            <dd>The report's editing address, entered with <span class="ui">Edit</span> and left with <span class="ui">Done</span>, which publishes. <span class="pathway">Pathway: NPMRDS › report header</span> <a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a></dd>
+            <dt id="g-epoch">epoch</dt>
+            <dd>A 5-minute time slice, 288 of them a day, in which one travel time is reported for one segment. <span class="pathway">Pathway: NPMRDS › Segment</span> <a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a></dd>
+            <dt id="g-etc-index">ETC index</dt>
+            <dd>A term the plan's what-changed table prints, quoted as the plan prints it because the plan's equity chapter carries the definition. <span class="pathway">Pathway: Freight Atlas › About &amp; The Plan</span> <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a></dd>
+            <dt id="g-excessive-delay-revision-june-2026">excessive-delay revision (June 2026)</dt>
+            <dd>The method change that set the delay threshold to the greater of 20 mph or 60 % of the posted limit, moved the baseline to the median, capped attribution and restarted the series, so earlier figures do not compare. <span class="pathway">Pathway: TSMO › Congestion</span> <a href="measures_and_data--methodology_changes.html#2026-06-10-methodology">Methodology changes</a></dd>
+          </dl>
+
+          <h2 id="letter-f">F</h2>
+          <dl class="defs">
+            <dt id="g-falcor-path">Falcor path</dt>
+            <dd>A JSON array naming the way into the graph, from the root through the environment and the view to the rows and attributes you want. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-fchn">FCHN</dt>
+            <dd>The Freight Core Highway Network, New York's designated core highway network for freight, created in the 2019 plan and extended by 4,497 miles in the 2024 plan. <span class="pathway">Pathway: Freight Atlas › Road Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-fcrn">FCRN</dt>
+            <dd>The Freight Core Rail Network, the rail counterpart created in the 2019 plan and drawn as the core rail layers. <span class="pathway">Pathway: Freight Atlas › Rail Network</span> <a href="freight_atlas--the_plan.html#what-changed-2019-to-2024">The 2024 State Freight Plan</a></dd>
+            <dt id="g-federal-submittal">federal submittal</dt>
+            <dd>The LOTTR, TTTR and PHED figures New York files with FHWA, frozen by rule. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a></dd>
+<dt id="g-fhwa">FHWA</dt>
+            <dd>The Federal Highway Administration, the agency that sets the PM3 rule, receives New York's June 15 filing and publishes the NPMRDS. <span class="pathway">Pathway: Measures &amp; Data › Federal PM3</span> <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a></dd>
+            <dt id="g-filter-bar-tsmo">filter bar (TSMO)</dt>
+            <dd>The <span class="ui">Year</span> and <span class="ui">Region</span> strip under each dashboard title, whose selection the page address carries. <span class="pathway">Pathway: TSMO › dashboards</span> <a href="tsmo--filters.html">Using the filter bar</a></dd>
+            <dt id="g-final-load-event">FINAL (load event)</dt>
+            <dd>The last event of a successful load, so a log that stops short of it is a failure. <span class="pathway">Pathway: Admin › Upload Views</span> <a href="admin--upload_data.html#troubleshooting">Upload a dataset</a></dd>
+            <dt id="g-the-floor">the floor</dt>
+            <dd>The 20 mph minimum on the excessive-delay threshold, which governs 62.7 % of all measured delay. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--which_measure.html">Which measure should I use?</a></dd>
+            <dt id="g-free-flow-reference">free-flow reference</dt>
+            <dd>The uncongested speed a segment is compared against, taken as its 15th-percentile travel time. <span class="pathway">Pathway: NPMRDS › PM3 measures</span> <a href="measures_and_data--measures--phed.html">PHED</a></dd>
+            <dt id="g-free-flow-speed-measure">free-flow speed (measure)</dt>
+            <dd>The 85th percentile of off-peak observed speed, computed internally as the delay reference and not yet published as a measure. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--in_development.html">Measures in development</a></dd>
+            <dt id="g-freight-web-atlas">Freight Web Atlas</dt>
+            <dd>The 2024 plan's own name for the earlier atlas that the Freight Atlas replaces. <span class="pathway">Pathway: Freight Atlas › About &amp; The Plan</span> <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a></dd>
+            <dt id="g-freshness-strip">freshness strip</dt>
+            <dd>The line on the NPMRDS pages reading "since Jan 2017 · complete through <month> · <month> partial". <span class="pathway">Pathway: NPMRDS › Reports, Route Comparison</span> <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></dd>
+            <dt id="g-functional-class">functional class</dt>
+            <dd>FHWA's classification of a road, from 1 for an Interstate to 7 for a local street, with 0 marking the platform's extended set of local and unclassified roads. <span class="pathway">Pathway: TSMO › Data &amp; Methodology</span> <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a></dd>
+          </dl>
+
+          <h2 id="letter-g">G</h2>
+          <dl class="defs">
+            <dt id="g-gap-layer">gap layer</dt>
+            <dd>One of the nine layers added in July 2026 to draw plan figures the map did not yet carry. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--layers.html#names-suffixes-and-recent-changes">Layer reference</a></dd>
+            <dt id="g-get-to-a-segment">Get to a segment</dt>
+            <dd>The Macro View search that zooms to one segment from three characters of a TMC code or a county name, and knows no road names. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="npmrds--segment.html">Look at one segment (TMC)</a></dd>
+<dt id="g-gpkg">GPKG</dt>
+            <dd>GeoPackage, a single-file spatial database format: the Macro View package's map-ready format and one of the four per-version export formats. <span class="pathway">Pathway: NPMRDS › Macro View › Download</span> <a href="npmrds--macro_view--download.html">Download data from the Macro View</a></dd>
+            <dt id="g-group">group</dt>
+            <dd>The only account attribute the Users page edits, and what a dataset grants its permissions to. <span class="pathway">Pathway: Admin › Users, Groups</span> <a href="admin--users_and_permissions.html">Users and permissions</a></dd>
+          </dl>
+
+          <h2 id="letter-h">H</h2>
+          <dl class="defs">
+            <dt id="g-hard-delete">Hard Delete</dt>
+            <dd>The deeper of the two deletes, which drops each version's data, removes the download files and deletes the load history after you type the dataset's name. <span class="pathway">Pathway: Admin › a dataset's Admin tab</span> <a href="admin--manage_data.html#access-and-deletion">Manage a dataset</a></dd>
+            <dt id="g-host">$HOST</dt>
+            <dd>The literal prefix some stored file addresses carry, which the site replaces with the data host before fetching. <span class="pathway">Pathway: Developers › Quick start</span> <a href="developers--quickstart.html">Quick start</a></dd>
+            <dt id="g-hpms">HPMS</dt>
+            <dd>The Highway Performance Monitoring System, FHWA's roadway data programme, whose Travel Time Metrics file carries New York's reliability submission. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a></dd>
+            <dt id="g-hpms-travel-time-metrics-ttm">HPMS Travel Time Metrics (TTM)</dt>
+            <dd>New York's annual travel-time submission to FHWA, one row per reporting segment in both directions, filed by June 15, and the file whose CY 2025 figures the TSMO home cites. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3 · Annual data</span> <a href="npmrds--map21.html#the-annual-download">MAP-21 PM3 reporting pages</a></dd>
+          </dl>
+
+          <h2 id="letter-i">I</h2>
+          <dl class="defs">
+            <dt id="g-identity-colour">identity colour</dt>
+            <dd>A route row's colour, carried onto every card it feeds, picked from a 20-colour palette. <span class="pathway">Pathway: NPMRDS › Routes rail</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+            <dt id="g-incident-search">Incident Search</dt>
+            <dd>The TSMO explorer that finds an incident by facets and keyword. <span class="pathway">Pathway: TSMO › Explorers</span> <a href="tsmo--incident_search.html">Find an incident</a></dd>
+            <dt id="g-interim-20-basis">interim $20 basis</dt>
+            <dd>The flat $20 per vehicle-hour value of time still stated on several TSMO pages, where the Data &amp; Methodology page uses the class-weighted rate. <span class="pathway">Pathway: TSMO › Congestion, Incidents, Work Zones</span> <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Cost of congestion</a></dd>
+            <dt id="g-iri">IRI</dt>
+            <dd>The International Roughness Index, a pavement roughness measure on which a higher value is a rougher road. <span class="pathway">Pathway: Freight Atlas › Road Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+          </dl>
+
+          <h2 id="letter-j">J</h2>
+          <dl class="defs">
+            <dt id="g-json-graph">JSON Graph</dt>
+            <dd>Falcor's response shape, the paths you sent mirrored back with the values at their ends. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+          </dl>
+
+          <h2 id="letter-k">K</h2>
+          <dl class="defs">
+            <dt id="g-k-factor">K factor</dt>
+            <dd>The share of AADT that falls in the design hour. <span class="pathway">Pathway: NPMRDS › retired attributes</span> <a href="measures_and_data--measures--retired.html">Measures that used to be here</a></dd>
+          </dl>
+
+          <h2 id="letter-l">L</h2>
+          <dl class="defs">
+            <dt id="g-landing-page">landing page</dt>
+            <dd>The platform's front door, which lists the three products. <span class="pathway">Pathway: Platform › landing</span> <a href="start--navigating.html">Navigating the platform</a></dd>
+            <dt id="g-last-mile">Last Mile</dt>
+            <dd>The third corridor type of the core rail network's legend, below National and Statewide, as the plan's Figure 39 labels it. <span class="pathway">Pathway: Freight Atlas › Rail Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-layer-freight-atlas">layer (Freight Atlas)</dt>
+            <dd>One row in the layer panel, a styled drawing of one dataset with its own legend and hover fields, of which the map holds 39 in 8 categories. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--layers.html">Layer reference</a></dd>
+            <dt id="g-layer-library-panel">Layer Library Panel</dt>
+            <dd>The on-map panel that lets readers toggle a section's saved maps, off unless the author turns it on. <span class="pathway">Pathway: Admin › Map Settings</span> <a href="admin--add_map_to_page.html#settings">Add a saved map to a page</a></dd>
+            <dt id="g-layers-address">layers= (address)</dt>
+            <dd>The map's share variable, the ids of the layers that are on, which carries neither the map position nor the field each layer shows. <span class="pathway">Pathway: Freight Atlas › map address</span> <a href="freight_atlas--map.html">Use the map</a></dd>
+            <dt id="g-least-reliable-segments">least-reliable segments</dt>
+            <dd>The LOTTR page's ranking of NHS segments above 30,000 directional AADT and a quarter-mile long by their worst-period ratio. <span class="pathway">Pathway: NPMRDS › Level of Travel Time Reliability</span> <a href="npmrds--map21.html#the-lottr-page">MAP-21 PM3 reporting pages</a></dd>
+            <dt id="g-legend-panel">Legend (panel)</dt>
+            <dd>One block per layer that is on, carrying its title, its symbols and an info button that opens the dataset's source page. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--map.html">Use the map</a></dd>
+            <dt id="g-length-then-rows">length-then-rows</dt>
+            <dd>The request pattern every query follows: ask how many rows match, then read them by index range. <span class="pathway">Pathway: Developers › Quick start</span> <a href="developers--quickstart.html">Quick start</a></dd>
+            <dt id="g-level-of-travel-time-reliability-page">Level of Travel Time Reliability (page)</dt>
+            <dd>The federal report's child page, with the LOTTR map, the compliance cards, person-miles by bin and period, and the least-reliable segments. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="npmrds--map21.html#the-lottr-page">MAP-21 PM3 reporting pages</a></dd>
+            <dt id="g-lottr">LOTTR</dt>
+            <dd>Level of Travel Time Reliability, the 80th-percentile travel time divided by the 50th, annual by federal definition. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--lottr.html">LOTTR</a></dd>
+          </dl>
+
+          <h2 id="letter-m">M</h2>
+          <dl class="defs">
+            <dt id="g-macro-view">Macro View</dt>
+            <dd>One measure, one year and every segment on a map, with the worst-segments panel and the download builder. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="npmrds--macro_view.html">Macro View: how to use</a></dd>
+            <dt id="g-map-layers-panel">Map layers (panel)</dt>
+            <dd>The Freight Atlas map's layer panel, which counts what is on, searches the library and lists the active layers. <span class="pathway">Pathway: Freight Atlas › map</span> <a href="freight_atlas--map.html">Use the map</a></dd>
+            <dt id="g-map-21-pm3-federal">MAP-21 / PM3 (federal)</dt>
+            <dd>The reliability, delay and freight figures NYSDOT submits to FHWA, which are not the analytical series. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a></dd>
+            <dt id="g-map-21-pm3-system-performance-page">MAP-21 PM3 system performance (page)</dt>
+            <dd>The live federal report, with the compliance snapshot, a trend per measure, the MPO table, urban congestion and the annual download. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></dd>
+            <dt id="g-maps-gallery">Maps Gallery</dt>
+            <dd>The plan's figures as ready-made presets of the Freight Atlas map. <span class="pathway">Pathway: Freight Atlas › Maps Gallery</span> <a href="freight_atlas--gallery.html">Maps Gallery</a></dd>
+            <dt id="g-markers-mode">Markers mode</dt>
+            <dd>The Route Creation mode that drops waypoints and matches them against the 2022 network, saving the matched segments and not the waypoints. <span class="pathway">Pathway: NPMRDS › Route Creation</span> <a href="npmrds--routes--create.html">Create a route</a></dd>
+            <dt id="g-matching-events">Matching events</dt>
+            <dd>The Incident Search results block, a live count with one row per event ranked by attributed delay. <span class="pathway">Pathway: TSMO › Incident Search</span> <a href="tsmo--incident_search.html">Find an incident</a></dd>
+            <dt id="g-mbtile-upload">Mbtile (upload)</dt>
+            <dd>The per-column checkbox that keeps a column in the map tiles, so a map can draw or label with it. <span class="pathway">Pathway: Admin › Field Names Mappings</span> <a href="admin--upload_data.html#steps">Upload a dataset</a></dd>
+            <dt id="g-min-max-normalisation">min–max normalisation</dt>
+            <dd>Rescaling a measure so its lowest value becomes 1 and its highest becomes 5. <span class="pathway">Pathway: Docs › Recipes</span> <a href="npmrds--recipes--composite_score.html">Recipe: a composite bottleneck score</a></dd>
+            <dt id="g-mine-route-badge">Mine (route badge)</dt>
+            <dd>A route created by you. <span class="pathway">Pathway: NPMRDS › Add Routes</span> <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></dd>
+            <dt id="g-minimum-n-bar">minimum-n bar</dt>
+            <dd>The observation count a measure needs for a precision of plus or minus 0.05, published beside the row's own count. <span class="pathway">Pathway: NPMRDS › PM3 measures</span> <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a></dd>
+            <dt id="g-month-strip">month strip</dt>
+            <dd>The per-day average-speed strip above the Corridor View grid, where selecting a day drives the grid. <span class="pathway">Pathway: TSMO › Corridor View</span> <a href="tsmo--corridor_view.html">Explore a corridor over time</a></dd>
+            <dt id="g-mpo">MPO</dt>
+            <dd>Metropolitan planning organization, of which New York has 14. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+          </dl>
+
+          <h2 id="letter-n">N</h2>
+          <dl class="defs">
+            <dt id="g-network-vintage">network vintage</dt>
+            <dd>The year's TMC map that a figure is computed on, 52,029 segments for 2024, 52,157 for 2025 and 52,473 for 2026. <span class="pathway">Pathway: NPMRDS › home</span> <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a></dd>
+            <dt id="g-nhfn">NHFN</dt>
+            <dd>The National Highway Freight Network, FHWA's designated freight network. <span class="pathway">Pathway: Freight Atlas › Road Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+<dt id="g-nhs">NHS</dt>
+            <dd>The National Highway System, the federally designated network of Interstates and principal arterials on which the PM3 measures are reported, as Interstate and non-Interstate NHS. <span class="pathway">Pathway: Measures &amp; Data › LOTTR</span> <a href="measures_and_data--measures--lottr.html">LOTTR</a></dd>
+            <dt id="g-not-yet-computed">not yet computed</dt>
+            <dd>The Macro View state for a declared measure with no data, which is kept out of the measure menu. <span class="pathway">Pathway: NPMRDS › Macro View measure reference</span> <a href="measures_and_data--measures--in_development.html">Measures in development</a></dd>
+            <dt id="g-npmrds">NPMRDS</dt>
+            <dd>National Performance Management Research Data Set, the FHWA-licensed probe travel times covering the National Highway System and New York's expanded network. <span class="pathway">Pathway: NPMRDS › everywhere</span> <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a></dd>
+            <dt id="g-nysdot-region">NYSDOT region</dt>
+            <dd>One of NYSDOT's 11 administrative regions, written as "Region 8". <span class="pathway">Pathway: TSMO › Region filter</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+          </dl>
+
+          <h2 id="letter-o">O</h2>
+          <dl class="defs">
+            <dt id="g-of-tmc">% of tmc</dt>
+            <dd>The share of a segment that must have data before the segment is used in a build, where the federal figure is computed at 100. <span class="pathway">Pathway: Admin › the map21 / pm3 panel</span> <a href="admin--map21_pm3_sources.html#settings">Create the map21 / pm3 sources</a></dd>
+            <dt id="g-omit-upload">Omit (upload)</dt>
+            <dd>The per-column checkbox that keeps a column out of the load entirely. <span class="pathway">Pathway: Admin › Field Names Mappings</span> <a href="admin--upload_data.html#steps">Upload a dataset</a></dd>
+            <dt id="g-on-this-map">On this map</dt>
+            <dd>The map section's list of the saved maps it holds, with their visibility, the active marker, refresh and remove. <span class="pathway">Pathway: Admin › Map Settings</span> <a href="admin--add_map_to_page.html#settings">Add a saved map to a page</a></dd>
+            <dt id="g-options-object">options object</dt>
+            <dd>The JSON object, serialised inside the path, that filters, excludes, compares, matches, groups and orders a row read. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-own-year-free-flow">own-year free-flow</dt>
+            <dd>The deprecated transitional delay reference, which tracks prevailing traffic instead of a fixed baseline. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--which_measure.html">Which measure should I use?</a></dd>
+          </dl>
+
+          <h2 id="letter-p">P</h2>
+          <dl class="defs">
+            <dt id="g-padd">PADD</dt>
+            <dd>A Petroleum Administration for Defense District, the Energy Information Administration's regional grouping shown in the terminals popup. <span class="pathway">Pathway: Freight Atlas › Freight Facilities</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-page-variable-bridge">Page Variable Bridge</dt>
+            <dd>The per-map settings that tie a map's layer filter to one of the page's own variables. <span class="pathway">Pathway: Admin › Map Settings</span> <a href="admin--add_map_to_page.html#steps">Add a saved map to a page</a></dd>
+            <dt id="g-partial-year">partial year</dt>
+            <dd>A year whose months are not all present, which shows a partial total in the same card as a full year. <span class="pathway">Pathway: TSMO › Year filter</span> <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></dd>
+            <dt id="g-percent-bins-reporting">percent bins reporting</dt>
+            <dd>The older coverage figure, restored and published as the Data coverage measure. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--retired.html">Measures that used to be here</a></dd>
+            <dt id="g-performance-period">performance period</dt>
+            <dd>The four-year federal target cycle with a 2-year midpoint check, running 2022 to 2025 and then 2026 to 2029. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></dd>
+            <dt id="g-permission-named">permission (named)</dt>
+            <dd>One of the nine grants on a dataset, from viewing and downloading through creating a version to editing permissions. <span class="pathway">Pathway: Admin › Access</span> <a href="admin--users_and_permissions.html#what-a-permission-gates">Users and permissions</a></dd>
+            <dt id="g-person-miles-reliable">person-miles reliable</dt>
+            <dd>The federal LOTTR roll-up, the share of person-miles on segments whose worst period is below 1.50. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="measures_and_data--measures--lottr.html">LOTTR</a></dd>
+            <dt id="g-phed">PHED</dt>
+            <dd>Peak Hour Excessive Delay, the excessive delay accumulated in the federal peak periods. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--phed.html">PHED</a></dd>
+            <dt id="g-phfs">PHFS</dt>
+            <dd>The Primary Highway Freight System, the core component of the National Highway Freight Network. <span class="pathway">Pathway: Freight Atlas › Road Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-plan-figure-tile">plan figure (tile)</dt>
+            <dd>A Maps Gallery tile, carrying the figure number, the plan page, the plan's own context and the layers it opens. <span class="pathway">Pathway: Freight Atlas › Maps Gallery</span> <a href="freight_atlas--gallery.html">Maps Gallery</a></dd>
+            <dt id="g-plan-published-figure">plan-published figure</dt>
+            <dd>A number the 2024 State Freight Plan prints, which the Freight Atlas shows in place of a live recomputation. <span class="pathway">Pathway: Freight Atlas › home</span> <a href="freight_atlas--downloads.html#the-figures-agree-with-the-plan">Download freight data</a></dd>
+            <dt id="g-planning-time-index">Planning Time Index</dt>
+            <dd>A retired reliability index, the 95th-percentile travel time divided by the free-flow travel time, not computed today. <span class="pathway">Pathway: NPMRDS › 2024 documentation</span> <a href="measures_and_data--measures--retired.html">Measures that used to be here</a></dd>
+            <dt id="g-platform-home">Platform home</dt>
+            <dd>The last entry of the product switcher, which returns you to the landing page. <span class="pathway">Pathway: all › product switcher</span> <a href="start--navigating.html">Navigating the platform</a></dd>
+            <dt id="g-pm3">PM3</dt>
+            <dd>The third federal performance-measure rule, 23 CFR 490 subparts E, F and G, which defines LOTTR, TTTR and PHED. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a></dd>
+            <dt id="g-pm3-readme-txt">PM3_README.txt</dt>
+            <dd>The README inside every Macro View package, which restates that year's coverage era, free-flow reference window, delay and reliability caveats, and that the file is not for federal submittal. <span class="pathway">Pathway: NPMRDS › download package</span> <a href="npmrds--macro_view--download.html">Download data from the Macro View</a></dd>
+            <dt id="g-possible-draft">Possible draft</dt>
+            <dd>The report badge for a name containing test, testing, delete, bug or saving, which the incomplete-looking filter drops. <span class="pathway">Pathway: NPMRDS › Choose a report</span> <a href="npmrds--reports--find.html">Find a report</a></dd>
+            <dt id="g-precision-band">precision band</dt>
+            <dd>The expected spread of a measure at the sample size behind a row, measured by down-sampling real segments, and advisory rather than a suppression rule. <span class="pathway">Pathway: NPMRDS › PM3 measures</span> <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a></dd>
+            <dt id="g-product-switcher">product switcher</dt>
+            <dd>The list of products at the top of every side navigation. <span class="pathway">Pathway: all › side navigation</span> <a href="start--navigating.html">Navigating the platform</a></dd>
+            <dt id="g-published-draft-pill">published · draft (pill)</dt>
+            <dd>The report header's status, which says whether unpublished changes exist. <span class="pathway">Pathway: NPMRDS › report header</span> <a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a></dd>
+            <dt id="g-python-client">python client</dt>
+            <dd>The published python client, whose fetch-and-convert helper writes a query's rows straight to a CSV. <span class="pathway">Pathway: Developers › Worked examples</span> <a href="developers--examples.html">Worked examples</a></dd>
+          </dl>
+
+          <h2 id="letter-q">Q</h2>
+          <dl class="defs">
+            <dt id="g-quick-controls">Quick Controls</dt>
+            <dd>The pill row on a graph card in edit mode, which sets routes, measure, window, aggregate and comparison without opening a dialog. <span class="pathway">Pathway: NPMRDS › report card</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+          </dl>
+
+          <h2 id="letter-r">R</h2>
+          <dl class="defs">
+            <dt id="g-reactive-incident">reactive incident</dt>
+            <dd>An event in the categories the Incidents dashboard keeps, which since July 2026 is the complement of the work-zone categories. <span class="pathway">Pathway: TSMO › Incidents</span> <a href="tsmo--incidents.html">Incidents dashboard</a></dd>
+            <dt id="g-recipe">recipe</dt>
+            <dd>A planner's deliverable worked end to end, from the question through the steps to a sample output. <span class="pathway">Pathway: Docs › NPMRDS › Recipes</span> <a href="npmrds--recipes.html">Recipes</a></dd>
+            <dt id="g-recurrent-and-non-recurrent-delay">recurrent and non-recurrent delay</dt>
+            <dd>The everyday delay pattern against the delay left by incidents, weather and work zones. <span class="pathway">Pathway: TSMO › Congestion</span> <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a></dd>
+            <dt id="g-redc">REDC</dt>
+            <dd>A Regional Economic Development Council region, which the plan's maps use as their background. <span class="pathway">Pathway: Freight Atlas › Geographies</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-refresh-a-page-s-map">refresh (a page's map)</dt>
+            <dd>The control that re-fetches a saved map from the editor and merges it over the page's copy, keeping the page's own visibility, active layer and filter bindings. <span class="pathway">Pathway: Admin › Map Settings</span> <a href="admin--add_map_to_page.html#keeping-a-pages-map-in-step">Add a saved map to a page</a></dd>
+            <dt id="g-region-keyed-county-keyed-mpo-keyed">region-keyed · county-keyed · MPO-keyed</dt>
+            <dd>Which geography a page filters on: the TSMO dashboards are region-keyed, Corridor View is county-keyed, and the MAP-21 table is MPO-keyed. <span class="pathway">Pathway: all</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+            <dt id="g-regional-dashboards">Regional Dashboards</dt>
+            <dd>The TSMO home band that holds the four dashboard cards. <span class="pathway">Pathway: TSMO › home</span> <a href="tsmo.html">TSMO</a></dd>
+            <dt id="g-relative-variant">relative variant</dt>
+            <dd>The unfloored delay threshold, which is the one to use when comparing across facility classes. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--which_measure.html">Which measure should I use?</a></dd>
+            <dt id="g-reliability-columns">Reliability columns</dt>
+            <dd>A table extra that adds LOTTR, TTTR and free-flow speed from the analytical series for a peak-period window in a year with published values. <span class="pathway">Pathway: NPMRDS › Add Graph (Table)</span> <a href="npmrds--reports--graph_types.html">Graph types reference</a></dd>
+            <dt id="g-reporting-bin">reporting bin</dt>
+            <dd>The 15-minute bin, three epochs averaged, that every measure is computed on. <span class="pathway">Pathway: Measures › all</span> <a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a></dd>
+            <dt id="g-reports">Reports</dt>
+            <dd>One route charted over time from a template. <span class="pathway">Pathway: NPMRDS › Reports</span> <a href="npmrds--reports--start_from_template.html">Start a report from a template</a></dd>
+            <dt id="g-resolution-aggregate">resolution (aggregate)</dt>
+            <dd>The time bucket of a card, from 5 minutes through hour, day, weekday and month to a single summary value. <span class="pathway">Pathway: NPMRDS › Add Graph</span> <a href="npmrds--reports--graph_types.html">Graph types reference</a></dd>
+            <dt id="g-response-timeline">response timeline</dt>
+            <dd>The incident page's list of Traffic Incident Management timestamps, where a step that was not recorded says so instead of being estimated. <span class="pathway">Pathway: TSMO › Incident View</span> <a href="tsmo--incident_view.html">Read an incident page</a></dd>
+            <dt id="g-ris">RIS</dt>
+            <dd>NYSDOT's Roadway Inventory System, the source of AADT variants, posted speed, DDHV, capacity, volume-to-capacity and the K and D factors. <span class="pathway">Pathway: NPMRDS › 2024 documentation</span> <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a></dd>
+            <dt id="g-roadway-clearance-time">roadway clearance time</dt>
+            <dd>All lanes reopened minus incident verified, the FHWA Traffic Incident Management headline measure, computed only where both timestamps exist. <span class="pathway">Pathway: TSMO › Incidents</span> <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a></dd>
+            <dt id="g-route">route</dt>
+            <dd>A named, ordered list of TMC segments saved from Route Creation, the input that Reports and Route Comparison take, carrying no dates of its own. <span class="pathway">Pathway: NPMRDS › Route Creation</span> <a href="measures_and_data--data--routes_data.html">Routes data</a></dd>
+            <dt id="g-route-787-case">Route 787 case</dt>
+            <dd>The 2024 before/after study of northbound Route 787 in Cohoes, which measured 60,000 hours of delay against 36,250 after the change. <span class="pathway">Pathway: Docs › Recipes</span> <a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a></dd>
+            <dt id="g-route-compare">Route Compare</dt>
+            <dd>A table extra at summary resolution that adds a percent-against-the-first-route column per measure. <span class="pathway">Pathway: NPMRDS › Add Graph (Table)</span> <a href="npmrds--reports--graph_types.html">Graph types reference</a></dd>
+            <dt id="g-route-comparison">Route Comparison</dt>
+            <dd>A cross-tab of routes against periods with a base period. <span class="pathway">Pathway: NPMRDS › Route Comparison</span> <a href="npmrds--route_comparison.html">Compare routes across periods</a></dd>
+            <dt id="g-route-row-report">route row (report)</dt>
+            <dd>One reference to a saved route inside a report, with its own date window, colour and label, whose renaming does not change the saved route. <span class="pathway">Pathway: NPMRDS › report Routes rail</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+            <dt id="g-route-tags-agency-user">route tags (agency: · user:)</dt>
+            <dd>The validated tag vocabulary on a saved route, which carries the grouping a folder would. <span class="pathway">Pathway: NPMRDS › Route Creation save dialog</span> <a href="measures_and_data--data--routes_data.html">Routes data</a></dd>
+            <dt id="g-routes-data">Routes Data</dt>
+            <dd>The platform's table of saved routes, holding each route's id, name, description, TMC array, tags and timestamps. <span class="pathway">Pathway: NPMRDS › route pickers</span> <a href="measures_and_data--data--routes_data.html">Routes data</a></dd>
+            <dt id="g-routes-rail">Routes rail</dt>
+            <dd>The report's route panel, shown only in edit mode, holding one row per route. <span class="pathway">Pathway: NPMRDS › report (edit)</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+          </dl>
+
+          <h2 id="letter-s">S</h2>
+          <dl class="defs">
+            <dt id="g-save-new-route">Save new route</dt>
+            <dd>The save dialog's title for a route that has no id yet, which becomes an update once the route exists. <span class="pathway">Pathway: NPMRDS › Route Creation</span> <a href="npmrds--routes--create.html">Create a route</a></dd>
+            <dt id="g-saved-map-symbology">saved map (symbology)</dt>
+            <dd>A named style over one or more dataset versions, built in the Map Editor with its own legend and hover fields, and copied into a page's map section. <span class="pathway">Pathway: Admin › Map Editor</span> <a href="admin--map_editor.html">Map Editor</a></dd>
+            <dt id="g-service-account-routes">service-account routes</dt>
+            <dd>Routes written in bulk by a service account rather than drawn by a person, 55,370 of the 73,464 rows at the August 2026 reading. <span class="pathway">Pathway: NPMRDS › route pickers</span> <a href="measures_and_data--data--routes_data.html">Routes data</a></dd>
+            <dt id="g-session">session</dt>
+            <dd>The signed-in state, which lasts about 6 hours before the site returns you to the sign-in page. <span class="pathway">Pathway: all › sign-in</span> <a href="start--accounts_and_sessions.html#how-long-a-session-lasts">Sign in, sessions and accounts</a></dd>
+            <dt id="g-shape-graph">shape (graph)</dt>
+            <dd>Which of the five things a card is: a bar graph, a line graph, a grid graph, a table or a map. <span class="pathway">Pathway: NPMRDS › Add Graph</span> <a href="npmrds--reports--graph_types.html">Graph types reference</a></dd>
+            <dt id="g-short-segments-fragments">short segments (fragments)</dt>
+            <dd>Single-segment routes, which browse views hide until you ask for them. <span class="pathway">Pathway: NPMRDS › Add Routes</span> <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></dd>
+            <dt id="g-show-view">Show (view)</dt>
+            <dd>The per-layer select that picks which field a layer colours by, offered on the five layers that have views. <span class="pathway">Pathway: Freight Atlas › Active map</span> <a href="freight_atlas--layers.html">Layer reference</a></dd>
+            <dt id="g-show-everyone-s">Show everyone's</dt>
+            <dd>The picker switch that widens the default list of yours, your agency's and curated work to the whole catalogue. <span class="pathway">Pathway: NPMRDS › pickers</span> <a href="npmrds--reports--find.html">Find a report</a></dd>
+            <dt id="g-sign-in">sign-in</dt>
+            <dd>Entering your email and password, needed only to save routes and reports or to administer data. <span class="pathway">Pathway: all › sign-in</span> <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a></dd>
+            <dt id="g-sign-in-token">sign-in token</dt>
+            <dd>The token the sign-in server returns for an email, password and project, which lasts about 6 hours and which a public read does not need. <span class="pathway">Pathway: Developers › Quick start</span> <a href="developers--quickstart.html">Quick start</a></dd>
+            <dt id="g-sign-in-wall-data-and-downloads">sign-in wall (Data &amp; Downloads)</dt>
+            <dd>The sign-in page an anonymous visitor met on the catalog at the July 2026 check, which the docs record as a known issue rather than a decision. <span class="pathway">Pathway: Freight Atlas › Data &amp; Downloads</span> <a href="freight_atlas--downloads.html#what-needs-a-login">Download freight data</a></dd>
+            <dt id="g-significant-progress-two-prong-test">significant progress (two-prong test)</dt>
+            <dd>FHWA's rule that a measure counts as progressing if it meets its 2-year or 4-year target, or improves on the period's baseline year. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></dd>
+            <dt id="g-source-page">source page</dt>
+            <dd>A dataset's page in the catalog, with its overview, table and map tabs, a version selector and a download per version. <span class="pathway">Pathway: Freight Atlas › Data &amp; Downloads</span> <a href="freight_atlas--downloads.html">Download freight data</a></dd>
+            <dt id="g-statewide-no-region-selected">statewide (no region selected)</dt>
+            <dd>The full PM3 submission dataset, which is deliberately not the sum of the 11 regions. <span class="pathway">Pathway: TSMO › filter bar</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+            <dt id="g-statewide-floor">statewide floor</dt>
+            <dd>A federal target that applies to the state as a whole, so a region can sit below it without the state being out of compliance. <span class="pathway">Pathway: TSMO › Reliability</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+            <dt id="g-stcc">STCC</dt>
+            <dd>The Standard Transportation Commodity Code, the commodity classification the Transearch layers filter by. <span class="pathway">Pathway: Freight Atlas › Transearch Freight Movement</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-stracnet">STRACNET</dt>
+            <dd>The Strategic Rail Corridor Network, the rail lines flagged in the core rail dataset, which the plan's Figure 19 draws with STRAHNET. <span class="pathway">Pathway: Freight Atlas › Rail Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-strahnet">STRAHNET</dt>
+            <dd>The Strategic Highway Network, the highways designated for defence mobility, drawn as routes and connectors. <span class="pathway">Pathway: Freight Atlas › Road Network</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-stream">stream</dt>
+            <dd>Which vehicles a travel time describes: all vehicles, passenger vehicles or freight trucks. <span class="pathway">Pathway: NPMRDS › PM3 measures</span> <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a></dd>
+            <dt id="g-system">system</dt>
+            <dd>Interstate or non-Interstate NHS, which is a basis and not a geography. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+          </dl>
+
+          <h2 id="letter-t">T</h2>
+          <dl class="defs">
+            <dt id="g-tasks-dataset-log">Tasks (dataset log)</dt>
+            <dd>A dataset's own record of its loads and jobs, with the event list for each one. <span class="pathway">Pathway: Admin › a dataset's Admin tab</span> <a href="admin--manage_data.html#access-and-deletion">Manage a dataset</a></dd>
+            <dt id="g-ted">TED</dt>
+            <dd>Total Excessive Delay, the excessive delay accumulated in all hours of the year. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--ted.html">TED</a></dd>
+            <dt id="g-ted-per-mile">TED per mile</dt>
+            <dd>Total excessive delay divided by segment length, which is what ranks a corridor list, while the total is what a report quotes. <span class="pathway">Pathway: Docs › Recipes</span> <a href="npmrds--recipes--congestion_management_process.html">Recipe: a Congestion Management Process</a></dd>
+            <dt id="g-threshold-variant">threshold variant</dt>
+            <dd>One of the four delay thresholds behind PHED and TED: posted speed limit, anchored free-flow, relative and own-year free-flow. <span class="pathway">Pathway: NPMRDS › Macro View threshold control</span> <a href="measures_and_data--measures--phed.html#the-four-variants">PHED</a></dd>
+            <dt id="g-tim-timestamp-completeness">TIM timestamp completeness</dt>
+            <dd>The share of TRANSCOM events carrying each Traffic Incident Management timestamp, from 42.7 % for all lanes reopened down to 0.3 % for response on scene. <span class="pathway">Pathway: TSMO › Incidents</span> <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></dd>
+            <dt id="g-time-space-speed-grid">time-space speed grid</dt>
+            <dd>Corridor View's grid of segments in road order against 5-minute columns from 05:00 to midnight, each cell an average speed in mph. <span class="pathway">Pathway: TSMO › Corridor View</span> <a href="tsmo--corridor_view.html">Explore a corridor over time</a></dd>
+            <dt id="g-tmc">TMC</dt>
+            <dd>Traffic Message Channel segment, the road piece every travel-time record is reported on. <span class="pathway">Pathway: NPMRDS › Macro View, Segment</span> <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a></dd>
+            <dt id="g-tmc-array">TMC array</dt>
+            <dd>The ordered TMC codes a route carries, its only geometry, which can hold a code a later map no longer carries. <span class="pathway">Pathway: NPMRDS › Route Creation</span> <a href="measures_and_data--data--routes_data.html">Routes data</a></dd>
+            <dt id="g-tmc-click-mode">TMC Click mode</dt>
+            <dd>The Route Creation mode that builds a route by clicking segments on the current map. <span class="pathway">Pathway: NPMRDS › Route Creation</span> <a href="npmrds--routes--create.html">Create a route</a></dd>
+            <dt id="g-tmc-search">TMC search</dt>
+            <dd>The Route Creation box that adds a segment by its 9-character code, whose add button stays disabled until the code resolves. <span class="pathway">Pathway: NPMRDS › Route Creation</span> <a href="npmrds--routes--create.html">Create a route</a></dd>
+            <dt id="g-today-view-time">Today (view time)</dt>
+            <dd>The virtual base date a derived row counts back from, which on a template is the <span class="ui">Viewing as of</span> date. <span class="pathway">Pathway: NPMRDS › Routes rail</span> <a href="npmrds--reports--templates.html">Template reference</a></dd>
+            <dt id="g-transcom-events">TRANSCOM events</dt>
+            <dd>Incidents, work zones and other road events reported through the TRANSCOM coalition feed, filtered to New York. <span class="pathway">Pathway: TSMO › Incidents</span> <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a></dd>
+            <dt id="g-transearch">TRANSEARCH</dt>
+            <dd>S&amp;P Global's commodity-flow database, which the plan and the map use as the 2023 release with a 2021 base year and a 2050 forecast. <span class="pathway">Pathway: Freight Atlas › Transearch layers</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-transportny">TransportNY</dt>
+            <dd>NYSDOT's open platform for travel-time, operations and freight data: three products, one sign-in and one documentation site. <span class="pathway">Pathway: Platform › everywhere</span> <a href="start--what_is_transportny.html">What TransportNY is</a></dd>
+            <dt id="g-travel-time-index">Travel Time Index</dt>
+            <dd>A retired reliability index, the mean travel time divided by the free-flow travel time, not computed today. <span class="pathway">Pathway: NPMRDS › 2024 documentation</span> <a href="measures_and_data--measures--retired.html">Measures that used to be here</a></dd>
+            <dt id="g-truck-aadt">truck AADT</dt>
+            <dd>The truck-only daily counts, which appear as single-unit and combination-truck AADT. <span class="pathway">Pathway: Freight Atlas › Traffic Volume &amp; Road Attributes</span> <a href="freight_atlas--layers.html#vocabulary">Layer reference</a></dd>
+            <dt id="g-tttr">TTTR</dt>
+            <dd>Truck Travel Time Reliability, the 95th-percentile truck travel time divided by the 50th. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--tttr.html">TTTR</a></dd>
+            <dt id="g-tttr80">TTTR₈₀</dt>
+            <dd>The same truck ratio as TTTR read at the 80th percentile, a platform measure and never a federal one. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a></dd>
+            <dt id="g-type-filter">Type (filter)</dt>
+            <dd>The Work Zones dashboard's control, offering Construction, Maintenance and Emergency Operations. <span class="pathway">Pathway: TSMO › Work Zones</span> <a href="tsmo--filters.html">Using the filter bar</a></dd>
+          </dl>
+
+          <h2 id="letter-u">U</h2>
+          <dl class="defs">
+            <dt id="g-uda-root">uda (root)</dt>
+            <dd>The current root of every data read, the one the site itself uses. <span class="pathway">Pathway: Developers › Data Manager API</span> <a href="developers--data_manager_api.html">Data Manager API</a></dd>
+            <dt id="g-update-route">Update Route</dt>
+            <dd>The save button's wording whenever a route id is in the address, where every save overwrites that route with no confirmation dialog. <span class="pathway">Pathway: NPMRDS › Route Creation</span> <a href="npmrds--routes--create.html">Create a route</a></dd>
+            <dt id="g-urbanized-area-uza">urbanized area (UZA)</dt>
+            <dd>A Census urban area, and where one holds over 200,000 people in an air-quality nonattainment or maintenance area it reports PHED, which in New York means New York–Newark and Poughkeepsie–Newburgh. <span class="pathway">Pathway: NPMRDS › MAP-21 PM3 · Urban congestion</span> <a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a></dd>
+            <dt id="g-use-template">use template →</dt>
+            <dd>The card link that opens a template, after which the route dialog asks for exactly the number of routes the template needs. <span class="pathway">Pathway: NPMRDS › Reports</span> <a href="npmrds--reports--start_from_template.html">Start a report from a template</a></dd>
+          </dl>
+
+          <h2 id="letter-v">V</h2>
+          <dl class="defs">
+            <dt id="g-value-distribution">Value distribution</dt>
+            <dd>The measure panel's histogram with its median, 80th percentile and share above target for what is currently on the map. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="npmrds--macro_view.html">Macro View: how to use</a></dd>
+            <dt id="g-value-of-time">value of time</dt>
+            <dd>The dollars per vehicle-hour a delay total is multiplied by, $52, $42 and $77 by vehicle class today, against the flat $20 some pages still state. <span class="pathway">Pathway: TSMO › Congestion</span> <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a></dd>
+            <dt id="g-vehicle-hours">vehicle-hours</dt>
+            <dd>One vehicle delayed one hour, the unit behind every delay figure, with person-hours being vehicle-hours times occupancy. <span class="pathway">Pathway: TSMO › Data &amp; Methodology</span> <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></dd>
+            <dt id="g-version-dataset">version (dataset)</dt>
+            <dd>One iteration of a dataset, the same columns with new data, to which the download files belong. <span class="pathway">Pathway: Admin › a dataset's Versions card</span> <a href="admin--manage_data.html#versions-and-downloads">Manage a dataset</a></dd>
+            <dt id="g-view-as">View As</dt>
+            <dd>The administrator's way of seeing the site as another account sees it, which is a diagnostic and not an audit trail. <span class="pathway">Pathway: Admin › Users</span> <a href="admin--users_and_permissions.html#steps">Users and permissions</a></dd>
+            <dt id="g-view-group">View Group</dt>
+            <dd>A set of versions of one dataset collected behind a single layer, in a chosen order, with one marked as the one it opens on. <span class="pathway">Pathway: Admin › Map Editor</span> <a href="admin--map_editor.html#pointing-a-map-at-a-newer-version">Map Editor</a></dd>
+            <dt id="g-viewing-as-of">Viewing as of</dt>
+            <dd>The anchor date a template's periods count back from, reset to the latest date with data by <span class="ui">Use latest available</span>. <span class="pathway">Pathway: NPMRDS › template header</span> <a href="npmrds--reports--start_from_template.html">Start a report from a template</a></dd>
+          </dl>
+
+          <h2 id="letter-w">W</h2>
+          <dl class="defs">
+            <dt id="g-when-window">When (window)</dt>
+            <dd>A card's time-of-day preset and day-of-week mask, which belongs to the graph rather than to the route. <span class="pathway">Pathway: NPMRDS › Add Graph</span> <a href="npmrds--reports--build.html">Build and edit a report</a></dd>
+            <dt id="g-work-zone-event">work-zone event</dt>
+            <dd>A TRANSCOM event whose NYSDOT sub-category is Construction, Maintenance or Emergency Operations. <span class="pathway">Pathway: TSMO › Work Zones</span> <a href="tsmo--work_zones.html">Work Zones dashboard</a></dd>
+            <dt id="g-worst-25-segments">Worst 25 segments</dt>
+            <dd>The measure panel's ranking of the current measure over the current geography, drawn as points on the map. <span class="pathway">Pathway: NPMRDS › Macro View</span> <a href="npmrds--macro_view.html#worst-segments">Macro View: how to use</a></dd>
+            <dt id="g-worst-period-lottr">worst-period LOTTR</dt>
+            <dd>The highest of a segment's four period ratios, which colours the Reliability map and ranks its corridor table. <span class="pathway">Pathway: TSMO › Reliability</span> <a href="tsmo--reliability.html">Reliability dashboard</a></dd>
+          </dl>
+
+          <h2 id="letter-y">Y</h2>
+          <dl class="defs">
+            <dt id="g-year-chips">year chips</dt>
+            <dd>The TSMO home's row of year chips, offering every year the delay series holds, partial years included. <span class="pathway">Pathway: TSMO › home</span> <a href="tsmo--start.html">Start here: a year, three numbers, a dashboard</a></dd>
+          </dl>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>The measure, data and concept pages of <a href="measures_and_data.html">Measures &amp; Data</a>: every measure, geography, coverage and dataset entry above restates the page it links to.</li>
+            <li><a href="freight_atlas--layers.html#vocabulary">Layer reference, Vocabulary</a>: the Freight Atlas network, commodity and facility acronyms, including the corridor types of the core rail network's legend and the TRANSEARCH citation form (ticket 2197830).</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28, Glossary section: TMC, epoch, reporting bin, stream, precision band, minimum-n bar, free-flow reference, the floor and coverage era.</li>
+            <li>TSMO Data &amp; Methodology page, revision of 2026-07-27, Glossary section: TMC, LOTTR, TTTR, PHED, vehicle-hours, functional class and NYSDOT region. Where its segment count differs from the platform's current network, <a href="measures_and_data--data--tmc_network.html">TMC network</a> owns the reconciliation.</li>
+            <li><a href="measures_and_data--methodology_changes.html">Methodology changes</a> and <a href="whats_new.html">What's new</a>: the dates behind the entries that name a change, including the anchored free-flow window and the June 2026 excessive-delay revision.</li>
+            <li>The Admin, Developers, NPMRDS, TSMO and Freight Atlas pages named in each entry: the control, dialog and API terms are the labels and keys those pages document.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 7)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="measures_and_data--methodology_changes.html">Methodology changes</a>
+          <a href="whats_new.html">What's new</a>
+          <a href="help.html">Help and feedback</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

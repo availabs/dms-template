@@ -4,8 +4,9 @@ import { getRegisteredComponents } from '../../../../dms/packages/dms/src/patter
 import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 import { CMSContext } from '../../../../dms/packages/dms/src/patterns/page/context';
 import { applyMeasurePickToState } from '../MeasurePicker';
-import { BASE_SOURCE } from '../MeasurePicker/composeMeasureConfig';
+import { BASE_SOURCE, applyDefaultLegendPosition } from '../MeasurePicker/composeMeasureConfig';
 import { composeMapSectionConfig } from '../MeasurePicker/composeMapConfig';
+import { DEFAULT_GRAPH_SECTION_BORDER } from './reportSectionDefaults';
 
 const AVL_GRAPH_ELEMENT_TYPE = 'AVL Graph';
 const SPREADSHEET_ELEMENT_TYPE = 'Spreadsheet';
@@ -75,6 +76,11 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
       // applyMeasurePickToState's own `if (!state.externalSource?.source_id)` guard, which exists
       // only for the already-configured-graph case (an author's own different Dataset pick).
       state.externalSource = { ...BASE_SOURCE.sourceInfo };
+      // NPMRDS's own per-graph-type default legend position (composeMeasureConfig.js's
+      // DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE) — seeded once, here, at real creation time only;
+      // never reasserted by applyMeasurePickToState below, so a later manual override (Settings
+      // drawer, or QuickControls' own Legend pill) survives every future re-pick on this section.
+      applyDefaultLegendPosition(state, pick.graphType);
 
       const applied = applyMeasurePickToState(state, pick, {
         externalSourceColumns: BASE_SOURCE.sourceInfo.columns,
@@ -98,6 +104,12 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
       is_draft: true,
       // Same shape sectionArray.jsx's own save() stamps onto every newly-created section.
       parent: JSON.stringify({ id: item.id, ref: `${item.app}+${item.type}` }),
+      border: DEFAULT_GRAPH_SECTION_BORDER,
+      // Inline title/legend row (2026-09-04, Ryan) — selects the `reportInlineTitle` avlGraph
+      // style (transportny/themev2.js), which is what actually reads `theme.titleInlineWithLegend`
+      // in GraphComponent.jsx. Only meaningful for the real chart component ('AVL Graph' — Map has
+      // no avlGraph theme to select, and Table/Spreadsheet has no chart legend at all).
+      ...(elementType === AVL_GRAPH_ELEMENT_TYPE ? { activeStyle: 'reportInlineTitle' } : {}),
       element: { 'element-type': elementType, 'element-data': JSON.stringify(state) },
     };
     const nextSections = [...sectionList, newSection];

@@ -2,21 +2,18 @@
 // and detects real intersections.
 //
 // Branch detection is PURE TOPOLOGY - just the count of distinct edges (by `ogc_fid`) touching a
-// node - not `osm` way id, not `highway` type (2026-08-25, after both of those broke: highway-type
-// matching failed on same-tagged interchange ramps; `osm` way id matching then failed too, once a
-// live check of the actual data showed a single physical motorway can legitimately continue under
-// a DIFFERENT `osm` way id with zero real intersection there - "you can only take the ogc_fid
-// here"). A node with exactly one viable next edge is always just a pass-through, whatever tags or
-// way ids are involved; two or more means a real fork exists, regardless of what any of them are
-// tagged as. `osm` is still used (as a soft preference, not a branch signal) to choose WHICH edge
-// to continue onto when there's no fork.
+// node - not `osm` way id, not `highway` type: highway-type matching fails on same-tagged
+// interchange ramps, and `osm` way id matching also fails since a single physical motorway can
+// legitimately continue under a DIFFERENT `osm` way id with zero real intersection there. A node
+// with exactly one viable next edge is always just a pass-through, whatever tags or way ids are
+// involved; two or more means a real fork exists, regardless of what any of them are tagged as.
+// `osm` is still used (as a soft preference, not a branch signal) to choose WHICH edge to continue
+// onto when there's no fork.
 //
-// Simplified 2026-08-25 ("expand the road from the end and start of the selected segment, in both
-// dir - if for any dir you find the incoming branch or road, pick the next immediate node and stop
-// that dir... it's simple, not that complex"): a single linear walk per side (no branching tree, no
-// real-routing-API verification) that stops ONE hop past the first node with a real fork - not at
-// the branch node itself, one step beyond it - or at a dead end if no branch is ever found.
-// General-purpose, not highway-specific - nothing here special-cases any road class.
+// A single linear walk per side (no branching tree, no real-routing-API verification) that stops
+// ONE hop past the first node with a real fork - not at the branch node itself, one step beyond it
+// - or at a dead end if no branch is ever found. General-purpose, not highway-specific - nothing
+// here special-cases any road class.
 const bearing = ([lon1, lat1], [lon2, lat2]) => Math.atan2(lon2 - lon1, lat2 - lat1);
 const angleDiff = (a, b) => {
   const d = Math.abs(a - b) % (2 * Math.PI);

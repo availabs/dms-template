@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Create a route · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Create a route.</h1>
+          <p class="doc-lede">A route is a named, ordered list of road segments (TMCs). Build one on the Route Creation map by clicking segments, typing codes or dropping markers, then save it with a name and tags. Every report and comparison starts from a saved route.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+            <span class="gated">requires sign-in</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Sign in. Open <span class="ui">Reports</span> and select <span class="ui">New route</span>; Route Creation is not in the side navigation, and the address <code>/route_creation</code> is the other way in. The page is one map with the network in grey and two panels: <span class="ui">Route</span>, naming the route you are making, and <span class="ui">Route editor</span>, holding the tools. Each direction of a road is its own set of segments, so know which you want.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Zoom to the road with the map's zoom buttons. A double-click does not zoom: it selects a segment and deselects it again. The mouse wheel does not zoom this map.<span class="result">Segments become clickable lines. Hovering one shows its code.</span></li>
+            <li>Keep <span class="ui">TMC Click</span>, the default mode, and click each segment in the direction of travel. Clicking a selected segment removes it.<span class="result">The segment turns blue and a row appears in <span class="ui">TMC list</span>: code, miles and the cross street it ends at. <span class="ui">TMCs:</span> counts up and the total miles follow.</span></li>
+            <li>To add a segment you cannot see, type its 9-character code in <span class="ui">TMC search</span> and select <span class="ui">Add</span>, or press Enter.<span class="result">The map centres on the segment and the row appears. If the code does not exist the panel reads <span class="ui">TMC not found</span> and <span class="ui">Add</span> stays disabled.</span></li>
+            <li>Or select <span class="ui">Markers</span> and click the map at two or more points along the road. Drag a marker to move it.<span class="result">The panel reads <span class="ui">Finding a route between your markers…</span>, then lists the segments a routing service matched between them. Switching modes clears the selection.</span></li>
+            <li>Tidy the list. Hover a row to highlight its segment. Select <span class="ui">Remove</span> on a row, <span class="ui">Remove last</span> for the newest segment or marker, or <span class="ui">Clear all</span> to start over.<span class="result">The list, the count and the total update.</span></li>
+            <li>Check the order. The list stores segments in the order you clicked them, not in road order.</li>
+            <li>Select <span class="ui">Save route</span>.<span class="result">The <span class="ui">Save new route</span> dialog opens with <span class="ui">Name</span>, <span class="ui">Description</span> and <span class="ui">Tags</span>.</span></li>
+            <li>Name the route so it reads well as a chart legend: road, direction, end points. Add a description if the extent needs explaining.</li>
+            <li>Tag it. The dialog suggests your own tag and one tag per agency group you belong to as <span class="ui">+</span> chips; select the ones that apply, or type a county, region or project tag in <span class="ui">Add a tag…</span>.<span class="result">Tags are how other people find the route. The panel also shows the route's <span class="ui">Network vintage</span>, pinned to the map the route was built on; a segment from another vintage cannot be added, and <span class="ui">Add</span> stays disabled. See <a href="npmrds--routes--manage.html#steps">Find, edit, tag and share routes</a>.</span></li>
+            <li>Select <span class="ui">Save</span>.<span class="result">The dialog closes and the address gains <code>?route_id=</code> and the new route's number. The <span class="ui">Route</span> panel shows an <span class="ui">editing</span> badge and the count, miles and route number. The button now reads <span class="ui">Update route</span>.</span></li>
+            <li>To edit later, open the same address, change the segments, tags or name, and select <span class="ui">Update route</span>. The dialog reads <span class="ui">Update route</span> and warns in red that saving overwrites the route.</li>
+          </ol>
+
+          <div class="callout caution"><span class="k">what is saved</span>Name, description, the segment codes in order, and the tags. Markers are not saved: a route drawn with markers reopens in <span class="ui">TMC Click</span> mode as a plain list. A route carries no dates. Dates belong to the report that uses it.</div>
+
+          <figure class="shot" data-capture="www/npmrds/route_creation?route_id=&lt;id&gt; · signed in · Markers mode · three markers · resolved segments · Route panel with editing badge" data-alt="Route Creation in Markers mode: three coloured markers on a road, the matched segments drawn in blue, and the Route panel showing the route name, count, miles and the editing badge">
+            <!-- captured 2026-09-08 · http://npmrds.localhost:5231/route_creation?route_id=2216791 · Markers mode, three markers on Western Ave, the matched segments in blue, EDITING badge; nothing saved -->
+            <img src="../../assets/screens/docs/npmrds/routes-create-01-markers.png" alt="Route Creation in Markers mode: three coloured markers on a road, the matched segments drawn in blue, and the Route panel showing the route name, count, miles and the editing badge"/>
+            <figcaption>Figure 1 · an existing route reopened, with markers dropped. Captured 2026-09-08.</figcaption>
+          </figure>
+
+          <h2 id="settings">Settings</h2>
+          <p>Every control on the Route Creation page.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">TMC Click</span> | <span class="ui">Markers</span></td><td>How segments are chosen: one click per segment, or waypoints matched by a routing service</td><td>Two modes; switching clears the selection</td><td><span class="ui">TMC Click</span></td></tr>
+              <tr><td><span class="ui">TMC search</span> · <span class="ui">Add</span></td><td>Adds a segment by its code; reads <span class="ui">Remove</span> if the code is already in the route</td><td>A 9-character TMC code; TMC Click mode only</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Remove last</span> · <span class="ui">Clear all</span></td><td>Drops the newest segment or marker; empties the route in both modes</td><td>—</td><td>—</td></tr>
+              <tr><td><span class="ui">Name</span> · <span class="ui">Description</span></td><td>The route's title, inherited by every report that uses it, and free text</td><td>Text</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Tags</span></td><td>Who owns the route and where it is</td><td>Suggested chips for you and your agency groups; typed <code>county:</code>, <code>region:</code>, <code>agency:</code> or free-text tags</td><td>Your own tag and your agency tags, offered as suggestions</td></tr>
+              <tr><td><span class="ui">Network vintage</span></td><td>The map year the routing service matches markers against</td><td>Fixed, shown as <span class="ui">2022</span> · <span class="ui">pinned</span></td><td>2022</td></tr>
+              <tr><td><span class="ui">All routes</span></td><td>Leaves the tool for the Reports page</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Two maps are in play. Clicks select segments from the 2026 network on screen. Markers are matched against the 2022 network, the only vintage the routing service resolved reliably in a July 2026 test; 2016, 2018 and 2023 to 2026 returned nothing. A route can hold a code a later year's data lacks, and a report for that year charts one segment fewer. <a href="measures_and_data--concepts--tmc_network_and_vintages.html#how-routes-bind-to-a-vintage">How routes bind to a vintage</a> explains.</li>
+            <li>With <code>?route_id=</code> in the address every save overwrites that route. The button and the dialog say so; there is no confirmation. Explore from a fresh <code>/route_creation</code> address.</li>
+            <li>Click order is stored as clicked. Nothing sorts the list into road order.</li>
+            <li>The hover popup shows the segment code only, not the road name.</li>
+            <li>There is no folder and no date on a route. Grouping is tags; dates live on the report. Folders from the earlier tool were not carried over.</li>
+            <li><span class="ui">All routes</span> opens the Reports page. Its address ends in a #routes anchor the current Reports page no longer carries, so it lands at the top of that page.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="i-cannot-find-the-tool-that-creates-a-route">I cannot find the tool that creates a route</h3>
+          <p>It is <span class="ui">New route</span> in the header of the Reports page, not an item in the side navigation. The address <code>/route_creation</code> also opens it. Asked in August 2026; see References.</p>
+          <h3 id="a-marker-route-has-a-blank-segment">A marker route has a blank segment</h3>
+          <p>The routing service can return a segment with no code or length in a matched path; northbound I-787 near Albany was reported in May 2026. Switch to <span class="ui">TMC Click</span> and add the missing segment by clicking it or by typing its code in <span class="ui">TMC search</span>.</p>
+          <h3 id="the-page-showed-an-error-on-first-load">The page showed an error on first load</h3>
+          <p>"Unable to complete your request at the moment. Please try again later." was reported on an NPMRDS map page in September 2026; the second attempt succeeded. Reload the page. If it repeats, <a href="help.html">report it</a> with the time.</p>
+          <h3 id="i-cannot-see-my-markers">I cannot see my markers</h3>
+          <p>Markers mode can match a route without drawing the start and end pins, reported in September 2026. The <span class="ui">TMC list</span> still fills. Use <span class="ui">Remove last</span> to back out the newest point.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></li>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a></li>
+            <li><a href="npmrds--reports--start_from_template.html">Start a report from a template</a></li>
+            <li><a href="measures_and_data--data--routes_data.html">Routes data</a> · the datasheet</li>
+            <li><a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Route Creation plugin code, 2026-09-03: RouteEditor (mode toggle, counts, <span class="ui">Remove last</span> · <span class="ui">Clear all</span>, <span class="ui">TMC search</span> · <span class="ui">Add</span> · <span class="ui">TMC not found</span>, <span class="ui">Save route</span> / <span class="ui">Update route</span>), RouteIdentityPanel (<span class="ui">Route</span>, <span class="ui">editing</span>, <span class="ui">Network vintage</span> 2022 pinned, <span class="ui">All routes</span>), SaveRouteModal (<span class="ui">Save new route</span> / <span class="ui">Update route</span>, overwrite warning, <span class="ui">Name</span> · <span class="ui">Description</span> · <span class="ui">Tags</span>, <span class="ui">Cancel</span> · <span class="ui">Save</span> / <span class="ui">Update</span>), ModeHintPill; the save payload (name, description, tmc_array, tags, empty metadata; markers not written); the 2022 routing default and its 2026-07-23 test.</li>
+            <li>Live Route Creation page, published 2026-09-01: one map section drawing the 2026 network, hover field the segment code.</li>
+            <li>Route Creation design record, revision 1 (2026-09-01), and <a href="measures_and_data--data--routes_data.html">Routes data</a>: click order stored; overwrite semantics; folders and dates deferred.</li>
+            <li>Platform route-building guide (creating-routes): mouse-wheel zoom disabled; hover shows the code only; the <span class="ui">Add</span> button of 2026-07-27.</li>
+            <li>Ticket 2210869 (2026-08-11) "I can't find the tools needed to create a new route"; ticket 2217675 (2026-09-02) markers not shown; ticket 2217781 (2026-09-03) first-load error; running fix 2172492 (2026-05-14) blank TMC on routing.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="measures_and_data--data--routes_data.html">Routes data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

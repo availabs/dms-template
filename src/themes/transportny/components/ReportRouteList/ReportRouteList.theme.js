@@ -24,12 +24,23 @@ export const reportRouteListTheme = {
   panelCollapseBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10',
 
   // ── Actions row · always present (Add Route / Add Graph are the report's two jobs). ──
-  actionsRow: 'px-3 py-2.5 border-b border-zinc-950/08 bg-slate-50 flex items-center gap-2 shrink-0',
+  // flex-col (2026-09-08, was items-center on a single row): the group-reuse select
+  // (`addSlotGroupRow`) needed its own line — sharing this row with the two buttons squeezed both
+  // labels into wrapping/overlapping text in the narrow rail (found live, screenshotted). Unchanged
+  // single-line look for every report without a group to reuse, and for every static report (which
+  // never renders `addSlotGroupRow` at all).
+  actionsRow: 'px-3 py-2.5 border-b border-zinc-950/08 bg-slate-50 flex flex-col gap-2 shrink-0',
+  actionsRowButtons: 'flex items-center gap-2',
   addRouteBtn: 'tny-press h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]',
   addGraphBtn: 'h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]',
   addBtnIcon: 'size-3.5 shrink-0',
   addGraphBtnIcon: 'size-3.5 text-[#37576B] shrink-0',
-  addBtnLabel: 'font-display uppercase text-[11.5px] tracking-wide',
+  addBtnLabel: 'font-display uppercase text-[11.5px] tracking-wide whitespace-nowrap',
+  // Sub-item 2 (2026-09-08), fixed same day: "reuse an existing route" select — its own row below
+  // the action buttons (not squeezed alongside them, see `actionsRow`'s own comment).
+  addSlotGroupRow: 'flex items-center gap-1.5',
+  addSlotGroupLabel: 'font-mono text-[9.5px] uppercase tracking-[0.12em] text-slate-500 shrink-0',
+  addSlotGroupSelect: 'h-8 flex-1 min-w-0 px-1.5 rounded-[6px] border border-zinc-950/15 bg-white font-mono text-[10.5px] text-slate-600 focus:outline-none focus:border-[#1F3F8F]',
 
   // Report settings disclosure — collapsed by default. Houses the Dynamic Report switch, which
   // used to be reachable only after opening RRL's own pencil edit mode (an incidental extra click
@@ -49,6 +60,16 @@ export const reportRouteListTheme = {
   dynamicToggleWrapper: 'flex items-center gap-2',
   dynamicToggleLabel: 'font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 flex-1',
 
+  // Round 82 (old-reports-conversion.md, "Round B") — report tags, same chip-input shape as
+  // routes' own tag editor (SaveRouteModal.jsx's TagsInputField) but themed through t.* tokens
+  // instead of inline Tailwind, per this package's own theming convention.
+  tagsEditorWrapper: 'pt-1.5 border-t border-zinc-950/06',
+  tagsEditorLabel: 'font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1',
+  tagsEditorChips: 'flex flex-wrap items-center gap-1.5',
+  tagsEditorChip: 'flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[11px] text-blue-800',
+  tagsEditorChipRemove: 'size-3 cursor-pointer text-blue-500 hover:text-blue-700',
+  tagsEditorInput: 'flex-1 min-w-[7rem] bg-transparent outline-none text-[11px] font-proxima placeholder:text-slate-400 py-0.5',
+
   searchOuterWrapper: 'px-3 py-2 border-b border-zinc-950/05 shrink-0',
   searchInnerBox: 'h-8 px-2 flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15',
   searchIcon: 'size-3.5 text-slate-400 shrink-0',
@@ -59,40 +80,75 @@ export const reportRouteListTheme = {
   // ── Row · collapsed rows carry NO background at all (same as the rail's own
   //     background) — only an OPEN row gets a faint tint. This is the specific thing
   //     flagged live: rows used to read as separate bordered cards. ──
-  row: 'px-2 py-2.5',
-  rowOpen: 'px-2 py-2.5 bg-slate-50/60 rounded-[6px]',
-  rowRenaming: 'px-2 py-2.5 bg-[#1F3F8F]/5 rounded-[6px]',
+  // border-l-transparent (2026-09-08) is a reserved, always-present 3px slot for the group
+  // border colour RouteRow.jsx sets inline (`rowStyle`) — kept transparent by default so a
+  // singleton (ungrouped) row never shifts pixel-width relative to a grouped sibling.
+  row: 'px-2 py-2.5 border-l-[3px] border-l-transparent',
+  rowOpen: 'px-2 py-2.5 bg-slate-50/60 rounded-[6px] border-l-[3px] border-l-transparent',
   rowHeaderWrapper: 'flex items-start gap-1 min-w-0',
   reorderButtons: 'flex flex-col shrink-0 mt-0.5',
   reorderBtn: 'size-4 flex items-center justify-center text-slate-400 hover:text-slate-700 disabled:text-slate-200 disabled:cursor-not-allowed',
-  // The +/- expander: small, WHITE, bordered — a plain +/- character, not a filled button.
-  expander: 'size-5 mt-0.5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]',
-  expanderOpen: 'size-5 mt-0.5 shrink-0 rounded border border-[#37576B]/40 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-[#37576B]',
-  // Identity-colour dot: edit permission gets a ring-hover popover trigger; a read-only
-  // viewer gets a plain static swatch.
-  colorDot: 'size-3 mt-1 rounded-full shrink-0',
-  colorDotButton: 'size-3.5 mt-1 rounded-full ring-1 ring-[#0f1722]/20 shrink-0 hover:ring-2 hover:ring-[#1F3F8F]/40 cursor-pointer',
+  // The +/- expander: small, WHITE, bordered — a plain +/- character, not a filled button. Sits
+  // inside `iconContainer` (grouped with delete, see `rowActionsGroup`), not the outer header row —
+  // no top-margin nudge needed there, see `titleRow`'s comment.
+  expander: 'size-5 shrink-0 rounded border border-zinc-950/12 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-slate-500 hover:border-[#37576B]',
+  expanderOpen: 'size-5 shrink-0 rounded border border-[#37576B]/40 bg-white flex items-center justify-center font-mono text-[11px] leading-none text-[#37576B]',
+  // Save, header-row icon button (2026-09-05) — sits beside expanderOpen's Discard (X) while a
+  // row is being edited; same bordered-tint shape as expanderOpen, green to read as the
+  // affirmative action (a solid saturated fill read as "heinous" — Ryan, live feedback; this
+  // reuses the exact green this component's very first Save button used, pre-2026-09-04).
+  saveIconBtn: 'size-5 shrink-0 rounded border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] hover:bg-[#10B981]/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#10B981]/10',
+  // Colour dot + title/input, in their own `items-center` row — centers the dot against whatever
+  // `iconContainer` actually holds (collapsed title, or the 32px `titleInput` while editing) via
+  // real flex centering, not a tuned pixel offset. Reorder buttons stay outside this row, directly
+  // in the outer `items-start` header — untouched, never an issue.
+  titleRow: 'flex items-center gap-1 flex-1 min-w-0',
+  colorDot: 'size-3 rounded-full shrink-0',
+  colorDotButton: 'size-3.5 rounded-full ring-1 ring-[#0f1722]/20 shrink-0 hover:ring-2 hover:ring-[#1F3F8F]/40 cursor-pointer',
   iconContainer: 'min-w-0 flex-1 flex items-center gap-1',
-  routeTitle: 'font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0',
-  // Row-level actions (rename/remove) — transparent icon buttons, background only on hover.
+  // Title + optional template-name hint (Dynamic Reports, resolved slots) — a flex-col pair, hint
+  // directly under the title in the SAME container, so it needs no cross-container offset math.
+  // `leading-none` on both: default line-height baked in several invisible px above/below each
+  // glyph, which read as unwanted gap even though it's just font leading. `routeTitleWrap` (not
+  // `routeTitle`) carries `flex-1 min-w-0` since it's the flex child competing with
+  // `rowActionsGroup` for space.
+  routeTitleWrap: 'flex flex-col min-w-0 flex-1',
+  routeTitle: 'font-proxima text-[13px] font-semibold leading-none text-slate-700 truncate',
+  routeTitleTemplate: 'font-mono text-[9.5px] leading-none text-slate-400 truncate mt-0.5',
+  // Edit-toggle + delete, grouped together at the end of the row (previously opposite ends).
+  rowActionsGroup: 'flex items-center gap-1 shrink-0 ml-1',
+  // Row-level actions (remove) — transparent icon buttons, background only on hover.
   iconBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0',
   dangerBtn: 'size-6 rounded flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 shrink-0',
-  editContainer: 'flex items-center gap-1.5 min-w-0',
-  renameInput: 'flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 font-proxima text-[12.5px] text-slate-700 focus:outline-none',
-  saveBtn: 'size-7 rounded-[6px] border border-[#10B981]/40 bg-[#10B981]/10 flex items-center justify-center text-[#0f7a52] shrink-0',
-  cancelBtn: 'size-7 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/10 flex items-center justify-center text-[#b91c1c] shrink-0',
+  // Inline title input (2026-09-04) — replaces the route title span in place when the
+  // combined expand/edit toggle is on; same slot, no separate rename-mode row swap.
+  titleInput: 'flex-1 min-w-0 h-8 px-2 rounded-[6px] border border-[#1F3F8F] bg-white ring-2 ring-[#1F3F8F]/15 font-proxima text-[12.5px] text-slate-700 focus:outline-none',
 
-  // Meta line ("9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28") — a compact mono micro-label,
-  // indented to the name's left edge (past reorder/expander/dot).
-  metaIndent: 'pl-7',
+  // Collapsed-row summary (2026-09-04, reweighted 2026-09-05) — two lines instead of one
+  // combined string. `metaProminent` now carries the DATE-RANGE line (bold — the thing an
+  // author scans for); the muted `meta` line below it now carries TMC/mileage. Both share the
+  // same left indent.
+  //
+  // pl-[38px] (not pl-7): matches the title's own real left edge on this row's actual
+  // reorder-buttons+colour-dot+gaps layout — measured live via `getBoundingClientRect()`, not
+  // guessed. Applies to `dateMeta`/`tmcMileageMeta` (the hint has its own indent for free, sharing
+  // a container with the title — see `routeTitleWrap`).
+  metaIndent: 'pl-[38px]',
+  // Pulls the collapsed date/TMC summary up snug under whatever's above it. This block sits AFTER
+  // the whole header row (not after the title specifically), and the header row's own height is
+  // set by its tallest child — the reorder up/down-arrow stack (34px) — which is taller than the
+  // title/title+hint content beside it, so without this the summary always started well below the
+  // title's real bottom edge. TWO values because that "content beside it" height differs by
+  // whether a template hint is showing: each measured independently to land ~2px below whatever's
+  // actually there, matching the `metaProminent`/`meta` rhythm right below.
+  collapsedSummaryPullUpNoHint: '-mt-[15.5px]',
+  collapsedSummaryPullUpWithHint: '-mt-[9.5px]',
+  metaProminent: 'font-proxima text-[12px] font-semibold text-slate-700 mt-0.5',
   meta: 'font-mono text-[9.5px] uppercase tracking-[0.08em] text-slate-400 tabular-nums mt-0.5',
 
   // ── Open-out · full row width (no indent), a bordered white card. NO TMC list —
   //     the count already lives in the meta line; nobody reads codes off a 340px rail. ──
   expandedContainer: 'mt-2 rounded-[6px] border border-zinc-950/08 bg-white p-2.5 space-y-3',
-  openOutRemoveRow: 'pt-2.5 border-t border-zinc-950/05 flex justify-end',
-  openOutRemoveBtn: 'h-7 px-2 inline-flex items-center gap-1.5 rounded-[6px] border border-[#EF4444]/40 bg-[#EF4444]/5 text-[#b91c1c] hover:bg-[#EF4444]/10',
-  openOutRemoveLabel: 'font-display uppercase text-[10.5px] tracking-wide',
 
   // ── Date-span block · the one window facet a route still owns (design push #2, 2026-08-06 —
   //     weekday mask/time-of-day moved to the graph, see QuickControls). ──
@@ -125,6 +181,11 @@ export const reportRouteListTheme = {
   deriveControlsWrapper: 'space-y-1.5 p-1.5 bg-[#1F3F8F]/5 border border-[#1F3F8F]/15 rounded-[4px]',
   deriveFormulaError: 'font-proxima text-[11px] text-[#b91c1c]',
   dowSummary: 'font-proxima text-[11px] text-slate-500 italic',
+
+  // "Same route as: ..." (2026-09-08) — plain, always-shown note (no toggle) pairing with the
+  // row's own group border colour (see `row`/`rowOpen` above).
+  groupNote: 'flex items-center gap-1.5 pt-1 font-proxima text-[11px] text-slate-500',
+  groupNoteDot: 'size-2 rounded-full shrink-0 ring-1 ring-inset ring-black/10',
 
   // "Base for N routes" — a standing fact about a base row.
   dependentsRow: 'pt-1',

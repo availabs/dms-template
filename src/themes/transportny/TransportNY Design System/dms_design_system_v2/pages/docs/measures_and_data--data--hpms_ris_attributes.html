@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HPMS / RIS attributes · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--hpms_ris_attributes.html · IA page 75 · type data. Phase 3, 2026-09-05.
+  Sources: Data Manager metadata for the enhanced shapefile (attribute columns), "TMC Average Speed Limit" (OSM), "RIS Production Legacy" and
+  "RIS 2025" (archived, columns), "PM3 Performance Measures 2019-2023" (ris_* columns); legacy overview 225868 (AADT from FHWA, two-year lag);
+  _seed §07 (RIS attributes not currently exposed); MAP21_REPORTING_PLAN §3 (f_system 1–7, nhs 1–9, facility_type 1–6, urban_code);
+  2184101 glossary (f_system 0); VOT task (classes 4–7 / 8–13); running fix 2172519. Exact source paths not confirmable are marked.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">HPMS / RIS attributes.</h1>
+          <p class="doc-lede">The roadway attributes the measures read from the network: traffic volume, functional system, NHS membership, facility type, speed limit, urban code and occupancy. Where each comes from, how far it lags the travel times, and what is not confirmed. For analysts who weight, filter or monetise.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>Every roadway attribute a measure uses lives on the TMC network, not on the travel-time table.</strong> Two inventories stand behind them. The Highway Performance Monitoring System (HPMS) is FHWA's national roadway inventory, to which every state reports; its attributes accompany the federal travel-time data. The Roadway Inventory System (RIS) is NYSDOT's own inventory, keyed to the state's linear referencing system. The platform reaches RIS through the OpenStreetMap conflation described on <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a>.</p>
+          <p>The 2024 report tool exposed RIS attributes directly: AADT variants, posted speed, directional design-hour volume (DDHV), adjusted capacity, volume-to-capacity ratio, K and D factors. The current Macro View does not expose them; the Attributes measure, not yet computed, is their intended home. See <a href="measures_and_data--measures--retired.html">Measures that used to be here</a>.</p>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <p>The attributes are re-attached with each network vintage, so their vintage is the network's. The 2024 documentation stated the lag plainly: "NPMRDS data includes traffic volume AADT data from FHWA, but the AADT data lags two years behind the NPMRDS data. So 2020 NPMRDS data is accompanied by 2018 AADT data." Analysts were told to caveat, crosswalk to the matching year, or apply growth factors. The lag is why a fixed panel's directional AADT fell 14.9 % between 2021 and 2022 while the road did not change; <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a> carries the table.</p>
+          <p>Two RIS extracts sit in the Data Manager, both archived: a legacy production extract and a 2025 extract with the route, functional class, NHS, jurisdiction, urban area and MPO fields. The legacy tracker recorded "Add 2025 RIS data to the Source" on 2025-08-11 and marked it resolved with a pointer to a newer source. The vintage of the roadway attributes on the 2025 and 2026 maps is not stated in the source metadata. Until confirmed, the AADT vintage on the current map is unstated.</p>
+          <div class="callout basis"><span class="k">basis</span>Attribute values are per segment and per network vintage, statewide. Name the map year when you quote one.</div>
+
+          <h2 id="schema">Schema</h2>
+          <p>The attribute columns on the current network, with the measure that reads each. The full network schema is on <a href="measures_and_data--data--tmc_network.html">TMC network</a>.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>Sample value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>aadt</code></td><td>integer</td><td>—</td><td>Annual average daily traffic, both directions, all vehicles. Read by TED, PHED, the excessive-delay series and cost. Origin: the FHWA traffic-volume data delivered with the network, per the 2024 documentation. The enhanced network's description adds that speed limits, region and MPO boundaries are joined from spatial datasets when the shapefile is built.</td></tr>
+              <tr><td><code>aadt_singl</code></td><td>integer</td><td>—</td><td>Single-unit truck AADT, FHWA classes 4 to 7 (bus-heavy in New York). Read by the class-weighted value of time.</td></tr>
+              <tr><td><code>aadt_combi</code></td><td>integer</td><td>—</td><td>Combination truck AADT, FHWA classes 8 to 13.</td></tr>
+              <tr><td><code>aadt_unidir</code> · <code>aadt_singl_unidir</code> · <code>aadt_combi_unidir</code></td><td>integer</td><td>—</td><td>The three above assigned to this direction, using directionality calculated from the probe data for PHED.</td></tr>
+              <tr><td><code>f_system</code></td><td>integer</td><td>1</td><td>FHWA functional system: 1 Interstate, 2 to 7 down to local; 0 marks the extended set of local and unclassified roads. Splits Interstate from non-Interstate in the federal roll-up.</td></tr>
+              <tr><td><code>nhs</code> · <code>nhs_pct</code></td><td>integer</td><td>—</td><td>NHS code 1 to 9 and the share of the segment on the NHS. The federal measures keep codes 1 to 9.</td></tr>
+              <tr><td><code>faciltype</code></td><td>integer</td><td>—</td><td>Facility type 1 to 6. The federal roll-up keeps 1, 2 and 6. The excessive-delay series normalises AADT by it.</td></tr>
+              <tr><td><code>structype</code> · <code>thrulanes</code> · <code>thrulanes_unidir</code></td><td>integer</td><td>—</td><td>Structure type and through lanes, both directions and this direction.</td></tr>
+              <tr><td><code>urban_code</code></td><td>integer</td><td>—</td><td>Census urban-area id; PHED is reported per urbanized area and the roll-up requires it non-null.</td></tr>
+              <tr><td><code>avg_speedlimit</code></td><td>number</td><td>—</td><td>Average posted speed limit, calculated from OpenStreetMap speed limits, not from RIS. Sets the excessive-delay threshold; backfilled for 2018 to 2026, missing for 2017.</td></tr>
+              <tr><td><code>avg_vehicle_occupancy</code></td><td>number</td><td>—</td><td>Persons per vehicle; converts vehicle-hours to person-hours for PHED. Values follow FHWA's average-vehicle-occupancy factors (April 2018).</td></tr>
+              <tr><td><code>truck</code> · <code>strhnt_typ</code> · <code>strhnt_pct</code></td><td>integer · string</td><td>—</td><td>Truck network flag and Strategic Highway Network type and share.</td></tr>
+              <tr><td><code>route_numb</code> · <code>route_sign</code> · <code>route_qual</code></td><td>integer</td><td>—</td><td>Route number, signing and qualifier.</td></tr>
+            </tbody>
+          </table></div>
+          <p>The legacy 2019 to 2023 measures table carried the RIS attributes beside the network's under a <code>ris_</code> prefix: <code>ris_aadt_current_yr_est</code>, <code>ris_aadt_actual</code>, <code>ris_aadt_single_unit</code>, <code>ris_aadt_combo</code>, <code>ris_posted_speed_limit</code>, <code>ris_ddhv</code>, <code>ris_ddhv_factor</code>, <code>ris_adj_cap</code>, <code>ris_v_c</code>, <code>ris_k_factor</code>, <code>ris_d_factor</code>, <code>ris_section_length</code>, <code>ris_divided</code>. That table is archived and no live page reads it.</p>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>The vendor's segment file for a vintage arrives with the travel-time data and carries the HPMS-derived attributes: functional system, NHS, facility type, lanes, urban code, routes and AADT with the two truck classes.</li>
+            <li>The enhanced network build adds the OpenStreetMap-derived speed limit, the region, MPO and urban-area codes, and the directional AADT split.</li>
+            <li>RIS attributes, when used, reach a segment through the OpenStreetMap conflation, which maps RIS ids and TMC ids onto the same directional OSM segments.</li>
+          </ol>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>The delay family and every dollar figure are linear in AADT; a revision to the inventory moves them without any change in traffic. A segment lacking AADT or a speed limit carries no delay; together with the AADT gate, 61 % of network mileage is absent from the delay family. Functional class from the 2017 vintage comes from a different attribute family and is not strictly comparable to 2018 to 2025. Single-unit truck AADT includes buses, so a bus-heavy urban segment reads as truck-heavy for the value of time. The speed limit is an OpenStreetMap average, not the regulatory posted limit on every segment.</p>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>With the network.</strong> The Data Manager's network source page carries the attributes per vintage; the Macro View's GeoPackage download carries them beside the measures. See <a href="measures_and_data--data--tmc_network.html#distribution">TMC network · distribution</a>.</li>
+            <li><strong>RIS extracts</strong> are archived Data Manager sources, not exposed on a public page.</li>
+            <li><strong>HPMS</strong> itself is published by FHWA; the Freight Atlas carries a 2018 New York HPMS layer as a map layer. See <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="measures_and_data--measures--ted.html">TED · AADT source control</a>
+            <a href="measures_and_data--measures--phed.html">PHED · occupancy, urbanized area</a>
+            <a href="measures_and_data--measures--excessive_delay.html">Excessive delay · posted limit</a>
+            <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion · truck classes</a>
+            <a href="npmrds--map21.html">MAP-21 PM3 pages · system and NHS filters</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2025-08-11 · request recorded to add 2025 RIS data; marked resolved in the tracker.</li>
+            <li>2026-06 · posted speed limits backfilled onto the network for 2018 to 2026 for the excessive-delay revision.</li>
+            <li>2026-09-05 · this datasheet created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs"><li>FHWA, "Average Vehicle Occupancy Factors for Computing Travel Time Reliability Measures and Total Peak Hour Excessive Delay Metrics" (April 2018).</li>
+            <li>Data Manager, "NPMRDS TMC Network Shapefile - Enhanced V6": the attribute columns and the directionality statement. "TMC Average Speed Limit": calculated from OpenStreetMap speed limits. "RIS Production Legacy" and "RIS 2025" (archived): the RIS field lists. "PM3 Performance Measures 2019-2023" (archived): the ris_* columns.</li>
+            <li>2024 NPMRDS documentation, Overview: the AADT lag statement quoted above.</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28, §07: RIS attributes "Not currently exposed"; the Attributes measure as their intended home.</li>
+            <li>MAP-21 PM3 reporting plan §3: f_system 1 to 7, nhs 1 to 9, facility_type 1 to 6, urban_code, and the roll-up filters; the HPMS Field Manual, chapter 8.</li>
+            <li>TSMO Data &amp; Methodology page, glossary: functional class 1 to 7 with 0 for the extended set.</li>
+            <li>Class-weighted value-of-time record: single-unit = classes 4 to 7, bus-heavy; combination = 8 to 13; the normalised-against-raw AADT note.</li>
+            <li>Excessive-delay backfill record: speed limits backfilled 2018 to 2026, 2017 likely missing.</li>
+            <li>pm3 download manifest and provenance record: the 2017 attribute family; 61 % of mileage absent from the delay family; the −14.9 % fixed-panel step.</li>
+            <li>Legacy running fix 2172519, 2025-08-11: "Add 2025 RIS data to the Source", resolved with a pointer to a newer source.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a>
+          <a href="measures_and_data--data--tmc_network.html">TMC network</a>
+          <a href="measures_and_data--measures--retired.html">Measures that used to be here</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

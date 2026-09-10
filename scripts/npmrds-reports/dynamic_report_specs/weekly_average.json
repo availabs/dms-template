@@ -1,6 +1,5 @@
 {
   "title": "Weekly Average",
-  "slug": "converted_reports/weekly_average",
   "dynamicReport": true,
   "description": "Compares a route's current-year weekday-vs-weekend speed pattern against the same route one and two years ago.",
   "tags": ["category:behavioral", "difficulty:beginner"],
@@ -19,15 +18,15 @@
       "why": "Weekday-vs-weekend speed split for the current year — named directly by the report's own title/description." }
   ],
   "routes": [
-    { "id": "current_year", "slot": true, "name": "Current Year", "route_slot_group": "$0",
+    { "id": "current_year", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "color": "#f781bf",
       "graphs": ["line_speed", "bar_speed_weekday"] },
-    { "id": "y1ago", "slot": true, "name": "1 Year Ago", "route_slot_group": "$0",
+    { "id": "y1ago", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-1year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#a65628",
       "graphs": ["line_speed"] },
-    { "id": "y2ago", "slot": true, "name": "2 Years Ago", "route_slot_group": "$0",
+    { "id": "y2ago", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-2year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#999999",
       "graphs": ["line_speed"] }

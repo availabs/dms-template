@@ -33,7 +33,12 @@ const dryRun = argv.includes('--dry-run');
 if (!runDir) throw new Error('usage: node mark_page_changed.mjs <run-dir> [--dry-run]');
 
 const applied = readJson(`${runDir}/applied.json`);
-const written = applied.results.filter((r) => r.action === 'SET');
+// The loop's section writers each name their success verb after what they did:
+// `apply.mjs` / `apply_element_data_key.mjs` report SET,
+// `remove_element_data_column.mjs` reports REMOVED. Both are a section write and
+// both need the page flag, so match on the set of write verbs, not on one string.
+const WRITE_ACTIONS = new Set(['SET', 'REMOVED']);
+const written = applied.results.filter((r) => WRITE_ACTIONS.has(r.action));
 if (!written.length) { console.log('nothing was written in this run'); process.exit(0); }
 
 const pageIds = [...new Set(written.map((r) => readJson(`${runDir}/baseline/${r.id}.json`).placement.pageId))];

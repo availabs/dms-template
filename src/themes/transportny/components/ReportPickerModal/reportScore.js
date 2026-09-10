@@ -13,7 +13,11 @@ import { recencyScore, isOwnedByCurrentUser, LOOKS_INCOMPLETE_RE } from '../Pick
 export function reportScore(row, { currentUserId } = {}) {
   let s = 0;
   if (isOwnedByCurrentUser(row?.created_by, currentUserId)) s += 30;
-  if (row?.page_path) s += 25; // rebuilt — a real, modern DMS page exists to open
+  // 2026-09-03: inert as of useReportSearch.js's unconditional `page_path notempty` filter —
+  // every row reaching this function already has page_path set, so this is now a constant +25
+  // on every row, not a real differentiator. Left in (harmless, not wrong) rather than removed;
+  // the "Rebuilt" badge this used to justify was removed since it had the same problem visibly.
+  if (row?.page_path) s += 25;
   if (row?.description) s += 20; // an author wrote a real summary
   s += recencyScore(row?.updated_at, 15);
   if (LOOKS_INCOMPLETE_RE.test(row?.name || '')) s -= 20;
@@ -26,8 +30,4 @@ export function isMine(row, currentUserId) {
 
 export function looksIncomplete(row) {
   return LOOKS_INCOMPLETE_RE.test(row?.name || '');
-}
-
-export function isRebuilt(row) {
-  return Boolean(row?.page_path);
 }

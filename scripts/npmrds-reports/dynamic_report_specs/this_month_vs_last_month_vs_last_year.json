@@ -1,6 +1,5 @@
 {
   "title": "This Month vs. Last Month vs. Last Year",
-  "slug": "converted_reports/this_month_vs_last_month_vs_last_year",
   "dynamicReport": true,
   "description": "This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes.",
   "tags": ["category:change_over_time", "difficulty:advanced"],
@@ -57,7 +56,7 @@
       "dateFormula": "startDate=>month-12month->1month", "derivedFromRoute": "__TODAY__",
       "color": "#53d550",
       "graphs": ["tt_vs_lastyear", "delay_vs_lastyear", "map_delay", "map_traveltime", "weekday_delay", "weekday_traveltime", "weekday_speed", "bar_summary_traveltime"] },
-    { "id": "trailing_3yr", "slot": true, "name": "Trailing 3 Years", "route_slot_group": "$0",
+    { "id": "trailing_3yr", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
       "color": "#000000",
       "graphs": ["tt_vs_trailing", "delay_vs_trailing", "map_delay", "map_traveltime", "weekday_delay", "weekday_traveltime", "weekday_speed", "bar_summary_traveltime"] }

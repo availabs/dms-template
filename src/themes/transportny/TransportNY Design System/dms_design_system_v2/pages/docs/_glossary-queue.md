@@ -1,0 +1,262 @@
+# Glossary queue
+
+Every phase appends the terms its pages define or rely on; Phase 7 writes `glossary.html` from this list.
+Format: `- term — one-line meaning — pathway (product › screen) — canonical page (file)` · mark duplicates rather than
+re-adding. Seed from `research/docs-redesign/platform-inventory.md` §6 and 281670 §8 / tsmo2 methodology 2184101.
+
+## Seeded 2026-09-04 (Phase 0)
+- NPMRDS — National Performance Management Research Data Set: FHWA-licensed probe travel times on the NHS (+ NY's expanded network) — NPMRDS › everywhere — measures_and_data--data--npmrds_travel_times.html
+- TMC — Traffic Message Channel segment, the unit of the NPMRDS network — NPMRDS › Macro View, Segment — measures_and_data--concepts--tmc_network_and_vintages.html
+- epoch — 5-minute time slice (288 per day) in which travel times are reported — NPMRDS › Segment — measures_and_data--concepts--peak_periods_and_epochs.html
+- reporting bin — 15-minute bin (3 epochs) the measures are computed on — Measures › all — measures_and_data--concepts--peak_periods_and_epochs.html
+
+## Added 2026-09-04 (Phase 1 · Get started)
+- TransportNY — NYSDOT's open platform for travel-time, operations and freight data; three products, one sign-in, one docs site — landing › everywhere — start--what_is_transportny.html
+- product switcher — the list of products (NPMRDS · TSMO · Freight Atlas) at the top of every side navigation, and the landing page's own side navigation — all › side navigation — start--navigating.html
+- Platform home — the last entry of the product switcher; returns to the landing page — all › product switcher — start--navigating.html
+- landing page — the platform's front door under www; lists the three products — Platform › landing — start--navigating.html
+- session — the signed-in state; lasts about 6 hours, then the site returns you to the sign-in page — all › sign-in — start--accounts_and_sessions.html
+- sign-in — entering Email and Password at /auth/login; needed only to save routes and reports or to administer — all › /auth/login — start--accounts_and_sessions.html
+- statewide (no region selected) — the full PM3 submission dataset, deliberately not the sum of the 11 regions — TSMO › filter bar — measures_and_data--concepts--geography.html
+- NYSDOT region — one of NYSDOT's 11 administrative regions, written "Region 8" — TSMO › Region filter · NPMRDS › Macro View geography — measures_and_data--concepts--geography.html
+- MPO — metropolitan planning organization; New York has 14 — landing · Macro View geography · MAP-21 pages — measures_and_data--concepts--geography.html
+- MAP-21 / PM3 (federal) — the reliability, delay and freight figures NYSDOT submits to FHWA; distinct from the analytical series — NPMRDS › MAP-21 PM3 — measures_and_data--federal_vs_analytical.html
+- the analytical series — the platform's own computation of the measures, shown per segment and per region — NPMRDS › Macro View · TSMO › Reliability — measures_and_data--federal_vs_analytical.html
+- LOTTR — Level of Travel Time Reliability, 80th-percentile travel time ÷ 50th; annual by federal definition — Macro View · TSMO Reliability — measures_and_data--measures--lottr.html
+- TTTR — Truck Travel Time Reliability, 95th-percentile truck travel time ÷ 50th — Macro View — measures_and_data--measures--tttr.html
+- TED · PHED — Total Excessive Delay (all hours) · Peak Hour Excessive Delay (federal peak periods) — Macro View — measures_and_data--measures--ted.html · measures_and_data--measures--phed.html
+- recurrent · non-recurrent delay — the everyday delay pattern vs delay from incidents, weather, work zones — TSMO › Congestion (delay composition) — measures_and_data--measures--delay_attribution.html
+- TRANSCOM events — incidents, work zones and other road events reported through TRANSCOM (one-line definition of TRANSCOM itself pending: [VERIFY] on start--what_is_transportny.html) — TSMO › Incidents · Work Zones — measures_and_data--data--transcom_events.html
+- 2024 State Freight Plan — NYSDOT's freight plan; the Maps Gallery reproduces its figures — Freight Atlas › Maps Gallery · About & The Plan — freight_atlas--the_plan.html
+- Maps Gallery — the plan's figures as ready-made presets of the Freight Atlas map — Freight Atlas › Maps Gallery — freight_atlas--gallery.html
+- Data & Downloads — the Freight Atlas dataset catalog (CSV · GeoJSON · Shapefile · GeoPackage · XLSX); currently sign-in-walled — Freight Atlas › Data & Downloads — freight_atlas--downloads.html
+- Macro View — one measure, one year, every segment; Worst 25 segments; download builder — NPMRDS › Macro View — npmrds--macro_view.html
+- Reports — one route charted over time from a template — NPMRDS › Reports — npmrds--reports--start_from_template.html
+- Route Comparison — routes × periods cross-tab with a base period — NPMRDS › (not in the side navigation) — npmrds--route_comparison.html
+- Worst 25 segments — the Macro View panel ranking the current measure over the current filter — NPMRDS › Macro View — npmrds--macro_view.html
+- Corridor View · Incident Search — TSMO explorers: one corridor through a day · find an incident by facets and keyword — TSMO › Explorers — tsmo--corridor_view.html · tsmo--incident_search.html
+- NPMRDS — duplicate of the Phase 0 seed entry; not re-added
+- TMC — duplicate of the Phase 0 seed entry; not re-added
+
+## Added 2026-09-05 (Phase 2a-ii · Measures & Data spine)
+- PM3 — the third federal performance-measure rule (23 CFR 490 subparts E, F, G): LOTTR, TTTR, PHED — NPMRDS › MAP-21 PM3 — measures_and_data--federal_vs_analytical.html
+- federal submittal — the LOTTR, TTTR and PHED figures New York files with FHWA; frozen by rule; shown on the MAP-21 pages and the TSMO Reliability dashboard — NPMRDS › MAP-21 PM3 · TSMO › Reliability — measures_and_data--federal_vs_analytical.html
+- HPMS Travel Time Metrics (TTM) resubmission — the FHWA file whose CY 2025 figures the TSMO home cites (80.0 · 83.3 · 1.46) — TSMO › home — measures_and_data--federal_vs_analytical.html
+- statewide floor — a federal target applies to the state as a whole; a region can sit below it without being out of compliance — TSMO › Reliability — measures_and_data--concepts--geography.html
+- threshold variant — one of four PHED/TED thresholds: posted speed limit · anchored free-flow (default) · relative (unfloored) · own-year free-flow — NPMRDS › Macro View threshold control — measures_and_data--measures--phed.html#the-four-variants
+- anchored free-flow reference — the delay threshold's 60 % base taken from a fixed coverage-era window so year-over-year change is measurable — Macro View — measures_and_data--which_measure.html
+- relative variant — the unfloored delay threshold; required for cross-class comparison — Macro View — measures_and_data--which_measure.html
+- the floor — the 20 mph minimum on the excessive-delay threshold; governs 62.7 % of measured delay — Macro View · TSMO Congestion — measures_and_data--which_measure.html (duplicate of the seed §08 entry once the glossary is written)
+- own-year free-flow — the deprecated transitional reference that tracks prevailing traffic (r = +0.998) — Macro View — measures_and_data--which_measure.html
+- not yet computed — the Macro View state for a declared measure with no data (free-flow speed · emissions · attributes); kept out of the Measure menu — NPMRDS › Macro View measure reference — measures_and_data--measures--in_development.html
+- free-flow speed (measure) — the 85th percentile of off-peak observed speed; computed internally as the delay reference, not yet published — Macro View — measures_and_data--measures--in_development.html
+- Attributes (measure) — colouring the map by a network field (functional class, AADT, ownership); the intended home for the RIS attributes — Macro View — measures_and_data--measures--in_development.html
+- Planning Time Index · Buffer Index · Travel Time Index — retired reliability indices (95th ÷ free-flow · (95th − mean) ÷ mean · mean ÷ free-flow); not computed — 2024 NPMRDS docs — measures_and_data--measures--retired.html
+- RIS — NYSDOT's Roadway Inventory System; source of AADT variants, posted speed, DDHV, capacity, V/C, K and D factors — 2024 NPMRDS docs · HPMS/RIS datasheet — measures_and_data--measures--retired.html
+- DDHV · K factor · D factor — directional design-hour volume · share of AADT in the design hour · peak-direction share of design-hour traffic — retired attributes — measures_and_data--measures--retired.html
+- percent bins reporting — the older coverage figure, restored as Data coverage (bins reporting) — Macro View — measures_and_data--measures--retired.html
+- urbanized area (UZA) — Census urban area; PHED reports per UZA over 200,000 in nonattainment/maintenance (New York–Newark, Poughkeepsie–Newburgh) — NPMRDS › MAP-21 PM3 — measures_and_data--concepts--geography.html
+- county (geography) — one of 62; the key of Corridor View and an Incident Search facet — TSMO › Corridor View · Incident Search — measures_and_data--concepts--geography.html
+- region-keyed · county-keyed · MPO-keyed — which geography a page filters on (TSMO dashboards · Corridor View · MAP-21 per-MPO table) — all — measures_and_data--concepts--geography.html
+- system — Interstate or non-Interstate NHS; a basis, not a geography — NPMRDS › MAP-21 PM3 · TSMO › Reliability — measures_and_data--concepts--geography.html
+- freshness strip — the NPMRDS pages' "since Jan 2017 · complete through <month> · <month> partial" line — NPMRDS › Route Comparison, Reports — measures_and_data--coverage_and_freshness.html
+- data-as-of badge — the per-panel date on TSMO pages; the home's Data Freshness band reads "Latest: <date>" per source — TSMO › every panel — measures_and_data--coverage_and_freshness.html
+- partial year — a year whose months are not all present; shows a partial total in the same card as a full year — TSMO › Year filter — measures_and_data--coverage_and_freshness.html
+- network vintage — the year's TMC map (52,029 · 52,157 · 52,473 segments for 2024 · 2025 · 2026) — NPMRDS › home spine — measures_and_data--coverage_and_freshness.html (canonical page: measures_and_data--concepts--tmc_network_and_vintages.html, Phase 3)
+- TIM timestamp completeness — the share of events carrying each Traffic Incident Management timestamp (42.7 / 20.1 / 10.6 / 0.3 %) — TSMO › Data & Methodology · Incidents — measures_and_data--coverage_and_freshness.html
+- delay footprint — the per-event set of segments and 5-minute slices carrying attributed delay; exists on 18.5 % of events — TSMO › Incidents · Incident page — measures_and_data--measures--delay_attribution.html
+- MAP-21 / PM3 (federal) · the analytical series · NYSDOT region · MPO · statewide (no region selected) · TRANSCOM events — duplicates of Phase 1 entries; not re-added
+
+## Added 2026-09-05 (Phase 2b · TSMO)
+- filter bar (TSMO) — the Year · Region strip under each dashboard title; Year single-select, Region single-select and clearable with ✕; the address carries the selection — TSMO › Congestion · Reliability · Incidents · Work Zones — tsmo--filters.html
+- year chips — the TSMO home's year control, a row of chips offering every year the delay series holds, partial years included — TSMO › home — tsmo--start.html
+- Regional Dashboards — the home band that holds the four dashboard cards (congestion · reliability annual · incidents · work zones) — TSMO › home — tsmo.html
+- Category (filter) — the Incidents dashboard's event-category control: Crash · Message · Other · Road Hazard · Special Event · Volume/Delay · Weather Hazard — TSMO › Incidents — tsmo--filters.html
+- Type (filter) — the Work Zones dashboard's control: Construction · Maintenance · Emergency Operations — TSMO › Work Zones — tsmo--filters.html
+- reactive incident — an event in the categories the Incidents dashboard keeps; the complement of the work-zone categories since 2026-07-28 — TSMO › Incidents — tsmo--incidents.html
+- work-zone event — a TRANSCOM event whose NYSDOT sub-category is Construction, Maintenance or Emergency Operations — TSMO › Work Zones — tsmo--work_zones.html · measures_and_data--measures--work_zone_delay.html
+- attributed delay — an event's footprint summed to vehicle-hours; exists on about 18.5 % of events, shown as "—" otherwise (near-duplicate of the Phase 2a "delay footprint"; keep one entry) — TSMO › Incidents · Incident Search · Incident View — measures_and_data--measures--delay_attribution.html
+- interim $20 basis — the flat $20 per vehicle-hour value of time still stated on the Congestion, Incidents, Work Zones, Incident Search and Incident View pages; the class-weighted rate is the Data & Methodology page's basis — TSMO › several — measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis
+- worst-period LOTTR — the highest of a segment's four period ratios (AM · Midday · PM · Weekend); the colour of the Reliability map and the rank of its corridor table — TSMO › Reliability — tsmo--reliability.html
+- roadway clearance time — all lanes reopened minus incident verified; the FHWA TIM headline measure, computed only where both timestamps exist and badged with the subset size — TSMO › Incidents · Data & Methodology — measures_and_data--measures--incident_delay_and_clearance.html
+- response timeline — the incident page's list of TIM timestamps; only recorded steps get a check, missing steps are muted "not recorded" — TSMO › Incident View — tsmo--incident_view.html
+- active corridor — the corridor an incident page's per-segment table and congestion grid are scoped to; the highlighted row of the Corridors table, switched by selecting another row — TSMO › Incident View — tsmo--incident_view.html
+- congestion grid — the incident page's TMC × 5-minute grid of each segment's affected window, shaded by attributed delay (a speed-against-free-flow version is not built) — TSMO › Incident View — tsmo--incident_view.html
+- time-space grid — Corridor View's grid: TMC rows in road order × 5-minute columns 05:00–midnight, cell = average speed in mph — TSMO › Corridor View — tsmo--corridor_view.html
+- month strip (Daily pattern & time-space speed) — the per-day average-speed strip above the grid; selecting a day drives the grid — TSMO › Corridor View — tsmo--corridor_view.html
+- corridor strip map — the map of exactly the segments feeding the Corridor View grid, zoomed to the corridor — TSMO › Corridor View — tsmo--corridor_view.html
+- Corridor page · view → — the link column of the Congestion worst-corridors table that opens Corridor View — TSMO › Congestion — tsmo--congestion.html
+- Matching events — the Incident Search results block: a live count and one row per event, ranked by attributed delay — TSMO › Incident Search — tsmo--incident_search.html
+- statewide (no region selected) · NYSDOT region · county (geography) · delay footprint · TIM timestamp completeness · partial year · data-as-of badge — duplicates of Phase 1 / 2a entries; not re-added
+
+## Added 2026-09-05 (Phase 3-ii · Routes data, Freight Atlas sources, Methodology changes)
+- route — a named, ordered list of TMC segments saved from Route Creation; the input Reports and Route Comparison take; carries no dates — NPMRDS › Route Creation · Reports — measures_and_data--data--routes_data.html
+- Routes Data — the platform's table of saved routes (route id · name · description · TMC array · tags · empty metadata · timestamps); about 73,464 rows for 32,569 route ids at the August 2026 reading — NPMRDS › Reports header count · Route Comparison picker — measures_and_data--data--routes_data.html
+- TMC array — the ordered TMC codes a route carries, stored in click order; its only geometry; can hold a code a later map no longer carries — NPMRDS › Route Creation — measures_and_data--data--routes_data.html
+- route tags (agency: · user:) — the validated tag vocabulary on a saved route; a new route is seeded with the saver's own; carries the grouping a folder would — NPMRDS › Route Creation save dialog — measures_and_data--data--routes_data.html
+- TMC Click mode · Markers mode — the two ways to build a route: click segments on the 2026 map, or drop waypoints matched by a routing service against the 2022 network; waypoints are not saved — NPMRDS › Route Creation — measures_and_data--data--routes_data.html
+- Update Route — the Save button's wording whenever a route id is in the address; every save then overwrites that route, with no confirmation dialog — NPMRDS › Route Creation — measures_and_data--data--routes_data.html
+- service-account routes (auto-generated) — routes written in bulk by a service account rather than drawn by a person; 55,370 of 73,464 rows at the August 2026 reading — NPMRDS › route pickers — measures_and_data--data--routes_data.html
+- TRANSEARCH — S&P Global's commodity-flow database; the 2024 State Freight Plan uses its 2023 release with a 2021 base year and a 2050 forecast — Freight Atlas › home · Transearch layers — measures_and_data--data--freight_atlas_sources.html
+- symbology — a styled map layer with a legend and hover fields, drawn from one source version; the live Freight Atlas map holds 39 — Freight Atlas › map — measures_and_data--data--freight_atlas_sources.html
+- gap layer — a layer added in July 2026 to reproduce a plan figure the map did not yet draw (nine on the live map) — Freight Atlas › map — measures_and_data--data--freight_atlas_sources.html
+- Data Manager — the platform's data catalog: one source page per dataset with Overview · Table · Map · Metadata tabs, a version selector and downloads — all › Data & Downloads · Data Sources — measures_and_data--data--freight_atlas_sources.html (canonical page: admin--manage_data.html, Phase 6)
+- plan-published figure — a number the 2024 State Freight Plan prints; the Freight Atlas shows the plan's value where one exists rather than a live recomputation (rule of 2026-08-25) — Freight Atlas › home — measures_and_data--data--freight_atlas_sources.html
+- change label — one of Platform · Data release · Map/TMC version · Methodology, the four labels on every entry of the Methodology changes log — Measures & Data › Methodology changes — measures_and_data--methodology_changes.html
+- excessive-delay revision (June 2026) — the 2026-06-10 method change: threshold = the greater of 20 mph or 60 % of the posted limit, median baseline, capped attribution, series restarted; earlier figures do not compare — TSMO › Congestion — measures_and_data--methodology_changes.html#2026-06-10-methodology · measures_and_data--measures--excessive_delay.html
+- anchored free-flow reference window — the fixed window the anchored delay threshold is taken from: June 2023 to July 2024 since 2026-08-23, after two moves (extends the Phase 2a "anchored free-flow reference" entry; keep one) — Macro View — measures_and_data--methodology_changes.html#2026-08-23-methodology
+- TMC · network vintage · Data & Downloads · 2024 State Freight Plan · Maps Gallery · anchored free-flow reference · HPMS · AADT — duplicates of Phase 0 / 1 / 2a entries; not re-added
+
+## Added 2026-09-05 (Phase 4a · NPMRDS hub, start, routes, reports)
+- route row (report) — one reference to a saved route inside a report, with its own date window, colour and label; renaming or re-dating it does not change the saved route — NPMRDS › report Routes rail — npmrds--reports--build.html
+- Routes rail — the report's route panel, shown only in edit mode; holds Add Route · Add Graph · Report settings and one row per route — NPMRDS › report (edit) — npmrds--reports--build.html
+- edit mode (report) — the page's /edit/ address, entered with Edit and left with Done; Done publishes — NPMRDS › report header — npmrds--reports--share_and_print.html
+- Quick Controls — the pill row on a graph card in edit mode: Routes · measure · When · aggregate · Overlay/Diff, plus move, width and legend pills — NPMRDS › report card — npmrds--reports--build.html
+- identity colour — a route row's colour, carried onto every card it feeds; picked from a 20-colour palette — NPMRDS › Routes rail — npmrds--reports--build.html
+- date window — a route row's From and To dates; shift − 1 year / + 1 year keeps the length; copy and paste between rows — NPMRDS › Routes rail — npmrds--reports--build.html
+- derived dates (Derive From · Pattern) — a row's dates computed from another row's, live: Offset by whole periods · Same period, aligned · Fixed calendar month · Fixed calendar range · Advanced — NPMRDS › Routes rail — npmrds--reports--build.html
+- Today (view time) — the virtual base a derived row can count back from; on templates it is the Viewing as of date — NPMRDS › Routes rail · template header — npmrds--reports--templates.html
+- Dynamic Report — a report whose routes are chosen by whoever opens it, from the address; the templates are Dynamic Reports; rows become Route Slots — NPMRDS › Report settings — npmrds--reports--build.html
+- Viewing as of — the anchor date a template's periods count back from; Use latest available resets it to the latest date with data — NPMRDS › template header · Add Routes gate — npmrds--reports--start_from_template.html
+- use template → — the card link that opens a template; the Add Routes dialog then asks for exactly N routes — NPMRDS › Reports — npmrds--reports--start_from_template.html
+- difficulty chip — beginner · intermediate · advanced on 9 of the 12 template cards — NPMRDS › Reports — npmrds--reports--start_from_template.html
+- Add Routes (dialog) — the route picker: search, Browse by tag (County · Region · Agency · Other tags), narrow by Mine · Curated · Auto-generated · Show everyone's, sort, Show short segments too — NPMRDS › Routes rail · templates — npmrds--routes--manage.html
+- Add Graph (dialog) — the guided card builder: Routes for this graph · What to show · Measure · Resolution · Comparison Mode · Anchor Route · When — NPMRDS › Routes rail — npmrds--reports--build.html
+- shape (graph) — Bar Graph · Line Graph · Grid Graph · Table · Map, the five things Add Graph can make — NPMRDS › Add Graph — npmrds--reports--graph_types.html
+- resolution (aggregate) — the time bucket of a card: 5 Minutes · 15 Minutes · Hour · Day · Weekday · Month · Summary; the aggregate pill — NPMRDS › Add Graph · Quick Controls — npmrds--reports--graph_types.html
+- comparison mode (Plain · Difference) — overlay every route, or subtract one from the other; Difference needs exactly two routes and an Anchor Route; pills Overlay · Diff — NPMRDS › Add Graph · Quick Controls — npmrds--reports--graph_types.html
+- When (window) — a card's time-of-day preset (AM Peak 06–10 · PM Peak 16–20 · PM Peak (alt) 15–19 · Midday 10–16 · All Day) and day-of-week mask; belongs to the graph, not the route — NPMRDS › Add Graph · Quick Controls — npmrds--reports--build.html
+- Route Compare — a Table extra at Summary resolution: a percent-against-the-first-route column per measure — NPMRDS › Add Graph (Table) — npmrds--reports--graph_types.html
+- Reliability columns — a Table extra: LOTTR, TTTR and free-flow speed for a peak-period window in a year with published values; the analytical series — NPMRDS › Add Graph (Table) — npmrds--reports--graph_types.html
+- Choose a report (dialog) — the report search opened from the Reports search bar: Search by name or description, Browse by tag, Mine · Hide incomplete-looking · Show everyone's, sort — NPMRDS › Reports — npmrds--reports--find.html
+- Best match — the pickers' default sort: yours first, then described (reports) or size (routes), then recency; alternatives Recently updated · Name (A–Z) — NPMRDS › pickers — npmrds--reports--find.html
+- Possible draft — the report badge for a name containing test, testing, delete, bug or saving; Hide incomplete-looking drops those rows — NPMRDS › Choose a report — npmrds--reports--find.html
+- Show everyone's — the picker switch that widens the default allow-list (yours · your agency's · curated) to the whole catalogue — NPMRDS › pickers — npmrds--reports--find.html
+- Mine · Curated · Auto-generated — route ownership badges and facets: created by you; drawn by a person; generated by a service account — NPMRDS › Add Routes — npmrds--routes--manage.html
+- short segments (fragments) — single-segment routes, hidden in browse views behind Show short segments too — NPMRDS › Add Routes — npmrds--routes--manage.html
+- All reports (list) — the full report table at /reports/list: Report · Tags · Routes · graphs · Updated, with a filter rail — NPMRDS › Reports toggle — npmrds--reports--find.html
+- published · draft (pill) — the report header's status: whether unpublished changes exist — NPMRDS › report header — npmrds--reports--share_and_print.html
+- Data link — the download address an author sets in the header; the Data button opens it — NPMRDS › report header — npmrds--reports--share_and_print.html
+- TMC search — the Route Creation box that adds a segment by its 9-character code; Add is disabled until the code resolves (TMC not found) — NPMRDS › Route Creation — npmrds--routes--create.html
+- Save new route · editing — the save dialog's title for a new route, and the Route panel badge once ?route_id= is in the address — NPMRDS › Route Creation — npmrds--routes--create.html
+- route · Routes Data · TMC array · route tags (agency: · user:) · TMC Click mode · Markers mode · Update route · service-account routes · network vintage · LOTTR · TTTR · TMC · epoch · Reports · Route Comparison · Macro View — duplicates of Phase 0 / 1 / 3 entries; not re-added
+
+## Added 2026-09-07 (Phase 4b · NPMRDS macro view, comparison, segment, MAP-21, recipes, FAQ)
+- download builder (Download measure data) — the Macro View dialog behind Download N rows: Scope · Format · Include ± geometry · Columns you'll get · Add metadata column · Add measure column · Build N rows — NPMRDS › Macro View bottom bar — npmrds--macro_view--download.html
+- Current filters · Statewide, <year> (scope) — the two export scopes: the geography on the map, or every segment in the year; each shows its row count — NPMRDS › download builder — npmrds--macro_view--download.html
+- PM3_README.txt — the README inside every Macro View download zip: export, coverage era, free-flow reference window, delay and reliability caveats, "not for federal submittal" — NPMRDS › download package — npmrds--macro_view--download.html
+- column-name scheme (measure_variant_period_unit) — how download columns are named, e.g. lottr_amp_lottr, ted_freeflow_anchored_all_xdelay_vhrs, coverage_all_vehicles_amp_pct_bins_reporting — NPMRDS › download — npmrds--macro_view--download.html
+- Worst 25 segments · in current filter — the measure panel's ranking of the current measure over the current geography, drawn as points on the map — NPMRDS › Macro View — npmrds--macro_view.html#worst-segments
+- Value distribution · Median · 80th pctl · Unreliable / Above target — the measure panel's histogram and summary figures for what is on the map — NPMRDS › Macro View — npmrds--macro_view.html
+- Get to a segment (TMC or county…) — the Macro View search that zooms to one segment from three characters of a TMC code or a county name; knows no road names — NPMRDS › Macro View — npmrds--segment.html
+- Build comparison rail (Scope · Routes · Periods · Metrics) — Route Comparison's builder; only the route step drives the matrix in the draft — NPMRDS › Route Comparison — npmrds--route_comparison.html
+- Comparison matrix — Route Comparison's table: one row per route, a column group per period, TT all · TT freight leaves — NPMRDS › Route Comparison — npmrds--route_comparison.html
+- Base period · Δ vs Base — the design's first period and change columns (▲ improved · ▼ worse · ◻ no data); not in the draft matrix — NPMRDS › Route Comparison — npmrds--route_comparison.html#reading-the-matrix
+- MAP-21 PM3 system performance (page) — the live federal report: compliance snapshot, a trend per measure, how targets work, the MPO table, urban congestion, the annual download — NPMRDS › MAP-21 PM3 — npmrds--map21.html
+- Level of Travel Time Reliability (page) — the report's child page: LOTTR map, compliance cards with context, person-miles by bin and period, least-reliable segments — NPMRDS › MAP-21 PM3 — npmrds--map21.html#the-lottr-page
+- compliance card — a MAP-21 KPI card with a status pill, a target bar and the change from the year before — NPMRDS › MAP-21 PM3 — npmrds--map21.html#reading-the-compliance-cards
+- significant progress (two-prong test) — FHWA's rule: a measure meets its 2-year or 4-year target, or improves on the period's baseline year (TTTR by ≥ 0.01) — NPMRDS › MAP-21 PM3 · How MAP-21 targets work — npmrds--map21.html
+- performance period (P2 2022–2025 · P3 2026–2029) — the four-year federal target cycle with a 2-year midpoint check — NPMRDS › MAP-21 PM3 — npmrds--map21.html
+- reporting urbanized area (UZA) — an urbanized area over 200,000 people in nonattainment or maintenance that reports PHED and Non-SOV: New York–Newark and Poughkeepsie–Newburgh — NPMRDS › MAP-21 PM3 · Urban congestion — npmrds--map21.html
+- person-miles reliable — the federal LOTTR roll-up: share of person-miles (length × directional AADT × occupancy) on segments whose worst period is below 1.50 — NPMRDS › MAP-21 PM3 · TSMO Reliability — npmrds--map21.html · measures_and_data--measures--lottr.html
+- HPMS Travel Time Metrics (annual download) — New York's submission file to FHWA, one row per reporting TMC segment, both directions, filed by June 15 — NPMRDS › MAP-21 PM3 · Annual data — npmrds--map21.html#the-annual-download
+- least-reliable segments table — the LOTTR page's ranking: NHS segments with directional AADT > 30,000 and length > 0.25 mi by worst-period LOTTR, 7 per page — NPMRDS › Level of Travel Time Reliability — npmrds--map21.html#the-lottr-page
+- recipe — a planner's deliverable worked end to end: The question · What you need · Steps · Reading the result · Variations · Sample output — Docs › NPMRDS › Recipes — npmrds--recipes.html
+- composite score · composite rank — a weighted sum of measures normalised to 1–5, and its descending RANK; a ranking device, not a measure — Recipes — npmrds--recipes--composite_score.html
+- 30 % reporting screen — dropping segments with under 30 % of bins reporting in every daytime period before ranking (coverage is on a 0–100 scale) — Recipes — npmrds--recipes--composite_score.html
+- min–max normalisation (1 to 5) — =1+4*((x)-MIN)/(MAX-MIN); the lowest value becomes 1, the highest 5 — Recipes — npmrds--recipes--composite_score.html
+- TED per mile to rank, TED total to report — the CMP recommendation carried from the 2024 draft — Recipes › Congestion Management Process — npmrds--recipes--congestion_management_process.html
+- Congestion Management Process (CMP) — the federally required process for Transportation Management Areas (23 CFR 450.322); eight FHWA actions, five served by the platform — Recipes — npmrds--recipes--congestion_management_process.html
+- before/after study — one route added twice with two date windows and a Difference graph, anchor = before, so positive = delay removed — Recipes › Reports — npmrds--recipes--before_and_after.html
+- Anchor Route (before/after) — the row subtracted from in Difference mode; with the before window as anchor, positive bars are improvement — NPMRDS › Add Graph — npmrds--recipes--before_and_after.html (duplicate of the Phase 4a "comparison mode" entry's anchor; keep one)
+- value of time (rate, stated) — the dollars per vehicle-hour a delay total is multiplied by: $15 in the 2024 write-up, $20 flat on some TSMO pages, $52 / $42 / $77 class-weighted today — Recipes › before/after · TSMO — measures_and_data--measures--cost_of_congestion.html
+- Route 787 (Cohoes Boulevard) case — the 2024 before/after study: NB, 2016–2018 vs 2021–2023, 60,000 → 36,250 hours, $451,000 → $271,875 per year at $15 — Recipes — npmrds--recipes--before_and_after.html
+- MAP-21 / PM3 (federal) · the analytical series · LOTTR · TTTR · TTTR₈₀ · TED · PHED · Data coverage · coverage era · anchored free-flow reference · Difference mode · Route Compare · Viewing as of · TMC · network vintage · Macro View · Route Comparison · Reports — duplicates of Phase 0 / 1 / 2a / 3 / 4a entries; not re-added
+
+## Added 2026-09-07 (Phase 5 · Freight Atlas)
+- Map layers (panel) — the Freight Atlas map's layer panel: a header count "N on", Search 39 layers…, Active map, Add layers by category — Freight Atlas › map — freight_atlas--map.html
+- Active map — the panel's list of layers that are on, in category order, each with Remove from map (×) and, for layers with views, a Show select — Freight Atlas › map — freight_atlas--map.html
+- Add layers — the panel's library: the eight categories, each a row of checkboxes; a badge counts what is on — Freight Atlas › map — freight_atlas--map.html
+- Show (view) — the per-layer select that picks the field a layer colours by; five layers have views (Traffic Volume & Road Attributes · Alternative Fuel Corridors · STCC Transearch Tonnage · STCC Transearch Value · Transearch Totals) — Freight Atlas › map · Active map row — freight_atlas--layers.html
+- Clear all — turns every layer off — Freight Atlas › map · Active map — freight_atlas--map.html
+- Legend (panel) — one block per layer that is on: title, symbols with labels, an info button "About this data — view the source page" that opens the dataset's source page — Freight Atlas › map — freight_atlas--map.html
+- layer (Freight Atlas) — one row in Map layers: a styled drawing of one dataset with a legend and hover fields; 39 in 8 categories — Freight Atlas › map — freight_atlas--layers.html
+- category (Freight Atlas map) — one of the eight groups in Add layers: Geographies · Freight Facilities · Maritime Network · Rail Network · Road Network · Network and Commodity Data · Transearch Freight Movement · Safety & Performance — Freight Atlas › map — freight_atlas--layers.html
+- layers= (address) — the map's share variable: the ids of the layers that are on, separated by |||; carries neither position nor the Show choice; comma-separated older links still resolve — Freight Atlas › map address — freight_atlas--map.html
+- Change base map — the map control that switches the background: Default · Satellite · Streets · Light · Dark · Blank; road names and shields come from the basemap, not a layer — Freight Atlas › map — freight_atlas--map.html
+- gap layer — one of nine layers added in July 2026 to draw plan figures the map lacked — Freight Atlas › map — freight_atlas--layers.html#names-suffixes-and-recent-changes
+- plan figure (tile) — a Maps Gallery tile: figure number and plan page, title, plan context, "N layers", open in Freight Atlas → — Freight Atlas › Maps Gallery — freight_atlas--gallery.html
+- 2050 Outlook — the gallery's eighth category, hidden because none of its four 2021-to-2050 change maps is live — Freight Atlas › Maps Gallery — freight_atlas--gallery.html#why-a-category-can-be-hidden
+- source page — a dataset's page in Data & Downloads: tabs Overview · Table · Map (· Admin), a version selector on Table and Map, Versions with Download per version — Freight Atlas › Data & Downloads — freight_atlas--downloads.html
+- version (dataset) — one upload of a dataset; downloads belong to a version; the selector starts at the latest — Freight Atlas › source page — freight_atlas--downloads.html
+- download formats — CSV · ESRI Shapefile · GeoJSON · GPKG (GeoPackage), as generated per version; XLSX was in the design only — Freight Atlas › source page › Versions — freight_atlas--downloads.html#formats-and-what-was-generated
+- sign-in wall (Data & Downloads) — the sign-in page anonymous visitors met on the catalog at the 2026-07-29 check; a permission-check cause, decision on public access unrecorded — Freight Atlas › Data & Downloads — freight_atlas--downloads.html#what-needs-a-login
+- the figures agree with the plan (rule) — where the plan publishes a figure the Freight Atlas shows the plan's figure (2026-08-25); layers still draw the underlying data — Freight Atlas › home — freight_atlas--downloads.html#the-figures-agree-with-the-plan
+- TRANSEARCH 2021 base year (2023 release) — S&P Global's commodity-flow database as the plan uses it: 2023 release, 2021 base year, 2050 forecast; never "TRANSEARCH 2023" alone — Freight Atlas › home · Transearch layers — freight_atlas--the_plan.html
+- FCHN — Freight Core Highway Network, New York's designated core freight highway network, created 2019, extended 4,497 mi in 2024 — Freight Atlas › Road Network — freight_atlas--layers.html#vocabulary
+- FCRN — Freight Core Rail Network, the rail counterpart created in 2019; drawn as the core rail layers — Freight Atlas › Rail Network — freight_atlas--the_plan.html#what-changed-2019-to-2024
+- NHFN · PHFS · CUFC · CRFC — the National Highway Freight Network and its components: Primary Highway Freight System, non-PHFS Interstate, Critical Urban and Critical Rural Freight Corridors — Freight Atlas › Road Network — freight_atlas--layers.html#vocabulary
+- STRAHNET — Strategic Highway Network, routes and connectors — Freight Atlas › Road Network — freight_atlas--layers.html#vocabulary
+- STRACNET — Strategic Rail Corridor Network; legend codes P · F · D unverified — Freight Atlas › Rail Network — freight_atlas--layers.html#vocabulary
+- REDC — Regional Economic Development Council region; the plan's map background — Freight Atlas › Geographies — freight_atlas--layers.html#vocabulary
+- DAC rank — percentile rank of a disadvantaged-communities index from EPA indicators — Freight Atlas › Network and Commodity Data — freight_atlas--layers.html#vocabulary
+- AADT · truck AADT — annual average daily traffic; truck-only counts as AADT (Single Trucks) and AADT (Combination Trucks) — Freight Atlas › Traffic Volume & Road Attributes — freight_atlas--layers.html#vocabulary
+- IRI — International Roughness Index, pavement roughness; higher is rougher — Freight Atlas › Road Condition — freight_atlas--layers.html#vocabulary
+- Last Mile (corridor) — the third corridor type of the core rail network's legend after National and Statewide; plan definition pending [VERIFY] — Freight Atlas › Rail Network — freight_atlas--layers.html#vocabulary
+- STCC — Standard Transportation Commodity Code, the commodity groups the Transearch layers filter by — Freight Atlas › Transearch Freight Movement — freight_atlas--layers.html#vocabulary
+- ATRI — American Transportation Research Institute, source of the licensed undesignated truck parking clusters — Freight Atlas › Safety & Performance — freight_atlas--layers.html#vocabulary
+- PADD — Petroleum Administration for Defense District, in the Pipeline Terminals popup — Freight Atlas › Freight Facilities — freight_atlas--layers.html#vocabulary
+- CLCPA — the Climate Leadership and Community Protection Act, the frame of the plan's Environment goal — Freight Atlas › About & The Plan — freight_atlas--the_plan.html
+- ETC index — quoted from the what-changed table; expansion pending [VERIFY] — Freight Atlas › About & The Plan — freight_atlas--the_plan.html
+- Freight Web Atlas — the 2024 plan's own name for the earlier atlas the site replaces — Freight Atlas › About & The Plan — freight_atlas--the_plan.html
+- 2024 State Freight Plan · Maps Gallery · Data & Downloads · Platform home · product switcher · MPO · TED · TTTR — duplicates of Phase 0 / 1 / 2 entries; not re-added
+
+## Added 2026-09-08 (Phase 6a · Developers — queued by the orchestrator; the worker was stopped before its queue step)
+- Data Manager API — the platform's read API: a Falcor JSON Graph endpoint at https://graph.availabs.org/graph, paths under the uda root — Developers — developers--data_manager_api.html
+- Falcor path — a JSON array naming the way into the graph: root · environment · view · options · length or dataByIndex · attributes; sent URL-encoded in the paths query parameter with method=get — Developers — developers--data_manager_api.html
+- JSON Graph — Falcor's response shape: the paths you sent, mirrored back, with the values at their ends — Developers — developers--data_manager_api.html
+- uda (root) — the current root of every data read, the one the site itself uses; supersedes the 2025 reference's dama root — Developers — developers--data_manager_api.html
+- dama (root) — the legacy root with viewsbyId / databyIndex casing; still served on the data host; write new code against uda — Developers — developers--data_manager_api.html
+- data environment — the second path segment; npmrds2 is the platform's environment — Developers — developers--data_manager_api.html
+- options object — the JSON object, serialised to a string inside the path, that filters, excludes, compares, matches, groups and orders a row read — Developers — developers--data_manager_api.html
+- aggregatedLen — with groupBy, makes length count groups rather than rows — Developers — developers--data_manager_api.html
+- length-then-rows — the request pattern every query follows: ask how many rows match the options, then read them by index range — Developers › Quick start — developers--quickstart.html
+- dataByIndex — the row read: an inclusive {from, to} index range and a list of attributes; the response key is the attribute string as sent — Developers — developers--data_manager_api.html
+- atom — Falcor's wrapper for an object, date or null value, {"$type":"atom","value":…}; unwrap it — Developers — developers--data_manager_api.html
+- sign-in token — the JWT returned by POST https://dmsserver.availabs.org/login with email, password and project; lasts about 6 hours; sent as the Authorization header; public reads need none — Developers › Quick start — developers--quickstart.html
+- python client — dama-api-client-py, installed from its repository; fetch_and_convert_to_csv writes a query's rows to a CSV — Developers — developers--examples.html
+- Batch Reports API — POST https://graph.availabs.org/batchreports/npmrds2/982: routes as TMC lists with time windows and column definitions → speed, travel time and hours of delay per route and column; retires with Route Comparison — Developers — developers--batch_reports_api.html
+- data columns (Batch Reports) — speed · speed-pc · traveltime · traveltime-pc · delay · delay-pc; a -pc key is the percent change against the base column — Developers — developers--batch_reports_api.html
+- data source (Batch Reports) — travel_time_all_vehicles · travel_time_freight_trucks · travel_time_passenger_vehicles, one per vehicle stream — Developers — developers--batch_reports_api.html
+- PM3_README.txt — the README written into every Macro View package for the year exported: export, coverage era, free-flow window, delay and reliability columns, comparison checklist — Developers — developers--downloads_and_formats.html
+- $HOST — the literal prefix some stored file addresses carry; the site replaces it with the data host before fetching — Developers › Quick start — developers--quickstart.html
+- API changelog labels — Platform · API · Docs; undated items under "Undated" — Developers — developers--changelog.html
+- GPKG · GeoPackage · download formats · Route Comparison · TMC · TRANSCOM events — duplicates of Phase 2b / 3 / 4 / 5 entries; not re-added
+
+## Added 2026-09-08 (Phase 6b · Admin)
+- dataset (source) — one named body of data on the platform, with a description, a column list and one or more versions — Admin › the dataset catalog — admin--upload_data.html
+- version — one iteration of a dataset: the same columns, new data; newest carries a "current" badge and downloads belong to it, not to the dataset — Admin › a dataset's Versions card — admin--manage_data.html#versions-and-downloads
+- data type — what a dataset is and how it is loaded, chosen once at creation and fixed thereafter: gis_dataset · csv_dataset · file_upload · internal_table · map21 · pm3 and the platform's named pipelines — Admin › Create Dataset · Type — admin--upload_data.html#the-data-types-on-offer
+- Omit (upload) — the per-column checkbox that keeps a column out of the load entirely — Admin › Field Names Mappings — admin--upload_data.html#steps
+- Mbtile (upload) — the per-column checkbox that keeps a column in the map tiles, so a map can draw or label with it — Admin › Field Names Mappings — admin--upload_data.html#steps
+- FINAL (load event) — the last event of a successful load; a log that stops short of it is a failure — Admin › Upload Views — admin--upload_data.html#troubleshooting
+- Tasks (dataset log) — a dataset's own record of its loads and jobs, with a per-task event list; the earlier documentation's Events log — Admin › a dataset's Admin tab — admin--manage_data.html#access-and-deletion
+- Advanced Metadata — the per-column editor behind display name, description, type, index and primary key; the same page as Edit columns — Admin › a dataset's Admin tab — admin--manage_data.html#steps
+- display name (column) — the name readers see for a column, written by an administrator; until it is written, readers see the stored column name — Admin › Advanced Metadata — admin--manage_data.html#column-metadata
+- Access (dataset) — the per-dataset list that grants named permissions to a group or one person — Admin › a dataset's Admin tab — admin--users_and_permissions.html#what-a-permission-gates
+- permission (named) — one of nine grants on a dataset: View source · Download source · Update source · Create version · Manage downloads · View source API · Delete source · Edit permissions · All (*) — Admin › Access — admin--users_and_permissions.html#what-a-permission-gates
+- authority level — the earlier one-number-per-group scheme, 1 view only / 2 view and download / 10 full access, replaced by the named permissions — Admin — admin--users_and_permissions.html#the-three-earlier-levels
+- group — the only account attribute the Users page edits; a dataset grants permissions to a group, not to a level — Admin › Users, Groups — admin--users_and_permissions.html
+- View As — the administrator's way of seeing the site as another account sees it; a diagnostic, not an audit trail — Admin › Users — admin--users_and_permissions.html#steps
+- Hard Delete — the deeper of the two deletes: drops each version's data table, removes the download files and deletes the load history, after you type the dataset's name — Admin › a dataset's Admin tab — admin--manage_data.html#access-and-deletion
+- saved map (symbology) — a named style over one or more dataset versions, built in the Map Editor and copied into a page's map section — Admin › Map Editor — admin--map_editor.html
+- symbology type — how a layer is coloured: Simple · Categories · Color Range · Interactive (points add Circles) — Admin › Map Editor · Style — admin--map_editor.html#the-style-controls
+- bin method — how a graduated layer's breaks are cut: ck-means · Quantile · Equal Interval · Standard Deviation · Custom — Admin › Map Editor · Scale — admin--map_editor.html#the-style-controls
+- View Group — a set of versions of one dataset collected behind a single layer, in a chosen order, with one marked as the one it opens on — Admin › Map Editor · Style — admin--map_editor.html#pointing-a-map-at-a-newer-version
+- On this map — the map section's list of the saved maps it holds, with visibility, the active marker, refresh and remove — Admin › Map Settings · Symbologies — admin--add_map_to_page.html#settings
+- refresh (a page's map) — the control that re-fetches a saved map from the editor and merges it over the page's copy, keeping the page's own visibility, active layer and filter bindings — Admin › Map Settings · Symbologies — admin--add_map_to_page.html#keeping-a-pages-map-in-step
+- Layer Library Panel — the on-map panel that lets readers toggle a section's saved maps; off by default — Admin › Map Settings · Symbologies — admin--add_map_to_page.html#settings
+- Page Variable Bridge — the per-map settings that tie a map's layer filter to one of the page's own variables — Admin › Map Settings · Filters — admin--add_map_to_page.html#steps
+- % of tmc — the share of a segment that must have data before the segment is used in a MAP-21 or analytical build; the federal figure is computed at 100 — Admin › the map21 / pm3 panel — admin--map21_pm3_sources.html#settings
+- MAP-21 dataset · analytical dataset — duplicates of the Phase 3 datasheet entries (PM3 and MAP-21 datasets); not re-added
+- GPKG · GeoPackage · download formats · Data & Downloads · session — duplicates of Phase 1 / 3 / 5 entries; not re-added

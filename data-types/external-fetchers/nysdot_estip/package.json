@@ -1,0 +1,15 @@
+{
+  "name": "nysdot-estip-fetcher",
+  "private": true,
+  "type": "commonjs",
+  "description": "One-off harvester for the NYSDOT eSTIP public API, its Mapbox project layers and the STIP region workbooks.",
+  "scripts": {
+    "fetch": "node fetch.js",
+    "resolve": "node resolve_ris.js"
+  },
+  "dependencies": {
+    "@mapbox/vector-tile": "^2.0.3",
+    "pbf": "^5.1.2",
+    "pg": "^8.11.3"
+  }
+}

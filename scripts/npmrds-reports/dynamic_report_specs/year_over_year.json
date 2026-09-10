@@ -1,6 +1,5 @@
 {
   "title": "Year Over Year",
-  "slug": "converted_reports/year_over_year",
   "dynamicReport": true,
   "description": "Compare year-over-year performance for a route or corridor across speed, travel time, and delay.",
   "tags": ["category:change_over_time", "difficulty:beginner"],
@@ -60,19 +59,19 @@
       "why": "Daily travel-time across the trailing-3-years window — same re-pointing as bar_delay_trailing. Single-route graph, same plain graph-level weekend-exclusion default." }
   ],
   "routes": [
-    { "id": "current", "slot": true, "name": "Current Year", "route_slot_group": "163181",
+    { "id": "current", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "color": "#666666",
       "graphs": ["map_traveltime", "infobox_length", "routecompare_speed", "line_traveltime_all", "map_speed_all"] },
-    { "id": "y1ago", "slot": true, "name": "1 Year Ago", "route_slot_group": "163181",
+    { "id": "y1ago", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-1year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#1b9e77",
       "graphs": ["map_traveltime", "routecompare_speed", "line_traveltime_all", "map_speed_all"] },
-    { "id": "y2ago", "slot": true, "name": "2 Years Ago", "route_slot_group": "163181",
+    { "id": "y2ago", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-2year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#666666",
       "graphs": ["map_traveltime", "routecompare_speed", "bar_avgdelay_2yr", "bar_traveltime_2yr", "line_traveltime_all", "map_speed_all"] },
-    { "id": "trailing", "slot": true, "name": "Trailing 3 Years", "route_slot_group": "163181",
+    { "id": "trailing", "slot": true, "name": "%n (%y)", "route_slot_group": "163181",
       "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
       "color": "#a6761d",
       "graphs": ["map_traveltime", "routecompare_speed", "bar_delay_trailing", "line_traveltime_all", "map_speed_all", "bar_traveltime_trailing"] }

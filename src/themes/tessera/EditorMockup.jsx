@@ -120,17 +120,9 @@ export function EditorMockup({ path, badge, cta, sidebar, blocks = [], dragCard,
             )}
           </div>
         )}
+        {/* Sidebar (pages/data tree) sits on the RIGHT of the canvas — matching
+            where the real editor puts it. */}
         <div className={t.body}>
-          {sidebar && (
-            <div className={t.sidebar}>
-              {sidebar.map((item, i) => (
-                <div key={i} className={item.active ? t.sidebarItemActive : t.sidebarItem}>
-                  {item.icon && Icon && <Icon icon={item.icon} className={t.sidebarIcon} />}
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
           <div className={t.canvas}>
             <div className={t.canvasGrid}>
               {blocks.map((block, i) => (
@@ -151,6 +143,16 @@ export function EditorMockup({ path, badge, cta, sidebar, blocks = [], dragCard,
               </div>
             )}
           </div>
+          {sidebar && (
+            <div className={t.sidebar}>
+              {sidebar.map((item, i) => (
+                <div key={i} className={item.active ? t.sidebarItemActive : t.sidebarItem}>
+                  {item.icon && Icon && <Icon icon={item.icon} className={t.sidebarIcon} />}
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {annotations.map((a, i) => (

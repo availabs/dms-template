@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Incident delay and clearance · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--incident_delay_and_clearance.html · IA page 61 · type measure. Phase 2a, 2026-09-04.
+  Sources: TSMO Data & Methodology 2184101 (roadway clearance card + legend, TIM timestamp completeness 42.7/20.1/10.6/0.3 % of
+  3.7M events, footprint 18.5 %), Incidents dashboard 2181461 (scope, estimated_duration_mins ~99 %, "reliable from 2019",
+  "~68% of events with real lanes-open timestamps"), Incident Search 2183804 (18.5 %, dashes), mockup header tsmo-incidents.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Incident delay and clearance.</h1>
+          <p class="doc-lede">Two measures for reactive incidents: the delay each incident caused, and how long the road took to clear. This page defines both, and the timestamp-completeness badges that qualify every clearance figure. It assumes you have read the delay-attribution page.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · TSMO dashboards (www/tsmo)</span>
+            <span>methodology · excessive delay, June 2026 revision</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p>How much delay did incidents cause, and how quickly were they cleared? The Data &amp; Methodology page defines roadway clearance time as "Time from incident verification to all lanes reopened — the FHWA TIM headline measure." TIM is Traffic Incident Management. Attributed delay is the event footprint defined on the <a href="measures_and_data--measures--delay_attribution.html">delay-attribution page</a>, summed per incident.</p>
+          <p>The scope is reactive incidents: crashes, road hazards, weather and special events. Construction, maintenance and emergency operations belong to <a href="measures_and_data--measures--work_zone_delay.html">work-zone delay</a>.</p>
+          <div class="callout basis"><span class="k">basis</span>Events are TRANSCOM events filtered to New York, classified by NYSDOT sub-category. Completeness shares are of 3.7 million events, all categories, queried 2026-06-22.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <h3 id="attributed-delay">Attributed delay</h3>
+          <ol class="steps">
+            <li>Build the incident's footprint: its affected segments and 5-minute slices, with delay above the recurrent baseline, as on the delay-attribution page.</li>
+            <li>Sum the footprint to vehicle-hours. Convert to dollars at the value of time the page states. See <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>.</li>
+            <li>Rank, bucket by category, or sum by month and region. Events without a footprint carry a dash, not a zero.</li>
+          </ol>
+          <h3 id="roadway-clearance-time">Roadway clearance time</h3>
+          <ol class="steps">
+            <li>Keep only events that carry both an incident-verified timestamp and an all-lanes-open timestamp.</li>
+            <li>Subtract: all lanes open minus incident verified.</li>
+            <li>Report the median, the 85th percentile and the share cleared within 90 minutes, and beside each the share of events the figure rests on.</li>
+          </ol>
+          <div class="formula">RCT = end_all_lanes_open − incident_verified
+subset: both timestamps present
+report: median · 85th percentile · % cleared &lt; 90 min · coverage %
+            <span class="var">RCT = roadway clearance time · end_all_lanes_open = the timestamp all lanes reopened to traffic · incident_verified = the timestamp the incident was confirmed</span>
+            <span class="var">coverage % = the share of events in the filter that carry both timestamps</span>
+          </div>
+          <h3 id="duration">Duration</h3>
+          <p>Incident duration, as distinct from clearance, comes from the estimated duration recorded on the event. About 99 % of events carry one. The values cluster at round estimates.</p>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Timestamp</th><th class="num">Share of events carrying it</th><th>Used for</th></tr></thead>
+            <tbody>
+              <tr><td>All lanes reopened to traffic</td><td class="num">42.7 %</td><td>the end of roadway clearance</td></tr>
+              <tr><td>Incident verified</td><td class="num">20.1 %</td><td>the start of roadway clearance</td></tr>
+              <tr><td>Incident reported</td><td class="num">10.6 %</td><td>the response timeline on an incident page</td></tr>
+              <tr><td>Response arrives on scene</td><td class="num">0.3 %</td><td>the response timeline; too sparse for a measure</td></tr>
+            </tbody>
+          </table></div>
+          <ul>
+            <li><strong>Clearance is computed only where the needed pair of timestamps exists.</strong> The badge on each panel restates the subset size. The Incidents dashboard's own band quotes a higher lanes-open share for its reactive subset than the all-events 42.7 % above; the two shares have different denominators (all events vs the dashboard's reactive subset), so read each badge with its own base..</li>
+            <li><strong>A footprint exists on about 18.5 % of events.</strong> Delay and cost are computed only for those. The dashboard rounds this to "about one in five".</li>
+            <li><strong>Category:</strong> NYSDOT sub-category, reactive set only.</li>
+            <li><strong>Filters:</strong> <span class="ui">Year</span> is one year; <span class="ui">Region</span> is one NYSDOT region or statewide.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>We headline the share cleared within 90 minutes rather than the median.</strong> Medians on a sparse subset shift as timestamp coverage improves. Threshold shares tolerate the missingness better.</li>
+            <li><strong>Coverage is trended, not hidden.</strong> Each clearance figure carries a "based on N % of incidents" badge, and the completeness itself is charted, so an improving median can be read against improving coverage.</li>
+            <li><strong>The lead figure is delay, not count.</strong> Most lost time comes from a small number of long, lane-blocking events. Counting events would hide that.</li>
+            <li><strong>Construction is excluded</strong> so that this page describes what operations responds to, and the planned-work story lives once, on Work Zones.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>Attributed delay is trusted from 2019, when probe attribution coverage matured. Clearance figures are as good as the timestamps behind them: with verification present on one event in five, a region-year median can rest on a few dozen events. Read the badge first. Duration is an estimate at the time of the event, not a measurement.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is still pending; the statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Most events have no measured footprint.</strong> They appear in lists and counts with a dash for delay and cost. An event list never implies every event delayed traffic.</li>
+            <li><strong>Events are counted across the feed's whole history unless the page filters by year.</strong> Check the panel's own basis line.</li>
+            <li><strong>Secondary crashes are not tracked.</strong> That is on the roadmap.</li>
+            <li><strong>Small regions can show missing bars</strong> where a chart's axis threshold exceeds the region's delay.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Compare attributed delay from 2019 onward, within the current attribution series. Compare clearance figures only with their coverage badges side by side: a lower median on a year with more timestamps is not the same improvement as a lower median at equal coverage. Dollar figures follow the rate rule on the cost page.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="tsmo--incidents.html">Incidents dashboard</a>
+            <a href="tsmo--incident_search.html">Incident Search</a>
+            <a href="tsmo--incident_view.html">Incident page · response timeline and footprint</a>
+            <a href="measures_and_data--data--transcom_events.html">TRANSCOM events · datasheet</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-06-22 · timestamp completeness measured on 3.7 million events and published on the Data &amp; Methodology page.</li>
+            <li>2026-07 · Incidents dashboard redesigned to lead with delay; construction moved to Work Zones.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Use <span class="ui">Incident Search</span> to list events by region, county, year, month and category, ranked by attributed delay, and open any event for its footprint. The event-by-segment delay table is in the Data &amp; Methodology page's <span class="ui">Downloads &amp; API</span> section.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page: roadway clearance card and legend; TIM timestamp completeness panel (42.7 / 20.1 / 10.6 / 0.3 % of 3.7 million events); footprint share 18.5 %.</li>
+            <li>TSMO Incidents dashboard: scope, duration source (estimated duration on about 99 % of events), methodology band (attribution reliable from 2019).</li>
+            <li>TSMO Incident Search: "attributed delay &amp; cost on ~18.5% of events"; dashes for events without a footprint.</li>
+            <li>Congestion and excessive-delay methodology review (references/tsmo/06), §1: the per-event footprint.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, useLocation } from 'react-router'
 import { ThemeContext, getComponentTheme } from '~/dms/packages/dms/src/ui/useTheme'
 import Icon from '~/dms/packages/dms/src/ui/components/Icon'
+import { getBaseHost } from '~/dms/packages/dms/src/utils/subdomainPath'
 
 // Each product is a `path` on the CURRENT origin (`/tsmo`, `/npmrds`,
 // `/freightatlas`). It used to be a `subdomain`, which cost the user their login
@@ -10,7 +11,7 @@ import Icon from '~/dms/packages/dms/src/ui/components/Icon'
 // a theme that has not been migrated keeps working; see
 // planning/transportny/tasks/current/subdomain-to-path-consolidation.md.
 const defaultSites = [
-  { name: 'NPMRDS',        path: '/npmrds',       subdomain: 'npmrds',        icon: 'Pages' },
+  { name: 'NPMRDS',                               subdomain: 'npmrds',        icon: 'Pages' },
   { name: 'Freight Atlas', path: '/freightatlas', subdomain: 'freightatlas',  icon: 'Pages' },
   { name: 'TSMO',          path: '/tsmo',         subdomain: 'tsmo',          icon: 'Pages' },
   { name: 'Sandbox',                              subdomain: 'sandbox',       icon: 'Pages' },
@@ -18,20 +19,31 @@ const defaultSites = [
 
 function getSiteHref(subdomain) {
   const { protocol, host } = window.location
-  const parts = host.split('.')
   // Bare IPv4 host (e.g. 1.2.3.4) has no room for a subdomain — swapping in
   // an octet would produce a broken address, so just prefix it instead.
-  const isIPv4Host = /^\d+$/.test(parts[parts.length - 1])
-  if (!isIPv4Host && parts.length >= 2) {
-    parts[0] = subdomain
-  } else {
-    parts.unshift(subdomain)
-  }
-  return `${protocol}//${parts.join('.')}`
+  if (/^\d+$/.test(host.split(':')[0].split('.').pop())) return `${protocol}//${subdomain}.${host}`
+  // `getBaseHost` strips a subdomain label only when there IS one (single-depth,
+  // localhost-aware). The old code replaced parts[0] unconditionally, which ate the
+  // domain itself on an apex host — transportny.org became www.org. That was mostly
+  // hidden while only the unused subdomain fallbacks went through here; every
+  // switcher entry resolves through it now.
+  return `${protocol}//${subdomain}.${getBaseHost(host)}`
 }
 
-// An explicit `href` wins, then a same-origin `path`, then the legacy subdomain hop.
-const siteHref = (site) => site?.href || site?.path || getSiteHref(site?.subdomain)
+// The platform lives on `www`, so a product `path` is resolved ABSOLUTELY against
+// that host rather than the current one. A bare `/tsmo` would resolve on whatever
+// subdomain the viewer happens to be on — from npmrds.<domain> it would point at
+// npmrds.<domain>/tsmo, which is not a mount of anything. On www itself the result
+// is same-origin, so react-router still routes it client-side; from anywhere else
+// it is a normal cross-origin page load, which is what crossing hosts requires.
+//
+// An explicit `href` still wins, and a site with no `path` (NPMRDS, which is staying
+// on its own subdomain for now) falls through to the subdomain hop.
+const wwwOrigin = () => getSiteHref('www')
+
+const siteHref = (site) =>
+  site?.href
+    || (site?.path ? `${wwwOrigin()}${site.path}` : getSiteHref(site?.subdomain))
 
 // Which product the viewer is currently inside. Path-mounted products are matched
 // on the pathname (prefix match, so /tsmo/congestion_v2 still highlights TSMO);
@@ -114,9 +126,14 @@ export default function LogoNav(props) {
           {sites.map((site, i) => {
             const isActive = isActiveSite(site, pathname, currentSubdomain)
             return (
-              <a
+              // `Link`, not `<a>`: now that the products are paths on one origin,
+              // switching between them is in-app routing and should not reload the
+              // document. The legacy `subdomain` fallback still works — react-router
+              // compares origins on an absolute `to` and renders a plain anchor when
+              // they differ, so a cross-subdomain entry keeps its full page load.
+              <Link
                 key={i}
-                href={siteHref(site)}
+                to={siteHref(site)}
                 className={`
                   flex items-center gap-3 px-4 py-2.5
                   transition-colors cursor-pointer whitespace-nowrap
@@ -140,11 +157,12 @@ export default function LogoNav(props) {
                   )}
                 </div>
                 {isActive && <span className="size-1.5 rounded-full bg-[#FACC15] flex-shrink-0" />}
-              </a>
+              </Link>
             )
           })}
-          <a
-            href="/"
+          <Link
+            /* the platform landing lives on www, not on whatever host we're on */
+            to={wwwOrigin()}
             onClick={() => setOpen(false)}
             className="
               flex items-center justify-between gap-3 px-4 py-2.5 mt-1
@@ -156,7 +174,7 @@ export default function LogoNav(props) {
           >
             <span>Platform home</span>
             <span className="text-[#FACC15]">&rarr;</span>
-          </a>
+          </Link>
         </div>
       )}
     </div>

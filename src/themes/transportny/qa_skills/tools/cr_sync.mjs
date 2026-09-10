@@ -78,7 +78,9 @@ async function readRows(env, viewId, cols) {
   return rows;
 }
 function listPages(pattern) {
-  const out = cli("page", "list", "--pattern", pattern);
+  // `--limit 1000`: the CLI defaults to 50 rows and npmrds_sub crossed 50 live pages on 2026-09-02,
+  // which would have turned every enrolled slug past the cut into an ALLOWLIST MISS.
+  const out = cli("page", "list", "--pattern", pattern, "--limit", "1000");
   const line = out.split("\n").find((l) => l.trim().startsWith("{") || l.trim().startsWith("["));
   return (line ? (JSON.parse(line).items || JSON.parse(line)) : []) || [];
 }
@@ -263,7 +265,14 @@ const KEY_FILE_OVERRIDE = {
   "npmrds:route_comparison": "route-comparison.html",
   "npmrds:map_21": "map-21.html",
   "npmrds:lottr": "map-21-lottr.html",
-  "npmrds:converted_reports/reports": "npmrds-reports.html",
+  // The REPORTS OVERVIEW — the `npmrds_sub` nav's Reports item, page 2188366 — was enrolled
+  // 2026-09-02 as `converted_reports` (npmrds-reports-page-rev3.md, Phase 5) and the owner
+  // renamed its slug to `reports` the same afternoon (rename-converted-reports-url-to-reports.md),
+  // which the `npmrds-` prefix rule resolves by convention (reports → npmrds-reports.html), so
+  // the `"npmrds:converted_reports"` override that briefly lived here resolved nothing and is
+  // gone. The old child 2208581 `converted_reports/reports` (the AVAIL-curated template grid /
+  // v0.1 landing page) once held the mapping; it was a different surface with no mockup of its
+  // own and was destroyed the same day — two pages must never claim one mockup anyway.
   // the live page moved /about → /about_the_plan (ticket #107); the mockup kept its old name
   "freightatlas2:about_the_plan": "freight-atlas-about.html",
   "freightatlas2:maps_gallery": "freight-atlas-gallery.html",
@@ -297,9 +306,10 @@ function ingestDesign(surface, slug, page_key) {
 // to before — `allow` is null and short-circuits before the `&&`, so tsmo2 / landing /
 // 2175436 / npmrds2 keep inventorying every live page exactly as they did.
 //
-// This exists because `npmrds_sub` holds 39 live pages, 22 of them `converted_reports*`
-// report conversions that must NOT enter the QA pipeline; only `macro` and `home` are asked
-// for. Excluded slugs are collected so that (a) the run prints what it skipped, and (b)
+// This exists because `npmrds_sub` holds dozens of live pages, most of them `reports*`
+// (renamed 2026-09-02 from `converted_reports*`) report conversions that must NOT enter the
+// QA pipeline; only `macro` and `home` are asked for. Excluded slugs are collected so that
+// (a) the run prints what it skipped, and (b)
 // `--prune` cannot delete a page row merely because the allowlist stopped enumerating it —
 // see the `allowExcluded` guard at the prune step.
 const desired = [];
@@ -328,6 +338,19 @@ for (const { pattern, surface, surface_label, subdomain, base_url, include_slugs
   }
 }
 console.log(`live pages across ${surfaces.length} pattern(s): ${desired.length}`);
+// ⚠ A pattern that lists ZERO live pages is an EXPIRED/ABSENT TOKEN, not an empty site (the CLI
+// returns an empty list rather than an error for an auth-gated pattern; measured 2026-09-03 when
+// a 6h-old token quietly turned every npmrds row into "not in live patterns"). With --prune that
+// would delete the whole inventory. Refuse unless the caller says the pattern is really empty.
+{
+  const empty = surfaces.filter((s) => !listPages(s.pattern).length).map((s) => s.pattern);
+  if (empty.length && !flag("allow-empty-pattern")) {
+    console.error(`\nREFUSING: pattern(s) [${empty.join(", ")}] returned 0 live pages — almost certainly an expired` +
+      ` DMS_AUTH_TOKEN (re-mint with src/dms/packages/dms/cli/bin/mint-token.mjs). Pass --allow-empty-pattern if a` +
+      ` tracked pattern really has no pages.\n`);
+    process.exit(1);
+  }
+}
 if (DESIGN) console.log(`design mockups ingested: ${desired.filter((d) => d.design_html).length}/${desired.length}` +
   ` (missing: ${desired.filter((d) => !d.design_html).map((d) => d.page_key).join(", ") || "none"})`);
 

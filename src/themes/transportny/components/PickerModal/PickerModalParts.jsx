@@ -47,14 +47,30 @@ export const PickerFacetChips = ({ t, Pill, facets, onToggle, onClearAll, label 
   );
 };
 
-// Result-count + static "sort: Best match" indicator bar, sitting just above the scrollable
-// result list — same shape in both modals (neither offers a real sort picker today; "Best
-// match" states the ranking honestly rather than implying a chooseable control that isn't
-// there yet).
-export const PickerCountBar = ({ t, countLabel, sortLabel = 'Best match' }) => (
+// Result-count + sort-mode bar, sitting just above the scrollable result list — same shape in
+// both modals. 2026-09-03 (Ryan's correction): this used to render "sort: Best match" as a
+// static label — looked like a chooseable control but wasn't one. Now a real native <select>
+// bound to `sortValue`/`onSortChange`; `sortOptions` defaults to the shared SORT_MODE_OPTIONS
+// (pickerScoring.js) so both modals get the same three modes unless a caller has a reason to
+// override. A bare `<select>` (not UI.Select/MultiSelect) on purpose — same "small utility
+// control, native element, styled via the modal's own theme" convention this file's sibling
+// RouteTagBrowserModal.jsx already uses for its `asOfDate` date input, not a reason to pull in
+// MultiSelect's much heavier search/chip UI for a 3-item dropdown.
+export const PickerCountBar = ({ t, countLabel, sortValue, sortOptions, onSortChange }) => (
   <div className={t.countBar}>
     <span className={t.countLabel}>{countLabel}</span>
-    <span className={t.sortPill}>sort <span className={t.sortPillValue}>{sortLabel}</span></span>
+    <label className={t.sortPill}>
+      sort
+      <select
+        className={t.sortSelect}
+        value={sortValue}
+        onChange={(e) => onSortChange?.(e.target.value)}
+      >
+        {(sortOptions || []).map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+    </label>
   </div>
 );
 

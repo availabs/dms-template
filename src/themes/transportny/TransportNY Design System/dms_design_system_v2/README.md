@@ -436,11 +436,18 @@ dms_design_system_v2/
     │                                Comparison · MAP-21), each opened by its own doorway card and
     │                                carrying that product's stats or links-into-views; sticky
     │                                in-page nav + documentation card in a `sidebar` rail
-    ├── npmrds-reports.html        · report library · TEMPLATE SHELF first (12 cards in 5 typed
-    │                                sections, each card with a layout-derived preview tile),
-    │                                search in a modal section group —
-    │                                the dialog on this page WORKS (57 real rows, live filter, URL-
-    │                                bound query); § 04 drives the real component's states
+    ├── npmrds-reports.html        · report library · THE TEMPLATE SHELF and nothing below it
+    │                                (12 cards in 5 typed sections, each card with a layout-derived
+    │                                preview tile); search lives in a modal section group and the
+    │                                dialog on this page WORKS (57 real rows, live filter, URL-bound
+    │                                query), opened from the header. Rev 3 (2026-09-02) removed
+    │                                § 02 your-reports, § 03 worked-examples and § 04's state
+    │                                drivers; the dialog itself stayed
+    ├── npmrds-reports-list.html   · ALL REPORTS — the same library as a filtered, paginated table:
+    │                                ReportPickerModal un-modaled (standing tag rail + facets +
+    │                                prominence sort) over 26 REAL `reports_snap_2` rows. The page
+    │                                pays back the one thing the modal costs, pagination; its header
+    │                                logs five measured findings about the live tag vocabulary
     ├── npmrds-macro.html          · full-page map workbench (controls left, measure context right)
     ├── npmrds-report.html         · the individual report canvas (compact SideNav + flush
     │                                content-sidebar route rail + graph-card grid) — the one
@@ -604,6 +611,33 @@ produced it; annotate with CSS overlays, never baked into the PNG) and the
 auth/dev-server recipe, including the two traps that each cost a run:
 the token must be minted against the app's real API host, and URL
 parameters do not set macro-view state — drive the UI.
+
+**Documentation (`pages/docs/`, 2026-09-04 → 2026-09-08).** The new TransportNY documentation is written as
+static pages in `pages/docs/` — all 95 pages written and reviewed by 2026-09-08 (build Phases 0–7; lint clean, no
+open `[VERIFY]` marks), illustrated from the running tool (Phase 8), and **live since 2026-09-09 as the `platform_docs`
+pattern at `www.devtny.org/docs`** (built from these files by `qa_skills/tools/builds/build_docs_pattern.mjs`; the old
+`npmrds_docs` pattern is parked at `/docs_legacy`). These static pages remain the source: edit here, re-run the build, publish. The layout is — one flat folder, one file per page named `<hub>--<slug>.html`, hubs as
+`<hub>.html`, home `index.html` — following the 95-page information architecture in
+`reports/platform-documentation-plan.html` §08 and the build task
+`planning/transportny/tasks/completed/platform-documentation-build.md`. The folder carries its own shell:
+`_docs-nav.js` (the tree — ONE data structure that drives the sidebar, breadcrumb, prev/next, the lint,
+and later the pattern build), `_template.html` (copy per page), `_docs.css` (docs vocabulary on top of
+`../_shared.css`), `_lint.mjs` (tree ↔ files, header block, ids, links, forbidden strings, figures),
+`_check_layout.mjs` (Playwright overflow/console check), `STYLE.md` (the writing style guide — Replica's
+documentation is the reference; rulings are appended per phase) and `_glossary-queue.md`. Underscore-
+prefixed files are infrastructure or seeds and are not pages. The three earlier docs mockups moved here:
+`docs-overview.html` → `_seed--docs-overview.html`, `npmrds-macro-guide.html` → `npmrds--macro_view.html`
+(IA page 18), `npmrds-measures.html` → `_seed--npmrds-measures.html` (split into the Measures & Data pages in
+phase 2). `ds-nav.js` lists only the docs home; docs pages render their own sidebar. Paths from a docs page
+are one level deeper than from `pages/` (`../_shared.css`, `../../assets/…`, `../<mockup>.html`).
+
+**Reports (`reports/`).** Document-style research reports that use the design system's
+tokens but are not product mockups live in `reports/`, beside `pages/`. They inline the
+`_shared.css` subset they need so they open standalone from the file system, use the `// 01`
+numbered-section grammar, `tny-card` surfaces and `table.tny`, and are NOT registered in
+`ds-nav.js` (that widget is for pages). Current reports: `npmrds-data-quality-report.html`
+(2026-08-13) and `platform-documentation-plan.html` (2026-09-04, the documentation redesign
+research + IA; task `planning/transportny/tasks/current/platform-documentation-plan.md`).
 
 **When you change a token:** update `theme/theme.js`, then mirror the
 new class string into any mockup HTML that demos the affected

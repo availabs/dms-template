@@ -1,0 +1,36 @@
+// Styling for the "All reports" list page's filter rail — visual language ported from the
+// picker modals' own theme (RouteTagBrowserModal.theme.js/PickerModal.theme.js: breadcrumb,
+// category pill row, value list, facet chips), laid out as a standing card stack instead of a
+// single scrollable modal body, per npmrds-reports-list.html's own "flattened from a
+// one-view-at-a-time state machine into a standing rail" note.
+export const reportsListRailTheme = {
+  wrapper: 'flex flex-col gap-4',
+  card: 'rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4',
+  cardHeadRow: 'flex items-center justify-between gap-2 mb-2.5',
+  cardLabel: 'font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400',
+  clearAll: 'font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]',
+  facetRow: 'flex flex-wrap gap-2',
+  facetNote: 'font-proxima text-[11px] leading-[1.5] text-slate-500 mt-3 pt-3 border-t border-zinc-950/05',
+  breadcrumb: 'flex items-center flex-wrap gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-2',
+  breadcrumbStep: 'hover:text-[#1F3F8F] hover:underline cursor-pointer text-slate-500',
+  breadcrumbStepCurrent: 'text-[#0F1722] font-semibold',
+  breadcrumbSep: 'text-slate-300',
+  activeChips: 'flex flex-wrap items-center gap-2 mb-1',
+  activeChip: 'flex items-center gap-1 pl-2 pr-1 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700 max-w-[220px]',
+  activeChipLabel: 'truncate',
+  activeChipRemove: 'shrink-0 text-blue-400 hover:text-blue-600',
+  categoryPillRow: 'flex flex-wrap items-center gap-1.5',
+  categoryPill: 'px-2.5 py-1 rounded-full text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-200 hover:bg-slate-200 flex items-center gap-1',
+  categoryPillActive: 'px-2.5 py-1 rounded-full text-sm font-semibold text-white bg-[#37576B] border border-[#37576B] flex items-center gap-1',
+  categoryPillHint: 'text-[10px] font-normal text-slate-400',
+  categoryPillHintActive: 'text-[10px] font-normal text-white/70',
+  categoryPanel: 'mt-3 pt-3 border-t border-zinc-950/05',
+  valueList: 'grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto',
+  valueItem: 'w-full text-left px-2 py-1.5 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 text-sm text-slate-700 truncate',
+  valueItemActive: 'w-full text-left px-2 py-1.5 bg-blue-50 border border-blue-300 rounded text-sm text-blue-700 truncate',
+  categoryFilterInput: 'w-full text-sm border border-slate-200 rounded px-2 py-1 mb-1.5',
+  otherLink: 'font-proxima text-[12.5px] text-[#1F3F8F] hover:underline',
+  otherLinkRow: 'mt-3 pt-3 border-t border-zinc-950/05',
+  otherPanel: 'mt-2',
+  otherInput: 'w-full text-sm border border-slate-200 rounded px-2 py-1',
+};

@@ -53,14 +53,21 @@ design the shape new. **Next step: ask Ryan if he knows of an existing Route Map
 already colored by a comparison-series measure** — that would collapse this from "design a new
 system" to "compose against a known-working reference."
 
-### 2. Report library (`npmrds-reports.html`) — blocked on Alex's design
+### 2. Report library (`npmrds-reports.html` + `npmrds-reports-list.html`) — UNBLOCKED, split into two
 
-Ryan's page eventually, not Alex's to build (`"reports lib I think is mine eventually, Alex is only
-like 90% done with that design"`) — but as of the design's last known status (2026-08-06, ~90%
-done), there's been no update in 12 days. **Worth checking with Ryan/Alex on design completion
-before doing anything else here.** When it's ready: needs a real queryable index of report
-metadata (869 reports, with denormalized route chips per report, per the original design critique's
-Honesty §5) as a data-shape prerequisite, not just UI work — not yet scoped at the file level.
+Alex's design finished (`npmrds-reports.html` revision 3, `npmrds-reports-list.html` net-new, both
+2026-09-02). This item is now two halves at two different states:
+
+- **The Templates shelf (`npmrds-reports.html`) is DONE and live** — built via
+  `src/themes/transportny/qa_skills/tools/builds/build_npmrds_reports.mjs`, `npmrds_sub` page
+  2188366, slug `reports` (renamed from `converted_reports` 2026-09-02, see
+  `rename-converted-reports-url-to-reports.md`), served at `/npmrds/reports`. Its view-toggle
+  "All reports" cell ships **inert** (no href) pending the list page below.
+- **The All Reports list page (`npmrds-reports-list.html`) is SCOPED, not built** — split out to its
+  own task file: [`npmrds-all-reports-list-page.md`](./npmrds-all-reports-list-page.md)
+  (2026-09-03). Not blocked on a "869 reports" queryable index — the live catalog is the same
+  `reports_snap_2` source (2177438/2177440, 26 rows in dev today) the Templates shelf and
+  `ReportPickerModal` already query; no new data shape needed.
 
 Minor, non-blocking loose end folded in here rather than tracked separately: a referenced task file
 `npmrds-category-design-set.md` (the presumed authoritative cross-page-contract doc) was never

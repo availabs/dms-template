@@ -12,6 +12,13 @@
  *
  * usage:
  *   node scan_pattern.mjs <patternId> <out.json> [--slugs <slugs.json>] [--limit 300]
+ *                          [--settings] [--sub <subdomain>]
+ *
+ * --settings also records each section's component settings (source, fetch mode,
+ * filters, columns, tags, permissions, authored vs dataset text) for the
+ * snap-to-county-template catalogue. Opt-in: without it the output is unchanged.
+ * --sub stamps the pattern's subdomain into the file, which the catalogue uses
+ * for its per-domain columns and links.
  *
  * `--slugs` restricts the scan to the pages a report actually references (a
  * JSON array of `url_slug` strings) — usually what you want, since a pattern
@@ -37,11 +44,68 @@ const outFile = argv.shift();
 if (!patternId || !outFile) {
   throw new Error('usage: node scan_pattern.mjs <patternId> <out.json> [--slugs <slugs.json>] [--limit N]');
 }
-let slugFile = null, limit = 300;
+let slugFile = null, limit = 300, settings = false, sub = null;
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--slugs') slugFile = argv[++i];
   else if (argv[i] === '--limit') limit = parseInt(argv[++i], 10);
+  else if (argv[i] === '--settings') settings = true;
+  else if (argv[i] === '--sub') sub = argv[++i];
 }
+
+// --settings adds the component-setting fields the snap-to-template catalogue
+// needs. Opt-in, so every existing caller's output shape is unchanged.
+const norm = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
+const filterLeaves = (node) => {
+  const out = [];
+  const walk = (x) => {
+    if (!x || typeof x !== 'object') return;
+    if (Array.isArray(x)) return x.forEach(walk);
+    if (x.col) out.push({ col: norm(x.col), value: x.value ?? null, upf: !!x.usePageFilters, spk: x.searchParamKey ?? null, op: x.op ?? null });
+    if (x.groups) x.groups.forEach(walk);
+  };
+  walk(node);
+  return out;
+};
+// Lexical bodies and cached dataset rows both hold "text" leaves, and they must
+// never be conflated: authoredText is the county's own writing, datasetText is
+// data that goes stale. See template-and-duplicate-patterns.md section 5b.
+const lexWords = (v) => {
+  const s = typeof v === 'string' ? v : JSON.stringify(v ?? '');
+  return (s.match(/"text":"((?:[^"\\]|\\.)*)"/g) || []).map((x) => x.slice(8, -1))
+    .filter((t) => t.trim()).join(' ').replace(/\s+/g, ' ').trim();
+};
+const settingsOf = (d) => {
+  const raw = (d.element || {})['element-data'];
+  let e = raw;
+  if (typeof raw === 'string') { try { e = JSON.parse(raw); } catch { e = {}; } }
+  e = e || {};
+  const src = e.sourceInfo || e.externalSource || {};
+  // display.* minus the two cached, per-instance values that are not settings
+  const display = { ...(e.display || {}) };
+  delete display.totalLength; delete display.loadMoreId;
+  return {
+    // layout: how the component is placed and shaped on the page
+    size: d.size ?? null,
+    border: d.border ?? null,
+    offset: d.offset ?? null,
+    rowspan: d.rowspan ?? null,
+    group: d.group ?? null,
+    display,
+    bgColor: e.bgColor ?? null,
+    isCard: e.isCard ?? null,
+    perms: d.authPermissions ? String(d.authPermissions) : '',
+    shape: e.externalSource ? 'v2' : (e.sourceInfo ? 'v1' : ''),
+    sourceId: src.source_id ?? null,
+    sourceName: src.name ?? '',
+    snapshotCols: (src.columns || []).length,
+    fetchMode: e.display?.fetchMode ?? null,
+    readyToLoad: e.display?.readyToLoad ?? null,
+    filters: filterLeaves(e.filters ?? e.dataRequest?.filterGroups),
+    cols: (e.columns || []).map((x) => norm(x.name)),
+    authoredText: e.text !== undefined ? lexWords(e.text) : '',
+    datasetText: Array.isArray(e.data) ? lexWords(e.data) : '',
+  };
+};
 const want = slugFile ? new Set(JSON.parse(fs.readFileSync(slugFile, 'utf8'))) : null;
 
 const c = config();
@@ -62,7 +126,7 @@ const pages = items
 if (!pages.length) throw new Error(`pattern ${patternId}: no pages resolved - check the pattern id`);
 
 const sel = pages.filter((p) => !want || want.has(p.url_slug));
-const out = { patternId: String(patternId), pageCount: pages.length, scannedAt: new Date().toISOString(), pages: {} };
+const out = { patternId: String(patternId), subdomain: sub, pageCount: pages.length, scannedAt: new Date().toISOString(), pages: {} };
 const CHUNK = 60;
 
 for (const p of sel) {
@@ -81,6 +145,7 @@ for (const p of sel) {
         tags: d.tags ?? null,
         et: (d.element || {})['element-type'] ?? null,
         hideInView: d.hideInView === true,
+        ...(settings ? settingsOf(d) : {}),
       });
     }
   }

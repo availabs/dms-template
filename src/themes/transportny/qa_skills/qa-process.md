@@ -6,14 +6,17 @@ this way) lives at `planning/transportny/qa-process/agent-qa-process.md` in the 
 
 ## Environment
 
-App `npmrdsv5`, site `dev2`, API `http://localhost:3001`, frontend `http://npmrds.localhost:5173`
-(sitemgmt pattern at `/sitemgmt`, pattern id 2184885). Auth (~6h tokens):
+App `npmrdsv5`, site `dev2`, API `http://localhost:3001`, frontend `http://www.localhost:5173/sitemgmt`
+(sitemgmt pattern, `subdomain:"*"`, pattern id 2184885 — live-verified 2026-09-02; the `www`
+subdomain isn't special to this pattern, just the convention the rest of the site now uses since
+npmrds_sub's own subdomain→path-mount move, see `traversing-dms-pages.md`'s subdomain gotcha).
+Auth (~6h tokens):
 
 ```bash
 export DMS_AUTH_TOKEN=$(node src/dms/packages/dms/cli/bin/mint-token.mjs \
   --host http://localhost:3001 --project npmrdsv5 --email availabs@gmail.com --password test123)
 # Playwright storageState (per assessed origin):
-node src/dms/packages/dms/cli/bin/mint-token.mjs ... --origin http://npmrds.localhost:5173 \
+node src/dms/packages/dms/cli/bin/mint-token.mjs ... --origin http://www.localhost:5173 \
   --out scratchpad/npmrdsv5-dev2/auth.json
 ```
 

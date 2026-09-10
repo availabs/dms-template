@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Percentile speed · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--percentile_speed.html · IA page 56 · type measure. Phase 2a, 2026-09-04.
+  Sources: macroview/measures.js speed (verbatim; controls percentile · peak period), _seed 281670 card, PROVENANCE §1 (2 mph
+  clamp, 101.7 mph), §4 (sub-second travel times), data-quality atlas (36.2 % trucks faster), TSMO methodology segment-speed card
+  (Corridor View: cap 80 mph, overnight dropped).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Percentile speed.</h1>
+          <p class="doc-lede">The speed a chosen share of trips beat, per segment and period. This page defines how speed is derived from travel time and where the derivation breaks. It assumes you know what a TMC segment is.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span>methodology 2026-08 (pm3 analytical series)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p><strong>What speed a chosen share of trips beat — the floating-car view.</strong> The chosen percentile of observed speed over all travel times.</p>
+          <p>Percentile speed is not a federal measure. It is the underlying distribution the reliability ratios summarise, shown directly.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are CY 2025, statewide, all vehicles, the full monitored network, unless stated.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Take the segment's all-vehicle travel times for the year, averaged into 15-minute bins, for the selected period.</li>
+            <li>Convert each bin's travel time to a speed: segment length in miles divided by travel time in seconds, times 3,600.</li>
+            <li>Take the chosen percentile of those speeds. Eight percentiles are published: 5th, 20th, 25th, 50th, 75th, 80th, 85th and 95th.</li>
+          </ol>
+          <div class="formula">speed = miles ÷ travel_time × 3600
+percentile speed = quantile(speed, p)
+            <span class="var">miles = the segment's length · travel_time = the bin's travel time in seconds · 3600 converts to miles per hour</span>
+            <span class="var">quantile(speed, p) = the value that a share p of bins fall below · p ∈ {5, 20, 25, 50, 75, 80, 85, 95}</span>
+            <span class="var">per segment × period × calendar year · all-vehicle stream · no imputation for missing bins</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>Controls:</strong> <span class="ui">percentile</span> and <span class="ui">peak period</span>. All periods are available.</li>
+            <li><strong>Stream:</strong> all vehicles.</li>
+            <li><strong>Missing bins:</strong> the percentile is taken over the bins that exist. Nothing is imputed.</li>
+            <li><strong>No threshold.</strong> A speed has no federal pass or fail.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>Speed is derived, not measured.</strong> The feed carries travel time. Speed is segment length divided by it, so segment length enters every speed figure.</li>
+            <li><strong>Sub-second travel times are kept.</strong> 8,292,469 CY 2025 records (0.489 %) have a travel time under one second. They occur only on segments shorter than 0.05 miles. A 53-foot segment at 38.5 mph legitimately takes 0.94 seconds. Removing them would empty one segment and leave 136 with under 10 % of their data, to move the per-segment reference by +0.009 %.</li>
+            <li><strong>No impossibility screen.</strong> One was specified and then dropped, because the feed arrives already clamped and no impossible-value population is left to remove.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>No precision band is published. The percentile depth is the thing to watch: the 5th and 95th read a thin tail and are far less stable than the median on a sparse segment. Check <a href="measures_and_data--measures--coverage.html">Data coverage</a> for the segment before reading a tail percentile.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>Feed bounds, CY 2025, statewide: zero of 1,695,358,623 records fall below 2 mph, and the maximum implied speed is 101.7 mph, with only 99 records above 100 mph.</p>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is still pending; the statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Bad geometry produces impossible speeds.</strong> On very short segments a one-second travel-time error becomes a large speed error. Any percentile pooled across segments of different lengths carries this artifact: pooled statewide, the same sub-second removal looks like +2.75 % instead of +0.009 %.</li>
+            <li><strong>The feed contains no records below 2 mph</strong>, a vendor floor we cannot inspect. Very low speeds are truncated before we see them.</li>
+            <li><strong>36.2 % of records show trucks moving faster than passenger cars</strong>, which is implausible at scale and is a property of the feed, not the road.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Thinning the probes behind a bin changes which trips are observed, so a tail percentile moves with coverage. Compare within a coverage era, or say that you are crossing one. Segment lengths also change with the network vintage, and length enters every speed. See <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View</a>
+            <a href="npmrds--macro_view--download.html">Macro View download</a>
+            <a href="npmrds--reports--start_from_template.html">Reports · speed over time for a route</a>
+            <a href="tsmo--corridor_view.html">Corridor View · 5-minute segment speed, capped at 80 mph</a>
+            <a href="npmrds--reports--graph_types.html">Reports · Speed graphs</a>
+            <a href="npmrds--route_comparison.html">Route Comparison · speed and travel time</a>
+          </div>
+          <p>The Corridor View computes segment speed from the same feed but on 5-minute epochs, caps values at 80 mph and drops the 00:00–04:59 epochs as too sparse to read. Its values are not this measure.</p>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Build a Macro View download with <span class="ui">Percentile speed</span> selected. The columns carry each published percentile for the selected period. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>pm3 provenance record §1 (the upstream clamp: zero records below 2 mph, 101.7 mph maximum, 99 records above 100), §4 (sub-second travel times: 8,292,469 records, 0.489 %, +0.009 % per segment against +2.75 % pooled).</li>
+            <li>NPMRDS data-quality atlas: 36.2 % of records with trucks faster than passenger cars.</li>
+            <li>TSMO Data &amp; Methodology page, segment-speed card: the Corridor View method (80 mph cap, overnight epochs dropped).</li>
+            <li>Macro View measure record: the verbatim strings and the percentile and peak-period controls.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="measures_and_data--measures--lottr.html">LOTTR</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

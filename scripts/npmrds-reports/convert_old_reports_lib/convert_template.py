@@ -6,11 +6,11 @@ from .config import COMPONENT_TYPE, GAPS_DIR, PATTERN, REPORTS_SNAP_TYPE
 from .vocab import BAR_SUMMARY_PM3_BUCKET, COLOR_RANGE_GRAPH_TYPES, DIFFERENCE_GRAPH_TYPES, GRAPH_TEMPLATE_MAP, INFO_BOX_AADT_BUCKET, INFO_BOX_BUCKET, INFO_BOX_DELAY_BUCKET, INFO_BOX_GRAIN, INFO_BOX_LENGTH_BUCKET, INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS, ROUTE_COMPARE_BUCKET
 from .expressions import ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION
 from .template_specs import MEASURE_EXPR
-from .db import dms, fetch_old_template, flatten_route_comps, now_iso
+from .db import dms, fetch_agency_tag, fetch_old_template, flatten_route_comps, now_iso
 from .dates import resolve_relative_dates
 from .transforms import build_slot_entry, generic_comp_label, group_route_comps, merged_group_date_label, route_comp_merge_key, route_settings_gaps
-from .graph_templates import ensure_graph_templates, graph_max_year, graph_reliability_bin, load_graph_templates
-from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
+from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templates, graph_max_year, load_graph_templates
+from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
 from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, template_framework_sections
@@ -33,7 +33,7 @@ def finish_template(old_id, old, page_id, gaps, dry_run, slug=None):
         print(f"  [{g['kind']}] " + json.dumps(
             {k: v for k, v in g.items() if k != 'kind'})[:200])
     if page_id and not dry_run:
-        print(f"\nview it: http://npmrds.localhost:5173/{slug or f'template_{old_id}'} "
+        print(f"\nview it: http://www.localhost:5173/npmrds/{slug or f'template_{old_id}'} "
               f"(page id {page_id})")
     return report
 
@@ -58,19 +58,18 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
     drift between the two is an accepted, deliberate cost of that choice.
 
     Route Map sections ARE converted (2026-08-03, added after the initial
-    244-only pass) — but deliberately WITHOUT the per-report choropleth
-    color-break bake (`route_map_value_ctx=None` below): that bake
-    (bake_route_map_choropleth_paint/bake_route_map_delay_paint) computes
-    quantile breaks over the report's actual routes' real values, which
-    can't exist for an unfilled slot. Read `ensure_route_map_speed_template`'s
-    own docstring: the shared per-year template it mints already carries a
-    real, working PLACEHOLDER color range (a generic quantile scale over
-    typical speed/delay values) precisely so every real conversion has
-    something correct to render before its own per-report bake customizes
-    it — skipping the bake for a Dynamic Report isn't a degraded fallback,
-    it's the actually-correct behavior: there's no single "this report's
-    routes" to bake against when a different real route may fill the slot
-    on every view.
+    244-only pass). Round 80 (2026-08-27): the per-report choropleth
+    color-break bake this paragraph used to describe skipping
+    (`route_map_value_ctx=None`, `bake_route_map_choropleth_paint`/
+    `bake_route_map_delay_paint`) has been retired entirely, for every
+    caller, not just this one — every `route_map_*_template` now carries
+    PERMANENT static breaks from the shared `colorBreaks.json` (same table
+    the live-authoring Map/GridGraph/BarGraph read), so there's no per-report
+    bake left to skip. This was already the right call for a Dynamic Report
+    slot specifically (there's no single "this report's routes" to bake
+    against when a different real route may fill the slot on every view) —
+    now it's simply how every Route Map conversion works, template slot or
+    real report alike.
 
     Route Difference Graph / TMC Difference Grid ARE also converted
     (2026-08-03) — `resolve_difference_pair` is called with `old_routes={}`
@@ -125,6 +124,14 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
         gaps.append({"kind": "station_comps",
                      "detail": f"{len(old['station_comps'])} station comps not converted"})
 
+    # Round 82: mirrors convert_report()'s own graph_comps order fix — see
+    # that function's comment for the full rationale (array storage order
+    # doesn't match the old tool's own layout.y/layout.x visual order).
+    old["graph_comps"] = sorted(
+        old.get("graph_comps") or [],
+        key=lambda g: ((g.get("layout") or {}).get("y", 0),
+                        (g.get("layout") or {}).get("x", 0)))
+
     for i, g in enumerate(old.get("graph_comps") or []):
         if g.get("id") is None:
             g["id"] = f"graph-idx-{i}"
@@ -172,6 +179,7 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
                                       i["data_column"]))
               for _, i in analyzed if i["type"] not in INFO_BOX_GRAIN} - {None}
     graph_templates = ensure_graph_templates(needed, graph_templates, dry_run)
+    graph_templates = ensure_bridge_graph_templates(needed, graph_templates, dry_run)
 
     info_box_tmpl_name = {}
     info_box_bin_year = {}
@@ -200,24 +208,14 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
             continue
         if measure_col != INFO_BOX_BUCKET:
             continue
-        year = graph_max_year(info, comps_by_id)
-        bin_ = graph_reliability_bin(info, comps_by_id)
-        if year is None:
-            gaps.append({"kind": "info_box_year_undetermined", "graph": gid,
-                         "detail": "no assigned comp has a startDate/endDate"})
-            info_box_gap_logged.add(gid)
-        elif year not in PM3_VIEW_BY_YEAR:
-            gaps.append({"kind": "info_box_year_outside_pm3_coverage", "graph": gid,
-                         "detail": f"max year {year} outside pm3 coverage"})
-            info_box_gap_logged.add(gid)
-        elif bin_ is None:
-            gaps.append({"kind": "info_box_bin_undetermined", "graph": gid,
-                         "detail": "assigned comp(s) don't land unambiguously on one bin"})
-            info_box_gap_logged.add(gid)
-        else:
-            graph_templates = ensure_pm3_join_template(grain, year, bin_, graph_templates, dry_run)
-            info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
-            info_box_bin_year[gid] = (year, bin_)
+        # Round 85 (2026-08-31): see convert_report.py's mirror of this branch
+        # for the full story — INFO_BOX_BUCKET's `speed` is the old tool's own
+        # plain average-speed measure (confirmed against dataTypes.js), not
+        # reliability; dispatches to the real plain-speed template now, no
+        # year/bin dependency (date window comes from routeWindows at render
+        # time, same as every other measure).
+        graph_templates = ensure_info_box_speed_template(grain, graph_templates, dry_run)
+        info_box_tmpl_name[gid] = f"{grain}_info_box_speed"
 
     bar_summary_pm3_tmpl_name = {}
     bar_summary_pm3_gap_logged = set()
@@ -356,11 +354,8 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
     # redesign.md) — no old_route/tmc_override on this path, so the key
     # collapses to (routeId, calendar startDate, calendar endDate).
     merge_groups = group_route_comps(route_comps, route_comp_merge_key)
-    comp_group_size = {}
     route_entries = []
     for group in merge_groups:
-        for rc in group:
-            comp_group_size[rc.get("compId")] = len(group)
         rep = group[0]
         union_graph_ids, seen_tids = [], set()
         for rc in group:
@@ -405,6 +400,9 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
                     # blank/white rail-width gap in view mode regardless of this flag's
                     # value on the template itself.
                     "sidebarHideInView": page_template.get("sidebarHideInView", False),
+                    # Compact-sidenav override — see convert_report.py's identical line
+                    # for why this must be copied from the template, not hardcoded.
+                    **({"theme": page_template["theme"]} if page_template.get("theme") else {}),
                     "published": "draft"})
     page_id = res["id"]
     print(f"created page id={page_id} slug={slug}")
@@ -428,31 +426,25 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
         if bin_year:
             year_, bin_ = bin_year
             info["title"] = f"{info['title']} ({RELIABILITY_BIN_LABELS[bin_]}, {year_})"
-        # Route-comp-merge title fix — see convert_report.py's identical block.
-        if (not info.get("had_name_token") and info.get("comp_names")
-                and any(comp_group_size.get(c, 1) > 1 for c in info["assigned"])):
-            info["title"] = f"{info['title']} — {info['comp_names']}"
+        # Round 82 title-suffix enrichment — see convert_report.py's identical block.
+        if not info.get("had_name_token") and info.get("comp_names_dated"):
+            info["title"] = f"{info['title']} — {info['comp_names_dated']}"
         section_datas.append(
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
                                      aadt_override=None,
-                                     # Deliberately None, not a gap: this graph
-                                     # type's per-report choropleth bake needs
-                                     # real per-route data that doesn't exist
-                                     # for an unfilled slot — the shared
-                                     # per-year template's own built-in
-                                     # placeholder color range is the correct
-                                     # render, not a degraded one. See
-                                     # convert_template()'s docstring.
-                                     route_map_value_ctx=None,
                                      diff_invert=route_diff_invert.get(g.get("id"), False),
                                      comps_by_id=comps_by_id))
 
-    draft_ids = []
+    # -- draft rows. Created via `raw create`, not `dms section create` — see
+    # convert_report.py's identical block for why (a read-modify-write race in
+    # that CLI command's own page-attach step silently drops every section but
+    # the last from draft_sections when called in a tight per-section loop).
+    draft_refs = []
     for sd in section_datas:
-        r = dms(["section", "create", str(page_id), "--pattern", PATTERN], data=sd)
-        draft_ids.append(r["id"])
-    print(f"created {len(draft_ids)} draft sections: {draft_ids}")
+        r = dms(["raw", "create", "npmrdsv5", COMPONENT_TYPE], data=sd)
+        draft_refs.append({"id": str(r["id"]), "ref": f"npmrdsv5+{COMPONENT_TYPE}"})
+    print(f"created {len(draft_refs)} draft sections: {[r['id'] for r in draft_refs]}")
 
     published_refs = []
     for sd in section_datas:
@@ -461,15 +453,21 @@ def convert_template(old_id, dry_run=False, replace=False, title_override=None):
     groups = page_template.get("draft_section_groups") or [
         {"name": "default", "index": 0, "theme": "flush", "position": "content"}]
     dms(["raw", "update", str(page_id)],
-        data={"sections": published_refs, "section_groups": groups,
+        data={"sections": published_refs, "draft_sections": draft_refs,
+              "section_groups": groups,
               "draft_section_groups": groups, "published": "", "has_changes": False})
     print(f"published page (published section rows: {[r['id'] for r in published_refs]})")
 
+    agency_tag = fetch_agency_tag(old_id, "template")
     snap = {
         "report_id": str(page_id),
         "routes": json.dumps(route_entries),
+        "tags": json.dumps([agency_tag] if agency_tag else []),
         "name": old.get("name") or "",
         "description": old.get("description") or "",
+        # See convert_report.py's identical field for why this must be set — ReportPickerModal
+        # keys "is this a real converted page" off it.
+        "page_path": f"/{slug}",
         "_converted_from_old_template_id": old_id,
         "_converted_at": now_iso(),
         "_old_created_by": old.get("created_by"),

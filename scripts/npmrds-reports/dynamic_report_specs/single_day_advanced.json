@@ -1,6 +1,5 @@
 {
   "title": "Single Day (Advanced)",
-  "slug": "converted_reports/single_day_advanced",
   "dynamicReport": true,
   "description": "Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.",
   "tags": ["category:events", "difficulty:advanced"],
@@ -51,7 +50,7 @@
       "dateFormula": "endDate=>month+1month->1month", "derivedFromRoute": "__TODAY__",
       "color": "#6accf8",
       "graphs": ["line_all", "map_all"] },
-    { "id": "year", "slot": true, "name": "Current Year", "route_slot_group": "synthetic:120P05853_120+05854",
+    { "id": "year", "slot": true, "name": "%n (%y)", "route_slot_group": "synthetic:120P05853_120+05854",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "color": "#f6a612",
       "graphs": ["line_all", "map_all", "grid_year_avg", "grid_diff", "bar_delay"] }

@@ -277,9 +277,9 @@ def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
         # state.activeRouteComponents (absent → the graph showed every comp);
         # forced to [] above when there's no real TMC to scope a query with.
         "graphIds": graph_ids,
+        "color": rc.get("color") or "",
         # Preserve the old comp verbatim — schema-free row, nothing is lost
         "_old_settings": settings,
-        "_old_color": rc.get("color"),
         "_old_report_id": old_report_id,
     }
     if not resolved_tmc_array and graph_tracking_ids:

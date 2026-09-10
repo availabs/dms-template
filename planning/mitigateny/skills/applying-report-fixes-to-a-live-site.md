@@ -14,9 +14,18 @@ loop below makes both failures visible instead of silent.
 > [`propagating-county-template-changes-to-duplicates.md`](./propagating-county-template-changes-to-duplicates.md),
 > then run this loop per pattern.
 
-> **TL;DR** — freeze the report tab into a run folder, `baseline.mjs` it, `apply.mjs --dry-run`,
-> `apply.mjs`, `mark_page_changed.mjs`, `validate.mjs`. Validation passes only when the intended
-> attribute moved and every other leaf in the row is byte-identical.
+> **TL;DR** — freeze the report tab into a run folder, dedupe it by `Draft section ID`,
+> `baseline.mjs` it, `apply.mjs --dry-run`, `apply.mjs`, `mark_page_changed.mjs`, `validate.mjs`.
+> Validation passes only when the intended attribute moved and every other leaf in the row is
+> byte-identical.
+>
+> **§0b before your first run**: the report is keyed per *page-appearance*, the loop per *row*, and a
+> section listed on two pages makes those differ.
+>
+> **Which writer?** A top-level attribute (`tags`) → `apply.mjs` (§2). A key inside `element-data`
+> (`display.fetchMode`) → `apply_element_data_key.mjs` (§2d). A **column** out of
+> `element-data.columns` → `remove_element_data_column.mjs` (§2e). A section off a page →
+> `remove_from_page.mjs`.
 
 ```bash
 export DMS_HOST=https://dmsserver.availabs.org DMS_APP=mitigat-ny-prod DMS_TYPE=prod
@@ -26,6 +35,7 @@ cd planning/mitigateny/skills/scripts/report_fixes
 RUN=scratchpad/mny-admin-status/fix-runs/<date>-<what>
 
 python export_tab.py <report>.xlsx "<Worksheet tab>" $RUN/rows.csv   # 0. freeze
+#      then assert rows == distinct `Draft section ID`s (see 0b)      # 0b. dedupe
 node   baseline.mjs  $RUN/baseline --from-csv $RUN/rows.csv          # 1. scan
 node   apply.mjs     $RUN --set-from "tags=Requirement" --dry-run    # 2. preview
 node   apply.mjs     $RUN --set-from "tags=Requirement"              #    write
@@ -79,6 +89,77 @@ python export_tab.py county-template-qa-t5-requirements-v2.xlsx \
 
 Give the run folder a dated, descriptive name — `2026-08-27-caps-tags`. Run folders live under
 `scratchpad/mny-admin-status/fix-runs/` (git-ignored); they are the audit trail for the edit.
+
+---
+
+## 0b. Two different keys: the report is keyed per page-appearance, the loop per row
+
+Get this wrong and a run reports its own writes as someone else's concurrent edit.
+
+**`Draft section ID` *is* the database row id.** `dms raw get <id>` returns exactly one row. But a
+section row can be listed in the `draft_sections` array of **more than one page**, and the reports
+enumerate page by page — so **one database row becomes two report rows**:
+
+| | Pattern ID | Page ID | Page | Draft section ID |
+|---|---|---|---|---|
+| report row 1 | 2249247 | 2249278 | `the_risk/natural_hazards/lightning` | 2250911 |
+| report row 2 | 2249247 | 2249292 | `the_risk/natural_hazards/wind` | 2250911 |
+
+Note what does **not** disambiguate them: `Pattern ID` is identical, and there is no second row id to
+reach for, because there is no second row. The only differing columns are `Page` / `Page ID`.
+
+So the two keys are:
+
+| | Key | Why |
+|---|---|---|
+| a **report row** | `(Fix ID, Pattern ID, Page)` | one component, one fix, listed under each page it appears on — truthful bookkeeping, and what §6b of the fetch-mode skill already documents |
+| a **loop target** | the **`Draft section ID`** alone | a write targets a *row*, not a row-on-a-page. There is one row, so there is one write |
+
+**Where those cardinalities differ, the loop must collapse to the row.** Concretely: dedupe
+`rows.csv` by `Draft section ID` before baselining, and assert `rows == distinct ids`.
+
+Adding key columns does not help and is the tempting wrong move. It would make each report row
+uniquely addressable while both still point at the same write target — you would have disambiguated
+the *description* of the work, not the work.
+
+### What the failure actually looks like
+
+`baseline.mjs` writes one `<id>.json` per id, so it physically cannot hold two snapshots of 2250911.
+Then:
+
+1. row 1 applies → writes the attribute, `updated_at` moves;
+2. row 2 hits the same id → apply compares live `updated_at` against the baseline, sees it moved, and
+   returns **`REFUSED — live row drifted since baseline`**
+   ([`apply_element_data_key.mjs:138`](./scripts/report_fixes/apply_element_data_key.mjs)).
+
+The write is fine. **The damage is to the signal.** "Live row drifted" is this loop's one
+stop-everything alarm — it means another person edited between your scan and your write, and the
+correct response is to re-baseline and re-review, never to force past it. A run that raises that
+alarm against itself makes the alarm unreadable, and a false one costs the same verification cycle as
+a real one to tell apart. (The same lesson as the proof-row `WRONG` in the
+2026-09-01 fetch-mode run: a self-inflicted refusal is still a refusal you have to investigate.)
+
+### A section on two pages is a defect, not a state to design around
+
+It is a real data problem in the pattern — the T5 task tracks it on `county_template`, and
+duplication copied it into all three county drafts. Deduping is a **guard against the defect**;
+repairing the `draft_sections` arrays is the actual fix. Measured 2026-09-01:
+
+```
+county_template   6 sections on 2 pages     suffolk_draft  9
+schenectady_draft 9                         delaware_draft 9
+```
+
+All 33 are bound to external sources (`AVAIL - Fusion Events V2`, `NRI Counties - Hazard Normalized`),
+so the fetch-mode narrowing excluded every one and no run has yet had to handle a shared row in scope.
+**That is luck, not design** — assert the counts anyway.
+
+### And `data.parent` is no help identifying the owner
+
+Section 2250911's own `data.parent` points at page **2249296** — a *third* page, which does not list
+it in `draft_sections` at all. So for a multi-page section, `parent` is neither of the pages that
+actually contain it. Resolve ownership from the page's `draft_sections`, never from the section's
+`parent`; see the `parent≠page` note in §1.
 
 ---
 
@@ -145,6 +226,14 @@ untouched, not re-serialised.
 | `live row drifted since baseline` | someone edited between your scan and your write — re-baseline and re-review, never force |
 | `NO-OP` | the attribute already holds the requested value (common after a partial earlier run) |
 
+> **`--set` reaches only the TOP LEVEL of `data`.** `parseSetPairs` does expand dot-notation into
+> nested keys, which makes `--set element.element-data.display.fetchMode=force` look like it would
+> work. It would **destroy the payload**: `element-data` is a JSON *string*, and lodash-merging an
+> object over a string does not do what you want. `--set element.element-data=<json>` is worse in a
+> quieter way — `parseSetPairs` `JSON.parse`s the value, so the attribute's **type** silently changes
+> from string to object. For anything inside `element-data`, use
+> **[`apply_element_data_key.mjs`](#2d-setting-a-key-inside-element-data)** instead.
+
 > **`--set` merges; it does not always replace.** lodash `merge` assigns scalars cleanly, but for an
 > **array-valued** attribute it merges *by index* — `["a","b"]` merged over `["x","y","z"]` leaves
 > `["a","b","z"]`, not `["a","b"]`. For any array attribute, send the whole object with
@@ -202,6 +291,121 @@ compares `String(live ?? '')`, so `""` reads as "no tag" and is written normally
 
 ---
 
+### 2d. Setting a key inside `element-data`
+
+Some settings are not top-level attributes of `data` at all. `Data Fetch Mode` lives at
+`data.element['element-data'].display.fetchMode` — inside the JSON string that also carries the
+lexical body, the Card config and the column list. `apply.mjs` cannot reach it (see the box above), so
+`apply_element_data_key.mjs` handles that case:
+
+```bash
+node apply_element_data_key.mjs $RUN --key display.fetchMode      --value-from "Target fetch mode" --dry-run
+node apply_element_data_key.mjs $RUN --key display.fetchMode --value-from "Target fetch mode"
+node validate.mjs $RUN --attr element.element-data.display.fetchMode
+```
+
+Same refusals as `apply.mjs` (no baseline, not a draft section, live drift, no-op), plus three that
+exist only because re-serialising a payload is involved:
+
+| Refusal | Why it matters |
+|---|---|
+| `element-data is not a JSON string` | absent, or already an object — a different problem, not this one |
+| `element-data is not stringify-canonical` | **the important one.** These payloads are `JSON.stringify` output, so `JSON.stringify(JSON.parse(s)) === s` holds byte-for-byte. If it does not, re-serialising would reformat the payload and *no leaf-level diff would ever show it* — so the row is refused rather than written |
+| `reverting the key does not reproduce the original payload` | strips the key back out and requires the result to equal the original exactly; catches a reordered key, a re-encoded escape, a number that round-tripped to a different literal |
+
+It writes the **full current `data` object** through `dms section update --data <file>` — a file
+because these payloads run past 30k characters, and the *full* object because that makes the CLI's
+replace-vs-merge semantics irrelevant: the object supplied is the row's current `data` with one key
+changed, so both land the same result. After writing it re-reads and asserts the stored string is
+byte-identical to the one it computed and that the attribute is still a string.
+
+Useful sanity signal: adding `fetchMode: 'force'` to a payload that lacks the key is **exactly +20
+characters** (`,"fetchMode":"force"`) every time. A different delta means something else moved.
+
+---
+
+### 2e. Removing a COLUMN from `element-data.columns`
+
+The R5 fix class — *"Deprecated column bound but not rendered"* — is a splice out of an array, not
+a key set, and it needs its own writer and its own validator:
+
+```bash
+python build_r5_report.py <report>.csv --out-dir src/themes/mny/design/reports   # 0a. triage
+python prep_r5_rows.py <report>.csv $RUN --fix-id QA2-534            # 0. freeze + resolve
+node   baseline.mjs   $RUN/baseline --from-csv $RUN/rows.csv         # 1.
+node   remove_element_data_column.mjs $RUN --column-from "Remove column" --dry-run
+node   remove_element_data_column.mjs $RUN --column-from "Remove column"
+node   mark_page_changed.mjs $RUN                                    # 2b.
+node   validate_element_data_column.mjs $RUN                         # 3.
+```
+
+> **Triage the batch before you run it — and do not triage it from the report.** `R5` is defined as
+> "bound **but not rendered**", so asking the R5 rows which components still *show* a deprecated
+> column returns zero *by construction*, not by fact. And its "not filtered" half is unreliable for
+> the same v1/v2 reason as everything else in this family: a v2 component keeps filters in a
+> top-level `filters` key, a **v1 component has no such key at all** and uses
+> `dataRequest.filterGroups`, so a check written against `filters` is *vacuously true* for every v1
+> component. `build_r5_report.py` therefore starts from the **sections** R5 names and sweeps each for
+> every deprecated column it binds, re-deriving shown/filtered/referenced from the live payload, and
+> joins the R5 rows on by **column name** rather than by the title text. Filters are matched
+> structurally — any config object whose `col` is this column — which on the county template covers
+> four different locations (`filters.groups`, `dataRequest.filterGroups.groups`,
+> `lastDataRequest.filterGroups.groups`, `outputSourceInfo.asUdaConfig.options.filterGroups.groups`),
+> all of which key on `col`.
+
+**The report names the column by its LIVE SOURCE title; the component stores a stale one.** That is
+not sloppiness in the report — the `(Delete) …` marker the source steward set is the *evidence* of
+deprecation, and it exists only on the source. `useDataSource.js:220` refreshes `externalSource`
+wholesale on every mount **without touching `columns`**, and `display_name` is deliberately absent
+from `ColumnManager.jsx`'s `ATTRS_TO_SYNC`, so even the author-clicked "Refresh Meta" never updates
+it. So step 0 has to join through the source snapshot — quoted title → snapshot column's `name` →
+the bound entry with that name — asserting exactly one match on each hop. `prep_r5_rows.py` does
+that and refuses rather than falling back to the component's own title.
+
+**Do not relax that join when a title fails to resolve.** On a source that carries
+`# Not Started - deprecated`, `# Proposed - deprecated`, `Hazards - (no flood, deprecated)` and
+`Hazards (Deprecated)`, a prefix or contains match is exactly how you land on the wrong column.
+An unresolvable title is a **report defect** — carry it back. (One `county_template` sweep found 16
+rows quoting `"# Not Started - deprecated (dep)"`, a title with a stray suffix that matches nothing.)
+
+**Splicing is index-safe but not reference-safe.** Nothing stores a column index — v1's
+`colSizes` / `groupBy` / `orderBy` were name-keyed and were folded into per-column flags by
+`migrateToV2.js:104-118` — but plenty stores a column **name**: `display.columnSelection`,
+`display.highlightColumn`, `pivot.rowColumn` / `pivotColumns`, every `column-select` arg under
+`display._functions`, formula `variables[]`, `comparisonSeries.seriesKey`, and any filter. So the
+writer's second gate scans the **whole payload** for the name and refuses if it appears anywhere
+outside the entry being removed and the source-schema snapshots. Its first gate refuses
+`show === true` outright: removing a rendered column changes the page, which is a different
+decision (`--allow-visible`, a stated one).
+
+> **A payload can hold up to three copies of the source schema, and only the binding matters.**
+> `externalSource.columns` (v2) or `sourceInfo.columns` (v1) is the one the picker refreshes; a
+> component that is itself consumable as a source caches the whole schema *again* under
+> `outputSourceInfo.asUdaConfig.sourceInfo.columns`. All are excluded from the reference scan — but
+> the writer excludes the third **only after asserting its column-name set equals the binding
+> snapshot's**, and leaves its sibling `outputSourceInfo.columns` (the component's *output* schema)
+> in the scan, because a deprecated column appearing there would be load-bearing. **Never edit any
+> of them**: they describe the source, not the binding, and the validator asserts the removed name
+> is gone from `columns` *and still present* in the snapshot.
+
+**`validate.mjs --attr` cannot validate this.** It asserts one leaf moved to one scalar, and a
+one-column splice legitimately moves every leaf under every later index.
+`validate_element_data_column.mjs` asserts at the level the change has: the live `columns` array
+must **deep-equal the baseline array minus the target, order preserved**, the payload must be
+byte-identical to the string the writer computed, and every leaf *outside* `columns[]` must be
+unchanged.
+
+Sanity signal, as with `+20` above: the delta is exactly the removed entry serialised plus its
+comma — measured `−120` for `planning_regulatory`, `−130` for `administrative_technical`, `−203`
+for a `CASE WHEN …` expression column, `−1789` for a long `to_jsonb(…)` one.
+
+**Several rows can target one section** (a component with several deprecated columns bound). The
+writer groups by `Draft section ID` and applies them in **one** write, because two writes would make
+the second read the first as drift. A row with an empty value cell inside such a group is *held*,
+not ambiguous — its siblings still write, and it is recorded as SKIPPED.
+
+---
+
 ## 2c. Removals shift every later index — so validate knows about them
 
 Run removals **after** the tag writes and validate last. Taking a section out of `draft_sections`
@@ -219,6 +423,12 @@ of removals below it still fails.
 ---
 
 ## 3. Validate — assert *only* the requested change happened
+
+> **`--attr` takes a dotted path, so it can assert a nested leaf.** It is interpolated as
+> `data.<attr>`, and `fix_lib.diffLeaves` parses `element-data` before diffing — so
+> `--attr element.element-data.display.fetchMode` works unmodified. Passing the bare
+> `--attr element-data` fails with `data.element-data did not change`, which is confusing but
+> correct: it is looking for a top-level attribute of that name.
 
 ```bash
 node validate.mjs $RUN --attr tags
@@ -684,6 +894,70 @@ Three things worth copying from its shape:
 
 ---
 
+## Worked example — R5 deprecated columns, one proof row (2026-09-02)
+
+Report: `county-template-qa-draft.csv`, class **R5** (*"Deprecated column bound but not rendered"*),
+47 rows. Fix: remove the deprecated entry from `element-data.columns`.
+Run folder: `scratchpad/mny-admin-status/fix-runs/2026-09-02-r5-deprecated-columns/`.
+
+`QA2-534` alone first, as a proof: draft section **1685651** (`County Capabilities Table`,
+Spreadsheet, v2, `Capabilities_Catalogue`) on page 1300807, dropping `planning_regulatory`.
+**1/1 PASS**, payload 184,952 → 184,832 (**−120**, exactly the entry plus its comma), columns 12 → 11,
+1,120 leaves outside `columns[]` byte-identical, `externalSource` / `filters` / `display` / `data` /
+`join` all sha256-identical on an independent `dms section dump`, 8 rendered columns before and
+after, page `has_changes` false → true.
+
+Then all 47 rows were resolved and **dry-run** — nothing written — which is the part worth copying:
+proving the write path on one row tells you the *mechanism* works, and a dry run over the rest tells
+you whether the *report* does. It did not.
+
+| Verdict | |
+|---|---|
+| `WOULD REMOVE` | 25 sections / 27 columns |
+| `REFUSED` — column is load-bearing | 2 |
+| rows held (no target resolved) | 17 |
+
+Three findings, all of which belong back with the report owner rather than being worked around:
+
+- **R5's "not filtered" premise is false for every v1 row.** Two v1 sections carry an *active
+  filter* on the very column the report calls unfiltered — `education_outreach` and `financial`,
+  both `value: ["x"]`. The cause is the same v1/v2 blind spot as the fetch-mode skill's §2b: a v2
+  component keeps filters in a top-level `filters` key, a v1 component **has no `filters` key at
+  all** and puts them in `dataRequest.filterGroups`, so a check written against `filters` is
+  *vacuously true* for every v1 component. The gate caught it; the detector should be re-run over
+  both keys before its "not filtered" claim is trusted anywhere.
+- **16 rows quote a source title that does not exist** — `"# Not Started - deprecated (dep)"` for a
+  live `"# Not Started - deprecated"`. One builder defect, 16 rows, and precisely the situation
+  where relaxing the title match would be the wrong instinct.
+- **A third copy of the source schema exists** (`outputSourceInfo.asUdaConfig.sourceInfo.columns`,
+  147 columns, name-identical to `externalSource.columns`) on components that are themselves
+  consumable as a source. See the box in §2e for how it is excluded — on proof, and path-precisely.
+
+**Applied in full 2026-09-02** (run `2026-09-02-r5-batch`) once the owner had removed the two
+filters. **46 columns over 27 sections in 27 writes, 27/27 PASS, 0 unexpected leaf changes** across
+**40,994** leaves compared outside `columns[]`; 27/27 payloads byte-identical to the computed string;
+19 pages flagged `has_changes`; an independent audit (fresh CLI reads, driven from `rows.csv` alone)
+clean over 73 assertions. Post-run rebuild: **every one of the 27 sections binds 0 deprecated
+columns.** With the proof row that is **47 R5 rows ↔ 47 columns, 1:1**.
+
+Three things worth carrying forward:
+
+- **Drive a batch from the R5 report, not the QA report.** `prep_r5_rows.py`'s title-resolution mode
+  holds all 16 mangled-title rows, and those 16 columns would have been left behind.
+  `--from-r5-report` projects the built report's ready rows straight into `rows.csv`, matching on
+  **column name**. A sweep-recovered row's `Fix ID` carries a `~` prefix (`~QA2-550`) so the run log
+  never implies the pairing was confirmed — the uncertainty there is *attribution*, not fact.
+- **The multi-column grouping got its first real exercise**: ten sections had 2–3 targets, and
+  validation asserted the array equals the baseline minus *all* of them with order preserved. One
+  write per section, because two would make the second read the first as drift.
+- **`audit_r5.py` is deliberately ignorant of the run.** It re-reads through the plain CLI and
+  re-derives the verdict from `rows.csv`, never opening `applied.json` or `validation.json`, so it
+  cannot inherit a bug in the path the writer and validator share. The T6 run learned the same
+  lesson the other way round — an audit taught about a run's bookkeeping is no longer independent of
+  it.
+
+---
+
 ## Scripts
 
 In [`scripts/report_fixes/`](./scripts/report_fixes/):
@@ -694,11 +968,18 @@ In [`scripts/report_fixes/`](./scripts/report_fixes/):
 | `baseline.mjs` | step 1 — full row + placement snapshot per section; refuses non-draft ids. Resolves placement against the report's `Page ID` (`--page-column`), not `data.parent` |
 | `page_scan.mjs` | live inventory of a page's draft sections (index / id / trackingId / type / title / tags / whether a lexical body is blank) + draft↔published trackingId correspondence, and `--find-trk` to place an orphan. The independent cross-check for a `positional` draft id, and the work-list for a delete sweep |
 | `apply.mjs` | step 2 — `--set-from "<attr>=<column>"`, drift-checked, `--dry-run` supported |
+| `apply_element_data_key.mjs` | step 2d — set ONE key inside `element['element-data']`; asserts the payload is stringify-canonical first and byte-minimal after, and refuses rather than reformatting |
 | `remove_from_page.mjs` | the delete half — dereferences a section from the page's `draft_sections` the way the UI does (row left intact), refusing anything that looks authored |
 | `mark_page_changed.mjs` | step 2b — set the owning page's `has_changes`, asserting nothing else on the page moved |
 | `validate.mjs` | step 3 — leaf diff vs baseline; PASS requires zero unexpected changes |
 | `scan_pattern.mjs` | inventory every draft section of every page in a PATTERN in one batched pass — the input to cross-pattern matching |
 | `match_patterns.py` | match a report tab's rows from a source pattern into target patterns (trackingId → neighbour alignment → page-structure tiers) |
+| `build_r5_report.py` | **before** an R5 batch — sweep every deprecated column the named sections bind and classify each `Ready` / `Blocked - rendered` / `Blocked - filtered` / `Blocked - other reference`, so the authoring pass that has to come first is a worklist rather than a surprise. Emits `.csv` / `.xlsx` / `.html` |
+| `prep_r5_rows.py` | step 0 for R5. `--from-r5-report` (**preferred for a batch**) projects a built R5 report's ready rows into `rows.csv`, matching on resolved column name. The `--fix-id` mode instead resolves the report's quoted source title to the bound `columns[]` entry, asserting each hop; either way an unresolvable or already-unbound row gets an empty target rather than aborting the batch |
+| `audit_r5.py` | the run's **independent** check — re-reads every section through the plain CLI and re-derives the verdict from `rows.csv` alone, never opening `applied.json` or `validation.json`, so it cannot inherit a bug in the path the writer and validator share |
+| `remove_element_data_column.mjs` | step 2e — splice one entry out of `element['element-data'].columns`; gates on `show`, on the name appearing nowhere else in the payload, and on the same canonicality/minimality proofs as `apply_element_data_key.mjs` |
+| `validate_element_data_column.mjs` | step 3 for a splice — asserts the live `columns` array is the baseline minus the target, order preserved, the payload is byte-identical to the computed one, and no leaf outside `columns[]` moved |
+| `update_report_csv.py` | write a run's outcome back into a report **CSV** (the `.xlsx` equivalent is `update_workbook.py`); refuses and restores if any cell outside the targeted set moved, and checks the file is not Excel-locked before taking a backup |
 | `rollback.mjs` | undo a run from its baseline; refuses if the row moved after validation |
 | `fix_lib.mjs` | shared: snapshot, canonical JSON, leaf flatten/diff — reads through the CLI's own falcor helpers so scripts and `dms` see identical rows |
 

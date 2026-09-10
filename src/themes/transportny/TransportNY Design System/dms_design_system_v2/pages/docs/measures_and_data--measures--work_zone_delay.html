@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Work-zone delay · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--work_zone_delay.html · IA page 62 · type measure. Phase 2a, 2026-09-04.
+  Sources: Work Zones dashboard 2182386 (scope Construction + Maintenance + Emergency Operations; methodology band; exposure on
+  the backfill list; safety separate; 1.77M construction events since 2015; 2026 partial; pre-2019 sparse), mockup header
+  tsmo-workzones.txt (ticket #180 removal of Active work zones 2026-07-28; FHWA frame mobility · exposure · safety; "numbers here
+  are illustrative"), Congestion design header (2025 construction bucket 46.84 M), delay.js category mapping.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Work-zone delay.</h1>
+          <p class="doc-lede">Delay attributed to construction, maintenance and emergency-operations events, the planned-work half of the network. This page defines the scope, what is measured, and what is not yet. It assumes you have read the delay-attribution page.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · TSMO dashboards (www/tsmo)</span>
+            <span>methodology · excessive delay, June 2026 revision</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p>How much delay work zones cause, where it lands, how long zones run, and how much of it is planned work that can be scheduled around. The Work Zones dashboard states the scope: "Work-zone events are TRANSCOM's Construction, Maintenance, and Emergency Operations categories (by nysdot_sub_category), filtered to New York — the planned-work counterpart to the reactive incidents on the incidents dashboard."</p>
+          <div class="callout basis"><span class="k">basis</span>Events are TRANSCOM events filtered to New York. Delay is attributed per event in vehicle-hours. Figures name their year; 2026 is partial.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Select events whose NYSDOT sub-category is Construction, Maintenance or Emergency Operations. The <span class="ui">Type</span> filter separates planned from emergency work.</li>
+            <li>For each event, build the footprint: its affected segments and 5-minute slices, with delay above the recurrent baseline, as on the <a href="measures_and_data--measures--delay_attribution.html">delay-attribution page</a>.</li>
+            <li>Sum the footprint to vehicle-hours per event. Convert to dollars at the value of time the page states.</li>
+            <li>Aggregate by year, region, facility and duration band. Duration comes from the event's estimated duration.</li>
+          </ol>
+          <div class="formula">work-zone delay = Σ footprint(event)   over Construction, Maintenance and Emergency Operations events
+            <span class="var">footprint(event) = the event's attributed delay in vehicle-hours: Σ max(0, TT_obs − max(TT_thr, TT_base)) × veh_5min over its segments and slices</span>
+            <span class="var">TT_obs = observed travel time · TT_thr = threshold travel time · TT_base = the segment's median weekday travel time for the slice · veh_5min = vehicles in the slice</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>Category scope:</strong> Construction, Maintenance, Emergency Operations. The Incidents dashboard excludes exactly these three.</li>
+            <li><strong>Footprint rules</strong> are the shared ones: one-hour padding, propagation at a 25 % or 45 % speed drop, cap at the segment-month's non-recurrent delay.</li>
+            <li><strong>Duration:</strong> the estimated duration recorded on the event, in hours. Most work-zone events carry short estimates; the long tail is where the delay accrues.</li>
+            <li><strong>Filters:</strong> <span class="ui">Year</span>, <span class="ui">Region</span>, <span class="ui">Type</span>.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>Work zones are read through the FHWA work-zone-management frame: mobility, exposure, safety.</strong> Mobility is delay and is built. Exposure and safety are not yet, and the dashboard says so rather than showing a placeholder.</li>
+            <li><strong>Planned work is separated from reactive incidents</strong> because a work zone is known in advance. Nearly all of its delay is addressable through lane-closure timing and corridor coordination, which is a different conversation from crash response.</li>
+            <li><strong>We removed the "active work zones" section on 2026-07-28.</strong> This dashboard is historical delay attribution with a Year filter. "What is active right now" needs live queue and sensor feeds that exist in no source here, and a map could only be scoped to a date the rest of the page does not cover. The section was removed on product fit, not feasibility.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>Work-zone delay is an attribution over the roughly one event in five that carries a footprint, and attribution is reliable from 2019. A zone that closes a lane overnight on a quiet road may show no footprint at all. Durations are estimates entered at the time of the event, clustered at round values, and are not the observed time on the road. Two different figures describe construction delay on the site: the per-event sum on this dashboard, and the capped construction bucket of the monthly excessive-delay series. They differ by construction and should not be compared.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>CY 2025, statewide, all vehicles, from the monthly excessive-delay series as measured for the Congestion dashboard's data revision of 2026-06-13: the construction bucket is 46.84 million vehicle-hours, against 4.82 million for accidents. The Work Zones dashboard's own per-event totals for 2025 are data-bound and recompute as the series is backfilled; the attribution bucket above is the June 2026 revision's measured value.. The design mockup's figures are illustrative and are not cited here.</p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Exposure is not measured.</strong> Lane-mile-hours need the event-to-segment length join and are on the backfill list.</li>
+            <li><strong>Safety is not measured here.</strong> Crashes in work zones, secondary crashes and worker injuries are a separate dashboard in development; the crash join is not wired.</li>
+            <li><strong>No live view.</strong> The dashboard does not show which zones are active now.</li>
+            <li><strong>Pre-2019 attribution is sparse</strong> and 2026 is a partial year.</li>
+            <li><strong>Category is the feed's.</strong> A Construction event with no lane closure and no speed drop carries no delay, correctly, but still counts as an event.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Compare complete years from 2019 onward within the current attribution series. Do not compare this dashboard's per-event totals to the monthly series' construction bucket, and do not compare dollars across pages that state different value-of-time rates. See <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="tsmo--work_zones.html">Work Zones dashboard</a>
+            <a href="tsmo--start.html">TSMO home · work zones card</a>
+            <a href="tsmo--incident_search.html">Incident Search · Construction category</a>
+            <a href="measures_and_data--data--transcom_events.html">TRANSCOM events · datasheet</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-07-28 · the "active work zones" section removed from the dashboard and its mockup.</li>
+            <li>2026-07-31 · methodology band published with the exposure and safety status.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Use <span class="ui">Incident Search</span> with the Construction category to list work-zone events with their attributed delay, or download the event-by-segment delay table from the Data &amp; Methodology page's <span class="ui">Downloads &amp; API</span> section.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Work Zones dashboard: scope statement, methodology band (exposure on the backfill list; safety separate), duration notes, "1.77M construction events since 2015", 2026 partial.</li>
+            <li>Work Zones design header and the removal note for the active-zones section (ticket 180, 2026-07-28).</li>
+            <li>Congestion dashboard design header, data revision 2026-06-13: the 2025 construction and accident buckets.</li>
+            <li>Excessive-delay data type, bucket math module: the Construction category mapping.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

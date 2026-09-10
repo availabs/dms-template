@@ -14,6 +14,7 @@ import {
   resolveReliabilityYear,
   RELIABILITY_BIN_LABELS,
   PM3_VIEW_BY_YEAR,
+  legendPositionOptionsFor,
 } from '../MeasurePicker/composeMeasureConfig';
 import { MAP_MEASURE_OPTIONS } from '../MeasurePicker/composeMapConfig';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
@@ -144,6 +145,7 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   );
   const currentSize = sectionValue?.size || sectionArrayTheme?.defaultSize || '1';
   const applyWidth = (name) => actions?.updateAttribute?.('size', name);
+
   // currentComponent?.type (the ComponentRegistry's own identity), not state.display.graphType /
   // pick.graphType — a Map section's stored state never carries either field (confirmed live
   // 2026-08-07: _measurePick only ever has weekdays/start/end/routeIds), so both would silently
@@ -151,6 +153,23 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   const isMapCard = currentComponent?.type === 'Map';
   const graphType = isMapCard ? 'Map' : (state?.display?.graphType || pick.graphType);
   const hasMode = graphType !== 'Map' && graphType !== 'Table';
+  // Legend position — a pure display toggle, written DIRECTLY rather than through
+  // applyPick/applyMeasurePick (composeMeasureConfig.js deliberately never owns `position` — see
+  // its own doc comment on DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE for why reasserting it on every
+  // repick would fight this exact pill). Same two-write shape applyPick itself uses: persist via
+  // updateAttribute, mirror onto a live dwAPI for instant feedback when mounted under SectionEdit.
+  const legendOptions = legendPositionOptionsFor(graphType);
+  const legendPosition = state?.display?.legend?.position || 'right';
+  const setLegendPosition = (value) => {
+    const nextState = cloneDeep(state);
+    nextState.display.legend = { ...(nextState.display.legend || {}), position: value };
+    actions?.updateAttribute?.('element', { ...sectionValue?.element, 'element-data': JSON.stringify(nextState) });
+    if (dwAPI?.setState) dwAPI.setState((s) => { s.display.legend = { ...(s.display.legend || {}), position: value }; });
+  };
+  // Legend position pill (graph-legend-position-quickcontrol.md) — same Map/Table exclusion as
+  // Mode: Map has its own, unrelated legend system (map.theme.js/LegendPanel); Table has no
+  // chart legend concept at all.
+  const hasLegend = graphType !== 'Map' && graphType !== 'Table';
   // Tier 5I (2026-08-20): Map has its OWN measure concept now (MAP_MEASURE_OPTIONS — "none" or a
   // choropleth measure), so it gets a Measure pill too — just not Aggregate (no resolution/
   // time-bucket concept for a Map at all, unlike Table/every chart type).
@@ -313,6 +332,14 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   // this section's Settings-drawer already offers Width unconditionally, so there's no "must
   // always be reachable from this row" pressure the way there is for e.g. Routes.
   const widthPillDef = { kind: 'width', label: currentSize === '12' ? 'Full' : `${currentSize}/12`, title: `Width · ${currentSize} of 12 columns` };
+
+  // Same "layout pill, not a data pill" treatment as Width above — not part of pillDefs/the
+  // responsive overflow system, always visible in the left-aligned group.
+  const legendPillDef = {
+    kind: 'legend',
+    label: legendOptions.find((o) => o.value === legendPosition)?.label || legendPosition,
+    title: `Legend position · ${legendOptions.find((o) => o.value === legendPosition)?.label || legendPosition}`,
+  };
 
   // ── Row-fit: measure the real rendered width of every pill (in an off-screen shadow copy,
   // so widths stay accurate for pills currently trimmed from the visible row) against the
@@ -573,6 +600,19 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     </div>
   );
 
+  const renderLegendSection = () => (
+    <div className={t.popSection}>
+      <div className={t.popSectionLabel}>legend position</div>
+      <div className={t.popPillRow}>
+        {legendOptions.map((o) => (
+          <button key={o.value} type="button" className={o.value === legendPosition ? t.pillOn : t.pill} onClick={() => setLegendPosition(o.value)}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   // `width` is deliberately not here — it's rendered directly in the left-aligned layout group
   // below, not through the pillDefs/overflow ("⋯") system this map serves.
   const sectionRenderers = { routes: renderRoutesSection, measure: renderMeasureSection, when: renderWhenSection, aggregate: renderAggregateSection, mode: renderModeSection };
@@ -607,6 +647,11 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
         <Popup button={pillButton(widthPillDef)} preferredPosition="bottom">
           {() => <div className={t.popBody}>{renderWidthSection()}</div>}
         </Popup>
+        {hasLegend ? (
+          <Popup button={pillButton(legendPillDef)} preferredPosition="bottom">
+            {() => <div className={t.popBody}>{renderLegendSection()}</div>}
+          </Popup>
+        ) : null}
       </div>
       {/* Own flex-1 sibling (not part of rowWrapper's own flow) so the layout group
           above stays pinned left while this cluster stays right-justified — and so

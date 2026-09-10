@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Measures that used to be here · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · reference</div>
+          <h1 class="doc-title">Measures that used to be here.</h1>
+          <p class="doc-lede">The 2024 documentation listed measures and attributes the current tools no longer offer. If you relied on one, this page says what happened to it, what to use instead, and where the capability went. Written for readers of the earlier NPMRDS documentation.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · NPMRDS (www/npmrds)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-changed">What changed</h2>
+          <p>The 2024 documentation was a federal PM3 primer with a "Using the Tools" half written for an older Macro tool. Its measure list came from that tool's catalogue. The 2026 rebuild replaced the tool with the <a href="npmrds--macro_view.html">Macro View</a> and added TTTR₈₀, data coverage and the delay threshold variants. It dropped three index measures and a set of roadway attributes. Nothing was silently renumbered. Each retired item below says where it went.</p>
+
+          <h2 id="retired-index-measures">Retired index measures</h2>
+          <p>Three reliability indices from the FHWA reliability primer were listed and are not currently computed. Each compares a travel time to a free-flow travel time.</p>
+          <dl class="defs">
+            <dt>Planning Time Index (PTI)</dt>
+            <dd>The 95th-percentile travel time divided by the free-flow travel time. A PTI of 1.60 means planning 60 % extra time to arrive on time 19 trips in 20.</dd>
+            <dt>Buffer Index (BI)</dt>
+            <dd>The 95th-percentile travel time minus the mean travel time, divided by the mean. The extra share of time to add to an average trip.</dd>
+            <dt>Travel Time Index (TTI)</dt>
+            <dd>The mean travel time divided by the free-flow travel time. How much longer an average trip takes than an uncongested one.</dd>
+          </dl>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Measure</th><th>Status</th><th>What to use instead</th></tr></thead>
+            <tbody>
+              <tr><td>Planning Time Index</td><td>Not currently computed</td><td><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a> gives the 95th and 50th percentiles of the same distribution. Reinstating the index family is under evaluation</td></tr>
+              <tr><td>Buffer Index</td><td>Not currently computed</td><td><a href="measures_and_data--measures--lottr.html">LOTTR</a> asks the same question with the federal percentile pair, 80th over 50th</td></tr>
+              <tr><td>Travel Time Index</td><td>Not currently computed</td><td><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a> at the 50th and 85th percentiles · <a href="measures_and_data--measures--ted.html">TED</a> for the volume-weighted time lost</td></tr>
+            </tbody>
+          </table></div>
+          <p>Why they went: the indices need a free-flow travel time per segment. The platform's free-flow reference is not yet published as a measure of its own. See <a href="measures_and_data--measures--in_development.html#free-flow-speed">free-flow speed</a> under Measures in development. The underlying distribution is what percentile speed shows directly.</p>
+
+          <h2 id="retired-roadway-attributes">Retired roadway attributes</h2>
+          <p>The 2024 tool could colour the map by fields from NYSDOT's Roadway Inventory System (RIS). The current Macro View does not expose them.</p>
+          <dl class="defs">
+            <dt>AADT variants</dt>
+            <dd>Annual average daily traffic (AADT) by year and by vehicle class. AADT still enters every delay figure as the volume term; see <a href="measures_and_data--measures--ted.html">TED</a>.</dd>
+            <dt>Posted speed</dt>
+            <dd>The posted speed limit. It now sets the threshold in the posted-limit delay variant and in the TSMO excessive-delay series.</dd>
+            <dt>DDHV, adjusted rated capacity, volume-to-capacity ratio</dt>
+            <dd>Directional design-hour volume, the segment's capacity after adjustment, and the ratio of the two. Not shown anywhere on the platform today.</dd>
+            <dt>K and D factors</dt>
+            <dd>The share of AADT that falls in the design hour, and the share of design-hour traffic in the peak direction. Not shown anywhere on the platform today.</dd>
+          </dl>
+          <p>Where they went: the <a href="measures_and_data--measures--in_development.html#attributes">Attributes measure</a>, declared but not yet computed, is the intended home for colouring the map by a network field. Until it exists, AADT and functional class ride along in every <a href="npmrds--macro_view--download.html">Macro View download</a>, and <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a> documents the source fields.</p>
+
+          <h2 id="restored-under-a-new-name">Restored under a new name</h2>
+          <p><strong>Percent bins reporting</strong> is back as <a href="measures_and_data--measures--coverage.html">Data coverage</a>. It is now published per stream (all vehicles or trucks) and per period, with a second figure, epochs reporting, beside it. One correction came with the restoration. The bin count now counts bins where the stream had a value, not bins where the feed had any row. The older count had inflated the truck figure roughly two times.</p>
+
+          <h2 id="tools-that-changed-name-or-home">Tools that changed name or home</h2>
+          <p>Readers of the 2024 documentation will also find tools under new names.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Then</th><th>Now</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Macro tool, Regional Analysis</td><td><a href="npmrds--macro_view.html">Macro View</a></td><td>One measure, one year, every segment, with a download builder</td></tr>
+              <tr><td>Batch Reports</td><td><a href="npmrds--route_comparison.html">Route Comparison</a></td><td>Routes against periods in one table. The <a href="developers--batch_reports_api.html">Batch Reports API</a> stays documented for developers until Route Comparison retires it</td></tr>
+              <tr><td>Folders</td><td>Tags on routes and reports</td><td>See <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a></td></tr>
+              <tr><td>PM3 data export (placeholder)</td><td>The MAP-21 annual download and the Macro View download</td><td>See <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a> and <a href="npmrds--macro_view--download.html">Download data from the Macro View</a></td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Measures &amp; Methodology page, published 2026-08-28, §07 "Measures that used to be here": status and replacement for each item.</li>
+            <li>The 2024 NPMRDS documentation's measures table: the historical list of index measures and RIS attributes.</li>
+            <li>FHWA, <em>Travel Time Reliability: Making It There On Time, All The Time</em> (2006): the definitions of the Planning Time Index, Buffer Index and Travel Time Index.</li>
+            <li>Data coverage measure page and pm3 provenance §11: the per-stream bin count and the roughly two-times truck inflation it removed.</li>
+            <li>Platform documentation plan, §03: tags replace Folders; Route Comparison succeeds Batch Reports.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="measures_and_data--measures--in_development.html">Measures in development</a>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

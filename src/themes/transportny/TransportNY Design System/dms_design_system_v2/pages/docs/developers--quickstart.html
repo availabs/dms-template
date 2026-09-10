@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Quick start · Developers · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  developers--quickstart.html · IA page 81 · type start. Phase 6a, 2026-09-08.
+  Sources: docs-dump 1458899 (the TRANSCOM events worked example: paths, encoded URLs and responses, verbatim); skills/authenticating-
+  the-dms-cli.md (POST {API_HOST}/login → { user: { token } }, ~6 h, Authorization header per avail-falcor auth/jwtAuth.js); dms-template
+  .env (VITE_DMS_APP=npmrdsv5, VITE_API_HOST=https://dmsserver.availabs.org); avail-falcor routes/uda.route.js (views.byId attributes
+  route); datasets overview.jsx (view.metadata.download, an OUTPUT_FILE_TYPES-keyed url map; $HOST resolved against DAMA_HOST);
+  ticket 2195637 resolution (the generated per-year CSV zip, verified fetchable 2026-07-27).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="start" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Developers · start</div>
+          <h1 class="doc-title">Quick start: your first requests to the platform.</h1>
+          <p class="doc-lede">In about 10 minutes you mint a sign-in token, count the rows of a public dataset without one, read five rows, and fetch a generated file. This page assumes a terminal or a browser and nothing else. Only the token step needs an account.</p>
+          <div class="stamps">
+            <span class="type">start</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires sign-in to edit</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-you-will-do">What you will do</h2>
+          <p>You work against one dataset, the <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a> table, and ask it the two questions every query starts with: how many rows match, and what are they. Then you read a view's download links and fetch one file. Every request is a plain HTTPS GET, so the same steps work from a browser address bar, <code>curl</code>, or any language.</p>
+
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Two hosts. Data reads go to <code>https://graph.availabs.org</code>. Sign-in goes to <code>https://dmsserver.availabs.org</code>, the same server the site signs in against. Reads of published data need no token, so steps 2 to 6 work without step 1. Do step 1 when you need an account for the command-line tools, for listing, or for editing a dataset's description. Keep a URL encoder to hand; the API's paths travel inside a query string.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Mint a token. Post your account's email and password, and the site's project name, to the sign-in route.
+<pre class="code">POST https://dmsserver.availabs.org/login
+Content-Type: application/json
+
+{ "email": "&lt;your email&gt;", "password": "&lt;your password&gt;", "project": "npmrdsv5" }
+
+<span class="c">→ 200</span> { "user": { "token": "&lt;JWT&gt;", … } }</pre>
+              <span class="result">The token lasts about 6 hours. Send it as the <code>Authorization</code> header on later requests. Never put it in a URL, a shared script or a commit.</span></li>
+            <li>Write the path that asks for a length. A request is a JSON array of paths. This one names the root, the data environment, the view, an options object as a JSON string, and the word <code>length</code>.
+<pre class="code">[["uda","npmrds2","viewsById",1947,"options",
+  "{\"groupBy\":[],\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"exclude\":{},\"normalFilter\":[]}",
+  "length"]]</pre></li>
+            <li>URL-encode the array and put it after <code>paths=</code> on the graph route, with <code>method=get</code>.
+<pre class="code">https://graph.availabs.org/graph?paths=%5B%5B%22uda%22%2C%22npmrds2%22%2C%22viewsById%22%2C1947%2C%22options%22%2C%22%7B%5C%22groupBy%5C%22%3A%5B%5D%2C%5C%22filter%5C%22%3A%7B%5C%22month_year%5C%22%3A%5B%5C%2206-2025%5C%22%5D%2C%5C%22region_name%5C%22%3A%5B%5C%22Region%201%20-%20Capital%20District%5C%22%5D%7D%2C%5C%22exclude%5C%22%3A%7B%7D%2C%5C%22normalFilter%5C%22%3A%5B%5D%7D%22%2C%22length%22%5D%5D&amp;method=get</pre>
+              <span class="result">The response mirrors your path and ends in the answer.</span>
+<pre class="code">{"jsonGraph":{"uda":{"npmrds2":{"viewsById":{"1947":{"options":{
+  "{\"groupBy\":[],\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"exclude\":{},\"normalFilter\":[]}":
+    {"length":1262}}}}}}}}</pre>
+              <span class="result">1,262 events matched June 2025 in Region 1 when the example was recorded on 2025-09-10. The live table recomputes.</span></li>
+            <li>Read the first five rows. Replace <code>length</code> with <code>dataByIndex</code>, an index range, and the columns you want. Indices count from 0 and the range is inclusive.
+<pre class="code">[["uda","npmrds2","viewsById",1947,"options",
+  "{\"groupBy\":[],\"orderBy\":{\"cost\":\"desc nulls last\"},\"filter\":{\"month_year\":[\"06-2025\"],\"region_name\":[\"Region 1 - Capital District\"]},\"exclude\":{},\"normalFilter\":[],\"meta\":{}}",
+  "dataByIndex",{"from":0,"to":4},
+  ["event_id","facility","event_type","start_date_time","cost"]]]</pre>
+              <span class="result">Each row arrives under its index, one key per column you asked for. Dates and nulls come wrapped as atoms.</span>
+<pre class="code">"dataByIndex": {
+  "0": {
+    "event_id": "ORI1237917919",
+    "facility": "I-90",
+    "event_type": "Disabled vehicle",
+    "start_date_time": { "$type": "atom", "value": "2025-06-25T17:01:58.000Z" },
+    "cost": "78062"
+  },
+  "1": { … }, "2": { … }, "3": { … }, "4": { … }
+}</pre></li>
+            <li>Read a view's download links. Generated files hang off the view, not the rows. Ask for the view's <code>metadata</code> attribute; its <code>download</code> key maps each format to a file URL.
+<pre class="code">[["uda","npmrds2","views","byId",3488,"metadata"]]</pre>
+              <span class="result">The value is one atom holding the view's metadata. Under <code>download</code>, a key per generated format. A stored address is either absolute or begins with the literal <code>$HOST</code>, which the site replaces with the data host, <code>https://graph.availabs.org</code>; do the same before you fetch.</span></li>
+            <li>Fetch the file. This one is the excessive-delay series, generated on 2026-07-27 as a zip of nine CSVs, one per year, 4,927,052 rows, about 143 MB. Open it or fetch it with any HTTP client; no token is needed.
+<pre class="code">https://availabs-bucket.files.availabs.org/npmrds2/s_2039/excessive_delay_v2_series_s2039_v3488_CSV.zip</pre>
+              <span class="result">Read the <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> datasheet before you use it: 2019 and 2020 are not in the run, and the latest year is partial.</span></li>
+          </ol>
+
+          <h2 id="what-you-now-have">What you now have</h2>
+          <p>A token you can reuse for 6 hours, the length-then-rows pattern that every query on the platform follows, a row with atoms unwrapped, and a generated file on disk. You also have the three things a request needs: the data environment, the view id from the dataset's source page or datasheet, and the column names from its schema table.</p>
+
+          <h2 id="where-to-go-next">Where to go next</h2>
+          <ul>
+            <li><a href="developers--data_manager_api.html">Data Manager API</a> · the full path grammar and the options table.</li>
+            <li><a href="developers--examples.html">Worked examples</a> · the same query with a filter, a grouped count, and the python client.</li>
+            <li><a href="developers--downloads_and_formats.html">Bulk downloads and formats</a> · every download route and what each file contains.</li>
+            <li><a href="npmrds--macro_view--download.html">Download data from the Macro View</a> · the PM3 package with its README, built from the map.</li>
+            <li><a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a> · how to get an account and what a session is.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>API request example (docs page, 2025-09-10): the path arrays, the encoded URL, the length response (1262) and the row values quoted in steps 2 to 4, verbatim; the five-column attribute list is a subset of the example's twenty.</li>
+            <li>Sign-in skill (<code>authenticating-the-dms-cli.md</code>): <code>POST {API_HOST}/login</code> with <code>email</code>, <code>password</code>, <code>project</code>; response <code>{ user: { token } }</code>; the token's expiry about 6 hours; the DMS server is <code>https://dmsserver.availabs.org</code>. Deployed site configuration (<code>.env</code>): <code>VITE_DMS_APP=npmrdsv5</code>.</li>
+            <li>Data server code: <code>auth/jwtAuth.js</code> reads the <code>Authorization</code> header as the token and continues as public without one; <code>auth.utils.js</code> signs tokens for 6 hours; <code>routes/uda.route.js</code>, route <code>uda[env].views.byId[id][attributes]</code>.</li>
+            <li>Datasets source page code (<code>overview.jsx</code>): generated exports live in <code>metadata.download</code>, a url map keyed by format; <code>$HOST</code> resolved against the data host.</li>
+            <li>Ticket 2195637 (resolved 2026-07-27): the excessive-delay download generated as CSV grouped by year, 4,927,052 rows over 9 year files in one zip, 149,482,429 bytes, verified fetchable; the file URL quoted in step 6.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="developers.html">Developers hub</a>
+          <a href="developers--data_manager_api.html">Data Manager API</a>
+          <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>
