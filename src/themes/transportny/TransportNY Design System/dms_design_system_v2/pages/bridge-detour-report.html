@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Bridge Detour Impact · Report · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  BRIDGE DETOUR IMPACT — design page for the bridge-detour-process batch analysis output.
+  ════════════════════════════════════════════════════════════════════════════════════════
+  Built following designing-a-dms-design-system.md: DMS-shaped (Layout → LayoutGroup →
+  Section → Component), plain HTML + Tailwind CDN + this theme's _shared.css, laid out on the
+  same grid-cols-12 vocabulary as map-21.html (the closest structural sibling — KPI band,
+  workbench section, methodology band). Content is the bridge-detour-process report data
+  (258 candidate bridges, batch detour analysis) transcribed onto TransportNY's real
+  primitives instead of the earlier ad-hoc report.html draft.
+
+  Two content bands, switched by the "default" Tabs pattern (components.html · tabs · default
+  variant, amber underline): OUTPUT REPORT (the results) and APPROACH (the method). Plain
+  anchor + JS show/hide — no framework, matches the mockup-only constraint.
+
+  Data refreshed 2026-09-09 against the current 258-bridge run (all 516 ftData rows are the
+  real routes.json output, not a hand-typed sample) - see bridge-detour-process/FINDINGS.md
+  and PROCESS.md for the full investigation behind these numbers, including the whole-bridge
+  closure fix (now native in dms-template's memoryGraph.js, using source 2137 as a second
+  bridge-identification signal alongside the OSM `bridge` tag) and the per-bridge data-quality
+  review in output/data_quality_review.csv.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="landing.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="npmrds-reports.html" class="hover:text-[#0f1722]">Reports</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">Bridge Detour Impact</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// batch detour analysis</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">258 candidate bridges · statewide</span>
+              </div>
+              <div class="flex items-end justify-between gap-8 flex-wrap">
+                <div class="max-w-[760px]">
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Bridge closure detour impact<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[680px]">For every candidate bridge, the best legal detour route around a closure — in both directions of travel — computed using the same routing engine and turn-restriction logic as the live TransportNY detour tool.</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 min-w-0">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1 justify-end">
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>run completed</span>
+                    <span class="text-slate-300">·</span><span>2026-09-09</span>
+                    <span class="text-slate-300">·</span><span>conflation view <span class="text-[#0f1722] tabular-nums">2025</span></span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════
+     TAB 1 · OUTPUT REPORT
+     ═══════════════════════════════════════════════════════════════════════════════════════ -->
+<div data-tab-panel="output">
+
+          <!-- ═════════ NAV STRIP · full-width blue band, switches to the Approach & Method page ═════════ -->
+          <div class="w-full bg-[#1F3F8F]" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <a href="#" onclick="showTab('approach'); return false;" class="w-full h-12 flex items-center justify-between text-white font-display uppercase text-[13px] tracking-wide cursor-pointer hover:bg-white/5 transition-colors">
+                <span>Approach &amp; method</span>
+                <span class="text-[#FACC15] text-[16px]">→</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · KPI OVERVIEW ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="kpi-overview">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Route-ability overview</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What happens if each bridge closes?</h2>
+                </div>
+                <a class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1" href="#full-table">full data table <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-routable">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>92% of directions</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Directions with a legal detour</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">476<span class="text-[22px] font-medium tracking-normal text-slate-500 ml-0.5">/516</span></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">258 bridges &times; 2 directions each</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-both">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>92% of bridges</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Both directions clear</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">237</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">no turn-restriction issue either way</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-one">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#CA8A04]/30 bg-[#CA8A04]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#92660A]"><span class="size-1.5 rounded-full bg-[#CA8A04]"></span>1% of bridges</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">One direction only</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">2</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">turn restriction blocks the other way</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-none">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B]"><span class="size-1.5 rounded-full bg-[#EF4444]"></span>7% of bridges</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">No legal detour, either way</div>
+                    <div class="font-display font-semibold text-[46px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">19</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">genuine graph-connectivity gap, reviewed individually</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · IMPACT DISTRIBUTION ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="impact-distribution">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">across all 476 routable directions</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How much worse is the detour?</h2>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-6" data-dms-section="dist-miles">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <div class="font-display font-medium text-[16px] text-[#0F1722] mb-4">Added distance (miles)</div>
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">4.19<span class="text-[15px] font-medium text-slate-500 ml-1">mi</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">Median</div>
+                      </div>
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">8.58<span class="text-[15px] font-medium text-slate-500 ml-1">mi</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">90th percentile</div>
+                      </div>
+                    </div>
+                    <div class="flex items-end gap-1.5 h-24">
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:26%"></div>
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:17%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:22%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:46%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:100%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:25%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:4%"></div>
+                    </div>
+                    <div class="flex justify-between font-mono text-[10px] text-slate-400 mt-1.5"><span>&lt;0.5</span><span>0.5–1</span><span>1–2</span><span>2–4</span><span>4–8</span><span>8–16</span><span>16+</span></div>
+                  </div>
+                </div>
+                <div class="col-span-12 lg:col-span-6" data-dms-section="dist-time">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <div class="font-display font-medium text-[16px] text-[#0F1722] mb-4">Added travel time (minutes)</div>
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">6.3<span class="text-[15px] font-medium text-slate-500 ml-1">min</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">Median</div>
+                      </div>
+                      <div>
+                        <div class="font-display font-semibold text-[28px] tabular-nums text-[#0F1722]">13.3<span class="text-[15px] font-medium text-slate-500 ml-1">min</span></div>
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">90th percentile</div>
+                      </div>
+                    </div>
+                    <div class="flex items-end gap-1.5 h-24">
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:31%"></div>
+                      <div class="flex-1 bg-[#37576B]/70 rounded-t-[3px]" style="height:24%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:28%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:100%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:78%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:9%"></div>
+                      <div class="flex-1 bg-[#37576B] rounded-t-[3px]" style="height:5%"></div>
+                    </div>
+                    <div class="flex justify-between font-mono text-[10px] text-slate-400 mt-1.5"><span>&lt;1</span><span>1–2</span><span>2–4</span><span>4–8</span><span>8–15</span><span>15–25</span><span>25+</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="font-proxima text-[13px] leading-[1.65] text-slate-600 mt-5 max-w-[900px]">Most closures add a real but moderate detour — a median of about 4 miles and 6 minutes, concentrated in the 4&ndash;8 mile band where a nearby parallel road exists but isn't immediately adjacent. The distribution has a long tail: a small number of bridges are the only crossing for miles, and closing them forces a detour of 10&ndash;34 extra miles.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · HIGHEST-IMPACT CLOSURES ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="top-impact">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">worst of the two directions, ranked</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Highest-impact closures</h2>
+                </div>
+                <button class="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 17C3 17.93 3 18.4 3.1 18.78C3.38 19.81 4.19 20.62 5.22 20.9C5.6 21 6.07 21 7 21H17C17.93 21 18.4 21 18.78 20.9C19.81 20.62 20.62 19.81 20.9 18.78C21 18.4 21 17.93 21 17"/><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>csv</button>
+              </div>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/10 bg-slate-50/60">
+                      <th class="px-4 py-2.5 font-normal w-10">#</th>
+                      <th class="px-4 py-2.5 font-normal">BIN</th>
+                      <th class="px-4 py-2.5 font-normal">Road carried</th>
+                      <th class="px-4 py-2.5 font-normal">Feature crossed</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Direct</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Detour</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Added mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Added time</th>
+                      <th class="px-4 py-2.5 font-normal text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-proxima text-[13px] text-slate-700">
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1048280'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">01</td><td class="px-4 py-2.5 font-mono">1048280</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY421</td><td class="px-4 py-2.5 text-slate-500">Bog River</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.12 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">34.21 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+34.09</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+47.1 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1048280" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1050540'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">02</td><td class="px-4 py-2.5 font-mono">1050540</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY268</td><td class="px-4 py-2.5 text-slate-500">Cadosia Creek</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.13 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">27.91 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+27.78</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+35.5 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1050540" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1050570'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">03</td><td class="px-4 py-2.5 font-mono">1050570</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY268</td><td class="px-4 py-2.5 text-slate-500">Cadosia Creek</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.15 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">27.91 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+27.76</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+34.8 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1050570" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1050530'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">04</td><td class="px-4 py-2.5 font-mono">1050530</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY268</td><td class="px-4 py-2.5 text-slate-500">Cadosia Creek</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.17 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">27.90 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#991B1B] font-medium">+27.73</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+34.8 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1050530" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1094020'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">05</td><td class="px-4 py-2.5 font-mono">1094020</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">CR 48</td><td class="px-4 py-2.5 text-slate-500">I-88</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.08 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">13.90 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+13.81</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+15.7 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1094020" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1054230'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">06</td><td class="px-4 py-2.5 font-mono">1054230</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">Augur Lake Rd</td><td class="px-4 py-2.5 text-slate-500">I-87</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.15 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.84 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.69</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+18.5 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1054230" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1018760'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">07</td><td class="px-4 py-2.5 font-mono">1018760</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY26</td><td class="px-4 py-2.5 text-slate-500">Otselic River</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.07 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.78 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.70</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+17.1 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1018760" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=1074990'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">08</td><td class="px-4 py-2.5 font-mono">1074990</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">NY143</td><td class="px-4 py-2.5 text-slate-500">Unknown Stream</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.30 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.73 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.44</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+16.1 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=1074990" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=5502530'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">09</td><td class="px-4 py-2.5 font-mono">5502530</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">Co Tour Rt11</td><td class="px-4 py-2.5 text-slate-500">Rail crossing</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.08 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.50 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.42</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+18.9 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=5502530" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                    <tr class="hover:bg-[#FFFBEB]" style="cursor:pointer" onclick="location.href='bridge-detour-route.html?bin=4426250'"><td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">10</td><td class="px-4 py-2.5 font-mono">4426250</td><td class="px-4 py-2.5 font-medium text-[#0f1722]">Bardwell Mills Rd</td><td class="px-4 py-2.5 text-slate-500">Kayuta Lake</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">0.09 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">11.50 mi</td><td class="px-4 py-2.5 text-right font-mono tabular-nums text-[#92660A] font-medium">+11.40</td><td class="px-4 py-2.5 text-right font-mono tabular-nums">+15.8 min</td><td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin=4426250" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]">View &rarr;</a></td></tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+              <p class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mt-3">full ranking of all 239 routable bridges in impact_ranking.csv · worst direction shown per bridge</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 05 · FULL DATA TABLE ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content" id="full-table">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="full-table">
+              <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">the complete underlying data · 516 rows</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Every bridge, every direction</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-9 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 pl-3 pr-2 min-w-[220px]">
+                    <svg class="size-3.5 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
+                    <input id="ft-search" type="text" placeholder="Search BIN, road, or crossing…" class="flex-1 text-[12.5px] font-proxima text-slate-700 placeholder:text-slate-400 outline-none bg-transparent"/>
+                  </div>
+                  <div class="inline-flex items-center gap-1 bg-white border border-zinc-950/10 rounded-[6px] p-0.5">
+                    <button data-status-btn="all" onclick="setStatus('all', this)" class="px-3 h-8 inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-white bg-[#1F3F8F] cursor-pointer rounded-[4px] font-medium">All <span class="font-mono text-[10px] opacity-80" id="cnt-all">516</span></button>
+                    <button data-status-btn="ok" onclick="setStatus('ok', this)" class="px-3 h-8 inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-600 hover:text-[#0F1722] cursor-pointer rounded-[4px]">Routable <span class="font-mono text-[10px] text-slate-400" id="cnt-ok">476</span></button>
+                    <button data-status-btn="no_route" onclick="setStatus('no_route', this)" class="px-3 h-8 inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-600 hover:text-[#0F1722] cursor-pointer rounded-[4px]">No route <span class="font-mono text-[10px] text-slate-400" id="cnt-no_route">40</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="overflow-auto max-h-[620px]">
+                <table class="w-full text-left" id="ft-table">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/10 bg-slate-50/60 sticky top-0">
+                      <th class="px-4 py-2.5 font-normal cursor-pointer" onclick="ftSort('bin')">Bridge ID</th>
+                      <th class="px-4 py-2.5 font-normal cursor-pointer" onclick="ftSort('carried')">Road carried</th>
+                      <th class="px-4 py-2.5 font-normal cursor-pointer" onclick="ftSort('crossed')">Feature crossed</th>
+                      <th class="px-4 py-2.5 font-normal">Direction</th>
+                      <th class="px-4 py-2.5 font-normal">Status</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('directMi')">Direct mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('detourMi')">Detour mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('dMi')">&Delta; mi</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('dMin')">&Delta; min</th>
+                      <th class="px-4 py-2.5 font-normal text-right cursor-pointer" onclick="ftSort('dPct')">&Delta; %</th>
+                      <th class="px-4 py-2.5 font-normal text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="ft-body" class="font-proxima text-[13px] text-slate-700"></tbody>
+                </table>
+                </div>
+              </div>
+              <p class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500 mt-3"><span id="ft-count">516</span> rows shown · click a column to sort · full technical detail in routes.json</p>
+            </div>
+          </div>
+
+</div><!-- /data-tab-panel=output -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════
+     TAB 2 · APPROACH & METHOD
+     ═══════════════════════════════════════════════════════════════════════════════════════ -->
+<div data-tab-panel="approach" class="hidden">
+
+          <!-- ═════════ NAV STRIP · full-width blue band, switches back to the Output Report page ═════════ -->
+          <div class="w-full bg-[#1F3F8F]" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <a href="#" onclick="showTab('output'); return false;" class="w-full h-12 flex items-center gap-3 text-white font-display uppercase text-[13px] tracking-wide cursor-pointer hover:bg-white/5 transition-colors">
+                <span class="text-[#FACC15] text-[16px]">←</span>
+                <span>Output report</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-8" data-dms-section="page-header">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// approach &amp; method</span>
+              </div>
+              <h1 class="font-display font-semibold text-[32px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">How the routing is computed<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[720px]">The method behind every number in the report — how a detour's start and end points are chosen, how the route itself is finalized, and how a "no legal detour" finding is confirmed rather than assumed.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · OVERVIEW ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="overview">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">How this analysis works</h2>
+              <div class="rounded-[8px] border border-[#37576B]/25 bg-[#37576B]/[0.04] p-6 flex gap-4 mb-6">
+                <svg class="size-6 text-[#37576B] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                <div>
+                  <div class="font-display font-medium text-[15px] text-[#0F1722] mb-1.5">The same routing engine behind the live detour tool</div>
+                  <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">Every route in this report is computed by the identical turn-restriction-aware routing engine that powers TransportNY's live detour map — the same road network, the same legal-movement rules, the same distance-and-time model. Nothing here is a simplified or approximate stand-in: this batch analysis simply runs that real engine once for every candidate bridge, in both directions of travel, and records what it finds.</p>
+                </div>
+              </div>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px]">For each bridge, the process has three parts: first, decide where a detour would realistically begin and end near the closure; second, run the real routing search twice — once with the bridge open, once with it closed — and compare the two; third, if the first attempt can't find a legal way through, systematically widen the search until it either finds one or proves there genuinely isn't one. The three sections below walk through each part.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 06 · PICKING LAUNCH POINTS ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="launch-points">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">Deciding where a detour starts and ends</h2>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px] mb-6">A detour isn't measured from the bridge itself — a driver approaching a closed bridge doesn't stop at the exact structure, they carry on to the nearest real decision point and choose a different way from there. So for every bridge, the analysis first locates the bridge on the road network, then walks outward from each side of the closure — along the same road, in the direction traffic would already be travelling — until it reaches the first genuine intersection: a point where a driver actually has more than one way to go. That intersection becomes the launch point for the detour search on that side.</p>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-2">Why not just start at the bridge?</div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">Starting the search exactly at the closed structure would force every route through whichever single road happens to touch the bridge, even when a driver would obviously peel off earlier at a nearby intersection. Walking out to the first real branch point produces a start and end that match how a detour is actually driven.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-2">A sensible limit on how far it looks</div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">The outward walk is capped — it won't wander for miles down an empty road looking for an intersection. If no branch point turns up within that distance, the search simply uses the furthest point it reached, and that becomes the starting point for the next stage instead.</p>
+                  </div>
+                </div>
+              </div>
+              <a href="detour-coverage-methodology.html" class="mt-6 flex items-center gap-3 rounded-[8px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/5 hover:bg-[#1F3F8F]/10 transition-colors p-4">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#1F3F8F]">read more</span>
+                <span class="font-proxima text-[13.5px] text-[#0F1722] flex-1">The full coverage-mode rules — how the plugin picks up to 10 candidate points per side, not just one launch point, with a worked example.</span>
+                <span class="font-mono text-[11px] text-[#1F3F8F]">&rarr;</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ═════════ § 07 · FINALIZING THE ROUTE ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="route-finalization">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">Finalizing the route</h2>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px] mb-6">Once a start and end point are chosen, the routing engine is asked the same question twice for each direction of travel: what's the best legal route between these two points with the network as it normally is, and what's the best legal route with this one bridge removed? Every route respects the same rules a driver actually has to follow — posted turn restrictions, no illegal U-turns, no cutting through a movement that isn't allowed — because the search is exhaustive over the full legal road network, not a shortest-path shortcut that ignores those rules.</p>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-2">step 1</div>
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-1.5">Route with the bridge open</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600">The normal, everyday route between the two points — the baseline every detour is measured against.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-2">step 2</div>
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-1.5">Route with the bridge closed</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600">The same search, but with that one bridge removed from the network — the actual detour a driver would have to take.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#CA8A04] mb-2">step 3</div>
+                    <div class="font-display font-medium text-[14.5px] text-[#0F1722] mb-1.5">Compare the two</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600">The difference in distance and travel time between the two routes is the reported detour impact — done for both directions of travel independently.</p>
+                  </div>
+                </div>
+              </div>
+              <a href="approach-and-method.html" class="mt-6 flex items-center gap-3 rounded-[8px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/5 hover:bg-[#1F3F8F]/10 transition-colors p-4">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#1F3F8F]">read more</span>
+                <span class="font-proxima text-[13.5px] text-[#0F1722] flex-1">The full approach and method page, covering endpoint picking, route finalization, the widen-and-retry expansion, and how "no legal detour" gets independently verified.</span>
+                <span class="font-mono text-[11px] text-[#1F3F8F]">&rarr;</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ═════════ § 08 · WIDENING THE SEARCH ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="expansion">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">When the first pair of points doesn't work</h2>
+              <p class="font-proxima text-[13.5px] leading-[1.65] text-slate-700 max-w-[900px] mb-6">Only one bridge is ever closed at a time, so somewhere along that road a legal route to the other side should generally exist — a closed bridge on an isolated dead-end is the exception, not the rule. Rather than reporting "no route" the moment the first attempt fails, the analysis treats that as a sign the starting points were too close to the closure, not as a final answer.</p>
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg class="size-5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 5v6h6M5 12a7 7 0 1 0 2-4.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <div class="font-display font-medium text-[14.5px] text-[#0F1722]">The points move further apart, together</div>
+                    </div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">If either direction fails to find a legal route, the analysis pushes that side's starting point further out along the same road it was already following — continuing outward, never doubling back toward the closure — and tries again. Both directions of travel are re-tested together against the updated pair each time, so the two directions always share one coherent, mutually-reachable set of start and end points rather than drifting apart.</p>
+                  </div>
+                </div>
+                <div class="col-span-12 lg:col-span-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-[#FAFBFC] p-6 h-full">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg class="size-5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6M12 9v6" stroke-linecap="round"/><circle cx="12" cy="12" r="9"/></svg>
+                      <div class="font-display font-medium text-[14.5px] text-[#0F1722]">A bounded, repeatable process</div>
+                    </div>
+                    <p class="font-proxima text-[13px] leading-[1.65] text-slate-700">This widen-and-retry cycle repeats up to several rounds. It stops as soon as both directions succeed against the same pair of points — that pair becomes the final answer for that bridge — or, if a side genuinely runs out of road to expand into, the process stops and the bridge is reported as having no legal detour, rather than forcing a route that doesn't reflect reality.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 09 · CONFIRMING NO-ROUTE CASES ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="diagnosis">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">Making sure "no legal detour" is a real finding</h2>
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-4">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] mb-2">// verification</div>
+                  <div class="font-display font-medium text-[16px] leading-[1.25] text-[#0f1722]">A second, independent check for every closure with no legal detour.</div>
+                </div>
+                <div class="col-span-12 md:col-span-8 font-proxima text-[13px] leading-[1.65] text-slate-700">
+                  <p>A bridge that comes back with no legal detour could mean one of two very different things: the two sides of the closure are genuinely cut off from each other on the road network, or a legal route exists but every path to it happens to be blocked by a turn restriction along the way. Those call for different conclusions, so every no-route result is checked a second way — a plain connectivity check that ignores turn restrictions entirely and asks only "is there any path at all between these points, in either direction?" A closure where that check also fails is a true dead end. A closure where that check succeeds confirms the earlier result was correct for the right reason: a real, drivable route exists in the underlying road network, but every legal way to use it is blocked by a posted movement restriction at some intersection along the way — not a gap in the map data, and not an error in the search.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 10 · WHY IT'S BUILT THIS WAY ═════════ -->
+          <div class="w-full bg-white" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pb-12" data-dms-section="decisions">
+              <div class="bg-[#FAFBFC] border border-zinc-950/10 rounded-[8px] p-6 grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-3">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] mb-2">// 06 · decisions</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">Why it's built this way.</div>
+                </div>
+                <div class="col-span-12 md:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-5 font-proxima text-[13px] leading-[1.6] text-slate-700">
+                  <div>
+                    <div class="font-display font-medium text-[13.5px] text-[#0f1722] mb-1">One consistent identity per bridge</div>
+                    <p>Every bridge is tracked throughout by its own Bridge Identification Number, so results for a given bridge stay traceable and filterable everywhere the analysis references it — the report, the map, and the underlying data all agree on the same identity.</p>
+                  </div>
+                  <div>
+                    <div class="font-display font-medium text-[13.5px] text-[#0f1722] mb-1">Real routing, not an estimate</div>
+                    <p>Every distance and time figure comes from an actual computed route on the real road network, respecting real turn restrictions — never a straight-line estimate or a simplified stand-in for the true driving distance.</p>
+                  </div>
+                  <div>
+                    <div class="font-display font-medium text-[13.5px] text-[#0f1722] mb-1">"No legal detour" is reported honestly</div>
+                    <p>Bridges that remain unroutable after the search has been widened as far as it reasonably can go are reported plainly as having no legal detour, rather than the record being hidden or a route being forced that doesn't reflect what a driver could actually do.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+</div><!-- /data-tab-panel=approach -->
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between flex-wrap gap-2">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+<script>
+  function showTab(name) {
+    document.querySelectorAll('[data-tab-panel]').forEach(function(p){ p.classList.add('hidden'); });
+    document.querySelector('[data-tab-panel="' + name + '"]').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- Full data table: render, sort, filter, search ----------
+  // All 516 rows from the actual 2026-09-09 run (routes.json) - not a mockup sample.
+  var ftData = [
+    {bin:1003090,carried:'US6',crossed:'TRIBUTARY INDIGOT CREEK',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:2.4,dMi:2.19,dMin:3.28,dPct:1050},
+    {bin:1003090,carried:'US6',crossed:'TRIBUTARY INDIGOT CREEK',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:2.4,dMi:2.19,dMin:3.3,dPct:1050},
+    {bin:1005020,carried:'WARREN RD',crossed:'9   9 87032186',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1005020,carried:'WARREN RD',crossed:'9   9 87032186',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1005110,carried:'BAY ST',crossed:'9   9 87033009',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:0.45,dMi:0.41,dMin:0.77,dPct:1056},
+    {bin:1005110,carried:'BAY ST',crossed:'9   9 87033009',dir:'end_to_start',status:'ok',directMi:0.04,detourMi:0.45,dMi:0.41,dMin:0.84,dPct:1056},
+    {bin:1006210,carried:'HAWKES AVE',crossed:'9A  9A87032164',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:0.43,dMi:0.36,dMin:0.57,dPct:549},
+    {bin:1006210,carried:'HAWKES AVE',crossed:'9A  9A87032164',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:0.94,dMi:0.87,dMin:1.13,dPct:1323},
+    {bin:1007170,carried:'982E - Crystal Lk Cross Rd',crossed:'9W  9W83021029',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:2.13,dMi:2.1,dMin:2.85,dPct:5393},
+    {bin:1007170,carried:'982E - Crystal Lk Cross Rd',crossed:'9W  9W83021029',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:4.11,dMi:4.05,dMin:4.89,dPct:7788},
+    {bin:1013100,carried:'WINDY HILL ROAD',crossed:'81I 81I91012004',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1013100,carried:'WINDY HILL ROAD',crossed:'81I 81I91012004',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1013320,carried:'MILL ST',crossed:'17  17 91073262',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:9.05,dMi:8.96,dMin:13.82,dPct:9462},
+    {bin:1013320,carried:'MILL ST',crossed:'17  17 91073262',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:9.04,dMi:8.93,dMin:13.79,dPct:8578},
+    {bin:1013710,carried:'RAPP RD',crossed:'17  17 96091244',dir:'start_to_end',status:'ok',directMi:0.18,detourMi:5.82,dMi:5.63,dMin:7.2,dPct:3045},
+    {bin:1013710,carried:'RAPP RD',crossed:'17  17 96091244',dir:'end_to_start',status:'ok',directMi:0.18,detourMi:6.37,dMi:6.18,dMin:8.24,dPct:3344},
+    {bin:1013930,carried:'SANDS RD WEST',crossed:'17  17 83101041',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:4.78,dMi:4.58,dMin:7.17,dPct:2211},
+    {bin:1013930,carried:'SANDS RD WEST',crossed:'17  17 83101041',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:4.78,dMi:4.58,dMin:8.67,dPct:2211},
+    {bin:1014140,carried:'NY17B',crossed:'N BR CALLICOON CK',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:1.33,dMi:1.18,dMin:2.07,dPct:791},
+    {bin:1014140,carried:'NY17B',crossed:'N BR CALLICOON CK',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:1.33,dMi:1.18,dMin:2.07,dPct:791},
+    {bin:1018700,carried:'NY26',crossed:'OTSELIC RIVER',dir:'start_to_end',status:'ok',directMi:0.14,detourMi:6.41,dMi:6.28,dMin:8.23,dPct:4574},
+    {bin:1018700,carried:'NY26',crossed:'OTSELIC RIVER',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:6.43,dMi:6.32,dMin:7.95,dPct:5844},
+    {bin:1018720,carried:'NY26',crossed:'OTSELIC RIVER',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:2.56,dMi:2.41,dMin:4.09,dPct:1626},
+    {bin:1018720,carried:'NY26',crossed:'OTSELIC RIVER',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:2.56,dMi:2.41,dMin:4.1,dPct:1626},
+    {bin:1018730,carried:'NY26',crossed:'GLENN BROOK',dir:'start_to_end',status:'ok',directMi:0.27,detourMi:8.54,dMi:8.27,dMin:14.08,dPct:3015},
+    {bin:1018730,carried:'NY26',crossed:'GLENN BROOK',dir:'end_to_start',status:'ok',directMi:0.27,detourMi:8.54,dMi:8.27,dMin:14.12,dPct:3015},
+    {bin:1018740,carried:'NY26',crossed:'OTSELIC RIVER',dir:'start_to_end',status:'ok',directMi:0.11,detourMi:5.93,dMi:5.82,dMin:9.31,dPct:5134},
+    {bin:1018740,carried:'NY26',crossed:'OTSELIC RIVER',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:5.93,dMi:5.82,dMin:9.55,dPct:5134},
+    {bin:1018750,carried:'NY26',crossed:'GLADING BROOK',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:6.04,dMi:5.94,dMin:9.45,dPct:5849},
+    {bin:1018750,carried:'NY26',crossed:'GLADING BROOK',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:6.04,dMi:5.94,dMin:9.68,dPct:5849},
+    {bin:1018760,carried:'NY26',crossed:'OTSELIC RIVER',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:11.78,dMi:11.7,dMin:17.07,dPct:15864},
+    {bin:1018760,carried:'NY26',crossed:'OTSELIC RIVER',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:11.76,dMi:11.55,dMin:17.58,dPct:5493},
+    {bin:1018770,carried:'NY26',crossed:'BUCKS BROOK',dir:'start_to_end',status:'ok',directMi:0.25,detourMi:0.34,dMi:0.09,dMin:0.39,dPct:35},
+    {bin:1018770,carried:'NY26',crossed:'BUCKS BROOK',dir:'end_to_start',status:'ok',directMi:0.25,detourMi:0.34,dMi:0.09,dMin:0.36,dPct:35},
+    {bin:1019390,carried:'CHAPMAN BLVD',crossed:'27  27 07051364',dir:'start_to_end',status:'ok',directMi:0.12,detourMi:5.03,dMi:4.91,dMin:7,dPct:4022},
+    {bin:1019390,carried:'CHAPMAN BLVD',crossed:'27  27 07051364',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:5.05,dMi:4.93,dMin:7.02,dPct:4037},
+    {bin:1022530,carried:'NY32',crossed:'FISH CREEK',dir:'start_to_end',status:'ok',directMi:0.12,detourMi:3.91,dMi:3.79,dMin:6.56,dPct:3252},
+    {bin:1022530,carried:'NY32',crossed:'FISH CREEK',dir:'end_to_start',status:'ok',directMi:0.25,detourMi:3.89,dMi:3.63,dMin:6.95,dPct:1444},
+    {bin:1022590,carried:'HIGH ST',crossed:'33  53011024',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:0.89,dMi:0.74,dMin:1.44,dPct:489},
+    {bin:1022590,carried:'HIGH ST',crossed:'33  53011024',dir:'end_to_start',status:'ok',directMi:0.04,detourMi:0.88,dMi:0.84,dMin:1.68,dPct:2115},
+    {bin:1022610,carried:'DODGE ST',crossed:'33  53011027',dir:'start_to_end',status:'ok',directMi:0.14,detourMi:0.28,dMi:0.14,dMin:0.27,dPct:96},
+    {bin:1022610,carried:'DODGE ST',crossed:'33  53011027',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:0.26,dMi:0,dMin:0,dPct:0},
+    {bin:1022810,carried:'PINE RDGE HERITAGE BLVD',crossed:'33  33 53012005',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1022810,carried:'PINE RDGE HERITAGE BLVD',crossed:'33  33 53012005',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1024740,carried:'NY41',crossed:'CORNELL CREEK',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:4.12,dMi:3.98,dMin:6.72,dPct:2690},
+    {bin:1024740,carried:'NY41',crossed:'CORNELL CREEK',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:4.12,dMi:3.98,dMin:6.72,dPct:2690},
+    {bin:1026060,carried:'TRYON PK',crossed:'590 590 43012006',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1026060,carried:'TRYON PK',crossed:'590 590 43012006',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1027450,carried:'NY58',crossed:'OSWEGATCHIE RIVER',dir:'start_to_end',status:'ok',directMi:0.3,detourMi:0.74,dMi:0.44,dMin:0.71,dPct:149},
+    {bin:1027450,carried:'NY58',crossed:'OSWEGATCHIE RIVER',dir:'end_to_start',status:'ok',directMi:0.25,detourMi:0.7,dMi:0.44,dMin:0.79,dPct:175},
+    {bin:1027470,carried:'NY58',crossed:'OSWEGATCHIE RIVER',dir:'start_to_end',status:'ok',directMi:0.53,detourMi:2.17,dMi:1.63,dMin:3.06,dPct:305},
+    {bin:1027470,carried:'NY58',crossed:'OSWEGATCHIE RIVER',dir:'end_to_start',status:'ok',directMi:0.53,detourMi:2.17,dMi:1.63,dMin:3.06,dPct:305},
+    {bin:1029410,carried:'NY69A',crossed:'LITTLE SALMON RIVER',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:4.79,dMi:4.59,dMin:6.5,dPct:2376},
+    {bin:1029410,carried:'NY69A',crossed:'LITTLE SALMON RIVER',dir:'end_to_start',status:'ok',directMi:0.28,detourMi:4.62,dMi:4.34,dMin:6.37,dPct:1566},
+    {bin:1031150,carried:'FRANCES ST',crossed:'81I 81I 91011078',dir:'start_to_end',status:'ok',directMi:0.18,detourMi:4.12,dMi:3.94,dMin:5.22,dPct:2245},
+    {bin:1031150,carried:'FRANCES ST',crossed:'81I 81I 91011078',dir:'end_to_start',status:'ok',directMi:0.18,detourMi:3.48,dMi:3.3,dMin:4.39,dPct:1878},
+    {bin:1031230,carried:'JOYNER RD',crossed:'81I 81I91013122',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:6.85,dMi:6.68,dMin:9.32,dPct:4001},
+    {bin:1031230,carried:'JOYNER RD',crossed:'81I 81I91013122',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:6.89,dMi:6.74,dMin:9.43,dPct:4511},
+    {bin:1031360,carried:'EAST RIVER ROAD',crossed:'81I 81I32021159',dir:'start_to_end',status:'ok',directMi:0.23,detourMi:4.92,dMi:4.69,dMin:6.66,dPct:2052},
+    {bin:1031360,carried:'EAST RIVER ROAD',crossed:'81I 81I32021159',dir:'end_to_start',status:'ok',directMi:0.23,detourMi:4.92,dMi:4.69,dMin:6.91,dPct:2052},
+    {bin:1031470,carried:'SONG LAKE CROSS',crossed:'81I 81I32023109',dir:'start_to_end',status:'ok',directMi:0.29,detourMi:4.49,dMi:4.2,dMin:4.85,dPct:1443},
+    {bin:1031470,carried:'SONG LAKE CROSS',crossed:'81I 81I32023109',dir:'end_to_start',status:'ok',directMi:0.29,detourMi:4.49,dMi:4.2,dMin:5.16,dPct:1443},
+    {bin:1031780,carried:'CR 12',crossed:'81I 81I34041046',dir:'start_to_end',status:'ok',directMi:0.27,detourMi:4.81,dMi:4.54,dMin:8.24,dPct:1673},
+    {bin:1031780,carried:'CR 12',crossed:'81I 81I34041046',dir:'end_to_start',status:'ok',directMi:0.27,detourMi:4.81,dMi:4.54,dMin:7.5,dPct:1673},
+    {bin:1031790,carried:'CR 32',crossed:'81I 81I34041063',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:4.93,dMi:4.78,dMin:8.43,dPct:3165},
+    {bin:1031790,carried:'CR 32',crossed:'81I 81I34041063',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:4.93,dMi:4.78,dMin:7.7,dPct:3165},
+    {bin:1031810,carried:'CR 84',crossed:'81I 81I34041096',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:5.62,dMi:5.47,dMin:8.63,dPct:3736},
+    {bin:1031810,carried:'CR 84',crossed:'81I 81I34041096',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:5.62,dMi:5.47,dMin:8.52,dPct:3736},
+    {bin:1031840,carried:'CR 38',crossed:'81I 81I34041133',dir:'start_to_end',status:'ok',directMi:0.29,detourMi:5.74,dMi:5.46,dMin:7.58,dPct:1903},
+    {bin:1031840,carried:'CR 38',crossed:'81I 81I34041133',dir:'end_to_start',status:'ok',directMi:0.29,detourMi:5.74,dMi:5.46,dMin:7.8,dPct:1903},
+    {bin:1031860,carried:'FRANK LACY RD',crossed:'81I 81I34041179',dir:'start_to_end',status:'ok',directMi:0.3,detourMi:4.17,dMi:3.86,dMin:6.12,dPct:1271},
+    {bin:1031860,carried:'FRANK LACY RD',crossed:'81I 81I34041179',dir:'end_to_start',status:'ok',directMi:0.3,detourMi:4.17,dMi:3.86,dMin:6.08,dPct:1271},
+    {bin:1031920,carried:'CANNING FACTORY RD',crossed:'81I 81I34041246',dir:'start_to_end',status:'ok',directMi:0.23,detourMi:5.11,dMi:4.88,dMin:7.72,dPct:2109},
+    {bin:1031920,carried:'CANNING FACTORY RD',crossed:'81I 81I34041246',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:5.09,dMi:4.82,dMin:7.57,dPct:1822},
+    {bin:1031930,carried:'MILLER RD',crossed:'81I 81I34041277',dir:'start_to_end',status:'ok',directMi:0.34,detourMi:4.62,dMi:4.28,dMin:6.29,dPct:1273},
+    {bin:1031930,carried:'MILLER RD',crossed:'81I 81I34041277',dir:'end_to_start',status:'ok',directMi:0.34,detourMi:4.62,dMi:4.28,dMin:6.22,dPct:1273},
+    {bin:1031960,carried:'SALISBURY ST',crossed:'81I 81I34041290',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:1.03,dMi:0.78,dMin:1.02,dPct:304},
+    {bin:1031960,carried:'SALISBURY ST',crossed:'81I 81I34041290',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:1.03,dMi:0.78,dMin:1.1,dPct:304},
+    {bin:1031990,carried:'DEAN SCHOOL HSE',crossed:'81I 81I73051027',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:6.01,dMi:5.88,dMin:6.05,dPct:4440},
+    {bin:1031990,carried:'DEAN SCHOOL HSE',crossed:'81I 81I73051027',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:4.29,dMi:4.16,dMin:4.54,dPct:3139},
+    {bin:1032020,carried:'MANOR RD',crossed:'81I 81I73051055',dir:'start_to_end',status:'ok',directMi:0.14,detourMi:6.08,dMi:5.94,dMin:9.84,dPct:4279},
+    {bin:1032020,carried:'MANOR RD',crossed:'81I 81I73051055',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:6.12,dMi:6,dMin:10.43,dPct:5152},
+    {bin:1032040,carried:'WARDWELL SETTLE',crossed:'81I 81I73051078',dir:'start_to_end',status:'ok',directMi:0.22,detourMi:6.35,dMi:6.14,dMin:9.64,dPct:2816},
+    {bin:1032040,carried:'WARDWELL SETTLE',crossed:'81I 81I73051078',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:6.35,dMi:6.08,dMin:8.82,dPct:2314},
+    {bin:1032110,carried:'971P - Kellogg Hill Rd',crossed:'CSX TRANSPORTATION',dir:'start_to_end',status:'ok',directMi:0.87,detourMi:4.69,dMi:3.82,dMin:4.3,dPct:439},
+    {bin:1032110,carried:'971P - Kellogg Hill Rd',crossed:'CSX TRANSPORTATION',dir:'end_to_start',status:'ok',directMi:0.23,detourMi:4.13,dMi:3.91,dMin:5.01,dPct:1717},
+    {bin:1032170,carried:'MASSEY ST RD',crossed:'81I 81I73051214',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:9.04,dMi:8.88,dMin:14.04,dPct:5531},
+    {bin:1032170,carried:'MASSEY ST RD',crossed:'81I 81I73051214',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:8.99,dMi:8.78,dMin:12.77,dPct:4189},
+    {bin:1032230,carried:'PARISH-JENKINS',crossed:'81I 81I73051313',dir:'start_to_end',status:'ok',directMi:0.32,detourMi:3.81,dMi:3.5,dMin:6.3,dPct:1099},
+    {bin:1032230,carried:'PARISH-JENKINS',crossed:'81I 81I73051313',dir:'end_to_start',status:'ok',directMi:0.32,detourMi:3.81,dMi:3.5,dMin:5.87,dPct:1099},
+    {bin:1032510,carried:'CARY RD',crossed:'84I84I 82021071',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:4.21,dMi:4.04,dMin:7.64,dPct:2432},
+    {bin:1032510,carried:'CARY RD',crossed:'84I84I 82021071',dir:'end_to_start',status:'ok',directMi:0.17,detourMi:4.21,dMi:4.04,dMin:7.64,dPct:2432},
+    {bin:1032560,carried:'SHENANDOAH RD',crossed:'84I 84I82021111',dir:'start_to_end',status:'ok',directMi:0.2,detourMi:4.14,dMi:3.94,dMin:5.89,dPct:1969},
+    {bin:1032560,carried:'SHENANDOAH RD',crossed:'84I 84I82021111',dir:'end_to_start',status:'ok',directMi:0.2,detourMi:4.14,dMi:3.94,dMin:5.93,dPct:1967},
+    {bin:1033190,carried:'RIVERVIEW RD',crossed:'87I 87I 1509 1007',dir:'start_to_end',status:'ok',directMi:0.2,detourMi:6.65,dMi:6.45,dMin:10.91,dPct:3287},
+    {bin:1033190,carried:'RIVERVIEW RD',crossed:'87I 87I 1509 1007',dir:'end_to_start',status:'ok',directMi:0.2,detourMi:9.17,dMi:8.98,dMin:15.08,dPct:4574},
+    {bin:1033400,carried:'GANSVOORT RD',crossed:'87I 87I15091293',dir:'start_to_end',status:'ok',directMi:0.25,detourMi:4.75,dMi:4.5,dMin:6.87,dPct:1801},
+    {bin:1033400,carried:'GANSVOORT RD',crossed:'87I 87I15091293',dir:'end_to_start',status:'ok',directMi:0.25,detourMi:4.74,dMi:4.49,dMin:5.97,dPct:1798},
+    {bin:1033410,carried:'OLD WEST RD',crossed:'87I 87I15091313',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:5.63,dMi:5.45,dMin:7.65,dPct:2923},
+    {bin:1033410,carried:'OLD WEST RD',crossed:'87I 87I15091313',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:5.48,dMi:5.29,dMin:7.03,dPct:2839},
+    {bin:1033670,carried:'CHARLEY HILL RD',crossed:'87I 87I12111039',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:8.39,dMi:8.18,dMin:13.05,dPct:3970},
+    {bin:1033670,carried:'CHARLEY HILL RD',crossed:'87I 87I12111039',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:8.39,dMi:8.18,dMin:13.05,dPct:3970},
+    {bin:1033780,carried:'HYDE RD',crossed:'87I 87I12111414',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:5.35,dMi:5.14,dMin:7.61,dPct:2398},
+    {bin:1033780,carried:'HYDE RD',crossed:'87I 87I12111414',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:5.35,dMi:5.14,dMin:7.61,dPct:2398},
+    {bin:1033930,carried:'LAPHAMS MILLS R',crossed:'87I 87I71051074',dir:'start_to_end',status:'ok',directMi:0.27,detourMi:5.26,dMi:4.99,dMin:7.72,dPct:1820},
+    {bin:1033930,carried:'LAPHAMS MILLS R',crossed:'87I 87I71051074',dir:'end_to_start',status:'ok',directMi:0.27,detourMi:5.26,dMi:4.99,dMin:7.3,dPct:1820},
+    {bin:1033950,carried:'S JUNCTION RD',crossed:'87I 87I71051103',dir:'start_to_end',status:'ok',directMi:0.24,detourMi:8.5,dMi:8.26,dMin:14.33,dPct:3471},
+    {bin:1033950,carried:'S JUNCTION RD',crossed:'87I 87I71051103',dir:'end_to_start',status:'ok',directMi:0.24,detourMi:8.5,dMi:8.26,dMin:14.35,dPct:3471},
+    {bin:1034060,carried:'STRATTON HILL',crossed:'87I 87I71051245',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:8.84,dMi:8.58,dMin:14.27,dPct:3364},
+    {bin:1034060,carried:'STRATTON HILL',crossed:'87I 87I71051245',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:8.84,dMi:8.58,dMin:14.03,dPct:3364},
+    {bin:1034110,carried:'MINER FARM',crossed:'87I 87I71051293',dir:'start_to_end',status:'ok',directMi:0.29,detourMi:7.83,dMi:7.54,dMin:11.26,dPct:2637},
+    {bin:1034110,carried:'MINER FARM',crossed:'87I 87I71051293',dir:'end_to_start',status:'ok',directMi:0.29,detourMi:7.83,dMi:7.54,dMin:11.68,dPct:2637},
+    {bin:1034130,carried:'LAVALLEY',crossed:'87I 87I71051323',dir:'start_to_end',status:'ok',directMi:0.31,detourMi:7.88,dMi:7.57,dMin:14.59,dPct:2445},
+    {bin:1034130,carried:'LAVALLEY',crossed:'87I 87I71051323',dir:'end_to_start',status:'ok',directMi:0.31,detourMi:7.88,dMi:7.57,dMin:11.8,dPct:2445},
+    {bin:1034140,carried:'RIDGE',crossed:'87I 87I71051353',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:7.93,dMi:7.67,dMin:14.37,dPct:2920},
+    {bin:1034140,carried:'RIDGE',crossed:'87I 87I71051353',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:7.93,dMi:7.67,dMin:11.58,dPct:2920},
+    {bin:1035640,carried:'NY98',crossed:'TONAWANDA CREEK',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:5.86,dMi:5.6,dMin:8.23,dPct:2150},
+    {bin:1035640,carried:'NY98',crossed:'TONAWANDA CREEK',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:5.86,dMi:5.6,dMin:8.33,dPct:2150},
+    {bin:1035650,carried:'NY98',crossed:'EAST FORK',dir:'start_to_end',status:'ok',directMi:0.28,detourMi:6,dMi:5.72,dMin:8.65,dPct:2056},
+    {bin:1035650,carried:'NY98',crossed:'EAST FORK',dir:'end_to_start',status:'ok',directMi:0.55,detourMi:5.74,dMi:5.18,dMin:8.01,dPct:937},
+    {bin:1035660,carried:'NY98',crossed:'TONAWANDA CREEK',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:5.98,dMi:5.77,dMin:8.69,dPct:2705},
+    {bin:1035660,carried:'NY98',crossed:'TONAWANDA CREEK',dir:'end_to_start',status:'ok',directMi:0.29,detourMi:5.8,dMi:5.51,dMin:8.39,dPct:1893},
+    {bin:1038020,carried:'NY143',crossed:'HANNACROIS CREEK',dir:'start_to_end',status:'ok',directMi:0.14,detourMi:4.33,dMi:4.19,dMin:6.58,dPct:3033},
+    {bin:1038020,carried:'NY143',crossed:'HANNACROIS CREEK',dir:'end_to_start',status:'ok',directMi:0.14,detourMi:4.33,dMi:4.19,dMin:5.9,dPct:3033},
+    {bin:1038990,carried:'NY168 - NY 168',crossed:'FULMER CREEK',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:9.42,dMi:9.34,dMin:14.14,dPct:11703},
+    {bin:1038990,carried:'NY168 - NY 168',crossed:'FULMER CREEK',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:9.42,dMi:9.38,dMin:14.19,dPct:20311},
+    {bin:1039060,carried:'NY171',crossed:'MOYER CREEK',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:5.7,dMi:5.63,dMin:8.37,dPct:7760},
+    {bin:1039060,carried:'NY171',crossed:'MOYER CREEK',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:5.7,dMi:5.63,dMin:7.72,dPct:7760},
+    {bin:1039090,carried:'NY171',crossed:'MOYER CREEK',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:9.12,dMi:9.07,dMin:12.39,dPct:17767},
+    {bin:1039090,carried:'NY171',crossed:'MOYER CREEK',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:9.12,dMi:9.07,dMin:12.38,dPct:17767},
+    {bin:1039460,carried:'ELECTRIC AVE (B)',crossed:'179  179 53011009',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:0.7,dMi:0.53,dMin:0.98,dPct:315},
+    {bin:1039460,carried:'ELECTRIC AVE (B)',crossed:'179  179 53011009',dir:'end_to_start',status:'ok',directMi:0.27,detourMi:0.69,dMi:0.42,dMin:0.81,dPct:155},
+    {bin:1039590,carried:'NY184',crossed:'FISH CREEK',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:7.03,dMi:6.94,dMin:11.19,dPct:7698},
+    {bin:1039590,carried:'NY184',crossed:'FISH CREEK',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:7.03,dMi:6.94,dMin:11.37,dPct:7698},
+    {bin:1039600,carried:'NY184',crossed:'FISH CREEK',dir:'start_to_end',status:'ok',directMi:0.42,detourMi:4.47,dMi:4.04,dMin:6.43,dPct:951},
+    {bin:1039600,carried:'NY184',crossed:'FISH CREEK',dir:'end_to_start',status:'ok',directMi:0.42,detourMi:4.47,dMi:4.04,dMin:6.43,dPct:951},
+    {bin:1040070,carried:'NY200',crossed:'E BR OWEGO CREEK',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:4.19,dMi:3.92,dMin:4.81,dPct:1498},
+    {bin:1040070,carried:'NY200',crossed:'E BR OWEGO CREEK',dir:'end_to_start',status:'ok',directMi:0.22,detourMi:4.19,dMi:3.97,dMin:5.14,dPct:1802},
+    {bin:1040080,carried:'NY200',crossed:'E BR OWEGO CREEK',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:4.31,dMi:4.22,dMin:5.53,dPct:4504},
+    {bin:1040080,carried:'NY200',crossed:'E BR OWEGO CREEK',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:4.31,dMi:4.22,dMin:5.26,dPct:4504},
+    {bin:1041340,carried:'NY292 - NY 292',crossed:'WHALEY LAKE STREAM',dir:'start_to_end',status:'ok',directMi:0.03,detourMi:10.16,dMi:10.13,dMin:16.17,dPct:33455},
+    {bin:1041340,carried:'NY292 - NY 292',crossed:'WHALEY LAKE STREAM',dir:'end_to_start',status:'ok',directMi:0.03,detourMi:10.16,dMi:10.13,dMin:14.33,dPct:33455},
+    {bin:1041350,carried:'NY292 - NY 292',crossed:'MNRR BEACON LINE',dir:'start_to_end',status:'ok',directMi:0.11,detourMi:4.64,dMi:4.54,dMin:6.6,dPct:4270},
+    {bin:1041350,carried:'NY292 - NY 292',crossed:'MNRR BEACON LINE',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:4.64,dMi:4.54,dMin:7.13,dPct:4270},
+    {bin:1041670,carried:'NY220',crossed:'RED BROOK',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:10.16,dMi:10.08,dMin:14.83,dPct:12363},
+    {bin:1041670,carried:'NY220',crossed:'RED BROOK',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:10.15,dMi:10.06,dMin:15.94,dPct:10653},
+    {bin:1041680,carried:'NY220',crossed:'STRONG BROOK',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:6.31,dMi:6.24,dMin:9.52,dPct:8951},
+    {bin:1041680,carried:'NY220',crossed:'STRONG BROOK',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:6.29,dMi:6.16,dMin:10,dPct:4701},
+    {bin:1042280,carried:'NY235',crossed:'TRIB WYLIE BROOK',dir:'start_to_end',status:'ok',directMi:0.37,detourMi:6.93,dMi:6.56,dMin:12.34,dPct:1784},
+    {bin:1042280,carried:'NY235',crossed:'TRIB WYLIE BROOK',dir:'end_to_start',status:'ok',directMi:0.37,detourMi:6.93,dMi:6.56,dMin:12.34,dPct:1784},
+    {bin:1042290,carried:'NY235',crossed:'WYLIE BROOK',dir:'start_to_end',status:'ok',directMi:0.36,detourMi:1.01,dMi:0.65,dMin:1.33,dPct:181},
+    {bin:1042290,carried:'NY235',crossed:'WYLIE BROOK',dir:'end_to_start',status:'ok',directMi:0.33,detourMi:1.06,dMi:0.73,dMin:1.46,dPct:221},
+    {bin:1042300,carried:'NY235',crossed:'WYLIE BROOK',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1042300,carried:'NY235',crossed:'WYLIE BROOK',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1043280,carried:'MILITARY RD',crossed:'81I 81I73051290',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:5.95,dMi:5.69,dMin:9.21,dPct:2176},
+    {bin:1043280,carried:'MILITARY RD',crossed:'81I 81I73051290',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:5.95,dMi:5.69,dMin:11.05,dPct:2176},
+    {bin:1043300,carried:'PERCH LAKE RD',crossed:'81I 81I73051303',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:3.97,dMi:3.82,dMin:6.44,dPct:2418},
+    {bin:1043300,carried:'PERCH LAKE RD',crossed:'81I 81I73051303',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:3.97,dMi:3.82,dMin:6.01,dPct:2418},
+    {bin:1043540,carried:'NY258',crossed:'BRADNER CREEK',dir:'start_to_end',status:'ok',directMi:1.21,detourMi:9.71,dMi:8.51,dMin:10.85,dPct:706},
+    {bin:1043540,carried:'NY258',crossed:'BRADNER CREEK',dir:'end_to_start',status:'ok',directMi:0.74,detourMi:9.72,dMi:8.98,dMin:11.78,dPct:1221},
+    {bin:1043720,carried:'NY262 - FORD RD',crossed:'OAK ORCHARD CREEK',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:0.88,dMi:0.8,dMin:1.45,dPct:994},
+    {bin:1043720,carried:'NY262 - FORD RD',crossed:'OAK ORCHARD CREEK',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:0.88,dMi:0.8,dMin:1.52,dPct:994},
+    {bin:1044100,carried:'NY274',crossed:'BIG BROOK',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:2.49,dMi:2.3,dMin:4.24,dPct:1190},
+    {bin:1044100,carried:'NY274',crossed:'BIG BROOK',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:2.49,dMi:2.3,dMin:4.24,dPct:1190},
+    {bin:1044110,carried:'NY274',crossed:'BIG BROOK',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:2.57,dMi:2.44,dMin:4.39,dPct:1919},
+    {bin:1044110,carried:'NY274',crossed:'BIG BROOK',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:2.56,dMi:2.41,dMin:4.36,dPct:1652},
+    {bin:1044210,carried:'WEST BRANCH RD',crossed:'277 277 53011033',dir:'start_to_end',status:'ok',directMi:0.28,detourMi:0.7,dMi:0.42,dMin:0.89,dPct:148},
+    {bin:1044210,carried:'WEST BRANCH RD',crossed:'277 277 53011033',dir:'end_to_start',status:'ok',directMi:0.35,detourMi:5.25,dMi:4.9,dMin:6.3,dPct:1395},
+    {bin:1044980,carried:'E PARK DR',crossed:'290 290 53011009',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:1.63,dMi:1.46,dMin:2.25,dPct:844},
+    {bin:1044980,carried:'E PARK DR',crossed:'290 290 53011009',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:1.6,dMi:1.56,dMin:2.57,dPct:3306},
+    {bin:1046130,carried:'NY334',crossed:'CAYADUTTA CREEK',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:3.17,dMi:3,dMin:5.69,dPct:1792},
+    {bin:1046130,carried:'NY334',crossed:'CAYADUTTA CREEK',dir:'end_to_start',status:'ok',directMi:0.17,detourMi:3.17,dMi:3,dMin:5.72,dPct:1792},
+    {bin:1047520,carried:'NY397',crossed:'BOZEN KILL',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:4.8,dMi:4.7,dMin:7.14,dPct:4703},
+    {bin:1047520,carried:'NY397',crossed:'BOZEN KILL',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:4.81,dMi:4.7,dMin:7.1,dPct:4237},
+    {bin:1047730,carried:'NY406 - GIFFORDS CHURCH RD NY 406',crossed:'NORMANS KILL',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:4.77,dMi:4.62,dMin:6.06,dPct:3081},
+    {bin:1047730,carried:'NY406 - GIFFORDS CHURCH RD NY 406',crossed:'NORMANS KILL',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:4.77,dMi:4.68,dMin:6.14,dPct:4767},
+    {bin:1048280,carried:'NY421',crossed:'BOG RIVER',dir:'start_to_end',status:'ok',directMi:0.12,detourMi:34.21,dMi:34.09,dMin:47.14,dPct:27742},
+    {bin:1048280,carried:'NY421',crossed:'BOG RIVER',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:34.19,dMi:34.06,dMin:47.55,dPct:27723},
+    {bin:1048550,carried:'BOVEE RD',crossed:'490I490I43021000',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:7.51,dMi:7.3,dMin:10.23,dPct:3455},
+    {bin:1048550,carried:'BOVEE RD',crossed:'490I490I43021000',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:7.52,dMi:7.35,dMin:10.34,dPct:4543},
+    {bin:1048580,carried:'ATTRIDGE RD',crossed:'490I490I43021072',dir:'start_to_end',status:'ok',directMi:0.22,detourMi:5.03,dMi:4.8,dMin:7.51,dPct:2138},
+    {bin:1048580,carried:'ATTRIDGE RD',crossed:'490I490I43021072',dir:'end_to_start',status:'ok',directMi:0.2,detourMi:5.07,dMi:4.87,dMin:7.62,dPct:2484},
+    {bin:1048860,carried:'CLOVER ST',crossed:'490I490I43023004',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:0.93,dMi:0.8,dMin:1.46,dPct:614},
+    {bin:1048860,carried:'CLOVER ST',crossed:'490I490I43023004',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:0.93,dMi:0.8,dMin:1.46,dPct:614},
+    {bin:1048870,carried:'LANDING RD S',crossed:'490I490I43023011',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:1.52,dMi:1.44,dMin:2.51,dPct:1880},
+    {bin:1048870,carried:'LANDING RD S',crossed:'490I490I43023011',dir:'end_to_start',status:'ok',directMi:0.36,detourMi:1.8,dMi:1.44,dMin:2.51,dPct:404},
+    {bin:1050220,carried:'990J - COVE STATE PARK RD',crossed:'PAGE BROOK',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:5.66,dMi:5.53,dMin:10.85,dPct:4267},
+    {bin:1050220,carried:'990J - COVE STATE PARK RD',crossed:'PAGE BROOK',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:5.66,dMi:5.53,dMin:9.27,dPct:4267},
+    {bin:1050240,carried:'990V - NY 30 to CR 3/CR 18 CONN',crossed:'BEAR KILL',dir:'start_to_end',status:'ok',directMi:0.51,detourMi:6.72,dMi:6.21,dMin:9.68,dPct:1224},
+    {bin:1050240,carried:'990V - NY 30 to CR 3/CR 18 CONN',crossed:'BEAR KILL',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:6.75,dMi:6.65,dMin:10.27,dPct:6085},
+    {bin:1050530,carried:'NY268',crossed:'CADOSIA CREEK',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:27.9,dMi:27.73,dMin:34.81,dPct:16099},
+    {bin:1050530,carried:'NY268',crossed:'CADOSIA CREEK',dir:'end_to_start',status:'ok',directMi:0.25,detourMi:27.87,dMi:27.61,dMin:35.33,dPct:10971},
+    {bin:1050540,carried:'NY268',crossed:'CADOSIA CREEK',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:27.91,dMi:27.78,dMin:34.86,dPct:21279},
+    {bin:1050540,carried:'NY268',crossed:'CADOSIA CREEK',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:27.91,dMi:27.78,dMin:35.5,dPct:21279},
+    {bin:1050570,carried:'NY268',crossed:'CADOSIA CREEK',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:27.91,dMi:27.76,dMin:34.85,dPct:18831},
+    {bin:1050570,carried:'NY268',crossed:'CADOSIA CREEK',dir:'end_to_start',status:'ok',directMi:0.18,detourMi:27.89,dMi:27.71,dMin:35.43,dPct:15033},
+    {bin:1051220,carried:'MUCKY RUN RD',crossed:'5S  5S 23021053',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1051220,carried:'MUCKY RUN RD',crossed:'5S  5S 23021053',dir:'end_to_start',status:'ok',directMi:10.22,detourMi:10.22,dMi:0,dMin:0,dPct:0},
+    {bin:1051960,carried:'920V - Prospect Ave',crossed:'CINCINNATI CREEK',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:0.23,dMi:0.17,dMin:0.37,dPct:265},
+    {bin:1051960,carried:'920V - Prospect Ave',crossed:'CINCINNATI CREEK',dir:'end_to_start',status:'ok',directMi:0.06,detourMi:0.23,dMi:0.17,dMin:0.27,dPct:265},
+    {bin:1052370,carried:'STORMVILLE MT RD',crossed:'84I 84I82021157',dir:'start_to_end',status:'ok',directMi:0.23,detourMi:4.61,dMi:4.38,dMin:6.65,dPct:1914},
+    {bin:1052370,carried:'STORMVILLE MT RD',crossed:'84I 84I82021157',dir:'end_to_start',status:'ok',directMi:0.27,detourMi:4.49,dMi:4.22,dMin:6.33,dPct:1571},
+    {bin:1052430,carried:'SO CENTERVILLE RD',crossed:'84I 84I83011101',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:4.5,dMi:4.34,dMin:8.69,dPct:2766},
+    {bin:1052430,carried:'SO CENTERVILLE RD',crossed:'84I 84I83011101',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:4.5,dMi:4.34,dMin:8.69,dPct:2766},
+    {bin:1052450,carried:'MT ORANGE RD',crossed:'84I 84I83011113',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:4.48,dMi:4.31,dMin:8.62,dPct:2482},
+    {bin:1052450,carried:'MT ORANGE RD',crossed:'84I 84I83011113',dir:'end_to_start',status:'ok',directMi:0.17,detourMi:4.48,dMi:4.31,dMin:8.62,dPct:2482},
+    {bin:1052520,carried:'AIRPORT RD',crossed:'84I 84I83011174',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:3.69,dMi:3.52,dMin:5.3,dPct:2085},
+    {bin:1052520,carried:'AIRPORT RD',crossed:'84I 84I83011174',dir:'end_to_start',status:'ok',directMi:0.14,detourMi:3.69,dMi:3.56,dMin:5.46,dPct:2587},
+    {bin:1052610,carried:'BART BULL RD',crossed:'84I 84I83011243',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1052610,carried:'BART BULL RD',crossed:'84I 84I83011243',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1052680,carried:'RIDGE RD',crossed:'84I 84I83011315',dir:'start_to_end',status:'ok',directMi:0.03,detourMi:0.03,dMi:0,dMin:0,dPct:0},
+    {bin:1052680,carried:'RIDGE RD',crossed:'84I 84I83011315',dir:'end_to_start',status:'ok',directMi:0.03,detourMi:0.03,dMi:0,dMin:0,dPct:0},
+    {bin:1052710,carried:'FLETCHER DR N',crossed:'84I 84I83011352',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:3.87,dMi:3.61,dMin:6.14,dPct:1386},
+    {bin:1052710,carried:'FLETCHER DR N',crossed:'84I 84I83011352',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:3.88,dMi:3.62,dMin:6.19,dPct:1388},
+    {bin:1052750,carried:'BOWEN RD',crossed:'84I 84I84031014',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:4.05,dMi:3.86,dMin:5.91,dPct:2017},
+    {bin:1052750,carried:'BOWEN RD',crossed:'84I 84I84031014',dir:'end_to_start',status:'ok',directMi:0.2,detourMi:4.01,dMi:3.81,dMin:5.91,dPct:1906},
+    {bin:1053030,carried:'BYRAM LK RD',crossed:'684I684I87011090',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:5.68,dMi:5.64,dMin:7.79,dPct:13111},
+    {bin:1053030,carried:'BYRAM LK RD',crossed:'684I684I87011090',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:5.67,dMi:5.62,dMin:7.39,dPct:11401},
+    {bin:1053060,carried:'CHESTNUT RIDGE RD',crossed:'684I684I87011124',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:6.97,dMi:6.91,dMin:11.75,dPct:11996},
+    {bin:1053060,carried:'CHESTNUT RIDGE RD',crossed:'684I684I87011124',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:6.95,dMi:6.88,dMin:11.73,dPct:9906},
+    {bin:1054170,carried:'HOFFMAN ROAD',crossed:'87I 87I12111048',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:8.39,dMi:8.18,dMin:13.33,dPct:3991},
+    {bin:1054170,carried:'HOFFMAN ROAD',crossed:'87I 87I12111048',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:8.39,dMi:8.18,dMin:13.33,dPct:3991},
+    {bin:1054180,carried:'COUNTY ROUTE 8',crossed:'87I 87I12111382',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:4.97,dMi:4.82,dMin:8.07,dPct:3017},
+    {bin:1054180,carried:'COUNTY ROUTE 8',crossed:'87I 87I12111382',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:4.97,dMi:4.82,dMin:8.1,dPct:3017},
+    {bin:1054210,carried:'DEERHEAD RD',crossed:'87I 87I12111452',dir:'start_to_end',status:'ok',directMi:0.52,detourMi:10.87,dMi:10.35,dMin:15.2,dPct:1993},
+    {bin:1054210,carried:'DEERHEAD RD',crossed:'87I 87I12111452',dir:'end_to_start',status:'ok',directMi:0.28,detourMi:11.12,dMi:10.85,dMin:15.82,dPct:3911},
+    {bin:1054230,carried:'AUGUR LAKE RD',crossed:'87I 87I12111574',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:11.84,dMi:11.69,dMin:15.65,dPct:7696},
+    {bin:1054230,carried:'AUGUR LAKE RD',crossed:'87I 87I12111574',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:11.84,dMi:11.69,dMin:18.53,dPct:7696},
+    {bin:1054520,carried:'NY69',crossed:'W BR FISH CREEK',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:0.73,dMi:0.65,dMin:1.25,dPct:738},
+    {bin:1054520,carried:'NY69',crossed:'W BR FISH CREEK',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:0.73,dMi:0.65,dMin:1.26,dPct:738},
+    {bin:1054900,carried:'CO RD 17 PART O',crossed:'17  17 93081160',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:11.12,dMi:11.03,dMin:12.12,dPct:12691},
+    {bin:1054900,carried:'CO RD 17 PART O',crossed:'17  17 93081160',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:10.14,dMi:10.07,dMin:12.25,dPct:13818},
+    {bin:1055300,carried:'OCEANIA ST',crossed:'495I495IX5M14110',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:1.1,dMi:1.05,dMin:2.09,dPct:2235},
+    {bin:1055300,carried:'OCEANIA ST',crossed:'495I495IX5M14110',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:0.75,dMi:0.71,dMin:1.43,dPct:1501},
+    {bin:1060100,carried:'NY98',crossed:'TONAWANDA CREEK',dir:'start_to_end',status:'ok',directMi:0.2,detourMi:2.14,dMi:1.93,dMin:3.27,dPct:944},
+    {bin:1060100,carried:'NY98',crossed:'TONAWANDA CREEK',dir:'end_to_start',status:'ok',directMi:0.2,detourMi:2.14,dMi:1.93,dMin:3.24,dPct:944},
+    {bin:1060970,carried:'NY26',crossed:'MANN BROOK',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:11.64,dMi:11.38,dMin:16.7,dPct:4450},
+    {bin:1060970,carried:'NY26',crossed:'MANN BROOK',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:0.26,dMi:0,dMin:0,dPct:0},
+    {bin:1062430,carried:'SAXTON ST',crossed:'490I490I43022021',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:0.49,dMi:0.28,dMin:0.49,dPct:137},
+    {bin:1062430,carried:'SAXTON ST',crossed:'490I490I43022021',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:0.49,dMi:0.28,dMin:0.65,dPct:137},
+    {bin:1062880,carried:'DUERR RD',crossed:'219 219 53121211',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:2.7,dMi:2.5,dMin:4.27,dPct:1291},
+    {bin:1062880,carried:'DUERR RD',crossed:'219 219 53121211',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:2.7,dMi:2.5,dMin:3.88,dPct:1291},
+    {bin:1063340,carried:'NY268',crossed:'CADOSIA CREEK',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:1.28,dMi:1.22,dMin:1.91,dPct:2128},
+    {bin:1063340,carried:'NY268',crossed:'CADOSIA CREEK',dir:'end_to_start',status:'ok',directMi:0.04,detourMi:1.28,dMi:1.24,dMin:1.94,dPct:3441},
+    {bin:1063860,carried:'HOLLENBECK ST',crossed:'104 104 43032026',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:0.71,dMi:0.63,dMin:1.22,dPct:801},
+    {bin:1063860,carried:'HOLLENBECK ST',crossed:'104 104 43032026',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:0.71,dMi:0.63,dMin:1.22,dPct:801},
+    {bin:1063940,carried:'BOVEE RD',crossed:'490I490I43021000',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:7.47,dMi:7.26,dMin:10.22,dPct:3474},
+    {bin:1063940,carried:'BOVEE RD',crossed:'490I490I43021000',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:7.47,dMi:7.26,dMin:10.17,dPct:3474},
+    {bin:1063990,carried:'ATTRIDGE RD',crossed:'490I490I43021073',dir:'start_to_end',status:'ok',directMi:0.39,detourMi:4.84,dMi:4.45,dMin:6.91,dPct:1150},
+    {bin:1063990,carried:'ATTRIDGE RD',crossed:'490I490I43021073',dir:'end_to_start',status:'ok',directMi:0.39,detourMi:4.84,dMi:4.45,dMin:6.9,dPct:1150},
+    {bin:1064230,carried:'RYERSON AVE',crossed:'495I495I07041342',dir:'start_to_end',status:'ok',directMi:0.24,detourMi:3.64,dMi:3.39,dMin:4.95,dPct:1387},
+    {bin:1064230,carried:'RYERSON AVE',crossed:'495I495I07041342',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:3.74,dMi:3.55,dMin:5.17,dPct:1825},
+    {bin:1064760,carried:'CR 38',crossed:'81I 81I34041145',dir:'start_to_end',status:'ok',directMi:0.29,detourMi:5.74,dMi:5.46,dMin:7.8,dPct:1903},
+    {bin:1064760,carried:'CR 38',crossed:'81I 81I34041145',dir:'end_to_start',status:'ok',directMi:0.29,detourMi:5.74,dMi:5.46,dMin:7.58,dPct:1903},
+    {bin:1064770,carried:'FRANK LACY RD',crossed:'81I 81I34041179',dir:'start_to_end',status:'ok',directMi:0.28,detourMi:4.24,dMi:3.96,dMin:6.31,dPct:1410},
+    {bin:1064770,carried:'FRANK LACY RD',crossed:'81I 81I34041179',dir:'end_to_start',status:'ok',directMi:0.23,detourMi:4.25,dMi:4.02,dMin:6.4,dPct:1738},
+    {bin:1064780,carried:'CANNING FACTORY RD',crossed:'81I 81I34041244',dir:'start_to_end',status:'ok',directMi:0.35,detourMi:4.98,dMi:4.63,dMin:7.22,dPct:1342},
+    {bin:1064780,carried:'CANNING FACTORY RD',crossed:'81I 81I34041244',dir:'end_to_start',status:'ok',directMi:0.35,detourMi:4.98,dMi:4.63,dMin:7.18,dPct:1342},
+    {bin:1065490,carried:'S 9TH ST',crossed:'278I278IX2M24103',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:0.1,dMi:0,dMin:0,dPct:0},
+    {bin:1065490,carried:'S 9TH ST',crossed:'278I278IX2M24103',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:0.19,dMi:0,dMin:0,dPct:0},
+    {bin:1066070,carried:'SEELEY ST',crossed:'27  27 X2M13013',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:0.79,dMi:0.72,dMin:1.68,dPct:1030},
+    {bin:1066070,carried:'SEELEY ST',crossed:'27  27 X2M13013',dir:'end_to_start',status:'ok',directMi:1.47,detourMi:1.47,dMi:0,dMin:0,dPct:0},
+    {bin:1066230,carried:'NELSON AVE',crossed:'95I 95IX1M22004',dir:'start_to_end',status:'ok',directMi:0.11,detourMi:0.91,dMi:0.8,dMin:1.75,dPct:744},
+    {bin:1066230,carried:'NELSON AVE',crossed:'95I 95IX1M22004',dir:'end_to_start',status:'ok',directMi:0.63,detourMi:0.63,dMi:0,dMin:0,dPct:0},
+    {bin:1066370,carried:'E 176TH ST',crossed:'95I 95IX1M22019',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:0.57,dMi:0.4,dMin:0.88,dPct:239},
+    {bin:1066370,carried:'E 176TH ST',crossed:'95I 95IX1M22019',dir:'end_to_start',status:'ok',directMi:0.24,detourMi:0.24,dMi:0,dMin:0,dPct:0},
+    {bin:1066380,carried:'MARMION AV',crossed:'95I  95IX1M22022',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:0.64,dMi:0.58,dMin:1.16,dPct:908},
+    {bin:1066380,carried:'MARMION AV',crossed:'95I  95IX1M22022',dir:'end_to_start',status:'ok',directMi:0.57,detourMi:0.57,dMi:0,dMin:0,dPct:0},
+    {bin:1066399,carried:'CROTONA PKWY',crossed:'95I  95IX1M21023',dir:'start_to_end',status:'ok',directMi:0.28,detourMi:0.28,dMi:0,dMin:0,dPct:0},
+    {bin:1066399,carried:'CROTONA PKWY',crossed:'95I  95IX1M21023',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:0.41,dMi:0.28,dMin:0.65,dPct:207},
+    {bin:1066610,carried:'WILKINSON AVE',crossed:'95I 95IX1M21070',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:1.33,dMi:1.29,dMin:2.98,dPct:3078},
+    {bin:1066610,carried:'WILKINSON AVE',crossed:'95I 95IX1M21070',dir:'end_to_start',status:'ok',directMi:0.44,detourMi:0.44,dMi:0,dMin:0,dPct:0},
+    {bin:1066930,carried:'W TREMONT AVE',crossed:'87I 87IX1M11041',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:0.76,dMi:0.71,dMin:1.52,dPct:1533},
+    {bin:1066930,carried:'W TREMONT AVE',crossed:'87I 87IX1M11041',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:0.29,dMi:0.24,dMin:0.48,dPct:518},
+    {bin:1066980,carried:'W 233RD ST',crossed:'87I 87IX1M11067',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:0.42,dMi:0.26,dMin:0.57,dPct:163},
+    {bin:1066980,carried:'W 233RD ST',crossed:'87I 87IX1M11067',dir:'end_to_start',status:'ok',directMi:0.27,detourMi:0.27,dMi:0,dMin:0,dPct:0},
+    {bin:1068430,carried:'NORWAY RD',crossed:'947A947A45011114',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1068430,carried:'NORWAY RD',crossed:'947A947A45011114',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1068480,carried:'LAKESHORE RD',crossed:'947A947A45011048',dir:'start_to_end',status:'ok',directMi:0.28,detourMi:5.4,dMi:5.12,dMin:6.27,dPct:1820},
+    {bin:1068480,carried:'LAKESHORE RD',crossed:'947A947A45011048',dir:'end_to_start',status:'ok',directMi:0.28,detourMi:6.7,dMi:6.42,dMin:10.43,dPct:2282},
+    {bin:1068490,carried:'WILSON RD',crossed:'947A947A45011010',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1068490,carried:'WILSON RD',crossed:'947A947A45011010',dir:'end_to_start',status:'ok',directMi:14.34,detourMi:14.34,dMi:0,dMin:0,dPct:0},
+    {bin:1069000,carried:'HYDE RD',crossed:'87I 87I12111412',dir:'start_to_end',status:'ok',directMi:0.18,detourMi:5.42,dMi:5.24,dMin:7.76,dPct:2966},
+    {bin:1069000,carried:'HYDE RD',crossed:'87I 87I12111412',dir:'end_to_start',status:'ok',directMi:0.14,detourMi:5.43,dMi:5.29,dMin:7.81,dPct:3695},
+    {bin:1070100,carried:'PRESBYTERIAN RD',crossed:'390I390I42021110',dir:'start_to_end',status:'ok',directMi:0.57,detourMi:5.75,dMi:5.18,dMin:7.19,dPct:911},
+    {bin:1070100,carried:'PRESBYTERIAN RD',crossed:'390I390I42021110',dir:'end_to_start',status:'ok',directMi:0.57,detourMi:5.75,dMi:5.18,dMin:7.19,dPct:911},
+    {bin:1070270,carried:'N AVON RD',crossed:'390I390I42021352',dir:'start_to_end',status:'ok',directMi:0.64,detourMi:4.49,dMi:3.85,dMin:5.36,dPct:606},
+    {bin:1070270,carried:'N AVON RD',crossed:'390I390I42021352',dir:'end_to_start',status:'ok',directMi:0.64,detourMi:4.49,dMi:3.85,dMin:5.83,dPct:606},
+    {bin:1070580,carried:'MILL ST',crossed:'88I 88I95071033',dir:'start_to_end',status:'ok',directMi:0.3,detourMi:5,dMi:4.7,dMin:8.72,dPct:1562},
+    {bin:1070580,carried:'MILL ST',crossed:'88I 88I95071033',dir:'end_to_start',status:'ok',directMi:0.3,detourMi:5,dMi:4.7,dMin:8.1,dPct:1562},
+    {bin:1070760,carried:'CHADWICK ROAD',crossed:'88I 88I16081056',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:1.61,dMi:1.35,dMin:1.8,dPct:515},
+    {bin:1070760,carried:'CHADWICK ROAD',crossed:'88I 88I16081056',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:1.61,dMi:1.35,dMin:2.07,dPct:515},
+    {bin:1071040,carried:'ZIMMERMAN RD',crossed:'219  219 53121153',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:5.72,dMi:5.56,dMin:8.01,dPct:3323},
+    {bin:1071040,carried:'ZIMMERMAN RD',crossed:'219  219 53121153',dir:'end_to_start',status:'ok',directMi:0.17,detourMi:5.72,dMi:5.56,dMin:8.49,dPct:3323},
+    {bin:1071130,carried:'LIMA RD',crossed:'390I390I42021283',dir:'start_to_end',status:'ok',directMi:0.45,detourMi:3.31,dMi:2.87,dMin:4.44,dPct:644},
+    {bin:1071130,carried:'LIMA RD',crossed:'390I390I42021283',dir:'end_to_start',status:'ok',directMi:0.45,detourMi:3.31,dMi:2.86,dMin:4.43,dPct:642},
+    {bin:1071140,carried:'TRIPHAMMER RD',crossed:'390I390I42021290',dir:'start_to_end',status:'ok',directMi:0.4,detourMi:3.36,dMi:2.96,dMin:4.56,dPct:738},
+    {bin:1071140,carried:'TRIPHAMMER RD',crossed:'390I390I42021290',dir:'end_to_start',status:'ok',directMi:0.4,detourMi:3.35,dMi:2.95,dMin:4.55,dPct:736},
+    {bin:1071160,carried:'MARSHALL RD',crossed:'390I390I42021313',dir:'start_to_end',status:'ok',directMi:0.39,detourMi:3.63,dMi:3.25,dMin:4.91,dPct:842},
+    {bin:1071160,carried:'MARSHALL RD',crossed:'390I390I42021313',dir:'end_to_start',status:'ok',directMi:0.39,detourMi:3.63,dMi:3.25,dMin:4.93,dPct:842},
+    {bin:1071170,carried:'SUTTON RD',crossed:'390I390I42021320',dir:'start_to_end',status:'ok',directMi:0.81,detourMi:3.21,dMi:2.39,dMin:2.71,dPct:294},
+    {bin:1071170,carried:'SUTTON RD',crossed:'390I390I42021320',dir:'end_to_start',status:'ok',directMi:0.81,detourMi:3.21,dMi:2.39,dMin:2.69,dPct:294},
+    {bin:1071580,carried:'DARBY HILL RD',crossed:'88I 88I 1608 1047',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:4.16,dMi:4,dMin:5.12,dPct:2617},
+    {bin:1071580,carried:'DARBY HILL RD',crossed:'88I 88I 1608 1047',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:4.16,dMi:4,dMin:5.62,dPct:2617},
+    {bin:1071770,carried:'CROSSETT RD',crossed:'390I390I42021208',dir:'start_to_end',status:'ok',directMi:0.84,detourMi:4.1,dMi:3.26,dMin:5.85,dPct:387},
+    {bin:1071770,carried:'CROSSETT RD',crossed:'390I390I42021208',dir:'end_to_start',status:'ok',directMi:0.84,detourMi:4.1,dMi:3.26,dMin:5.5,dPct:387},
+    {bin:1071790,carried:'LONG POINT RD',crossed:'390I390I42021230',dir:'start_to_end',status:'ok',directMi:0.44,detourMi:6.06,dMi:5.62,dMin:8.6,dPct:1273},
+    {bin:1071790,carried:'LONG POINT RD',crossed:'390I390I42021230',dir:'end_to_start',status:'ok',directMi:0.44,detourMi:6.06,dMi:5.62,dMin:8.95,dPct:1273},
+    {bin:1071800,carried:'RESERVOIR RD',crossed:'390I390I42021240',dir:'start_to_end',status:'ok',directMi:0.29,detourMi:6.36,dMi:6.07,dMin:9.85,dPct:2117},
+    {bin:1071800,carried:'RESERVOIR RD',crossed:'390I390I42021240',dir:'end_to_start',status:'ok',directMi:0.29,detourMi:6.36,dMi:6.07,dMin:9.94,dPct:2117},
+    {bin:1073910,carried:'NY26',crossed:'UNKNOWN CREEK',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:3.74,dMi:3.53,dMin:5.66,dPct:1696},
+    {bin:1073910,carried:'NY26',crossed:'UNKNOWN CREEK',dir:'end_to_start',status:'ok',directMi:0.37,detourMi:3.73,dMi:3.36,dMin:5.55,dPct:909},
+    {bin:1074360,carried:'DOCK LA',crossed:'MILL BROOK',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1074360,carried:'DOCK LA',crossed:'MILL BROOK',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1074990,carried:'NY143',crossed:'UNKNOWN STREAM',dir:'start_to_end',status:'ok',directMi:0.54,detourMi:11.66,dMi:11.12,dMin:15.2,dPct:2069},
+    {bin:1074990,carried:'NY143',crossed:'UNKNOWN STREAM',dir:'end_to_start',status:'ok',directMi:0.3,detourMi:11.73,dMi:11.44,dMin:16.13,dPct:3817},
+    {bin:1075170,carried:'MEREDITH AVE',crossed:'440 440 X6M12070',dir:'start_to_end',status:'ok',directMi:0.23,detourMi:2.01,dMi:1.78,dMin:3.95,dPct:770},
+    {bin:1075170,carried:'MEREDITH AVE',crossed:'440 440 X6M12070',dir:'end_to_start',status:'ok',directMi:0.23,detourMi:1.95,dMi:1.72,dMin:3.78,dPct:744},
+    {bin:1076900,carried:'RAPELYE ST',crossed:'278I278IX2MR08B1',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:1.03,dMi:0.83,dMin:1.93,dPct:429},
+    {bin:1076900,carried:'RAPELYE ST',crossed:'278I278IX2MR08B1',dir:'end_to_start',status:'ok',directMi:0.25,detourMi:0.25,dMi:0,dMin:0,dPct:0},
+    {bin:1077510,carried:'JOHNSON RD',crossed:'17  17 91073035',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:4.06,dMi:3.96,dMin:4.12,dPct:4026},
+    {bin:1077510,carried:'JOHNSON RD',crossed:'17  17 91073035',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:3.96,dMi:3.86,dMin:4.77,dPct:3920},
+    {bin:1077530,carried:'FOX FARM HILL R',crossed:'86I 17 91073061',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:5.32,dMi:5.23,dMin:9.08,dPct:5728},
+    {bin:1077530,carried:'FOX FARM HILL R',crossed:'86I 17 91073061',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:5.32,dMi:5.23,dMin:9.08,dPct:5728},
+    {bin:1079800,carried:'NY146',crossed:'KINGS CREEK',dir:'start_to_end',status:'ok',directMi:0.25,detourMi:4.89,dMi:4.63,dMin:7.02,dPct:1838},
+    {bin:1079800,carried:'NY146',crossed:'KINGS CREEK',dir:'end_to_start',status:'ok',directMi:0.18,detourMi:4.92,dMi:4.74,dMin:7.14,dPct:2626},
+    {bin:1090660,carried:'WENTWORTH RD',crossed:'390I64011079',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:7.42,dMi:7.29,dMin:9.98,dPct:5700},
+    {bin:1090660,carried:'WENTWORTH RD',crossed:'390I64011079',dir:'end_to_start',status:'ok',directMi:0.2,detourMi:7.4,dMi:7.21,dMin:12.85,dPct:3693},
+    {bin:1090670,carried:'WENTWORTH RD',crossed:'390I64011078',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:7.44,dMi:7.34,dMin:10.08,dPct:7231},
+    {bin:1090670,carried:'WENTWORTH RD',crossed:'390I64011078',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:7.43,dMi:7.27,dMin:12.97,dPct:4556},
+    {bin:1090880,carried:'W LAMOKA AVE',crossed:'COHOCTON RIVER',dir:'start_to_end',status:'ok',directMi:0.18,detourMi:6.28,dMi:6.11,dMin:8.56,dPct:3474},
+    {bin:1090880,carried:'W LAMOKA AVE',crossed:'COHOCTON RIVER',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:6.3,dMi:6.17,dMin:8.34,dPct:4781},
+    {bin:1091250,carried:'GREENVILLE TPKE E',crossed:'84I 84I83011066',dir:'start_to_end',status:'ok',directMi:0.18,detourMi:5.99,dMi:5.81,dMin:7.65,dPct:3193},
+    {bin:1091250,carried:'GREENVILLE TPKE E',crossed:'84I 84I83011066',dir:'end_to_start',status:'ok',directMi:0.18,detourMi:5.99,dMi:5.81,dMin:7.65,dPct:3193},
+    {bin:1091710,carried:'GREENMAN RD',crossed:'86I  17 52111003',dir:'start_to_end',status:'ok',directMi:0.48,detourMi:3.95,dMi:3.47,dMin:4.94,dPct:730},
+    {bin:1091710,carried:'GREENMAN RD',crossed:'86I  17 52111003',dir:'end_to_start',status:'ok',directMi:0.48,detourMi:3.96,dMi:3.48,dMin:5.42,dPct:732},
+    {bin:1091740,carried:'NORTH RD',crossed:'86I 17 52111019',dir:'start_to_end',status:'ok',directMi:0.24,detourMi:8.83,dMi:8.59,dMin:12.32,dPct:3509},
+    {bin:1091740,carried:'NORTH RD',crossed:'86I 17 52111019',dir:'end_to_start',status:'ok',directMi:0.24,detourMi:8.83,dMi:8.59,dMin:13.26,dPct:3509},
+    {bin:1092770,carried:'MAPLE HILL RD',crossed:'90I 90I 14022098',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:4.07,dMi:4,dMin:5.86,dPct:5610},
+    {bin:1092770,carried:'MAPLE HILL RD',crossed:'90I 90I 14022098',dir:'end_to_start',status:'ok',directMi:0.06,detourMi:4.08,dMi:4.03,dMin:5.55,dPct:7212},
+    {bin:1093360,carried:'PUMPHOUSE RD',crossed:'NINE MILE CREEK',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1093360,carried:'PUMPHOUSE RD',crossed:'NINE MILE CREEK',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:1093590,carried:'NY34B',crossed:'TRIB. YAWGER CREEK',dir:'start_to_end',status:'ok',directMi:0.28,detourMi:1.55,dMi:1.27,dMin:1.64,dPct:445},
+    {bin:1093590,carried:'NY34B',crossed:'TRIB. YAWGER CREEK',dir:'end_to_start',status:'ok',directMi:0.28,detourMi:1.55,dMi:1.27,dMin:1.64,dPct:445},
+    {bin:1093760,carried:'NY215',crossed:'OTTER CREEK',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:4.23,dMi:4.08,dMin:5.26,dPct:2757},
+    {bin:1093760,carried:'NY215',crossed:'OTTER CREEK',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:4.23,dMi:4.08,dMin:5.52,dPct:2757},
+    {bin:1094020,carried:'CR 48',crossed:'88I 88I94061043',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:13.71,dMi:13.63,dMin:13.99,dPct:16383},
+    {bin:1094020,carried:'CR 48',crossed:'88I 88I94061043',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:13.9,dMi:13.81,dMin:15.73,dPct:16607},
+    {bin:1094070,carried:'JOYNER RD',crossed:'81I 81I91013122',dir:'start_to_end',status:'ok',directMi:0.22,detourMi:6.78,dMi:6.56,dMin:9.07,dPct:3001},
+    {bin:1094070,carried:'JOYNER RD',crossed:'81I 81I91013122',dir:'end_to_start',status:'ok',directMi:0.22,detourMi:6.78,dMi:6.56,dMin:9.07,dPct:3001},
+    {bin:1094880,carried:'WARDWELL SETTLE',crossed:'81I 81I73051077',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:6.37,dMi:6.18,dMin:9.7,dPct:3230},
+    {bin:1094880,carried:'WARDWELL SETTLE',crossed:'81I 81I73051077',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:6.37,dMi:6.18,dMin:8.94,dPct:3230},
+    {bin:1095090,carried:'WELLS BRIDGE RD',crossed:'88I 88I  93051072',dir:'start_to_end',status:'ok',directMi:0.18,detourMi:7.39,dMi:7.21,dMin:8.65,dPct:4035},
+    {bin:1095090,carried:'WELLS BRIDGE RD',crossed:'88I 88I  93051072',dir:'end_to_start',status:'ok',directMi:0.17,detourMi:7.42,dMi:7.25,dMin:8.85,dPct:4225},
+    {bin:1095130,carried:'PINE HILL RD',crossed:'88I 88I93031032',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:10.67,dMi:10.52,dMin:13.26,dPct:6982},
+    {bin:1095130,carried:'PINE HILL RD',crossed:'88I 88I93031032',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:10.67,dMi:10.52,dMin:13.66,dPct:6982},
+    {bin:3043630,carried:'NY260 - WALKER-LAKE ONT',crossed:'WEST CREEK',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:5.22,dMi:5.15,dMin:6.38,dPct:6846},
+    {bin:3043630,carried:'NY260 - WALKER-LAKE ONT',crossed:'WEST CREEK',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:5.22,dMi:5.15,dMin:6.3,dPct:6846},
+    {bin:3043640,carried:'NY260 - WALKER-LAKE ONT',crossed:'BRUSH CREEK',dir:'start_to_end',status:'ok',directMi:0.69,detourMi:2.97,dMi:2.28,dMin:4.74,dPct:330},
+    {bin:3043640,carried:'NY260 - WALKER-LAKE ONT',crossed:'BRUSH CREEK',dir:'end_to_start',status:'ok',directMi:0.48,detourMi:0.48,dMi:0,dMin:0,dPct:0},
+    {bin:3095730,carried:'NY260 - WALKER-LAKE ONT',crossed:'COWSUCKER CREEK',dir:'start_to_end',status:'ok',directMi:0.31,detourMi:2.62,dMi:2.31,dMin:4.03,dPct:741},
+    {bin:3095730,carried:'NY260 - WALKER-LAKE ONT',crossed:'COWSUCKER CREEK',dir:'end_to_start',status:'ok',directMi:0.29,detourMi:2.81,dMi:2.52,dMin:3.99,dPct:858},
+    {bin:3367220,carried:'MELONDY HILL RD',crossed:'LANDERS CREEK',dir:'start_to_end',status:'ok',directMi:0.11,detourMi:9.15,dMi:9.03,dMin:16.18,dPct:7918},
+    {bin:3367220,carried:'MELONDY HILL RD',crossed:'LANDERS CREEK',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:0.11,dMi:0,dMin:0,dPct:0},
+    {bin:4415010,carried:'CR 42 Lock 5 Access',crossed:'CHAMPLAIN  CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4415010,carried:'CR 42 Lock 5 Access',crossed:'CHAMPLAIN  CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4415060,carried:'BURTON AVE',crossed:'OLD CHAMPLN CANAL',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:0.95,dMi:0.89,dMin:1.79,dPct:1640},
+    {bin:4415060,carried:'BURTON AVE',crossed:'OLD CHAMPLN CANAL',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:0.95,dMi:0.89,dMin:1.58,dPct:1639},
+    {bin:4415100,carried:'SOUTH ST',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:0.95,dMi:0.91,dMin:1.82,dPct:1967},
+    {bin:4415100,carried:'SOUTH ST',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:0.95,dMi:0.91,dMin:1.6,dPct:1966},
+    {bin:4415130,carried:'CANAL CORP-RIBERTY LA',crossed:'ERIE CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4415130,carried:'CANAL CORP-RIBERTY LA',crossed:'ERIE CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4417010,carried:'BUSH ST',crossed:'GLENS FALLS FEEDER CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4417010,carried:'BUSH ST',crossed:'GLENS FALLS FEEDER CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4417060,carried:'WARREN ST',crossed:'FEEDER CANAL',dir:'start_to_end',status:'ok',directMi:0.11,detourMi:1.58,dMi:1.47,dMin:2.27,dPct:1327},
+    {bin:4417060,carried:'WARREN ST',crossed:'FEEDER CANAL',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:1.58,dMi:1.47,dMin:2.5,dPct:1327},
+    {bin:4418020,carried:'SAUNDERS ST',crossed:'CHAMPLAIN CANAL',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:1.13,dMi:1.06,dMin:1.97,dPct:1386},
+    {bin:4418020,carried:'SAUNDERS ST',crossed:'CHAMPLAIN CANAL',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:1.13,dMi:1.06,dMin:2.02,dPct:1386},
+    {bin:4418040,carried:'RYDER RD',crossed:'CHAMPLAIN CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4418040,carried:'RYDER RD',crossed:'CHAMPLAIN CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4418080,carried:'BALDWIN CORNERS',crossed:'CHAMPLAIN CANAL',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:9.63,dMi:9.56,dMin:11.55,dPct:12665},
+    {bin:4418080,carried:'BALDWIN CORNERS',crossed:'CHAMPLAIN CANAL',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:9.63,dMi:9.56,dMin:11.07,dPct:12665},
+    {bin:4418090,carried:'NEW SWAMP RD',crossed:'CHAMPLAIN CANAL',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:7.15,dMi:7.07,dMin:11.8,dPct:8615},
+    {bin:4418090,carried:'NEW SWAMP RD',crossed:'CHAMPLAIN CANAL',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:7.15,dMi:7.07,dMin:11.81,dPct:8615},
+    {bin:4418120,carried:'N RIVER ROAD',crossed:'CHAMPLAIN CANAL',dir:'start_to_end',status:'ok',directMi:0.18,detourMi:1.87,dMi:1.7,dMin:2.71,dPct:967},
+    {bin:4418120,carried:'N RIVER ROAD',crossed:'CHAMPLAIN CANAL',dir:'end_to_start',status:'ok',directMi:0.18,detourMi:1.87,dMi:1.7,dMin:2.71,dPct:967},
+    {bin:4418130,carried:'FORT MILLER RD',crossed:'CHAMPLAIN CANAL',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:1.06,dMi:0.8,dMin:1.35,dPct:304},
+    {bin:4418130,carried:'FORT MILLER RD',crossed:'CHAMPLAIN CANAL',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:1.06,dMi:0.8,dMin:1.35,dPct:304},
+    {bin:4418140,carried:'FORT MILLER RD',crossed:'CHAMPLAIN CANAL',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:1.01,dMi:0.98,dMin:1.72,dPct:2731},
+    {bin:4418140,carried:'FORT MILLER RD',crossed:'CHAMPLAIN CANAL',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:1,dMi:0.95,dMin:1.66,dPct:1964},
+    {bin:4423050,carried:'MOSS RD',crossed:'ERIE BARGE CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4423050,carried:'MOSS RD',crossed:'ERIE BARGE CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4424060,carried:'CANASERAGA ROAD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.12,detourMi:3.98,dMi:3.86,dMin:7.72,dPct:3142},
+    {bin:4424060,carried:'CANASERAGA ROAD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:3.98,dMi:3.86,dMin:6.5,dPct:3142},
+    {bin:4424080,carried:'ARMSTRONG RD',crossed:'CHENANGO FEEDER',dir:'start_to_end',status:'ok',directMi:0.15,detourMi:2.79,dMi:2.64,dMin:2.93,dPct:1797},
+    {bin:4424080,carried:'ARMSTRONG RD',crossed:'CHENANGO FEEDER',dir:'end_to_start',status:'ok',directMi:0.15,detourMi:2.79,dMi:2.64,dMin:3.94,dPct:1797},
+    {bin:4424100,carried:'N COURT ST SPUR',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4424100,carried:'N COURT ST SPUR',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4424130,carried:'BEEBE BRG RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:5.28,dMi:5.2,dMin:8.57,dPct:6516},
+    {bin:4424130,carried:'BEEBE BRG RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:5.28,dMi:5.2,dMin:9.66,dPct:6516},
+    {bin:4424150,carried:'KIMBERLEE DR',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4424150,carried:'KIMBERLEE DR',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4424160,carried:'BOLIVAR RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:4.33,dMi:4.29,dMin:7.59,dPct:11789},
+    {bin:4424160,carried:'BOLIVAR RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.04,detourMi:4.33,dMi:4.29,dMin:7.87,dPct:11789},
+    {bin:4426060,carried:'STONEY CREEK RD',crossed:'ERIE BARGE CANAL',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:8.08,dMi:7.99,dMin:11.28,dPct:9324},
+    {bin:4426060,carried:'STONEY CREEK RD',crossed:'ERIE BARGE CANAL',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:8.08,dMi:7.99,dMin:10.96,dPct:9324},
+    {bin:4426090,carried:'COVE RD',crossed:'ERIE BARGE CANAL',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:6.18,dMi:6.12,dMin:9.3,dPct:9495},
+    {bin:4426090,carried:'COVE RD',crossed:'ERIE BARGE CANAL',dir:'end_to_start',status:'ok',directMi:0.06,detourMi:6.18,dMi:6.12,dMin:9.73,dPct:9495},
+    {bin:4426150,carried:'SARGENT RD',crossed:'FRSTPT CNL FEEDER',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:2.17,dMi:2.13,dMin:3.48,dPct:4319},
+    {bin:4426150,carried:'SARGENT RD',crossed:'FRSTPT CNL FEEDER',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:2.17,dMi:2.13,dMin:3.08,dPct:4319},
+    {bin:4426160,carried:'MOOSE RIVER RD',crossed:'FRSTPT CNL FEEDER',dir:'start_to_end',status:'ok',directMi:0.21,detourMi:5.58,dMi:5.37,dMin:8.86,dPct:2561},
+    {bin:4426160,carried:'MOOSE RIVER RD',crossed:'FRSTPT CNL FEEDER',dir:'end_to_start',status:'ok',directMi:0.21,detourMi:5.58,dMi:5.37,dMin:7.34,dPct:2561},
+    {bin:4426200,carried:'WILLIAMS RD',crossed:'FRSTPT CNL FEEDER',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4426200,carried:'WILLIAMS RD',crossed:'FRSTPT CNL FEEDER',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4426220,carried:'EDMONDS RD',crossed:'FRSTPT CNL FEEDER',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:6.06,dMi:5.9,dMin:9.43,dPct:3801},
+    {bin:4426220,carried:'EDMONDS RD',crossed:'FRSTPT CNL FEEDER',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:6.06,dMi:5.9,dMin:7.78,dPct:3801},
+    {bin:4426230,carried:'DUTCH HILL RD',crossed:'ALDER POND',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:4.39,dMi:4.33,dMin:5.26,dPct:7475},
+    {bin:4426230,carried:'DUTCH HILL RD',crossed:'ALDER POND',dir:'end_to_start',status:'ok',directMi:0.06,detourMi:4.09,dMi:4.04,dMin:6.25,dPct:6961},
+    {bin:4426250,carried:'BARDWELL MILLS',crossed:'KAYUTA LAKE',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:11.5,dMi:11.4,dMin:15.81,dPct:12340},
+    {bin:4426250,carried:'BARDWELL MILLS',crossed:'KAYUTA LAKE',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:11.5,dMi:11.4,dMin:14.82,dPct:12340},
+    {bin:4426340,carried:'MAIN ST NEW LONDON',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:2.9,dMi:2.8,dMin:4.57,dPct:2852},
+    {bin:4426340,carried:'MAIN ST NEW LONDON',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:2.9,dMi:2.8,dMin:4.45,dPct:2852},
+    {bin:4426350,carried:'LOCK RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.17,detourMi:1.77,dMi:1.6,dMin:2.15,dPct:936},
+    {bin:4426350,carried:'LOCK RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.17,detourMi:1.77,dMi:1.6,dMin:1.99,dPct:936},
+    {bin:4426360,carried:'SENN RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:1.65,dMi:1.59,dMin:2.01,dPct:2604},
+    {bin:4426360,carried:'SENN RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.06,detourMi:1.65,dMi:1.59,dMin:2.17,dPct:2604},
+    {bin:4426370,carried:'COLLINS RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:2.63,dMi:2.54,dMin:4.16,dPct:2736},
+    {bin:4426370,carried:'COLLINS RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.09,detourMi:2.63,dMi:2.54,dMin:4.16,dPct:2736},
+    {bin:4426380,carried:'HIGGINSVILLE RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:1.65,dMi:1.58,dMin:2.78,dPct:2198},
+    {bin:4426380,carried:'HIGGINSVILLE RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:1.65,dMi:1.58,dMin:2.78,dPct:2198},
+    {bin:4426390,carried:'GERMANY RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:1.7,dMi:1.63,dMin:2.89,dPct:2202},
+    {bin:4426390,carried:'GERMANY RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:1.7,dMi:1.63,dMin:2.89,dPct:2202},
+    {bin:4426400,carried:'DUNBARTON RD SPUR',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:1.81,dMi:1.74,dMin:2.74,dPct:2431},
+    {bin:4426400,carried:'DUNBARTON RD SPUR',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:1.81,dMi:1.74,dMin:2.74,dPct:2431},
+    {bin:4426410,carried:'MILLS RD',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:2,dMi:1.96,dMin:3.33,dPct:4346},
+    {bin:4426410,carried:'MILLS RD',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.04,detourMi:2,dMi:1.96,dMin:3.33,dPct:4346},
+    {bin:4426420,carried:'CENTER ST',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:0.34,dMi:0.26,dMin:0.34,dPct:336},
+    {bin:4426420,carried:'CENTER ST',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:0.39,dMi:0.31,dMin:0.54,dPct:400},
+    {bin:4426440,carried:'CHURCH ST',crossed:'OLD ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:0.44,dMi:0.39,dMin:0.46,dPct:742},
+    {bin:4426440,carried:'CHURCH ST',crossed:'OLD ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:0.44,dMi:0.38,dMin:0.58,dPct:738},
+    {bin:4431020,carried:'BONTA BRIDGE RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:7.23,dMi:7.18,dMin:10.98,dPct:14732},
+    {bin:4431020,carried:'BONTA BRIDGE RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:7.23,dMi:7.18,dMin:11.33,dPct:14732},
+    {bin:4433020,carried:'CAUGHDENOY RD',crossed:'ERIE CANAL CUT',dir:'start_to_end',status:'ok',directMi:0.26,detourMi:5.99,dMi:5.73,dMin:7.64,dPct:2171},
+    {bin:4433020,carried:'CAUGHDENOY RD',crossed:'ERIE CANAL CUT',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:5.99,dMi:5.73,dMin:7.64,dPct:2171},
+    {bin:4433030,carried:'BLACK CREEK RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:6.13,dMi:6,dMin:8,dPct:4622},
+    {bin:4433030,carried:'BLACK CREEK RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:6.13,dMi:6,dMin:8,dPct:4622},
+    {bin:4433050,carried:'HORSESHOE ISLAND',crossed:'ERIE CANAL E-69',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4433050,carried:'HORSESHOE ISLAND',crossed:'ERIE CANAL E-69',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4433140,carried:'RIVER RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:7.5,dMi:7.37,dMin:10.07,dPct:5470},
+    {bin:4433140,carried:'RIVER RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.14,detourMi:7.5,dMi:7.36,dMin:10.97,dPct:5271},
+    {bin:4433200,carried:'PRIVATE ROAD',crossed:'OLD CANAL',dir:'start_to_end',status:'ok',directMi:0.12,detourMi:5.41,dMi:5.29,dMin:8.73,dPct:4253},
+    {bin:4433200,carried:'PRIVATE ROAD',crossed:'OLD CANAL',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:5.43,dMi:5.31,dMin:8.73,dPct:4268},
+    {bin:4433240,carried:'POOLS BROOK ROA',crossed:'ERIE CANAL PARK',dir:'start_to_end',status:'ok',directMi:0.05,detourMi:4.56,dMi:4.52,dMin:7.6,dPct:9990},
+    {bin:4433240,carried:'POOLS BROOK ROA',crossed:'ERIE CANAL PARK',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:4.56,dMi:4.52,dMin:7.6,dPct:9990},
+    {bin:4434070,carried:'CR 46',crossed:'OSWEGO CANAL',dir:'start_to_end',status:'ok',directMi:0.12,detourMi:6.31,dMi:6.19,dMin:11.65,dPct:5201},
+    {bin:4434070,carried:'CR 46',crossed:'OSWEGO CANAL',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:6.31,dMi:6.19,dMin:10.99,dPct:5201},
+    {bin:4435010,carried:'ARMITAGE RD',crossed:'ERIE CANAL E-92',dir:'start_to_end',status:'ok',directMi:0.08,detourMi:10.68,dMi:10.6,dMin:14.04,dPct:12924},
+    {bin:4435010,carried:'ARMITAGE RD',crossed:'ERIE CANAL E-92',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:10.68,dMi:10.6,dMin:14.29,dPct:12924},
+    {bin:4437170,carried:'GALLOWAY RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.27,detourMi:4.71,dMi:4.45,dMin:6.27,dPct:1662},
+    {bin:4437170,carried:'GALLOWAY RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.26,detourMi:4.98,dMi:4.72,dMin:7.78,dPct:1781},
+    {bin:4437200,carried:'WALWORTH RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.14,detourMi:3.01,dMi:2.87,dMin:4.74,dPct:2033},
+    {bin:4437200,carried:'WALWORTH RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.14,detourMi:3.01,dMi:2.87,dMin:5.6,dPct:2033},
+    {bin:4443030,carried:'PARKER ST',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.07,detourMi:0.55,dMi:0.48,dMin:0.92,dPct:687},
+    {bin:4443030,carried:'PARKER ST',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.07,detourMi:0.69,dMi:0.62,dMin:1.06,dPct:883},
+    {bin:4443150,carried:'MARTHA ST',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:0.51,dMi:0.35,dMin:0.61,dPct:221},
+    {bin:4443150,carried:'MARTHA ST',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:0.51,dMi:0.35,dMin:0.61,dPct:221},
+    {bin:4443160,carried:'TRIMMER RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:2.39,dMi:2.23,dMin:4.19,dPct:1366},
+    {bin:4443160,carried:'TRIMMER RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.06,detourMi:2.4,dMi:2.34,dMin:4.4,dPct:3842},
+    {bin:4443180,carried:'GALLUP RD T/L R',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:4.08,dMi:3.98,dMin:5.84,dPct:3843},
+    {bin:4443180,carried:'GALLUP RD T/L R',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:4.11,dMi:4,dMin:5.96,dPct:3866},
+    {bin:4443820,carried:'MOORE RD',crossed:'390I390I43012001',dir:'start_to_end',status:'ok',directMi:0.75,detourMi:0.75,dMi:0,dMin:0,dPct:0},
+    {bin:4443820,carried:'MOORE RD',crossed:'390I390I43012001',dir:'end_to_start',status:'ok',directMi:0.83,detourMi:0.83,dMi:0,dMin:0,dPct:0},
+    {bin:4445020,carried:'EAST AVE',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:3.13,dMi:2.95,dMin:4.05,dPct:1593},
+    {bin:4445020,carried:'EAST AVE',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:3.13,dMi:2.95,dMin:3.9,dPct:1593},
+    {bin:4445040,carried:'GROTH RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.1,detourMi:2.99,dMi:2.89,dMin:4.52,dPct:2788},
+    {bin:4445040,carried:'GROTH RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:2.99,dMi:2.89,dMin:4.69,dPct:2788},
+    {bin:4445050,carried:'HULBERTON RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:3.87,dMi:3.78,dMin:5.75,dPct:4234},
+    {bin:4445050,carried:'HULBERTON RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.14,detourMi:3.84,dMi:3.7,dMin:5.78,dPct:2673},
+    {bin:4445060,carried:'HINDSBURG RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.14,detourMi:0.14,dMi:0,dMin:0,dPct:0},
+    {bin:4445060,carried:'HINDSBURG RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.14,detourMi:0.14,dMi:0,dMin:0,dPct:0},
+    {bin:4445090,carried:'KEITEL RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.48,detourMi:2.66,dMi:2.18,dMin:3.2,dPct:451},
+    {bin:4445090,carried:'KEITEL RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.48,detourMi:2.66,dMi:2.18,dMin:3.34,dPct:451},
+    {bin:4445100,carried:'BUTTS RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.28,detourMi:1.65,dMi:1.37,dMin:2.81,dPct:488},
+    {bin:4445100,carried:'BUTTS RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.28,detourMi:1.65,dMi:1.37,dMin:2.81,dPct:488},
+    {bin:4445130,carried:'LATTINS FARM DR',crossed:'ERIE CANAL',dir:'start_to_end',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4445130,carried:'LATTINS FARM DR',crossed:'ERIE CANAL',dir:'end_to_start',status:'no_route',directMi:null,detourMi:null,dMi:null,dMin:null,dPct:null},
+    {bin:4445160,carried:'ALLEN BRIDGE RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.16,detourMi:4.71,dMi:4.55,dMin:6.87,dPct:2877},
+    {bin:4445160,carried:'ALLEN BRIDGE RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.16,detourMi:4.71,dMi:4.55,dMin:6.83,dPct:2877},
+    {bin:4445170,carried:'PRESBYTERIAN RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:4.44,dMi:4.31,dMin:6.89,dPct:3281},
+    {bin:4445170,carried:'PRESBYTERIAN RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:4.44,dMi:4.31,dMin:7.03,dPct:3281},
+    {bin:4445180,carried:'KNOWLESVILLE RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.11,detourMi:4.56,dMi:4.45,dMin:7.25,dPct:4076},
+    {bin:4445180,carried:'KNOWLESVILLE RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.1,detourMi:4.56,dMi:4.46,dMin:7.4,dPct:4283},
+    {bin:4445190,carried:'BEALS RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:3.41,dMi:3.36,dMin:6.02,dPct:7493},
+    {bin:4445190,carried:'BEALS RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.04,detourMi:3.41,dMi:3.36,dMin:6.21,dPct:7493},
+    {bin:4445210,carried:'HORAN RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.11,detourMi:4.19,dMi:4.08,dMin:8.16,dPct:3826},
+    {bin:4445210,carried:'HORAN RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.11,detourMi:4.19,dMi:4.08,dMin:8.16,dPct:3826},
+    {bin:4445290,carried:'NY387',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.37,detourMi:3.55,dMi:3.18,dMin:5.01,dPct:852},
+    {bin:4445290,carried:'NY387',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.37,detourMi:3.55,dMi:3.18,dMin:5.14,dPct:852},
+    {bin:4454100,carried:'N CANAL RD',crossed:'ERIE CANAL',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:1.74,dMi:1.55,dMin:1.85,dPct:821},
+    {bin:4454100,carried:'N CANAL RD',crossed:'ERIE CANAL',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:1.74,dMi:1.55,dMin:2.08,dPct:821},
+    {bin:5500950,carried:'CROTON AVE',crossed:'987D987D87012196',dir:'start_to_end',status:'ok',directMi:0.06,detourMi:1.23,dMi:1.17,dMin:1.79,dPct:2085},
+    {bin:5500950,carried:'CROTON AVE',crossed:'987D987D87012196',dir:'end_to_start',status:'ok',directMi:0.05,detourMi:2.22,dMi:2.17,dMin:3.63,dPct:4416},
+    {bin:5501150,carried:'MURRAY AVE',crossed:'907K 907K87012004',dir:'start_to_end',status:'ok',directMi:0.31,detourMi:0.91,dMi:0.6,dMin:1.1,dPct:194},
+    {bin:5501150,carried:'MURRAY AVE',crossed:'907K 907K87012004',dir:'end_to_start',status:'ok',directMi:0.96,detourMi:0.96,dMi:0,dMin:0,dPct:0},
+    {bin:5501220,carried:'WESTCHESTER AVE',crossed:'907KX',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:0.38,dMi:0.25,dMin:0.53,dPct:199},
+    {bin:5501220,carried:'WESTCHESTER AVE',crossed:'907KX',dir:'end_to_start',status:'ok',directMi:0.13,detourMi:0.38,dMi:0.25,dMin:0.59,dPct:200},
+    {bin:5501230,carried:'CENTRAL PKWY',crossed:'907K 907K87012001',dir:'start_to_end',status:'ok',directMi:0.12,detourMi:0.67,dMi:0.55,dMin:1.03,dPct:455},
+    {bin:5501230,carried:'CENTRAL PKWY',crossed:'907K 907K87012001',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:0.75,dMi:0.63,dMin:1.09,dPct:521},
+    {bin:5501520,carried:'DEWITT AVE',crossed:'987FX',dir:'start_to_end',status:'ok',directMi:0.13,detourMi:0.52,dMi:0.39,dMin:0.65,dPct:298},
+    {bin:5501520,carried:'DEWITT AVE',crossed:'987FX',dir:'end_to_start',status:'ok',directMi:0.12,detourMi:0.12,dMi:0,dMin:0,dPct:0},
+    {bin:5502530,carried:'CO TOUR RT11',crossed:'987G 987G81041169',dir:'start_to_end',status:'ok',directMi:0.09,detourMi:5.23,dMi:5.15,dMin:8.19,dPct:6011},
+    {bin:5502530,carried:'CO TOUR RT11',crossed:'987G 987G81041169',dir:'end_to_start',status:'ok',directMi:0.08,detourMi:11.5,dMi:11.42,dMin:18.86,dPct:14168},
+    {bin:6012220,carried:'951T - OLD RT 17',crossed:'COLD SPRING CREEK & FIVE MILE CREEK',dir:'start_to_end',status:'ok',directMi:0.19,detourMi:6.24,dMi:6.05,dMin:8.49,dPct:3134},
+    {bin:6012220,carried:'951T - OLD RT 17',crossed:'COLD SPRING CREEK & FIVE MILE CREEK',dir:'end_to_start',status:'ok',directMi:0.19,detourMi:6.24,dMi:6.05,dMin:8.6,dPct:3134},
+    {bin:6064830,carried:'BURNING SPNG RD',crossed:'LITTLE INDIAN CRK',dir:'start_to_end',status:'ok',directMi:0.04,detourMi:3.73,dMi:3.69,dMin:5.66,dPct:10050},
+    {bin:6064830,carried:'BURNING SPNG RD',crossed:'LITTLE INDIAN CRK',dir:'end_to_start',status:'ok',directMi:0.04,detourMi:3.73,dMi:3.69,dMin:5.66,dPct:10050}
+  ];
+  var ftState = { key: 'dMi', dir: 'desc', status: 'all', q: '' };
+  function fmt(v){ return (v===null||v===undefined) ? '—' : (typeof v==='number' ? v.toFixed(2) : v); }
+  function renderFt() {
+    var rows = ftData.filter(function(r){
+      if (ftState.status !== 'all' && r.status !== ftState.status) return false;
+      if (ftState.q) {
+        var hay = (String(r.bin) + ' ' + r.carried + ' ' + r.crossed).toLowerCase();
+        if (hay.indexOf(ftState.q) === -1) return false;
+      }
+      return true;
+    });
+    rows.sort(function(a,b){
+      var av=a[ftState.key], bv=b[ftState.key], dir = ftState.dir==='asc'?1:-1;
+      if (av===null||av===undefined) return 1;
+      if (bv===null||bv===undefined) return -1;
+      if (typeof av === 'string') return av.localeCompare(bv)*dir;
+      return (av-bv)*dir;
+    });
+    var body = document.getElementById('ft-body'), html='';
+    rows.forEach(function(r){
+      var pill = r.status==='ok'
+        ? '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.14em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>routable</span>'
+        : '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[10px] uppercase tracking-[0.14em] text-[#991B1B]"><span class="size-1.5 rounded-full bg-[#EF4444]"></span>no route</span>';
+      var dLabel = r.dir === 'start_to_end' ? 'start → end' : 'end → start';
+      var dCls = (r.dMi>5) ? 'text-[#991B1B] font-medium' : (r.dMi>1 ? 'text-[#92660A] font-medium' : '');
+      // 2026-08-27, "if user click it will redirect to the single route page from that" - the row
+      // itself is the click target (bridge-detour-route.html?bin=..., a live page would read the
+      // BIN via PageContext and bind its sections to it rather than one hand-authored page per
+      // bridge - see creating-interactive-pages.md).
+      html += '<tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href=\'bridge-detour-route.html?bin='+r.bin+'\'">'
+        + '<td class="px-4 py-2.5 font-mono">'+r.bin+'</td>'
+        + '<td class="px-4 py-2.5 font-medium text-[#0f1722]">'+r.carried+'</td>'
+        + '<td class="px-4 py-2.5 text-slate-500">'+r.crossed+'</td>'
+        + '<td class="px-4 py-2.5">'+dLabel+'</td>'
+        + '<td class="px-4 py-2.5">'+pill+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums">'+fmt(r.directMi)+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums">'+fmt(r.detourMi)+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums '+dCls+'">'+(r.dMi===null?'—':'+'+fmt(r.dMi))+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums '+dCls+'">'+(r.dMin===null?'—':'+'+fmt(r.dMin))+'</td>'
+        + '<td class="px-4 py-2.5 text-right font-mono tabular-nums">'+(r.dPct===null?'—':'+'+r.dPct+'%')+'</td>'
+        + '<td class="px-4 py-2.5 text-right"><a href="bridge-detour-route.html?bin='+r.bin+'" class="font-mono text-[11px] text-[#37576B] hover:text-[#1f3450]" onclick="event.stopPropagation()">View &rarr;</a></td>'
+        + '</tr>';
+    });
+    body.innerHTML = html;
+    document.getElementById('ft-count').textContent = rows.length;
+  }
+  function ftSort(key){
+    ftState.dir = (ftState.key===key && ftState.dir==='desc') ? 'asc' : 'desc';
+    ftState.key = key;
+    renderFt();
+  }
+  function setStatus(status, btn){
+    ftState.status = status;
+    document.querySelectorAll('[data-status-btn]').forEach(function(b){
+      b.classList.remove('text-white','bg-[#1F3F8F]','font-medium');
+      b.classList.add('text-slate-600');
+    });
+    btn.classList.remove('text-slate-600');
+    btn.classList.add('text-white','bg-[#1F3F8F]','font-medium');
+    renderFt();
+  }
+  document.getElementById('ft-search').addEventListener('input', function(e){
+    ftState.q = e.target.value.trim().toLowerCase();
+    renderFt();
+  });
+  renderFt();
+</script>
+
+</body>
+</html>

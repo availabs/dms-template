@@ -5,7 +5,6 @@ import { CMSContext } from "../../../../dms/packages/dms/src";
 import { usePointPicker } from "./hooks/usePointPicker";
 import { useTrspRoute } from "./hooks/useTrspRoute";
 import { useRouteLayer } from "./hooks/useRouteLayer";
-import { DEFAULT_CONFLATION_VIEW_ID } from "./constants";
 import { RouteDetailsPanel } from "./components/RouteDetailsPanel";
 
 const Comp = ({ state, setState, map }) => {
@@ -16,11 +15,11 @@ const Comp = ({ state, setState, map }) => {
   const ctx = mctx?.falcor ? mctx : cctx;
   const { pgEnv } = ctx || {};
 
-  const { source, destination, reset: resetSelection } = usePointPicker(map, true);
+  const { source, destination, outOfBounds, reset: resetSelection } = usePointPicker(map, true, pgEnv);
 
   const {
     routes, selectedVariant, setSelectedVariant, loading, error, getRoute, reset: resetRoute,
-  } = useTrspRoute(DEFAULT_CONFLATION_VIEW_ID, pgEnv);
+  } = useTrspRoute(pgEnv);
 
   const otherVariant = selectedVariant === "shortest" ? "fastest" : "shortest";
   useRouteLayer(map, routes?.[selectedVariant]?.feature, routes?.[otherVariant]?.feature);
@@ -42,6 +41,7 @@ const Comp = ({ state, setState, map }) => {
       canGetRoute={Boolean(source && destination)}
       loading={loading}
       error={error}
+      outOfBounds={outOfBounds}
       routes={routes}
       selectedVariant={selectedVariant}
       onSelectVariant={setSelectedVariant}
