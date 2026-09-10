@@ -1,9 +1,20 @@
 # Graph-card padding + legend quality pass (Phase 5)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** RESCOPED 2026-09-10 after a design review
-against the real code — not yet implemented, and **this site's half now explicitly depends on pass 1
-of the submodule task** (the legend must stop overflowing before the padding can be tightened, or the
-clip gets worse). · **Started:** 2026-09-09
+**Project:** TransportNY · **Topic:** themes · **Status:** **NOT STARTED on this side.** The submodule
+half's **pass 1 is DONE + live-verified 2026-09-10** (legend geometry, title truncation, the
+no-ramp fallback, the admin theme-editor pieces); none of this site's own token VALUES are set yet.
+· **Started:** 2026-09-09
+
+> **Read first:** the ▶ START HERE block in
+> [`src/dms/planning/tasks/current/avlgraph-legend-and-padding-theming.md`](../../../../src/dms/planning/tasks/current/avlgraph-legend-and-padding-theming.md)
+> — current state, exact next action, and the four constraints (chiefly: core `avlGraphTheme`
+> defaults must stay byte-identical, because that is the only thing protecting MitigateNY's 7,415
+> legend-rendering graphs).
+>
+> **This file's remaining work** is step 3 of "Next steps" below: set transportny's legend + tooltip
+> values in `themev2.js`, then **padding last** — and padding goes on the report sections'
+> `display.padding`, **not** on `graph.styles[0]`, which MAP-21 (4 graphs), tsmo2 (368), sitemgmt (6)
+> and `landing` all render with.
 
 ## Objective
 
@@ -128,10 +139,17 @@ Affecting this file specifically:
   `styles[0]`, so it DOES reach MAP-21 / tsmo2** — it replaces the generic white-box-with-black-shadow
   those pages get today, so it should read as an improvement, but **browser-verify MAP-21 `/map_21`
   and a tsmo2 page before calling it done.** Don't assume.
-- **Legend styling can't regress any real non-report page** — measured 2026-09-10: `legend.show=false`
-  on all 368 tsmo2 graphs, all 4 MAP-21 graphs, all 6 sitemgmt, and the 1 freightatlas2. The only real
-  non-report graph that renders a legend is a single one on `landing` (check it). The ~583 graphs that
-  do show legends live in `page_test` / `sandbox2` / `graph_test` — scratch patterns.
+- **Legend styling can't regress any real non-report page *within TransportNY*** — measured
+  2026-09-10: `legend.show=false` on all 368 tsmo2 graphs, all 4 MAP-21 graphs, all 6 sitemgmt, and the
+  1 freightatlas2. The only real non-report TransportNY graph that renders a legend is a single one on
+  `landing` (check it). The ~583 that do show legends live in `page_test` / `sandbox2` / `graph_test` —
+  scratch patterns.
+  **⚠ But this is NOT true site-wide: MitigateNY renders 7,415 graph legends — more than TransportNY.**
+  It uses the legacy `Graph` element-type, which resolves to the same component
+  (`ComponentRegistry/index.jsx:54`), so an `element-type='AVL Graph'` filter hides it entirely. Only 4
+  of MNY's are gradient legends. Full corrected numbers and the per-item consequences are in the
+  submodule task file's blast-radius section — **read that before touching `Legend.jsx` or the core
+  `avlGraphTheme` defaults.**
 - **Dark mode is OUT** — transportny's `avlGraph` stays at two styles (and loses one; see below).
 - **`reportInlineTitle` — first plan withdrawn, now OPTIONAL.** Ryan caught that deleting the theme
   boolean would regress every non-transportny site that shows a legend at the top (they're built
