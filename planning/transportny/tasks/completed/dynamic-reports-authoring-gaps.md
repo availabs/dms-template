@@ -1,6 +1,6 @@
 # Dynamic Reports — authoring gaps (route-slot naming, add-slot UX, preview-swap, static↔dynamic conversion)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS — **all four sub-items DONE +
+**Project:** TransportNY · **Topic:** themes · **Status:** DONE 2026-09-09 — **all four sub-items DONE +
 live-verified** (1 and 3: 2026-09-05; 2: 2026-09-08; 4: 2026-09-09). **All 12 catalog templates
 regenerated + republished 2026-09-08** (see "Catalog regeneration" under sub-item 1 below) — the
 deferral note that originally blocked this is superseded by Ryan's explicit go-ahead. A second real
@@ -15,6 +15,18 @@ live-verified 2026-09-08" under sub-item 1 below for the full design + live-veri
 for the full design, Ryan's 3 answered open questions, implementation, a real bug found + fixed
 during live-verification (frozen `%n`/`%y` tokens going permanently blank), and the verification
 record. · **Started:** 2026-09-05
+
+**Closed 2026-09-09.** Residual gaps, none blocking: 2+ *distinct* route-slot groups (a real NB/SB-
+shaped report) never exercised live through sub-item 3's swap or either direction of sub-item 4's
+conversion (only single-group and 2-slots-sharing-1-group were); a few other narrow testing-checklist
+items left unchecked (`%y` on a plain-literal-dates slot, 3+ slots in one group) — see "Testing
+checklist" below for the full list. One accepted-as-is cosmetic gap (color dot centers against the
+full title+hint block, not just the title line, when a template hint shows — Ryan signed off on
+leaving it). One explicitly-deferred consequence of sub-item 4: converting to static freezes DRAFT
+section titles correctly but leaves the PUBLISHED copy blank until a manual Publish (same rule every
+other section edit already follows; no auto-publish step was built, Ryan's call). See
+`npmrds-reports-routes-feedback-triage.md`'s Phase 5 for the separate, still-open avl-graph/graph-
+card polish work this file was never scoped to cover.
 
 ## Objective
 
