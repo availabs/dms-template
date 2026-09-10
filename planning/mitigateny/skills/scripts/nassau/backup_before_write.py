@@ -57,10 +57,20 @@ def collect():
         if fn.startswith("hoc_") and fn.endswith("_updates.json"):
             for u in json.load(io.open(os.path.join(PAY, fn), encoding="utf-8")):
                 jobs["hoc"][str(u["id"])] = u["data"]
-        elif fn.startswith("act_") and fn.endswith(".json"):
+    # Any flat dataset can acquire updates once part of it has been loaded -- correcting rows
+    # this pipeline itself wrote is an update like any other. The first version of this only
+    # looked at Actions, HOC and Jurisdictions, on the assumption that the other three were
+    # insert-only forever. That held exactly until Gate 3 wrote 6 Roles rows that then needed a
+    # `required_stakeholder` correction, at which point the loader rightly refused for want of
+    # a backup that this script was never going to produce.
+    for prefix, ds in (("act_", "actions"), ("cap_", "capabilities"),
+                       ("roles_", "roles"), ("part_", "participation")):
+        for fn in sorted(os.listdir(PAY)):
+            if not (fn.startswith(prefix) and fn.endswith(".json")) or fn.startswith("_"):
+                continue
             for r in json.load(io.open(os.path.join(PAY, fn), encoding="utf-8")):
                 if r.get("_op") == "update":
-                    jobs["actions"][str(r["_existing_id"])] = r["data"]
+                    jobs[ds][str(r["_existing_id"])] = r["data"]
 
     p = os.path.join(PAY, "_juris_updates.json")
     if os.path.exists(p):
@@ -72,6 +82,9 @@ def collect():
 LIVE = {
     "hoc": "live_hoc_nassau.json",
     "actions": "live_actions_nassau.json",
+    "capabilities": "live_capabilities_nassau.json",
+    "roles": "live_roles_nassau.json",
+    "participation": "live_participation_nassau.json",
     "jurisdictions": "live_jurisdictions_nassau.json",
 }
 

@@ -52,8 +52,9 @@
           </ol>
 
           <figure class="shot" data-capture="www/npmrds/route_comparison?routes=&lt;two route ids&gt; · reading mode · rail with two route chips · matrix with year column groups and TT all / TT freight leaves" data-alt="Route Comparison in its draft state: the Build comparison rail with Scope, two route chips under Routes, an empty Periods block and the Metrics checklist, beside a matrix of two route rows against year column groups">
-            <div class="ph">Route Comparison · draft · 2 routes · years as periods · travel-time leaves</div>
-            <figcaption>Figure 1 · the draft page as it renders. Capture date to be added when taken.</figcaption>
+            <!-- captured 2026-09-08 · http://npmrds.localhost:5231/route_comparison · the page's own default state, signed in; the rail's two default route chips and the matrix's year column groups render as the page describes, but the matrix rows are labelled by route id and the cells are unrounded -->
+            <img src="../../assets/screens/docs/npmrds/route_comparison-01-draft.png" alt="Route Comparison in its draft state: the Build comparison rail with Scope, two route chips under Routes, an empty Periods block and the Metrics checklist, beside a matrix of two route rows against year column groups"/>
+            <figcaption>Figure 1 · the draft page as it renders. Captured 2026-09-08.</figcaption>
           </figure>
 
           <h2 id="reading-the-matrix">Reading the matrix</h2>
@@ -77,6 +78,7 @@
 
           <h2 id="limits-and-gotchas">Limits and gotchas</h2>
           <ul>
+            <li>The matrix labels its rows by route id and shows unrounded values at the 2026-09-08 check; the rail's chips carry the route names.</li>
             <li>Only the route step publishes. Scope, periods and metrics are kept in the rail and do not change the query yet; the periods block is a shell.</li>
             <li>The rail's footer says the whole comparison lives in the address. In the draft, the routes do; the scope, periods and metrics do not.</li>
             <li>The address carries the routes and their segment codes. A route with many segments makes a long address; that is what keeps the query fast.</li>

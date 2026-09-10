@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>The New York Work Zone Universe &middot; TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities.
+     * Inlined (not linked) so this document opens standalone, exactly as
+     * ./05_recommendation_report.html does. Values copied verbatim from
+     * dms_design_system_v2/design-system/_shared.css — do not diverge. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-card-ink .tny-link { color: #BFD3F2; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-card-ink .tny-mono { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); color: #DCE6F5; }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    .bar-track { background: rgba(15,23,42,0.06); border-radius: 2px; height: 8px; }
+    .barv { width: 100%; border-radius: 2px 2px 0 0; background: #37576B; }
+    .barv-warn { background: #CA8A04; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: right; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap;
+    }
+    table.tny th:first-child, table.tny td:first-child { text-align: left; }
+    table.tny td {
+      font-size: 13px; padding: 7px 8px; text-align: right;
+      border-bottom: 1px solid rgba(15,23,42,0.05);
+      font-variant-numeric: tabular-nums;
+      vertical-align: top;
+    }
+    table.tny td.txt { text-align: left; font-variant-numeric: normal; line-height: 1.5; }
+    table.tny th.txt { text-align: left; }
+    table.tny tr:last-child td { border-bottom: none; }
+    table.tny tr.total td { font-weight: 600; border-top: 1px solid rgba(15,23,42,0.18); background: rgba(15,23,42,0.02); }
+    .step-n {
+      font-family: "Oswald", sans-serif; font-weight: 600; font-size: 13px;
+      width: 26px; height: 26px; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #37576B; color: #fff; flex: none;
+    }
+    .cite { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color:#64748b; }
+    .pill { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; text-transform:uppercase; letter-spacing:.12em; white-space:nowrap; }
+    .pill-ok   { background:#E6F7EF; color:#0B6B44; border:1px solid #B7E3CC; }
+    .pill-warn { background:#FBF3DB; color:#8A5A00; border:1px solid #EAD59A; }
+    .pill-bad  { background:#FBE9E0; color:#8A3B0C; border:1px solid #F0C9B4; }
+    .pill-ink  { background:#0F2D4D; color:#fff; }
+    .kpi { font-family:"Oswald",sans-serif; font-weight:600; font-size:30px; line-height:1; color:#0F1722; letter-spacing:-0.01em; }
+    .kpi-sm { font-family:"Oswald",sans-serif; font-weight:600; font-size:22px; line-height:1; color:#0F1722; }
+    .lbl { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:#64748b; }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  THE NEW YORK WORK ZONE UNIVERSE — phase 1 of the work_zone data-type pipeline
+  Deliverable of planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md (phase 1).
+  Every number is queried from DAMA source 2193 (`wz_event`) on npmrds2, nine vintages CY2018–CY2026,
+  built by dms-template/data-types/work_zone stage "spine" from TRANSCOM source 956 / view 1947.
+  Queried 2026-09-09. Design: TransportNY design system v2 tokens (inlined _shared.css subset above),
+  matching ./05_recommendation_report.html. Document-style page, not the app shell.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <!-- ── meta-nav ─────────────────────────────────────────────────────── -->
+  <nav class="flex flex-wrap items-center gap-x-4 gap-y-1 pt-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-slate-500">
+    <span class="text-[#0f1722]">work zone exposure</span>
+    <a class="hover:text-[#1F3F8F]" href="./00_README.md">00 index</a>
+    <a class="hover:text-[#1F3F8F]" href="./04_datasets.md">04 datasets</a>
+    <a class="hover:text-[#1F3F8F]" href="./05_recommendation_report.html">05 recommendation</a>
+    <a class="hover:text-[#1F3F8F]" href="./06_work_zone_universe.html">06 the universe</a>
+    <a class="hover:text-[#1F3F8F]" href="../npmrds-data-quality-report.html">npmrds data quality</a>
+    <a class="hover:text-[#1F3F8F]" href="../../design-system/theme.html">design system</a>
+  </nav>
+
+  <!-- ── header ───────────────────────────────────────────────────────── -->
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-9 pb-9 border-b border-zinc-950/10 mt-4">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// work_zone pipeline &middot; phase 2</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      Work Zone Exposure<span class="text-[#CA8A04]">.</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[860px]">
+      &ldquo;220 significant work zones&rdquo; means very little on its own. &ldquo;220 work zones exposing
+      85 million vehicle-miles of traffic&rdquo; is a programme. Every measure the
+      <span class="text-[#0f1722] font-medium">Subpart J</span> rule asks for is a rate &mdash; crashes per
+      hundred million vehicle-miles, delay per vehicle &mdash; and this phase built the denominators:
+      how many lanes were closed, for how many lane-mile-hours, and how much traffic drove through.
+      It also had to decide what &ldquo;for how long&rdquo; even means, because the field that answers it
+      cannot be taken at face value.
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white">DAMA source 2197 &middot; wz_exposure</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">CY2018 &ndash; CY2026 &middot; 9 vintages</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">E1 &middot; E2 &middot; E3</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">queried 2026-09-09</span>
+    </div>
+  </header>
+
+  <!-- ── executive totals ─────────────────────────────────────────────── -->
+  <section class="pt-8">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Nine years of exposure</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">on the capped duration basis</span>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="tny-card p-4">
+        <div class="lbl">E2 &middot; lane-mile-hours</div>
+        <div class="kpi mt-1.5">7.9 M</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">lanes × extent × hours</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">E3 &middot; vehicles through</div>
+        <div class="kpi mt-1.5">5.27 B</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">past an active work zone</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">E3 &middot; VMT through</div>
+        <div class="kpi mt-1.5">5.71 B</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">vehicle-miles</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">work zones measured</div>
+        <div class="kpi mt-1.5">355,743</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">136,447 fully computable</div>
+      </div>
+      <div class="tny-card tny-card-bone p-4">
+        <div class="lbl">share of NY NHS VMT</div>
+        <div class="kpi mt-1.5">0.87<span class="text-[18px]">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">CY2024 vs HPMS 2024</div>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-ink p-6 mt-4">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#BFD3F2]">the three measures</div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 mt-3">
+        <div>
+          <div class="font-display font-medium text-[16px]">E1 &middot; lane closures</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-[#DCE6F5] mt-1.5">
+            How many lanes the work took. Simple to state, and reported for only
+            <span class="font-medium text-white">45%</span> of work zones &mdash; the
+            single biggest limit on this phase.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[16px]">E2 &middot; lane-mile-hours</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-[#DCE6F5] mt-1.5">
+            Lanes closed × the length of the work × how long it lasted. The classic FHWA exposure unit:
+            one lane shut for one mile for one hour.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[16px]">E3 &middot; vehicles and VMT</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-[#DCE6F5] mt-1.5">
+            The traffic that actually drove through, from each segment's annual average daily traffic,
+            adjusted for the month and weekday and spread across the hours of the day.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── the series ───────────────────────────────────────────────────── -->
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Exposure by year</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">one vintage per calendar year</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr>
+              <th class="txt">vintage</th><th>work zones</th><th>lane-mile-hours</th><th></th>
+              <th>vehicles through</th><th>VMT through</th><th>computable</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="txt">CY2018</td><td>36,376</td><td>193,544</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:85%"></div></div></td><td>524 M</td><td>651 M</td><td>6%</td></tr>
+            <tr><td class="txt">CY2019</td><td>38,738</td><td>246,532</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:71%"></div></div></td><td>551 M</td><td>546 M</td><td>11%</td></tr>
+            <tr><td class="txt">CY2020</td><td>41,521</td><td>387,305</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:93%"></div></div></td><td>611 M</td><td>713 M</td><td>16%</td></tr>
+            <tr><td class="txt">CY2021</td><td>41,190</td><td>1,151,270</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:90%"></div></div></td><td>651 M</td><td>687 M</td><td>51%</td></tr>
+            <tr><td class="txt">CY2022</td><td>40,947</td><td>1,145,437</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:100%"></div></div></td><td>712 M</td><td>764 M</td><td>52%</td></tr>
+            <tr><td class="txt">CY2023</td><td>42,528</td><td>1,051,745</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:72%"></div></div></td><td>524 M</td><td>552 M</td><td>47%</td></tr>
+            <tr><td class="txt">CY2024</td><td>42,688</td><td>958,264</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:79%"></div></div></td><td>544 M</td><td>605 M</td><td>52%</td></tr>
+            <tr><td class="txt">CY2025</td><td>41,616</td><td>1,434,652</td><td style="width:100px"><div class="bar-track"><div class="bar" style="width:91%"></div></div></td><td>684 M</td><td>695 M</td><td>54%</td></tr>
+            <tr><td class="txt">CY2026 <span class="pill pill-warn ml-1">to 31 aug</span></td><td>30,139</td><td>1,336,372</td><td style="width:100px"><div class="bar-track"><div class="bar bar-warn" style="width:65%"></div></div></td><td>469 M</td><td>496 M</td><td>53%</td></tr>
+            <tr class="total"><td class="txt">total</td><td>355,743</td><td>7,905,122</td><td></td><td>5.27 B</td><td>5.71 B</td><td>38%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="space-y-4">
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">One of these is reportable</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            <span class="font-medium text-[#0f1722]">VMT through work zones is steady</span> &mdash; between
+            546 and 764 million a year across eight complete years &mdash; because it needs only a traffic
+            count and a length, and both are recorded consistently.
+          </p>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            <span class="font-medium text-[#0f1722]">Lane-mile-hours rises seven-fold</span> over the same
+            period, from 194,000 to 1.4 million. Almost none of that is more work: it needs a reported lane
+            count, and lane-closure reporting went from 2,915 work zones in 2018 to 26,221 in 2025. E2 is
+            currently a reporting series wearing the clothes of an exposure series.
+          </p>
+        </div>
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Where it can be trusted</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            Use <span class="tny-mono">exposure_complete</span> before aggregating. Within the population the
+            rule governs &mdash; Interstate work zones in urbanised areas &mdash; coverage is essentially
+            total: <span class="font-medium text-[#0f1722]">95.2%</span> of significant
+            candidates have both E2 and E3.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── the duration decision ────────────────────────────────────────── -->
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The hardest number: how long</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">and why it is a parameter, not a constant</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="tny-card p-6">
+        <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700">
+          Lane-mile-hours is <em>literally</em> hours × lanes × length, so the duration field decides the
+          measure. And that field cannot be taken at face value: TRANSCOM's reported durations include
+          records that were opened and never closed &mdash; single events of up to
+          <span class="font-medium text-[#0f1722]">1,051,059 minutes, about two years</span>. Events longer
+          than thirty days supply 40&ndash;53% of all reported hours in 2018&ndash;2024 and 77&ndash;81% in
+          2025&ndash;2026, while the median duration barely moves at 420&ndash;480 minutes.
+        </p>
+        <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-3">
+          So exposure computes on a declared basis, recorded on every row, and always publishes the
+          duration-independent variant beside it:
+        </p>
+        <div class="space-y-3 mt-4">
+          <div class="flex items-start gap-3">
+            <span class="pill pill-ok">default</span>
+            <div>
+              <div class="font-display font-medium text-[14px] text-[#0f1722]">reported, capped per occurrence</div>
+              <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-0.5">
+                Each occurrence is clipped at thirty days, so a sixty-night chain of normal shifts is
+                untouched while one runaway record is not allowed to carry a whole work zone.
+                <span class="font-medium text-[#0f1722]">3,348</span> work zones had at least one
+                occurrence capped.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="pill pill-ink">variant</span>
+            <div>
+              <div class="font-display font-medium text-[14px] text-[#0f1722]">nominal shift</div>
+              <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-0.5">
+                Reported duration ignored entirely: one eight-hour shift per active day. Computed on every
+                row, whatever basis the run used, so the sensitivity is never hidden.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="pill pill-warn">comparison</span>
+            <div>
+              <div class="font-display font-medium text-[14px] text-[#0f1722]">reported, uncapped</div>
+              <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-0.5">
+                The field as TRANSCOM gives it. Available for comparison; not recommended for publication.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tny-card p-6">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">What the choice is worth</div>
+        <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-1">
+          Lane-mile-hours under each basis, all nine vintages:
+        </p>
+        <table class="tny mt-3">
+          <thead><tr><th class="txt">basis</th><th>lane-mile-hours</th><th>vs capped</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">reported, capped <span class="pill pill-ok ml-1">default</span></td><td>7,905,122</td><td>&mdash;</td></tr>
+            <tr><td class="txt">nominal shift</td><td>3,527,843</td><td>-55%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-4">
+          The capped basis is <span class="font-medium text-[#0f1722]">2.24&times;</span> the nominal one, so
+          the choice is not cosmetic &mdash; it more than doubles the headline. Even at thirty days the cap is
+          generous: it still admits a single occurrence of 720 hours, and the capped series still carries some
+          of the reporting artefact (2025 and 2026 sit 40% above 2021&ndash;2024 on the capped basis while
+          moving in the opposite direction on the nominal one).
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-3">
+          So the honest position is that <span class="font-medium text-[#0f1722]">lane-mile-hours is not yet a
+          year-on-year measure</span>, on any basis. It is reliable <em>within</em> a year and between places;
+          it is not yet reliable across years. NYSDOT should pick a basis before the December 2026 policy
+          deadline &mdash; we would take the nominal shift, as the only one insensitive to a field that cannot
+          be trusted &mdash; and the capped variant should be published beside it until closure reporting
+          improves.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── coverage ─────────────────────────────────────────────────────── -->
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">What can and cannot be measured</h2>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700">
+          Exposure needs three things per work zone: a lane count, a length, and a traffic volume. Length is
+          essentially always there. The other two are not, and where they are missing the measure is
+          published as <em>unknown</em> rather than zero &mdash; a zero would quietly drag every average down.
+        </p>
+        <table class="tny mt-4">
+          <thead><tr><th class="txt">input</th><th>work zones</th><th>share</th><th></th><th class="txt">what is lost without it</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">an anchor TMC (length)</td><td>345,533</td><td>97.1%</td><td style="width:90px"><div class="bar-track"><div class="bar bar-ok" style="width:97.1%"></div></div></td><td class="txt">both E2 and E3</td></tr>
+            <tr><td class="txt">traffic volume (AADT)</td><td>284,792</td><td>80.1%</td><td><div class="bar-track"><div class="bar" style="width:80.1%"></div></div></td><td class="txt">E3 only — E2 still computes</td></tr>
+            <tr><td class="txt">a reported lane count</td><td>160,200</td><td>45.0%</td><td><div class="bar-track"><div class="bar bar-warn" style="width:45.0%"></div></div></td><td class="txt">E1 and E2 — E3 still computes</td></tr>
+            <tr class="total"><td class="txt">all three &mdash; <span class="tny-mono">exposure_complete</span></td><td>136,447</td><td>38.4%</td><td><div class="bar-track"><div class="bar" style="width:38.4%"></div></div></td><td class="txt">&mdash;</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4">
+          Half the universe therefore has partial exposure. That sounds worse than it is: the missing lane
+          counts are concentrated in the Regions that under-report them (a finding of phase 1, unchanged
+          here), and the missing AADT is concentrated on local roads that fall outside the rule's scope
+          anyway. Within Interstate work zones, AADT is present on
+          <span class="font-medium text-[#0f1722]">97%</span>.
+        </p>
+      </div>
+      <div class="space-y-4">
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Which traffic figure</div>
+          <p class="font-proxima text-[13px] leading-[1.6] text-slate-700 mt-2">
+            A work zone occupies one direction, so directional AADT is the right input where it exists, and
+            the row records which was used.
+          </p>
+          <table class="tny mt-3">
+            <thead><tr><th class="txt">AADT used</th><th>work zones</th></tr></thead>
+            <tbody>              <tr><td class="txt">directional (preferred)</td><td>275,534</td></tr>
+              <tr><td class="txt">none — no E3</td><td>70,951</td></tr>
+              <tr><td class="txt">both directions (fallback)</td><td>9,258</td></tr></tbody>
+          </table>
+        </div>
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Anchors, not queues</div>
+          <p class="font-proxima text-[13px] leading-[1.6] text-slate-700 mt-2">
+            Exposure counts only the segment the work sits on. The congestion-derived segments downstream of
+            a zone &mdash; where the queue forms &mdash; are excluded by design; counting them would inflate
+            exposure by the length of the traffic jam the work causes.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── where ────────────────────────────────────────────────────────── -->
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Where the exposure is</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">2018&ndash;2026 pooled</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="tny-card p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">By NYSDOT Region</div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-1">
+          Ordered by VMT through work zones &mdash; the exposure that matters for a crash rate.
+        </p>
+        <table class="tny mt-3">
+          <thead><tr><th class="txt">region</th><th>work zones</th><th>VMT through</th><th></th><th>computable</th></tr></thead>
+          <tbody>            <tr><td class="txt">8 · Hudson Valley</td><td>51,218</td><td>1,424 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:100%"></div></div></td><td class="text-[#8A3B0C]">25.0%</td></tr>
+            <tr><td class="txt">11 · New York City</td><td>102,025</td><td>1,198 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:84%"></div></div></td><td>62.3%</td></tr>
+            <tr><td class="txt">(unassigned)</td><td>46,902</td><td>634 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:45%"></div></div></td><td class="text-[#8A3B0C]">5.1%</td></tr>
+            <tr><td class="txt">3 · Central New York</td><td>20,314</td><td>475 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:33%"></div></div></td><td>37.8%</td></tr>
+            <tr><td class="txt">1 · Capital District</td><td>39,988</td><td>465 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:33%"></div></div></td><td>29.6%</td></tr>
+            <tr><td class="txt">10 · Long Island</td><td>39,957</td><td>421 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:30%"></div></div></td><td>41.7%</td></tr>
+            <tr><td class="txt">4 · Genesee Valley</td><td>21,581</td><td>416 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:29%"></div></div></td><td>34.4%</td></tr>
+            <tr><td class="txt">2 · Mohawk Valley</td><td>9,476</td><td>295 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:21%"></div></div></td><td>38.3%</td></tr>
+            <tr><td class="txt">5 · Western New York</td><td>11,951</td><td>249 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:17%"></div></div></td><td>58.0%</td></tr>
+            <tr><td class="txt">6 · Southern Tier/Central New York</td><td>6,817</td><td>74 M</td><td style="width:80px"><div class="bar-track"><div class="bar" style="width:5%"></div></div></td><td class="text-[#8A3B0C]">13.8%</td></tr></tbody>
+        </table>
+      </div>
+      <div class="tny-card p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">By work activity, and the significant subset</div>
+        <table class="tny mt-3">
+          <thead><tr><th class="txt">population</th><th>work zones</th><th>lane-mile-hours</th><th>VMT through</th></tr></thead>
+          <tbody>            <tr><td class="txt">construction</td><td>335,347</td><td>7,812,305</td><td>5,560 M</td></tr>
+            <tr><td class="txt">maintenance</td><td>17,464</td><td>67,916</td><td>142 M</td></tr>
+            <tr><td class="txt">utility</td><td>2,932</td><td>24,902</td><td>7 M</td></tr>
+            <tr class="total"><td class="txt">of which significant candidates</td><td>1,485</td><td>89,974</td><td>85 M</td></tr></tbody>
+        </table>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-3">
+          The significant subset is 0.4% of work zones and carries 1.5% of measured VMT through work
+          zones &mdash; a concentration of about three and a half times, which is what one would expect from
+          a rule that selects for sustained closures on the busiest Interstates. It is a real concentration
+          but a modest one: governing the programme through a sample of significant projects reaches the
+          most-exposed work, not most of the exposure.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── validation ───────────────────────────────────────────────────── -->
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Is the number the right size?</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">checked against HPMS, and against itself</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="tny-card p-6">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Against the state's own travel</div>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2">
+          A derived exposure figure is only believable if it sits sensibly inside the total travel it is a
+          part of. New York's HPMS submission for 2024 gives:
+        </p>
+        <table class="tny mt-3">
+          <thead><tr><th class="txt">HPMS 2024 · New York</th><th>annual VMT</th><th>CY2024 work-zone VMT as a share</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">all reported roads</td><td>115.1 B</td><td>0.53%</td></tr>
+            <tr><td class="txt">National Highway System</td><td>69.4 B</td><td>0.87%</td></tr>
+            <tr><td class="txt">freeways &amp; expressways</td><td>45.2 B</td><td>1.34%</td></tr>
+            <tr><td class="txt">Interstates</td><td>27.2 B</td><td>2.22%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-3">
+          Work zones expose about <span class="font-medium text-[#0f1722]">0.87% of NHS travel</span>
+          in a year. The phase plan guessed a single-digit percentage; the measured answer is at the low end
+          of that, which is what the arithmetic demands &mdash; a work zone occupies a short stretch of road
+          for a few hours at a time, and there are only about forty thousand of them a year.
+        </p>
+      </div>
+      <div class="tny-card p-6">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Against itself</div>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2">
+          An outside-in check can still hide an internal error, so the CY2024 figures were reconstructed a
+          second way. 33,960 work zones with a volume, averaging
+          1.87 active days at 6.9 hours a day, gives roughly
+          440,000 zone-hours. Dividing the 544 million vehicles across those gives
+          <span class="font-medium text-[#0f1722]">about 1,235 vehicles per hour</span> of active
+          work zone.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-3">
+          That is the right order for the roads work zones sit on: a segment carrying 20,000 vehicles a day
+          in one direction averages a little over 800 an hour, and rather more in the daytime hours when
+          most work is scheduled. The two routes to the number agree, which is the point of doing both.
+        </p>
+        <div class="tny-card tny-card-tint p-4 mt-4">
+          <div class="lbl">what would falsify this</div>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-1">
+            Hour-of-day. Exposure currently spreads a zone's active hours evenly across the day, because the
+            spine records how long a zone ran but not <em>when</em>. Night work &mdash; which most lane
+            closures are &mdash; sees materially less traffic than the daily average implies, so E3 is more
+            likely to be an over-estimate than an under-estimate. Phase 3 reads speeds by five-minute
+            epoch, and will make an hour-of-day exposure possible for the first time.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── how it was computed ──────────────────────────────────────────── -->
+  <section class="pt-9 pb-4">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">How exposure was computed</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">work_zone pipeline &middot; stage &ldquo;exposure&rdquo;</span>
+    </div>
+
+    <div class="tny-card p-6">
+      <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 max-w-[920px]">
+        No new data was acquired for this phase. Exposure joins the work-zone inventory from phase 1 to the
+        roadway metadata that already sits beside it, and reuses the hourly traffic profiles AVAIL already
+        maintains for New York's federal MAP-21 submission.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-6">
+        <div class="flex items-start gap-3">
+          <span class="step-n">1</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Take the work extent, not the traffic jam</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              Each work zone knows both the segment the work is on and the segments downstream where
+              congestion was attributed to it. Exposure reads the first and ignores the second. Including
+              the downstream segments would count the queue a work zone causes as part of the work zone
+              itself &mdash; a mistake that would have inflated the lane-mile-hours of a typical zone
+              several-fold.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">2</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Decide how long it lasted</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              On the declared basis, with each occurrence capped so one never-closed record cannot carry a
+              whole work zone, and with the duration-independent variant computed alongside every row. The
+              basis, the cap and the number of capped occurrences are all recorded, so any figure can be
+              recomputed on a different choice without re-deriving the dataset.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">3</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Turn a yearly average into an hourly volume</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              Annual average daily traffic is adjusted for the month and the day of the week, then spread
+              across the day by one of twenty traffic distribution profiles &mdash; chosen by whether the
+              segment is a freeway, how congested it is, and whether its peak is in the morning, the evening
+              or neither. Weekends get their own profiles. Each active day of a work zone is walked
+              separately, so a zone spanning a weekend is measured against weekend traffic.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">4</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Say what is missing</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              A measure with a missing input is published as unknown, never as zero, and each row carries
+              flags for what was available: how many of its segments had a traffic count, how many had a
+              length, which traffic figure was used, and whether the whole row is computable. Anything
+              aggregating this dataset should filter on that last flag first.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 mt-5 pt-5 border-t border-zinc-950/8">
+        <span class="step-n">5</span>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Publish one vintage per year</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1 max-w-[920px]">
+            As with the inventory, each calendar year is its own dataset vintage, computed against that
+            year's roadway metadata &mdash; traffic counts change year to year, and using the wrong
+            vintage's AADT would be a silent error. Re-running a year replaces it. The profile used, the
+            duration basis and the metadata year are stamped on every run.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">What NYSDOT needs to decide</div>
+        <ol class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 space-y-1.5 list-decimal pl-5">
+          <li><span class="font-medium text-[#0f1722]">The duration basis</span>, before the December 2026 policy deadline. It moves every exposure figure, and it is a methodology choice rather than a technical one.</li>
+          <li><span class="font-medium text-[#0f1722]">Lane-closure reporting.</span> E1 and E2 exist only where a lane count was reported, and reporting varies from 92% of work zones in one Region to 25% in another. This is the single change that would most improve the measures.</li>
+          <li><span class="font-medium text-[#0f1722]">Whether hour-of-day matters enough to capture.</span> If work-zone start and end times were recorded reliably, exposure could be measured against the traffic actually present rather than the daily average.</li>
+        </ol>
+      </div>
+      <div class="tny-card tny-card-tint p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Where it lives</div>
+        <ul class="font-proxima text-[13px] leading-[1.75] text-slate-700 mt-2 space-y-1">
+          <li><span class="tny-mono">source 2197</span> &mdash; <span class="tny-mono">wz_exposure</span>, one row per work zone, 9 vintages CY2018&ndash;CY2026</li>
+          <li>joins <span class="tny-mono">source 2193</span> (<span class="tny-mono">wz_event</span>) on <span class="tny-mono">wz_event_id</span>; carries the zone geometry so it maps on its own</li>
+          <li>pgEnv <span class="tny-mono">npmrds2</span>, schema <span class="tny-mono">work_zone</span>, geometry at SRID 4326</li>
+          <li>built by <span class="tny-mono">dms-template/data-types/work_zone</span>, stage <span class="tny-mono">exposure</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-6 border-t border-zinc-950/10 pt-4">
+      Compiled 2026-09-09 for phase 2 of
+      <span class="tny-mono">planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md</span>.
+      Every figure was queried live from DAMA source 2197 on <span class="tny-mono">npmrds2</span> on
+      2026-09-09 and will drift as vintages are rebuilt. Figures are on the capped duration basis unless
+      stated; the CY2026 vintage covers 1 January to 31 August 2026 only. HPMS denominators are New York's
+      2024 submission (DAMA source 2130), excluding ramps. Exposure spreads each work zone's active hours
+      evenly across the day, which is likely to over-state E3 for night work; phase 3 will make an
+      hour-of-day treatment possible.
+    </p>
+  </section>
+
+</div>
+</body>
+</html>

@@ -213,17 +213,20 @@ function yearSpanOf(startDate, endDate) {
   return startYear === endYear ? String(startYear) : `${startYear}–${endYear}`;
 }
 
-// Route-slot name template substitution (dynamic-reports-authoring-gaps.md item 1) — an author
-// can type `%n`/`%y` literally anywhere in a slot's name; at view time (once the slot has resolved
-// against a real catalog route) `%n` is replaced by that route's own real name and `%y` by the
-// resolved calendar year(s) of the slot's own dates. Both are opt-in string tokens, not a name-wide
-// replace, so surrounding literal text (e.g. `"%n (%y)"`, `"%y (NB)"`) survives untouched. Returns
-// `null` (not the original name) when neither token is present, so callers can tell "no template
-// here" apart from "templated to an empty/falsy result".
-export function applyNameTemplate(route) {
-  const name = route?.name;
-  if (!name || (!name.includes('%n') && !name.includes('%y'))) return null;
-  let result = name;
+// `%n`/`%y` token substitution core (dynamic-reports-authoring-gaps.md item 1) — an author can
+// type `%n`/`%y` literally anywhere in a piece of display text; at view time (once `route` has
+// resolved against a real catalog route) `%n` is replaced by that route's own real name and `%y`
+// by the resolved calendar year(s) of `route`'s own dates. Both are opt-in string tokens, not a
+// text-wide replace, so surrounding literal text (e.g. `"%n (%y)"`, `"Hours of Delay - %n"`)
+// survives untouched. Returns `null` (not the original text) when neither token is present, so
+// callers can tell "no template here" apart from "templated to an empty/falsy result". Guards on
+// `typeof text === 'string'` because callers may hand this arbitrary section display content (e.g.
+// a Lexical rich-text object on a non-report section) that was never meant to be a name/title
+// string at all — see resolveReportDisplayText.js's own doc comment on why that matters.
+export function substituteTokens(text, route) {
+  if (typeof text !== 'string' || !text) return null;
+  if (!text.includes('%n') && !text.includes('%y')) return null;
+  let result = text;
   if (result.includes('%n')) {
     result = result.split('%n').join(route?.catalogRouteName ?? '');
   }
@@ -231,6 +234,12 @@ export function applyNameTemplate(route) {
     result = result.split('%y').join(yearSpanOf(route?.startDate, route?.endDate) ?? '');
   }
   return result;
+}
+
+// Route-slot name template substitution — the common case of substituteTokens applied to a
+// route's own `name` field (see that function's doc comment for the token grammar).
+export function applyNameTemplate(route) {
+  return substituteTokens(route?.name, route);
 }
 
 // The single choke point both the header's routes disclosure and the chart legend read through —

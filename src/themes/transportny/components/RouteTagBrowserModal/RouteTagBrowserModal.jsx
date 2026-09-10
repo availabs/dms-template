@@ -42,6 +42,12 @@ export default function RouteTagBrowserModal({
   // back to. Only affects Cancel's disabled styling here — the caller's own no-op `setOpen`
   // already makes backdrop-click/Escape (see Modal.jsx/useModalOverlay.js) inert either way.
   dismissible = true,
+  // Optional explanatory line under the header — used by ReportRouteList.jsx's dynamic→static
+  // conversion (sub-item 4 of dynamic-reports-authoring-gaps.md) to say WHY this picker just
+  // opened (an unresolved route slot needs a real route before the switch can flip off) rather
+  // than silently reusing this modal's normal "Add Routes" framing with no context. Every other
+  // caller omits it and gets the unchanged plain header.
+  message,
   // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3):
   // ReportRouteList.jsx's blocking entry gate is the one place a Dynamic Report viewer can
   // override the "Today (view time)" anchor a route's date might derive from — Ryan's call was to
@@ -316,6 +322,7 @@ export default function RouteTagBrowserModal({
     <Modal open={open} setOpen={setOpen} activeStyle="wide">
       <div className={t.wrapper}>
         <div className={t.header}>Add Routes</div>
+        {message ? <div className={t.headerMessage}>{message}</div> : null}
         {breadcrumb}
 
         {selected.size > 0 ? (

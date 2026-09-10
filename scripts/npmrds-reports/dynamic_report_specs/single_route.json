@@ -38,15 +38,15 @@
     }
   ],
   "routes": [
-    { "id": "before", "slot": true, "name": "3 Years Ago", "route_slot_group": "268034",
+    { "id": "before", "slot": true, "name": "%n (%y)", "route_slot_group": "268034",
       "dateFormula": "startDate=>year-3year->1year", "derivedFromRoute": "__TODAY__",
       "color": "#cb7a05",
       "graphs": ["delay_line", "delay_map_before", "speed_grid_before", "speed_map_all", "speed_diff", "speed_bar_summary"] },
-    { "id": "after", "slot": true, "name": "Current Year", "route_slot_group": "268034",
+    { "id": "after", "slot": true, "name": "%n (%y)", "route_slot_group": "268034",
       "dateFormula": "startDate=>yearof", "derivedFromRoute": "__TODAY__",
       "color": "#f1cf96",
       "graphs": ["delay_line", "speed_map_all", "speed_grid_after", "speed_diff", "speed_bar_summary"] },
-    { "id": "trailing", "slot": true, "name": "Trailing 3 Years", "route_slot_group": "268034",
+    { "id": "trailing", "slot": true, "name": "%n (%y)", "route_slot_group": "268034",
       "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
       "color": "#5501a6",
       "graphs": ["delay_bar", "speed_bar", "speed_map_all", "speed_bar_summary"] }

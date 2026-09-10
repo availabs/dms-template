@@ -56,7 +56,7 @@
       "dateFormula": "startDate=>month-12month->1month", "derivedFromRoute": "__TODAY__",
       "color": "#53d550",
       "graphs": ["tt_vs_lastyear", "delay_vs_lastyear", "map_delay", "map_traveltime", "weekday_delay", "weekday_traveltime", "weekday_speed", "bar_summary_traveltime"] },
-    { "id": "trailing_3yr", "slot": true, "name": "Trailing 3 Years", "route_slot_group": "$0",
+    { "id": "trailing_3yr", "slot": true, "name": "%n (%y)", "route_slot_group": "$0",
       "dateFormula": "startDate=>year-2year->3year", "derivedFromRoute": "__TODAY__",
       "color": "#000000",
       "graphs": ["tt_vs_trailing", "delay_vs_trailing", "map_delay", "map_traveltime", "weekday_delay", "weekday_traveltime", "weekday_speed", "bar_summary_traveltime"] }
