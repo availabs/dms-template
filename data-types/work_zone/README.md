@@ -143,17 +143,18 @@ that never applied).
 
 | source type | grain | stage |
 |---|---|---|
-| `wz_event` | one deduped work-zone event | `spine` |
-| `wz_event_tmc` | event × tmc × active window | `spine` |
-| `wz_exposure` | event (+ Region×month rollup) | `exposure` |
-| `wz_speed` | event × tmc × hour-of-day | `speed`, `differential` |
+| `wz_event` | one deduped work-zone event | `spine` (source **2193**, live) |
+| `wz_event_tmc` | event × tmc × active window | `spine` (source **2194**, live) |
+| `wz_exposure` | event (+ Region×month rollup) | `exposure` (source **2197**, live) |
+| `wz_speed` | event × tmc × hour-of-day | `speed` (source **2206**, live), `differential` |
 | `wz_queue` | event × 5-min epoch | `queue` |
 | `nys_crashes_open` / `nys_crashes_clear` | crash case | `crashes_open` / `crashes_clear` |
 | `wz_crash` | crash ∩ wz_event | `crash_join` |
 | `wz_intrusions`, `wz_qa_ratings` | as delivered | `intrusions`, `qa_ratings` |
 | `nysdot_stip` | PIN × phase × fund year | `stip` (phase 1a) |
 | `wz_significant_sample` | candidate project | `sample` |
-| `work_zone_measures` | Region × facility class × period × measure | `delay`, `measures` |
+| `wz_delay` | one work zone (delay, per-vehicle) | `delay` (source **2213**, live) |
+| `work_zone_measures` | Region × facility class × period × measure | `measures` (phase 10) |
 
 All under app `npmrdsv5`, pgEnv `npmrds2`.
 
@@ -167,8 +168,10 @@ node data-types/run-tests.js work_zone --integration
 
 Two layers, per the `run-tests.js` convention: `tests/*.unit.test.mjs` are pure vitest
 files (no DB, CH, or network); `tests/*.integration.js` are node scripts against the
-dms-server sqlite harness. No test contacts TRANSCOM, RITIS, Socrata or ArcGIS — recorded
-extracts live in `tests/fixtures/`.
+dms-server sqlite harness. No test contacts TRANSCOM, RITIS, Socrata, ArcGIS **or ClickHouse** —
+recorded extracts live in `tests/fixtures/`.
+
+Green through phase 4: **256 unit + 80 integration**.
 
 ---
 
@@ -821,63 +824,515 @@ spine, `metadata.columns`, the basis switch changing totals).
 
   Report: `reports/workzone_safety/08_work_zone_exposure.html`.
 
-## Phase 3 — NPMRDS speeds (ClickHouse) → M1 exceedance — NOT STARTED
+## Phase 3 — NPMRDS speeds (ClickHouse) → M1 exceedance — ✅ COMPLETE 2026-09-09
 
-**Purpose.** How much of a work zone's active time ran below an acceptable speed — the
-core mobility measure.
+**Purpose.** How much of a work zone's active time ran below an acceptable speed — the core
+mobility measure, and the one 23 CFR 630.1006(b) names as an example.
 
-**Inputs.** `wz_event_source_id`, `npmrds_source_id` (583 / CH view 982, 5-minute speeds),
-`npmrds_meta_source_id` (reference speeds, length).
+**Owner decisions.** The **primary reported threshold is 10 mph below the posted speed limit, floored at
+20 mph** (`m1_posted`). Vehicle class = **all vehicles**. Observation density **C included**, with the
+A/B/C mix recorded per cell so a C-heavy zone stays identifiable. Baseline window **12 months**. All four
+thresholds are computed on every row and every run stamps the values that produced its figures, so a
+different drop or floor is a re-run rather than a redesign.
 
-**Algorithm (planned).** `ch.js` gains two query builders: an in-window extract
-(event × tmc × 5-min: speed, travel time) and a **baseline** extract — the same TMC, same
-hour-of-day and day-type, 12 months prior (configurable), **excluding epochs that overlap
-any other TRANSCOM event on that TMC** (bounds from 2799 / the spine) → median and
-15th/85th percentiles. Reference speed = baseline 85th-percentile off-peak.
-`lib/baseline.js` holds the (pure) SQL builders; `lib/measures.js` holds M1 =
-`epochs_below / epochs_active` per event, then a Region×period share weighted by active
-hours. **Both** thresholds are reported — absolute (35 mph) and relative (60% of
-reference) — never one silently.
+**Inputs.** `wz_event` (2193) + `wz_event_tmc` (2194) from phase 1 · `npmrds` CH view 982 (source 583,
+14.6 B rows, 5-minute) · `npmrds_geometry` meta view 984 (source 582 — `miles`, `avg_speedlimit`) ·
+`pm3` source **2135**, per-year views (`speed_pctl_85`, `phed_threshold_speed`) · TRANSCOM event×TMC
+view **2799** for the active epoch windows.
 
-**Output.** `wz_speed` (event × tmc × hour-of-day), plus M1 rows in `work_zone_measures`.
+**Output.** `wz_speed` — DAMA source **2206**, one row per (work zone × TMC × hour-of-day), nine
+vintages CY2018–CY2026. Created **with phase 6's differential columns** (nullable), so phase 6 needs
+no new source. 38 columns: `m1_posted` first among the measures, `posted_threshold_speed` and
+`posted_speed_drop_mph` making every row self-describing.
 
-> ⚠ **Create `wz_speed` with the phase-6 differential columns from the start** (nullable,
-> filled by the `differential` stage). All views of a source must share one column list, so
-> adding columns in phase 6 would force a new source and orphan the phase-3 views.
+### The primary measure: posted limit minus 10 mph
 
-**Tests (planned).** Unit: SQL-builder snapshots; exceedance math over a recorded CH
-extract for one real event in `tests/fixtures/` (the `map21/tests/golden.unit.test.mjs`
-freeze pattern). Integration: the worker with a stubbed CH client returning that fixture.
+**Owner decision 2026-09-09.** The reported threshold is
+`max(20, avg_speedlimit - posted_speed_drop_mph)` with `posted_speed_drop_mph` = 10, capped at the posted
+limit itself. `m1_posted` is the primary column; the other three thresholds stay on every row as
+comparators so the choice can be revisited without rebuilding the dataset.
 
-**Validation (planned).** Three known 2024 events (an I-495 NYC, an I-87 Albany, a rural
-I-81): M1 at 35 mph vs at 60% of reference, eyeballed against the incident-view speed
-grid; both exceedance shares documented.
+| column | below what |
+|---|---|
+| **`m1_posted`** | **`max(20, posted limit - 10)`** -- PRIMARY |
+| `m1_absolute` | `speed_threshold_mph` (35 mph default) |
+| `m1_relative` | `reference_speed_pct` x PM3 `speed_pctl_85` |
+| `m1_fhwa` | `max(20, 0.6 x avg_speedlimit)` -- FHWA's PHED anchor |
 
-**Results log.** —
+**Why it is the right primary -- measured, CY2024 conflated windows.** A fixed threshold cannot be
+compared across facility types, because it interacts with the speed limit rather than with the work:
 
-## Phase 4 — Event×TMC delay + excessive delay → M2 — NOT STARTED
+| | zones | segment-hrs | mean speed | mean threshold | < posted-10 | < 35 mph | < 60 % FF |
+|---|---|---|---|---|---|---|---|
+| not Interstate | 22,464 | 250,782 | 37.8 | 35.3 | **38.4 %** | 46.6 % | 18.5 % |
+| Interstate | 15,929 | 162,354 | 56.8 | 49.2 | **17.3 %** | 10.3 % | 9.4 % |
+| ratio | | | 0.67x | 0.72x | **2.21x** | 4.54x | 1.97x |
 
-**Purpose.** Work-zone delay in vehicle-hours, per vehicle, and as a share of all delay.
+The fixed 35 mph threshold turns a 0.67x difference in observed speed into a **4.53x** difference in
+measured performance. `posted - 10` turns it into **2.21x** -- it halves the distortion.
 
-**Inputs.** `wz_event_source_id`, `transcom_event_tmc_source_id` (1635 / 2799 — `delay`,
-`raw_delay`, `cost`), optionally `excessive_delay_source_id` (1469 / 2633) and
-`wz_exposure_source_id`.
+**The 20 mph floor does most of that work, and it is not a rounding detail.** On cells where it binds
+(segments posted <= 30 mph):
 
-**Algorithm (planned).** Join `wz_event_tmc` to 2799 for per-event veh-hrs; divide by
-`veh_through_wz` for delay per vehicle; flag above `delay_per_veh_min`. Region×year share =
-WZ delay ÷ total (2633), and WZ ÷ the `construction` bucket as a consistency check.
+| | zones | segment-hrs | mean threshold | mean speed | < posted-10 | < 35 mph |
+|---|---|---|---|---|---|---|
+| threshold above the floor | 35,652 | 382,176 | 41.7 | 47.1 | 29.3 % | 28.0 % |
+| held at the 20 mph floor | 2,741 | 30,960 | 20.0 | 23.6 | 39.6 % | **86.1 %** |
 
-**Output.** M2 rows in `work_zone_measures`. (If a per-event delay table proves necessary
-it is a NEW source — `wz_delay` — not extra columns on an existing one.)
+Those 2,741 work zones sit on streets whose **normal operating speed is
+23.6 mph**. A fixed 35 mph threshold flags **86.1 %** of their
+active time -- it is measuring the street, not the work zone. Where the floor does not bind the two
+thresholds are close (29.3 % vs 28.0 %), so nearly all of the
+statewide difference between the measures comes from this one band of slow roads.
 
-**Validation (planned).** 2024 statewide WZ delay reconciles to **40.7M veh-hrs** (the TSMO
-work-zones build) within the dedupe delta; Region ranking R11 ≫ R10 > R8
-(31.96 / 3.90 / 3.34M).
+Two guards, both recorded in `lib/baseline.js`:
+- **The floor is capped at the posted limit.** Without it, the 4 anchors posted <= 10 mph would be
+  measured against a threshold above their own limit and report 100 % exceedance.
+- **The threshold is computed from the POSTGRES meta view.** The ClickHouse copy of `avg_speedlimit` is
+  empty for every year -- the same trap that collapsed the existing 2021-2025 excessive-delay series to a
+  uniform 20 mph floor. Ours is populated on 100 % of anchors (median 50 mph, p05 30, max 69.7).
 
-**Dependency.** `transcom-event-tmc-accumulating-view.md` — view 2799 ends 2025-11; note
-the freshness gap in the output metadata.
+**The reference speed for `m1_relative` still comes from PM3**, not from a baseline derived here, so no
+threshold in this dataset can be biased by whether the baseline excluded other work zones. Missing epochs
+are excluded, not interpolated: M1 is a share of time, and interpolating would invent it.
 
-**Results log.** —
+### M1 is a ZONE-HOUR measure, and `wz_speed` is the evidence underneath it
+
+> **Percent of active work-zone HOURS in which the AVERAGE SPEED WITHIN THE ZONE falls below the
+> threshold.**
+
+The first implementation of this phase reported the share of five-minute **epochs** on **individual
+segments** and called it M1. That is a different numerator and a different spatial unit, and it gives a
+different number. `lib/m1.js` implements the measure as defined; `wz_speed` remains the evidence table.
+
+Three decisions the definition forces, none of which `wz_speed` makes:
+
+1. **The unit of time is an hour**, classified once — below threshold or not. An hour is counted only
+   when at least `min_epochs_per_hour` (default **6**) of its twelve five-minute slots carried an
+   observation; hours that fail the floor are reported as `hours_too_sparse`, not silently dropped.
+2. **The unit of space is the zone.** "Average speed within the work zone" is the **space-mean** speed —
+   total distance travelled over total travel time across the whole extent — not a mean of per-segment
+   speeds, which would over-weight short segments. The space-mean is harmonic, so it is pulled toward
+   the congested part of a zone. That is why M1 comes out **above** the epoch share (CY2024:
+   31.8 % against 28.4 %) rather than below it.
+3. **The threshold applies to the zone**, so a zone spanning segments with different posted limits gets
+   one length-weighted limit, floored **after** the weighting.
+
+Both rollups are published on every view: `metadata.m1` (the measure) and `metadata.statewide_m1` (the
+epoch-level evidence). `tests/speed.integration.js` asserts they differ, because publishing one as the
+other is the bug this section exists for.
+
+### M1 must be reported as a difference, on a named universe
+
+This is the phase's most consequential finding and it came out of comparing our practice to peers'.
+
+**The universe is not the one peers report on.** CY2024 holds **42,688** zones of which
+**32,918 (77.1 %) last under twelve hours** — median
+span **6.0 h**. They are work *shifts*. Illinois averages **1,673
+work zones a year** from project records that explicitly include temporary maintenance; Ohio monitors
+**25-30 key projects a season**. So M1 is rolled up per tier
+(`metadata.m1_by_tier`): `all`, `week_plus`, `significant`, `interstate`, `not_interstate`. The
+comparable sets are our **220 significant candidates** (~8x Ohio's monitored set) and
+our **3,275 zones active a week or more** (~2x Illinois).
+
+**A level reports the road; the difference reports the work.** Measured CY2024, M1 during the work
+against the same segments in the same hours of day a year earlier:
+
+| threshold | significant candidates (216 zones, 11,619 hrs) | | | week-plus (2,968 zones, 344,995 hrs) | | |
+|---|---|---|---|---|---|---|
+| | before | during | change | before | during | change |
+| posted - 10 | 7.0 % | 20.4 % | **+13.4 pts** (2.9x) | 27.5 % | 31.3 % | +3.8 pts |
+| 35 mph | 4.7 % | 15.2 % | **+10.5 pts** (3.2x) | 34.5 % | 34.6 % | **+0.1 pts** |
+| 60 % of 85th pctl | 3.9 % | 13.7 % | **+9.8 pts** (3.5x) | 12.7 % | 13.9 % | +1.2 pts |
+
+Read the 35 mph row on the week-plus universe: **34.6 % during against
+34.5 % before — a change of +0.1
+points.** As a level it is more than double the significant candidates'
+15.2 % and would rank those zones the worse performers; as a difference the
+impact is nil. **The level was reporting chronic congestion on slow roads.** Publishing a bare level
+inverts the conclusion.
+
+Read the significant-candidate columns across the three thresholds: ratios of
+2.9x, 3.2x
+and 3.5x. **Reported as a difference, the threshold
+choice barely matters.** It only dominates when a level is published — which reframes the whole
+threshold question.
+
+**The aggregate and the typical project disagree.** The programme total rose
+2.9x, yet **112 of
+216 individual significant projects came in BETTER than their own baseline** against
+99 worse; 101 never dropped below threshold at all and
+the median project sits at 2.2 %. A few large impacts carry the total. Both
+are true and they support opposite headlines.
+
+**The during-vs-before finding replicates on an independent year.** The same computation on CY2023's
+271 significant candidates: posted-10 24.1 % vs
+9.1 % (2.6x), 35 mph 20.5 % vs
+6.0 % (3.4x), relative 15.6 % vs
+4.2 % (3.7x) — against CY2024's 2.9x/3.2x/3.5x
+— and again slightly more than half the projects (142 of 271)
+came in better than their own baseline. Two years, two largely different zone sets, the same answer.
+
+`scratchpad/m1_baseline_analysis.js` resolves its spine/tmc/pm3 views from DAMA by vintage rather than
+hardcoding them, so it runs for any year and tier: `node _m1b.js <significant|week_plus> <year>` from
+`data-types/`.
+
+**The significant-tier series is too small to be stable** — it moved between 7 % and 35 % across the
+nine vintages on composition alone (14-307 zones per year). Report it per project and monthly, as Ohio
+does, not as a statewide time series.
+
+### Five rules for reporting M1
+
+1. **Never publish a level alone.**
+2. **Always name the universe and its zone count.**
+3. **Pair the share with a count of hours** (2,376 of 11,619).
+4. **Report the aggregate and the typical project together.**
+5. **Report per project, monthly, for the significant tier** — Ohio's and FHWA HOP-20-029's form.
+
+Peer practice is recorded in `scratchpad/peer_practice.md`; the during-vs-before analysis is
+`scratchpad/m1_baseline_analysis.js` (its SQL builders live in `lib/m1.js` and belong in phase 10's
+`work_zone_measures` when that lands).
+
+### Left for phase 10, deliberately
+
+**Per-zone M1 is not queryable from DAMA.** `metadata.m1` and `metadata.m1_by_tier` carry the rollups,
+but the per-zone rows behind them are not persisted anywhere — so the per-project monthly report this
+phase recommends cannot yet be built from the dataset, only from the analysis script. That is phase 10's
+`work_zone_measures` (Region x facility class x period x measure), and `lib/m1.js`'s
+`zoneHourM1SQL` / `zoneBaselineM1SQL` / `joinDuringAndBaseline` are the builders it should use.
+
+**`zoneBaselineM1SQL` does not run in the worker.** The during-vs-before comparison is computed by
+`scratchpad/m1_baseline_analysis.js` on demand, not stamped per vintage. It was left out of the speed
+stage on purpose: the baseline scan is a second full year of ClickHouse reads and the reportable
+universes are the significant and week-plus tiers, not all 38k zones, so it belongs with the measures
+rollup rather than in the evidence build. Verified reproducible on CY2023 and CY2024.
+
+### The posted-limit caution, on the record
+
+**NCHRP Synthesis 482** warns that comparing observed speeds to the posted limit alone is confounded,
+and the state-practice review found **no peer uses the posted limit as its sole reference** — all
+compare against pre-construction conditions. The confound: work zones often carry a *reduced* posted
+limit, so "below the posted limit" can measure compliance with a temporary restriction rather than
+mobility impact. Our `avg_speedlimit` is the segment's **normal** limit from the roadway inventory, so
+`posted - 10` measures "traffic ran more than 10 mph below what this road is normally posted for" — a
+defensible impact measure, not a compliance one. **Reporting it against the pre-construction baseline
+neutralises the confound**, because the same posted limit sits on both sides of the comparison.
+
+### The active window is the hard part
+
+M1's denominator is "epochs observed **while the zone was active**", and getting that window right
+turned out to be most of the work. Three bugs, all found by measuring rather than by reading:
+
+- **A 2799 row is a SPAN, not a day.** `bound_start_date/time` → `bound_end_date/time`. Keying on the
+  start date measures only the first day, and applies to it an epoch range whose end belongs to a
+  later day — usually an empty range. **12.8 % of CY2024 rows span multiple days** (up to 27).
+- **Same-day rows whose end epoch precedes its start (0.8 %)** are night shifts crossing midnight. Read
+  literally they are empty ranges and the shift disappears — and night is exactly when a work zone's
+  speed impact is cheapest, so dropping it biases M1 *upward*.
+- **Epoch bounds are half-open.** `bound_end_time` reaches **288**, one past the last epoch of the day,
+  so a whole active day is `[0, 288)` and the measure joins with `< epoch_to`.
+
+Expanding the spans onto the day grid recovered **+21.8 % of measurable active TMC-hours** on CY2024
+(469,299 → 571,441) and 1,790 more zones. **The baseline's contamination exclusion had the identical
+bug**, leaving the later days of every multi-day event inside the baseline it exists to clean
+(677,567 → 697,499 excluded TMC-days).
+
+### View 2799 has holes, so there are two window sources
+
+2799 is the event→TMC conflation and it is **not complete**: no rows at all for **2019 and 2020**, only
+9,070 events in 2018 against 134,337 in 2024, and ~10 % of zones missing even in a good year. On 2799
+alone, M1 is simply blank for two of the nine vintages.
+
+The anchor TMC does **not** come from 2799 — the spine reads it from the event's own `tmclist` — so for
+those zones the segment is known and only the window is missing. It is recovered from the anchor row's
+own `first_start`/`last_end`, converted to the epoch grid (floor for the start, ceil for the end),
+which reproduces 2799's bounds exactly where both exist: an event 04:25–09:45 gives epochs 53–117
+either way. Same measure on a coarser input, not a different measure.
+
+Every row records which it used in **`window_source`** (`'2799'` | `'event'`) and the split is stamped
+on the view, because the fallback is genuinely weaker: the anchor row's span is the **chain's** span,
+so a recurring chain can claim days it was not working. Measured on CY2018, hours per zone are
+median 3.0 / p90 18.6 on conflated windows against median 4.8 / **p90 54.2** on derived ones.
+`MAX_SPAN_DAYS = 30` (matching phase 2's duration cap) bounds the damage; the flag makes those rows
+filterable, and **the phase-3 report's headline series is the conflated windows only**, with the
+derived series shown beside it rather than blended into it.
+
+### Why the baseline still exists
+
+Context and phase 6, not M1. Per TMC: same hour-of-day, same day-type (weekday vs weekend), over the
+12 months before the window, with whole days removed where that TMC carried any work zone — median
+plus 15th/85th percentiles. That answers "what was normal at this hour", which is what a
+during-vs-baseline drop (M4) needs and what makes an M1 number interpretable. Contamination is removed
+at the **(tmc, date)** level, not epoch-precisely, because a work zone's effect spills past its
+reported window through setup, teardown and residual queueing — over-excluding in the safe direction.
+Cost on CY2024 anchors: 9.7 % of TMC-days. Note that for **CY2021 nothing could be excluded at all**,
+because the baseline year is 2020 and 2799 has no 2020 rows.
+
+### ClickHouse: join order is load-bearing
+
+The measure runs entirely in ClickHouse — three run-scoped `Memory` staging tables (tmc → miles and
+thresholds, active epoch windows, baseline exclusions), one query, ~300 k (zone × tmc × hour) cells
+back. Two things make it work at all:
+
+- **ClickHouse builds its hash table from the RIGHT side of a join**, so the 14.6-billion-row speed
+  table must be on the **left** and the small staged tables on the right. With them the other way
+  round the query reached **44 GiB and ~3 billion rows read without finishing**. Correct order: a
+  full CY2024 run in **45.6 s**.
+- **The date bound is not optional.** Without `n.date BETWEEN …` ClickHouse cannot prune the speed
+  table's partitions from the join alone and scans every year for every anchor TMC. `measureSQL`
+  now *throws* if the window is missing.
+
+Also: the exclusion is a `LEFT ANTI JOIN`, not a tuple `NOT IN` over ~700 k pairs; and the DAMA CH
+adapter is a **passthrough** — `query({query, format})` with `.json()` on the result, `exec({query})`
+for DDL, whose response stream must be destroyed or every statement logs a socket warning.
+
+### Files
+
+| file | what |
+|---|---|
+| `lib/baseline.js` | pure. Baseline window arithmetic, `fhwaThresholdSpeed`, `speedExpr`, and the two SQL builders (`baselineSQL`, `measureSQL`). The module note carries the threshold reasoning and the two divergences. |
+| `lib/m1.js` | pure. **M1 as the rule defines it** — `zoneSpeedExpr` (space-mean), `zoneHourM1SQL` (zone x date x hour), `zoneBaselineM1SQL` (the same over the pre-construction year), `rollupZoneM1`, `rollupZoneM1ByTier`, `joinDuringAndBaseline`. |
+| `lib/measures.js` | pure. Epoch-level evidence: `m1ForZone` (three shares, epoch-weighted speed means, `is_measurable` at `min_epochs` = 12), `groupCellsByZone`, `rollupM1` (epoch-weighted **and** zone-mean, plus `zones_skipped`). |
+| `ch.js` | `stripChPrefix`, run-scoped staging names + DDL, `chExec` / `chQueryRows` / `insertRows`, and `sweepStaleStaging` (Memory-engine orphans from killed runs). |
+| `workers/speed.js` | resolves spine / tmc / meta / CH speeds / PM3-by-version, reads the zones and the two window sources, stages three CH tables, runs the measure, **drops the staging in `finally`**, shapes rows, rolls up statewide. |
+| `sql.js` | `wzSpeedTableDDL` (with `window_source` and phase 6's columns), insert builder, column metadata, and `vintageVersion`. |
+
+**Speed is derived, not stored.** The NPMRDS table holds travel time in seconds:
+`speed = miles × 3600 / travel_time_all_vehicles`. Every speed therefore depends on the TMC's length
+and so on the right **year's** meta vintage — the meta view is one row per `(tmc, year)`, so the read
+is `DISTINCT ON (tmc) … WHERE year <= metaYear ORDER BY tmc, year DESC`.
+
+### Tests — 226 unit + 67 integration, none touching ClickHouse
+
+- `tests/baseline.unit.test.mjs` (38) — `postedDropThresholdSpeed` (the drop, the 20 mph floor, the cap at
+  the posted limit, the configurable drop, the fractional limits the meta view actually carries), plus
+  SQL-builder shape including the assertions that pin the bugs above: the speed table on the LEFT of every
+  join, the epoch range half-open, the required date bound, and the primary threshold read from the staged
+  table rather than recomputed inline.
+- `tests/measures.unit.test.mjs` (26) — golden exceedance arithmetic including the primary threshold,
+  whose per-case counts are frozen in the fixture as `expected_below_posted` (computed by hand from the
+  recorded travel times, so the test checks the code against an independent number). On the I-495 case the
+  primary threshold flags 51 of 65 epochs against 49 absolute / 48 relative / 38 PHED, and on the I-81 case
+  it still flags zero — the check that a looser threshold does not manufacture exceedances. Golden
+  arithmetic over
+  `tests/fixtures/npmrds_speed_cells.json`, two **recorded real** cases: I-81 `104N04116` 2024-09-10
+  epochs 156–228 (73 recorded epochs, 59–73 mph, 0 exceedances) and I-495 `120+04939` 2024-02-07
+  epochs 53–117 (65 recorded epochs, 11–61 mph, 49 below 35 / 48 below 32.80 / 38 below 30). The
+  fixture was recorded with an inclusive end epoch, before the half-open decision above, so it holds
+  one epoch past each zone's close; it tests the exceedance **arithmetic**, and the SQL's epoch
+  convention is asserted separately in `baseline.unit.test.mjs`.
+- `tests/m1.unit.test.mjs` (28) — the M1 definition: hours not epochs, space-mean not mean-of-speeds,
+  the half-hour observation floor, the floor applied after length-weighting, the tier rollups (which give
+  materially different answers, and must), and the hour-weighted vs zone-mean split that keeps the
+  aggregate and the typical project from being confused.
+- `tests/sql.unit.test.mjs` (18) — descriptor/insert-list parity for all four sources (the check that
+  caught both `metadata.columns` omissions), `vintageVersion` (including the partial-year label that the phase-1
+  report's seasonality filter missed) and `deleteWindowSQL`'s half-openness.
+- `tests/speed.integration.js` (19) — the worker against a faked Postgres **and** a faked ClickHouse:
+  staging created and dropped even when the measure throws, the window-expansion SQL shape, the
+  fallback window source and its stamped counts, the FHWA threshold from metadata, phase-6 columns
+  present, the window replaced before insert, and the statewide rollup.
+
+### Gotchas earned in this phase
+
+- A **backtick inside a JS template literal** breaks the SQL builders' parse. It happened twice. No
+  backticks in comments inside `lib/baseline.js`'s query strings.
+- **Do not edit a module while a run is in flight** — a mid-run edit to `lib/baseline.js` killed four
+  vintages with a syntax error.
+- The statewide rollup is built from the **shaped rows**, not the raw CH cells: the measure can return
+  cells for zones outside the window (a TMC's active windows are not partitioned by our window), and
+  rolling up the raw cells silently counts them.
+- **PM3 lags the inventory.** PM3's newest vintage is 2025 while the inventory has CY2026, so
+  `resolveVersionView` falls back to the newest numeric vintage and records `pm3_version_fallback`.
+  A missing *older* year is still an error — that would mean PM3 is incomplete behind us.
+- **The vintage label is stamped by the worker now**, in the same UPDATE as the table name. It used to
+  be a hand-run SQL script, so a re-run published `version = NULL`.
+
+### Results log — live on `npmrds2`, 2026-09-09
+
+`wz_speed` source **2206**, nine vintages, rebuilt with the posted−10 primary measure. Runs 42–60 s each.
+
+**The headline is a FIVE-year series** (CY2021–CY2025, conflated windows): 183,718 work zones,
+15,401 segments, 23.1 M five-minute observations =
+**1,925,088 segment-hours**. Mean observed speed 45.5 mph against a mean
+threshold of 40.5 mph.
+
+| measure | share of observed active time |
+|---|---|
+| **below posted − 10 (PRIMARY)** | **30.4 %** |
+| below 35 mph | 32.4 % |
+| below 60 % of PM3 free flow | 16.0 % |
+| below the FHWA PHED anchor | 19.5 % |
+
+**Per vintage** (conflated windows only; 2019–2020 have none, 2018 has 2.3 %):
+
+| vintage | zones | segment-hrs | < posted−10 | < 35 mph | conflated share |
+|---|---|---|---|---|---|
+| CY2018 | 1,822 | 17,646 | **42.9 %** | 47.0 % | 2.3 % |
+| CY2019 | — | — | — | — | **0 %** |
+| CY2020 | — | — | — | — | **0 %** |
+| CY2021 | 36,536 | 452,440 | **32.5 %** | 34.5 % | 68.0 % |
+| CY2022 | 35,831 | 394,909 | **28.4 %** | 32.6 % | 63.9 % |
+| CY2023 | 37,212 | 333,270 | **30.6 %** | 33.2 % | 69.3 % |
+| CY2024 | 38,393 | 413,136 | **30.1 %** | 32.3 % | 72.9 % |
+| CY2025 | 35,746 | 331,332 | **30.0 %** | 28.2 % | 77.7 % |
+| CY2026 (to 08-31) | 18,583 | 142,943 | **27.9 %** | 28.3 % | 41.0 % |
+
+**Cuts, CY2024 conflated.** Statewide 30.1 % on the primary measure.
+
+| cut | zones | segment-hrs | < posted−10 | < 35 mph |
+|---|---|---|---|---|
+| all | 38,393 | 413,136 | 30.1 % | 32.3 % |
+| Interstate | 15,929 | 162,354 | 17.3 % | 10.3 % |
+| not Interstate | 22,464 | 250,782 | 38.4 % | 46.6 % |
+| in a TMA | 29,612 | 302,922 | 33.2 % | 36.5 % |
+| outside a TMA | 8,781 | 110,215 | 21.8 % | 21.0 % |
+| significant candidates | 220 | 11,134 | 20.5 % | 13.7 % |
+
+**Significant candidates still score better than average, but far less so.** On the absolute threshold
+they read 13.7 % against a statewide 32.3 % — 0.42× —
+because the rule makes them Interstate by construction. On the primary measure it is
+20.5 % against 30.1 %, i.e. 0.68×.
+The distortion is roughly halved but not removed: Interstates genuinely do have fewer slow periods, so
+some of the residual is real. Measuring the rule's own sample still understates the programme.
+
+**Night work is 2.3× cheaper.** Worst hour
+08:00 at 36.4 %, quietest 04:00 at
+16.0 % — but active hours peak at 15:00
+(44,934 h) against 2,395 h at 23:00. Phase 2
+could not see this; it spread each zone's hours evenly across the day, and flagged that as a known
+over-statement for night work. This closes it.
+
+**The distribution is bimodal, so no average describes a typical zone.** Of 35,460 measurable
+CY2024 zones: 9,223 never below threshold, 9,931 below it more than half
+the time, 16,306 in between. Median
+13.2 %, p90 94.6 %. Argues for a count-over-a-line measure rather than a mean.
+
+**CY2020 is still the sanity check that passed** — lowest year on the primary measure too
+(22.3 % against 27.3 % in 2019 and
+28.9 % in 2021) with nothing in the pipeline knowing about the pandemic.
+
+**Validation — the three named CY2024 events, on the primary measure.**
+
+| zone | segment-hrs | mean | threshold | min | < posted−10 | < 35 | significant? |
+|---|---|---|---|---|---|---|---|
+| I-495 Queens `ORI1237584671` | 55.7 | 41.3 | 49.0 | 6.0 | **38.9 %** | 35.5 % | **no** |
+| I-87 Northway, Saratoga `ORI1237674447` | 124.3 | 60.9 | 55.0 | 3.0 | **8.6 %** | 4.4 % | **yes** |
+| I-81 Oswego (rural) `ORI1237605713` | 314.5 | 71.9 | 55.0 | 22.0 | **0.2 %** | 0.05 % | no |
+
+The zone with a real impact is still not flagged (no three-day closure reported — phase 1's lane-count
+finding); the flagged one now reads 8.6 % rather than 4.4 %, which is a fairer account of a zone holding
+60.9 mph against a 55 mph threshold.
+
+**Report.** `reports/workzone_safety/09_work_zone_speed.html`, indexed in `00_README.md`.
+**Generated, not hand-assembled** — `scratchpad/gen_report09.py` reads the queried JSON and formats every
+figure through one rounding helper, so the report can be regenerated after any rebuild. The first
+hand-assembled draft had a transcription error (a Region's share typed as 7.7 % where the data said
+7.647 %); this removes that class of mistake.
+
+## Phase 4 — TRANSCOM event×TMC delay → M2 — ✅ COMPLETE 2026-09-09
+
+**Purpose.** Vehicle-hours of delay attributed to work zones, delay per vehicle through the zone, and
+work-zone delay as a share of all delay.
+
+**Output.** `wz_delay` — DAMA source **2213**, one row per work zone (the `wz_exposure` shape), nine
+vintages CY2018–CY2026. Runs ~13 s per vintage. **256 unit + 79 integration tests green.**
+
+### ⚠ M2 includes IMPACT TMCs. Phases 2 and 3 do not. This is the inverse.
+
+`wz_event_tmc` roles each TMC `anchor` (being worked on) or `impact` (downstream, where the queue
+formed). `workers/exposure.js` and `workers/speed.js` both filter to **anchors** on purpose — counting
+the queue would inflate lane-mile-hours, and M1 is a statement about speed where the work is.
+
+**Delay is the queue.** Measured CY2024: **anchor 3.52 M veh-hrs (8.6 %) / impact 37.22 M (91.4 %)**.
+Filtering to anchors would report 3.5 M against a true 40.7 M — an **11× understatement that would look
+entirely plausible**. The split is written to every row (`delay_anchor` / `delay_impact` /
+`delay_impact_share`) and `tmc_roles_included: 'anchor+impact'` is stamped on every view, so the rule
+cannot quietly become folklore.
+
+**The impact share is stable at 87.5–93.8 % across every measurable vintage** — a structural property of
+work-zone delay in New York, not an artefact of one year.
+
+### Never join to 2799 on `region_name`
+
+2799 stores `'Region 11 - New York City '` with a **trailing space** (26 chars); the phase-1 spine trims
+it (25). A region-name join silently drops New York City — which is **83 % of the state's work-zone
+delay**. The join is on `(event_id, tmc)`; region comes from the spine. An integration test asserts both.
+
+### Delay is read, not computed
+
+2799 already attributes delay per (event, TMC) in **vehicle-hours**
+(`references/tsmo/01_data_universe.md`). This phase rolls it up. It carries two columns and
+**`delay >= raw_delay` always** — equal on 51 % of CY2024 construction/maintenance rows, larger on 49 %
+(median ratio 1.28, mean 5.44). **Nothing in the references explains the derivation**, so both are
+published, `delay` primary because it is what the 40.7 M target reconciles to, and the choice is stamped
+rather than assumed.
+
+### Results log — live on `npmrds2`, 2026-09-09
+
+| vintage | delay (veh-hrs) | zones measured | delay unknown | impact share | min/veh | zones > 10 min | share of all delay |
+|---|---|---|---|---|---|---|---|
+| CY2018 | 1,790,677 | 1,925 | 34,451 | 88.5 % | 6.921 | 169 | 0.69 % |
+| CY2019 | — | 0 | 38,738 | — | — | 0 | — |
+| CY2020 | — | 0 | 41,521 | — | — | 0 | — |
+| CY2021 | 50,323,548 | 37,171 | 4,019 | 91.6 % | 4.950 | 3,376 | 18.06 % |
+| CY2022 | 35,216,765 | 36,972 | 3,975 | 90.0 % | 3.170 | 2,919 | 15.95 % |
+| CY2023 | 28,061,036 | 38,521 | 4,007 | 87.5 % | 3.396 | 2,848 | 10.68 % |
+| CY2024 | 40,742,644 | 38,618 | 4,070 | 91.4 % | 4.725 | 3,697 | 14.71 % |
+| CY2025 | 38,968,237 | 36,181 | 5,435 | 91.3 % | 3.618 | 2,680 | 12.54 % |
+| CY2026 (to 08-31) | 27,224,116 | 18,845 | 11,294 | 93.8 % | 5.083 | 1,667 | 17.29 % |
+
+**Validation — every target hit.**
+- ✅ **CY2024 = 40,742,644 veh-hrs** against the tsmo build's **40.7 M**.
+- ✅ **Cross-check against an independent dataset:** excessive-delay 2039's CY2024 `construction` bucket
+  is 40.31 M; **ratio 1.011**. WZ delay is **14.71 %** of all CY2024 excessive delay (277.06 M).
+  ⚠ That series used the PHED threshold collapsed to a uniform 20 mph (phase 3), so it is a magnitude
+  check, not an authority. The ratio ranges 0.75–1.40 across vintages.
+- ✅ **Region ranking R11 ≫ R10 > R8** — 33.97 / 2.96 / 2.54 M. The task doc's values (31.96 / 3.90 /
+  3.34 M) do **not** reproduce; the three-region sum is close (39.47 vs 39.20 M), so it is a
+  redistribution consistent with the tsmo build grouping on 2799's per-TMC region while this pipeline
+  uses the spine's zone-level region. Recorded, not chased.
+- **Region 11 averages 9.56 min per vehicle** — just under the 10-minute threshold — with 2,385 of its
+  zones over it.
+
+**CY2021 is the peak year at 50.3 M veh-hrs**, above CY2024, and 18.1 % of all excessive delay.
+
+### Three bugs found while building
+
+1. **`Number(null)` is 0 and 0 is finite**, so null per-vehicle rates passed an `isFinite` filter and
+   averaged in as zeros, dragging the zone-mean rate down.
+2. **Shares were rounded to 4 dp**, which collapses a small share to exactly 0 — reading as "no
+   work-zone delay" rather than "a small share". Shares now round to 8 dp; vehicle-hour totals stay at 4.
+3. **Unknown delay was published as zero**, violating the rule this pipeline set in phase 2 ("a measure
+   with a missing input is published as unknown, never as zero"). 4,070 of CY2024's 42,688 zones have no
+   2799 conflation row, and CY2019/CY2020 have none at all — those two vintages were reporting a
+   confident **0 veh-hrs**. Now `NULL`, with `delay_measured` on every row and
+   `zones_delay_unknown` on every rollup. **The fix moved real numbers:** unmeasured zones' vehicles were
+   also diluting the per-vehicle denominator, so CY2024 went 4.497 → **4.725** min/veh and CY2018 went
+   0.205 → **6.921** — a 34× correction, because only 2.3 % of 2018's zones had conflation at all.
+
+### The 2019–2020 hole, again
+
+2799 has no rows for those years, so **M2 is a 2021→ series** exactly as M1 is, and unlike M1 there is
+no fallback — delay is only available where the conflation exists. CY2018 is thin (1,925 measured zones
+of 36,376). Asking TRANSCOM for the 2019–2020 conflation would repair M1 and M2 together.
+
+### Files
+
+| file | what |
+|---|---|
+| `lib/delay.js` | pure. `delayForZone` (all roles, anchor/impact split, unknown-vs-zero), `rollupDelay` (exposure-weighted **and** zone-mean rates), `delayShare`. |
+| `workers/delay.js` | resolves the spine/tmc/exposure views for the window, reads 2799 over all roles, rolls up, reads the excessive-delay denominator, publishes `wz_delay`. |
+| `sql.js` | `wzDelayTableDDL`, `wzDelayInsertSQL`, `WZ_DELAY_*` column metadata. |
+
+### Tests
+
+- `tests/delay.unit.test.mjs` (28) — the all-roles rule, the per-vehicle conversion and its null
+  handling, exposure-weighted vs zone-mean aggregation (which differ ~1.9× on the real data and must not
+  be confused), the share arithmetic, and a regression per bug above.
+- `tests/delay.integration.js` (12) — the worker against a faked Postgres: that the delay query does
+  **not** filter to anchors, that it joins on `(event_id, tmc)` and never on `region_name`, that the rate
+  comes from phase 2 and is null without it, the window replace, and the stamped role rule.
 
 ## Phase 5 — Speeds + TMC ordering → M3 queue — NOT STARTED
 
@@ -1010,12 +1465,47 @@ fixture; this README's results logs complete.
 - **`tmclinear` is unique only within an NPMRDS region** (phase 5).
 - **`round(double, int)` fails in Postgres** — cast to `::numeric` first.
 - **Region values are formatted `Region NN - Name`** in the TRANSCOM-derived tables.
+- **ClickHouse builds its hash table from the RIGHT side of a join.** Put the 14.6-billion-row
+  speed table on the LEFT and the small staged tables on the right, or the query eats tens of
+  gigabytes and never finishes (phase 3, measured: 44 GiB).
+- **A view-2799 row is a SPAN, not a day.** Expand it onto the day grid before joining to NPMRDS,
+  handle the same-day inverted range as a midnight crossing, and treat `bound_end_time` as
+  EXCLUSIVE — it reaches 288 (phase 3).
+- **View 2799 has no rows for 2019 or 2020**, and 2018 is thin (9,070 events vs 134,337 in 2024).
+  Anything keyed on the conflation is a 2021→ series unless it carries a fallback.
+- **Two lists describe every table** — the insert order and `metadata.columns`. They drift silently;
+  `tests/sql.unit.test.mjs` now asserts parity (it caught three phase-1 columns with no descriptor).
+- **No backticks inside a template literal** in the SQL builders. It broke `lib/baseline.js` and
+  `sql.js` **four times** in this phase — a backtick in a `-- ...` SQL comment closes the literal and the
+  module stops parsing, and it reads fine on review. `tests/sql.unit.test.mjs` now scans every SQL-builder
+  module for it, so it is a test failure rather than a surprise.
+- **Do not edit a module while a run is in flight.** A mid-run edit killed four phase-3 vintages, and
+  `speed_rerun.sh` spawns a fresh node process per vintage, so an edit lands on the *next* one.
+- **M1 is an HOUR measure on the ZONE's average speed.** Reporting the share of five-minute epochs on
+  individual segments is a different measure; `lib/m1.js` has the definition and both rollups ship on
+  every view so they cannot be confused.
+- **CH staging tables are `Memory` engine on a SHARED server, and `finally` does not run on SIGKILL.**
+  Two hard-killed phase-3 runs leaked six tables (~30 MB). `ch.js`'s `sweepStaleStaging` now drops
+  `_wz_*` Memory tables older than 6 hours at the start of every staged run — aged by ClickHouse's
+  `metadata_modification_time`, not by parsing our own names, and floored at 6 h so it can never touch a
+  concurrent run. If a run is killed, check `system.tables` for `_wz_%` rather than assuming it cleaned up.
+- **⚠ TMC ROLE FILTER FLIPS AT PHASE 4.** `exposure` and `speed` read `tmc_role = 'anchor'` only.
+  `delay` (M2) reads **all** roles, because delay is the queue and ~91% of it accrues on the impact
+  TMCs — an anchors-only rollup understates M2 by 11×. Check which you want before copying a query.
+- **Never report M1 as a bare level.** On the week-plus universe a fixed 35 mph threshold reads 34.6 %
+  during and 34.5 % before — the level ranks those zones worst, the difference says the impact is nil.
 
 ## Open questions
 
-1. Threshold defaults — confirm with NYSDOT work-zone program staff before phase 3. The
-   pipeline stays parametric regardless.
-2. Baseline window: 12 months prior (default) vs 24 (FHWA HOP-20-029 used two years).
+1. ~~Threshold defaults — confirm with NYSDOT work-zone program staff before phase 3.~~
+   **Answered by phase 3's evidence, pending NYSDOT's decision:** all three thresholds are computed on
+   every row and the absolute 35 mph is shown to measure the road rather than the work zone (4.5×
+   between facility types on roads differing 0.72× in free flow). Recommendation is the relative
+   measure for anything compared across facility types, Regions or years. The pipeline stays
+   parametric regardless.
+2. Baseline window: 12 months prior (default) vs 24 (FHWA HOP-20-029 used two years). **Lower stakes
+   than expected** — the reference speed comes from PM3, so none of the three thresholds reads the
+   baseline; it is context and phase 6's input only.
 3. Hourly volume profile for E3: MAP-21 CATT profiles (by f_system / urbanized area) vs
    TMAS continuous counts. Starting with the MAP-21 statics; the swap is a phase-2 note.
 4. TMA county boundaries — Census urbanized-area / TMA designations vs the HDM Appendix 16B

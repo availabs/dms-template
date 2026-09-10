@@ -559,7 +559,7 @@ missed row looks like a layout bug, not a failure. Validate by count, not by eye
 - [ ] Only `draft_sections` / `draft_section_groups` written; `sections` and `section_groups` never touched
 - [ ] Every bound section renders **non-empty** at `county_template.devmny.org/edit/home_new`
 - [ ] Every figure matches the design's verified values: 23 jurisdictions · 475 actions (391/23/41/20) · 17 declared disasters · 537 other events · $398,477,317 total · 11 hazards with hurricane at $363,792,448 (91%)
-- [ ] Fetch mode explicit on every data component — external Smart, internal Force
+- [x] Fetch mode explicit on every data component — **smart everywhere except Actions_Revised (force)**, per owner direction 2026-09-10, superseding the external/internal rule for this page
 - [ ] No calc column on an `isDms` source contains a comma; each such cell verified against a known count
 - [ ] All 33 destination slugs resolve live (checked against the harvest, **not** live, as of 2026-09-01)
 - [ ] No horizontal overflow at 1440 / 1280 / 1024 — including the `mnyHeader` bug in finding 6
@@ -636,13 +636,13 @@ Sizes are the mny fractional map (work item B deferred — see below).
 | 4 | County facts strip | Card | 2 | DHSES · 4 cells |
 | 5–7 | The three profile cards | Card ×3 | 1/3 | DHSES · one per narrative field |
 | 8 | Band header — What the county faces | lexical | 2 | — |
-| 9 | Hurricane focus panel | Card | 1/3 | Fusion 870/1648, grouped, ordered desc, 1 row |
-| 10 | The hazard bar list | Card | 2/3 · **rowspan 2** | Fusion 870/1648, grouped |
+| 9 | Most-costly-hazard focus panel | Card | 5/12 · rowspan 2 | Fusion 870/1648, grouped, ordered desc, 1 row |
+| 10 | The hazard bar list | Card | 7/12 | Fusion 870/1648, grouped, `rowOffset: 1` |
 | 11 | County disaster totals | Card | 1/3 | Fusion 870/1648, the four 2413419 aggregates |
 | 12 | Hazard-band chips | lexical | 2 | 4 links |
 | 13 | Band header — What the county is doing | lexical | 2 | — |
-| 14 | Mitigation actions + meter | Card | 2/3 | Actions_Revised 1029065/1074456 |
-| 15 | Participating jurisdictions | Card | 1/3 | Jurisdictions 1346449/1346450 |
+| 14 | Mitigation actions + meter | Card | 7/12 | Actions_Revised 1029065/1074456 |
+| 15 | Participating jurisdictions | Card | 5/12 | Jurisdictions 1346449/1346450 |
 | 16 | Band header — Explore the plan | lexical | 2 | — |
 | 17–20 | Explore the plan | Card ×4 | 1/4 | DHSES (seed) · 18 static links + 4 index pills |
 | 21 | Footer | `Footer: MNY Footer` | 2 | clone of 2175347 |
@@ -1041,6 +1041,334 @@ was stale and is corrected.
   rendered fine individually. An empty body is a timing artifact; a rendered body carrying the
   unknown-component placeholder is the real signal.
 
+## Round 4 — 2026-09-09, the focus panel
+
+### The band is 5 + 7, the design's split — WITHOUT the size-map migration
+
+Work item B's premise said the fix for mny's missing 5 and 7 steps was the full 1–12 integer
+migration. That is still the right end state, but it was **not needed to unblock this band**: adding
+`"5/12"` and `"7/12"` to mny's existing fractional map is **purely additive** — no stored section uses
+either key, so nothing existing re-renders. The band now matches the design and the migration
+subsumes the two keys whenever it happens.
+
+That is what puts the hazard name (36px) and its loss (30px) **on one line**: 385px of type needs a
+column wider than the ~363px `1/3` gives. Measured at 5/12: name 148px + amount 234px in a 501px
+card, same baseline.
+
+### The focus panel is one card again, and it is not "the hurricane card"
+
+The second card is deleted. Its three county figures are now **window aggregates over the focus
+card's own grouped query** (`sum(sum(x)) over ()`), which is what let the design's composition
+collapse from two cards into one.
+
+**Verified against the known values: Declared disasters 17 · Other events 537 · All-hazard loss
+$398.5M.** One correction on the way there: with the null-category exclusion applied, Other events
+read **532**, because that filter also drops those events from the window aggregates. The exclusion
+belongs to the bar list (where a blank row is visible), not here — the leader by loss is never the
+null row.
+
+**Per-county behaviour, verified by replaying the card's own request:**
+
+| County | Focus card shows |
+|---|---|
+| Sullivan | Hurricane $363.8M |
+| Albany | Hurricane $56.7M |
+| **Erie** | **Snowstorm $755.4M** |
+| **Monroe** | **Wind $103.4M** |
+| Suffolk / Nassau / New York / Delaware | Hurricane |
+
+Nothing in the card names a hazard. The label, amount, risk pill, **illustration** and destination
+slug all come off the winning row. The illustration had to be data-driven for exactly this reason — a
+hardcoded file would have shown Erie a hurricane; it is a CASE column mapping hazard code → asset,
+the same shape as `hazard_label` / `hazard_slug`.
+
+⚠ `?geoid=` does **not** re-scope this page — each section carries its own geoid value alongside
+`usePageFilters`, the same as `home`. That is what the propagation step rewrites per duplicate.
+
+### The breakout illustration: `img5XL` was the whole height problem
+
+`img5XL` is `w-full` with no height, so a 1024×1024 render became as tall as the column is wide —
+**388px**, which is why the card was **501px** against the design's ~305px box. New mny token
+**`imgBreakout`** (`w-full h-[240px] object-contain object-center`).
+
+`object-cover` was tried first and is **wrong for these files**: at 494×240 from a 1024² source it
+scales to 494×494 and crops 127px off the top *and* bottom, decapitating the drawing. These focus
+renders fill most of their square — `design/README.md`'s note about croppable transparent padding
+holds for the smaller profile-card renders, not for these.
+
+Card now **501 × 327** with the image 240px tall starting 127px above the card top → **113px inside**,
+against the design's 129/111. ⚠ The px height is correct at one column width; it is tuned to the
+~494px the panel gets at 5/12.
+
+### The band is two rows, and the focus panel spans both
+
+The chips row exposed the shape: with the focus panel one row tall, the left half of the band's
+second row was empty. The panel now carries **`rowspan: 2` + `height: 'fill'`**, so it occupies the
+left cell of both rows and the band reads as two columns rather than an L.
+
+That also removed the offset filler the chips needed. `sectionArray` fills the grid in source order
+with no col-start, so a narrow section is normally pushed into place by an empty filler
+(`creating-pages-from-a-design-pattern.md`, "Col offset") — but with the panel spanning both rows,
+auto-placement drops the chips into columns 6–12 of row two on their own.
+
+**The chips are a wrapping button row, not a layout-container.** A container with one button per
+column costs **24px** between chips on this theme — `lexical.styles[0].layoutItem` is `px-2 py-4`, so
+16px of item padding rides on top of the container's gap — plus 16px above and below; that pushed the
+four chips 23px past their column. New mny button style **`chipRow`** = `secondarySmall` + its own
+`mr-2 mb-2`, four buttons in one paragraph. Measured: chips start at x=629, exactly the bar column's
+left edge, 8px gaps, last one ending at 1311 inside the column's 1344.
+
+### Sizing the breakout illustration — the arithmetic that actually governs it
+
+`imageMargin` does **not** change the section's height. Card.jsx sets the cards-grid `paddingTop` to
+`|imageMargin|` and the image cell's `marginTop` to `-|imageMargin|`, so the two move together:
+
+```
+section height = image height + (card content below the image)
+```
+
+`imageMargin` only decides **where the card's top edge falls** within that — how much of the render
+overhangs versus sits inside. So "make the image bigger" always grows the band; it cannot be
+absorbed by a larger negative margin.
+
+Tuned against the right column (bar list + chips): 240px bottom-aligned exactly but read small in a
+501px card; 300px looked right but ran 29px past; **285px** with the chips' top padding at step 8
+leaves a **10px** difference, which is flush to the eye. If the image height changes again, the chips'
+top step moves with it.
+
+### Still off from the mockup
+
+- The card is taller than the design's box — the price of the 285px drawing, taken deliberately.
+- The band's two columns end 10px apart.
+- The profile link is a `cardLinkPill` button rather than the mockup's plain "Hurricane profile →"
+  text link — carried over from the "card foot links should be buttons" direction.
+
+## Round 5 — 2026-09-09, the graph was lying
+
+**Owner: "the way it is on the graph makes no sense, the hurricane bar should dwarf everything, are
+we sure we are implementing the graph correctly?" — correct, and it was my error.**
+
+The bar list scaled to **rank 2** (the design's rule) while still **containing rank 1** (my Phase-1
+deviation, because there was no row offset). Those two only work together. With the leader in the
+list, rank-2 scaling clamps the leader *and* rank 2 both to 100%:
+
+| | loss | rendered | should be (scale=max) |
+|---|---|---|---|
+| Hurricane | 363,792,448 | **100%** | 100% |
+| Lightning | 13,180,000 | **100%** | 3.62% |
+| Flooding | 13,158,841 | 99.8% | 3.62% |
+
+Two bars the same length for values **27× apart**. Not a styling miss — the chart was misrepresenting
+the data, and it shipped that way through four rounds of review because I checked that the bars
+*varied*, never that they were *proportional*.
+
+### The fix: build the row offset instead of working around it
+
+There were only two coherent options with existing primitives — scale to the max (truthful, but the
+other ten become the invisible stubs the design exists to avoid) or drop rank 1 (needs an offset).
+I checked once more for an author-reachable offset and there is none: no `display.transform` row
+hook, no seedable initial page, `currentPage` is `useState(0)`.
+
+So **`display.rowOffset` is now implemented** — four lines in `getData.js` plus a **Row Offset**
+toolbar input, escalated and documented at
+[`src/dms/planning/tasks/current/datawrapper-row-offset.md`](../../../../src/dms/planning/tasks/current/datawrapper-row-offset.md).
+⚠ **That is a submodule change; the commit is the user's.** Two follow-ups are explicitly NOT done
+(the pager over-reports by the offset on a *paginated* section, and there is no test) — neither
+affects this page, which is unpaginated.
+
+The bar list now carries `rowOffset: 1` and the rank-2 scale, which is the design exactly:
+
+`Lightning 100% · Flooding 99.84% · Tornado 29.59% · Wind 14.81% · Hail 9.26% · Snowstorm 7.88% ·
+Drought 1.52% · Extreme Cold 0.15% · Ice Storm 0.11% · Extreme Heat 0%`
+
+**The two settings are a pair and the builder says so at both sites** — change the scale without the
+offset, or the offset without the scale, and the chart starts lying again.
+
+### Knock-on
+
+Dropping a row took ~36px off the right column, so the band's two ends drifted. Re-levelled by
+trimming the illustration 285 → **258px**; the columns now end 14px apart. Reminder of the
+arithmetic: `section height = image height + card content below it`, and `imageMargin` only moves the
+card's top edge within that — it cannot absorb a taller image.
+
+### The lesson worth keeping
+
+**Verify a chart's proportions against the numbers, not just that the bars differ.** One line of
+arithmetic — printing each value's expected percentage next to the rendered width — would have caught
+this on the first render.
+
+## Round 6 — 2026-09-09, "What the county is doing"
+
+**7 + 5, the design's split** (was 8 + 4 — mny had no 5 or 7 step until round 4 added them).
+Both cards `height: 'fill'`, so the band is equal-height.
+
+**The six missing destinations.** Actions card: *Actions Dashboard* (amber `cardLinkPillPrimary`,
+the band's one primary action) · *Actions Database* · *Funding Sources* · *Annual Maintenance*.
+Jurisdictions card: *Jurisdictional Annexes* · *Capabilities*. All six resolve.
+
+**Both cards were also missing their lede line** from the design — "Every problem the county and its
+jurisdictions identified…" and "Each one adopts the plan and keeps its own annex." Added as static
+`proseSM` cells.
+
+### ⚠ `cellWidth: 'max-content'` on ONE cell resizes the tracks for EVERY row
+
+The first pass gave the chips `cellWidth: 'max-content'` so they'd pack left. It worked for the
+chips and **silently broke every other row on the card**: the Towns/Villages/County values stopped
+right-aligning, landing **152px short** of the card edge.
+
+The cells grid is ONE grid — all rows share the track edges (`card-layout.md`, "Budgeting a track
+template"). A `max-content` chip claims its first track and the walker collapses its other spanned
+tracks to **0px**, so the twelve tracks no longer add up to the container: a `cellSpan: 12` data row
+spans every track and still comes up short by the collapsed remainder. The value was right-aligned
+the whole time — to the wrong edge.
+
+**Removing `cellWidth` fixed it** (gap 152px → 21px, which is just the card padding). Chips are plain
+`cellSpan: 3` cells now; the pill is `w-fit` so it left-aligns in its quarter.
+
+The lesson generalises past this page: **`cellWidth` is a property of the shared grid, not of the
+cell you put it on.** Reach for it only when every row of the card wants that track shape.
+
+### And the pill token needed `whitespace-nowrap`
+
+Without it, a label a few px wider than its track breaks onto a second line and the pill renders as a
+two-line lozenge — "Actions Dashboard" and "Annual Maintenance" both did. Measured natural widths are
+143 · 131 · 125 · 155px against 157px cells, so they fit comfortably; only the wrap was wrong. Added
+to `cardLinkPill` and `cardLinkPillPrimary`. If a chip row genuinely doesn't fit, give it fewer per
+row — never let the type wrap.
+
+### Matching the design's head exactly
+
+- **New `cardKicker` token** — 11px/700 uppercase tracked in mny-700, which is what the design draws
+  on every panel ("Mitigation actions", "Participating jurisdictions", "Most costly hazard"). The
+  nearest existing tokens each miss on one axis: `textXSReg` is 12px/400, `statCardLabel` 11px/600,
+  `statCardLabelStrong` 11px/700 but mny-900. Applied to all three panels.
+- **The figure is bottom-aligned to the lede, not the kicker** — the mockup's `items-end`. Done with
+  `cellRowSpan: 2` + `cellContentVAlign: 'bottom'` on the 475 / 23, so it spans both head rows and
+  sits on the lede's last line.
+- **The lede takes 7 of 12 tracks** on the actions card ≈ the mockup's `max-w-[420px]` measure, so it
+  wraps to two lines exactly as drawn.
+
+### These chips are Card CELLS, not a sibling lexical section
+
+The opposite call from the hazard band's chips, and for a concrete reason: the design puts these
+**on the card's own surface** (the amber one especially), which a sibling section cannot be. Inside a
+Card the container problem that forced `chipRow` doesn't arise — there is no `layoutItem` padding —
+so a plain static link cell with `valueFontStyle: 'cardLinkPill'` is enough.
+
+**Chips ride the card's bottom edge** via `cellsRowsTemplate` — `'max-content max-content 1fr
+max-content'` on the actions card (the meter row takes the slack) and a five-`max-content` + `1fr`
+template on the jurisdictions card (Towns/Villages/County keep their own rhythm). Same device as the
+profile cards.
+
+## Round 7 — 2026-09-09, the strategy band's height
+
+**310px → 234px.** The actions card read as too tall, but it was not the actions card's fault:
+both cards are `height: 'fill'`, so **the taller one sets the row and the other stretches**. The
+jurisdictions card was the driver, and the actions card's `1fr` meter row absorbed all the slack —
+a 64px dead gap between the legend and the chips.
+
+### The real cause: card cells inherited the band's 28px prose leading
+
+The `content` layoutGroup sets `leading-7` on the band. mny's `dataCard.header` and `dataCard.value`
+carried **no line-height of their own**, so every card cell got a 28px line box regardless of its
+text — a 14px `proseSM` label/value row measured **35px** where its content was 19.6px. Roughly 9px
+of dead height per cell, on every mny Card on every mny page.
+
+Fixed at the theme: `leading-[1.35]` on both keys. It can only shrink a cell whose content is
+*shorter* than 28px — a `text4XL` value (36px, `leading-[100%]`) is untouched.
+⚠ **Blast radius is every mny Card**, always in the direction of less dead space. Worth a look on the
+Actions Dashboard and the Action Record if either was relying on the old spacing.
+
+Row heights before → after: label/value rows 35 → 30 → **27**; chip rows 59 → 40 → **35**.
+Remaining per-card trims: `cellPaddingTop/Bottom: 1` on the label/value rows, `cellPaddingTop: 6` on
+the chip rows, `cellsRowGap` 6 → 4 (actions) and 4 → 2 (jurisdictions).
+
+The actions card still carries ~45px of slack in its meter row, because it genuinely has less
+content than the jurisdictions card and both are `h-full` — which is what the mockup does too
+(slack above the pinned chips).
+
+### ⚠ A chip went missing and the geometry probes did not notice
+
+*Actions Database* disappeared from `ACTION_LINKS` during one of the height edits and survived two
+further rounds of measurement, because every probe was checking **positions and heights** — and
+three evenly-spaced chips measure just as cleanly as four. Restored; the page's internal link count
+went 42 → 43.
+
+**Check content and geometry separately.** A layout probe that reads what is there cannot tell you
+what is missing; assert the expected set by name.
+
+## Round 8 — 2026-09-10, no-flicker load
+
+**13 UDA data requests on load → 1.** The page now paints from stored rows; the only request left is
+the actions card, deliberately.
+
+### Fetch mode: smart everywhere except the actions card
+
+Owner direction, superseding round 2's DHSES-only exception. `Actions_Revised` changes constantly, so
+a stale count there is worse than a flicker; everything else is reference or publication-cycle data
+that does not move between page views.
+
+| Source | Sections | Mode |
+|---|---|---|
+| DHSES_County_Database | 9 | `smart` |
+| AVAIL - Fusion Events V2 | 2 | `smart` |
+| Jurisdictions | 1 | `smart` |
+| **Actions_Revised** | 1 | **`force`** |
+
+Encoded as `FORCE_SOURCES = new Set([1029065])` in the builder, so it is a source-id rule rather than
+a judgement call per section.
+
+### Why seeding removes the fetch entirely
+
+`useDataLoader.js:94` seeds its dedup ref from the section's own stored state:
+
+```js
+const lastFetchKeyRef = useRef(
+  state.data?.length && (state.externalSource?.source_id || state.externalSource?.isDms)
+    ? computeFetchKey(state) : null);
+…
+if (!bypassDedup && fetchKey === lastFetchKeyRef.current) return;   // never fetches
+```
+
+So rows in `element-data.data` + a matching fetch key ⇒ the load effect returns without issuing a
+request. `bypassDedup` is `fetchMode === 'force'`, which is exactly why the actions card is left
+**unseeded**: it would render stale rows for a moment before replacing them.
+
+**The page geoid has to be baked into every filter leaf for this to hold.** `computeFetchKey` hashes
+`state.filters`, so if a leaf carried an empty value and the page injected `36105` at runtime, the
+runtime key would differ from the seeded one and every section would fetch anyway. The seeder
+**asserts** it rather than assuming: all 13 bound sections carry `"36105"` in their geoid leaf.
+
+### The seeder
+
+`scratchpad/mitigat-ny-prod-prod/seed_lhmp_section_data.mjs` — reads the page's geoid, then for each
+bound section runs the app's **own `getData`** and writes the rows back into `element-data.data`
+along with `display.totalLength`. Using getData rather than a hand-built query is the point: the row
+shape is exactly what the component would have produced.
+
+This mirrors `api/preloadSectionData.js` (the route-loader preload). That function is not reused
+directly only because it reads `import.meta.env`, which plain Node cannot evaluate — and the library
+is written for a bundler, so its extensionless relative imports need a resolve hook
+(`_extres.mjs`) to load under Node at all.
+
+Seeded: 12 sections (10 rows for the bar list, 1 each for the rest). Verified after: every figure on
+the page unchanged, no overflow at 1440.
+
+### ⚠ What this trades away — read before publishing
+
+**A seeded `smart` section will not re-fetch until its configuration changes.** The stored rows ARE
+what visitors see. That is the right call for a county template, where the page is a snapshot the
+team curates, but it has consequences:
+
+- **DHSES / Fusion / Jurisdictions edits will not appear on this page** until someone re-runs the
+  seeder (or edits and saves the section, which rewrites `data`). If a county fixes the stray `?` in
+  its narrative fields, the page keeps the old text.
+- **Re-running `build_lhmp_home_new.mjs` wipes the seed** — it recreates every section from scratch,
+  so `data` comes back empty. **Always run the seeder after a rebuild.**
+- **Propagation to the four duplicate patterns must re-seed per county.** A duplicate's sections
+  carry that county's geoid, so the Sullivan rows would be both stale and *wrong*. The seeder takes
+  the geoid from the page it is pointed at, so it handles this — but it has to be run for each.
+
 ### ⚠ Not a defect — the owner was publishing, and I reverted it twice
 
 Logged here because it cost real time and because the wrong conclusion is an easy one to reach again.
@@ -1070,7 +1398,6 @@ wants it.
 
 ## Known deltas from the mockup (all deliberate, all listed above)
 
-1. Hurricane appears in the bar list as well as the focus panel (finding ⑤ — no row offset).
 2. The hurricane panel's three county stats are a card below it, not inside it (finding ④ — two queries).
 3. Hazard band is 4 + 8, not the mockup's 5 + 7 (work item B deferred).
 4. No per-row hazard icon in the bar list — the cell now carries the reader-facing name, and

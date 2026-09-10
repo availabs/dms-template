@@ -375,9 +375,14 @@ function makeSpine(depOverrides = {}) {
     // ── 8. metadata — the most-forgotten step ──
     const viewsTable = tableFor(db, 'views');
     const sourcesTable = tableFor(db, 'sources');
+    // The vintage label goes on in the same statement as the table name. It used
+    // to be applied by hand afterwards, which meant a re-run silently published
+    // an unlabelled view.
+    const vintage = sql.vintageVersion({ startDate: d.start_date, endDate: d.end_date });
     const setTable = async (viewId, tbl) => db.query(
-      `UPDATE ${viewsTable} SET table_schema = $1, table_name = $2, data_table = $3 WHERE view_id = $4`,
-      [schema, tbl, `${schema}.${tbl}`, viewId]);
+      `UPDATE ${viewsTable} SET table_schema = $1, table_name = $2, data_table = $3, version = $5
+        WHERE view_id = $4`,
+      [schema, tbl, `${schema}.${tbl}`, viewId, vintage]);
     await setTable(eventView.view_id, eventTable);
     await setTable(tmcView.view_id, tmcTable);
 

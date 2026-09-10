@@ -130,7 +130,13 @@ async function runTests() {
     assert(stages.filter((s) => s.runnable).length === Object.keys(plugin.workers).length,
       'runnable count matches the registered workers');
     assert(thresholds.defaults.speed_threshold_mph === 35, 'serves the default thresholds');
-    assert(thresholds.specs.length === 6, `serves 6 threshold specs (got ${thresholds.specs.length})`);
+    // Assert against the module's own spec list, not a literal: adding a
+    // threshold is a routine change and should not fail an unrelated route test.
+    const { THRESHOLD_SPECS } = require('../lib/thresholds.js');
+    assert(thresholds.specs.length === THRESHOLD_SPECS.length,
+      `serves every threshold spec (${THRESHOLD_SPECS.length}, got ${thresholds.specs.length})`);
+    assert(thresholds.specs.some((sp) => sp.name === 'posted_speed_drop_mph'),
+      'serves the primary posted-drop threshold to the Create form');
   });
 
   // ── refusals (nothing is created) ──────────────────────────────────────

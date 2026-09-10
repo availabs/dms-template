@@ -21,24 +21,45 @@
  * baseline excluded other work zones. That removes the circularity risk this
  * phase was most exposed to.
  *
- * ── Three thresholds, because prior AVAIL work anchors it differently ─────
- * `references/tsmo/06_congestion_delay_methodology.md` records how AVAIL's own
- * congestion and excessive-delay work defines a speed threshold:
- * `max(20, 0.6 × posted speed limit)` — FHWA's PHED anchor — and measures delay
- * against `max(free-flow threshold, recurrent baseline)`. The work-zone report
- * instead recommends an absolute 35 mph and a relative 60% of observed free
- * flow. Rather than pick, every zone reports all three:
+ ── Four thresholds, one of them primary ─────────────────────────────────
+ * NYSDOT's reporting measure is **posted speed limit minus 10 mph** (owner
+ * decision 2026-09-09), so `m1_posted` is the primary column. The other three
+ * stay on every row as comparators, because the pipeline's job is to let the
+ * threshold be re-chosen without re-deriving the dataset:
  *
- *   m1_absolute  below `speed_threshold_mph`                    (35 mph default)
+ *   m1_posted    below `avg_speedlimit − posted_speed_drop_mph`   ← PRIMARY
+ *   m1_absolute  below `speed_threshold_mph`                      (35 mph default)
  *   m1_relative  below `reference_speed_pct` × PM3 speed_pctl_85
- *   m1_fhwa      below max(20, 0.6 × avg_speedlimit)            — the PHED anchor,
- *                which keeps this measure comparable with the congestion series
+ *   m1_fhwa      below max(20, 0.6 × avg_speedlimit)              — FHWA's PHED
+ *                anchor, which keeps this comparable with AVAIL's congestion series
  *
- * Measured on the 8,165 CY2024 anchor TMCs, the three relative anchors agree
- * closely in aggregate — FHWA-from-metadata 28.9 mph, PM3's own PHED threshold
- * 29.9, 60% of speed_pctl_85 30.3 — so the choice matters per segment rather
- * than in the total. The absolute 35 mph sits above all three and will flag
- * more.
+ * `references/tsmo/06_congestion_delay_methodology.md` records where the PHED
+ * anchor comes from and how AVAIL's own congestion work uses it.
+ *
+ * **Why posted − 10 is the right primary.** Measured on CY2024, an absolute
+ * 35 mph threshold flags 46.6% of off-Interstate active time against 10.3% on
+ * the Interstate system — a 4.5× gap on roads that differ by only 0.72× in
+ * free-flow speed. Almost all of that gap is the threshold interacting with the
+ * speed limit, not work zones behaving differently, which makes the absolute
+ * measure incomparable across facility types, Regions, or years in which the
+ * mix changes. `posted − 10` is defined relative to each segment's own limit,
+ * so it asks the same question everywhere: did this work zone slow traffic by
+ * more than 10 mph below what the road is posted for.
+ *
+ * It is also a LOOSER threshold than the others on fast roads (55 mph on a
+ * 65 mph Interstate against 35 absolute), so it flags substantially more time.
+ * That is the intended behaviour: it measures any material slowdown rather than
+ * only severe congestion.
+ *
+ * **Floored at 20 mph** (owner decision), i.e. `max(20, posted − 10)` — the same
+ * floor FHWA's PHED threshold uses, so the dataset's two per-segment thresholds
+ * bottom out at the same speed. Posted limits come from the Postgres meta view's
+ * `avg_speedlimit`, populated on 100% of CY2024 anchor TMCs (median 50 mph,
+ * p05 30, max 69.7). The floor binds on the 902 anchors posted at or below
+ * 30 mph — 11.0% of them — where it holds the threshold at 20 rather than
+ * letting it fall to a speed at which traffic is stopped rather than delayed.
+ * Only 4 anchors are posted at or below 10 mph, so the floor is doing real work
+ * across a band of local roads, not patching a handful of bad rows.
  *
  * ── Two divergences from that prior work, deliberate and recorded ─────────
  * 1. **The PHED threshold is computed from the POSTGRES meta view**, whose
@@ -80,6 +101,13 @@
  */
 
 const DEFAULT_BASELINE_MONTHS = 12;
+/** Default mph below the posted limit for the primary M1 threshold. */
+const DEFAULT_POSTED_SPEED_DROP = 10;
+/**
+ * Floor for the posted-drop threshold, in mph. Same value FHWA's PHED threshold
+ * floors at, so the two per-segment thresholds bottom out together.
+ */
+const POSTED_THRESHOLD_FLOOR_MPH = 20;
 /** The reference speed's percentile within the off-peak baseline distribution. */
 const DEFAULT_REFERENCE_PERCENTILE = 0.85;
 /**
@@ -131,6 +159,34 @@ function fhwaThresholdSpeed(avgSpeedLimit) {
   return Math.max(20, 0.6 * limit);
 }
 
+/**
+ * NYSDOT's primary work-zone threshold: the posted limit less a fixed drop,
+ * floored at 20 mph — `max(20, posted − drop)`.
+ *
+ * The floor is the owner's decision and it matches FHWA's own PHED convention
+ * (`max(20, 0.6 × posted)`), so the two per-segment thresholds in this dataset
+ * bottom out at the same speed. Without it, a 25 mph-posted street would report
+ * exceedances against 15 mph — a speed at which traffic is stopped, not merely
+ * delayed — and the measure would go quiet exactly where local work is most
+ * disruptive.
+ *
+ * Null only when the posted limit itself is missing. It is populated on 100% of
+ * CY2024 anchor TMCs, so this is a guard against a metadata gap, not a routine
+ * branch.
+ */
+function postedDropThresholdSpeed(avgSpeedLimit, dropMph = DEFAULT_POSTED_SPEED_DROP) {
+  const limit = Number(avgSpeedLimit);
+  const drop = Number(dropMph);
+  if (!Number.isFinite(limit) || limit <= 0) return null;
+  if (!Number.isFinite(drop) || drop < 0) return null;
+  // The floor must never exceed the posted limit itself. On a segment posted
+  // below 20 mph, max(20, posted − 10) sits ABOVE the limit and every observation
+  // is an "exceedance" — 4 of 8,165 CY2024 anchors. Capping at the limit keeps
+  // the measure meaningful there (below the posted limit still means stopped)
+  // and is a no-op for the 99.7% posted above 20.
+  return Math.min(limit, Math.max(POSTED_THRESHOLD_FLOOR_MPH, limit - drop));
+}
+
 /** ClickHouse expression for speed in mph, given a joined `miles` column. */
 function speedExpr({ milesExpr = 'm.miles', travelTimeExpr = 'n.travel_time_all_vehicles' } = {}) {
   // Guard the divide: a zero or null travel time is no observation, not infinite speed.
@@ -156,10 +212,12 @@ SELECT n.tmc AS tmc,
        quantile(${q[2]})(${speed}) AS speed_p85
   FROM ${speedTable} n
  INNER JOIN ${tmcTable} m ON m.tmc = n.tmc
+ -- Whole-day contamination exclusion (see the module note) as an ANTI JOIN: a
+ -- tuple NOT IN (SELECT ...) over hundreds of thousands of pairs is markedly
+ -- slower than the join.
+ LEFT ANTI JOIN ${excludeTable} x ON x.tmc = n.tmc AND x.date = n.date
   WHERE n.date >= toDate('${baselineStart}') AND n.date <= toDate('${baselineEnd}')
     AND n.travel_time_all_vehicles > 0
-    -- whole-day contamination exclusion; see the module note
-    AND (n.tmc, n.date) NOT IN (SELECT tmc, date FROM ${excludeTable})
  GROUP BY tmc, hour, is_weekend`;
 }
 
@@ -175,7 +233,11 @@ SELECT n.tmc AS tmc,
  * Density is not filtered: the owner's decision is to include density C. The
  * mix is returned so a C-heavy zone stays identifiable.
  */
-function measureSQL({ speedTable, tmcTable, activeTable, baselineCte, speedThresholdMph, referencePct }) {
+function measureSQL({
+  speedTable, tmcTable, activeTable, baselineCte,
+  speedThresholdMph, referencePct, windowStart, windowEnd,
+}) {
+  if (!windowStart || !windowEnd) throw new Error('measureSQL: windowStart and windowEnd are required');
   const speed = speedExpr();
   return `
 WITH baseline AS (${baselineCte})
@@ -183,6 +245,11 @@ SELECT a.wz_event_id AS wz_event_id,
        n.tmc AS tmc,
        intDiv(n.epoch, ${EPOCHS_PER_HOUR}) AS hour,
        count() AS epochs_observed,
+       -- The primary measure. posted_threshold_speed is staged per TMC rather
+       -- than computed here so the drop and the 20 mph floor are applied once,
+       -- in one place.
+       countIf(m.posted_threshold_speed > 0
+               AND ${speed} < m.posted_threshold_speed) AS epochs_below_posted,
        countIf(${speed} < ${speedThresholdMph}) AS epochs_below_absolute,
        countIf(m.reference_speed > 0
                AND ${speed} < m.reference_speed * ${referencePct} / 100) AS epochs_below_relative,
@@ -193,25 +260,48 @@ SELECT a.wz_event_id AS wz_event_id,
        min(${speed}) AS speed_min,
        any(b.speed_median) AS baseline_speed,
        any(b.speed_p85) AS baseline_p85,
+       any(m.posted_threshold_speed) AS posted_threshold_speed,
        any(m.reference_speed) AS reference_speed,
        any(m.phed_threshold_speed) AS phed_threshold_speed,
        any(m.fhwa_threshold_speed) AS fhwa_threshold_speed,
        countIf(n.data_density_all_vehicles = 'A') AS density_a,
        countIf(n.data_density_all_vehicles = 'B') AS density_b,
-       countIf(n.data_density_all_vehicles = 'C') AS density_c
-  FROM ${activeTable} a
- INNER JOIN ${speedTable} n
-    ON n.tmc = a.tmc AND n.date = a.date AND n.epoch >= a.epoch_from AND n.epoch <= a.epoch_to
+       countIf(n.data_density_all_vehicles = 'C') AS density_c,
+       -- One (zone, tmc) draws its windows from one source, so any() is exact
+       -- rather than a sample: 2799's conflation where it exists, the event's
+       -- own clock times where it does not.
+       any(a.window_source) AS window_source
+ -- Join order is load-bearing: ClickHouse builds its hash table from the RIGHT
+ -- side, so the 14.6-billion-row speed table MUST be on the left and the small
+ -- staged tables on the right. With them the other way round this query reached
+ -- 44 GiB of memory and ~3 billion rows read without finishing.
+ --
+ -- The epoch range is applied in WHERE, not in the join condition: ClickHouse
+ -- refuses an inequality between left and right tables inside a JOIN ("join
+ -- expression contains column from left and right table"). Same result — one
+ -- row per (observation × overlapping window).
+  FROM ${speedTable} n
+ INNER JOIN ${activeTable} a ON a.tmc = n.tmc AND a.date = n.date
  INNER JOIN ${tmcTable} m ON m.tmc = n.tmc
   LEFT JOIN baseline b
     ON b.tmc = n.tmc AND b.hour = intDiv(n.epoch, ${EPOCHS_PER_HOUR})
    AND b.is_weekend = (toDayOfWeek(n.date) IN (6, 7))
- WHERE n.travel_time_all_vehicles > 0
+ -- The date bound is NOT optional. Without it ClickHouse cannot prune the
+ -- speed table's partitions from the join alone and scans every year for every
+ -- anchor TMC — 44 GiB and still running, measured, before this was added.
+ WHERE n.date >= toDate('${windowStart}') AND n.date <= toDate('${windowEnd}')
+   AND n.travel_time_all_vehicles > 0
+ -- Half-open: 2799's bound_end_time reaches 288, one past the last epoch of
+ -- the day, so the end is exclusive and a whole active day is [0, 288).
+   AND n.epoch >= a.epoch_from AND n.epoch < a.epoch_to
  GROUP BY wz_event_id, tmc, hour`;
 }
 
 module.exports = {
   DEFAULT_BASELINE_MONTHS,
+  DEFAULT_POSTED_SPEED_DROP,
+  POSTED_THRESHOLD_FLOOR_MPH,
+  postedDropThresholdSpeed,
   DEFAULT_REFERENCE_PERCENTILE,
   DEFAULT_OFF_PEAK_HOURS,
   BASELINE_PERCENTILES,

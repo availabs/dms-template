@@ -68,21 +68,26 @@ const STAGES = {
     alsoProduces: [],
     requiresWindow: true,
     writesMeasures: ['M1'],
-    inputs: ['wz_event_source_id', 'npmrds_source_id', 'npmrds_meta_source_id'],
-    optionalInputs: [],
-    desc: 'Reads NPMRDS 5-minute speeds from ClickHouse for each event×TMC window, builds a contamination-excluded baseline, and computes exceedance shares at both thresholds.',
+    // pm3 supplies the reference speed (`speed_pctl_85`) — see lib/baseline.js;
+    // event_tmc_table is the view-2799 table whose epoch bounds define the
+    // active window. npmrds_meta comes from the spine view's own metadata.
+    inputs: ['wz_event_source_id', 'npmrds_source_id', 'pm3_source_id', 'event_tmc_table'],
+    optionalInputs: ['wz_event_tmc_source_id', 'baseline_months', 'min_epochs', 'min_epochs_per_hour'],
+    desc: 'Reads NPMRDS 5-minute speeds from ClickHouse over each zone\'s active window. Publishes M1 — the share of active work-zone HOURS whose ZONE-AVERAGE speed (total distance / total travel time) fell below the threshold — onto the view as metadata.m1 and metadata.m1_by_tier, and the per-(zone x segment x hour-of-day) epoch evidence into wz_speed. Four thresholds on every row: posted limit minus posted_speed_drop_mph floored at 20 (the reported measure), an absolute mph, a percentage of the PM3 85th-percentile reference, and FHWA/PHED.',
   },
   delay: {
     phase: 4,
     label: 'Delay (M2: veh-hrs, per-vehicle, share of total)',
     workerPath: 'work_zone/delay',
-    sourceType: 'work_zone_measures',
+    // Its own source, not phase 10's rollup: wz_delay is one row per work zone,
+    // the wz_exposure shape.
+    sourceType: 'wz_delay',
     alsoProduces: [],
     requiresWindow: true,
     writesMeasures: ['M2'],
-    inputs: ['wz_event_source_id', 'transcom_event_tmc_source_id'],
-    optionalInputs: ['excessive_delay_source_id', 'wz_exposure_source_id'],
-    desc: 'Joins the spine to the TRANSCOM event×TMC delay table for work-zone veh-hrs, divides by exposure for delay per vehicle, and reports the share of all delay.',
+    inputs: ['wz_event_source_id', 'event_tmc_table'],
+    optionalInputs: ['wz_event_tmc_source_id', 'wz_exposure_source_id', 'excessive_delay_source_id'],
+    desc: 'Sums TRANSCOM view 2799 delay over each zone\'s member events for work-zone vehicle-hours, divides by phase 2\'s vehicle count for delay per vehicle, and reports the share of all delay from the excessive-delay series. ⚠ Unlike exposure and speed, this stage includes IMPACT TMCs as well as anchors — delay is the queue, and 91% of it accrues downstream of the work extent.',
   },
   queue: {
     phase: 5,

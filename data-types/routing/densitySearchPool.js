@@ -1,15 +1,14 @@
 /**
  * worker_threads pool for the closure-density point-selection validation searches AND the
- * closure-density route-tally searches (planning/transportny/tasks/current/
- * closure-density-performance.md). Each search (point-selection's open-route validation, or the
- * tally's closed-route search) is fully independent, so they parallelize across real OS threads
- * instead of running one after another on the single event loop.
+ * closure-density route-tally searches. Each search runs on a real OS thread instead of the event
+ * loop. One pool per (graph, costObjective), reused across requests - NOT per closure.
  *
- * One pool per (graph, costObjective) pair, cached and reused across requests - NOT per closure
- * (ogc_fid), so switching which segment is closed never respawns workers. The graph's topology
- * (edgeSource/edgeTarget/adjacency/restrictions) and cost array are copied ONCE into
- * SharedArrayBuffers at pool creation; which segment is "closed" (edgeIdx/reverseIdx) is passed
- * per-batch instead, since that's the only thing that varies per request.
+ * Shared by every concurrent request (no per-request pool) - see "Concurrency/scalability
+ * hardening" in planning/transportny/tasks/current/detour-avoid-segment-routing-plugin.md for why
+ * that's safe: per-task `taskId` correlation (not "whichever call is still listening on this
+ * worker" - a confirmed live cross-wiring/hang bug), a shared FIFO task queue for fair
+ * interleaving, and an admission gate (MAX_ACTIVE_REQUESTS) so a traffic burst queues instead of
+ * flooding the pool all at once.
  */
 
 const { Worker } = require("worker_threads");
@@ -20,6 +19,12 @@ const path = require("path");
 // capped at 8 so a huge box doesn't spawn an excessive number of long-lived workers holding a
 // full graph-topology copy each.
 const NUM_WORKERS = Math.max(1, Math.min(os.cpus().length - 1, 8));
+
+// How many runBatch/runTallyBatch calls (i.e. distinct in-flight analyses) may feed the shared
+// task queue at once. Not a hard cap on concurrent USERS - it's a cap on how many heavy analyses
+// compete for the fixed worker budget at the same instant; extra calls queue and run as soon as a
+// slot frees, rather than every simultaneous request flooding the queue together.
+const MAX_ACTIVE_REQUESTS = 6;
 
 // graph -> Map<costObjective, Promise<pool>> - a WeakMap keyed by the graph object itself (the
 // same singleton memoryGraph.js already caches per pgEnv:viewId) so pools are garbage-collected
@@ -36,6 +41,88 @@ const toSharedFloat64 = (arr) => {
   const buf = new SharedArrayBuffer(arr.length * 8);
   new Float64Array(buf).set(arr);
   return buf;
+};
+
+// One shared FIFO task queue + worker dispatch loop for the whole pool. Individual searches (not
+// per-request chunks) are the unit of scheduling, so workers interleave fairly across whatever
+// concurrent requests currently have tasks outstanding.
+const createTaskQueue = (workers) => {
+  const queue = []; // FIFO of { taskId, message }
+  const pending = new Map(); // taskId -> { resolve, reject }
+  const idle = [...workers];
+  let nextTaskId = 0;
+
+  const dispatch = () => {
+    while (idle.length > 0 && queue.length > 0) {
+      const worker = idle.pop();
+      const { taskId, message } = queue.shift();
+      worker.postMessage({ ...message, taskId });
+    }
+  };
+
+  for (const worker of workers) {
+    worker.on("message", (msg) => {
+      if (msg.taskId === undefined) return; // 'ready' (init) or any other non-task message
+      const entry = pending.get(msg.taskId);
+      if (!entry) return; // no longer awaited (shouldn't happen - defensive, not a silent-drop risk since nothing is still waiting on it)
+      pending.delete(msg.taskId);
+      idle.push(worker);
+      entry.resolve(msg);
+      dispatch();
+    });
+    worker.on("error", (err) => {
+      // A worker crash must not hang every request that had a task in flight on it - fail them
+      // all so callers see an error instead of waiting forever. The pool itself keeps the other
+      // workers; a crashed worker simply stops receiving new tasks (idle.push never re-adds it).
+      for (const [taskId, entry] of pending) {
+        pending.delete(taskId);
+        entry.reject(err);
+      }
+    });
+  }
+
+  const submit = (message, requestTag) =>
+    new Promise((resolve, reject) => {
+      const taskId = nextTaskId++;
+      pending.set(taskId, { resolve, reject, requestTag });
+      queue.push({ taskId, message, requestTag });
+      dispatch();
+    });
+
+  // Drops requestTag's still-queued (not yet dispatched) tasks, resolving them as `cancelled`
+  // instead of hanging. In-flight tasks on a worker can't be interrupted - they finish and their
+  // reply is discarded. Returns the drop count for logging.
+  const cancelTag = (requestTag) => {
+    let dropped = 0;
+    for (let i = queue.length - 1; i >= 0; i--) {
+      if (queue[i].requestTag !== requestTag) continue;
+      const { taskId } = queue[i];
+      queue.splice(i, 1);
+      const entry = pending.get(taskId);
+      if (entry) { pending.delete(taskId); entry.resolve({ cancelled: true }); dropped++; }
+    }
+    return dropped;
+  };
+
+  return { submit, cancelTag };
+};
+
+// Admission gate: bounds how many runBatch/runTallyBatch calls are actively submitting to the
+// shared queue at once. FIFO wait list, one slot handed directly to the next waiter on release
+// (never re-decrements activeCount on handoff) so a burst of requests drains in arrival order.
+const createAdmissionGate = (maxActive) => {
+  let active = 0;
+  const waiting = [];
+  const acquire = () => {
+    if (active < maxActive) { active++; return Promise.resolve(); }
+    return new Promise((resolve) => waiting.push(resolve));
+  };
+  const release = () => {
+    const next = waiting.shift();
+    if (next) next();
+    else active--;
+  };
+  return { acquire, release };
 };
 
 const createPool = async (graph, costObjective) => {
@@ -73,7 +160,7 @@ const createPool = async (graph, costObjective) => {
     workers.push(worker);
   }
   console.log(`[densitySearchPool] spawned ${workers.length} workers for costObjective=${costObjective} in ${Date.now() - t0}ms`);
-  return { workers };
+  return { workers, taskQueue: createTaskQueue(workers), admissionGate: createAdmissionGate(MAX_ACTIVE_REQUESTS) };
 };
 
 const getPool = (graph, costObjective) => {
@@ -88,80 +175,59 @@ const getPool = (graph, costObjective) => {
   return byObjective.get(costObjective);
 };
 
-// tasks: [{ id, sourceNodeIdx, destNodeIdx }] -> Map<id, usesClosedSegment>. Round-robin chunking
-// (not contiguous slabs) so the tasks each worker gets are drawn evenly from across the whole
-// list rather than one worker getting only the "easy" end - a reasonable balance given individual
-// searches are roughly similar cost, without the complexity of a dynamic re-queueing scheduler.
-const runBatch = async (pool, edgeIdx, reverseIdx, tasks) => {
+// tasks: [{ id, sourceNodeIdx, destNodeIdx }] -> Map<id, { usesClosedSegment, reachable }>.
+// `reachable: false` means no open-network route at all - kept distinct from usesClosedSegment so
+// an unreachable candidate never scores like a genuine off-closure route. `requestTag` (optional)
+// tags this call's tasks so a caller can later drop just its own via taskQueue.cancelTag(...).
+// `excludedEdgeIndices` is the FULL widened closed-edge set (matched edge + reverse twin + any
+// whole-bridge sibling edges, see closureContext/loadGraph's bridgeSiblingEdges) - not just the
+// two indices of the one matched segment, so validation/tally correctly treats the whole physical
+// structure as closed, not just the one directional piece a user happened to click.
+const runBatch = async (pool, excludedEdgeIndices, tasks, requestTag) => {
   if (tasks.length === 0) return new Map();
-  const { workers } = pool;
-  const n = workers.length;
-  const chunks = Array.from({ length: n }, () => []);
-  tasks.forEach((t, i) => chunks[i % n].push(t));
-
-  const promises = workers.map((worker, i) => {
-    if (chunks[i].length === 0) return Promise.resolve([]);
-    return new Promise((resolve, reject) => {
-      const onMessage = (msg) => {
-        if (msg.type !== "batchResult") return;
-        worker.off("message", onMessage);
-        worker.off("error", onError);
-        resolve(msg.results);
-      };
-      const onError = (err) => { worker.off("message", onMessage); reject(err); };
-      worker.on("message", onMessage);
-      worker.once("error", onError);
-      worker.postMessage({
-        type: "batch", edgeIdx, reverseIdx,
-        items: chunks[i].map((t) => ({ id: t.id, s: t.sourceNodeIdx, d: t.destNodeIdx })),
-      });
+  await pool.admissionGate.acquire();
+  try {
+    const replies = await Promise.all(
+      tasks.map((t) =>
+        pool.taskQueue.submit({ type: "batch", excludedEdgeIndices, s: t.sourceNodeIdx, d: t.destNodeIdx }, requestTag)
+      )
+    );
+    const resultsMap = new Map();
+    tasks.forEach((t, i) => {
+      const reply = replies[i];
+      if (reply.cancelled) return; // dropped via cancelTag - just absent from the result, not an error
+      resultsMap.set(t.id, { usesClosedSegment: reply.usesClosedSegment, reachable: reply.reachable });
     });
-  });
-
-  const resultsArrays = await Promise.all(promises);
-  const resultsMap = new Map();
-  for (const arr of resultsArrays) for (const item of arr) resultsMap.set(item.id, item.usesClosedSegment);
-  return resultsMap;
+    return resultsMap;
+  } finally {
+    pool.admissionGate.release();
+  }
 };
 
-// Closure-density STEP 2/2 (computeClosureDensityFromPoints's tally) - same pool, same round-robin
-// chunking, but dispatches 'tallyBatch' (closed-network search, full edgePath returned) instead of
-// 'batch' (open-network search, boolean-only). tasks: [{ id, sourceNodeIdx, destNodeIdx }] ->
-// Map<id, edgePath | null> (null = no route found for that pair). tasks may mix `mode: 'closed'`
-// (default, edgeIdx/reverseIdx excluded - the heatmap tally) and `mode: 'open'` (no exclusion -
-// the route-comparison tab's "before closure" baseline,
-// planning/transportny/tasks/current/closure-density-route-comparison-tab.md) in the SAME batch,
-// so both sides of a comparison run across the whole pool together, not as two sequential passes.
-const runTallyBatch = async (pool, edgeIdx, reverseIdx, tasks) => {
+// Closure-density STEP 2/2 - same queue/gate as runBatch, dispatches 'tallyBatch' (closed-network
+// search, full edgePath) instead of 'batch'. Map<id, edgePath | null>. `mode: 'closed'` (default)
+// vs `mode: 'open'` (route-comparison tab's baseline) may mix in one call.
+const runTallyBatch = async (pool, excludedEdgeIndices, tasks, requestTag) => {
   if (tasks.length === 0) return new Map();
-  const { workers } = pool;
-  const n = workers.length;
-  const chunks = Array.from({ length: n }, () => []);
-  tasks.forEach((t, i) => chunks[i % n].push(t));
-
-  const promises = workers.map((worker, i) => {
-    if (chunks[i].length === 0) return Promise.resolve([]);
-    return new Promise((resolve, reject) => {
-      const onMessage = (msg) => {
-        if (msg.type !== "tallyBatchResult") return;
-        worker.off("message", onMessage);
-        worker.off("error", onError);
-        resolve(msg.results);
-      };
-      const onError = (err) => { worker.off("message", onMessage); reject(err); };
-      worker.on("message", onMessage);
-      worker.once("error", onError);
-      worker.postMessage({
-        type: "tallyBatch", edgeIdx, reverseIdx,
-        items: chunks[i].map((t) => ({ id: t.id, s: t.sourceNodeIdx, d: t.destNodeIdx, mode: t.mode || "closed" })),
-      });
+  await pool.admissionGate.acquire();
+  try {
+    const replies = await Promise.all(
+      tasks.map((t) =>
+        pool.taskQueue.submit({
+          type: "tallyBatch", excludedEdgeIndices,
+          s: t.sourceNodeIdx, d: t.destNodeIdx, mode: t.mode || "closed",
+        }, requestTag)
+      )
+    );
+    const resultsMap = new Map();
+    tasks.forEach((t, i) => {
+      if (replies[i].cancelled) return; // dropped via cancelTag - absent from the result, not an error
+      resultsMap.set(t.id, replies[i].edgePath);
     });
-  });
-
-  const resultsArrays = await Promise.all(promises);
-  const resultsMap = new Map();
-  for (const arr of resultsArrays) for (const item of arr) resultsMap.set(item.id, item.edgePath);
-  return resultsMap;
+    return resultsMap;
+  } finally {
+    pool.admissionGate.release();
+  }
 };
 
 module.exports = { getPool, runBatch, runTallyBatch, NUM_WORKERS };
