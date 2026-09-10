@@ -87,6 +87,43 @@ function stagingDropDDL({ database = DEFAULT_CH_DATABASE, tmcTable, activeTable,
 }
 
 /**
+ * Drop staging tables left behind by runs that died without their `finally`.
+ *
+ * The staging tables are `Memory` engine, so an orphan holds ClickHouse server
+ * RAM until someone drops it -- and the server is shared. `finally` covers a
+ * thrown error but NOT a SIGKILL, and a killed run is not hypothetical: two
+ * phase-3 runs were hard-killed during development and leaked six Memory
+ * tables totalling ~30 MB between them.
+ *
+ * Age comes from ClickHouse's own `metadata_modification_time` rather than from
+ * parsing the table name. The name does embed a timestamp, but trusting our own
+ * naming convention to stay parseable is a worse bet than asking the server
+ * when it made the table.
+ *
+ * `olderThanHours` defaults to 6: long enough that it can never touch a
+ * concurrent run (a vintage takes about a minute), short enough that an orphan
+ * does not survive the day. Returns the names dropped, so a caller can log them.
+ */
+async function sweepStaleStaging(chDb, opts) {
+  const o = opts || {};
+  const database = o.database || DEFAULT_CH_DATABASE;
+  const prefix = o.prefix || '_wz_';
+  const hours = Number(o.olderThanHours === undefined ? 6 : o.olderThanHours);
+  const rows = await chQueryRows(chDb, `
+    SELECT name FROM system.tables
+     WHERE database = '${database}'
+       AND name LIKE '${prefix}%'
+       AND engine = 'Memory'
+       AND metadata_modification_time < now() - INTERVAL ${hours} HOUR`);
+  const names = (rows || []).map((r) => r.name).filter(Boolean);
+  for (const n of names) {
+    // Best effort: a table another process is concurrently dropping is fine.
+    try { await chExec(chDb, `DROP TABLE IF EXISTS ${database}.${n}`); } catch (e) { /* ignore */ }
+  }
+  return names;
+}
+
+/**
  * Run a statement that returns nothing (DDL).
  *
  * The DAMA ClickHouse adapter is a thin passthrough to @clickhouse/client:
@@ -144,5 +181,6 @@ module.exports = {
   stagingDropDDL,
   chExec,
   chQueryRows,
+  sweepStaleStaging,
   insertRows,
 };

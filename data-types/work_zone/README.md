@@ -171,7 +171,7 @@ files (no DB, CH, or network); `tests/*.integration.js` are node scripts against
 dms-server sqlite harness. No test contacts TRANSCOM, RITIS, Socrata, ArcGIS **or ClickHouse** —
 recorded extracts live in `tests/fixtures/`.
 
-Green through phase 4: **256 unit + 79 integration**.
+Green through phase 4: **256 unit + 80 integration**.
 
 ---
 
@@ -1093,7 +1093,7 @@ for DDL, whose response stream must be destroyed or every statement logs a socke
 | `lib/baseline.js` | pure. Baseline window arithmetic, `fhwaThresholdSpeed`, `speedExpr`, and the two SQL builders (`baselineSQL`, `measureSQL`). The module note carries the threshold reasoning and the two divergences. |
 | `lib/m1.js` | pure. **M1 as the rule defines it** — `zoneSpeedExpr` (space-mean), `zoneHourM1SQL` (zone x date x hour), `zoneBaselineM1SQL` (the same over the pre-construction year), `rollupZoneM1`, `rollupZoneM1ByTier`, `joinDuringAndBaseline`. |
 | `lib/measures.js` | pure. Epoch-level evidence: `m1ForZone` (three shares, epoch-weighted speed means, `is_measurable` at `min_epochs` = 12), `groupCellsByZone`, `rollupM1` (epoch-weighted **and** zone-mean, plus `zones_skipped`). |
-| `ch.js` | `stripChPrefix`, run-scoped staging names + DDL, `chExec` / `chQueryRows` / `insertRows`. |
+| `ch.js` | `stripChPrefix`, run-scoped staging names + DDL, `chExec` / `chQueryRows` / `insertRows`, and `sweepStaleStaging` (Memory-engine orphans from killed runs). |
 | `workers/speed.js` | resolves spine / tmc / meta / CH speeds / PM3-by-version, reads the zones and the two window sources, stages three CH tables, runs the measure, **drops the staging in `finally`**, shapes rows, rolls up statewide. |
 | `sql.js` | `wzSpeedTableDDL` (with `window_source` and phase 6's columns), insert builder, column metadata, and `vintageVersion`. |
 
@@ -1484,6 +1484,11 @@ fixture; this README's results logs complete.
 - **M1 is an HOUR measure on the ZONE's average speed.** Reporting the share of five-minute epochs on
   individual segments is a different measure; `lib/m1.js` has the definition and both rollups ship on
   every view so they cannot be confused.
+- **CH staging tables are `Memory` engine on a SHARED server, and `finally` does not run on SIGKILL.**
+  Two hard-killed phase-3 runs leaked six tables (~30 MB). `ch.js`'s `sweepStaleStaging` now drops
+  `_wz_*` Memory tables older than 6 hours at the start of every staged run — aged by ClickHouse's
+  `metadata_modification_time`, not by parsing our own names, and floored at 6 h so it can never touch a
+  concurrent run. If a run is killed, check `system.tables` for `_wz_%` rather than assuming it cleaned up.
 - **⚠ TMC ROLE FILTER FLIPS AT PHASE 4.** `exposure` and `speed` read `tmc_role = 'anchor'` only.
   `delay` (M2) reads **all** roles, because delay is the queue and ~91% of it accrues on the impact
   TMCs — an anchors-only rollup understates M2 by 11×. Check which you want before copying a query.
