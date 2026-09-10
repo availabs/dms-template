@@ -213,6 +213,37 @@ never names.
 
 ---
 
+## 6b. Formatting in an IEM document
+
+IEM uses real Word formatting, and it maps cleanly onto the rich-text convention — but only if you
+read it at **run** level. Measured on the Westchester base plan (629 paragraphs used by the fill):
+
+| | Count | What it is |
+|---|--:|---|
+| Bold runs | **40** | **Lead-in labels only** — `Probability:`, `Spatial Extent:`, `Severity:`, `Duration:`, `Warning Time:`, `Location:`, `Extent:`, `Data Limitations:`, `Goals:`, `Objectives:`. IEM never bolds whole sentences, so this maps 1:1 onto the convention's "bold defined terms and lead-in labels". |
+| List paragraphs | **53** | 45 bullet, **8 numbered** |
+| Hyperlinks | **13 link runs** in 8 paragraphs | Source citations — Census QuickFacts, USGS event pages, DHSES declaration pages, NASA, County GIS |
+
+**The one thing to know:** IEM bullets most of its lists with **direct numbering (`w:numPr`) on a
+`Body Text` style**, not with a list style. A style-only rule catches 14 of 53. Every hazard-ranking
+scale value (`Unlikely` / `Occasional` / `Likely` / `Highly Likely`, `Small` / `Limited` /
+`Significant` / `Extensive`, and so on) is in the missed 39 — they look like stray one-word
+paragraphs and are in fact the bullets under a bold lead-in label.
+
+The intended rendering of a hazard-ranking section is therefore:
+
+> **Probability:** The relative likelihood that a hazard event will occur…
+> - Unlikely
+> - Occasional
+> - Likely
+> - Highly Likely
+
+Numbered lists appear in the plan-maintenance subsections (`numId` 30 and 32, both `decimal`).
+
+Mechanics and the four extraction traps: `docx_runs.py`, and
+[`../loading-a-plan-into-a-2.0-pattern.md`](../loading-a-plan-into-a-2.0-pattern.md)
+§ *Getting the formatting out of the source document*.
+
 ## 7. Scripts
 
 [`../scripts/westchester/`](../scripts/westchester/) — `baseplan/` and `annexes/`, with a README

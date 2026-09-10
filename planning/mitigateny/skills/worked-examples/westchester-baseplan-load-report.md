@@ -15,7 +15,7 @@ register); this file is the reusable summary.
 | Annotation slots written | **177 / 177** |
 | Failed / skipped | **0 / 0** |
 | Characters live | **334,761** — exact match to the spec |
-| Heading nodes / list nodes | 13 / 6 — both match |
+| Heading / list / bold / link nodes | 13 / 12 / 40 / 13 — all match |
 | Read-back clean | **177 / 177** |
 | Written components appearing in a published `sections` list | **0** |
 | Slots left deliberately empty | 71 |
@@ -27,6 +27,11 @@ from `county_template` **1300890**. Source: `2026 Westchester County HMP Base Pl
 
 Everything went to `draft_sections` with `status = local_review_needed`. Nothing published; the
 consultant reviews in-platform.
+
+Loaded in **two writes**: content first, then a formatting pass once it was clear the initial write
+had used a builder implementing none of the rich-text convention. The second write changed **zero
+characters** (334,761 both times) and added 766 blank spacer paragraphs, 40 bold runs, 13 link nodes
+and 6 more lists. Worth doing in one pass next time — see lesson 5.
 
 ## Crosswalk, final
 
@@ -99,13 +104,33 @@ Worth noting the box where **no** heading was right: the demographic-factors par
 the topic sentence for the at-risk-population list that follows it, which was the whole reason it
 was mapped there. A heading would have broken exactly the continuity that justified the mapping.
 
-### 5. Let the document's own styling decide list markup
+### 5. Read formatting out of the document — a style-only rule is not enough
 
-Across all 187 mapped sections: 641 paragraphs — `Body Text` 561, `Normal` 50, `Bullet 1` 15,
-`List Paragraph` 13, `Normal (Web)` 2. `Bullet 1` and `List Paragraph` become `<ul>` items;
-everything else stays a paragraph. **Never invent list structure the document doesn't have** — which
-is why the probability and severity scales stay as the separate paragraphs the author wrote, even
-though a list would read better.
+Let the source decide bold, bullets and links, but get at it properly. A **second extraction pass**
+(`docx_runs.py`) captures run-level formatting keyed to the same block numbers, with the join
+validated at **662/662 exact text match**. Four traps, all silent:
+
+| Trap | Cost if missed |
+|---|---|
+| `run.bold` is tri-state — `None` means *inherit from style*, not *not bold* | every styled-bold run lost |
+| **`paragraph.runs` drops text inside `w:hyperlink`** | 10 `Sources:` citations read *"Sources: ; ; and U.S. Census Bureau QuickFacts."* |
+| A list item is such by STYLE **or** `w:numPr` | style-only found **14 of 53**, missing every hazard probability/severity scale |
+| `numFmt` (from `word/numbering.xml`) separates bullet from number | **8 of 53** are `decimal`, not bullets |
+
+The third is the instructive one. This report's first version claimed the probability and severity
+scales *"stay as the separate paragraphs the author wrote, even though a list would read better."*
+**That was wrong.** The author does bullet them — via direct numbering with a `Body Text` style,
+which a style-only rule cannot see. "Honour the document's formatting" is the right principle; a
+style lookup is an incomplete implementation of it, and it produced a confident, wrong conclusion
+about authorial intent.
+
+Also: `numId="0"` is Word's *remove-numbering* sentinel, not a list id (though a list style still
+wins), and adjacent runs with identical formatting need coalescing because Word splits runs on
+spellcheck boundaries.
+
+Then **assert the convention on read-back, per slot** — blank-line spacing with heading-hug,
+`indent: 1`, `listType` matching the source, bold and link counts round-tripping. That is what makes
+formatting non-regressable instead of eyeballed.
 
 ---
 
