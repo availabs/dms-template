@@ -223,7 +223,20 @@ Owner direction (2026-08-28):
 | external | `smart` | DAMA content changes on a publication cycle. Smart re-fetches when the query changes and otherwise reuses the cache — cheap, and stale only within a cycle. |
 | internal | `force` | A DMS dataset is edited by the same authors browsing the site. They must see their own edit, so re-query every mount. |
 
-### Exception: `DHSES_County_Database` (953754) is **smart**, internal or not
+### Exception: the LHMP plan home is **smart everywhere except Actions_Revised**
+
+Owner direction 2026-09-10, superseding the DHSES-only exception below (which it contains). On the
+county-template plan home every data section is `smart` and **only `Actions_Revised` (1029065) is
+`force`** — that dataset changes constantly, so a stale count is worse than a flicker; everything
+else is reference or publication-cycle data.
+
+That page also **seeds `element-data.data`** from the app's own `getData`, which makes a `smart`
+section skip its fetch entirely on mount (`useDataLoader.js:94`) — 13 requests on load became 1.
+`force` bypasses that dedup, which is why the actions card is left unseeded. The two settings are a
+pair; see `planning/mitigateny/tasks/current/mny-lhmp-home-live-build.md` round 8 and
+`scratchpad/mitigat-ny-prod-prod/seed_lhmp_section_data.mjs`.
+
+### Earlier exception: `DHSES_County_Database` (953754) is **smart**, internal or not
 
 Owner direction (2026-09-09), taken on the LHMP plan-home build. The DHSES county row carries
 reference and narrative fields that change on an editing cycle, not per page view, and the plan home

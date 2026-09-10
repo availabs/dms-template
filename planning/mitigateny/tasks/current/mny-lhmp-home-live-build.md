@@ -559,7 +559,7 @@ missed row looks like a layout bug, not a failure. Validate by count, not by eye
 - [ ] Only `draft_sections` / `draft_section_groups` written; `sections` and `section_groups` never touched
 - [ ] Every bound section renders **non-empty** at `county_template.devmny.org/edit/home_new`
 - [ ] Every figure matches the design's verified values: 23 jurisdictions · 475 actions (391/23/41/20) · 17 declared disasters · 537 other events · $398,477,317 total · 11 hazards with hurricane at $363,792,448 (91%)
-- [ ] Fetch mode explicit on every data component — external Smart, internal Force
+- [x] Fetch mode explicit on every data component — **smart everywhere except Actions_Revised (force)**, per owner direction 2026-09-10, superseding the external/internal rule for this page
 - [ ] No calc column on an `isDms` source contains a comma; each such cell verified against a known count
 - [ ] All 33 destination slugs resolve live (checked against the harvest, **not** live, as of 2026-09-01)
 - [ ] No horizontal overflow at 1440 / 1280 / 1024 — including the `mnyHeader` bug in finding 6
@@ -1296,6 +1296,78 @@ went 42 → 43.
 
 **Check content and geometry separately.** A layout probe that reads what is there cannot tell you
 what is missing; assert the expected set by name.
+
+## Round 8 — 2026-09-10, no-flicker load
+
+**13 UDA data requests on load → 1.** The page now paints from stored rows; the only request left is
+the actions card, deliberately.
+
+### Fetch mode: smart everywhere except the actions card
+
+Owner direction, superseding round 2's DHSES-only exception. `Actions_Revised` changes constantly, so
+a stale count there is worse than a flicker; everything else is reference or publication-cycle data
+that does not move between page views.
+
+| Source | Sections | Mode |
+|---|---|---|
+| DHSES_County_Database | 9 | `smart` |
+| AVAIL - Fusion Events V2 | 2 | `smart` |
+| Jurisdictions | 1 | `smart` |
+| **Actions_Revised** | 1 | **`force`** |
+
+Encoded as `FORCE_SOURCES = new Set([1029065])` in the builder, so it is a source-id rule rather than
+a judgement call per section.
+
+### Why seeding removes the fetch entirely
+
+`useDataLoader.js:94` seeds its dedup ref from the section's own stored state:
+
+```js
+const lastFetchKeyRef = useRef(
+  state.data?.length && (state.externalSource?.source_id || state.externalSource?.isDms)
+    ? computeFetchKey(state) : null);
+…
+if (!bypassDedup && fetchKey === lastFetchKeyRef.current) return;   // never fetches
+```
+
+So rows in `element-data.data` + a matching fetch key ⇒ the load effect returns without issuing a
+request. `bypassDedup` is `fetchMode === 'force'`, which is exactly why the actions card is left
+**unseeded**: it would render stale rows for a moment before replacing them.
+
+**The page geoid has to be baked into every filter leaf for this to hold.** `computeFetchKey` hashes
+`state.filters`, so if a leaf carried an empty value and the page injected `36105` at runtime, the
+runtime key would differ from the seeded one and every section would fetch anyway. The seeder
+**asserts** it rather than assuming: all 13 bound sections carry `"36105"` in their geoid leaf.
+
+### The seeder
+
+`scratchpad/mitigat-ny-prod-prod/seed_lhmp_section_data.mjs` — reads the page's geoid, then for each
+bound section runs the app's **own `getData`** and writes the rows back into `element-data.data`
+along with `display.totalLength`. Using getData rather than a hand-built query is the point: the row
+shape is exactly what the component would have produced.
+
+This mirrors `api/preloadSectionData.js` (the route-loader preload). That function is not reused
+directly only because it reads `import.meta.env`, which plain Node cannot evaluate — and the library
+is written for a bundler, so its extensionless relative imports need a resolve hook
+(`_extres.mjs`) to load under Node at all.
+
+Seeded: 12 sections (10 rows for the bar list, 1 each for the rest). Verified after: every figure on
+the page unchanged, no overflow at 1440.
+
+### ⚠ What this trades away — read before publishing
+
+**A seeded `smart` section will not re-fetch until its configuration changes.** The stored rows ARE
+what visitors see. That is the right call for a county template, where the page is a snapshot the
+team curates, but it has consequences:
+
+- **DHSES / Fusion / Jurisdictions edits will not appear on this page** until someone re-runs the
+  seeder (or edits and saves the section, which rewrites `data`). If a county fixes the stray `?` in
+  its narrative fields, the page keeps the old text.
+- **Re-running `build_lhmp_home_new.mjs` wipes the seed** — it recreates every section from scratch,
+  so `data` comes back empty. **Always run the seeder after a rebuild.**
+- **Propagation to the four duplicate patterns must re-seed per county.** A duplicate's sections
+  carry that county's geoid, so the Sullivan rows would be both stale and *wrong*. The seeder takes
+  the geoid from the page it is pointed at, so it handles this — but it has to be run for each.
 
 ### ⚠ Not a defect — the owner was publishing, and I reverted it twice
 
