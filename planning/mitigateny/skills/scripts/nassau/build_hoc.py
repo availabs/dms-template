@@ -164,20 +164,29 @@ def norm_cat(c):
 
 def vuln_sentence(juris, hazard, cats, kind, source_hazard):
     """
-    A self-declaring derived sentence. The Hagerty annex carries NO narrative vulnerability
+    A self-declaring derived sentence.
+
+    It does NOT name the consultant (owner, 2026-09-09). Loaded content should describe the
+    plan, not the firm that wrote it -- a reader of the Nassau record has no reason to care
+    which consultancy produced the annex, and the name would age badly. This applies only to
+    text THIS pipeline composes: where the plan's own prose names the consultant it stays
+    verbatim (54 Participation narratives do), and `Hagerty Consulting` remains as the actual
+    agency on the 5 Roles rows for its staff.
+
+    The annex carries NO narrative vulnerability
     prose -- Table 2 is a boolean grid -- so anything in this field is derived by definition
     and must say so, or a reader will mistake it for authored text.
     """
     if not cats:
         return (f"No impact categories were recorded for {source_hazard} in the "
                 f"{juris} annex. (Derived from the annex Local Hazard Impact table; the "
-                f"Hagerty annex format carries no narrative vulnerability text.)")
+                f"annex format carries no narrative vulnerability text.)")
     listed = ", ".join(cats[:-1]) + (" and " + cats[-1] if len(cats) > 1 else cats[0])
     split = ("" if kind != "split" else
              f" This value is inherited from the combined \"{source_hazard}\" profile, "
              f"which the MNY taxonomy splits into separate hazards.")
     return (f"The {juris} annex identifies impacts to {listed} for {source_hazard}. "
-            f"(Derived from the annex Local Hazard Impact table; the Hagerty annex format "
+            f"(Derived from the annex Local Hazard Impact table; the annex format "
             f"carries no narrative vulnerability text.){split}")
 
 
