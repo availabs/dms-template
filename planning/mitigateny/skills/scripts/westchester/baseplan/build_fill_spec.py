@@ -6,7 +6,14 @@ Reads  ../out/crosswalk.json  (emission order matters - M-list order in build_cr
 Writes ../out/fill_spec.json   - {slot_id, page_id, slot_title, status, blocks[], sources[], chars}
        ../out/fill_spec.md     - human-reviewable rendering of every block
 
-Block shape matches lexical.mjs buildRootBlocks2: {"t":"p"|"h"|"ul", "text"/"items", "tag"}
+Block shape matches lexical.mjs buildFormattedRoot:
+    {"t":"p",  "runs":[{text,b,i,url}]}
+    {"t":"h",  "tag":"h3", "runs":[...]}
+    {"t":"ul"|"ol", "items":[[{text,b,i,url}, ...], ...]}
+
+Run-level formatting (bold lead-in labels, hyperlinks) and true list membership
+come from ../out/baseplan/runs.json (docx_runs.py). The document's own
+formatting decides all of it - see the faithfulness rules below.
 
 Faithfulness rules
 ------------------
@@ -26,6 +33,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', 'out')
 
 STATUS = 'local_review_needed'   # C2: NOT shmp_sourced_content - this is county prose
+
+# Run-level formatting from docx_runs.py. Keyed by the same block numbers as
+# sections.json; docx_runs.py asserts a 662/662 exact text match on the join.
+RUNS = json.load(io.open(os.path.join(OUT, 'baseplan', 'runs.json'), encoding='utf-8'))
 
 # ---------------------------------------------------------------- paragraph rules
 # (doc_block, slot_id) -> list of paragraph block numbers to include, in this order
@@ -87,32 +98,109 @@ LEAD_INS = {
     #  2449721, 2450098  - continuous exec-summary / strategy-overview prose.
 }
 
-LIST_STYLES = {'Bullet 1', 'List Paragraph'}
+# List membership is NOT decided here any more - docx_runs.py resolves it from the
+# document (list style OR w:numPr, with numFmt telling bullet from numbered).
+# The old style-only rule missed 39 of 53 list paragraphs, including every
+# probability/severity scale value, because IEM styles them `Body Text` and
+# bullets them with direct numbering.
+def runs_of(p):
+    """Run descriptors for a paragraph, falling back to its plain text."""
+    r = RUNS.get(str(p['n']))
+    if r and r.get('runs'):
+        return [dict(x) for x in r['runs']]
+    return [{'text': (p.get('text') or '').strip(), 'b': False, 'i': False}]
 
 
-def split_first_sentence(t):
-    """Split at the first sentence boundary. Returns (first, rest)."""
-    m = re.search(r'(?<=[.!?])\s+(?=[A-Z(])', t)
-    if not m:
-        return t, ''
-    return t[:m.start()].strip(), t[m.end():].strip()
+def is_list(p):
+    r = RUNS.get(str(p['n']))
+    return bool(r and r.get('list'))
+
+
+def is_ordered(p):
+    r = RUNS.get(str(p['n']))
+    return bool(r and r.get('ordered'))
+
+
+def runs_text(runs):
+    return ''.join(x.get('text', '') for x in runs)
+
+
+def split_runs_at(runs, offset):
+    """Split a run list at a character offset, preserving each run's format."""
+    head, tail, seen = [], [], 0
+    for r in runs:
+        t = r.get('text', '')
+        start, end = seen, seen + len(t)
+        if end <= offset:
+            head.append(dict(r))
+        elif start >= offset:
+            tail.append(dict(r))
+        else:
+            cut = offset - start
+            if t[:cut]:
+                head.append({**r, 'text': t[:cut]})
+            if t[cut:]:
+                tail.append({**r, 'text': t[cut:]})
+        seen = end
+    return head, tail
+
+
+def strip_runs(runs):
+    """Trim leading/trailing whitespace across a run list; drop empties."""
+    out = [dict(r) for r in runs if r.get('text')]
+    while out and not out[0]['text'].lstrip():
+        out.pop(0)
+    if out:
+        out[0]['text'] = out[0]['text'].lstrip()
+    while out and not out[-1]['text'].rstrip():
+        out.pop()
+    if out:
+        out[-1]['text'] = out[-1]['text'].rstrip()
+    return [r for r in out if r['text']]
+
+
+def md_runs(rs):
+    """Render run descriptors as light markdown, for the reviewable .md only."""
+    out = []
+    for r in rs:
+        t = r.get('text', '')
+        if r.get('url'):
+            t = '[%s](%s)' % (t, r['url'])
+        if r.get('b'):
+            t = '**%s**' % t
+        if r.get('i'):
+            t = '*%s*' % t
+        out.append(t)
+    return ''.join(out)
 
 
 def blocks_from_paras(paras):
-    """Paragraph dicts -> block descriptors, grouping consecutive list-styled runs."""
-    out, buf = [], []
-    for p in paras:
-        text = (p.get('text') or '').strip()
-        if not text:
-            continue
-        if p.get('style') in LIST_STYLES:
-            buf.append(text)
-            continue
+    """Paragraph dicts -> run-level block descriptors.
+
+    Consecutive list paragraphs group into one list; a change of ordered-ness
+    starts a new one, so a bullet run followed by a numbered run does not get
+    silently merged into a single mistyped list.
+    """
+    out, buf, buf_ordered = [], [], None
+    def flush():
+        nonlocal buf, buf_ordered
         if buf:
-            out.append({'t': 'ul', 'items': buf}); buf = []
-        out.append({'t': 'p', 'text': text})
-    if buf:
-        out.append({'t': 'ul', 'items': buf})
+            out.append({'t': 'ol' if buf_ordered else 'ul', 'items': buf})
+            buf, buf_ordered = [], None
+    for p in paras:
+        rs = strip_runs(runs_of(p))
+        if not rs:
+            continue
+        if is_list(p):
+            o = is_ordered(p)
+            if buf and o != buf_ordered:
+                flush()
+            buf_ordered = o
+            buf.append(rs)
+            continue
+        flush()
+        out.append({'t': 'p', 'runs': rs})
+    flush()
     return out
 
 
@@ -168,11 +256,16 @@ def main():
             src = by_n.get(rule['para'])
             if not src:
                 unresolved.append((n, sid, 'sentence para %s missing' % rule['para'])); continue
-            first, rest = split_first_sentence((src.get('text') or '').strip())
-            take = first if rule['take'] == 'first' else rest
+            src_runs = strip_runs(runs_of(src))
+            full = runs_text(src_runs)
+            m = re.search(r'(?<=[.!?])\s+(?=[A-Z(])', full)
+            if not m:
+                unresolved.append((n, sid, 'no sentence boundary found')); continue
+            head, tail = split_runs_at(src_runs, m.start())
+            take = strip_runs(head if rule['take'] == 'first' else tail)
             if not take:
                 unresolved.append((n, sid, 'sentence split produced nothing')); continue
-            blocks = [{'t': 'p', 'text': take}]
+            blocks = [{'t': 'p', 'runs': take}]
             for extra in SENT_TAIL.get(key, []):
                 p = by_n.get(extra)
                 if p:
@@ -200,7 +293,8 @@ def main():
         # --- optional h3 lead-in
         lead = LEAD_INS.get(key)
         if lead:
-            blocks = [{'t': 'h', 'tag': lead[0], 'text': lead[1]}] + blocks
+            blocks = [{'t': 'h', 'tag': lead[0],
+                       'runs': [{'text': lead[1], 'b': False, 'i': False}]}] + blocks
 
         e = slots.setdefault(sid, {
             'slot_id': sid, 'page_id': r['page_id'], 'page_title': r['page_title'],
@@ -212,11 +306,18 @@ def main():
                              'paras': used, 'confidence': r['confidence']})
 
     # --- char counts
+    def all_runs(b):
+        return list(b.get('runs', [])) + [x for it in b.get('items', []) for x in it]
+
+    def block_chars(b):
+        if b['t'] in ('ul', 'ol'):
+            return sum(len(runs_text(it)) for it in b['items'])
+        return len(runs_text(b.get('runs', [])))
+
     for e in slots.values():
-        c = 0
-        for b in e['blocks']:
-            c += len(b.get('text', '')) + sum(len(i) for i in b.get('items', []))
-        e['chars'] = c
+        e['chars'] = sum(block_chars(b) for b in e['blocks'])
+        e['n_bold'] = sum(1 for b in e['blocks'] for r in all_runs(b) if r.get('b'))
+        e['n_links'] = sum(1 for b in e['blocks'] for r in all_runs(b) if r.get('url'))
 
     spec = list(slots.values())
     lead_warnings = check_lead_ins(spec)
@@ -237,13 +338,14 @@ def main():
                 for s in e['sources']))
             for b in e['blocks']:
                 if b['t'] == 'h':
-                    f.write('### %s\n\n' % b['text'])
-                elif b['t'] == 'ul':
-                    for i in b['items']:
-                        f.write('- %s\n' % i)
+                    f.write('### %s\n\n' % md_runs(b.get('runs', [])))
+                elif b['t'] in ('ul', 'ol'):
+                    for k, it in enumerate(b['items']):
+                        mark = ('%d.' % (k + 1)) if b['t'] == 'ol' else '-'
+                        f.write('%s %s\n' % (mark, md_runs(it)))
                     f.write('\n')
                 else:
-                    f.write('%s\n\n' % b['text'])
+                    f.write('%s\n\n' % md_runs(b.get('runs', [])))
             f.write('---\n\n')
 
     # --- summary
@@ -252,7 +354,10 @@ def main():
     print('total characters:       %d' % sum(e['chars'] for e in spec))
     print('total blocks:           %d' % sum(len(e['blocks']) for e in spec))
     print('slots with >1 source:   %d' % len(multi))
-    print('list blocks emitted:    %d' % sum(1 for e in spec for b in e['blocks'] if b['t'] == 'ul'))
+    print('bullet lists emitted:   %d' % sum(1 for e in spec for b in e['blocks'] if b['t'] == 'ul'))
+    print('numbered lists emitted: %d' % sum(1 for e in spec for b in e['blocks'] if b['t'] == 'ol'))
+    print('bold runs:              %d' % sum(e['n_bold'] for e in spec))
+    print('link runs:              %d' % sum(e['n_links'] for e in spec))
     print('h3 lead-ins emitted:    %d' % sum(1 for e in spec for b in e['blocks'] if b['t'] == 'h'))
     if lead_warnings:
         print('\nLEAD-IN WARNINGS (%d) - a heading would mislabel the source after it:' % len(lead_warnings))

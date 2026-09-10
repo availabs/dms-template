@@ -1252,6 +1252,137 @@ Before generating the full set. All four steps, in order:
 - [ ] read it back **through the filter the loader will use**
 - [ ] `dms raw delete` it
 
+### Gate 3 — first real rows loaded — DONE (2026-09-09)
+
+Pilot jurisdiction **Long Beach (City), 3643335** — chosen because it is the only candidate that
+exercises BOTH Actions paths later at Gate 4 (13 insert + 14 update). Glen Cove has 0 updates and
+Baxter Estates 0 inserts, so either would have left half the loader unproven.
+
+`load.mjs roles 3643335` -> **6 rows inserted, 0 failures, all verified field-for-field**, and
+independently re-queried: Nassau Roles 0 -> 6. Run record in
+`runs/20260909T125948Z_roles_3643335/`.
+
+### ⚠ What the pilot caught: `required_stakeholder` was backwards
+
+Reading the six rows in production showed the two annex points of contact with **blank**
+`required_stakeholder` while four ordinary roster members read `Yes`. Row 1 is Long Beach's
+*designated hazard-mitigation representative* — the single most required stakeholder there is.
+
+Cause: `required` was sourced only from the base plan roster's `core_planning_group` flag, and
+the annex POCs are not in that roster, so they got nothing. Owner ruled 2026-09-09 that an annex
+POC **is** a required stakeholder. Now `Yes` for all **102** annex POCs (51 primary + 51
+alternate); corpus split is 167 Yes / 95 No.
+
+The dedupe needed fixing alongside it: where an annex contact won over a roster duplicate it was
+copying the roster's `required` across, which would have re-blanked exactly the people this
+change is for.
+
+**This is what a pilot is for.** The value was in *looking at six rows*, not in the loader
+reporting success — it reported success both times.
+
+### The correction path exercised the untested code
+
+The 6 rows were corrected in place rather than deleted and re-inserted, and doing so proved two
+things that had been unproven:
+
+- **The Roles key-match path ran against real data for the first time.** It had only ever
+  executed against 0 existing rows and passed a self-test. Re-fetching (6 rows now live) and
+  re-matching produced **6 matched -> UPDATE, 256 -> INSERT**, keyed on `(name, role)` — correct,
+  including the two rows whose `role` is empty.
+- **`backup_before_write.py` had a scope bug.** It collected updates from Actions, HOC and
+  Jurisdictions only, on the assumption the other three were insert-only forever. That held until
+  Gate 3 produced 6 Roles updates, at which point the loader correctly refused for want of a
+  backup the script was never going to produce. Now covers all six datasets; backup
+  `20260909T135535Z` is 1,091 rows / 10,834 column writes.
+
+Correction applied: **6 updates, 0 failures, verified, and no duplicate rows created** (still 6
+total). Both annex POCs now read `required=Yes`.
+
+Remaining blanks in the six are expected and previously flagged: rows 1-2 have no `role` because
+the Long Beach contact table carries **no title at all** (verified against the raw annex cells —
+name, agency, address, email, phone only), and rows 4-5 are `Deputy Director` / `Deputy
+Commissioner`, the pure seniority words left unmapped rather than guessed.
+
+### Gate 4 — full vertical slice, Long Beach — DONE (2026-09-09)
+
+All six datasets for one jurisdiction. **Final state: 6 Roles, 28 Capabilities, 6 Participation,
+1 Jurisdictions row (6 lexical columns), 17 HOC updates, 25 Actions — every row verified
+field-for-field by `verify_loaded.mjs`, which reads the database independently of the loader.**
+
+Jurisdictions is worth spelling out because it reads oddly in the log as "1 row": the dataset is
+a **statewide registry** (2,346 rows, one per municipality or CDP, pre-seeded from Census). Long
+Beach's row already existed with eight identity columns; the write filled the **six lexical prose
+columns, all previously null** — confirmed by the rollback file, where all six restore to `None`.
+Nothing was overwritten. Same shape as HOC: a pre-seeded grid we populate, not a table we add to.
+
+### ⚠ Three defects found at this gate, all of them mine
+
+**1. I ran the loader twice in one command and killed the first run.** The command piped the
+loader to `Select-Object -First 12` *and* invoked it again for `-Last 6`. `Select-Object -First`
+closes the pipeline, which terminated the first run after 7 of 28 capability inserts; the second
+wrote the full 28. Long Beach ended up with **35 rows, 7 duplicated**.
+
+The guard should have caught the second invocation and did not, because it keyed on
+`result.json` with `wrote > 0` — and **a killed run leaves `created.json` but no `result.json`**.
+The only kind of prior run it ignored was the dangerous kind. Fixed three ways: detection now
+keys on `created.json` (rows were *made*), a `started.json` marker is written before the first
+write, and the directory name is a fallback for runs predating that. A `reconciled.json` marker
+lets a cleaned-up run stop blocking, so `--force` is not misused for "I tidied up".
+
+Recovery was immediate because the ids were on disk — the id-before-fill rule paying for itself
+a second time.
+
+**2. Same-name rows loaded as both an update and an insert.** The annex lists a carried-forward
+project TWICE — once in the proposed-actions table, once in the prior-actions table with its
+progress. Both became payload rows, and because matching is strictly one-to-one the proposed row
+claimed the live row while the prior row inserted alongside it. The same project therefore
+existed as both `Proposed - Not Started` and `In-Progress`.
+
+County-wide: **11 groups / 22 rows** of 571 — 8 `prior+proposed`, 2 `prior+prior`, 1
+`proposed+proposed`. Owner chose (2026-09-09) to **merge**: keep one row with the proposed
+version's fields and append the dropped row's status and progress narrative to
+`action_status_details`. Implemented in `merge_same_name()`; **571 built → 560 emitted**.
+
+**3. The discriminator guard produced a FALSE NEGATIVE, and it cost a duplicate row.**
+
+    "City of Long Beach Nassau County Waste Water Treatment Plant (WWTP) Diversion Project"
+    "City of Long Beach/Nassau County Waste Water Treatment Plant Diversion Project
+                                                                  (FEMA 406 Mitigation)"
+
+Same project, scored **0.811**, refused — because `406` sat in the symmetric difference and the
+guard treated any number there as "these are different things". But `406` is part of a
+**programme name** (FEMA Category 406), not an identifier. So the row was inserted as new,
+duplicating pre-existing row 1099721.
+
+Narrowed: a number is a conflict only when **both** names carry one and they **differ**. A number
+on one side only is extra detail. Compass words keep the broader rule, because relaxing them
+would re-admit the case the guard exists for — `Headquarters` vs `Southside` Fire House, where
+only one side carries a compass-like token. Regression-tested against all five motivating cases,
+including the three original false positives, all still correct.
+
+**The two guards fail in opposite directions and both failures are silent.** A false positive
+overwrites the wrong row; a false negative inserts a duplicate. Only reading the loader's row
+list caught this one — the run reported "all 27 verified field-for-field", and it was right: the
+payload matched what landed. Verification cannot see a wrong *decision*.
+
+### Cleanup performed
+
+| Rows | Why |
+|---|---|
+| 2484408-2484414 (7 capabilities) | duplicates from the killed run |
+| 2484510, 2484516 (2 actions) | prior-table twins, merged away |
+| 2484508 (1 action) | false-negative duplicate of 1099721 |
+
+Long Beach now holds **25 actions with 0 duplicate names**, and the 25 payload rows map 1:1 onto
+25 live rows with nothing unclaimed. The two merged rows carry their prior-cycle status in
+`action_status_details` as intended.
+
+### What this gate cost, and why it was worth it
+
+Three real defects, all found on **75 rows in one jurisdiction** rather than on 2,900 across 52.
+Two of the three were invisible to the loader's own verification and only visible by reading
+output. **The pilot's value was in looking, not in the checks passing.**
+
 ### 7e — Load, in dependency order
 
 Estimated volumes; 7a's dry run supersedes them.
