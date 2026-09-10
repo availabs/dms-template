@@ -153,9 +153,34 @@ def jaccard(a, b):
 
 
 def discriminators_conflict(name_a, name_b):
-    """True when the two names are told apart by a number or a direction."""
+    """
+    True when the two names are told apart by a number or a direction.
+
+    NUMBERS are only a conflict when BOTH names carry one and they DIFFER. The first version
+    refused on any number in the symmetric difference, which was too broad and produced a false
+    NEGATIVE at Gate 4:
+
+        "City of Long Beach Nassau County Waste Water Treatment Plant (WWTP) Diversion Project"
+        "City of Long Beach/Nassau County Waste Water Treatment Plant Diversion Project
+                                                                       (FEMA 406 Mitigation)"
+
+    Same project, scored 0.811, refused because `406` was in the difference. But `406` is part
+    of a PROGRAMME NAME (FEMA Category 406), not an identifier separating two facilities. A
+    number present on one side only is extra detail; a number present on both sides with
+    different values is "which one".
+
+    COMPASS words keep the broader rule -- refuse if one appears in the difference at all --
+    because a place qualifier on one side genuinely does separate things, and relaxing it would
+    re-admit the case this guard exists for ("Headquarters" vs "Southside" Fire House, where
+    only one side carries a compass-like token).
+    """
     a, b = tokens(name_a, keep_short=True), tokens(name_b, keep_short=True)
-    return any(is_discriminator(t) for t in (a ^ b))
+    diff = a ^ b
+    if any(t.startswith(DISCRIM_COMPASS) for t in diff):
+        return True
+    na = {t for t in a if t.isdigit()}
+    nb = {t for t in b if t.isdigit()}
+    return bool(na and nb and na != nb)
 
 
 def main():
@@ -339,6 +364,29 @@ def main():
                       ensure_ascii=False, indent=1)
         per.append(dict(geoid=geoid, payload=len(payload), existing=len(existing),
                         updates=len(taken_pay)))
+
+    # ---- provenance: WHICH live dump these decisions were made against.
+    #
+    # The loader has to be able to refuse a payload whose insert/update split was decided against
+    # a dump that has since changed. Comparing file mtimes cannot answer that: the matcher writes
+    # the payloads *after* reading the dump, so payloads are always newer on a correct run --
+    # which made an mtime test refuse every legitimate load. A content hash of the dump is the
+    # actual signal, and it also ignores a re-fetch that returned identical data.
+    if apply_:
+        import hashlib
+        blob = io.open(live_path, "rb").read()
+        prov_path = os.path.join(OUT, "_match_provenance.json")
+        prov = {}
+        if os.path.exists(prov_path):
+            prov = json.load(io.open(prov_path, encoding="utf-8"))
+        prov[which] = dict(
+            live_file=cfg["live"],
+            live_sha256=hashlib.sha256(blob).hexdigest(),
+            live_rows=n_live,
+            matched_at=__import__("datetime").datetime.now(
+                __import__("datetime").timezone.utc).isoformat(),
+            updates=n_match, inserts=n_pay - n_match, mode=cfg["mode"])
+        json.dump(prov, io.open(prov_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
     if report:
         cols = list(report[0].keys())

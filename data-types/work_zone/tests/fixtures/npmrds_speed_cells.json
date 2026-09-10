@@ -1,0 +1,723 @@
+{
+ "_note": "Recorded 2026-09-09 from npmrds.s583_v982_NPMRDS_V6 on npmrds2, frozen so the M1 arithmetic is tested against real NPMRDS travel times without touching ClickHouse. Each case is one work zone's own active epoch window on one date \u2014 the window view 2799 reports and the event's start/close confirm. Two cases on purpose: a significant candidate with NO measurable speed impact, and one with a large impact. Each case also carries posted_threshold_speed = min(limit, max(20, avg_speedlimit - 10)) \u2014 NYSDOT's primary M1 threshold \u2014 and expected_below_posted, the count computed by hand from the recorded travel times so the golden test is not checking the code against itself.",
+ "no_impact": {
+  "wz_event_id": "ORI1237639097",
+  "tmc": "104N04116",
+  "date": "2024-09-10",
+  "epoch_from": 156,
+  "epoch_to": 228,
+  "miles": 0.321709,
+  "avg_speedlimit": 56.706,
+  "reference_speed": 69.97899697885197,
+  "phed_threshold_speed": 34.0236,
+  "epochs": [
+   {
+    "epoch": 156,
+    "travel_time_all_vehicles": 16.78,
+    "density": "B"
+   },
+   {
+    "epoch": 157,
+    "travel_time_all_vehicles": 17.55,
+    "density": "C"
+   },
+   {
+    "epoch": 158,
+    "travel_time_all_vehicles": 17.55,
+    "density": "B"
+   },
+   {
+    "epoch": 159,
+    "travel_time_all_vehicles": 17.29,
+    "density": "B"
+   },
+   {
+    "epoch": 160,
+    "travel_time_all_vehicles": 17.55,
+    "density": "C"
+   },
+   {
+    "epoch": 161,
+    "travel_time_all_vehicles": 16.78,
+    "density": "A"
+   },
+   {
+    "epoch": 162,
+    "travel_time_all_vehicles": 17.82,
+    "density": "A"
+   },
+   {
+    "epoch": 163,
+    "travel_time_all_vehicles": 18.1,
+    "density": "B"
+   },
+   {
+    "epoch": 164,
+    "travel_time_all_vehicles": 17.29,
+    "density": "C"
+   },
+   {
+    "epoch": 165,
+    "travel_time_all_vehicles": 18.38,
+    "density": "C"
+   },
+   {
+    "epoch": 166,
+    "travel_time_all_vehicles": 17.82,
+    "density": "A"
+   },
+   {
+    "epoch": 167,
+    "travel_time_all_vehicles": 18.38,
+    "density": "B"
+   },
+   {
+    "epoch": 168,
+    "travel_time_all_vehicles": 18.1,
+    "density": "A"
+   },
+   {
+    "epoch": 169,
+    "travel_time_all_vehicles": 18.38,
+    "density": "B"
+   },
+   {
+    "epoch": 170,
+    "travel_time_all_vehicles": 18.99,
+    "density": "A"
+   },
+   {
+    "epoch": 171,
+    "travel_time_all_vehicles": 18.38,
+    "density": "A"
+   },
+   {
+    "epoch": 172,
+    "travel_time_all_vehicles": 18.38,
+    "density": "B"
+   },
+   {
+    "epoch": 173,
+    "travel_time_all_vehicles": 17.29,
+    "density": "C"
+   },
+   {
+    "epoch": 174,
+    "travel_time_all_vehicles": 17.82,
+    "density": "B"
+   },
+   {
+    "epoch": 175,
+    "travel_time_all_vehicles": 17.29,
+    "density": "A"
+   },
+   {
+    "epoch": 176,
+    "travel_time_all_vehicles": 16.78,
+    "density": "C"
+   },
+   {
+    "epoch": 177,
+    "travel_time_all_vehicles": 17.55,
+    "density": "B"
+   },
+   {
+    "epoch": 178,
+    "travel_time_all_vehicles": 17.29,
+    "density": "B"
+   },
+   {
+    "epoch": 179,
+    "travel_time_all_vehicles": 17.55,
+    "density": "B"
+   },
+   {
+    "epoch": 180,
+    "travel_time_all_vehicles": 17.82,
+    "density": "B"
+   },
+   {
+    "epoch": 181,
+    "travel_time_all_vehicles": 17.82,
+    "density": "B"
+   },
+   {
+    "epoch": 182,
+    "travel_time_all_vehicles": 17.03,
+    "density": "B"
+   },
+   {
+    "epoch": 183,
+    "travel_time_all_vehicles": 17.29,
+    "density": "C"
+   },
+   {
+    "epoch": 184,
+    "travel_time_all_vehicles": 17.55,
+    "density": "A"
+   },
+   {
+    "epoch": 185,
+    "travel_time_all_vehicles": 18.68,
+    "density": "B"
+   },
+   {
+    "epoch": 186,
+    "travel_time_all_vehicles": 17.29,
+    "density": "B"
+   },
+   {
+    "epoch": 187,
+    "travel_time_all_vehicles": 15.87,
+    "density": "B"
+   },
+   {
+    "epoch": 188,
+    "travel_time_all_vehicles": 18.1,
+    "density": "B"
+   },
+   {
+    "epoch": 189,
+    "travel_time_all_vehicles": 17.03,
+    "density": "B"
+   },
+   {
+    "epoch": 190,
+    "travel_time_all_vehicles": 19.63,
+    "density": "A"
+   },
+   {
+    "epoch": 191,
+    "travel_time_all_vehicles": 19.63,
+    "density": "B"
+   },
+   {
+    "epoch": 192,
+    "travel_time_all_vehicles": 17.82,
+    "density": "B"
+   },
+   {
+    "epoch": 193,
+    "travel_time_all_vehicles": 16.31,
+    "density": "B"
+   },
+   {
+    "epoch": 194,
+    "travel_time_all_vehicles": 17.55,
+    "density": "B"
+   },
+   {
+    "epoch": 195,
+    "travel_time_all_vehicles": 18.1,
+    "density": "B"
+   },
+   {
+    "epoch": 196,
+    "travel_time_all_vehicles": 16.31,
+    "density": "A"
+   },
+   {
+    "epoch": 197,
+    "travel_time_all_vehicles": 17.55,
+    "density": "B"
+   },
+   {
+    "epoch": 198,
+    "travel_time_all_vehicles": 16.55,
+    "density": "C"
+   },
+   {
+    "epoch": 199,
+    "travel_time_all_vehicles": 17.29,
+    "density": "B"
+   },
+   {
+    "epoch": 200,
+    "travel_time_all_vehicles": 16.55,
+    "density": "C"
+   },
+   {
+    "epoch": 201,
+    "travel_time_all_vehicles": 16.78,
+    "density": "B"
+   },
+   {
+    "epoch": 202,
+    "travel_time_all_vehicles": 16.09,
+    "density": "C"
+   },
+   {
+    "epoch": 203,
+    "travel_time_all_vehicles": 17.55,
+    "density": "A"
+   },
+   {
+    "epoch": 204,
+    "travel_time_all_vehicles": 16.31,
+    "density": "B"
+   },
+   {
+    "epoch": 205,
+    "travel_time_all_vehicles": 16.55,
+    "density": "C"
+   },
+   {
+    "epoch": 206,
+    "travel_time_all_vehicles": 17.03,
+    "density": "B"
+   },
+   {
+    "epoch": 207,
+    "travel_time_all_vehicles": 16.78,
+    "density": "B"
+   },
+   {
+    "epoch": 208,
+    "travel_time_all_vehicles": 17.82,
+    "density": "B"
+   },
+   {
+    "epoch": 209,
+    "travel_time_all_vehicles": 16.78,
+    "density": "A"
+   },
+   {
+    "epoch": 210,
+    "travel_time_all_vehicles": 17.03,
+    "density": "B"
+   },
+   {
+    "epoch": 211,
+    "travel_time_all_vehicles": 17.55,
+    "density": "B"
+   },
+   {
+    "epoch": 212,
+    "travel_time_all_vehicles": 18.38,
+    "density": "B"
+   },
+   {
+    "epoch": 213,
+    "travel_time_all_vehicles": 17.55,
+    "density": "A"
+   },
+   {
+    "epoch": 214,
+    "travel_time_all_vehicles": 15.87,
+    "density": "B"
+   },
+   {
+    "epoch": 215,
+    "travel_time_all_vehicles": 16.78,
+    "density": "A"
+   },
+   {
+    "epoch": 216,
+    "travel_time_all_vehicles": 17.29,
+    "density": "C"
+   },
+   {
+    "epoch": 217,
+    "travel_time_all_vehicles": 18.38,
+    "density": "B"
+   },
+   {
+    "epoch": 218,
+    "travel_time_all_vehicles": 17.03,
+    "density": "B"
+   },
+   {
+    "epoch": 219,
+    "travel_time_all_vehicles": 15.87,
+    "density": "B"
+   },
+   {
+    "epoch": 220,
+    "travel_time_all_vehicles": 18.1,
+    "density": "B"
+   },
+   {
+    "epoch": 221,
+    "travel_time_all_vehicles": 17.82,
+    "density": "A"
+   },
+   {
+    "epoch": 222,
+    "travel_time_all_vehicles": 16.09,
+    "density": "A"
+   },
+   {
+    "epoch": 223,
+    "travel_time_all_vehicles": 16.78,
+    "density": "B"
+   },
+   {
+    "epoch": 224,
+    "travel_time_all_vehicles": 17.03,
+    "density": "B"
+   },
+   {
+    "epoch": 225,
+    "travel_time_all_vehicles": 16.31,
+    "density": "B"
+   },
+   {
+    "epoch": 226,
+    "travel_time_all_vehicles": 17.03,
+    "density": "A"
+   },
+   {
+    "epoch": 227,
+    "travel_time_all_vehicles": 16.31,
+    "density": "A"
+   },
+   {
+    "epoch": 228,
+    "travel_time_all_vehicles": 17.29,
+    "density": "A"
+   }
+  ],
+  "posted_threshold_speed": 46.706,
+  "expected_below_posted": 0
+ },
+ "impact": {
+  "wz_event_id": "ORI1237447126",
+  "tmc": "120+04939",
+  "date": "2024-02-07",
+  "epoch_from": 53,
+  "epoch_to": 117,
+  "miles": 0.290003,
+  "avg_speedlimit": 50,
+  "reference_speed": 54.66735063866136,
+  "phed_threshold_speed": 30,
+  "epochs": [
+   {
+    "epoch": 53,
+    "travel_time_all_vehicles": 18.64,
+    "density": "B"
+   },
+   {
+    "epoch": 54,
+    "travel_time_all_vehicles": 18.64,
+    "density": "B"
+   },
+   {
+    "epoch": 55,
+    "travel_time_all_vehicles": 18.64,
+    "density": "B"
+   },
+   {
+    "epoch": 56,
+    "travel_time_all_vehicles": 17.4,
+    "density": "B"
+   },
+   {
+    "epoch": 57,
+    "travel_time_all_vehicles": 19.33,
+    "density": "C"
+   },
+   {
+    "epoch": 58,
+    "travel_time_all_vehicles": 17.11,
+    "density": "B"
+   },
+   {
+    "epoch": 59,
+    "travel_time_all_vehicles": 20.08,
+    "density": "C"
+   },
+   {
+    "epoch": 60,
+    "travel_time_all_vehicles": 19.7,
+    "density": "C"
+   },
+   {
+    "epoch": 61,
+    "travel_time_all_vehicles": 20.88,
+    "density": "C"
+   },
+   {
+    "epoch": 62,
+    "travel_time_all_vehicles": 21.31,
+    "density": "C"
+   },
+   {
+    "epoch": 63,
+    "travel_time_all_vehicles": 22.7,
+    "density": "C"
+   },
+   {
+    "epoch": 64,
+    "travel_time_all_vehicles": 26.77,
+    "density": "C"
+   },
+   {
+    "epoch": 65,
+    "travel_time_all_vehicles": 29.83,
+    "density": "C"
+   },
+   {
+    "epoch": 66,
+    "travel_time_all_vehicles": 23.2,
+    "density": "C"
+   },
+   {
+    "epoch": 67,
+    "travel_time_all_vehicles": 21.31,
+    "density": "C"
+   },
+   {
+    "epoch": 68,
+    "travel_time_all_vehicles": 23.73,
+    "density": "C"
+   },
+   {
+    "epoch": 69,
+    "travel_time_all_vehicles": 27.47,
+    "density": "C"
+   },
+   {
+    "epoch": 70,
+    "travel_time_all_vehicles": 32.63,
+    "density": "C"
+   },
+   {
+    "epoch": 71,
+    "travel_time_all_vehicles": 34.8,
+    "density": "C"
+   },
+   {
+    "epoch": 72,
+    "travel_time_all_vehicles": 36,
+    "density": "C"
+   },
+   {
+    "epoch": 73,
+    "travel_time_all_vehicles": 36,
+    "density": "C"
+   },
+   {
+    "epoch": 74,
+    "travel_time_all_vehicles": 34.8,
+    "density": "C"
+   },
+   {
+    "epoch": 75,
+    "travel_time_all_vehicles": 34.8,
+    "density": "C"
+   },
+   {
+    "epoch": 76,
+    "travel_time_all_vehicles": 36,
+    "density": "C"
+   },
+   {
+    "epoch": 77,
+    "travel_time_all_vehicles": 36,
+    "density": "C"
+   },
+   {
+    "epoch": 78,
+    "travel_time_all_vehicles": 38.67,
+    "density": "C"
+   },
+   {
+    "epoch": 79,
+    "travel_time_all_vehicles": 40.15,
+    "density": "C"
+   },
+   {
+    "epoch": 80,
+    "travel_time_all_vehicles": 37.29,
+    "density": "C"
+   },
+   {
+    "epoch": 81,
+    "travel_time_all_vehicles": 43.5,
+    "density": "C"
+   },
+   {
+    "epoch": 82,
+    "travel_time_all_vehicles": 43.5,
+    "density": "C"
+   },
+   {
+    "epoch": 83,
+    "travel_time_all_vehicles": 41.76,
+    "density": "C"
+   },
+   {
+    "epoch": 84,
+    "travel_time_all_vehicles": 34.8,
+    "density": "C"
+   },
+   {
+    "epoch": 85,
+    "travel_time_all_vehicles": 38.67,
+    "density": "C"
+   },
+   {
+    "epoch": 86,
+    "travel_time_all_vehicles": 37.29,
+    "density": "C"
+   },
+   {
+    "epoch": 87,
+    "travel_time_all_vehicles": 40.15,
+    "density": "C"
+   },
+   {
+    "epoch": 88,
+    "travel_time_all_vehicles": 34.8,
+    "density": "C"
+   },
+   {
+    "epoch": 89,
+    "travel_time_all_vehicles": 38.67,
+    "density": "C"
+   },
+   {
+    "epoch": 90,
+    "travel_time_all_vehicles": 36,
+    "density": "C"
+   },
+   {
+    "epoch": 91,
+    "travel_time_all_vehicles": 33.68,
+    "density": "C"
+   },
+   {
+    "epoch": 92,
+    "travel_time_all_vehicles": 36,
+    "density": "C"
+   },
+   {
+    "epoch": 93,
+    "travel_time_all_vehicles": 37.29,
+    "density": "C"
+   },
+   {
+    "epoch": 94,
+    "travel_time_all_vehicles": 41.76,
+    "density": "C"
+   },
+   {
+    "epoch": 95,
+    "travel_time_all_vehicles": 40.15,
+    "density": "C"
+   },
+   {
+    "epoch": 96,
+    "travel_time_all_vehicles": 49.71,
+    "density": "C"
+   },
+   {
+    "epoch": 97,
+    "travel_time_all_vehicles": 65.25,
+    "density": "C"
+   },
+   {
+    "epoch": 98,
+    "travel_time_all_vehicles": 80.31,
+    "density": "C"
+   },
+   {
+    "epoch": 99,
+    "travel_time_all_vehicles": 87,
+    "density": "B"
+   },
+   {
+    "epoch": 100,
+    "travel_time_all_vehicles": 94.91,
+    "density": "C"
+   },
+   {
+    "epoch": 101,
+    "travel_time_all_vehicles": 69.6,
+    "density": "C"
+   },
+   {
+    "epoch": 102,
+    "travel_time_all_vehicles": 52.2,
+    "density": "C"
+   },
+   {
+    "epoch": 103,
+    "travel_time_all_vehicles": 65.25,
+    "density": "C"
+   },
+   {
+    "epoch": 104,
+    "travel_time_all_vehicles": 74.57,
+    "density": "B"
+   },
+   {
+    "epoch": 105,
+    "travel_time_all_vehicles": 45.39,
+    "density": "C"
+   },
+   {
+    "epoch": 106,
+    "travel_time_all_vehicles": 41.76,
+    "density": "C"
+   },
+   {
+    "epoch": 107,
+    "travel_time_all_vehicles": 38.67,
+    "density": "C"
+   },
+   {
+    "epoch": 108,
+    "travel_time_all_vehicles": 47.46,
+    "density": "C"
+   },
+   {
+    "epoch": 109,
+    "travel_time_all_vehicles": 41.76,
+    "density": "C"
+   },
+   {
+    "epoch": 110,
+    "travel_time_all_vehicles": 33.68,
+    "density": "C"
+   },
+   {
+    "epoch": 111,
+    "travel_time_all_vehicles": 32.63,
+    "density": "C"
+   },
+   {
+    "epoch": 112,
+    "travel_time_all_vehicles": 37.29,
+    "density": "C"
+   },
+   {
+    "epoch": 113,
+    "travel_time_all_vehicles": 34.8,
+    "density": "C"
+   },
+   {
+    "epoch": 114,
+    "travel_time_all_vehicles": 37.29,
+    "density": "C"
+   },
+   {
+    "epoch": 115,
+    "travel_time_all_vehicles": 43.5,
+    "density": "C"
+   },
+   {
+    "epoch": 116,
+    "travel_time_all_vehicles": 41.76,
+    "density": "C"
+   },
+   {
+    "epoch": 117,
+    "travel_time_all_vehicles": 47.46,
+    "density": "C"
+   }
+  ],
+  "posted_threshold_speed": 40.0,
+  "expected_below_posted": 51
+ }
+}

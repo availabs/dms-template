@@ -115,7 +115,10 @@ const L = {
   routeCreation: "/route_creation",
   comparison: "/route_comparison",
   map21: "/map_21",
-  docOverview: "/docs/npmrds/overview",
+  // 2026-09-09 (Phase 9b): repointed at the NEW `platform_docs` pattern (2218952) at
+  // `/docs`; the old `npmrds_docs` pattern moved to `/docs_legacy` and `/docs/npmrds/overview`
+  // is dead. The link's text is "docs", so it lands on the NPMRDS hub.
+  docOverview: "/docs/npmrds",
 };
 
 // ── the `reports_snap_2` source — same binding build_npmrds_reports.mjs uses (source 2177438 /

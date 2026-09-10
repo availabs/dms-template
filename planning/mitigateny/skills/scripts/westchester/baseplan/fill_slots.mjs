@@ -8,7 +8,7 @@
 // read the component, MERGE text into its existing element-data (never replace it,
 // or isCard/bgColor/showToolbar are lost), write {element, status}.
 import { byIds, edit } from './fq.js';
-import { buildRootBlocks2 } from './lexical.mjs';
+import { buildFormattedRoot } from './lexical.mjs';
 import fs from 'fs';
 import path from 'path';
 
@@ -50,11 +50,11 @@ for (const e of work) {
     skipped++; results.push({ id, status: 'not_annotation', isCard: ed.isCard }); continue;
   }
 
-  const root = buildRootBlocks2(e.blocks);
+  const root = buildFormattedRoot(e.blocks);
   const expect = lexLen(root);
 
   // merge, don't replace.
-  // buildRootBlocks2 returns the bare ROOT NODE. Page components store
+  // buildFormattedRoot returns the bare ROOT NODE. Page components store
   // {text:{root:<node>}}; only dataset columns take the bare {root:<node>}.
   // Assigning the node straight to ed.text writes it one level too shallow -
   // the content is all there but nothing finds text.root, so the box renders
@@ -67,7 +67,7 @@ for (const e of work) {
 
   const label = `${id}  ${String(e.page_title).slice(0, 24).padEnd(24)} ${String(e.slot_title).slice(0, 30).padEnd(30)}`;
   if (!APPLY) {
-    console.log(`DRY      ${label} <- ${String(e.blocks.length).padStart(3)} blocks / ${String(expect).padStart(6)} ch`);
+    console.log(`DRY      ${label} <- ${String(e.blocks.length).padStart(3)} blk / ${String(root.children.length).padStart(3)} nodes / ${String(expect).padStart(6)} ch / b${e.n_bold || 0} l${e.n_links || 0}`);
     results.push({ id, status: 'dry', blocks: e.blocks.length, expect });
     continue;
   }
@@ -79,7 +79,7 @@ for (const e of work) {
     failed++; results.push({ id, status: 'write_failed', err: String(err.message || err).slice(0, 400) });
     continue;
   }
-  console.log(`WROTE    ${label} <- ${String(e.blocks.length).padStart(3)} blocks / ${String(expect).padStart(6)} ch`);
+  console.log(`WROTE    ${label} <- ${String(e.blocks.length).padStart(3)} blk / ${String(root.children.length).padStart(3)} nodes / ${String(expect).padStart(6)} ch / b${e.n_bold || 0} l${e.n_links || 0}`);
   wrote++;
   results.push({ id, status: 'ok', blocks: e.blocks.length, expect });
 }

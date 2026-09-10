@@ -1,6 +1,6 @@
 # Westchester 2026 HMP Base Plan → pattern 2448336 crosswalk
 
-**Project:** MitigateNY · **Topic:** content · **Status:** **LOADED 2026-09-08** — 177 / 177 Annotation slots written to `draft_sections`, 334,761 ch, read-back verified, nothing published. All decisions closed (C1, C2, D1-SO, D3, D4, D7). · **Started:** 2026-09-03
+**Project:** MitigateNY · **Topic:** content · **Status:** **LOADED + FORMATTED 2026-09-08** — 177 / 177 Annotation slots in `draft_sections`, 334,761 ch, rich-text formatting applied per convention (blank-line spacing, bold lead-ins, bullets/numbers, real links), read-back verified, nothing published. All decisions closed (C1, C2, D1-SO, D3, D4, D7). · **Started:** 2026-09-03
 
 ## Objective
 
@@ -682,7 +682,10 @@ the document's own headings) and `2466023` Drought (the only hazard page where b
 | Skipped | **0** |
 | Characters live | **334,761** — exact match to the spec |
 | Heading nodes | **13** — match |
-| List nodes | **6** — match |
+| List nodes | **12** — match (10 bullet + 2 numbered) |
+| Bold runs | **40** — match |
+| Link nodes | **13** — match |
+| Blank spacer paragraphs | 766 |
 | Read-back clean | **177 / 177** |
 | Target components in published `sections` | **0** |
 
@@ -698,6 +701,60 @@ spec. All matched.
 177 written components appear in `draft_sections` and **none** appears in a page's published
 `sections` list. Draft and published are separate component rows, so the public site is unchanged.
 `status = local_review_needed` on every slot (per **C2**).
+
+### Formatting pass — 2026-09-08 (second write)
+
+The first write used `buildRootBlocks2`, which emits bare paragraphs and implements **none** of the
+convention in `loading-a-plan-into-a-2.0-pattern.md` § *Rich-text formatting*. Re-done properly.
+
+| | Before | After |
+|---|--:|--:|
+| Characters | 334,761 | **334,761** — byte-identical, only formatting changed |
+| Blocks | 621 | 602 (39 paragraphs absorbed into lists) |
+| Bullet lists | 6 | **10** |
+| Numbered lists | 0 | **2** |
+| Bold runs | 0 | **40** |
+| Link nodes | 0 | **13** |
+| Blank spacer paragraphs | 0 | **766** |
+
+Rules now applied and **asserted per slot** by `verify_slots.mjs`: leading and trailing blank
+paragraph; blank between blocks except a heading hugs the block after it; `indent: 1` on every list;
+bold → `format: 1`; hyperlinks → real `type:"link"` nodes (`rel:"noopener"`, `target:"_blank"`).
+
+### Where the formatting came from: `docx_runs.py`
+
+A second extraction pass, keyed to the **same block numbers** as `sections.json` (join validated
+**662/662 exact text match**). Four things it resolves that the first pass could not:
+
+**1. Bold is a tri-state.** `run.bold` is `True` / `False` / **`None`**, and `None` means *inherit
+from the style*, not *not bold*. Resolved against the paragraph style's own bold.
+All **40** bold runs are lead-in labels — `Probability:`, `Spatial Extent:`, `Severity:`,
+`Duration:`, `Warning Time:`, `Location:`, `Extent:`, `Data Limitations:`, `Goals:`, `Objectives:` —
+exactly the convention's "bold defined terms and lead-in labels, not whole sentences."
+
+**2. `paragraph.runs` silently drops hyperlink text.** python-docx only returns `w:r` children
+directly under `w:p`, so every run inside a `w:hyperlink` vanishes. It cost the text of 10 `Sources:`
+citations, which read *"Sources: ; ; and U.S. Census Bureau QuickFacts."* — caught only because the
+run/section join mismatched on exactly those 10 paragraphs. `walk_runs()` iterates the paragraph's
+children and carries the relationship target out, so those citations are now **real links** (Census
+QuickFacts, USGS event pages, DHSES declarations, NASA, County GIS).
+
+**3. A paragraph is a list item by STYLE *or* by `w:numPr`** — and IEM uses both. The original
+style-only rule (`Bullet 1` / `List Paragraph`) found 14 of 53 and **missed 39**, including every
+probability / severity / duration / warning-time scale value, because IEM styles those `Body Text`
+and bullets them with direct numbering. **This reverses an earlier call in this document** — the
+scales were left as paragraphs on the reasoning that "the document writes them as paragraphs." It
+does not; it bullets them, just not via a style.
+
+**4. `numFmt` from `word/numbering.xml` separates bullets from numbers.** Guessing "bullet" would
+have been wrong for **8 of 53** list paragraphs: `numId` 30 and 32 are `decimal`, and both feed
+`2449748` (Evaluating Method and Schedule, Plan Updating Approach). python-docx does not expose
+`numFmt`, so the numbering part is parsed directly.
+
+Also handled: **`numId="0"` is Word's *remove-numbering* sentinel**, not a list id — it must not make
+a paragraph a list on its own, though a list *style* still wins (block [769] is `Bullet 1` with
+`numId=0` and is genuinely a bullet). And adjacent runs with identical formatting are coalesced,
+because Word splits runs on spellcheck/rsid boundaries — a single bold label is commonly 3+ runs.
 
 ### The bug the canary caught — `{text:{root}}` vs `{root}`
 

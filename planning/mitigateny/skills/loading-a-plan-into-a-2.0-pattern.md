@@ -70,6 +70,52 @@ The county pattern's page rows share an instance slug (e.g. `mitigateny_county_t
   the pattern's `additionalSectionAttributes`; if that field did not survive duplication there is no
   status control in the admin UI at all (see the post-duplication check below).
 
+## Getting the formatting out of the source document
+
+The convention above says *what* the output must look like. This is how to get it faithfully, rather
+than hand-authoring markdown and guessing. Established on Westchester/IEM 2026 —
+`docx_runs.py` in [`scripts/westchester/baseplan/`](./scripts/westchester/baseplan/).
+
+Run a **second extraction pass** that captures run-level formatting, keyed to the **same block
+numbers** as the first pass, then **validate the join** (Westchester: 662/662 exact text match). If
+the join mismatches on a handful of paragraphs, that is a signal — see trap 2.
+
+Four traps, each of which silently produces plausible-looking wrong output:
+
+**1. `run.bold` is tri-state.** `True` / `False` / **`None`**, where `None` means *inherit from the
+style*, **not** *not bold*. Resolve `None` against the paragraph style's own bold (walking
+`base_style`), or every heading run reads as not-bold and every styled-bold run is lost.
+
+**2. `paragraph.runs` silently drops hyperlink text.** python-docx returns only `w:r` children
+directly under `w:p`, so runs nested in a `w:hyperlink` **vanish**. On Westchester this emptied 10
+`Sources:` citations — they read *"Sources: ; ; and U.S. Census Bureau QuickFacts."* Iterate the
+paragraph's children instead, handling `w:r` and `w:hyperlink` in document order, and resolve the
+target via `paragraph.part.rels[rId].target_ref`. Those hyperlinks are exactly the "turn source
+references into real links" half of the convention — 13 real link nodes came out of it.
+
+**3. A paragraph is a list item by STYLE *or* by `w:pPr/w:numPr`.** Consultants use both. A
+style-only rule (`Bullet 1`, `List Paragraph`) found **14 of 53** on Westchester and missed **39** —
+every hazard probability / severity / duration / warning-time scale value, because IEM styles them
+`Body Text` and bullets them with direct numbering. A style-only rule does not just under-detect; it
+invites the wrong conclusion that *"the document writes these as paragraphs"* when it bullets them.
+
+**4. `numFmt` is the only thing separating a bullet from a number**, and python-docx does not expose
+it. Parse `word/numbering.xml` (`w:num` → `w:abstractNumId` → per-`w:ilvl` `w:numFmt`). Guessing
+"bullet" would have mistyped **8 of 53** Westchester list paragraphs, which are `decimal`.
+
+Two smaller ones worth coding for:
+
+- **`numId="0"` is Word's *remove-numbering* sentinel**, not a list id. It must not make a paragraph
+  a list on its own — but a list *style* still wins.
+- **Coalesce adjacent runs with identical formatting.** Word splits runs on spellcheck and rsid
+  boundaries, so one bold label is routinely 3+ runs; without coalescing you emit a stutter of
+  adjacent bold text nodes.
+
+**Then assert the convention on read-back, per slot** — leading/trailing blank, blank between blocks
+with heading-hug, `indent: 1` on lists, `listType` matching the source's `numFmt`, and bold/link
+counts round-tripping. `verify_slots.mjs` does this; it is what makes the formatting non-regressable
+rather than eyeballed.
+
 ## Before you write: two checks that have each cost a load
 
 ### 1. The lexical shape — `{text:{root}}` for components, `{root}` for dataset columns

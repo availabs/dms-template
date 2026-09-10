@@ -1,7 +1,7 @@
 # TransportNY documentation — style guide
 
 **Status:** v1 · 2026-09-04 (Phase 0) · owner: documentation build task
-(`planning/transportny/tasks/current/platform-documentation-build.md`).
+(`planning/transportny/tasks/completed/platform-documentation-build.md`).
 **Binding on every worker and every page.** §10 *Rulings* is append-only; a ruling outranks the section it amends.
 Reference documentation: **Replica** (`documentation.replicahq.com` for datasets and methodology; `help.replicahq.com`
 for how-tos and release notes), read 2026-09-04 — what we take from it and what we do differently is in §9.
