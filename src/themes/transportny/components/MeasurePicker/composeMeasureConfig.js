@@ -90,13 +90,25 @@ export const GRAPH_TYPE_OPTIONS = [
 // "mint a brand-new graph section" call sites (`useAddGraphSection.js`, `compose_bridge.mjs`,
 // `report_build.mjs`) — never on a re-pick of an existing section.
 export const DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE = {
-    // Flipped bottom → top(-right) 2026-09-04 (Ryan) — the `bottom` build shipped 2026-09-01 and
-    // was live-verified working, but Ryan changed his mind on the default once he saw it live:
-    // top reads better paired with the graph-native title (see the title/legend inline-alignment
-    // work landing alongside this in the same pass). Still just an author-overridable default —
-    // the per-graph Legend Position control (LEGEND_POSITION_OPTIONS(_GRID) below) is unaffected.
-    BarGraph: 'top',
-    LineGraph: 'top',
+    // History: bottom (2026-09-01) → top / top-right (2026-09-04) → top-right for every graph
+    // type (2026-09-11).
+    //
+    // The bare `top` the charts used until now CENTRED the legend over the plot, which only ever
+    // looked deliberate while the graph-native title shared that row with it (the
+    // `titleInlineWithLegend` arrangement). That title is gone — the card's header band owns it
+    // now — so a centred legend floats over nothing. `top-right` puts it in the corner, where it
+    // reads as chrome rather than as a caption, and matches GridGraph, which has always been there.
+    //
+    // ⚠ `top-right` on a Bar/Line/Pie/Treemap/Sunburst chart rendered NOTHING AT ALL before
+    // 2026-09-11 — those five wrappers matched `position` with strict equality against the four
+    // bare edges, so a corner value hit no branch and the legend silently disappeared. The shared
+    // helpers in `graph_new/components/utils.js` fix that; this default depends on them, so it
+    // cannot be cherry-picked back to a build that lacks them.
+    //
+    // Still just an author-overridable default — the per-graph Legend Position control is
+    // unaffected, and now offers all eight positions for every graph type.
+    BarGraph: 'top-right',
+    LineGraph: 'top-right',
     GridGraph: 'top-right',
 };
 
@@ -111,26 +123,29 @@ export function applyDefaultLegendPosition(state, graphType) {
     state.display.legend = { ...(state.display.legend || {}), position };
 }
 
-// The author-facing option set for a "Legend Position" control — same split as the DMS Settings
-// drawer's own `legend`/`legendForGridGraph` control groups (`ComponentRegistry/graph_new/
-// config.jsx`), reused here so QuickControls' own Legend pill never drifts from what the Settings
-// drawer offers.
+// The author-facing option set for a "Legend Position" control — mirrors the DMS Settings drawer's
+// own `legend` control group (`ComponentRegistry/graph_new/config.jsx`), so QuickControls' Legend
+// pill never drifts from what the drawer offers.
+//
+// ONE list as of 2026-09-11. It used to be split, GridGraph getting the corners and everything
+// else the four bare edges — not a design choice, a workaround: only GridGraph's wrapper actually
+// rendered a corner position, and the others silently dropped the legend entirely. All six handle
+// all eight now (graph_new/components/utils.js), so the split has nothing left to express.
 export const LEGEND_POSITION_OPTIONS = [
     { value: 'right', label: 'Right' },
     { value: 'left', label: 'Left' },
     { value: 'top', label: 'Top' },
-    { value: 'bottom', label: 'Bottom' },
-];
-export const LEGEND_POSITION_OPTIONS_GRID = [
-    { value: 'right', label: 'Right' },
-    { value: 'left', label: 'Left' },
     { value: 'top-right', label: 'Top Right' },
     { value: 'top-left', label: 'Top Left' },
+    { value: 'bottom', label: 'Bottom' },
     { value: 'bottom-right', label: 'Bottom Right' },
     { value: 'bottom-left', label: 'Bottom Left' },
 ];
+// Kept as an alias so nothing that imported the GridGraph-specific list breaks; both names now
+// resolve to the same single list.
+export const LEGEND_POSITION_OPTIONS_GRID = LEGEND_POSITION_OPTIONS;
 export function legendPositionOptionsFor(graphType) {
-    return graphType === 'GridGraph' ? LEGEND_POSITION_OPTIONS_GRID : LEGEND_POSITION_OPTIONS;
+    return LEGEND_POSITION_OPTIONS;
 }
 
 export const MEASURE_OPTIONS = Object.entries(vocab.measures).map(([value, m]) => ({
@@ -1044,29 +1059,86 @@ export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externa
  * Different => the author typed something of their own => never touched again. Ryan's explicit
  * call, 2026-08-20: no new field, keep the mechanism obvious at the call site instead.
  */
+// A window restricts along two INDEPENDENT axes — time of day, and day of week — and they are
+// reported separately (see windowTitleFragment) so a card can say which one its series disagree on
+// instead of collapsing both into one vague phrase.
+// Mirrors the tokens QuickControls' "When" pill displays for the same state, so the two can't drift.
+function timeOfDayFragment(window) {
+    if (!window?.start || !window?.end) return '';
+    const preset = PEAK_PRESETS.find((p) => p.startTime === window.start && p.endTime === window.end);
+    return preset ? preset.label : timeOfDayToken(window.start, window.end);
+}
+function weekdaysFragment(window) {
+    return summarizeWeekdays(window?.weekdays) || '';
+}
+
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Ryan's own report — Peak Selector/DoW
 // picks on the "When" pill didn't move the title, only Measure did. `composeAutoTitle` already
 // receives the full resolved pick (routeWindows/routeIds included, see applyMeasurePickToState's
-// call site) — it simply never read them. This reads the SAME "first assigned route's own window"
-// convention QuickControls' own When pill already uses to compute ITS displayed token
-// (`pick.routeWindows?.[routeIds[0]]?.[0]`, QuickControls/index.jsx) so the title's phrasing can
-// never drift from what the pill shows for the same state. Renders nothing (same as before this
-// fix) whenever the window is unrestricted (all day, every day) — an unrestricted graph's title
-// looks exactly as it did before this change.
+// call site) — it simply never read them. Renders nothing whenever the window is unrestricted
+// (all day, every day), so an unrestricted graph's title is unaffected.
+//
+// 2026-09-11 — it used to read ONLY the first assigned route's first window, borrowing the
+// convention QuickControls' pill uses for its own token. That is fine for a pill, which describes
+// one thing you are about to change, and wrong for a title, which describes the whole chart: a
+// card plotting AM Peak, PM Peak and Off-Peak side by side announced itself as "AM Peak", which is
+// not a simplification but a false claim about what the bars contain. It now reads EVERY window on
+// every assigned route and only names one when they genuinely agree; otherwise it says so.
 function windowTitleFragment(pick) {
     const routeIds = pick.routeIds || [];
-    const window = pick.routeWindows?.[routeIds[0]]?.[0];
-    if (!window) return '';
+    const windows = routeIds.flatMap((id) => pick.routeWindows?.[id] || []).filter(Boolean);
+    if (!windows.length) return '';
+    // The two axes are reported independently, because a card whose series share a time-of-day
+    // window but differ on days is a different (and much more interesting) fact than one whose
+    // series are on three different peaks. Collapsing both into "multiple time windows" said
+    // nothing about WHICH axis disagreed — and on snapshot's line graph it read as simply wrong,
+    // because the series there differ only on weekends.
+    //
+    // NOTE this deliberately says nothing about DATE ranges. Two series over different years are
+    // the normal case for a comparison chart, not an inconsistency worth captioning.
+    const each = (fn) => [...new Set(windows.map(fn))];
+    const times = each(timeOfDayFragment);
+    const days = each(weekdaysFragment);
     const parts = [];
-    if (window.start && window.end) {
-        const preset = PEAK_PRESETS.find((p) => p.startTime === window.start && p.endTime === window.end);
-        parts.push(preset ? preset.label : timeOfDayToken(window.start, window.end));
-    }
-    const daysSummary = summarizeWeekdays(window.weekdays);
-    if (daysSummary) parts.push(daysSummary);
+    if (times.length > 1) parts.push('multiple time windows');
+    else if (times[0]) parts.push(times[0]);
+    if (days.length > 1) parts.push('mixed days');
+    else if (days[0]) parts.push(days[0]);
     return parts.join(', ');
 }
 
+// How each resolution reads as the "by ..." clause of a title. `summary` is deliberately absent:
+// a summary graph is one bar per route with no x grouping at all, so "Average speed" is the whole
+// title and "by summary" would be noise.
+const RESOLUTION_TITLE_PHRASES = {
+    '5-minutes':  'by 5-minute epoch',
+    '15-minutes': 'by 15-minute epoch',
+    'hour':       'by hour of day',
+    'day':        'by day',
+    'weekday':    'by day of week',
+    'month':      'by month',
+};
+
+const sentenceCase = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+/**
+ * The auto-composed title for a pick.
+ *
+ * 2026-09-11 — this moved from the graph-native title (`display.title.title`, drawn inside the
+ * chart box) to the SECTION title, and got the vocabulary it needed to earn that slot. It used to
+ * emit the bare measure label, which was fine as a caption under a hand-written section title
+ * ("Daily Average Speed By Month" / "Speed (mph)") and useless as the only title on the card. See
+ * planning/transportny/tasks/current/report-graph-card-header-and-titles.md.
+ *
+ * Sentence case, per the design system's graph-card contract clause 1 ("the title token is
+ * cardTitleSM rendered sentence-case"). Each measure's `titlePhrase` in vocabulary.json is stored
+ * mid-sentence ("average speed", "AADT") so a prefix composes cleanly and one capitalisation at
+ * the end handles both — lowercasing a phrase that starts with an acronym does not.
+ *
+ * STILL A PURE FUNCTION OF THE PICK, which is load-bearing: `isTitleDirty` decides whether an
+ * author has typed their own title by recomputing what this would have produced for the PREVIOUS
+ * pick and comparing. Anything read from outside `pick` breaks that check.
+ */
 export function composeAutoTitle(pick) {
     if (!pick) return '';
     // Reliability's own bin (not year — composeAutoTitle only ever receives `pick`, no route date
@@ -1074,16 +1146,52 @@ export function composeAutoTitle(pick) {
     const reliabilityBin = (pick.graphType === 'Table' && pick.includeReliability && pick.resolution === 'summary')
         ? resolveReliabilityBin(pick.routeIds, pick.routeWindows)
         : null;
-    const measureLabel = pick.graphType === 'Table'
-        ? [...(pick.measures || []).map((k) => vocab.measures[k]?.label), reliabilityBin ? `Reliability (${RELIABILITY_BIN_LABELS[reliabilityBin]})` : null].filter(Boolean).join(', ')
-        : (vocab.measures[pick.measure]?.label || '');
-    if (!measureLabel) return '';
-    // Mirrors route_compare_template.py's own f"Route Compare, {title}" naming convention. Gated
-    // the same as composeTableMeasuresConfig's own routeCompare check — the title shouldn't claim
-    // "Route Compare" when the resolution means no delta column actually got composed.
-    const prefix = (pick.graphType === 'Table' && pick.routeCompare && pick.resolution === 'summary') ? 'Route Compare, ' : '';
+    // Table (Info Box / Route Compare) keeps the label list: it is a grid of several measures at
+    // once, so a single "average speed by month" sentence would misdescribe it.
+    if (pick.graphType === 'Table') {
+        const measureLabel = [
+            ...(pick.measures || []).map((k) => vocab.measures[k]?.label),
+            reliabilityBin ? `Reliability (${RELIABILITY_BIN_LABELS[reliabilityBin]})` : null,
+        ].filter(Boolean).join(', ');
+        if (!measureLabel) return '';
+        // Mirrors route_compare_template.py's own f"Route Compare, {title}" naming convention.
+        // Gated the same as composeTableMeasuresConfig's own routeCompare check — the title
+        // shouldn't claim "Route Compare" when the resolution means no delta column composed.
+        const prefix = (pick.routeCompare && pick.resolution === 'summary') ? 'Route Compare, ' : '';
+        const when = windowTitleFragment(pick);
+        return when ? `${prefix}${measureLabel} — ${when}` : `${prefix}${measureLabel}`;
+    }
+
+    const phrase = vocab.measures[pick.measure]?.titlePhrase;
+    if (!phrase) return '';
+    // Difference mode plots `anchor - other`, one series that is a delta — neither raw value
+    // survives to the client (clickhouse.js's diff-mode join), so the title is the only place the
+    // card says so. "Difference in" rather than a "Difference" suffix keeps it readable once the
+    // resolution clause lands: "Difference in average speed by hour of day".
+    const head = pick.comparisonMode === 'difference' ? `difference in ${phrase}` : phrase;
+    const by = RESOLUTION_TITLE_PHRASES[pick.resolution] || '';
     const when = windowTitleFragment(pick);
-    return when ? `${prefix}${measureLabel} — ${when}` : `${prefix}${measureLabel}`;
+    return sentenceCase([[head, by].filter(Boolean).join(' '), when].filter(Boolean).join(' — '));
+}
+
+/**
+ * The auto-composed KICKER — the quiet meta line that sits at the right edge of the card's header
+ * band, written to the section's `description` attribute (see section_components.jsx's
+ * `headerKicker` token). Deliberately carries what the title CAN'T: the unit, and the time window
+ * in its own words. Repeating the measure here would waste the only other line the card has.
+ *
+ * Pure function of the pick, same contract as composeAutoTitle, so the same pristine-check works.
+ */
+export function composeAutoKicker(pick) {
+    if (!pick) return '';
+    const units = pick.graphType === 'Table'
+        ? [...new Set((pick.measures || []).map((k) => vocab.measures[k]?.units).filter(Boolean))].join(' · ')
+        : (vocab.measures[pick.measure]?.units || '');
+    // windowTitleFragment renders nothing for an unrestricted graph — say so rather than leaving
+    // the reader to assume it, since "all day, every day" is a real and load-bearing claim about
+    // what the bars contain.
+    const when = windowTitleFragment(pick) || 'all day, every day';
+    return [units, when].filter(Boolean).join(' · ');
 }
 
 // `priorPick` is whatever `state.display._measurePick` held BEFORE this apply (undefined on a
@@ -1093,4 +1201,40 @@ export function composeAutoTitle(pick) {
 export function isTitleDirty({ currentTitle, priorPick }) {
     if (!currentTitle) return false;
     return currentTitle !== composeAutoTitle(priorPick);
+}
+
+// The kicker's twin of the above. Separate rather than folded in, because the two are edited
+// independently: an author can retitle a card and still want the meta line to track the measure.
+export function isKickerDirty({ currentDescription, priorPick }) {
+    if (!currentDescription) return false;
+    return currentDescription !== composeAutoKicker(priorPick);
+}
+
+/**
+ * The SECTION-attribute patch a measure pick implies — `{ title?, description? }`, already
+ * pristine-checked, ready to merge into one `updateAttribute` call.
+ *
+ * Why a returned patch rather than a write: the title lives on the section ROW, and
+ * `applyMeasurePickToState` only ever sees the section's element-data. Every caller writes the
+ * row through its own channel (`actions.updateAttribute` in the UI, a plain object literal in
+ * report_build.mjs / useAddGraphSection.js), and two sequential single-key writes would clobber
+ * each other — both derive from the same captured `value`. So the shared code composes and the
+ * caller merges once. The thing that must never drift between callers is the COMPOSITION, and
+ * that is what lives here.
+ *
+ * A caller that ignores the return value gets exactly the old behaviour: no section title.
+ */
+export function composeSectionTitlePatch({ currentTitle, currentDescription, priorPick, nextPick }) {
+    const patch = {};
+    if (!isTitleDirty({ currentTitle, priorPick })) {
+        const title = composeAutoTitle(nextPick);
+        // Never blank a title that exists. An unknown measure composes '' (see composeAutoTitle),
+        // and replacing a real title with nothing would leave the card anonymous.
+        if (title) patch.title = title;
+    }
+    if (!isKickerDirty({ currentDescription, priorPick })) {
+        const description = composeAutoKicker(nextPick);
+        if (description) patch.description = description;
+    }
+    return Object.keys(patch).length ? patch : null;
 }

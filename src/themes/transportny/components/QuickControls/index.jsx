@@ -214,12 +214,18 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   // reconcile step here instead would reintroduce exactly that drift risk.
   const applyPick = (partial) => {
     const nextState = cloneDeep(state);
-    applyMeasurePick({ state: nextState, dwAPI: { setState: (updater) => updater(nextState) }, currentComponent, apiHost, allRoutes: allRoutesResolved }, partial);
-    actions?.updateAttribute?.('element', { ...sectionValue?.element, 'element-data': JSON.stringify(nextState) });
+    // The return value is the SECTION-attribute patch the pick implies — `{ title, description }`,
+    // already pristine-checked so a hand-typed title is never clobbered (composeSectionTitlePatch).
+    // Merged into the SAME write as the element, not a second updateAttribute call: both would
+    // derive from the same captured `sectionValue` and the second would discard the first.
+    const sectionPatch = applyMeasurePick({ state: nextState, dwAPI: { setState: (updater) => updater(nextState) }, currentComponent, apiHost, allRoutes: allRoutesResolved, sectionValue }, partial);
+    const elementPatch = { element: { ...sectionValue?.element, 'element-data': JSON.stringify(nextState) } };
+    if (sectionPatch && actions?.updateAttributes) actions.updateAttributes({ ...elementPatch, ...sectionPatch });
+    else actions?.updateAttribute?.('element', elementPatch.element);
     // Harmless no-op-for-persistence nicety under SectionView (see above); real instant feedback
     // under SectionEdit. Either way, the round-trip once draft_sections/sections comes back down
     // as a fresh `state` prop is what actually reflects the change.
-    if (dwAPI?.setState) applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allRoutes: allRoutesResolved }, partial);
+    if (dwAPI?.setState) applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allRoutes: allRoutesResolved, sectionValue }, partial);
   };
 
   // Writes ONE window to every currently-assigned route's routeWindows entry (index 0 only —

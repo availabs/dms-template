@@ -163,6 +163,16 @@ export function isMapTitleDirty({ currentTitle, priorMeasureKey }) {
     return currentTitle !== composeMapAutoTitle(priorMeasureKey);
 }
 
+// Map's `{ title? }` patch for the SECTION row — the counterpart to composeMeasureConfig.js's
+// composeSectionTitlePatch (read that one's doc comment for why this is returned rather than
+// written). No kicker: a Map card has no unit and no time grouping to caption, and its measure is
+// already the whole title.
+export function composeMapSectionTitlePatch({ currentTitle, priorMeasureKey, measureKey }) {
+    if (isMapTitleDirty({ currentTitle, priorMeasureKey })) return null;
+    const title = composeMapAutoTitle(measureKey);
+    return title ? { title } : null;
+}
+
 function latestAvailableYear() {
     const years = Object.keys(GEOMETRY_TILE_VIEWS).map(Number);
     const now = new Date().getFullYear();
@@ -354,10 +364,9 @@ export function composeMapSectionConfig({ measureKey = 'none', year, apiHost } =
         },
     };
     ensureSelfBoundSubscriber(state);
-    // Brand-new section, no prior title to preserve — always set (mirrors applyMeasurePickToState's
-    // own "undefined priorPick" creation-time behavior, via isMapTitleDirty's `!currentTitle`
-    // short-circuit).
-    state.display.title = { ...state.display.title, title: composeMapAutoTitle(measureKey) };
+    // The in-card title write that used to live here moved to the SECTION title on 2026-09-11 —
+    // see composeMapSectionTitlePatch. It was always invisible anyway: a Map section is not
+    // rendered by GraphComponent and has no GraphTitle, so `display.title` had no render path.
     return state;
 }
 
@@ -381,8 +390,6 @@ export function applyMapMeasureToState(state, { measureKey = 'none', year, apiHo
         symbology: { activeLayer: layer.id, layers: { [layer.id]: layer } },
     };
     ensureSelfBoundSubscriber(state);
-    const currentTitle = state.display.title?.title;
-    if (!isMapTitleDirty({ currentTitle, priorMeasureKey })) {
-        state.display.title = { ...state.display.title, title: composeMapAutoTitle(measureKey) };
-    }
+    // Title handled by the caller via composeMapSectionTitlePatch (see above) — it writes the
+    // SECTION row, which this function can't reach.
 }

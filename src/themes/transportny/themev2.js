@@ -38,6 +38,7 @@ import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
 import ReportPageHeader from "./components/ReportPageHeader"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { resolveLegendUnit } from "./components/MeasurePicker/resolveLegendUnit"
 import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
@@ -1970,6 +1971,10 @@ const lexical = {
 // ─────────────────────────────────────────────────────────────────────────────
 const graph = {
   options: { activeStyle: 0 },
+  // Optional hook read by graph_new/index.jsx: supplies the DEFAULT text for a legend's title
+  // slot when a section hasn't set `display.legend.title` itself. Lives beside `_measurePick`'s
+  // own writer rather than in the library — see resolveLegendUnit.js's header for why.
+  resolveLegendUnit,
   styles: [{
     name: "default",
     // Built-in chart padding (consumed by graph_new/GraphComponent's outer div) —
@@ -1984,8 +1989,19 @@ const graph = {
     axis:         "stroke-zinc-950/15",
     grid:         "stroke-zinc-950/5",
     tooltip:      "rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima",
-    legend:       "flex items-center gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
-    legendSwatch: "h-0.5 w-4",
+    // These two were authored as DEAD scaffolding and went live 2026-09-10 when the legend
+    // gained its class-token layer. Layout is component-owned now (the legend picks grid vs
+    // flex from its own orientation), so `legend` must carry NO display/alignment class: the
+    // original value led with `flex items-center`, which fought `grid grid-cols-1` on the
+    // vertical variant. Spacing and typography only.
+    legend:       "gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
+    // A thin rule rather than a block swatch, as authored — but the token REPLACES the
+    // historical `w-4 h-4 rounded mr-1`, so it has to carry its own gap or the dash abuts
+    // the label.
+    legendSwatch: "h-0.5 w-4 mr-2",
+    // The gradient legend's unit/title line (see Legend.jsx's LegendTitle). Deliberately quieter
+    // than the tick numerals it labels — it is a caption for the ramp, not a second data value.
+    legendTitle:  "font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-0.5",
     catPalette:     ["#6F6F6F", "#E5A646", "#94C24E", "#E160A4", "#F2CB3D"],
     seqSpeedPalette:["#D6453B", "#E8843F", "#F2E18A", "#A8D26B", "#3FA34D"],
     primary:        "#1F3F8F",
@@ -2294,6 +2310,54 @@ const pages = {
       // "Open visual question" note), not this row, so there's nothing to
       // visually match here.
       headerExtensionsRow: "px-3 pb-2",
+    },
+    {
+      // ── Report graph card (2026-09-11) ────────────────────────────────────
+      // The graph-card contract's clause 1, drawn in npmrds-report.html:677-686:
+      // "Header h-10, one line: title · measure chip · quick-control pills right ·
+      // kebab last. No separate section title above the card — the header IS the
+      // title." Selected per-section by `value.activeStyle: "reportCard"`, stamped
+      // only by the paths that mint a report graph section (report_build.mjs,
+      // useAddGraphSection.js, the converter). NOT site-wide on purpose: npmrds_docs
+      // has 133 titled sections and `status` 26, and a documentation page has no
+      // business wearing a bordered card band.
+      //
+      // Every other key is inherited from styles[0] (getComponentTheme merges the
+      // default style under a named one), so this block is only the delta.
+      //
+      // An un-regenerated report section carries `activeStyle: "reportInlineTitle"`,
+      // which matches no style here and therefore resolves to styles[0] — the old
+      // look, unchanged, with no guard needed. That is the whole no-backfill story.
+      name: "reportCard",
+      // One 40px row. `pr-10` is not decoration: the section's Settings kebab is
+      // absolutely positioned at the wrapper's top-right (`menuPosition`, top-2/right-2)
+      // and would otherwise sit on top of whatever ends the row.
+      headerRow:       "flex w-full items-center gap-3 h-10 pl-4 pr-10 border-b border-zinc-950/10",
+      // Drops styles[0]'s `uppercase` and its `pb-2`: the contract renders this title
+      // sentence-case, and vertical rhythm is the row's fixed height now.
+      headerInner:     "flex-1 min-w-0 flex flex-row items-center gap-3",
+      headerTitleWrap: "flex-1 min-w-0",
+      // Deliberately NOT the `cardTitleSM` text token, which is the same 15px face but
+      // UPPERCASE — see the contract: "rendered sentence-case". `leading-none` keeps the
+      // cap-height centred in a 40px row rather than riding high on a 1.15 line box.
+      headerTitle:     `${F_DISP} font-medium text-[15px] leading-none tracking-tight ${INK} truncate`,
+      // The right-hand meta line, fed by the section's `description`. Quiet on purpose:
+      // it is a caption for the card, not a second title. Amber is reserved for band
+      // heads (a `kicker` paragraph naming a GROUP of graphs) — a `// NN` on every card
+      // would stop meaning anything.
+      //
+      // `hidden xl:block` is how this row resolves its one real width conflict. In page-edit
+      // mode the Quick Controls pills share this slot, and a half-width card cannot hold the
+      // title, the meta line and four pills. Rather than have the band guess which to drop,
+      // the caption simply yields below xl — so a wide card shows both, and a narrow one in
+      // edit mode shows the controls, which are the thing you came to use.
+      headerKicker:    "shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 hidden xl:block",
+      headerActions:   "flex items-center shrink-0",
+      // Quick Controls move INTO the row (they render only in page-edit mode, see
+      // QuickControls/index.jsx's `editPageMode` gate, so in view mode this slot is the
+      // kicker's alone and nothing competes).
+      headerExtensionsInline: true,
+      headerExtensionsInlineRow: "shrink-0 flex items-center justify-end gap-1.5",
     }],
   },
 
