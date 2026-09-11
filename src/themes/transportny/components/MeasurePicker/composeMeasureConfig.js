@@ -1169,7 +1169,14 @@ export function composeAutoTitle(pick) {
     // card says so. "Difference in" rather than a "Difference" suffix keeps it readable once the
     // resolution clause lands: "Difference in average speed by hour of day".
     const head = pick.comparisonMode === 'difference' ? `difference in ${phrase}` : phrase;
-    const by = RESOLUTION_TITLE_PHRASES[pick.resolution] || '';
+    // A GridGraph is a TMC × time grid, so its x grouping is only half its grain — a line and a
+    // grid of the same measure at the same resolution otherwise compose the SAME title, which is
+    // wrong on a page that shows both (snapshot, seasonality, one_week_study, and 5 more all do).
+    // Naming the extra dimension is not widget prose: `by TMC and 5-minute epoch` describes what a
+    // row of the chart IS, and is the fact that distinguishes it from the line.
+    const by = pick.graphType === 'GridGraph'
+        ? (RESOLUTION_TITLE_PHRASES[pick.resolution] || '').replace(/^by /, 'by TMC and ') || 'by TMC'
+        : (RESOLUTION_TITLE_PHRASES[pick.resolution] || '');
     const when = windowTitleFragment(pick);
     return sentenceCase([[head, by].filter(Boolean).join(' '), when].filter(Boolean).join(' — '));
 }

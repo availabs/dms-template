@@ -246,3 +246,23 @@ describe("multiple time windows — the misleading case", () => {
     expect(composeAutoKicker(variants)).toBe("mph · multiple time windows");
   });
 });
+
+describe("grain — what distinguishes a grid from a line of the same measure", () => {
+
+  it("names the TMC dimension a GridGraph adds", () => {
+    expect(composeAutoTitle(p({ graphType: "GridGraph", measure: "speed", resolution: "5-minutes" })))
+      .toBe("Average speed by TMC and 5-minute epoch");
+  });
+
+  it("does not collide with the line graph of the same measure and resolution", () => {
+    const line = composeAutoTitle(p({ graphType: "LineGraph", measure: "speed", resolution: "5-minutes" }));
+    const grid = composeAutoTitle(p({ graphType: "GridGraph", measure: "speed", resolution: "5-minutes" }));
+    expect(line).toBe("Average speed by 5-minute epoch");
+    expect(grid).not.toBe(line);
+  });
+
+  it("still says something useful for a grid with no x grouping", () => {
+    expect(composeAutoTitle(p({ graphType: "GridGraph", measure: "speed", resolution: "summary" })))
+      .toBe("Average speed by TMC");
+  });
+});

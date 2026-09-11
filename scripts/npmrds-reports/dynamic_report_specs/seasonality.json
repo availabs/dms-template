@@ -11,7 +11,6 @@
   "graphs": [
     {
       "key": "daily_delay",
-      "title": "Daily hours of delay",
       "graphType": "BarGraph",
       "measure": "hoursOfDelay",
       "resolution": "day",

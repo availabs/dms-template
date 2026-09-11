@@ -2338,9 +2338,14 @@ const pages = {
       headerInner:     "flex-1 min-w-0 flex flex-row items-center gap-3",
       headerTitleWrap: "flex-1 min-w-0",
       // Deliberately NOT the `cardTitleSM` text token, which is the same 15px face but
-      // UPPERCASE — see the contract: "rendered sentence-case". `leading-none` keeps the
-      // cap-height centred in a 40px row rather than riding high on a 1.15 line box.
-      headerTitle:     `${F_DISP} font-medium text-[15px] leading-none tracking-tight ${INK} truncate`,
+      // UPPERCASE — see the contract: "rendered sentence-case".
+      //
+      // The leading is load-bearing, not taste: `truncate` brings `overflow: hidden`, so a line
+      // box shorter than the font's full ink height CLIPS descenders. At `leading-none` the box
+      // was exactly 15px against 18px of Oswald ink, and every g/p/y on every card lost its tail
+      // (measured: clientHeight 15, scrollHeight 18). The row is `items-center`, so a taller line
+      // box stays vertically centred — there was never anything to gain by tightening it.
+      headerTitle:     `${F_DISP} font-medium text-[15px] leading-[1.4] tracking-tight ${INK} truncate`,
       // The right-hand meta line, fed by the section's `description`. Quiet on purpose:
       // it is a caption for the card, not a second title. Amber is reserved for band
       // heads (a `kicker` paragraph naming a GROUP of graphs) — a `// NN` on every card

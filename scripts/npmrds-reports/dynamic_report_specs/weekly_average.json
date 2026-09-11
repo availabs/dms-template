@@ -11,7 +11,6 @@
   "graphs": [
     {
       "key": "line_speed",
-      "title": "Route line graph, speed",
       "graphType": "LineGraph",
       "measure": "speed",
       "resolution": "5-minutes",
@@ -38,7 +37,6 @@
     },
     {
       "key": "bar_speed_weekday",
-      "title": "Average speed by day of week",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "weekday",

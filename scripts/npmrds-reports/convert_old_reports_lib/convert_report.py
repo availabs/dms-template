@@ -5,7 +5,7 @@ import uuid
 from .config import COMPONENT_TYPE, GAPS_DIR, PATTERN, REPORTS_SNAP_TYPE
 from .vocab import BAR_SUMMARY_PM3_BUCKET, COLOR_RANGE_GRAPH_TYPES, DIFFERENCE_GRAPH_TYPES, GRAPH_TEMPLATE_MAP, INFO_BOX_AADT_BUCKET, INFO_BOX_BUCKET, INFO_BOX_DELAY_BUCKET, INFO_BOX_GRAIN, INFO_BOX_LENGTH_BUCKET, INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS, ROUTE_COMPARE_BUCKET
 from .expressions import ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, aadt_override_of
-from .template_specs import MEASURE_EXPR
+from .template_specs import BRIDGE_GRAPH_SPECS, MEASURE_EXPR
 from .db import dms, fetch_agency_tag, fetch_auth_agency_tags, fetch_old_report, fetch_old_routes, fetch_user_tag, flatten_route_comps, now_iso
 from .dates import report_is_pre_2017_only, resolve_relative_dates
 from .transforms import build_route_entry, group_route_comps, route_comp_display_name, route_comp_merge_key
@@ -13,6 +13,7 @@ from .graph_templates import ensure_bridge_graph_templates, ensure_graph_templat
 from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
+from .compose_bridge import call_compose_bridge
 from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, resolve_tmc_array, template_framework_sections
 from .pages import compute_report_slug, delete_converted_page, ensure_parent_page, ensure_route_in_catalog, find_page_by_old_report_id
 
@@ -597,6 +598,9 @@ def convert_report(old_id, dry_run=False, replace=False):
     # add-route-flow-improvements.md task).
     section_datas = [build_cloned_section_data(page_id, tmpl, str(uuid.uuid4()))
                       for tmpl in template_framework_sections(page_template)]
+    # Everything appended after this point is a graph section — the card-chrome pass below stamps
+    # only those, never the cloned framework sections.
+    framework_section_count = len(section_datas)
     for (g, info, tmpl), tid, aadt_ov in zip(convertible, graph_tracking_ids,
                                              graph_aadt_overrides):
         # Info Box sections all render an otherwise-identical "TMC/Route Info
@@ -627,6 +631,56 @@ def convert_report(old_id, dry_run=False, replace=False):
                                      diff_invert=route_diff_invert.get(
                                          g.get("id"), False),
                                      comps_by_id=comps_by_id))
+
+    # ── Report-card chrome + caption (2026-09-11) ────────────────────────────
+    # A converted report is a report: its graph cards get the same chrome the spec-driven builder
+    # and the "+ Add Graph" button give (`report_build.mjs`'s graphSectionData /
+    # useAddGraphSection.js), instead of the bare pre-2026-09-11 look. Both literals come back from
+    # `compose_bridge.mjs` rather than being mirrored here, so the three mint paths cannot drift —
+    # a card ending up rounded or square depending on which one created it is exactly what
+    # reportSectionDefaults.js exists to prevent, and a Python copy would reintroduce it across a
+    # language boundary no grep would cross.
+    #
+    # Only the GRAPH sections. The framework sections cloned above (`ReportPageHeader`,
+    # `ReportRouteList`) carry their own chrome from the page template and must keep it — carding
+    # the header put a second border around a card that already had one.
+    #
+    # The caption is composed HERE, not at template-compose time, because it names the route
+    # windows — which only exist once the loop above has resolved route assignment onto each
+    # section's `_measurePick`. That pick carries no `measure` (the converter never needed one
+    # there), so the measure comes from the template's own BRIDGE_GRAPH_SPECS entry, keyed by the
+    # templateName this section was stamped with.
+    graph_sections = section_datas[framework_section_count:]
+    meta_reqs = [{"key": "__defaults", "sectionDefaults": True}]
+    for i, sd in enumerate(graph_sections):
+        try:
+            st = json.loads(sd["element"]["element-data"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        pick = (st.get("display") or {}).get("_measurePick")
+        if not pick:
+            continue
+        tname = (((sd.get("_appliedTemplate") or {}).get("fields") or {})
+                 .get("title") or {}).get("templateName")
+        spec = BRIDGE_GRAPH_SPECS.get(tname) or {}
+        measure = spec.get("measureKey")
+        # Map / Info Box / Route Compare have no chart-shaped measure; they get the card, no caption.
+        if not measure:
+            continue
+        meta_reqs.append({"key": f"__kick{i}",
+                          "kickerPick": {**pick, "measure": measure,
+                                         "graphType": spec.get("graphType"),
+                                         "resolution": spec.get("resolutionKey")}})
+    composed_meta = call_compose_bridge(meta_reqs)
+    defaults = composed_meta.get("__defaults") or {}
+    for i, sd in enumerate(graph_sections):
+        if defaults.get("border"):
+            sd["border"] = defaults["border"]
+        if defaults.get("activeStyle"):
+            sd["activeStyle"] = defaults["activeStyle"]
+        kick = composed_meta.get(f"__kick{i}")
+        if kick:
+            sd["description"] = kick
 
     # -- draft rows. Created via `raw create` (a plain insert), NOT `dms section
     # create` — that CLI command attaches itself to the page's draft_sections

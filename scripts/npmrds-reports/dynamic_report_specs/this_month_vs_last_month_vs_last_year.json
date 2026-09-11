@@ -79,7 +79,6 @@
     },
     {
       "key": "weekday_delay",
-      "title": "Avg. hours of delay by day of week",
       "graphType": "BarGraph",
       "measure": "avgHoursOfDelay",
       "resolution": "weekday",
@@ -87,7 +86,6 @@
     },
     {
       "key": "weekday_traveltime",
-      "title": "Travel time by day of week",
       "graphType": "BarGraph",
       "measure": "travelTime",
       "resolution": "weekday",
@@ -95,7 +93,6 @@
     },
     {
       "key": "weekday_speed",
-      "title": "Speed by day of week",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "weekday",
@@ -103,7 +100,6 @@
     },
     {
       "key": "bar_summary_traveltime",
-      "title": "Bar graph summary, travel time",
       "graphType": "BarGraph",
       "measure": "travelTime",
       "resolution": "summary",
