@@ -1,9 +1,25 @@
 # Graph-card padding + legend quality pass (Phase 5)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** **NOT STARTED on this side.** The submodule
-half's **pass 1 is DONE + live-verified 2026-09-10** (legend geometry, title truncation, the
-no-ramp fallback, the admin theme-editor pieces); none of this site's own token VALUES are set yet.
-· **Started:** 2026-09-09
+**Project:** TransportNY · **Topic:** themes · **Status:** **LEGEND VALUES SET + live-verified and
+owner-reviewed 2026-09-11.** The submodule half's pass 1 and pass 2 items 1-2 are DONE. This site's
+**legend** token values are authored and rendering; the **tooltip** and **padding** values are still
+unset, pending submodule items 3 and 4. · **Started:** 2026-09-09
+
+### What is authored on this site now (`themev2.js`, the `avlGraph` block)
+
+| token | value | note |
+|---|---|---|
+| `legend` | `gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500` | was authored years ago as DEAD scaffolding and went live the moment the token layer was wired. Its original value led with `flex items-center`, which **broke the gradient legend** — see the submodule file's "Two bugs". Layout is component-owned; a legend token must carry **no display/alignment class**. |
+| `legendSwatch` | `h-0.5 w-4 mr-2` | a thin rule rather than a block swatch, as originally authored. The token REPLACES `w-4 h-4 rounded mr-1`, so it has to carry its own gap. |
+| `legendTitle` | `font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-0.5` | the caption above a gradient ramp — deliberately quieter than the numerals it labels. |
+| `resolveLegendUnit` | `components/MeasurePicker/resolveLegendUnit.js` | optional hook read by the library; supplies the automatic unit. `units` added to all 11 measures in `vocabulary.json`. |
+
+`legendLabel`, `legendTick` and `legendRamp` are **available and intentionally unset** — gradient
+ticks and the ramp keep their historical look.
+
+**The design system's "chip treatment" was NOT adopted.** The earlier instruction to use it rather
+than the older mono/uppercase values is **superseded**: the values above were reviewed on the live
+client and accepted as-is.
 
 > **Read first:** the ▶ START HERE block in
 > [`src/dms/planning/tasks/current/avlgraph-legend-and-padding-theming.md`](../../../../src/dms/planning/tasks/current/avlgraph-legend-and-padding-theming.md)

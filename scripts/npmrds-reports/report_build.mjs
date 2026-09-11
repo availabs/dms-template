@@ -1043,16 +1043,21 @@ const server = await createServer({ root: REPO, server: { middlewareMode: true }
 
 let composedStates;
 let DEFAULT_GRAPH_SECTION_BORDER;
+let DEFAULT_GRAPH_SECTION_STYLE;
+// Hoisted out of the try block below: the route-resolution pass further down recomposes each
+// section's auto title/kicker against the FINISHED pick (see its own comment), long after the Vite
+// server that loaded this module has been closed.
+let cmc;
 try {
   const mp = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/index.js');
-  const cmc = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js');
+  cmc = await server.ssrLoadModule('/src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js');
   const graphCfg = await server.ssrLoadModule(
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/graph_new/config.jsx');
   const avlGraph = graphCfg.default;
   // Shared with useAddGraphSection.js (the UI "+ Add Graph" flow's counterpart to this
   // function) via reportSectionDefaults.js, loaded through the same ssrLoadModule bridge
   // already used for composeMeasureConfig.js — one real module, not a duplicated literal.
-  ({ DEFAULT_GRAPH_SECTION_BORDER } = await server.ssrLoadModule(
+  ({ DEFAULT_GRAPH_SECTION_BORDER, DEFAULT_GRAPH_SECTION_STYLE } = await server.ssrLoadModule(
     '/src/themes/transportny/components/ReportRouteList/reportSectionDefaults.js'));
 
   // Validate picks against the vocabulary before composing, so a typo fails
@@ -1153,7 +1158,11 @@ try {
       setState: (fn) => fn(state),
       reconcileComparisonSeriesColumn: () => reconcileComparisonSeriesColumn(state),
     };
-    mp.applyMeasurePick({ state, dwAPI, currentComponent: avlGraph }, {
+    // The return value is the SECTION-attribute patch this pick implies (auto title + meta line)
+    // — see composeSectionTitlePatch. `sectionValue` is empty because a spec build always mints a
+    // fresh section, so the pristine check always writes. Stashed on the spec graph for
+    // graphSectionData() below, which is where the section row is actually assembled.
+    g._sectionPatch = mp.applyMeasurePick({ state, dwAPI, currentComponent: avlGraph, sectionValue: {} }, {
       graphType: g.graphType,
       measure: g.measure,
       resolution: g.resolution,
@@ -1173,14 +1182,20 @@ try {
     if (g._invert) {
       state.comparisonSeries.combine = { ...(state.comparisonSeries.combine || {}), invert: true };
     }
-    // No in-card chart title: the Section's own `title` (graphSectionData,
-    // rendered by the generic section-header band — the same band Quick
-    // Controls attaches to) is the one place a graph's title shows now.
-    // Writing it into state.display.title too used to double it (once above
-    // the card, once inside it) — see report-route-ui-parity-gaps.md.
-    // `state.display.description` (below) is a different field — the
-    // difference-mode subtitle — and keeps rendering inside the card via
-    // GraphComponent.jsx's GraphTitle.
+    // No in-card chart title: the Section's own `title` (graphSectionData, rendered in the card's
+    // header band) is the one place a graph's title shows.
+    //
+    // This file never assigned `state.display.title` — but until 2026-09-11 `applyMeasurePick`,
+    // called just above, did, unconditionally, and nothing cleared it. So the doubling an earlier
+    // version of this comment claimed was fixed was live on every spec-built report: 315 of 383
+    // sections carried both titles, one of them the identical string twice. The write is gone from
+    // the measure picker now (MeasurePicker/index.js), and this clears anything a component's
+    // `defaultState` still carries, so a regenerated report has exactly one title.
+    //
+    // `state.display.description` (below) is a DIFFERENT field — the in-card caption under the
+    // chart, still rendered by GraphComponent.jsx's GraphTitle. The section's own `description`
+    // (the header band's meta line) is a third thing again; see graphSectionData.
+    if (state.display?.title) delete state.display.title;
     if (g.caption) {
       state.display.description = g.caption;
     }
@@ -1499,6 +1514,13 @@ for (const [i, g] of spec.graphs.entries()) {
     if (!composedStates[i]) continue; // Route Map with no resolvable tmcs/dates (see its own note above) leaves this undefined — same pre-existing guard, unrelated to this block.
     const state = composedStates[i];
     if (!state.display) state.display = {};
+    // One title per card (2026-09-11). The AVL Graph path already deleted this above; Info Box and
+    // Route Compare states come back from the Python builders with a `display.title` baked in, and
+    // Map's composer used to write one too. None of those three has a render path for it — only
+    // GraphComponent draws a graph-native title — so it was invisible rather than doubled, but
+    // leaving dead text in the state means the next component that grows a title render path
+    // doubles silently. Cleared centrally, once, for every graph type.
+    if (state.display.title) delete state.display.title;
     const routeIds = g._assigned.map(r => routeCompId.get(r));
     // Every assigned route gets its own `_measurePick.routeWindows` entry now — no uniform-check,
     // no silently leaving the window unset when routes disagree (that was never correct: it made
@@ -1520,6 +1542,21 @@ for (const [i, g] of spec.graphs.entries()) {
       routeIds,
       routeWindows,
     };
+    // Recompose the section's auto title/kicker NOW, against the finished pick.
+    // `applyMeasurePick` ran long before this block, when `routeIds`/`routeWindows` were still
+    // empty — so a peak-filtered graph composed "mph · all day, every day", claiming a window it
+    // does not have. (Caught on the first regenerated report: snapshot's two AM/PM-peak summary
+    // cards.) Recomposing here rather than moving the compose call is deliberate: the earlier call
+    // is what actually builds the columns/join, and it has to run before route resolution.
+    //
+    // Only the AVL-Graph types have a pick shaped for this composer; Map and the Spreadsheet-backed
+    // Info Box / Route Compare keep whatever their own composer produced.
+    if (!['Map', 'InfoBox', 'RouteCompare'].includes(g.graphType)) {
+      g._sectionPatch = cmc.composeSectionTitlePatch({
+        currentTitle: '', currentDescription: '',
+        priorPick: undefined, nextPick: state.display._measurePick,
+      }) || g._sectionPatch;
+    }
   }
 }
 
@@ -1594,7 +1631,15 @@ function graphSectionData(g, i, trackingId) {
   return {
     type: COMPONENT_TYPE,
     group: 'default',
-    title: g.title || '',
+    // The spec's own wording always wins — a curated report's titles are hand-written and better
+    // than anything a composer produces ("Route Map, Speed", "Daily Average Speed By Month"). A
+    // spec that OMITS `title` now gets the auto-composed one instead of an anonymous card
+    // ("Average speed by month"), which is the same text the UI's own pills would have written.
+    title: g.title || g._sectionPatch?.title || '',
+    // The header band's right-hand meta line — unit + time window, the two things the title has no
+    // room for. `g.caption` is deliberately NOT used here: that is the in-card caption under the
+    // chart (state.display.description above), which is prose about the graph, not a meta line.
+    ...(g._sectionPatch?.description ? { description: g._sectionPatch.description } : {}),
     parent: parentRef,
     trackingId,
     // Rounded card by default (2026-09-04, Ryan) — see reportSectionDefaults.js for why
@@ -1602,11 +1647,13 @@ function graphSectionData(g, i, trackingId) {
     // existing reports keep their current chrome until an author (or a future --update
     // run) touches them.
     border: DEFAULT_GRAPH_SECTION_BORDER,
-    // Inline title/legend row (2026-09-04, Ryan) — selects the `reportInlineTitle` avlGraph
-    // style (transportny/themev2.js), which is what actually reads `theme.titleInlineWithLegend`
-    // in GraphComponent.jsx. Only meaningful for the real chart component ('AVL Graph' —
-    // Map/Spreadsheet-backed InfoBox/RouteCompare sections have no avlGraph theme to select).
-    ...(elementType === 'AVL Graph' ? { activeStyle: 'reportInlineTitle' } : {}),
+    // The graph-card header band (2026-09-11) — see reportSectionDefaults.js. Stamped on EVERY
+    // report section type, not just AVL Graph: the band is drawn by the SECTION, so Route Map and
+    // the Spreadsheet-backed Info Box / Route Compare cards get the same header, and each
+    // component theme falls back to its own styles[0] on a style name it doesn't define. Replaces
+    // the AVL-Graph-only 'reportInlineTitle', whose avlGraph style existed to inline the
+    // graph-native title with the legend — there is no graph-native title on a report card now.
+    activeStyle: DEFAULT_GRAPH_SECTION_STYLE,
     ...(g.size ? { size: String(g.size) } : {}),
     element: {
       'element-type': elementType,
