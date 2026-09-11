@@ -38,6 +38,7 @@ import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
 import ReportPageHeader from "./components/ReportPageHeader"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { resolveLegendUnit } from "./components/MeasurePicker/resolveLegendUnit"
 import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
@@ -1970,6 +1971,10 @@ const lexical = {
 // ─────────────────────────────────────────────────────────────────────────────
 const graph = {
   options: { activeStyle: 0 },
+  // Optional hook read by graph_new/index.jsx: supplies the DEFAULT text for a legend's title
+  // slot when a section hasn't set `display.legend.title` itself. Lives beside `_measurePick`'s
+  // own writer rather than in the library — see resolveLegendUnit.js's header for why.
+  resolveLegendUnit,
   styles: [{
     name: "default",
     // Built-in chart padding (consumed by graph_new/GraphComponent's outer div) —
@@ -1994,6 +1999,9 @@ const graph = {
     // historical `w-4 h-4 rounded mr-1`, so it has to carry its own gap or the dash abuts
     // the label.
     legendSwatch: "h-0.5 w-4 mr-2",
+    // The gradient legend's unit/title line (see Legend.jsx's LegendTitle). Deliberately quieter
+    // than the tick numerals it labels — it is a caption for the ramp, not a second data value.
+    legendTitle:  "font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-0.5",
     catPalette:     ["#6F6F6F", "#E5A646", "#94C24E", "#E160A4", "#F2CB3D"],
     seqSpeedPalette:["#D6453B", "#E8843F", "#F2E18A", "#A8D26B", "#3FA34D"],
     primary:        "#1F3F8F",
