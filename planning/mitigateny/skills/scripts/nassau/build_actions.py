@@ -211,6 +211,34 @@ def clean(s):
     return re.sub(r"\s+", " ", str(s or "")).strip()
 
 
+def fmt_alternative(alt):
+    """
+    Render one worksheet alternative as prose.
+
+    The alternatives are DICTS -- {action, estimated_cost, evaluation} -- and passing one
+    through `clean()` stringifies the dict, so 138 rows were carrying literal Python syntax
+    into a field a county reviewer reads:
+
+        Alternative action 2: {'action': 'Elevate the garage to only the FEMA base flood
+        elevation.', 'estimated_cost': 'To be determined.', 'evaluation': 'The building
+        would not be fully protected from hazards.'}
+
+    Caught before load by listing every template this builder composes, rather than by
+    anything the schema validator could see -- a str is a valid str.
+    """
+    if not isinstance(alt, dict):
+        return clean(alt)
+    action = clean(alt.get("action"))
+    cost = clean(alt.get("estimated_cost"))
+    ev = clean(alt.get("evaluation"))
+    bits = [action] if action else []
+    if cost and cost not in ("$", "$0"):
+        bits.append(f"Estimated cost: {cost}")
+    if ev:
+        bits.append(f"Evaluation: {ev}")
+    return " ".join(bits).strip()
+
+
 def money(s):
     """A number only when the string really is a cost. Prose returns None -- an earlier
     version parsed fragments out of sentences and produced four false HIGH cost bands."""
@@ -372,6 +400,14 @@ def merge_same_name(rows, geoid, juris):
             extra.append(line)
         if extra:
             prior = clean(keep["data"].get("action_status_details"))
+            # Drop an appended note whose detail text the survivor already carries verbatim.
+            # The two tables often describe a carried-forward project in identical words, so a
+            # naive append produced rows reading "Project completed. The building wide
+            # generator is fully operational.  Also recorded in the plan's prior-actions table
+            # with status "Completed": Project completed. The building wide generator is fully
+            # operational." -- the same sentence twice in one field.
+            extra = [e for e in extra if not (prior and prior in e)]
+        if extra:
             keep["data"]["action_status_details"] = (
                 (prior + "  " if prior else "") + "  ".join(extra))
         keep["_merged_from"] = [
@@ -394,15 +430,26 @@ def main():
     M = json.load(io.open(os.path.join(EX, "maws.json"), encoding="utf-8"))
     ws = {}
     rollup_components = set()
+    rollup_ws = {}
     for w in M["worksheets"]:
         num = w.get("project_number")
         g = str(w.get("geoid") or "")
         if w.get("relationship") == "rollup" or w.get("precedence_applies") is False:
             # A roll-up must not overwrite its components; remember them so precedence is
             # skipped, but keep its worksheet-only fields available as shared context.
-            for c in re.split(r"[,\s]+", str(num or "")):
+            #
+            # Read the components from `covers`, NOT from `project_number`. The extractor
+            # deliberately BLANKS project_number on a roll-up (the raw string lives on in
+            # `project_number_source`) precisely because it is not a single project's number.
+            # Splitting the blank field added nothing, so `rollup_components` stayed empty and
+            # the roll-up branch never once executed. The eight VOH rows still kept their own
+            # costs -- but only because the roll-up worksheet is excluded from `ws` below, so
+            # nothing matched them. Right outcome, wrong mechanism, and the shared worksheet
+            # fields the decision called for were never attached.
+            for c in (w.get("covers") or []):
                 if c:
-                    rollup_components.add((g, c))
+                    rollup_components.add((g, str(c)))
+                    rollup_ws[(g, str(c))] = w
             continue
         if num:
             ws[(g, str(num))] = w
@@ -427,8 +474,10 @@ def main():
                     [("completed", a) for a in (A.get("completed_actions") or [])])
         for i, (kind_p, a) in enumerate(proposed):
             num = clean(a.get("Project Number"))
-            w = ws.get((geoid, num))
             is_rollup_component = (geoid, num) in rollup_components
+            # A component inherits its roll-up's worksheet-only fields as shared context, but
+            # `pick()` below refuses to let it overwrite name, cost or narrative.
+            w = ws.get((geoid, num)) or rollup_ws.get((geoid, num))
             if w:
                 enriched += 1
 
@@ -498,7 +547,7 @@ def main():
                     w.get("Local Planning Mechanisms to be Used in Implementation, if any:")) or None
                 alts = w.get("alternatives") or []
                 if alts:
-                    d["alternative_action_1"] = clean(alts[0]) or None
+                    d["alternative_action_1"] = fmt_alternative(alts[0]) or None
                 cbn = []
                 for k in ("Level of Protection:", "Useful Life:",
                           "Estimated Benefits (losses avoided):"):
@@ -506,7 +555,7 @@ def main():
                     if v:
                         cbn.append(f"{k.rstrip(':')}: {v}")
                 if len(alts) > 1:
-                    cbn.append("Alternative action 2: " + clean(alts[1]))
+                    cbn.append("Alternative action 2: " + fmt_alternative(alts[1]))
                 if cbn:
                     d["cost_benefit_notes"] = "  ".join(cbn)
                 if is_rollup_component:
@@ -579,10 +628,10 @@ def main():
                     "jurisdiction": juris,
                     "lead_agency_department": juris,
                     "dhses_comments": (
-                        f"Prior-cycle action carried into the 2020 plan. `action_name` is "
-                        f"derived by truncating the source sentence, which the prior-action "
-                        f"table gives in place of a name; the full sentence is preserved in "
-                        f"Description of the Solution."
+                        f"Prior-cycle action carried into the 2020 plan. The plan lists "
+                        f"these as a sentence rather than a name, so the title here is a "
+                        f"shortened form; the full sentence is preserved in the Description "
+                        f"of the Solution."
                         if len(sent) > 120 else None),
                     "is_this_action_addressing_climate_change": "Not Reported",
                     "is_this_action_mitigating_climate_change_i_e_ghg_reduction": "Not Reported",
