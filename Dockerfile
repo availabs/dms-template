@@ -115,4 +115,13 @@ WORKDIR /app/src/dms/packages/dms-server
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD node -e "fetch('http://localhost:' + (process.env.PORT || 5555) + '/graph', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(()=>process.exit(0)).catch(()=>process.exit(1))"
 
-CMD ["node", "--max-http-header-size=1048576", "src/index.js"]
+# --max-old-space-size: Node's default old-space cap is ~4GB regardless of how
+# much RAM the host has. The full-app /sync/delta handler loads the entire
+# change_log backlog for an app into heap and then holds a JSON.stringify copy
+# of it alongside the parsed rows, which at the default limit OOM-crashed this
+# container in a restart loop (~48s per cycle) once the mitigat-ny-prod backlog
+# reached ~37k revisions / ~292MB. 16GB is a deliberate stopgap ceiling, not a
+# fix — the delta payload still needs bounding upstream. Keep this flag until
+# that lands. NOTE: a command-line flag takes precedence over NODE_OPTIONS, so
+# this value holds even if an .env sets NODE_OPTIONS to something else.
+CMD ["node", "--max-http-header-size=1048576", "--max-old-space-size=16384", "src/index.js"]

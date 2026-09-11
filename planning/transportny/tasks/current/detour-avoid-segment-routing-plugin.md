@@ -253,6 +253,711 @@ between the two travel directions), not the cost-objective axis.
   suspenders, still in place); the `runWhenStyleReady` fix above is the more likely actual root
   cause, since the reset handler's logic was correct both times it was checked by reading the code.
 
+## Base layer: author-selected DMS layer instead of bespoke bbox-fetch (2026-08-31, PLANNED)
+
+**Problem**: the pickable network (`useEdgeLayer.js`) currently owns its own data pipeline —
+bbox-chunked `GET /edges` fetches on activation + every `moveend`, entirely outside DMS's normal
+source/view/symbology mechanism. This is slow on first render (N parallel Postgres round-trips
+gate first paint) and bypasses the access-control boundary the normal Layer Manager path enforces
+(a plugin querying a hardcoded table directly, vs. an author-added, permission-scoped layer).
+
+**Decision**: follow the DMS convention instead — the author picks the base network layer through
+MapEditor's normal Layer Manager (like any other layer), and `detour` consumes that
+already-tiled, already-authorized layer via `map.queryRenderedFeatures` instead of fetching its
+own GeoJSON. Both of detour's modes (single-trip + closure-density) share `useEdgeLayer.js`'s
+segment-picking unchanged after this — only the base layer's origin changes, not how either mode
+consumes `selectedSegment` afterward. `routing` (the sibling plugin) is explicitly OUT of scope
+for this change — `detour` only, per direct instruction.
+
+**Precedent, not invented**: `routecreation` already does exactly this — see
+`routecreation/internalPanel.jsx` (author-facing layer `select` built from
+`Object.keys(state.symbology.layers)`) and `routecreation.plugin.jsx`'s `mapRegister` (resolves
+the chosen layer id, force-sets `data-column` so a needed column survives into tile properties)
+and `hooks/useMapTmcHandler.js` (`map.queryRenderedFeatures(e.point, { layers: [shapefileLayerId] })`).
+
+**Column check, done live via read-only SQL against `npmrds2`/`neptune.availabs.org:5758`
+(2026-08-31, using creds already in
+`src/dms/packages/dms-server/src/db/configs/npmrds2.config.json`)** — this corrects a wrong
+assumption from earlier in this task file:
+- View 3699 ("Temp OSM Conflation v2", source 2125) — the one this file's own "line-offset"
+  investigation above checked for tile symbology — is **NOT** the right table. It's
+  `temp.osm_conflation_1_2024`, the TMC/RIS-enriched match table, a **different physical table**
+  with its own separate `ogc_fid` sequence and **no `highway` column**. Using it as the base layer
+  would make clicked `ogc_fid`s meaningless to `excluded_edge_ids`/`resolveDetourEndpoints`.
+- **Correct source: 2097 ("Temp OSM Conflation Edges")** — `temp.osm_conflation_1_2024_edges` for
+  2024 (view 3701), `temp.osm_conflation_1_2023_edges` for 2023 (view 3704) — the exact table
+  `data-types/routing/memoryGraph.js` and this plugin's backend already operate on
+  (`ogc_fid`/`osm`/`tmc`/`ris`/`highway`/`reversed`/`from_node`/`to_node`/`wkb_geometry`).
+  **Already has real DAMA tile symbology registered**
+  (`https://graph.availabs.org/dama-admin/npmrds2/tiles/3701/{z}/{x}/{y}/t.pbf`) — an author can
+  already add it as a normal layer via the Layer Manager today, no new backend/tiling work needed.
+
+**Simplification found while planning (2026-08-31)**: grepped every consumer of `selectedSegment`
+across `comp.jsx`/hooks/components — **`.fromNode`/`.toNode`/`.highway`/`.osm` are set today but
+never actually read anywhere**; only `.ogcFid` and `.geometry` are consumed (endpoint
+resolution moved fully server-side back on 2026-08-25, per `resolveVerifiedEndpoints`/
+`resolveDetourEndpoints`). PostGIS's `ST_AsMVT` always keeps `ogc_fid`/geometry regardless of
+`data-column`/`filter`/`filter-group` config — so **no column-forcing trick on the author's layer
+is needed at all**, unlike `routecreation`'s `tmc` case. This removes the one part of the plan
+that risked mutating the author's own filter/symbology config as a side effect.
+
+**Plan**:
+1. `constants.js` — add `EDGES_LAYER_KEY` (a plugin-data key, mirrors `SHAPEFILE_LAYER_KEY`) and
+   `BLANK_OPTION`; remove now-dead `EDGES_SOURCE_ID`/`EDGES_LAYER_ID` (the plugin no longer owns
+   this source/layer).
+2. `internalPanel.jsx` — takes `{ state }` (currently ignores it), adds a `select` control listing
+   `Object.keys(state.symbology.layers)` (mirrors `routecreation/internalPanel.jsx` exactly),
+   writing to `pluginData.detour['active-layers'][EDGES_LAYER_KEY]`.
+3. `detour.plugin.jsx` — no `mapRegister` column-forcing needed (see simplification above); its
+   `cleanup` restores the author layer's visibility to `'visible'` (in case it was hidden by
+   `isActive` toggling) and drops the `EDGES_SOURCE_ID`/`EDGES_LAYER_ID` teardown lines.
+4. `useEdgeLayer.js` — rewritten, not patched: delete `resolveEdgesInBbox` import,
+   `splitBboxIntoChunks`, `EDGE_CHUNK_SIZE_DEG`/`MAX_EDGE_CHUNKS`, `refreshEdges`, the `moveend`
+   fetch loop, and all `addSource`/`addLayer`/`removeLayer`/`removeSource` calls for the base
+   network (not owned by the plugin anymore). New signature `useEdgeLayer(map, edgesLayerId,
+   isActive)`. Hover/click `queryRenderedFeatures` scope to `edgesLayerId` instead of
+   `EDGES_LAYER_ID`. `isActive` toggling now does `map.setLayoutProperty(edgesLayerId,
+   'visibility', isActive ? 'visible' : 'none')` instead of adding/removing a plugin-owned
+   source. `selectedSegment` drops the dead `osm`/`fromNode`/`toNode`/`highway` fields, keeps only
+   `{ ogcFid, geometry }`.
+5. Delete `hooks/resolveEdgesInBbox.js` entirely (only consumer removed in step 4).
+6. `comp.jsx` — resolves `edgesLayerId` from `pluginData.detour['active-layers'][EDGES_LAYER_KEY]`
+   (same `pluginDataPath` already computed there) and passes it to
+   `useEdgeLayer(map, edgesLayerId, !hasResult)` instead of `(map, DEFAULT_CONFLATION_VIEW_ID,
+   pgEnv, !hasResult)`.
+
+**Live-tested 2026-08-31** — added source 2097/view 3701 ("Temp OSM Conflation Edges 2024") as a
+normal layer, picked it in detour's new internalPanel control. Base layer rendered (fast, no bbox
+fetch) and hover worked (amber preview), but two real bugs found:
+
+1. **MapEditor's generic per-layer hover/click "info popup"** (`state.symbology.layers[layerKey].hover`,
+   read by the shared `HoverComp`/`pinHoverComp` in `SymbologyViewLayer.jsx`/`avl-map.jsx` -
+   hardcoded truthy on every layer at creation, no author-facing toggle) popped up a card showing
+   the layer's name ("Temp OSM Conflation Edges 2024") right at the cursor on hover, and a global
+   click handler pins it (the X/up/down-arrow card in the screenshot). Confirmed via research this
+   is NOT something detour added - it's unconditional shared MapEditor behavior for every added
+   layer, with `layer.props.hover` as the only structural gate and no existing escape hatch
+   anywhere in this codebase.
+2. **Click wasn't selecting a segment** - hover/`queryRenderedFeatures`/layer-id matching all
+   confirmed correct (research ruled out an id mismatch and ruled out the popup's click handler
+   explicitly blocking propagation), but the popup card rendering directly at the click point was
+   the most likely real cause - a DOM element sitting over the map canvas at the exact click
+   location can eat the click before it reaches maplibre's canvas listeners, matching this
+   project's own prior `pointer-events-auto` bug class (see `RouteDetailsPanel` fix earlier in
+   this file).
+
+**Fixed, staying entirely inside `detour`'s own files (explicit instruction: "do not change
+anythingn in map stuff just make edit for this detoru plugin")** - `detour.plugin.jsx`'s
+`mapRegister` now force-sets `hover: false` on the author-selected base layer (same class of
+mutation `../routecreation.plugin.jsx`'s `mapRegister` already does via its `data-column` force-set
+- editing the CHOSEN layer's own config field, not any shared map component). `cleanup` restores
+`hover: "hover"` (its original default) alongside the existing visibility restore, so the layer
+behaves normally again once the plugin unmounts/the author picks a different base layer.
+
+**REVERTED same day, after deep architecture trace** - the `hover: false` fix was wrong. Traced
+the real mechanism end-to-end (per user request: "understand the architecture... once we selected
+the rest flow has to be same" before patching further):
+
+- `mapRegister(map, state, setState)` fires **exactly once**, on `PluginLayer`'s mount
+  (`PluginLayer.jsx:52-58`, empty-deps `useEffect`) - never re-fires when the author changes the
+  base-layer selection afterward. Only `dataUpdate` gets that signal. So even a correct mutation
+  placed here can only ever apply to whatever `edgesLayerId` was resolvable at that single mount
+  moment.
+- `state.symbology.layers[layerKey].hover` DOES genuinely reach the running `HoverComp` (traced
+  through `MapEditor/index.jsx`'s `layerProps` useMemo -&gt; `avl-map.jsx:713`'s `l.props = get(...)`
+  -&gt; `SymbologyViewLayer.jsx:794`'s `if(!layer.props.hover) return`) - no stale-snapshot issue.
+  But **`hover` only gates `HoverComp`'s own inner content div** - nothing else.
+- The actual popup/pin-marker/X-close-button chrome is produced by a SEPARATE, hardcoded pipeline
+  that never checks `props.hover`: `avl-layer.jsx:225-226`'s mousemove hover detection
+  (`if (!maplibreMap || !isActive || !onHover) return` - `onHover` is `ViewLayer.onHover`, a
+  class-level constant with `isPinnable: this.isPinnable || true`, always truthy for every
+  `ViewLayer`, no per-layer opt-out) sets `state.hoverData.hovering = true`; `avl-map.jsx:848-861`
+  attaches a single global `click` listener whenever ANY active layer is pinnable (always); on
+  click, `pinHoverComp` (`avl-map.jsx:770-776`) unconditionally creates a `maplibregl.Marker` and
+  dispatches `pin-hover-comp`, pinned iff `hovering` was true; `HoverComponent.jsx:53-88`'s
+  `PinnedHoverComponent` unconditionally renders the X `RemoveButton` regardless of whether
+  `children` (i.e. `HoverComp`'s content) is empty. So `hover: false` blanked the popup's content
+  but left the marker+pin-wrapper+X-button fully intact - confirmed live-tested as "even worse"
+  (an empty pin instead of no pin).
+- Separately, the "Layer is controlled by Plugin... To enable this panel, remove the plugin, or
+  link it to a different layer" message the user also saw in the Layer Editor is UNRELATED to the
+  hover mutation - traced to `LayerEditor/index.jsx:62-70`'s `isActiveLayerPlugin` check
+  (`stateUtils.jsx:38-44,106`: true whenever the layer open in Layer Manager appears in ANY
+  plugin's `pluginData[...]['active-layers']`). This is a pre-existing, arguably-correct side
+  effect of the base-layer-selection feature itself (Base layer plan above) - it started the
+  moment the author picked the layer via internalPanel.jsx, not because of the hover patch. Not a
+  bug to fix, just a fact to know about (the Style/Legend/Popup/Filter/Join tabs for a
+  plugin-claimed layer are intentionally locked while claimed).
+- The pink Legend-tab highlight visible in the same screenshot was investigated as an alternative
+  hypothesis (does Legend-item-selection drive the popup?) - **not supported by any code found**
+  in `avl-map.jsx`/`avl-layer.jsx`/`SymbologyViewLayer.jsx`; the popup+marker are fully explained
+  by the click-anywhere-while-hovering pin mechanism above, independent of the Legend tab.
+
+**`mapRegister`/`setState` on `hover` is reverted back to a no-op.** `cleanup`'s visibility-restore
+stays (that part was correct and unaffected by this finding).
+
+**Real options going forward, not yet decided/built** (see conversation - user has not yet chosen
+one, explicit instruction remains "do not change anything in map stuff"):
+1. A small, additive, opt-in change to `avl-layer.jsx`'s `onHover` gate or `avl-map.jsx`'s
+   `isPinnable` computation (e.g. reading a new `layer.props['suppress-hover']` flag) - would
+   actually work, but is a change to shared map/library code, currently out of bounds per explicit
+   instruction.
+2. A plugin-side DOM/event-capture workaround (e.g. a capture-phase listener on
+   `map.getCanvas()` calling `stopImmediatePropagation()`) - flagged as genuinely risky: it would
+   very likely also block `useEdgeLayer.js`'s OWN `map.on('click', ...)` handler, since that goes
+   through the exact same maplibre-internal dispatch the generic pin listener does - not a clean
+   fix, not attempted.
+3. Live with the popup/pin appearing as a known cosmetic side effect for now (confirm click
+   selection itself isn't actually blocked - the architecture trace found no evidence propagation
+   is stopped anywhere in the existing pin mechanism, so `useEdgeLayer`'s own click handler should
+   still fire and select correctly despite the visual clutter) - needs a real live click-test to
+   confirm this, not yet done since the hover-mutation attempt intervened first.
+
+**Root cause found + fixed, 2026-08-31 - the actual bug, unrelated to the popup investigation
+above.** Added a temporary debug log in `useEdgeLayer.js`'s `onClick` and had the user click live:
+console showed `foundFeature: true` but `ogcFid: undefined` on every click - the click handler WAS
+firing and WAS finding a feature via `queryRenderedFeatures`, it just could never read `ogc_fid`
+off it. Cause: **`ogc_fid` comes back as the vector tile's FEATURE ID (`feature.id`), not a
+`properties` key** - `useEdgeLayer.js` was reading `feature.properties.ogc_fid` (matching the old
+plugin-owned-GeoJSON code, where the plugin controlled the property shape itself), but PostGIS's
+`ST_AsMVT` keeps `ogc_fid` specifically as the MVT feature id when the tile is built, not inside
+`properties`. `../routecreation` never surfaced this because it only ever reads a real property
+(`tmc`, via its `data-column` trick) - it has no reason to read `ogc_fid` at all. This also
+explains why hover appeared to "work" the whole time: `renderHover`/`nearestFeatureToPoint` only
+ever needed `feature.geometry`, never `ogc_fid` - so the hover path never exercised the broken
+line.
+
+**Fix**: `useEdgeLayer.js`'s click handler now reads `const ogcFid = feature.id;` instead of
+`feature.properties.ogc_fid`. One-line fix, entirely inside `detour`'s own file, no map/shared
+code touched - resolves the actual reported bug ("just hovering, not selecting"). Debug log
+removed.
+
+**The popup/pin-marker cosmetic issue (options 1-3 above) is still open and separate** - this fix
+only addresses click-to-select; the generic hover/pin popup chrome still appears as described
+above and remains unresolved pending a decision on options 1-3.
+
+**Live-verified 2026-08-31** - click-to-select works now (confirmed live: single-trip AND density
+mode both ran real analyses end-to-end, e.g. a 100/100-pair closure-density heatmap with candidate
+points, matching the pre-refactor behavior).
+
+**Follow-on bug found + fixed same day**: after a result renders ("Get detour"/"Analyze coverage"),
+the pickable base network layer stayed visible instead of hiding (`isActive` correctly flips to
+`false`, but the one-shot `setLayoutProperty(edgesLayerId, "visibility", "none")` call in
+`useEdgeLayer.js` wasn't sticking). Root cause: the author-selected layer's OWN rendering pipeline
+(outside detour's control) re-syncs on any symbology state change - including the frequent,
+unrelated state updates this plugin itself fires while showing a result (density progress,
+candidate-point updates) - and each re-sync can reassert the layer's own default visibility,
+silently undoing the one-shot call. **Fix, staying inside `useEdgeLayer.js` only**: the visibility
+effect now also re-subscribes to the map's `'styledata'` event and reapplies the intended
+visibility on every fire (not just once), so this plugin's intent keeps winning without touching
+any shared layer/map code.
+
+**Still visible live-tested, 2026-08-31**: the `'styledata'`-reassert fix above was NOT enough -
+confirmed live, the base network layer stayed fully visible through density mode's "Points found -
+computing routes..." intermediate phase (the point where `density` first becomes truthy and
+`hasResult`/`isActive` should already have flipped). Whatever is reasserting the layer's own
+default visibility fights harder/more often than a single map-event listener can reliably win
+against event-ordering-wise.
+
+**Fix #2, same file, more robust**: replaced the single `'styledata'` listener with a 300ms
+`setInterval` that reapplies the intended visibility repeatedly while `!isActive` (cleared
+immediately once `isActive` is true again or the effect tears down). This sidesteps needing to
+know exactly what/when the other side reasserts - polling converges within one tick regardless.
+Still entirely inside `useEdgeLayer.js`, no shared/map code touched.
+
+**Live-verified 2026-08-31 - CONFIRMED FIXED.** Added temporary per-call debug logging
+(`edgesLayerId`/`isActive`/`exists`/`before`/`after`) to get hard evidence rather than iterate
+blind a third time; user re-tested with logging in place and separately confirmed via screenshot -
+the base network layer now hides completely once a result renders (both single-trip and density
+mode), leaving only the result (route line, candidate points, node markers) on the plain basemap.
+Debug logging removed after confirmation. The 300ms interval-poll approach is the one that
+actually works - both the one-shot apply and the `'styledata'`-listener-only version (both tried
+first) did not.
+
+Net history of this sub-bug, for future reference: one-shot `setLayoutProperty` (didn't stick) ->
+`'styledata'` listener reassert (still lost the fight) -> 300ms `setInterval` reassert while
+`!isActive` (works). All three attempts stayed entirely inside `useEdgeLayer.js`, no shared
+map/layer code touched, per explicit instruction throughout this arc.
+
+## Live DMS page Map component - checked, deferred (2026-08-31)
+
+User asked whether this base-layer approach (author picks a layer, plugin auto-hides it - no
+manual "eye" toggle exists for a page viewer, confirmed: `settings/controls.jsx`'s `setLayerPanel`
+is an AUTHOR-side edit-mode control only) will actually work once `detour` is placed in a real
+published DMS page's Map section, not just tested inside MapEditor.
+
+**Checked, good news - no extra work needed for the automation itself.** `patterns/page/.../
+ComponentRegistry/map/index.jsx:15` imports `PluginLayer` directly from
+`mapeditor/MapEditor/components/PluginLayer` - the SAME component, not a fork - which is what
+calls `plugin.mapRegister(map, state, setState)`/`plugin.cleanup(...)` and renders
+`plugin.comp({state, setState, map})`. So `detour`'s own automated visibility logic
+(`useEdgeLayer.js`'s `isActive`-driven interval) runs through the identical plugin lifecycle on a
+live page as in MapEditor - nothing page-specific to build for the automation itself.
+
+**What's still genuinely uncertain**: `SymbologyViewLayer.jsx` (the component rendering the
+author-selected BASE layer itself - the thing our interval-poll fights against) IS a separately
+forked file on the page side (`patterns/page/.../ComponentRegistry/map/SymbologyViewLayer.jsx` vs.
+`patterns/mapeditor/MapEditor/components/SymbologyViewLayer.jsx` - diffed at 1,663 lines
+different). The interval-poll doesn't care about the internals of what it's fighting, so it should
+still work, but this has only been live-verified against MapEditor's copy so far.
+
+**Decided 2026-08-31: focus stays on MapEditor for now** - live-page verification (publishing a
+real page with a Map section + `detour`, confirming the same hide-on-result behavior there) is
+explicitly deferred, not scheduled yet.
+
+## False alarm: "layer still visible after result" - resolved, not a real bug (2026-08-31)
+
+After the interval-poll fix was confirmed working (grey/pink "Temp OSM Conflation Edges" styling
+genuinely disappeared in one test), a LATER test on a different map/symbology ("test osm detour")
+appeared to show the same bug again - grey/white streets stayed visible through a completed
+"Analyze coverage" result. Investigated properly instead of re-patching blind:
+
+- **Layers tab showed only one DMS layer** ("Temp OSM Conflation Edges 2024") - no second
+  basemap-style entry, but that alone didn't prove the grey streets belonged to it.
+- **Decisive test**: switched `detour`'s "Base network layer" dropdown to blank/none entirely.
+  The grey streets did not change AT ALL - proving they have nothing to do with that layer
+  selection, and are the map's own base style/basemap streets (baked into the map style itself,
+  never registered as a DMS/DAMA layer, never shown in the Layers panel, not something any plugin
+  can control).
+- **Real explanation surfaced once the layer was unclaimed and its actual Style panel was
+  visible**: "Temp OSM Conflation Edges" on this particular test map had its own author-configured
+  **Opacity: 0%** - set independently of any of this task's code, meaning the actual target layer
+  has been invisible by its own paint config this whole time, unrelated to the `visibility`
+  layout property `useEdgeLayer.js` toggles. Confirmed with the user directly ("opacity was 0
+  only").
+- **Revised, 2026-08-31 - it WAS a real bug after all, found by re-reading the Style-panel
+  screenshot more carefully.** The panel showed TWO separate paint properties, not one: `Fill:
+  Opacity 0%` (the main line, correctly invisible) AND `Casing: #7d7d7d / 2px / -1.5px` (a
+  separate outline sub-layer, full opacity, mid-grey - an exact match for the "grey streets" seen
+  throughout this investigation). This connects to a fact the earlier architecture-trace research
+  pass already surfaced but wasn't applied here: **every line-type DMS layer renders as TWO
+  maplibre layers sharing one symbology config** - the unsuffixed id (fill) and `${id}_case`
+  (casing), confirmed via `LayerManager/utils.jsx`'s `getLineLayer`. `useEdgeLayer.js`'s
+  visibility toggle only ever set `visibility` on `edgesLayerId` itself - never on
+  `${edgesLayerId}_case` - so the casing sub-layer stayed visible regardless of `isActive`,
+  regardless of the interval-poll fix, regardless of the base-layer dropdown (clearing the
+  dropdown just stops the plugin from touching ANY layer id, which trivially left the untouched
+  casing exactly as visible as before - that test wasn't actually informative, in hindsight).
+- **Fixed**: `applyVisibility` in `useEdgeLayer.js` now sets `visibility` on both `edgesLayerId`
+  AND `${edgesLayerId}_case` (each guarded by its own `map.getLayer(...)` existence check, so a
+  layer type without a casing sub-layer doesn't error). Still entirely inside `useEdgeLayer.js`,
+  same 300ms interval-poll mechanism from the earlier fix, just now targeting both real rendered
+  layers instead of one.
+- **User pushed back that the casing/opacity Style-panel edit wasn't the root cause** (it was their
+  own manual test edit, not evidence of a code bug) - added temporary debug logging in both
+  `comp.jsx` (`isActive`/`hasResult`/`edgesLayerId` chain) and `useEdgeLayer.js` (`applyVisibility`
+  - what it believes vs. what it actually set/reads back on each real layer id) to get hard
+  evidence instead of continuing to guess from screenshots.
+- **CONFIRMED WORKING, 2026-08-31 (user's own words: "it's working now")** - both temporary debug
+  logs removed after confirmation. The `_case` sub-layer fix combined with the 300ms interval-poll
+  mechanism (from the earlier fix) is the final, correct implementation - base layer genuinely
+  hides on result and restores on clear, in both single-trip and density modes.
+
+## Separate bug found via console spam, fixed same session (2026-08-31)
+
+User pasted live console output while testing the above - unrelated to the base-layer work, but a
+real, pre-existing bug: `hooks/useDensityPointPicker.js`'s `onMouseMove`/`onClick` called
+`map.queryRenderedFeatures(..., { layers: [DENSITY_CANDIDATES_LAYER_ID] })` unconditionally,
+without checking the layer exists first (unlike `useEdgeLayer.js`'s `queryNearbyEdge`, which
+already guards this). Race: `isActive` (density mode + "show candidate points" + "pick point pair
+(beta)" all on) can go true before `useDensityCandidatesLayer.js` has actually added
+`DENSITY_CANDIDATES_LAYER_ID` (only added once `density.startPoints`/`endPoints` resolve) -
+querying a not-yet-added layer throws on every single mousemove, which is what flooded the
+console (`[Violation] 'mousemove' handler took 180ms` alongside it, from the repeated throw/catch
+overhead).
+
+**Fixed**: both handlers now `if (!map.getLayer(DENSITY_CANDIDATES_LAYER_ID)) return;` before
+querying, same guard pattern already used elsewhere in this plugin. Lint clean.
+
+## Live DMS page Map component - first real test, crash found + fixed (2026-08-31)
+
+User tried `detour` in an actual published page's Map section (not just MapEditor) for the first
+time - console showed a cascade of `TypeError: Cannot read properties of undefined (reading
+'getLayer')` at `ds.getLayer` (maplibre-gl internal), thrown during React's cleanup/unmount phase
+across FIVE separate files: `useDensityCandidatesLayer.js:55`, `detour.plugin.jsx:57`,
+`useEdgeLayer.js:184`, `useRouteLayer.js:64`, `useStartEndMarkers.js:53` - each caught by
+`RenderErrorBoundary`, tearing down and remounting `<Comp>` repeatedly.
+
+**Root cause**: on this page's Map component, the underlying maplibre `map` instance can be
+destroyed (`.remove()`'d, internal `style` set to undefined) BEFORE React runs this plugin's own
+cleanup effects - a lifecycle-ordering difference from MapEditor, where this never surfaced.
+`map.getLayer(...)` then throws INSIDE maplibre itself, even though `map` is still a defined
+object reference - so the `if (!map) return` guard already present at every one of these sites
+doesn't catch it (it only checks the reference, not whether the map is still functionally alive).
+
+**Not a new problem to solve from scratch** - this exact race was already hit and fixed once
+before in this same plugin: `useClosureDensityLayer.js`'s cleanup (2026-08-26) already uses
+`if (!map || !map.loaded()) return;` instead of a plain truthiness check, with a comment citing
+`AvlLayer`'s own cleanup using the same guard. `.loaded()` (a real MapLibre API checking internal
+state, not touching `.style`) survives being called on an already-torn-down map without throwing.
+
+**Fixed**: applied the identical `.loaded()` guard to the other five cleanup sites that were still
+using a plain `if (!map) return` - `useEdgeLayer.js`, `useRouteLayer.js`,
+`useStartEndMarkers.js`, `useDensityCandidatesLayer.js`, `detour.plugin.jsx`. Lint clean. Not yet
+live-verified on the page that surfaced this - needs a fresh test to confirm the crash/remount
+loop is gone.
+
+**Also note**: this is now the SECOND finding specific to the live-page Map-component context
+(the first was the forked `SymbologyViewLayer.jsx` question, still deferred/unverified) - the
+"focus stays on MapEditor for now" decision above has effectively been superseded by the user
+actually testing on a live page; treat both contexts as in scope going forward, not just MapEditor.
+
+## Base-layer column validation - no author-facing guardrail existed, built one (2026-08-31)
+
+User raised a real, previously-unaddressed gap: nothing validates that the layer an author picks
+in `internalPanel.jsx`'s "Base network layer" select is actually a conflation `_edges` table.
+Traced the risk precisely:
+
+- **`DEFAULT_CONFLATION_VIEW_ID` (constants.js, hardcoded `3699`) drives ALL backend routing calls**
+  (`useTrspRoute`, `useClosureDensity`, `usePickedPairRoute`, `resolveVerifiedEndpoints`) -
+  completely independent of whatever layer the author actually picks for click-identity. The two
+  settings can silently diverge.
+- **Failure mode 1 (visible)**: picked layer has no per-feature ids at all - `feature.id` (ogc_fid,
+  per the earlier click-selection fix) comes back `undefined`, clicking does nothing.
+- **Failure mode 2 (dangerous, silent)**: picked layer DOES have integer feature ids, but for a
+  different table/year (e.g. 2023 `_edges` instead of 2024). Since `ogc_fid` is an independent
+  auto-increment sequence per physical table, a number meaningful in the picked layer can
+  coincidentally also exist in the graph `DEFAULT_CONFLATION_VIEW_ID` actually computes against -
+  pointing at a completely different, unrelated road segment. The backend would return a real,
+  plausible-looking route/exclusion for the WRONG segment with no error at all.
+
+**Built**: `internalPanel.jsx` now fetches the picked layer's real source metadata and validates
+its declared columns before treating it as valid, surfacing a red warning message directly under
+the "Base network layer" picker if the layer is missing `ogc_fid`/`from_node`/`to_node`/`highway`.
+
+- Confirmed via research (not guessed) that MapEditor's own `LayerEditor/*` components already use
+  exactly this pattern in 8+ places to read a source's declared `metadata.columns` -
+  `falcor.get(["uda", pgEnv, "sources", "byId", sourceId, "metadata"])` then read
+  `falcorCache[...]"metadata"."value"."columns"` (with a fallback to `...value` directly for older
+  sources that store the array there instead) - reused verbatim, no new backend route needed.
+- `sourceId` comes for free off the picked layer itself - `state.symbology.layers[layerKey].source_id`
+  is already set at layer-creation time (`SourceSelector/index.jsx`), no extra lookup required.
+- `internalPanel.jsx` already runs `React.useContext`/hooks directly inside the plain function
+  (confirmed established precedent - `../routecreation/internalPanel.jsx` already does this, since
+  `InternalPluginPanel` calls `plugin.internalPanel({state, setState})` synchronously during its
+  own render, so hooks called here attach to `InternalPluginPanel`'s fiber correctly as long as
+  they're called unconditionally every render - matched that existing pattern exactly, not new
+  ground).
+- The warning renders via the control BLOCK's `label` field, confirmed (by reading
+  `PluginControlWrappers.jsx`'s `SimpleControlWrapper`) to render as plain `{label}` JSX children -
+  so `label` can be a real element (a small stacked div: the normal "Base network layer" text plus
+  a conditional red warning line below it) instead of only a plain string. No new control type or
+  shared-code change needed.
+
+**Still open (this task file's own `DEFAULT_CONFLATION_VIEW_ID` gap is NOT yet closed)**: this
+column-validation warning only protects the CLICK-IDENTITY side (what `useEdgeLayer.js` reads). It
+does NOT yet fix the deeper architectural issue - the backend routing calls still use the separate
+hardcoded `DEFAULT_CONFLATION_VIEW_ID` constant, not the picked layer's own `view_id`. An author
+could still pick a layer that PASSES this column check (e.g. a real `_edges` table, just for the
+WRONG YEAR) and still get the "coincidental wrong segment" failure mode, since the warning doesn't
+know which specific conflation view the backend graph is loaded from. The real fix - deriving
+`conflation_view_id` from the picked layer's own `view_id` instead of the separate constant - was
+proposed in conversation but not yet built; flagged as the next real step, not done in this pass.
+
+**Not yet live-verified** - needs a real MapEditor test: pick the correct "Temp OSM Conflation
+Edges" layer (should show no warning once the falcor fetch resolves), then pick a deliberately
+wrong layer (should show the red missing-columns warning).
+
+## Performance: distance-based algorithm choice for "Get detour" (2026-08-31)
+
+User asked what could make this faster via code. Traced the real request pattern: one "Get detour"
+press fires 4 backend requests (AtoB/BtoA x closed/open), each computing shortest+fastest
+server-side - 8 full graph searches per press, all landing on the same single-threaded Node
+process. Two real levers identified:
+
+1. **`worker_threads` for true parallelism** - the task history repeatedly flags this as the real
+   fix for "N searches queued on one thread," repeatedly deferred as "a bigger lift." Touches
+   shared `data-types/routing/` code (used by both `routing` and `detour`) - out of detour-only
+   scope without explicit sign-off, not built this pass.
+2. **Algorithm choice** - `resolveTrspRoute.js` never sent an `algorithm` param, always defaulting
+   to the server's plain Dijkstra, even though `bidirectional` is already built and available.
+   User: "choose algorithm wisely... because it will impact more here" (a bad default is felt 8x
+   per press here vs. once for a single-search plugin) - not a blanket switch.
+
+**Built**: `hooks/haversineMiles.js` (new) - straight-line distance + `chooseAlgorithm(start, end)`,
+reusing the EXACT threshold already validated in `point-to-point-routing-plugin.md`'s 20-pair
+benchmark for the sibling `routing` plugin (not a new guess): bidirectional was consistently
+SLOWER under ~3mi, only a real (if noisy, modest) win past ~80mi. `routing` itself kept this
+manual per an explicit prior user preference ("keep it dijkstra only") - that decision was specific
+to `routing`, not binding here. Wired into `resolveTrspRoute.js` (new optional `algorithm` param,
+passed through verbatim) and both call sites that hit it: `useTrspRoute.js` (the main "Get detour"
+flow) and `usePickedPairRoute.js` (the beta pair-picker, for consistency). Single source of truth
+for the threshold - both call sites import `chooseAlgorithm` rather than duplicating it.
+
+**Not yet live-verified** - needs a real long-distance closure test (>80mi apart) to confirm the
+backend actually receives/honors `algorithm: "bidirectional"` and responds faster, and a short
+closure to confirm normal (<80mi) requests are unaffected (still plain `dijkstra`, matching
+today's behavior exactly).
+
+## `conflation_view_id` dynamic-from-picked-layer - attempted, REVERTED, plan-first now (2026-08-31)
+
+Attempted implementing the fix flagged earlier (derive `conflation_view_id` from the picked
+layer's own `view_id` in `comp.jsx`, replacing the hardcoded `DEFAULT_CONFLATION_VIEW_ID` constant
+everywhere) - user said "no... stop and revert first give me plan then if i say then start".
+**Fully reverted** - `comp.jsx` is back to the pre-existing baseline (hardcoded
+`DEFAULT_CONFLATION_VIEW_ID` for all four backend calls, no button gating added). Lint-clean,
+confirmed only pre-existing unrelated noise remains.
+
+Confirmed while investigating (still true, not undone by the revert): the SERVER side already
+supports this dynamically with zero code changes - `getOrLoadGraph(db, pgEnv, conflationViewId)`
+is called fresh per-request and lazily loads+caches whatever view_id it's given
+(`data-types/routing/memoryGraph.js:368-376`, `graphCache` keyed by `` `${pgEnv}:${conflationViewId}` ``).
+The gap is entirely client-side (`detour` always sends the same hardcoded constant).
+
+**Plan to be written up and approved before any further implementation** - see conversation for
+the plan; do not re-attempt this change until explicitly told to start.
+
+## Start/end point-picking: bearing-drift bug, live-observed + fixed (2026-08-31)
+
+Separate topic, requested next ("let's improve the start and end points picking process"). Two
+candidate gaps were identified by reading `walkToFirstBranchSimple`/`walkToFirstBranchDensity`
+(server-side, `data-types/routing/memoryGraph.js` - NOT used by `../../routing`, this is
+detour-exclusive logic that happens to live in the shared backend file, so touching it doesn't
+cross into `routing`'s territory):
+1. Bearing-only road continuation (no highway-class matching) - theoretical, not yet observed live.
+2. Pure-topology branch detection (any 2+-connection node counts, including driveways) - theoretical.
+
+**User provided live screenshot evidence of a THIRD, different, confirmed real bug** - the walked
+path visibly bent/deflected at a real intersection (osm `5593248`, `highway: residential` - a real
+road, not a driveway, ruling out gap 2 as the cause here) instead of continuing straight through
+it. Root cause, confirmed by reading the code: the "pick straightest-continuing edge" comparison
+used `incomingBearing` - the bearing of the hop JUST taken, **reset every single iteration** - not
+the road's actual original direction. This is locally-greedy: small per-hop bearing drift (normal
+on any real street, which rarely lies EXACTLY straight node-to-node) compounds over multiple hops,
+and at a junction the walk could pick whichever candidate is straightest relative to the last hop
+rather than relative to where the road actually started - visually a bend/turn with no real reason.
+
+**Fixed in both `walkToFirstBranchSimple` and `walkToFirstBranchDensity`** (kept as two synced
+copies per their existing 2026-08-26 "make search for both separate" convention): renamed
+`incomingBearing` -> `referenceBearing`, captured ONCE on the first real hop
+(`if (referenceBearing === null) referenceBearing = bearingDeg(...)`) and never updated again -
+every subsequent hop's straightness comparison is against that fixed original direction, not the
+constantly-drifting previous-hop bearing. The walk still genuinely stops at a real branch once
+nothing continues that original direction closely enough - only the COMPARISON reference changed,
+not the branch-detection/stop logic itself.
+
+**Server-side change - needs a server restart to take effect** (unlike everything else fixed this
+session, which was all client-side `src/themes/...` and hot-reloads). `node --check` confirms
+syntax is valid; `npx eslint` on this file shows only 3 pre-existing, unrelated errors (this
+subtree is CommonJS per `data-types/package.json`'s override, and the root eslint config doesn't
+recognize `require`/`module` as globals here - none on the lines touched).
+
+**Not yet live-verified** - needs a server restart + a fresh test on the exact same segment (near
+osm `5593248`) to confirm the path no longer bends there, plus a regression check on a few other
+segments (including a genuinely curving real road, to make sure the fixed-reference-bearing
+approach doesn't now fail to track a real gradual curve - a theoretical tradeoff of this fix worth
+confirming isn't a problem in practice).
+
+Gaps 1 and 2 above remain theoretical/unconfirmed and untouched - not addressed in this pass,
+only the concrete bug the user actually observed live.
+
+## Closure-density candidate selection: 10-10 shortfall + wrong-side picks (2026-09-01)
+
+Live screenshot (a real published DMS page, `sandbox2/page_13`, not just MapEditor) showed a
+segment near Rouses Point (Lake Champlain, NY/Canada border - a genuinely sparse rural network)
+producing only ~3-4 end candidates instead of the required 10. Two separate real issues, both in
+`selectClosureDensityCandidates`/`farthestToNearestNodes` (`data-types/routing/memoryGraph.js`) -
+server-side, needs a restart, NOT yet live-verified after these fixes:
+
+1. **10-10 shortfall**: the count-is-a-hard-requirement gap-relaxation logic (already built earlier
+   - see the file's own extensive inline history) was still bounded by a hard
+   `MAX_CANDIDATE_DISTANCE_M` distance cap (8mi, reduced from 20mi on 2026-08-25 for a real,
+   measured perf reason). In a sparse area, 10 valid candidates may genuinely not exist within
+   8mi - no amount of gap-relaxation manufactures more points than the search radius reaches.
+   **Fixed**: raised to 15mi - a middle ground, not a full revert to 20mi, explicitly to be
+   tested live before treating as final (user: "let's test first for this detour and then will
+   make rule if it's a good progress/upgrade").
+2. **Wrong-side picks**: user flagged directly - candidates must never end up on the geometric
+   "opposite side" of the closure from their own seed (a U-turn back onto the correct side is
+   fine; ending up past the closure on the other side is not). The EXISTING corridor-block
+   (`blockedNodes` in `farthestToNearestNodes`) only prevents crossing through the specific nodes
+   the OTHER side's seed-walk visited - it does nothing to stop a genuinely different road
+   (a parallel street, a loop, a bypass) from reaching the wrong side without ever touching those
+   blocked nodes. **Fixed**: added `sideOfSegment` - a real geometric side-of-line test (the closed
+   segment's own bearing + a perpendicular through its midpoint, local equirectangular
+   approximation), applied as a post-filter on each side's raw candidate pool (same-road and
+   "other" sub-groups filtered separately so `sameRoadCount` stays accurate). Evaluated on the
+   candidate's FINAL position, not the path taken to reach it - so a U-turn that ends up back on
+   the correct side still passes, matching the user's exact framing.
+
+**Explicitly experimental, not yet a finalized rule** - user's own words: test first, decide if
+it's a real upgrade after seeing it live. `node --check` passes, lint shows only the same 3
+pre-existing CommonJS-global errors (unrelated). Needs: a server restart, then a live retest on
+the same Rouses Point segment (and a regular/dense-network segment, to confirm the geometric
+filter doesn't over-reject in a normal case) before either side of this change is treated as
+settled.
+
+**LIVE-TESTED AND REVERTED, same day.** Result was worse, not better: "Analyzed 10 of 100 possible
+routes (10 had no route)" - every single candidate pair failed to find a route at all - and the
+user reported it "taking a lot of time" (a real perf regression too, likely from the widened 15mi
+search radius). User: "this is even worst taking a lot of time and then this, so revert last."
+
+**Fully reverted, both parts** - `MAX_CANDIDATE_DISTANCE_M` back to `8 * MILE_M`, `sideOfSegment`/
+`filterBySide` removed entirely (not left disabled/commented - deleted, matching this codebase's
+"delete what's genuinely unused" convention). Confirmed via `grep` that no trace remains, `node
+--check` passes, lint shows only the same 3 pre-existing errors. Back to the exact state this file
+was in after the earlier bearing-drift point-picking fix (that fix is untouched by this revert -
+only the 10-10/side-filter experiment from this section was undone).
+
+**Open question for next time, not yet diagnosed**: WHY did raising the distance cap + adding the
+side filter make things worse rather than better - "10 had no route" is a different failure mode
+than "too few candidates found" (the original complaint). Possible causes not yet investigated:
+the side filter may have been too strict and excluded valid candidates outright (leaving too few
+to even attempt), the wider 15mi radius may have pushed candidates past where a real route exists
+at all in this specific sparse area, or something else. Needs real diagnosis (add logging, inspect
+an actual failing case) before attempting a fix again, not another blind parameter change.
+
+**Diagnostic logging added, 2026-09-01** ("yeah but again i want 10-10 must and check why it's not
+coming") - a `console.log` right before `selectClosureDensityCandidates`'s return, capturing the
+count at every pipeline stage: raw pool size per side, same-road count, `candidatesRejected`,
+valid count per side/group, final picked count, gap actually used. Lets a real shortfall be traced
+to its actual cause (sparse raw pool vs. over-strict >50% validation vs. gap-relaxation itself
+failing) instead of guessing at another parameter change. TEMP - remove once root-caused. Needs a
+server restart to take effect, then a live "Analyze coverage" run on the same Rouses Point segment,
+server log output pasted back for diagnosis before any further code change.
+
+**Live-tested a DIFFERENT segment (not Rouses Point) same day - worked well**: "Analyzed 100 of
+100 possible routes," a real distribution shown, candidate points spread across both sides. Not
+the sparse-network failure case, but confirms the pipeline works correctly in a normal area.
+
+**No-U-turn constraint added, 2026-09-01** ("keep things of the u turn, so in that direction do
+not u turn, keep that and will check what is the result there" - explicitly another experimental
+variant to test, not yet a finalized rule). `farthestToNearestNodes`'s Dijkstra expansion is
+undirected by design (comment: "candidate picking only needs how far is this node, not a turn-
+restriction-correct path") - meaning it could always immediately double back the way it came.
+**Fixed**: added a `predecessorNode` typed array tracking which node each node was actually
+reached FROM (alongside the existing `reachedVia` edge tracking), and the relaxation loop now
+skips any edge leading straight back to that predecessor - a cheap O(1) per-relaxation check,
+deliberately NOT using the existing `findReverseEdge` helper (an O(degree) adjacency scan) since
+this runs inside the hot per-edge Dijkstra loop across a potentially large search radius. This
+does NOT prevent all backtracking (a candidate can still loop around via a different path and
+approach from a direction that feels like a U-turn geometrically) - it specifically prevents the
+one cheap, common case: immediately reversing onto the same edge just traveled. `node --check`
+passes, lint shows only the same 3 pre-existing errors.
+
+**LIVE-TESTED AND REVERTED, same day.** Result: "Analyzed 100 of 100 possible routes (100 had no
+route)" - every single pair failed, worse than the baseline. User's own diagnosis, precise and
+useful: "it is not doing the u turn but the gap between the nodes is too less which is not useful
+at all" - the no-U-turn constraint itself worked correctly, but forcing the search to never
+backtrack pushed it into taking long, winding detours around any obstacle instead of the direct
+nearby path, collapsing real network distance between consecutive candidates down to nearly
+nothing (defeating `MIN_GAP_M`'s whole purpose) even though `dist[n]` (used for gap enforcement)
+kept growing along that longer forced path - so the candidates were both too close together AND
+routing-invalid. **Reverted, confirmed clean** - `predecessorNode`/`cameFrom` fully removed (no
+trace via `grep`), `node --check` passes, lint shows only the same 3 pre-existing errors.
+`farthestToNearestNodes` is back to its original unrestricted (U-turns allowed) form. The
+diagnostic logging from the prior fix is still in place and untouched.
+
+**Running tally of this candidate-selection area today**: distance-cap raise + side filter (tried,
+reverted), no-U-turn constraint (tried, reverted) - two real, informative negative results, not
+wasted effort. Current baseline is the original 8mi-cap, U-turn-allowed, no-side-filter version
+plus the still-active diagnostic logging. Next attempt should use the diagnostic log's actual
+numbers (once captured from a real "Analyze coverage" run) rather than another blind structural
+change - two structural changes in a row have now both made results worse, which is itself useful
+signal that the ORIGINAL algorithm's shortfall is likely a genuinely sparse-network case (not a
+fixable algorithm flaw) rather than something more aggressive expansion/constraints can solve.
+
+## DMS theme compliance - started with `routing`, `detour` on hold (2026-09-01)
+
+User asked whether `routing`/`detour` follow DMS theming rules. Checked directly: neither does -
+both only use `ThemeContext` to pull `{ UI }` component references, never `getComponentTheme` for
+styling; every visual class is raw hardcoded Tailwind (`routing/RouteDetailsPanel.jsx`: 31,
+`detour/DetourDetailsPanel.jsx`: 39, `detour/ClosureDensityPanel.jsx`: 32,
+`detour/RouteComparisonBarChart.jsx`: 11, `detour/internalPanel.jsx`: 2). This matches this
+project's own documented, established MapEditor-pattern precedent (raw Tailwind by convention,
+deliberate, previously deferred as a separate compliance task) - not a `routing`/`detour`-specific
+gap.
+
+**Full site-wide-registerable compliance would require new core `src/dms/` library code** - traced
+`getPatternTheme()`'s actual mechanism: `src/dms/packages/dms/src/ui/defaultTheme.js` manually
+imports each pattern's own `defaultTheme.js` (page/datasets/auth/admin all do this); there is no
+`patterns/mapeditor/defaultTheme.js` entry at all. Proposed creating one + one import line in the
+core file - **user declined this piece explicitly** ("no revert that mapeditor default theme
+thing" - nothing had actually been written yet, so nothing to literally revert).
+
+**Decided approach instead**: local `.theme.js` sibling files per component (the DMS package's own
+documented naming convention - `Foo.jsx` + `Foo.theme.{js,jsx}`), read via the standard
+local-default-spread + `getComponentTheme` pattern, but NOT registered into any site-wide merge
+pipeline. Since nothing registers these theme keys into `ThemeContext`, `getComponentTheme` always
+returns `{}` and every component falls back to its local default - **zero visual change**, but
+every className now lives in one named, discoverable file instead of scattered inline. Honest
+tradeoff, stated to the user: a site author can't override these plugins' look through the normal
+theme-admin UI this way, only by editing the `.theme.js` file directly - accepted as the cost of
+not touching core `src/dms/` code.
+
+**`routing` DONE**: `components/RouteDetailsPanel.theme.js` (new) exports `routeDetailsPanelTheme`
+- every one of the 31 raw classNames moved into it, keyed semantically (`panel`, `title`,
+`stepText`, `variantButton`, `statRow`, `segmentRow`, `getRouteButton`, etc.).
+`RouteDetailsPanel.jsx` now imports `getComponentTheme` alongside the existing `ThemeContext`
+import, builds `const t = { ...routeDetailsPanelTheme, ...getComponentTheme(themeFromContext,
+"routeDetailsPanel") }`, and every JSX `className="..."` replaced with `className={t.<key>}`.
+Confirmed zero raw `className="` strings remain (`grep` clean). Lint clean (only the same
+pre-existing `prop-types` noise, no new errors).
+
+**`detour` RESUMED AND DONE, 2026-09-01** ("yeah i want this too, these boxes too" - pointing at a
+live screenshot of the detour panels). All 4 files converted:
+- `internalPanel.theme.js` (new) - the base-layer-status warning text (2 classNames).
+- `DetourDetailsPanel.theme.js` (new) - the main panel + its co-located `ImpactBlock` sub-component
+  (39 classNames), plus `ROUTE_COLOR`/`ROUTE_SECONDARY_COLOR` folded in as `t.colors`.
+- `ClosureDensityPanel.theme.js` (new) - both stacked panels (results + comparison), 32 classNames.
+  Incidentally fixed a pre-existing unused-var lint warning (`(hex, i) =>` → `(hex) =>`) while
+  rewriting the file.
+- `RouteComparisonBarChart.theme.js` (new) - 11 classNames, plus `ROUTE_COLOR` folded in as
+  `t.colors.primary`. This file had no `ThemeContext` import at all before - added it.
+
+**`routing`'s dynamic colors also folded in** (user: "and it's all themable right?" → "yeha i want
+this too"): `ROUTE_VARIANT_COLORS` moved into `RouteDetailsPanel.theme.js` as `t.colors`, the two
+`style={{...}}` blocks that read it directly now read `t.colors.primary`/`t.colors.secondary`
+instead - single source of truth, `constants.js` still holds the raw hex values, the theme file
+just re-exports them alongside the classNames.
+
+**Verified across both plugins together**: `grep -rn 'className="' detour/ routing/` returns
+nothing - zero raw Tailwind strings remain anywhere in either plugin. Full lint pass shows only
+pre-existing, unrelated `no-unused-vars` warnings in the two `comp.jsx` files (predates this
+session) - no new errors introduced by the theme conversion across all 7 converted files (2 in
+`routing`, 5 in `detour` counting `internalPanel.jsx`).
+
+**Not yet live-verified** - needs a quick MapEditor check that both plugins' panels render
+visually identically to before (expected, since every theme value is byte-identical to what was
+inline - this was a pure refactor, no visual changes intended).
+
+## DECIDED (2026-09-01): dynamic `conflation_view_id` proposal DECLINED for `detour` too - different shape than `routing`
+
+Same underlying decision as `point-to-point-routing-plugin.md`'s matching note, but shaped
+differently here since `detour` already has the layer-picker UI built (unlike `routing`, which
+never got one):
+
+- **The base-layer picker (`internalPanel.jsx`'s "Base network layer" select) STAYS** - author can
+  pick any conflation-layer year for click-identity/rendering purposes. This part is NOT being
+  removed or restricted to 2025-only.
+- **But `conflation_view_id` sent to the backend (`/trsp-memory` etc.) does NOT derive from
+  whichever layer the author picked.** It stays hardcoded (same single-constant approach as
+  `routing`), and will be set to 2025's correct view_id once that data exists (does not exist yet
+  as of this note). The earlier "derive conflation_view_id from the picked layer's own view_id"
+  proposal (see the "conflation_view_id must be dynamic" section, still further up this file) is
+  DECLINED, not just on hold.
+
+**Real residual risk, stated plainly and acknowledged by the user, not silently accepted**: if an
+author picks a NON-2025 layer as the base network layer, its `ogc_fid` values get read off that
+layer's own tiles (via `feature.id`, see the click-identity fix earlier in this file) and sent to
+a backend that is ALWAYS computing against the 2025 graph. Since `ogc_fid` is an independent
+auto-increment sequence per physical table, an id meaningful in the picked (non-2025) layer could
+coincidentally also exist in the 2025 graph, pointing at a completely different, unrelated
+segment - a real "silently wrong route, no error at all" failure mode. The column-validation
+warning already built (`internalPanel.jsx`, checks `ogc_fid`/`from_node`/`to_node`/`highway`
+columns exist) does NOT catch this - it only validates the picked layer LOOKS like a conflation
+edges table, not that it's specifically the 2025 vintage. User's explicit call: this residual risk
+is acceptable ("that is not the problem here at all") - not revisited unless it becomes a real
+issue in practice.
+
+**Net effect: no further code changes needed for this decision** - the layer-picker UI already
+built stays exactly as-is; only the (not-yet-built) "derive view_id from picked layer" work is
+what's being declined, and that was never implemented (stayed at the proposal/discussion stage
+throughout). The one real future action item, for both `routing` and `detour`: update the
+hardcoded conflation_view_id constant to 2025's correct value once 2025 data is published - a
+plain value swap in each plugin's `constants.js`, same mechanism already used for every prior
+year's swap (see `point-to-point-routing-plugin.md`'s "View swap #1/#2/#3" history).
+
 ## Testing Checklist
 
 - [ ] Clicking a segment immediately (no prior point-picking) computes a route between its two
@@ -1325,3 +2030,1049 @@ pre-existing/unrelated, confirmed via `git log`/`git diff` predating this sessio
 Point selection now works correctly but can be slow per-request (CPU-bound Dijkstra search on the
 Node event loop). Broken out into its own task file so it doesn't get lost in this one's history:
 [Closure-density point-selection performance](./closure-density-performance.md).
+
+### 2025 conflation data: removed all hardcoded conflation_view_id, server resolves by source+version (2026-09-01)
+
+The whole system moved from 2024 conflation data (view_id 3699) to 2025. Investigation (read-only
+SQL, per the user's standing "never update delete or anything - always use SELECT" constraint)
+found 2025's edges/nodes/relations tables don't share a single view_id's naming convention the way
+2023/2024 did - each of the three followed a different table-naming pattern, so no one hardcoded
+id could resolve all three tables. The user added the missing 2025 relations table themselves
+(not by me).
+
+User's final instruction, superseding an earlier "leave it as-is" retraction: **"no all will be
+2025 verion so what you have to do is no hard coaded view id s here you have to find the source
+and then version in it of 2025 so no hard coaded for all theree here."** Then simplified further:
+**"just remove the version sendign from the frontend this must be shifted to backend only... only
+frontend do not know anythng here it just know the server where to call and backend will manage it
+all."** And: **"and cehck all must be same i mean all 3"** - routing's default, detour's default,
+and the warm-load constant all had to reference ONE shared source of truth, not three
+independently drifting hardcoded values.
+
+**Backend (`data-types/routing/memoryGraph.js`, `data-types/routing/index.js`)**:
+- Added `MAIN_CONFLATION_SOURCE_ID = 2125`, `NODES_SOURCE_ID = 2096`, `EDGES_SOURCE_ID = 2097`,
+  `RELATIONS_SOURCE_ID = 2098`, `CURRENT_CONFLATION_VERSION = "2025"` - the single source of
+  truth, exported for `index.js`'s warm-load log line.
+- `resolveConflationTables(db)` now takes NO params (previously took a `conflationViewId` and
+  derived `version` from `data_manager.views`) - resolves all four tables by `source_id` +
+  `CURRENT_CONFLATION_VERSION` directly.
+- `loadGraph`, `getOrLoadGraph`, `invalidateGraph` all dropped their `conflationViewId` params;
+  cache key is now `` `${pgEnv}:${CURRENT_CONFLATION_VERSION}` ``.
+- `index.js`: removed `WARM_LOAD_CONFLATION_VIEW_ID` entirely; every route handler
+  (`/trsp`, `/trsp-memory`, `/nodes`, `/edges`, `/trsp-memory-detour-endpoints`,
+  `/trsp-memory-density-points`, `/trsp-memory-density`) stopped reading `conflation_view_id`
+  from the request body/query.
+
+**Frontend (`src/themes/transportny/components/routing/`, `.../detour/`)**: removed
+`DEFAULT_CONFLATION_VIEW_ID` from both plugins' `constants.js`, and stripped the
+`conflationViewId`/`conflation_view_id` param from every hook and fetch boundary that used to pass
+it through (`comp.jsx`, `hooks/useTrspRoute.js`, `hooks/resolveTrspRoute.js`, and detour's
+`hooks/useClosureDensity.js`, `hooks/resolveClosureDensity.js`, `hooks/usePickedPairRoute.js`,
+`hooks/resolveDetourEndpoints.js`, `hooks/resolveNodesInBbox.js` - the last one dead code, fixed
+anyway for consistency since it shares the same API contract). The frontend now sends only
+`{source, destination, ...}` - no version/view knowledge at all, per "frontend do not know
+anythng here."
+
+**Not yet done**: backend changes require a server restart and have NOT been live-tested against
+real 2025 data yet - this was interrupted before that step. Verify (post-restart): warm-load log
+line resolves all four 2025 tables successfully, a real point-to-point route and a real detour
+both return results, and closure-density mode still finds candidates, before considering this
+closed.
+
+### REVERTED - back to 2024 (view_id 3699) hardcoding (2026-09-01, same day)
+
+After a server restart, live testing against real 2025 data showed candidate points and route
+lines not rendering on the map, then the user reported the API "taking a lot of time" on every
+request (not just the expected first-request cold-load). Rather than debug 2025-data performance
+mid-session, the user said: **"revert back to the 2024 version i mean revert all code that you
+u[pdated] to make it 2025 version."**
+
+Reverted, file by file, back to the pre-refactor state (hardcoded `conflation_view_id`/
+`DEFAULT_CONFLATION_VIEW_ID = 3699` everywhere, threaded from frontend constants through every
+hook/fetch boundary to the backend, `resolveConflationTables(db, view_id)` back to its original
+by-view_id + table-name-suffix form, `getDataTable(db, view_id)` restored, `getOrLoadGraph`/
+`invalidateGraph`/`loadGraph` all take `conflationViewId` again, `WARM_LOAD_CONFLATION_VIEW_ID =
+3699` restored in `data-types/routing/index.js`, every route handler back to requiring
+`conflation_view_id` in its body/query). Confirmed via `node --check` (backend) and `npx eslint`
+(frontend, no parsing errors, no `conflation` findings) that the revert is complete and clean.
+Only unrelated work from earlier in this same session (theming conversions, the base-network-layer
+picker, etc.) was left in place - this revert touched exclusively the files changed by the 2025
+refactor above.
+
+**Status: back to the known-good, previously-live-tested 2024 view_id 3699 configuration.** The
+2025 data-source naming-convention problem (three different table-naming schemes across the main/
+nodes/edges/relations sources) documented above is real and still unsolved if a 2025 migration is
+attempted again - but any future attempt should investigate the "taking a lot of time" / invisible-
+layers symptom BEFORE re-landing this refactor, since neither was root-caused before the revert
+(candidates: 2025 dataset genuinely larger -> slower per-request search; the reinstated 30s Express
+timeout on density routes, see "Timeout removed entirely for both density routes" above; or the
+candidate/route coordinates landing far outside the zoomed-in test viewport, never actually
+confirmed either way).
+
+Backend requires a restart to pick this revert up (same as any `data-types/routing/` change).
+
+### 2025 conflation data, take 2: hardcoded table names + start/end-endpoint segment resolution (2026-09-02)
+
+Same day, redone per explicit correction: **"manage this along the backend only can take the hard
+code version or table names we are not going to use the db to find the table name it will take
+few sec and this process is not for that."** `data-types/routing/memoryGraph.js`'s
+`resolveConflationTables()` is now a plain synchronous function returning four hardcoded string
+literals (`CONFLATION_TABLE`/`NODES_TABLE`/`EDGES_TABLE`/`RELATIONS_TABLE`) - no DB query at all.
+Confirmed live, read-only, against `data_manager.views` for source_id/version pairs
+(2125/2096/2097/2098 x version='2025'):
+
+| source_id | role | data_table |
+|---|---|---|
+| 2125 | main | `temp.s2125_v3772_osm_conflation_2025` |
+| 2096 | nodes | `temp.s2096_v3773_osm_conflation_nodes_2025` |
+| 2097 | edges | `temp.s2097_v3774_osm_conflation_edges_2025` |
+| 2098 | relations | `temp.osm_conflation_1_2025_relations` |
+
+Confirmed columns and real row counts (5,416,201 nodes / 10,042,759 edges / 16,643 resolved
+relations) match. `loadGraph`/`getOrLoadGraph`/`invalidateGraph` cache key is just `pgEnv` now.
+Frontend `DEFAULT_CONFLATION_VIEW_ID` removed from both plugins' `constants.js` again; every hook
+that passed it stopped sending it.
+
+**Segment-identity resolution** (same "ogc_fid isn't stable across conflation years" bug as
+before, since the base network layer is author-selected to any year): `resolveEdgeBetweenPoints(db,
+edgesTable, nodesTable, {start, end})` in `data-types/routing/index.js` - snaps the clicked
+segment's own START/END coordinates (`comp.jsx`'s `endpointsOf`, the segment's real first/last
+LineString coordinates) to nodes via `snapToNearestNode`, looks for a direct edge connecting them
+(`exactMatch: true`), and falls back to nearest-by-distance against the segment's midpoint
+(`exactMatch: false`) when no such edge exists. New route `POST /trsp-memory-resolve-edge` exposes
+this; new frontend fetch boundary `resolveEdgeAtPoint.js`. `comp.jsx` resolves `resolvedOgcFid`
+via a `useEffect` on `selectedSegment` and passes it (not the raw picked-layer `ogc_fid`) to every
+downstream call (`resolveDetourEndpoints`, `analyze`, `getRoute`'s `excluded_edge_ids`,
+`usePickedPairRoute`); `segmentResolveError` surfaces a warning when `exactMatch` is false instead
+of silently guessing.
+
+**A multi-edge-chain version was attempted and explicitly reverted same day.** User's next report:
+"still overlap... allow user to pick segment and you for that year pick the lat and long of that
+selected segment here and then understand the segment for 2025 may be 2 segment comes unders that
+lat long break those 2 or take those 2 as a single" - confirmed via a follow-up choice ("treat all
+matched 2025 edges as one closed set") to build a graph-path-search version that resolved a picked
+segment to a whole CHAIN of edges (new `resolveEdgeChainBetweenPoints` in `memoryGraph.js`,
+`closureContext` generalized to arrays, the `densitySearchPool.js`/`graphSearchWorker.js` worker
+protocol changed from a fixed edge pair to an array). While testing that version live, the user hit
+a stuck "Finding nearby candidate points…" state with no "Analyze coverage" button ever appearing,
+said **"lol" / "revert this"**, then clarified after an over-correction (a full revert to the last
+commit, `99f02b1`, discarding the 2025-hardcoded-tables work too) with **"noo i mean keep the last
+[c]hange i said rever[t] last to last change only"** - i.e. keep the hardcoded-2025-tables +
+single-edge start/end resolution, drop only the multi-edge chain redesign. That is the state
+documented in this section and currently in the working tree.
+
+**Also confirmed by the user mid-thread, worth remembering going forward: "i told you clearly that
+this is only a backend task front must have to behave as before i mean user actions"** - future
+work in this area must keep the frontend's user-facing behavior (buttons, panels, click flow)
+exactly as before; only the backend's data-source resolution should change.
+
+Verified via `node --check` (all touched backend files) and `npx eslint` (frontend - no new
+errors, no leftover `conflation_view_id`/multi-edge-chain references confirmed via grep).
+**Not yet live-tested** - needs a backend restart to pick up the current `/trsp-memory-resolve-edge`
+contract and hardcoded table names.
+
+### Closure-density candidate search: directional bias to reduce U-turn candidates (2026-09-02, PENDING LIVE VERIFICATION)
+
+Live testing on the 2025 layer (candidates now correctly resolving, no more year mismatch) surfaced
+a separate, real problem: candidate points clustering right at/behind the closed segment - a visible
+U-turn in the candidate search's own exploration. User's diagnosis and requested fix, verbatim:
+**"it took u turn i told you to not take u turn rather expand the route in that dir... you can take
+one node in u turn route and stop and expand more on the same direction if found the nodes in that
+dir can pick those and it dead end then only expand other ways there."**
+
+**Important history**: a hard no-U-turn rule (`predecessorNode` tracking, fully blocking the reverse
+edge in `farthestToNearestNodes`) was already tried once and reverted - "it is not doing the u turn
+but the gap between the nodes is too less which is not useful at all." Confirmed with the user
+before implementing again which approach to use this time (asked directly, since a repeat of the
+same failure mode was a real risk): **chose a SOFT directional-bias penalty over a hard block.**
+
+**Implementation** (`data-types/routing/memoryGraph.js`'s `farthestToNearestNodes`, used by
+`selectClosureDensityCandidates` for the closure-density candidate search):
+- The search's Dijkstra now tracks TWO values per node: `dist[]` (real, unpenalized cumulative
+  network distance - unchanged, still what `MIN_GAP_M` spacing enforcement reads) and a separate
+  `priority[]` (direction-penalized cumulative cost, used ONLY as the heap key that controls
+  exploration/settling order).
+- `directionPenalty(inBearing, outBearing)`: an edge continuing roughly the same bearing as the
+  edge that just reached this node costs its real length (penalty = 1x); an edge reversing back
+  the way it came costs up to `DIRECTION_PENALTY_MAX` (4x) its real length, linearly interpolated
+  by the bearing difference (0deg = straight = 1x, 180deg = full reversal = 4x). The first hop out
+  of the seed has no prior bearing to compare against, so it's unpenalized (1x), same as before.
+- Backward/branching directions are never excluded - they're still fully reachable, just explored
+  and settled LATER, which in practice means only once the straight-ahead direction has nothing
+  cheaper left to offer (i.e. dead-ended or exhausted within budget). This is the soft version of
+  "take one node in u turn route and stop... if it dead end then only expand other ways."
+  Directly addresses why the hard-block version failed: a full block forced the search into
+  whatever's next-nearest by any means, producing tight clustering; a soft penalty still allows
+  the straight direction ample room to be exhausted before backward nodes compete for candidate
+  slots, without ever making backward nodes literally unreachable.
+- `reached` (the search's output list) is explicitly re-sorted by real `dist` before being handed
+  back to the caller, since the pop order is now by `priority` (direction-biased), not real
+  distance - preserves the existing "nearest-first, real-distance-ordered" contract that
+  `MIN_GAP_M` spacing enforcement and the same-road/other split both depend on. Only WHICH nodes
+  get discovered/pass the `maxDistanceM` cap changes; the final ordering contract is unchanged.
+- The search-radius cap (`maxDistanceM`, still `MAX_CANDIDATE_DISTANCE_M` = 8mi) is still enforced
+  in real distance (`dist[nodeIdx] > maxDistanceM` skips a node from the candidate list), not the
+  inflated priority scale - the priority-scale early-break (`priorityBreakM = maxDistanceM *
+  DIRECTION_PENALTY_MAX`) is a generous safety bound only, so real-distance-valid nodes reached via
+  a penalized path are never cut off prematurely.
+
+Verified via `node --check` and `npx eslint` (only a pre-existing, unrelated `edgeSource` unused-var
+finding elsewhere in the file, confirmed via `git stash` diff - not introduced by this change).
+
+**PENDING LIVE VERIFICATION per explicit user instruction ("make sure we will check the result and
+if its good then only will use this")** - this has NOT been tested against a real closure yet.
+Needs: backend restart, then a live closure-density run on a segment that previously showed the
+U-turn clustering artifact, checking (a) candidates no longer bunch immediately behind the closed
+segment, (b) the 10/10 count and real spacing (`MIN_GAP_M`) requirements from
+`documentation/closure-density-point-selection.md` still hold, (c) no new regression in analysis
+timing. If the result isn't good, this whole section's change should be reverted rather than kept
+half-working - same discipline as the two prior candidate-selection attempts in this file.
+
+### Follow-up, same day: real-junction detection by OSM way identity (also PENDING LIVE VERIFICATION)
+
+First live test of the directional-bias change above surfaced a genuine, more serious problem:
+**"Analyzed 100 of 100 possible routes (100 had no route)"** on a highway interchange (South Mall
+Arterial ramps) - every single candidate pair failed to find a route. Asked the user whether to
+revert the directional-bias change first before investigating further; their answer identified the
+real root cause directly: **"the routing is working the issue is all points are there is not
+reachable because it is in a opposit one way direction... expand first start and end point until
+any junction of road so that we can traverse in the tree/roads."**
+
+Root cause: `walkToFirstBranchSimple`/`walkToFirstBranchDensity` (used to derive both the simple-
+mode detour endpoints and the closure-density seed points) stopped at the FIRST node offering more
+than one next-edge option, **pure topology (edge count)** - on a highway interchange, this is
+almost every node, since a ramp forking into "continue" vs. "exit" is technically 2+ candidates
+even though both are the SAME physical one-way ramp, not a real cross-connected road. The walk was
+stopping at these fake forks far too early, seeding candidates onto one-way-isolated ramp geometry
+that structurally can't route back to the opposite side - explaining both the earlier U-turn
+clustering AND this new 100%-no-route failure.
+
+**Fix**: added `edgeOsm` (the OSM way id per edge, same "ground truth for is this the same road"
+column `getEdgesInBbox` already selects per-request - now loaded into the in-memory graph once at
+graph-load time instead) to `loadGraph`'s edges query and the graph object. `isBranch` in BOTH walk
+functions (confirmed in scope by the user: **"i thisnk this is also used in a simple detour too...
+if junction is there just take the next node in that dir not junction dir but the expansion dir"**
+- i.e. keep the existing straightest-continuation pick for WHICH node to walk to, only change WHEN
+the walk is allowed to stop) now requires that at least one candidate edge belongs to a genuinely
+DIFFERENT OSM way than the one just traveled - a real joining road, not a lane/ramp fork within the
+same way. Falls back to the old any-fork rule when `osm` data is missing (`-1`) on the just-
+traveled edge, so this degrades safely rather than never stopping.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings as before this change,
+confirmed unrelated via `git stash` diff - no new errors).
+
+**PENDING LIVE VERIFICATION, same discipline as above** - backend restart needed (graph reload
+required to pick up `edgeOsm`), then re-test the SAME interchange closure that produced "100 had no
+route": candidates should now sit past a real cross-street, not on isolated ramp geometry, and
+route-finding between them should succeed for at least most pairs. If it doesn't, this needs
+further investigation before being trusted - not kept half-working.
+
+### REVERTED - the OSM-way real-junction fix, same day
+
+Live test with both today's changes (direction-bias search + OSM-way branch detection) still
+showed a bad result: **"Analyzed 100 of 100 possible routes (46 had no route)"**, average detour
++39.30mi/+3265s, with candidate points spread wildly asymmetric (green/start candidates strung out
+~40mi north, red/end candidates clustered tightly together) - visibly still wrong, not just
+"improved but imperfect." User's explicit verdict: **"still the start and end points are not valid
+here."**
+
+Asked whether to revert both changes back to the plain-topology baseline given the two-changes-in-
+one-session risk (debugging compounded, unproven changes at once); user confirmed reverting both,
+then immediately corrected to **"i mean just revert h[t]e last"** - keep the direction-bias search
+change (still itself unverified, but not implicated by this specific new failure mode), revert only
+the OSM-way real-junction fix.
+
+**Reverted**: `edgeOsm` removed from `loadGraph`'s edges query/typed-array/graph object; both
+`walkToFirstBranchSimple` and `walkToFirstBranchDensity`'s `isBranch` back to plain
+`candidates.length > 1` (pure topology, pre-2026-09-02 state). The direction-bias search change
+(`DIRECTION_PENALTY_MAX`/`directionPenalty` in `farthestToNearestNodes`) is UNCHANGED/kept from the
+earlier entry in this file. Verified via `node --check` and `npx eslint` (same 3 pre-existing,
+unrelated findings, no new errors) and `grep` (confirmed zero remaining `edgeOsm`/`currentOsm`
+references).
+
+**Current state**: direction-bias search kept (still pending its own live verification - never
+cleanly confirmed working on its own, since the OSM-way fix landed in the same session before a
+clean isolated test could happen), OSM-way real-junction detection fully reverted. The underlying
+"walk stops at fake one-way ramp forks" problem this was meant to fix is UNRESOLVED and will
+recur on interchange-heavy closures until revisited - flagged here rather than silently dropped.
+
+### Direction-bias search ALSO reverted, same day - back to the fully plain-topology baseline
+
+A clean isolated test of the direction-bias-only state (2025 layer, confirmed exact match) still
+came back bad: "Analyzed 100 of 100 possible routes (20 had no route)," avg +30.26mi/+2525s -
+user's verdict: **"still see the point picker is not following the rules."** Asked whether this
+was a stale/segment-mismatch artifact; user confirmed **"layer is 2025 yeah same result because
+the points that you pick is same and not that good"** - a clean, valid test showing the direction-
+bias search itself was the problem (every test today with it active had come back with large
+30-40mi average detours, vs. sane small-scale results in tests earlier in the session before any
+of today's changes).
+
+**Reverted**: `DIRECTION_PENALTY_MAX`/`directionPenalty`/the priority-vs-real-distance split in
+`farthestToNearestNodes` - back to the plain, single-real-distance Dijkstra flood, byte-identical
+to commit `99f02b1`'s version (confirmed via `diff` against that commit). This closes out EVERY
+candidate-picking experiment tried on 2026-09-02 - direction bias, OSM-way real-junction detection
+- all reverted. The plain pre-2026-09-02 topology-based rules (documented in
+`documentation/closure-density-point-selection.md`, unchanged all day) are what's live.
+
+**Confirmed working** on the next live test (2025 layer, real interchange-free residential road):
+100/100 routes found, avg +0.32mi/+41sec - sane, small-scale, real. User: **"this looks good for
+me for now."** Two genuine, still-open problems were separately diagnosed and left UNFIXED
+(deliberately, not forgotten) rather than patched with another unproven change:
+- Interchange/one-way-ramp fake-branch stopping (the walk problem the reverted OSM-way fix
+  targeted).
+- Trivially-local candidates on small dead-end-heavy networks (a user-observed case: "i know this
+  is total 3-4 mile road and here it has to be min 15-20 mile" - the search settles for nearby
+  dead-end streets instead of being forced out to the arterial network). A blanket radius raise
+  (`MAX_CANDIDATE_DISTANCE_M` 8mi->15mi) was already tried once (2026-08-25 era) and reverted for
+  being slower without being better - an adaptive approach wasn't attempted.
+
+Both are documented in `documentation/detour-plugin-pipeline.md`'s "Known limitations" section and
+the new skill `planning/transportny/skills/detour-and-routing-plugins.md`.
+
+### Documentation written (2026-09-02, once the baseline was confirmed good)
+
+- `documentation/detour-plugin-pipeline.md` - full pipeline + "Known limitations."
+- `documentation/mapeditor-authoring-guide.md` - general "how to create a map" UI guide (two
+  entry points, adding a layer, adding a plugin as author/developer, the `state.symbology` vs
+  `state.symbologies` gotcha).
+- `planning/transportny/skills/` (new folder, mirrors `planning/mitigateny/skills/`) -
+  `README.md` + `detour-and-routing-plugins.md`, the plugin-specific skill covering attachment,
+  methodology, and - per explicit follow-up instruction - an IMPORTANT callout that only the 2025
+  base network layer should ever be used, plus a worked example documenting the actual live test
+  map's real layer/source/table setup (`localhost:5173/mapeditor/edit/2216051`, source_id 2097,
+  `temp.s2097_v3774_osm_conflation_edges_2025`).
+
+### Conflation table resolution refined again, same day: source_id+version, resolved ONCE and cached (not hardcoded literals, not per-request)
+
+Final correction to the backend's table-resolution approach, per explicit instruction: **"do not
+hardcode table name just hardcode th[e] view_id... keep sourrce and find version so first
+understan[d] that in backend and make sure it will not impact on the speed of response."** The
+hardcoded-literal-table-name approach (earlier same day) has a real staleness problem identical to
+the old per-plugin `DEFAULT_CONFLATION_VIEW_ID`'s history (3608->3689->3692->3699 across
+reprocesses) - a literal table name string breaks the moment the conflation pipeline reprocesses
+and mints a new physical table.
+
+**Fix**: `resolveConflationTables` in `data-types/routing/memoryGraph.js` resolves by
+`source_id` (permanent, hardcoded: 2125/2096/2097/2098) + `CURRENT_CONFLATION_VERSION` ("2025",
+hardcoded) via `data_manager.views`, same as the FIRST 2025 migration attempt earlier this
+session - but this time the resolution is wrapped in a **module-level memoized promise**
+(`cachedTablesPromise`): the actual DB query runs exactly ONCE per server process lifetime,
+whichever caller happens to trigger it first (in practice, the warm-load, ~20s after boot - "the
+memory store on restart"). Every call after that - including every real per-request call site
+(`/nodes`, `/edges`, `/trsp-memory-resolve-edge`, `computeTrspRoutes`) - returns the cached result
+synchronously with zero DB cost, so real user traffic never pays for this resolution at all. A
+failed resolution clears the cache so the next caller can retry rather than caching a permanent
+failure.
+
+All 5 call sites (`loadGraph` + 4 in `index.js`) updated to `await` the now-async
+`resolveConflationTables(db)`. `CURRENT_CONFLATION_VERSION` exported for the warm-load log line.
+Verified via `node --check` and `npx eslint` (same pre-existing findings only, no new errors) and
+`grep` (confirmed zero remaining hardcoded literal table-name strings).
+
+**Not yet live-tested** - needs a backend restart to confirm the warm-load resolves all four
+tables correctly and that a real request afterward is fast (no DB round trip beyond the one-time
+warm-load cost).
+
+### Root-caused the candidate-gap-relaxation issue (from the diagnostic log), fixed the actual cause
+
+The "points look closer than 1 mile" question (raised right after the source_id+version fix above)
+was root-caused, not just re-explained as the known tradeoff, once real diagnostic data came back:
+```
+rawStartPoolSize: 41002, ... startSameValidCount: 151, startOtherValidCount: 150,
+candidatesRejected: 0, startGapUsedM: 402.335, endGapUsedM: 402.335
+```
+User's sharp pushback - **"but this is happening or all segment[s]... this is a trad[e]off but
+not for all things right?"** - was correct: `startGapUsedM`/`endGapUsedM` of ~402m (0.25mi, exactly
+two halvings from the 1609m target) with ZERO rejected candidates and a 41,002-node raw pool is
+not "the road genuinely lacks spread" (the documented tradeoff) - it's a real, fixable cause.
+
+**Root cause**: `MAX_ATTEMPTS` (`numCandidates * 30` = 300) validation attempts were spent on a
+CONTIGUOUS NEAREST-FIRST PREFIX of the raw pool (`budgetTestIndices`'s old `for (let i = 0; i <
+sameRoadCap; i++)` loop). On a dense network (41,002 raw nodes within the 8mi radius), 300
+nearest-first attempts never reach past roughly the first mile - so `MIN_GAP_M`'s gap-relaxation
+logic was handed an artificially clustered validated pool and had no choice but to shrink the gap,
+even though the road clearly has far more spread available (41,000 nodes' worth) that the search
+simply never got to.
+
+**Fix**: `budgetTestIndices` (`data-types/routing/memoryGraph.js`) now picks its `MAX_ATTEMPTS`
+worth of validation attempts STRATIFIED across the full distance range instead of a nearest-first
+prefix - `stratifiedIndices(poolLength, cap)` picks `cap` indices evenly spaced across
+`[0, poolLength)` (`Math.floor(i * poolLength / cap)`), applied separately to the same-road and
+"other" sub-ranges. Near, mid, and far candidates all get a chance to be validated within the SAME
+total budget - no change to `MAX_ATTEMPTS` itself, no change to the 8mi search radius, only where
+within that radius the fixed attempt budget gets spent. `applyBudget`'s same-road/other
+classification changed from a magnitude check (`idx < sameRoadCap`, which assumed a contiguous
+prefix) to an explicit `sameRoadIndexSet.has(idx)` Set membership check, since a stratified pick
+can land anywhere in its sub-range, not just below a cutoff.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings, no new errors).
+
+**Not yet live-tested** - needs a backend restart. Expect `startGapUsedM`/`endGapUsedM` to land
+much closer to the full 1609m target on segments like the one diagnosed above (dense network,
+plenty of raw candidates) - if it's still relaxing significantly on a network with a genuinely
+large raw pool, that's a sign this fix needs another look, not that the tradeoff was correct all
+along.
+
+### REVERTED same day, live-tested and rejected
+
+Live test after restart: candidates now spread across a MUCH larger geographic area (a screenshot
+spanning Halfmoon down to Colonie/Troy - many miles) and the analysis visibly slowed down. User's
+verdict, direct and immediate: **"points are coming in both direction that is not the thing i
+wanteed at all so revert it first."**
+
+This is the real, predictable cost of stratified sampling that wasn't weighed clearly enough before
+implementing: spreading the SAME `MAX_ATTEMPTS` validation budget across the full 8mi radius means
+some of those 300 searches now run against genuinely far candidates instead of exclusively nearby
+ones - each such search costs more (longer path), which is a real, direct explanation for "taking a
+lot of time." More importantly, the RESULT itself - candidates legitimately spread across many
+miles instead of clustered near the closure - was explicitly not what was wanted, even though it
+technically satisfies "genuinely spread out, not clustered." The tighter, closer-together candidate
+set (the thing this fix set out to "fix") was closer to the actually-desired behavior than the
+wider, farther-spread, slower alternative.
+
+**Reverted**: `budgetTestIndices` and `applyBudget` both restored to their exact pre-fix,
+byte-identical-to-commit-`7192724` state (confirmed via `diff`) - `stratifiedIndices` and
+`sameRoadIndexSet` fully removed, back to the plain nearest-first contiguous-prefix budget. Verified
+via `node --check` and `npx eslint` (same 3 pre-existing findings only).
+
+**Where this leaves the original gap-relaxation question**: back to the pre-diagnosis state - the
+0.25mi-instead-of-1mi gap on dense networks is confirmed, real, and its root cause (budget spent
+entirely near-first) is understood, but the fix that follows from that root cause was tried and
+explicitly rejected on the basis of its actual live behavior, not reverted blind. Any future attempt
+at this needs a mechanism that doesn't trade "clustered but fast and geographically tight" for
+"spread but slow and geographically wide" - both extremes were now tested live and both were
+rejected for different reasons (the ORIGINAL gap-relaxation issue was rejected as "not that good";
+this fix's over-correction was rejected as "not what i wanted at all"). Left genuinely unresolved,
+not silently dropped.
+
+### A third, much more precisely specified rewrite: round-synchronized multi-branch expansion
+
+Given a precise, literal spec this time - **"i said expand in dir[ection] if junc[tion] come from
+the side expand one node in junc[tion] and one in the same dir[ection]... if 2-3 junction there
+expand 1-1-1 in all dir[ections] and another round in all dir[ections] and continue... can take
+more than 10 if it['s] there"** - implemented a genuinely different search algorithm from the two
+reverted earlier attempts (weighted-Dijkstra direction bias; distance-stratified validation
+budget). User also floated using AADT (traffic volume) to help distinguish real branches from
+minor forks on short roads - noted as a good follow-up, deliberately NOT bundled into this same
+change since it requires loading a new column into the in-memory graph (the same class of change
+as the reverted `edgeOsm` load) and this rewrite was already substantial enough on its own.
+
+**`farthestToNearestNodes` rewritten** (`data-types/routing/memoryGraph.js`) - replaced the plain
+distance-ordered Dijkstra flood entirely with a round-synchronized branch walk: every ACTIVE
+branch (starting as just the seed) advances by exactly ONE hop per round; when a branch's node
+offers more than one viable next edge (a real junction, pure topology), that ONE branch is
+replaced by MULTIPLE new branches - one per viable direction - each of which ALSO advances by one
+hop on the SAME round (so a 3-way junction produces 3 new frontier nodes in one round, not
+staggered). Every frontier node a round produces is a candidate. A branch's "which road does this
+represent" tag is set on its first hop and inherited by every child branch a later junction spawns
+from it - this is what feeds the existing same-road/other classification, unchanged in meaning.
+Same function signature and `{nodes, sameRoadCount}` return shape as before, so the caller needed
+minimal changes.
+
+**Selection logic also changed** to honor "can take more than 10 if it's there": the gap-relaxation
+mechanism (`pickWithBestEffortGap`, which shrunk `MIN_GAP_M` down to hit exactly `numCandidates`)
+is REMOVED - replaced with `pickWithFixedGap`, which never relaxes below the full 1-mile gap and
+never caps the result at `numCandidates`. `numCandidates` is now the same-road-first fallback
+logic's MINIMUM TARGET (try same-road-only at full spacing first; only fall back to the combined
+same-road+branched pool if same-road alone can't reach the target), not a count either side is
+forced to hit exactly. The reasoning for why this is safe now (it wasn't, twice, on 2026-08-24):
+those earlier hard-floor attempts ran against the OLD distance-ordered flood-fill, which really
+could produce a thin pool on a small network; the new round-based search produces a structurally
+richer, genuinely-multi-directional pool by construction, so a full non-relaxing gap should
+actually work rather than starve.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings only, no new errors)
+and `grep` (confirmed zero dangling references to the removed `pickWithMinGap`/
+`pickWithBestEffortGap`/`reachedVia`).
+
+**Not yet live-tested** - needs a backend restart. Given the very direct rejections of both prior
+attempts, this should be evaluated carefully against the user's literal spec (does expansion
+genuinely follow "1-1-1 per junction, one round at a time," do candidates land in believable,
+locally-sensible places rather than either clustered or scattered miles apart, is the count
+sometimes above 10 as expected) before being trusted.
+
+### Fix: round-based expansion was dying to ~1 branch (global `visited` starvation)
+
+Live test of the above: **"it just picking 1-1 points so just expand it more."** Root cause: the
+round-based rewrite still gated every branch's next-step options through one GLOBAL `visited` Set
+shared across ALL branches. On any real (non-rural) road network, branches spreading outward from
+nearby junctions race to claim the same small pool of nearby nodes - within a few rounds almost the
+entire local neighborhood is claimed by whichever branch got there first, and every other branch
+has nothing left to step onto and dies. Only the 1-2 branches that happened to escape into
+genuinely untouched territory survive to keep producing candidates - exactly the "1-1" symptom.
+
+**Fix** (`farthestToNearestNodes`, `data-types/routing/memoryGraph.js`): removed the global
+`visited` Set entirely. Each branch now only avoids its own immediate previous node/edge
+(`prevNode`/`prevEdge`, already tracked - prevents trivial one-step backtracking); it's otherwise
+free to cross paths with a sibling branch. Added `MAX_ACTIVE_BRANCHES = 400` as a safety valve
+(deterministic truncation if a single round would spawn more branches than that) so removing global
+dedup can't cause unbounded branch-count blowup on a dense grid. The final `reached` list is
+deduplicated by node afterward (nearest-distance occurrence wins) so overlapping branches don't
+report the same candidate twice - this replaces what the old global `visited` was doing, but only
+at the reporting stage, not during exploration (so it no longer starves other branches).
+
+Verified via `node --check` (clean) and `npx eslint` (same 3 pre-existing findings only - `require`/
+`module` not defined under the ESM-flavored lint config, `edgeSource` unused elsewhere in the file;
+no new errors introduced).
+
+User confirmed AADT integration stays scoped to "just for the no u-turn stuff" - i.e. purely a
+future aid for picking which junction direction is the real one (to suppress U-turn candidates on
+short roads), not bundled into this fix and not a general search-weighting change.
+
+**Not yet live-tested** - needs a backend restart, then re-verify against the same checklist as
+above (genuine multi-directional spread, locally-sensible placement, count sometimes >10) plus
+confirm this specific fix: multiple candidates per side again, not just 1-1.
+
+### Reverted: round-based rewrite dropped entirely, back to 10-10 flood-fill
+
+User: **"i mean from it started picking only 1-1 points revert that and tack back to 10-10."** The
+global-visited fix above was not trusted as a live-tested fix for a live-tested regression - reverted
+the whole round-synchronized branch-expansion algorithm (both the original rewrite and the
+global-visited fix on top of it) via `git checkout 7192724 -- data-types/routing/memoryGraph.js`,
+back to the plain distance-ordered flood-fill (`farthestToNearestNodes`) and `pickWithBestEffortGap`
+selection that was last confirmed live to reliably produce 10-10 candidates. This reintroduces the
+known, previously-diagnosed tradeoff: on a thin candidate pool, the gap can relax well below the
+1-mile target (real diagnostic data showed candidates as close as ~402m / 0.25mi in one case) -
+this was root-caused (validation budget spent nearest-first only) but not yet fixed in a way the
+user has accepted; see the two earlier rejected fix attempts above (directional-bias weighting,
+distance-stratified budget) and the round-based rewrite itself, all three tried and reverted. This
+problem (10-10 count vs. real 1-mile spacing) is genuinely unresolved as of this revert - no
+further attempt is in flight.
+
+Verified via `node --check` (clean) and `git diff --stat` (only doc/task-file changes remain
+outside this revert; `memoryGraph.js` is byte-identical to commit 7192724 again).
+
+### Overshoot-and-drop-the-near-end fix
+
+User observation, live-tested against the 10-10 flood-fill above: **"first 3-3 points were worst
+where last 10 points were great, so can we keep 15 for the points and pick last 10"** - i.e. the
+nearest picks (closest to the closure) are consistently the weak ones, and the farthest picks
+within the validated set are consistently the strong ones.
+
+**`selectClosureDensityCandidates`** (`data-types/routing/memoryGraph.js`): added
+`OVERSHOOT = 5` and `searchTarget = numCandidates + OVERSHOOT` (15 when `numCandidates` is the
+default 10). `MAX_ATTEMPTS` and `selectPreferSameRoad`'s gap-relaxation target both now use
+`searchTarget`, not `numCandidates` directly - so the extra 5 candidates are genuinely searched
+and validated for, not sliced out of what a 10-target search would have found anyway (which would
+just be the same 10 near points, no better/worse). After selection, `startCandidates`/
+`endCandidates` (already nearest-to-farthest sorted, since `pickWithMinGap` walks that direction)
+are sliced to `.slice(-numCandidates)` - keeping only the farthest `numCandidates` (10), dropping
+the nearest `OVERSHOOT` (5).
+
+No change to `DENSITY_NUM_CANDIDATES` (stays 10, reverted from a brief 13 earlier the same day per
+"taking a lot of time keep it 10") - `numCandidates` the caller passes is still the requested final
+count; overshoot is purely internal search/selection headroom.
+
+Verified via `node --check` (clean). **Reverted same day, before ever being live-tested** - "lol
+revert that." Back to byte-identical with commit 7192724 again.
+
+**Reapplied 2026-09-03** - "now can we try to improve the points as noted yestaday." Same change as
+above (`OVERSHOOT = 5`, `searchTarget` drives `MAX_ATTEMPTS`/`selectPreferSameRoad`, final
+`.slice(-numCandidates)` keeps the farthest 10 of 15 searched). Verified via `node --check` and
+`npx eslint` (same 3 pre-existing findings only).
+
+**Live-tested, request time flagged**: "it's taking a lot of time... i mean its 15 right?" -
+confirmed `searchTarget` (15) driving `MAX_ATTEMPTS` was a real cost increase (450 vs 300
+validations/side). Fixed by decoupling: `MAX_ATTEMPTS` reverted to `numCandidates * 30` (original
+cost), `searchTarget` kept only for the selection-target widening. Verified, not yet re-tested at
+that point before the next round of live feedback arrived.
+
+**Live-tested again, real clustering bug found**: screenshot showed 10 candidates landing almost on
+top of each other in a tight loop near the closure (Saratoga Ave/Cohoes) - matches the diagnostic
+log from the same test: `startGapUsedM: 100.58375` (barely a tenth of the 1-mile target). Root
+cause: on a dense local grid, the ENTIRE validation budget (nearest-graph-order first) gets spent
+inside one small real-world radius before ever reaching genuinely farther, spread-out roads - so
+even "keep the farthest of what got searched" still only had a tightly-clustered pool to choose
+from. Proposed a distance-targeted validation-index fix (test near/mid/far real-world distances
+instead of nearest-order); user declined that specific direction.
+
+### Hard gap floor (2026-09-03) - the actual accepted fix
+
+Explicit instruction: **"i want you to follow the rules and pick the points based on that i know
+some roads are not like that and will not follow our rules but yeah you have to pick the good
+points... i mean its total 1 mile gap between all points."** Reading: the 1-mile spacing is the
+non-negotiable rule; `numCandidates` (10) becomes a CEILING, not a floor - a road whose validated
+pool genuinely can't support 10 points a full mile apart should return FEWER points, never closer
+ones. This is a direct reversal of the 2026-08-21 "count is the hard requirement, spacing gives
+way" rule that had been in place since the very first version of this feature - that original rule
+is exactly what produced every clustering complaint this session, all the way back to the first one.
+
+**`selectClosureDensityCandidates`** (`data-types/routing/memoryGraph.js`):
+- `pickWithBestEffortGap`/`pickWithMinGap` (relaxing, count-capped) REMOVED, replaced with
+  `pickWithFixedGap(sortedValid, minGapM)` - takes EVERY candidate that clears the full `MIN_GAP_M`
+  from the previous pick, no count target, no relaxation at all.
+- `selectPreferSameRoad` same-road-first fallback logic unchanged in shape (try same-road-only
+  first, fall back to combined same-road+other only if same-road alone can't reach `numCandidates`)
+  but now calls `pickWithFixedGap` instead of the relaxing picker.
+- The OVERSHOOT/keep-farthest-10-of-15 logic (`searchTarget`, `.slice(-numCandidates)` after
+  selection) is UNCHANGED and composes naturally with the hard floor: `pickWithFixedGap` now
+  returns however many points genuinely clear the gap (could be fewer OR more than
+  `numCandidates`), and the final slice still keeps only the farthest `numCandidates` of those.
+- `startGapUsedM`/`endGapUsedM` in the diagnostic/response are now always exactly `MIN_GAP_M` (or
+  `null` if literally zero candidates passed) - they no longer vary run-to-run, since the gap is
+  never relaxed anymore.
+- Removed all dangling comment references to the deleted relaxing picker; confirmed via `grep`.
+
+Verified via `node --check` (clean) and `npx eslint` (same 3 pre-existing findings only - no new
+errors from the removed function).
+
+**Not yet live-tested.** This is a real behavior change or the request may now more often return
+FEWER than 10 candidates per side on dense/short local networks (by design, per the user's explicit
+instruction) - re-verify this is the actually-wanted trade-off once tested, not just that spacing
+looks correct.
+
+### Reverted: hard gap floor rejected on live testing - "do not focus on distance"
+
+Live test: **"no it's not good revert to last, do not focus on distance just keep points good."**
+The hard, non-relaxing gap floor is REVERTED - back to `pickWithBestEffortGap` (relaxes the gap
+downward, never the count) + the decoupled `searchTarget`/OVERSHOOT (search 15, keep farthest 10,
+`MAX_ATTEMPTS` sized off the original `numCandidates` so cost stays at the 10-10 baseline) - this
+is the exact state from the "it's taking a lot of time... i mean its 15 right?" fix earlier in this
+same file, restored verbatim. `pickWithFixedGap` and its `HARD GAP FLOOR` comment block are
+removed entirely; confirmed via `grep` (zero remaining references).
+
+**This closes out the hard-floor idea for this session**: it has now been tried and rejected on
+live data four separate times total (2026-08-24 x2 under the old search algorithm, 2026-09-03
+under this one) - most recently on the user's own explicit instruction to prioritize picking GOOD
+(valid, real) points over strictly enforcing the 1-mile spacing. Do not re-attempt a non-relaxing
+gap floor without a new, explicit ask.
+
+Verified via `node --check` and `npx eslint` (same 3 pre-existing findings only). **Not yet
+live-tested** post-revert - needs a backend restart. Current live behavior is unchanged from the
+"it's taking a lot of time" fix: search 15 within the original 10-10-sized budget, keep the
+farthest 10 of whatever validates, gap relaxes downward if the count can't be hit at full spacing.
+No further point-picking change is in flight; genuinely open items remain the same as documented
+throughout this file (interchange fake-branches, trivially-local small networks, AADT for
+no-U-turn).
+
+### Reverted further: overshoot/keep-farthest also dropped, plain 10-10 restored
+
+**"now leave and revert the overlook also just normal 10-10 points keep those."** The
+overshoot/keep-farthest-10-of-15 logic is also reverted - `git checkout 7192724 --
+data-types/routing/memoryGraph.js` again, back to byte-identical with that commit. Plain 10-10
+point picking, `MIN_GAP_M` relaxes downward if the validated pool can't support the full count at
+full spacing - no overshoot, no hard floor, no other change in flight. This is the same stable
+baseline the file has repeatedly been reverted back to throughout this session; nothing in
+`selectClosureDensityCandidates` differs from commit 7192724 as of this entry.
+
+### Bounded bidirectionalDijkstra search cost - genuine performance fix
+
+Live-tested closure-density tally on a downtown segment (river-crossing candidates) took ~88s
+total (17.5s point selection + 70s tally, 64/100 pairs failing). Root cause:
+`bidirectionalDijkstra`'s loop only terminates when both search frontiers are fully exhausted -
+for a genuinely unreachable pair (candidates on opposite sides of a river with no nearby bridge in
+the graph), the search has to traverse the entire reachable component before concluding "no
+route," which is worst-case-expensive on a 5.4M-node graph. 64 failing pairs meant 64+ full-graph
+exhaustions.
+
+Fix: `bidirectionalDijkstra` now takes an optional `maxCost` (default `Infinity`, so every existing
+unbounded caller - the point-candidate validation search in particular - is unaffected). Added
+`haversineM`/`searchCostCap` (`data-types/routing/memoryGraph.js`): the cap scales with each pair's
+own straight-line distance (`straightLineM * 5 + 20mi floor`, converted to a time budget via a
+generous 100mph ceiling for the "time" cost objective) rather than a fixed number, so a
+legitimately long route stays proportionally bounded and isn't falsely rejected - only pairs that
+are actually unreachable (or absurdly indirect) hit the cap. Wired into both real call sites:
+`findRoute` (live route computation, `routing`/`detour` plugins) and
+`computeClosureDensityFromPoints` (closure-density tally, per-pair cap threaded through
+`densitySearchPool.js`'s `runTallyBatch` and `graphSearchWorker.js`'s `tallyBatch` handler).
+
+Verified via `node --check` on all three touched files
+(`memoryGraph.js`/`densitySearchPool.js`/`graphSearchWorker.js`) and a `grep` confirming the
+point-candidate `batch` validation search (graphSearchWorker.js line ~70) still omits `maxCost`,
+so it stays unbounded as before - this fix is scoped to the two call sites that actually showed the
+problem. **Not yet live-tested** - needs a backend restart, then re-run the same downtown segment
+and confirm the tally completes fast even with a high failure rate, and that a real long
+legitimate route (e.g. NYC-Buffalo) still succeeds.
+
+### Closure-density candidate-point rules, for client reference
+
+Client asked for the current candidate-picking behavior in detail with a worked example.
+Published as a themed artifact (TransportNY design-system tokens):
+https://claude.ai/code/artifact/bd78be35-8337-4abe-b5ad-19d411416568. Full rule text below, kept
+in sync with `selectClosureDensityCandidates` (`data-types/routing/memoryGraph.js`) as of this
+entry (byte-identical to commit 7192724 - see the "Reverted further" entry above):
+
+1. **Seed** - from each end of the closed segment, walk outward along the straightest
+   continuation of the road until reaching a node that actually offers more than one way
+   forward (a real junction, by pure topology). That's the seed for that side.
+2. **Flood** - from the seed, every reachable road out to 8 miles is collected and sorted
+   nearest-to-farthest, tagged same-road (matches the closure's own highway type) or other
+   (branched onto a different road). The two sides' searches are blocked from crossing into
+   each other's territory.
+3. **Trust** - the single nearest candidate on each side is accepted automatically, without
+   validation - a point right next to the closure is almost always a genuine, direct use of it.
+4. **Validate** - every other candidate (nearest first, up to `numCandidates * 30` = 300 tried
+   per side) is tested: does the OPEN route from it to the opposite seed actually pass through
+   the closed segment? If not, it's discarded. Same-road gets up to half the budget guaranteed,
+   other gets the rest.
+5. **Prefer same-road** - if same-road-only validated candidates can hit the target count (10)
+   at full 1-mile spacing, they're used exclusively; only falls back to combining with other
+   (branched) candidates if same-road alone can't supply 10.
+6. **Select with a gap, count wins** - walk the validated list nearest-to-farthest, skip
+   anything within 1 mile of the last pick. If fewer than 10 are reached, halve the gap and
+   retry, repeating until either 10 points are picked or the gap bottoms out at 0. **Count (10)
+   is the hard requirement; the 1-mile spacing is what silently relaxes to hit it** - this is
+   the known, previously-discussed trade-off behind "points too close" complaints on dense/short
+   networks, kept this way per the explicit decision logged above ("do not focus on distance
+   just keep points good").
+
+Worked example (illustrative, matches the artifact's diagram): a closure on a long, mostly
+straight road. The seed lands ~0.3mi out. The same road alone supplies more than 10 validated
+points, so rule 5 never needs to branch. Walking nearest-to-farthest with the full 1-mile gap
+lands exactly 10 points between the seed and ~7.4mi out, each ~1 mile apart - the well-behaved
+case, contrasted with the dense-downtown-grid case (rule 6's known trade-off) documented earlier
+in this file.
+
+### DMS-page Simple/Multi mode switch - shipped
+
+End-user-facing "Simple / Multi-point coverage" switch, for visitors on a live DMS page (not
+MapEditor). `internalPanel.jsx`'s three author toggles (`density-mode`/`show-candidates`/
+`pick-pair-testing`) are unchanged and still drive MapEditor's own behavior and the default a
+fresh page load starts from.
+
+- **`DetourModeSwitch`** (`components/DetourModeSwitch.jsx` + its keys in
+  `components/DetourDetailsPanel.theme.js`, `modeSwitch*`) - a themed two-button control (not the
+  generic externalPanel/PluginControls system, which is hardcoded Tailwind never routed through
+  ThemeContext), rendered directly by `Comp`.
+- **`comp.jsx`**: `isMapEditor` (`mctx?.falcor`) gates the switch out of MapEditor entirely - the
+  editor's own UI is unchanged, confirmed live. A visitor's toggle writes one master flag,
+  `pluginData.detour['multi-mode']`, which `isDensityMode`/`showCandidatePoints`/`pickPairTesting`
+  all check first, falling back to the author's three toggles only when a visitor hasn't touched
+  the switch yet.
+- Safe by construction on a live page: the Map section only persists to the DB when `isEdit`
+  (`map/index.jsx`'s save-effect guard) - a visitor's toggle is local React state only, resets on
+  reload, never shared across viewers, never written to the saved page config.
+- Two earlier approaches were tried and rejected before this: (1) the generic `externalPanel`/
+  `PluginControls` system - discovered to be fundamentally unthemed (bug found along the way: its
+  `ToggleControl`/`InputControl`/`RadioControl` were missing the `MapContext`-vs-`SymbologyContext`
+  fallback `SelectControl` already had, so those controls silently don't work on a live page at
+  all - fixed then reverted once the themeable requirement redirected the approach entirely,
+  keeping `src/dms` at zero net change for this feature); (2) that fix left in place with an
+  `isLivePage` signal threaded through `ExternalPluginPanel` - also reverted once the switch moved
+  into `Comp` directly and no longer needed either mechanism.
+
+Live-tested and confirmed working by the user.
+
+### Session-scoped result caching - shipped
+
+Both `useTrspRoute.js` (simple detour) and `useClosureDensity.js` (closure-density) now cache a
+finished computation in `sessionStorage`, keyed by the closed segment (+ start/end for simple
+mode, + cost objective for density mode). Repeating the same analysis (re-pressing "Get detour"/
+"Analyze coverage" without an intervening "Clear") skips the backend entirely; "Clear detour"/
+"Clear analysis" purges that specific cache entry so the next run is genuinely fresh, not stale.
+Fail-soft: every `sessionStorage` call is wrapped in try/catch, so a browser with storage
+unavailable/full just skips the cache rather than breaking analysis. Entirely frontend - does not
+touch the backend's own in-memory graph cache (`graphCache` in `memoryGraph.js`), a separate,
+unrelated cache the user was careful to flag should stay untouched.
+
+### Coverage-methodology design-system page - shipped
+
+`detour-coverage-methodology.html` added under `TransportNY Design System/dms_design_system_v2/
+pages/` as a sub-page of `bridge-detour-report.html` (real DMS-shaped structure, actual brand
+primitives - see that file's own header comment for the full rationale). Registered in `ds-nav.js`
+under a new `detour` section, which also fixed a pre-existing gap: `bridge-detour-report.html`/
+`bridge-detour-route.html` existed on disk but were never registered in any `SECTIONS` entry.
+Cross-linked bidirectionally: a "read more" callout in `bridge-detour-report.html`'s launch-point
+section points to the methodology page; the methodology page's "related" sidebar and footer point
+back.
+
+The worked-example diagram is a static illustrative image (matplotlib-generated, uploaded via the
+platform's own `file_upload` route, captioned "a possible example - real spacing and count vary by
+network") - not a live interactive map. An interactive Map section (bound to the real 2025 edges
+layer, source 2097/view 3774) was tried first and rejected: the user wants an illustrative example
+image, not real/current data, since "real can be different for so many cases."
+
+### NY-boundary click-gate for the `routing` plugin - reverted, not yet reattempted
+
+Explored three approaches this session, all reverted:
+1. A bundled static NY county-boundary GeoJSON (`nyCountyBoundaries.json`) + client-side
+   ray-casting point-in-polygon - rejected: a 70KB duplicated dataset that has to be kept in sync
+   and doesn't even guarantee it matches the actual road network's real coverage.
+2. A new dedicated backend route (`/trsp-memory-coverage-check`) using the in-memory graph's own
+   node grid (no static file, no DB call) - rejected per explicit instruction not to add a new
+   route; told to find a different approach and verify it before implementing.
+3. **Proposed, not yet implemented**: reuse the existing `GET /routing/nodes?bbox=...` route - on
+   click, query a small bbox around the point; zero nodes returned = reject as outside coverage.
+   No new route, no static file. Awaiting go-ahead to implement.
+
+Current state: `usePointPicker.js`/`comp.jsx`/`constants.js`/`RouteDetailsPanel.jsx` in
+`routing/` are byte-identical to their pre-feature state (no gating at all, any click places a
+point).
+
+### bidirectionalDijkstra maxCost search-cap - tried and reverted (real regression found)
+
+Added an optional `maxCost` bound to `bidirectionalDijkstra` (scaled to each pair's own
+straight-line distance, `5x + 20mi floor`) to stop a genuinely-unreachable OD pair from exhausting
+the whole graph before failing - the diagnosed cause of a 70-90s closure-density tally with a high
+failure rate on a river-crossing downtown segment.
+
+**Live-tested and found to cause a worse regression**: on a different river-crossing segment
+(Green Island/Cohoes/Troy area), the SAME fix produced 100/100 pairs failing, fast (9s for 200
+searches) - the speed itself is the tell: a genuinely unbounded exhaustive search failing that
+consistently would take much longer, so the cap was very likely cutting off real routes that
+legitimately need to detour far to reach the nearest bridge. **Fully reverted** (`memoryGraph.js`,
+`densitySearchPool.js`, `graphSearchWorker.js` all back to byte-identical with commit `669dbc6`) -
+a slow-but-correct search beats a fast-but-wrong one. The original slowness problem this was meant
+to fix is real and still open; a flat straight-line-distance multiplier is now a confirmed-bad
+approach to it and should not be re-attempted as-is.
+
+### Adaptive reference-route cap - second attempt, addresses the regression's root cause
+
+Re-scoped to `computeClosureDensityFromPoints` only (`findRoute`, real point-to-point route
+computation for the `routing`/`detour` plugins, is left fully unbounded as before - no evidence it
+needs a cap, and no reference route available there to scale from safely).
+
+Instead of guessing a cap from straight-line distance, runs ONE reference search first - the
+nearest-start x nearest-end pair (the "trusted" pair rule 3 already accepts without validation) -
+fully unbounded except a generous fixed safety ceiling (150mi-equivalent), then scales every other
+pair's cap off THAT pair's real detour distance (`referenceDistance * 3 + a 5mi floor`). A closure
+whose geography genuinely needs a big detour (the river-crossing case that broke the flat-multiplier
+version) shows that in the reference route itself, so the cap scales up automatically for that
+geography instead of assuming a fixed multiplier works everywhere. If even the reference pair can't
+find a route within the safety ceiling, there's no reliable distance to scale from - stays fully
+unbounded for the rest of the batch (the original, safe baseline) rather than risk capping too
+tight again.
+
+`bidirectionalDijkstra`'s `maxCost` param (early-exit break) is back, same mechanism as the first
+attempt - only the caller-side cap *computation* changed, not the bound-checking itself. Threaded
+through `densitySearchPool.js`/`graphSearchWorker.js` the same way. `node --check`/`eslint` clean
+(same pre-existing findings only, all CJS-global false positives from the ESM-flavored lint config
+plus one unrelated `edgeSource` unused-var).
+
+**Live-tested and reverted same day** - "even toooooo much time" (`searchMs: 195599` in the
+diagnostic log - 195 seconds just for point selection). The reference search itself ran unbounded
+on the main thread, blocking everything before the batch even started - if that one reference pair
+happened to be a slow/hard case, the request paid its full cost PLUS the batch cost, strictly worse
+than no cap at all. Fully reverted (`memoryGraph.js`/`densitySearchPool.js`/`graphSearchWorker.js`
+back to byte-identical with `5fb8cec`), confirmed via `git diff`/`node --check`.
+
+### Third attempt: per-pair adaptive cap from already-computed candidate distances
+
+Both prior attempts needed a NEW piece of information (a straight-line guess, or a fresh reference
+search) to size the cap. This attempt uses data that's already computed and already free: each
+candidate's own real graph-distance (meters, via the flood search) from its seed -
+`selectClosureDensityCandidates` computes this for every candidate already (it's how nearest-first
+ordering and the 1-mile gap work), it was just discarded after point selection. A candidate that
+sat far into the network to be found at all (needed a long flood, e.g. because the only path to it
+crosses a river far from its seed) is itself evidence a route from there might need to go far -
+so its cap scales with that, automatically, per pair, with zero extra searches:
+
+`maxCost = (startCandidate.dist + endCandidate.dist) * 4 + 5mi floor`
+
+Sanity-checked the scaling directly: near/near candidates (0.5mi each) get a tight ~9mi cap; a
+candidate that needed a 6mi flood to be found gets a ~33-53mi cap depending on the other side -
+scales up automatically for exactly the geography that broke both previous attempts, without
+guessing a global multiplier or paying for a blocking reference search.
+
+**Plumbing**: `selectClosureDensityCandidates`'s `toPoint` now includes `dist` in every returned
+candidate point. `computeClosureDensityFromPoints` accepts `{osm_id, dist}` objects (falls back to
+unbounded/`Infinity` for any entry missing a real `dist`, backward-compatible with a bare osm_id
+string). Frontend (`useClosureDensity.js`/`resolveClosureDensity.js`) now passes the FULL point
+objects from step 1 into step 2 instead of stripping to bare ids. `bidirectionalDijkstra`'s
+`maxCost` param is back (same early-exit mechanism as both prior attempts - only the cap
+*computation* differs this time). `node --check`/`eslint` clean (same pre-existing findings only).
+
+**Live-tested and reverted same day** - "that is soo bed" (bad). No diagnostic numbers captured
+this time before the revert request. Fully reverted (`memoryGraph.js`/`densitySearchPool.js`/
+`graphSearchWorker.js`/`useClosureDensity.js`/`resolveClosureDensity.js` all back to
+byte-identical with `5fb8cec`), confirmed via `git diff`/`node --check`.
+
+### Status: 0-for-3 on capping `bidirectionalDijkstra`, direction abandoned for now
+
+Three genuinely different cap-computation strategies tried, all failed live for different
+reasons: a flat straight-line-distance multiplier (false-rejected real river detours), a single
+blocking reference-route search (195s - the reference pair itself was slow, blocking the whole
+request), and a per-pair cap from already-computed candidate flood-distances (rejected live,
+"soo bed", no diagnostic captured). Given this track record, **do not attempt a fourth capping
+variant without a fundamentally different mechanism** (e.g. switching to A* with an admissible
+heuristic instead of bounding plain bidirectional Dijkstra - see the "what can we do to make it
+faster" discussion for the options considered) - repeatedly guessing at cap formulas has cost three
+live-test cycles for zero net improvement. The original 70-90s slowness on river-crossing closures
+remains real, understood, and currently accepted as a known tradeoff rather than something to keep
+patching with variations on the same idea.
+
+## Point-selection validation bug: unreachable candidates scored the same as valid off-closure routes
+
+A live test on a real river-crossing bridge (Albany's South Mall Arterial, `ogc_fid 9249029`)
+showed candidates picked far from the closure with 65/100 tally pairs failing ("no route"). Root
+cause found in `graphSearchWorker.js`'s `batch` handler: when `bidirectionalDijkstra` found NO
+open-network route at all (`result === null`, e.g. candidate genuinely cut off across a river),
+`usesClosedSegment` came out `false` - the exact same value as "found a real route that legitimately
+doesn't cross the closure." Point-selection's validation (`passedFromCells` in `memoryGraph.js`)
+had no way to tell "unreachable" apart from "valid detour candidate."
+
+**Fix**: worker replies now carry `reachable: result !== null` alongside `usesClosedSegment`
+(`graphSearchWorker.js`, `densitySearchPool.js`'s `runBatch`). `passedFromCells` rejects a
+candidate outright if unreachable from >50% of the tested opposite points, before applying the
+existing usesClosedSegment>50% majority-vote rule to the reachable remainder. No extra searches -
+reuses the same validation searches already being run.
+
+**Second live finding on a different segment** (Albany bridge, `ogc_fid 9506168`/`9249029`):
+`candidatesRejected: 0` even with the reachability fix - the real cause there was unrelated:
+`MAX_ATTEMPTS = numCandidates * 30 = 300` tested candidates out of an 80k+ raw pool is a flat
+count regardless of local node density, so on a dense urban grid the nearest 300 pooled nodes span
+only a short physical distance, confining every validated candidate to right next to the closure
+(gap-relaxation collapsed to the 50m floor) - the corridor least likely to have a real detour,
+producing 100%-failed tallies. Not fixed this session (structural fix would be striding the tested
+window by distance/index instead of raw pool order - flagged, not implemented).
+
+**User-proposed alternative selection strategy** (kept as a documented spare, NOT activated):
+`selectSeedThenBranch` in `memoryGraph.js` - only the single nearest (seed) point stays on the
+same road as the closure; the other 9 are drawn from `otherValid` (branched onto a different road)
+first, falling back to more same-road points only if branches can't fill the count. Live-tested on
+the dense urban case above and confirmed it produces genuine geographic spread instead of
+clustering along one arterial. User's call: keep `selectPreferSameRoad` (existing same-road-first
+behavior) as the active default for now, keep `selectSeedThenBranch` defined-but-unused directly
+below it as "the deliberate next thing to try."
+
+## Concurrency/scalability hardening (worker pool correctness, throughput, caching, cancellation)
+
+Triggered by the user asking how the closure-density backend behaves under real concurrent load
+(50-100 simultaneous users). Confirmed via code read a real, pre-existing bug (present on
+`origin/master` too, not introduced by this branch): `densitySearchPool.js`'s pool was ONE shared
+pool of `NUM_WORKERS` (`min(cpus-1, 8)`) long-lived workers, with NO per-request correlation - a
+per-call `worker.on('message', onMessage)` listener resolved on the FIRST matching-type message
+from that worker, which could belong to a DIFFERENT concurrent request. Under concurrency this
+doesn't just risk slower queueing, it risks wrong results being cross-wired between users' requests
+and orphaned replies (a listener that resolved on the wrong message detaches, leaving its own real
+reply undelivered - a silent hang) - this was traced through carefully as an EventEmitter behavior
+(every registered listener fires on a message, not just one), not just a race-condition guess.
+
+**Fix 1 - `batchId`/task correlation** (`graphSearchWorker.js`, `densitySearchPool.js`): every
+worker message and reply now carries a unique `taskId`; the pool resolves exactly that task's own
+pending promise via a `Map<taskId, {resolve,reject}>`, never "whichever call is still listening."
+
+**Fix 2 - shared task queue, not per-request chunks** (`densitySearchPool.js`'s `createTaskQueue`):
+replaced "one message per worker containing that worker's whole chunk of ONE request's tasks" with
+one shared FIFO queue of individual searches from every concurrent request; each worker pulls the
+next queued task the instant it's free. Interleaves fairly - a big analysis can no longer
+monopolize a worker for its whole duration while a smaller/different request waits. Message
+protocol changed to one search per message (was: one chunk per message) - see
+`graphSearchWorker.js`'s updated header comment for the full protocol.
+
+**Fix 3 - admission gate** (`createAdmissionGate`, `MAX_ACTIVE_REQUESTS = 6`): bounds how many
+`runBatch`/`runTallyBatch` calls actively feed the shared queue at once; extra calls queue in
+arrival order and start automatically as a slot frees, rather than a traffic burst flooding the
+queue simultaneously.
+
+**Live load-tested twice** with real HTTP requests against the running local server (`http://
+localhost:3001`), using real distinct `ogc_fid`s collected from ~28 actual NY bridge/river
+crossings statewide (via `GET /routing/edges?bbox=...` at each location) - not synthetic/fake ids:
+- First run had a false-looking low success rate (6/100, then 17/100) - root-caused to MY OWN test
+  artifact: killing a client-side load-test script does NOT cancel already-dispatched server-side
+  work (no cancellation wiring existed yet), so a stopped first test's ~100 leftover requests kept
+  draining through the 6-slot gate underneath a second test, doubling real load. This directly
+  motivated the cancellation work below rather than being a random tangent.
+- Clean re-run (fresh server restart, isolated): 17/100 succeeded within a 5-minute client timeout
+  (p50 147s, p90 268s, max 286s for the ones that finished; 83/100 hadn't gotten a response back
+  at all after 5 min) - **zero cross-wiring**: every completed result was correct and correlated to
+  its own segment; the only "collision" flags were expected forward/reverse-direction edge pairs of
+  the same physical bridge (verified against the diagnostic logs, not assumed).
+- **Conclusion**: the correlation/queue/admission-gate fix makes concurrent load SAFE (no wrong
+  results, no silent hangs) but does not by itself make it FAST - 100 genuinely simultaneous heavy
+  analyses on 8 workers still queues for many minutes. That gap is what the cache below targets.
+
+**Fix 4 - server-side results cache** (`memoryGraph.js`): `pointsResultCache`/`tallyResultCache`,
+two `WeakMap<graph, Map<key, entry>>` caches wrapping `selectClosureDensityCandidates`/
+`computeClosureDensityFromPoints` (renamed to `...Uncached` internally, logic untouched). Same two
+tricks the codebase already used elsewhere (`graphCache`/`getOrLoadGraph`, `poolsByGraph` in
+`densitySearchPool.js`): (a) keyed by the GRAPH OBJECT via `WeakMap` so entries auto-GC whenever
+`invalidateGraph()` evicts that graph - no manual cache-clearing code; (b) the map stores the
+in-flight PROMISE immediately, so concurrent callers for the same key (same segment, possibly
+different users/tabs) join one computation instead of each starting their own. Points cache key:
+`ogcFid:numCandidates:costObjective`. Tally cache key: `ogcFid:costObjective:sortedStartIds:
+sortedEndIds` (keyed by the actual point set passed in, not just ogcFid, so it stays correct
+regardless of whether point-selection ever changes).
+
+**Live-verified with a real before/after A-B test** (10 distinct real bridge `ogc_fid`s, same
+collected list): pass 1 (cold) - 175.1s wall, p50 101.6s, all 10 succeeded. Pass 2 (identical 10
+ogc_fids, re-run immediately after) - **0.1s wall, p50 50ms, max 97ms** - same byte-identical
+results (same 7 distinct fingerprints, same expected same-bridge symmetry). ~2000x speedup
+confirmed, correctness unchanged across cold/warm paths.
+
+**Fix 5 - refcounted cancellation** (client: `AbortController` in `useClosureDensity.js`/
+`resolveClosureDensity.js`; server: `req.on('close')` in `index.js`'s two route handlers;
+`cancelTag` in `densitySearchPool.js`'s task queue; refcounting in `memoryGraph.js`'s
+`memoizeByGraph`). Motivated directly by the test-artifact incident above: an abandoned client
+request (user clears/switches segments, or - as demonstrated - a killed script) previously kept
+consuming worker-pool queue slots to completion for nobody. `cancelTag(requestTag)` drops only
+that request's own still-QUEUED (not yet dispatched to a worker) tasks - tasks already mid-search
+on a worker finish normally (no preemption possible, synchronous JS) and their reply is discarded
+harmlessly. Refcounted specifically because of the cache interaction: two tabs sharing the same
+cached in-flight computation (same segment, same key) must not have one tab's abort cancel the
+other's still-wanted result - cancellation only actually drops queued tasks when the LAST
+subscriber to a given cache entry aborts (`entry.refCount` hits 0).
+
+**Plain-language version of the rule** (came up because the refcount mechanic wasn't obvious from
+the code alone): say Person A clicks "Analyze" on Bridge #123, and a few seconds later Person B (a
+different tab) also clicks "Analyze" on that SAME bridge. Thanks to the cache, B doesn't start a
+second computation - they get hooked up to wait on A's already-running one, so there's one
+computation with two people waiting on it. If A then clicks "Clear," the server checks "is anyone
+else still waiting on this?" - yes (B is) - so it does nothing, keeps computing. Only once BOTH A
+and B have left (refCount reaches 0) does the server actually cancel the remaining unstarted work
+and free the workers for someone else. The refcount is just "how many people are currently waiting
+on this one result" - up when someone joins, down when someone leaves, cancel only at zero.
+
+**Live-verified cancellation actually fires**: fired a fresh (uncached) real `ogc_fid`, aborted
+client-side 3s later (well before the ~15-90s solo completion), confirmed via
+`AbortError` client-side and (server-side, user-confirmed) the `[closure-density cache] cancelled
+N queued tasks for ...` log line appearing.
+
+**Status**: correctness (fixes 1-2, live-verified under real concurrent load) and the results cache
+(fix 4, live-verified ~2000x on repeat/shared segments) are both DONE and live-tested. Cancellation
+(fix 5) is DONE and live-verified to fire correctly. The admission gate (fix 3) is a tunable
+constant (`MAX_ACTIVE_REQUESTS = 6`), not separately load-tested at other values. **Still open**:
+raw per-request search cost (the A* idea from the earlier capping saga) is the only lever that
+would raise the actual throughput ceiling rather than reschedule/cache around it - not started this
+session. Whether the deployed box has spare cores beyond the current `NUM_WORKERS` cap
+(`min(cpus-1, 8)`) was not checked (`nproc` on the real server, not this dev machine).
+
+### Fix #1 (overpass-mismatch matching) ported to the live plugin, fix #3 deprioritized, interchange fake-branch fix re-attempted and reverted again (2026-09-09)
+
+Confirmed via grep which of the 3 standalone-tool improvements (overpass-mismatch matching, whole-
+bridge closure, honest no-route reporting) were actually live in the interactive routing plugin
+(`memoryGraph.js`) vs. only in the standalone `bridge-detour-process` batch tool: only whole-bridge
+closure was live. User asked to port overpass-mismatch matching (fix #1) too, with a plan-first
+requirement; approved starting with fix #1 alone.
+
+**Fix #1 implemented**: `loadGraph()`'s candidate-to-way matching query changed to a
+`UNION ALL ... LIMIT 1` lateral join - prefer the nearest non-freeway-class edge, fall back to the
+nearest edge of any class only if none exists - so a bridge candidate point near a highway overpass
+doesn't wrongly snap onto the freeway passing underneath it. Verified live against the real DB (10
+valid distinct rows, no SQL errors).
+
+User then deprioritized fix #3 (honest no-route reporting): **"yeah for plugin 3 is not tath good
+so just focus on to pick good node for the detoured segment is better"** - redirecting to the
+already-documented highway-interchange fake-branch problem instead (confirmed via AskUserQuestion).
+
+**Interchange fake-branch fix, re-attempted in isolation**: added `edgeOsm` (OSM way id per edge)
+back into `loadGraph`'s edges query/typed-array/graph object, changed both `walkToFirstBranchSimple`
+and `walkToFirstBranchDensity`'s `isBranch` to require a genuinely different OSM way id on at least
+one candidate (not just `candidates.length > 1`), falling back to the old any-fork rule when the
+arrived-on edge's `osm` is unknown (`-1`). Verified via `node --check` and `npx eslint` (same 4 pre-
+existing findings, no new ones). Backend restarted (data-types/ isn't inside nodemon's watched dir,
+so this needs a manual restart every time - `kill` the old `src/index.js` process, then `npm run dev`
+again) to pick up the new graph-loading code; full ~10M-edge graph reload took ~85s.
+
+**Live-tested in isolation** on the exact same interchange closure from the original attempt
+(`ogc_fid 9249029`, Albany South Mall Arterial) - `/trsp-memory-density-points` returned reasonably
+clustered candidates (not the wild 40mi spread from the compounded 2026-09-02 attempt), but
+`/trsp-memory-density` came back **100 of 100 pairs failed to find a route** - the exact same total-
+failure signature as the ORIGINAL (pre-compounding) 2026-09-02 result, this time with nothing else
+active that could be masking or causing it. This resolves the "inconclusive" status from 2026-09-02:
+the OSM-way-id approach itself is the problem, not a side effect of the direction-bias change it was
+tried alongside back then.
+
+**Reverted again**: `edgeOsm` removed from `loadGraph`'s query/typed-array/graph object; both walk
+functions' `isBranch` back to plain `candidates.length > 1`. Backend restarted again to confirm the
+revert take effect (baseline behavior restored). `git diff` confirmed zero remaining `edgeOsm`/
+`arrivingWayOsm` references. Fix #1 (overpass-mismatch) and fix #2 (whole-bridge closure) remain
+live and untouched by this revert.
+
+**Current state**: fix #1 and fix #2 are live in the interactive plugin. Fix #3 (honest no-route
+reporting) remains not started, deprioritized by the user. The interchange fake-branch problem
+remains OPEN and unfixed - two independent attempts (compounded 2026-09-02, isolated 2026-09-09)
+both produced total or near-total route-finding failure on the same real interchange, ruling out
+OSM way identity as the signal for "real junction, not a ramp fork." See
+`documentation/detour-plugin-pipeline.md`'s Known Limitations for the updated writeup and a
+suggested alternate signal (node degree in the untraveled-direction subgraph) to try next.

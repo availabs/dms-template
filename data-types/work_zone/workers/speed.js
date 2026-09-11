@@ -337,6 +337,14 @@ function makeSpeed(depOverrides = {}) {
     let cells = [];
     let zoneM1Rows = [];
     try {
+      // Drop anything a previously killed run left behind. The staging tables
+      // are Memory-engine on a shared server, and `finally` does not run on a
+      // SIGKILL. 6-hour floor, so this can never touch a concurrent run.
+      const swept = await chLib.sweepStaleStaging(chDb, { database: names.database });
+      if (swept.length) {
+        await say('work_zone/speed:SWEPT', `dropped ${swept.length} orphaned staging tables`,
+          { tables: swept });
+      }
       for (const stmt of chLib.stagingDDL(names)) await chLib.chExec(chDb, stmt);
 
       await chLib.insertRows(chDb, `${names.database}.${names.tmcTable}`, tmcRows.map((r) => ({

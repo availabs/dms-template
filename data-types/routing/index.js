@@ -44,23 +44,14 @@ const MPH_TO_MPS = 0.44704;
 // (real observed speed, NPMRDS probe data) and ris_posted_speed (real posted limit, RIS inventory)
 // live on the MAIN conflation table, keyed by the tmc/ris codes each edge carries in its own
 // tmc[]/ris[] array columns - `edgesAlias` must be a table/alias in scope with those columns.
-// Requires btree indexes on the main table's tmc/ris columns (added 2026-08-14 - confirmed via
-// direct testing this join is a ~100s-for-300-edges full-table-scan disaster without them, ~0.1s
-// with them - do not remove those indexes without re-verifying this stays fast).
+// Requires btree indexes on the main table's tmc/ris columns - confirmed via direct testing this
+// join is a ~100s-for-300-edges full-table-scan disaster without them, ~0.1s with them - do not
+// remove those indexes without re-verifying this stays fast.
 const speedMphSql = (conflationTable, edgesAlias) => `COALESCE(
   (SELECT avg(m.tmc_avg_speedlimit) FROM ${conflationTable} m WHERE m.tmc = ANY(${edgesAlias}.tmc) AND m.tmc_avg_speedlimit IS NOT NULL),
   (SELECT avg(m.ris_posted_speed::numeric) FROM ${conflationTable} m WHERE m.ris = ANY(${edgesAlias}.ris) AND m.ris_posted_speed IS NOT NULL),
   (${HIGHWAY_SPEED_MPH_SQL.replaceAll("highway", `${edgesAlias}.highway`)})
 )`;
-
-const getDataTable = async (db, view_id) => {
-  const { rows } = await db.query(
-    `SELECT data_table FROM data_manager.views WHERE view_id = $1;`,
-    [view_id]
-  );
-  if (!rows.length) throw new Error(`No view found for view_id ${view_id}`);
-  return rows[0].data_table;
-};
 
 const snapToNearestNode = async (db, nodesTable, { lon, lat }) => {
   const { rows } = await db.query(
@@ -72,6 +63,51 @@ const snapToNearestNode = async (db, nodesTable, { lon, lat }) => {
   );
   if (!rows.length) throw new Error(`No node found near [${lon}, ${lat}] in ${nodesTable}`);
   return rows[0].osm_id;
+};
+
+// Detour plugin's segment identity fix: the base network layer is author-selected and can be ANY
+// year's tiled layer, but the routing backend always computes against ONE hardcoded conflation
+// table set. `ogc_fid` is a per-import serial PK, not a stable cross-year identifier - the same
+// integer in one year's edges table and another year's edges table almost certainly refer to two
+// entirely unrelated physical roads.
+//
+// Fix: never trust a client-supplied ogc_fid as an identifier into the live conflation table.
+// Snap the clicked segment's own START and END coordinates to nodes in the live table and require
+// a real edge connecting them. That validates real network topology, not just proximity: when the
+// live table doesn't have a direct edge between those two snapped points, the segment genuinely
+// doesn't exist there in the same shape (disconnected/re-split by the reconflation), and callers
+// should be told, not handed a silent guess.
+const resolveEdgeBetweenPoints = async (db, edgesTable, nodesTable, { start, end }) => {
+  const [startNode, endNode] = await Promise.all([
+    snapToNearestNode(db, nodesTable, start),
+    snapToNearestNode(db, nodesTable, end),
+  ]);
+
+  const { rows } = await db.query(
+    `SELECT ogc_fid FROM ${edgesTable}
+       WHERE (from_node = $1 AND to_node = $2) OR (from_node = $2 AND to_node = $1)
+       LIMIT 1;`,
+    [startNode, endNode]
+  );
+  if (rows.length) return { ogc_fid: +rows[0].ogc_fid, exactMatch: true, startNode, endNode };
+
+  // No direct edge connects the two snapped nodes - the segment the author clicked doesn't exist
+  // in this shape in the live conflation table (split differently, or a genuinely different
+  // road). Falls back to nearest-by-distance against the segment's midpoint, but flags
+  // `exactMatch: false` so the caller can surface that this is a best-effort guess, not a
+  // validated match.
+  const midLon = (start.lon + end.lon) / 2;
+  const midLat = (start.lat + end.lat) / 2;
+  const { rows: nearest } = await db.query(
+    `SELECT ogc_fid,
+            ST_Distance(wkb_geometry::geography, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography) AS distance_m
+       FROM ${edgesTable}
+       ORDER BY wkb_geometry <-> ST_SetSRID(ST_MakePoint($1, $2), 4326)
+       LIMIT 1;`,
+    [midLon, midLat]
+  );
+  if (!nearest.length) throw new Error(`No edge found near [${midLon}, ${midLat}] in ${edgesTable}`);
+  return { ogc_fid: +nearest[0].ogc_fid, exactMatch: false, startNode, endNode, distanceM: +nearest[0].distance_m };
 };
 
 const NODES_QUERY_LIMIT = 500;
@@ -92,14 +128,13 @@ const getNodesInBbox = async (db, nodesTable, [minLon, minLat, maxLon, maxLat]) 
 // as a GeoJSON LineString feature (ogc_fid as the feature id) so the frontend can render + click
 // it directly, no client-side geometry assembly needed.
 //
-// No LIMIT (2026-08-26, "i want all bbox must be working and showing all" - the earlier 2000-row
-// cap silently dropped edges in a dense viewport, and without a deterministic order the dropped
-// set could even change between identical repeat queries, looking like segments randomly
-// vanishing/reappearing on revisit). ORDER BY ogc_fid still applied for stable, reproducible
-// results.
+// No LIMIT - an earlier 2000-row cap silently dropped edges in a dense viewport, and without a
+// deterministic order the dropped set could even change between identical repeat queries, looking
+// like segments randomly vanishing/reappearing on revisit. ORDER BY ogc_fid still applied for
+// stable, reproducible results.
 const getEdgesInBbox = async (db, edgesTable, [minLon, minLat, maxLon, maxLat]) => {
   const { rows } = await db.query(
-    // `osm` (2026-08-25, detour plugin's endpoint-picker walk) - the OSM WAY id each edge belongs
+    // `osm` (detour plugin's endpoint-picker walk) - the OSM WAY id each edge belongs
     // to. Ground truth for "is this the same road" instead of guessing from highway-type string
     // match + bearing angle: two edges sharing the same `osm` id are literally the same mapped
     // way (including its own reverse-direction pair, for a two-way road), while a different `osm`
@@ -192,11 +227,8 @@ const runTrspVariant = async (db, { conflationTable, edgesTable, costSql, restri
 // resolution + restriction-table build, since those are the expensive shared setup. Each variant
 // is its own independent, fully turn-restriction-aware pgr_trsp call - not true k-shortest-path
 // alternates (see the task file's Phase 7 for why that's a separate, harder problem).
-const computeTrspRoutes = async (db, pgEnv, { conflation_view_id, source, destination, source_node_id, dest_node_id }) => {
-  const conflationTable = await getDataTable(db, conflation_view_id);
-  const nodesTable = `${conflationTable}_nodes`;
-  const edgesTable = `${conflationTable}_edges`;
-  const relationsTable = `${conflationTable}_relations`;
+const computeTrspRoutes = async (db, pgEnv, { source, destination, source_node_id, dest_node_id }) => {
+  const { conflationTable, nodesTable, edgesTable, relationsTable } = await memoryGraph.resolveConflationTables(db);
 
   // Caller already picked exact nodes (the node-picker UX) -> skip the snap query entirely.
   // Otherwise fall back to snapping raw lon/lat (the original free-form-click UX).
@@ -209,7 +241,7 @@ const computeTrspRoutes = async (db, pgEnv, { conflation_view_id, source, destin
 
   // pgr_trsp evaluates restrictions_sql as its own independent statement - it cannot see a CTE
   // wrapped around the outer pgr_trsp call, so the restrictions have to be a real, materialized
-  // temp table restrictions_sql can reference by name (confirmed by direct testing 2026-08-12).
+  // temp table restrictions_sql can reference by name (confirmed by direct testing).
   const restrictionsTable = `temp_trsp_restrictions_${pgEnv}_${sourceNodeId}_${destNodeId}`;
 
   // An unbounded pgr_trsp search over the full ~9.6M-edge network takes ~60-70s (confirmed by
@@ -297,25 +329,23 @@ const computeTrspRoutes = async (db, pgEnv, { conflation_view_id, source, destin
 };
 
 // Warm-load the default conflation view's in-memory graph shortly after the server boots, so the
-// FIRST real request doesn't pay the ~80s cold-load cost (2026-08-20 user ask: "auto load cache
-// for this graph so that it will response fast from the first api call itself").
+// FIRST real request doesn't pay the ~80s cold-load cost.
 //
-// Kept in sync manually with the frontend plugins' own DEFAULT_CONFLATION_VIEW_ID
-// (src/themes/transportny/components/routing/constants.js and .../detour/constants.js) - both
-// point at this same view/pgEnv, so one warm-load benefits both plugins.
+// The conflation source/version is a single server-side constant (memoryGraph.js's
+// CONFLATION_TABLE/etc) - both frontend plugins (routing/constants.js and detour/constants.js) no
+// longer know or send a view id at all, so one warm-load benefits both.
 //
-// DELIBERATELY DEFERRED, not fired immediately at registration: an earlier attempt (2026-08-19)
-// called helpers.getDb(...) + the graph load synchronously at plugin-registration time, which
-// raced the server's own DAMA-env init sequence for the SAME pgEnv and hung the entire server
-// boot (confirmed live - the process never reached "DMS Server running"). A fixed delay is not
-// a fully deterministic fix (there's no confirmed "server fully ready" hook to listen for
-// instead), but 20s is comfortably past every boot sequence observed live in this task so far.
+// DELIBERATELY DEFERRED, not fired immediately at registration: an earlier attempt called
+// helpers.getDb(...) + the graph load synchronously at plugin-registration time, which raced the
+// server's own DAMA-env init sequence for the SAME pgEnv and hung the entire server boot
+// (confirmed live - the process never reached "DMS Server running"). A fixed delay is not a fully
+// deterministic fix (there's no confirmed "server fully ready" hook to listen for instead), but
+// 20s is comfortably past every boot sequence observed live so far.
 //
 // Fire-and-forget: never blocks route registration, and any failure here just logs - the existing
 // lazy load (getOrLoadGraph, called normally by /trsp-memory on the first real request) is the
 // real fallback and is completely unaffected either way.
 const WARM_LOAD_PG_ENV = "npmrds2";
-const WARM_LOAD_CONFLATION_VIEW_ID = 3699;
 const WARM_LOAD_DELAY_MS = 20_000;
 
 module.exports = {
@@ -324,10 +354,10 @@ module.exports = {
       (async () => {
         try {
           const db = helpers.getDb(WARM_LOAD_PG_ENV);
-          console.log(`[routing] warm-load starting for conflation_view_id=${WARM_LOAD_CONFLATION_VIEW_ID}...`);
+          console.log(`[routing] warm-load starting (resolving source_id+version="${memoryGraph.CURRENT_CONFLATION_VERSION}" tables once, then loading graph)...`);
           const t0 = Date.now();
-          await memoryGraph.getOrLoadGraph(db, WARM_LOAD_PG_ENV, WARM_LOAD_CONFLATION_VIEW_ID);
-          console.log(`[routing] warm-load done in ${Date.now() - t0}ms - /trsp-memory (routing + detour) is warm for view ${WARM_LOAD_CONFLATION_VIEW_ID}`);
+          await memoryGraph.getOrLoadGraph(db, WARM_LOAD_PG_ENV);
+          console.log(`[routing] warm-load done in ${Date.now() - t0}ms - /trsp-memory (routing + detour) is warm`);
         } catch (err) {
           console.error("[routing] warm-load failed (harmless - the first real request will load it lazily instead):", err.message);
         }
@@ -337,18 +367,18 @@ module.exports = {
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp
     router.post("/trsp", async (req, res) => {
       try {
-        const { conflation_view_id, source, destination, source_node_id, dest_node_id } = req.body || {};
+        const { source, destination, source_node_id, dest_node_id } = req.body || {};
         const hasNodeIds = source_node_id && dest_node_id;
-        if (!conflation_view_id || (!hasNodeIds && (!source || !destination))) {
+        if (!hasNodeIds && (!source || !destination)) {
           return res.status(400).json({
             ok: false,
-            error: "conflation_view_id is required, plus either {source_node_id, dest_node_id} or {source, destination}",
+            error: "either {source_node_id, dest_node_id} or {source, destination} is required",
           });
         }
 
         const db = helpers.getDb(req.params.pgEnv);
         const { shortest, fastest } = await computeTrspRoutes(db, req.params.pgEnv, {
-          conflation_view_id, source, destination, source_node_id, dest_node_id,
+          source, destination, source_node_id, dest_node_id,
         });
         res.json({ ok: true, result: { routes: { shortest, fastest } } });
       } catch (err) {
@@ -360,8 +390,8 @@ module.exports = {
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory
     // Phase 11 Stage A: same {shortest, fastest} contract as /trsp, computed via an in-memory
     // typed-array graph instead of per-request SQL. NEW, ADDITIVE route - /trsp above is
-    // completely untouched. First request for a given conflation_view_id pays a one-time graph
-    // load cost (logged); every request after that reuses the cached in-memory graph.
+    // completely untouched. First request after a server restart pays a one-time graph load cost
+    // (logged); every request after that reuses the cached in-memory graph.
     //
     // Optional body field `algorithm`: "dijkstra" (default, unchanged) or "bidirectional" - a
     // second exact search that grows from both source and destination at once, meant to cut the
@@ -377,22 +407,21 @@ module.exports = {
     // in-memory graph is never mutated - see findRoute()'s excludedEdgeOgcFids handling.
     router.post("/trsp-memory", async (req, res) => {
       try {
-        const { conflation_view_id, source, destination, algorithm, excluded_edge_ids } = req.body || {};
-        if (!conflation_view_id || !source || !destination) {
-          return res.status(400).json({ ok: false, error: "conflation_view_id, source, and destination are required" });
+        const { source, destination, algorithm, excluded_edge_ids } = req.body || {};
+        if (!source || !destination) {
+          return res.status(400).json({ ok: false, error: "source and destination are required" });
         }
 
         // Default is plain dijkstra, unchanged. Smart auto-dispatch (choosing bidirectional by
-        // straight-line distance) was tried 2026-08-19, then explicitly reverted per user request
-        // ("keep it here the stuff for the dijkstra only but keep code for bi directional also") -
-        // bidirectionalDijkstra() stays available as an explicit `algorithm: "bidirectional"`
-        // override (see the 20-pair verification in point-to-point-routing-plugin.md for why the
-        // auto-dispatch threshold wasn't a clean win worth keeping as the default behavior).
+        // straight-line distance) was tried and reverted - bidirectionalDijkstra() stays available
+        // as an explicit `algorithm: "bidirectional"` override (see the 20-pair verification in
+        // point-to-point-routing-plugin.md for why the auto-dispatch threshold wasn't a clean win
+        // worth keeping as the default behavior).
         const resolvedAlgorithm = algorithm || "dijkstra";
 
         const db = helpers.getDb(req.params.pgEnv);
         const t0 = Date.now();
-        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv, conflation_view_id);
+        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv);
         const loadMs = Date.now() - t0;
 
         const t1 = Date.now();
@@ -409,21 +438,21 @@ module.exports = {
       }
     });
 
-    // Mounts as GET /dama-admin/:pgEnv/routing/nodes?conflation_view_id=&bbox=minLon,minLat,maxLon,maxLat
+    // Mounts as GET /dama-admin/:pgEnv/routing/nodes?bbox=minLon,minLat,maxLon,maxLat
     // Viewport-scoped node lookup for the node-picker UX (Phase 6) - the _nodes table has ~5M
     // rows for the view currently in use, so this deliberately never returns "all nodes", only
     // whatever's in the requested bbox, capped at NODES_QUERY_LIMIT.
     router.get("/nodes", async (req, res) => {
       try {
-        const { conflation_view_id, bbox } = req.query;
+        const { bbox } = req.query;
         const bboxParts = (bbox || "").split(",").map(Number);
-        if (!conflation_view_id || bboxParts.length !== 4 || bboxParts.some(Number.isNaN)) {
-          return res.status(400).json({ ok: false, error: "conflation_view_id and bbox=minLon,minLat,maxLon,maxLat are required" });
+        if (bboxParts.length !== 4 || bboxParts.some(Number.isNaN)) {
+          return res.status(400).json({ ok: false, error: "bbox=minLon,minLat,maxLon,maxLat is required" });
         }
 
         const db = helpers.getDb(req.params.pgEnv);
-        const conflationTable = await getDataTable(db, conflation_view_id);
-        const nodes = await getNodesInBbox(db, `${conflationTable}_nodes`, bboxParts);
+        const { nodesTable } = await memoryGraph.resolveConflationTables(db);
+        const nodes = await getNodesInBbox(db, nodesTable, bboxParts);
         res.json({ ok: true, result: { nodes } });
       } catch (err) {
         console.error("[routing/nodes] failed:", err);
@@ -431,21 +460,21 @@ module.exports = {
       }
     });
 
-    // Mounts as GET /dama-admin/:pgEnv/routing/edges?conflation_view_id=&bbox=minLon,minLat,maxLon,maxLat
+    // Mounts as GET /dama-admin/:pgEnv/routing/edges?bbox=minLon,minLat,maxLon,maxLat
     // Viewport-scoped edge lookup for the detour/avoid-segment plugin's segment-picker layer -
     // NEW route, added alongside the existing /nodes route above (same bbox-scoped,
     // never-return-the-whole-network discipline - see getEdgesInBbox).
     router.get("/edges", async (req, res) => {
       try {
-        const { conflation_view_id, bbox } = req.query;
+        const { bbox } = req.query;
         const bboxParts = (bbox || "").split(",").map(Number);
-        if (!conflation_view_id || bboxParts.length !== 4 || bboxParts.some(Number.isNaN)) {
-          return res.status(400).json({ ok: false, error: "conflation_view_id and bbox=minLon,minLat,maxLon,maxLat are required" });
+        if (bboxParts.length !== 4 || bboxParts.some(Number.isNaN)) {
+          return res.status(400).json({ ok: false, error: "bbox=minLon,minLat,maxLon,maxLat is required" });
         }
 
         const db = helpers.getDb(req.params.pgEnv);
-        const conflationTable = await getDataTable(db, conflation_view_id);
-        const edges = await getEdgesInBbox(db, `${conflationTable}_edges`, bboxParts);
+        const { edgesTable } = await memoryGraph.resolveConflationTables(db);
+        const edges = await getEdgesInBbox(db, edgesTable, bboxParts);
         res.json({ ok: true, result: { edges } });
       } catch (err) {
         console.error("[routing/edges] failed:", err);
@@ -453,27 +482,57 @@ module.exports = {
       }
     });
 
+    // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory-resolve-edge
+    // Segment-identity resolver (see resolveEdgeBetweenPoints's own comment above for the full
+    // "ogc_fid isn't stable across conflation years" bug this fixes). The detour plugin's
+    // base network layer is author-selected and can be ANY year's tiled layer; this snaps the
+    // clicked segment's own start/end coordinates to nodes in THIS backend's live conflation
+    // table and looks for a real edge connecting them, returning that edge's own ogc_fid - the
+    // only ogc_fid safe to pass to every other /trsp-memory-* route below. `start`/`end` should
+    // be the clicked segment's actual first/last coordinates - see resolveEdgeAtPoint.js for the
+    // frontend side. `result.exactMatch` is false when no direct edge connects the two snapped
+    // nodes (the segment doesn't exist in this shape in the live table) and the returned ogc_fid
+    // is a nearest-by-distance best guess instead - the frontend should treat that case as a real
+    // "this segment isn't in the current routing data" condition, not a normal match.
+    router.post("/trsp-memory-resolve-edge", async (req, res) => {
+      try {
+        const { start, end } = req.body || {};
+        const isPoint = (p) => p && typeof p.lon === "number" && typeof p.lat === "number";
+        if (!isPoint(start) || !isPoint(end)) {
+          return res.status(400).json({ ok: false, error: "start and end ({lon, lat}) are required" });
+        }
+
+        const db = helpers.getDb(req.params.pgEnv);
+        const { edgesTable, nodesTable } = await memoryGraph.resolveConflationTables(db);
+        const result = await resolveEdgeBetweenPoints(db, edgesTable, nodesTable, { start, end });
+        res.json({ ok: true, result });
+      } catch (err) {
+        console.error("[routing/trsp-memory-resolve-edge] failed:", err);
+        res.json({ ok: false, error: err.message });
+      }
+    });
+
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory-detour-endpoints
-    // Simple detour mode's endpoint picker, moved server-side (2026-08-25 perf) - replaces the
+    // Simple detour mode's endpoint picker, moved server-side - replaces the
     // client-side per-hop-HTTP-request walk (comp.jsx's old walkForward) with ONE fast in-memory
     // call using the same walk-to-first-branch rule (memoryGraph.js's walkToFirstBranch, shared
     // with selectClosureDensityCandidates's own seeding).
     router.post("/trsp-memory-detour-endpoints", async (req, res) => {
       try {
-        const { conflation_view_id, ogc_fid } = req.body || {};
-        if (!conflation_view_id || !ogc_fid) {
-          return res.status(400).json({ ok: false, error: "conflation_view_id and ogc_fid are required" });
+        const { ogc_fid } = req.body || {};
+        if (!ogc_fid) {
+          return res.status(400).json({ ok: false, error: "ogc_fid is required" });
         }
 
         const db = helpers.getDb(req.params.pgEnv);
         const t0 = Date.now();
-        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv, conflation_view_id);
+        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv);
         const loadMs = Date.now() - t0;
 
         const t1 = Date.now();
         const result = memoryGraph.resolveDetourEndpoints(graph, ogc_fid);
         const searchMs = Date.now() - t1;
-        console.log("[routing/trsp-memory-detour-endpoints]", { conflation_view_id, ogc_fid, loadMs, searchMs });
+        console.log("[routing/trsp-memory-detour-endpoints]", { ogc_fid, loadMs, searchMs });
 
         res.json({ ok: true, result: { ...result, timing: { loadMs, searchMs } } });
       } catch (err) {
@@ -483,27 +542,39 @@ module.exports = {
     });
 
     // Mounts as POST /dama-admin/:pgEnv/routing/trsp-memory-density-points
-    // Closure coverage/density analysis, STEP 1/2 (2026-08-21 - split into two calls so the
-    // frontend can show/confirm candidate points before committing to the expensive full
-    // analysis; also lets the timing of point-selection vs. route-tallying be measured
-    // separately). Returns candidate start/end points only, no route tallying yet.
+    // Closure coverage/density analysis, STEP 1/2 - split into two calls so the frontend can
+    // show/confirm candidate points before committing to the expensive full analysis; also lets
+    // the timing of point-selection vs. route-tallying be measured separately. Returns candidate
+    // start/end points only, no route tallying yet.
     router.post("/trsp-memory-density-points", async (req, res) => {
       try {
-        const { conflation_view_id, ogc_fid, num_candidates, cost_objective } = req.body || {};
-        if (!conflation_view_id || !ogc_fid) {
-          return res.status(400).json({ ok: false, error: "conflation_view_id and ogc_fid are required" });
+        const { ogc_fid, num_candidates, cost_objective } = req.body || {};
+        if (!ogc_fid) {
+          return res.status(400).json({ ok: false, error: "ogc_fid is required" });
         }
 
         const db = helpers.getDb(req.params.pgEnv);
         const t0 = Date.now();
-        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv, conflation_view_id);
+        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv);
         const loadMs = Date.now() - t0;
 
+        // Drops this request's own queued tasks if abandoned - see detour-avoid-segment-routing-
+        // plugin.md's "Concurrency/scalability hardening". Harmless no-op after normal completion.
+        const abortController = new AbortController();
+        const cancelDebugT0 = Date.now();
+        req.on("close", () => {
+          console.log(`[cancel-debug] req 'close' fired for ogc_fid=${ogc_fid} at +${Date.now() - cancelDebugT0}ms, res.writableEnded=${res.writableEnded}`);
+          abortController.abort();
+        });
+        res.on("close", () => {
+          console.log(`[cancel-debug] res 'close' fired for ogc_fid=${ogc_fid} at +${Date.now() - cancelDebugT0}ms, res.writableEnded=${res.writableEnded}`);
+        });
+
         const t1 = Date.now();
-        const result = await memoryGraph.selectClosureDensityCandidates(graph, ogc_fid, num_candidates || 10, cost_objective || "distance");
+        const result = await memoryGraph.selectClosureDensityCandidates(graph, ogc_fid, num_candidates || 10, cost_objective || "distance", abortController.signal);
         const searchMs = Date.now() - t1;
         console.log("[routing/trsp-memory-density-points]", {
-          conflation_view_id, ogc_fid,
+          ogc_fid,
           startPoints: result.startPoints.length, endPoints: result.endPoints.length,
           candidatesRejected: result.candidatesRejected,
           // Real achieved gap (meters), after any relaxation - see selectClosureDensityCandidates.
@@ -526,21 +597,25 @@ module.exports = {
     // separate frontend calls.
     router.post("/trsp-memory-density", async (req, res) => {
       try {
-        const { conflation_view_id, ogc_fid, start_node_ids, end_node_ids, cost_objective } = req.body || {};
-        if (!conflation_view_id || !ogc_fid || !start_node_ids?.length || !end_node_ids?.length) {
-          return res.status(400).json({ ok: false, error: "conflation_view_id, ogc_fid, start_node_ids, and end_node_ids are required" });
+        const { ogc_fid, start_node_ids, end_node_ids, cost_objective } = req.body || {};
+        if (!ogc_fid || !start_node_ids?.length || !end_node_ids?.length) {
+          return res.status(400).json({ ok: false, error: "ogc_fid, start_node_ids, and end_node_ids are required" });
         }
 
         const db = helpers.getDb(req.params.pgEnv);
         const t0 = Date.now();
-        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv, conflation_view_id);
+        const graph = await memoryGraph.getOrLoadGraph(db, req.params.pgEnv);
         const loadMs = Date.now() - t0;
 
+        // See the matching comment in /trsp-memory-density-points above.
+        const abortController = new AbortController();
+        req.on("close", () => abortController.abort());
+
         const t1 = Date.now();
-        const result = await memoryGraph.computeClosureDensityFromPoints(db, graph, ogc_fid, start_node_ids, end_node_ids, cost_objective || "distance");
+        const result = await memoryGraph.computeClosureDensityFromPoints(db, graph, ogc_fid, start_node_ids, end_node_ids, cost_objective || "distance", abortController.signal);
         const searchMs = Date.now() - t1;
         console.log("[routing/trsp-memory-density]", {
-          conflation_view_id, ogc_fid,
+          ogc_fid,
           totalPairsComputed: result.totalPairsComputed, totalPairsFailed: result.totalPairsFailed,
           loadMs, searchMs,
         });

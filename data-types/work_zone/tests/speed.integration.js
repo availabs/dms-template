@@ -289,6 +289,21 @@ async function runTests() {
     assert(/bound_end_date >= \$1/.test(q.text), 'catches spans that START before the window');
   });
 
+  await test('sweeps orphaned staging tables before creating its own', async () => {
+    await run(descriptor);
+    const sweep = ch.statements.findIndex((s) => /FROM system\.tables/.test(s));
+    const create = ch.statements.findIndex((s) => /^CREATE TABLE IF NOT EXISTS/.test(s));
+    assert(sweep >= 0, 'looks for orphaned staging tables');
+    assert(sweep < create, 'sweeps before creating its own');
+    const q = ch.statements[sweep];
+    // The staging tables are Memory-engine on a shared server and `finally`
+    // does not run on SIGKILL, so orphans accumulate. The 6-hour floor is what
+    // makes the sweep safe against a concurrent run.
+    assert(/engine = 'Memory'/.test(q), 'only Memory-engine staging tables');
+    assert(/INTERVAL 6 HOUR/.test(q), 'six-hour floor, so a live run is never touched');
+    assert(/metadata_modification_time/.test(q), 'ages by the server clock, not by parsing our own names');
+  });
+
   await test('stages tmc, active and exclusion rows in ClickHouse', async () => {
     await run(descriptor);
     const creates = ch.statements.filter((s) => /^CREATE TABLE IF NOT EXISTS/.test(s));
