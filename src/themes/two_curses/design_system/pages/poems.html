@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Poems — Two Curses</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { vellum:'#FCF7E4', 'vellum-deep':'#E3D5B0', leaf:'#F6EFDD', ink:'#3A3129', 'ink-soft':'#5A4E42', sepia:'#7A6A52', rubric:'#8A2B1E', gilt:'#9C7A2E', rule:'#C6B58D' },
+      fontFamily: { display:['"IM Fell English"','serif'], prose:['"EB Garamond"','serif'], meta:['"IM Fell English SC"','serif'], blackletter:['"UnifrakturMaguntia"','serif'] }
+    } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=UnifrakturMaguntia&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body class="min-h-screen">
+
+<!--
+  TWO CURSES · POEMS — the table of contents (29 songs from the songs dataset, source 1066383, in dataset order; the "Test" row omitted). v0.2: full width, no rules.
+  Layout `default`, no TopNav, no footer (v0.13) →
+    LayoutGroup `content` : a whole plate with the by-hand filter and a search field (5) · the contents list, a Card in row mode (7)
+  Rows are generated from the dataset dump: titles and by-lines verbatim; first lines are the first lyric line (chord lines skipped); folio = the row's place in the book.
+-->
+
+<div data-dms="layout" data-name="default" class="tc-paper min-h-screen text-ink flex flex-col">
+
+
+  <main class="flex-1">
+
+    <!-- LAYOUTGROUP — content: plate + filter (5) · contents list (7) -->
+    <div data-dms="layoutGroup" data-name="content" class="w-full pt-8 md:pt-12 pb-16">
+      <div class="w-full px-6 md:px-12 xl:px-20">
+        <div class="grid grid-cols-12 gap-0">
+
+          <div data-dms="section" data-name="contents-plate" class="col-span-12 md:col-span-5 p-3 md:pr-12">
+            <div class="md:sticky md:top-8">
+              <a href="home.html" class="block font-blackletter text-[44px] leading-none text-ink hover:text-rubric transition-colors text-center mb-5">Two Curses</a>
+              <figure class="tc-plate">
+                <img src="../assets/alpha/quarlesemblems00quaruoft_0022.png"
+                     alt="A serpent coiled about a heart in a wooded landscape, within a scrolled frame with an hourglass"
+                     class="w-full max-w-[560px] mx-auto">
+              </figure>
+              <h1 class="font-display text-[42px] leading-[1.1] text-ink text-center mt-5">Poems</h1>
+              <p class="font-display italic text-[17px] leading-[1.4] text-ink-soft text-center mt-2">nine-and-twenty songs, in the order they were written into the book</p>
+
+              <!-- Filter: one small-caps link per hand, separated by middots -->
+              <div class="mt-10 text-center">
+                <p class="font-meta text-[12px] tracking-[0.14em] text-sepia">by the hand of</p>
+                <div class="flex flex-wrap justify-center items-baseline gap-x-3 gap-y-2 mt-3">
+                  <a href="poems.html" class="tc-fleuron font-meta text-[15px] tracking-[0.08em] text-rubric">all <span class="font-prose italic text-[16px] leading-[1.5] text-sepia tracking-normal">29</span></a>
+                  <span class="text-rule">·</span>
+                  <a href="#" class="font-meta text-[15px] tracking-[0.08em] text-ink-soft hover:text-rubric transition-colors">Alex Muro <span class="font-prose italic text-[16px] leading-[1.5] text-sepia tracking-normal">1</span></a>
+                  <span class="text-rule">·</span>
+                  <a href="#" class="font-meta text-[15px] tracking-[0.08em] text-ink-soft hover:text-rubric transition-colors">Sgt Dunbar &amp; the Hobo Banned <span class="font-prose italic text-[16px] leading-[1.5] text-sepia tracking-normal">6</span></a>
+                  <span class="text-rule">·</span>
+                  <a href="#" class="font-meta text-[15px] tracking-[0.08em] text-ink-soft hover:text-rubric transition-colors">Hoborchestra <span class="font-prose italic text-[16px] leading-[1.5] text-sepia tracking-normal">1</span></a>
+                  <span class="text-rule">·</span>
+                  <a href="#" class="font-meta text-[15px] tracking-[0.08em] text-ink-soft hover:text-rubric transition-colors">Dan Pardee <span class="font-prose italic text-[16px] leading-[1.5] text-sepia tracking-normal">1</span></a>
+                  <span class="text-rule">·</span>
+                  <a href="#" class="font-meta text-[15px] tracking-[0.08em] text-ink-soft hover:text-rubric transition-colors">onlyness <span class="font-prose italic text-[16px] leading-[1.5] text-sepia tracking-normal">1</span></a>
+                  <span class="text-rule">·</span>
+                  <a href="#" class="font-meta text-[15px] tracking-[0.08em] text-ink-soft hover:text-rubric transition-colors">two curses <span class="font-prose italic text-[16px] leading-[1.5] text-sepia tracking-normal">1</span></a>
+                </div>
+              </div>
+
+              <!-- Input: search within the book -->
+              <label class="block mt-8 max-w-[360px] mx-auto">
+                <span class="sr-only">find a line</span>
+                <span class="flex items-center gap-2 border-b border-dotted border-rule focus-within:border-rubric transition-colors pb-1">
+                  <!-- icon: Search -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-sepia shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                  <input type="text" placeholder="find a line — copper bells…" class="w-full bg-transparent font-prose italic text-[19px] leading-[1.6] text-ink placeholder:text-sepia/70 outline-none">
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Card · row mode -->
+          <div data-dms="section" data-name="contents-list" class="col-span-12 md:col-span-7 p-3 md:pl-6">
+            <div class="flex items-baseline justify-between pb-2">
+              <p class="font-meta text-[12px] tracking-[0.14em] text-sepia">numeral · title, first line · hand</p>
+              <p class="font-meta text-[12px] tracking-[0.14em] text-sepia">folio</p>
+            </div>
+            <ul>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">i</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">The Way Your Movin'</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">I don't mind, when you roll your eyes</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Alex Muro</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">1</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">ii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Searching</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">It seems so strange when you remember</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">2</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">iii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">A Song You Can't Explain</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">And she lives by the ocean</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">3</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">iv</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Theif In the House</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">Take a look back at the face you were wearing</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">4</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">v</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">watch a little spider fall</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">Streetlight paints the quiet wall,</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">5</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">vi</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">FA 2</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">take me back to the first time</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">6</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">vii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Golden dawn</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">Flowers in the city</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">7</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">viii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Moss Heart</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">the forest quietly calls to you</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">8</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">ix</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Chasing A Shadow's Shadow</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">Theres a wish you wanted to make</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">9</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">x</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">A March Through Charles Mingus' Garbage Pile</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">The Arch-Artist solitude symbolized</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Sgt Dunbar &amp; the Hobo Banned</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">10</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xi</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Goin Nowhere</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">waiting for a moment that does not arise I went</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Sgt Dunbar &amp; the Hobo Banned</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">11</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Move Your Memories Part I</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">Lines lock our thoughts in space</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Sgt Dunbar &amp; the Hobo Banned</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">12</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xiii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Carrot on a String</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">a song once sung by a burning heart</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Sgt Dunbar &amp; the Hobo Banned</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">13</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xiv</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Realism Is the Purest form of Art</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">time to keep the realist thing I've ever seen</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Sgt Dunbar &amp; the Hobo Banned</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">14</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xv</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Light Come through</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">a strange haze over a woodland sign</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">15</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xvi</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">The Book Was The Same</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">the book was the same, every letter was there</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">16</span>
+                </a>
+              </li>
+              <li>
+                <a href="poem.html" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xvii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-rubric group-hover:text-rubric transition-colors">The Night was left</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">You don't see, the ways I let you hang</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">17</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xviii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">If You Told Me</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">When I was young I used to go</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">18</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xix</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">I will never take your hand</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">I will never take your hand</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">19</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xx</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">is there a pattern here?</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">If I might find</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">20</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxi</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Golden maidens and the art of being lost</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">between four eyes i've lost my life</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Hoborchestra</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">21</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">No more than a farthing</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">little bird, little bird</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">22</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxiii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Surrealist Bicycle Over Flaming Gondola</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">Oh the lovely pair</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Dan Pardee</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">23</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxiv</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">I just want to feel okay</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">I don't wanna quit my band</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">onlyness</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">24</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxv</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Breakout</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">breakout, when the waves gonna come any day now</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">25</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxvi</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Cooling the Mark Out</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">In the long run you were just cooling the mark out</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">26</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxvii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Notorius Inflection</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">I heard you callin' out</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">Sgt Dunbar &amp; the Hobo Banned</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">27</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxviii</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">untitled</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">Find your own way</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">two curses</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">28</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="group flex items-baseline gap-4 py-2.5">
+                  <span class="font-meta text-[12px] tracking-[0.14em] text-rubric w-12 shrink-0 tabular-nums">xxix</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors">Time at an End</span>
+                    <span class="block font-prose italic text-[16px] leading-[1.5] text-sepia mt-0.5">because I do not hope to turn again</span>
+                  </span>
+                  <span class="flex-1 border-b border-dotted border-rule mb-1.5 min-w-[24px]"></span>
+                  <span class="font-prose italic text-[16px] leading-[1.5] text-sepia shrink-0 hidden sm:inline max-w-[240px] text-right">&nbsp;</span>
+                  <span class="font-display text-[22px] leading-[1.25] text-ink-soft shrink-0 w-8 text-right tabular-nums">29</span>
+                </a>
+              </li>
+            </ul>
+            <div class="tc-ornament flex justify-center mt-10">
+              <!-- decorative: tailpiece — the bird and ribbons, Quarles' Emblems p.302 -->
+              <img src="../assets/ornaments/tail-bird.png" alt="" class="w-[300px]">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

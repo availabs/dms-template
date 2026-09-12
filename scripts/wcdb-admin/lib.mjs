@@ -270,7 +270,7 @@ export const fusedEnd = { bg: CARD_BG, border: { left: true, right: true, bottom
  *  the column-header row. It binds to the list's own source at pageSize 1
  *  because a Card renders one card per ROW, and static cells need a row to
  *  render into; the row's data is never read. */
-export const staticRowSection = ({ source, tracks, cells, valueFontStyle = 'label', padding }) =>
+export const staticRowSection = ({ source, tracks, cells, valueFontStyle = 'label', padding, rowGutter }) =>
   dataSection({
     source,
     columns: [
@@ -293,7 +293,11 @@ export const staticRowSection = ({ source, tracks, cells, valueFontStyle = 'labe
     display: {
       pageSize: 1, usePagination: false, fetchMode: 'cache',
       cellsTracksTemplate: tracks, cellsGridSize: cells.length,
-      cellsGridGap: 12, cellsPadding: padding ?? 0, cardsGridGap: 0, cardsPadding: 0,
+      cellsGridGap: 12, cellsPadding: padding ?? 0, cardsGridGap: 0,
+      // See listCard: `cardsPadding: 0` zeroes the theme's `px-6` on this very
+      // element. A list that keeps its row gutter drops it here too so the header
+      // labels stay over their columns.
+      ...(rowGutter ? {} : { cardsPadding: 0 }),
       cardBorder: false, cardStyle: 'adminHeaderRow',
     },
   });

@@ -49,6 +49,9 @@
       { f: 'blog.html', t: 'blog (superseded)' },
       { f: 'events.html', t: 'events' },
       { f: 'login.html', t: 'login' },
+      { f: 'auth-forgot.html', t: 'forgot password' },
+      { f: 'auth-reset.html', t: 'reset password' },
+      { f: 'auth-signup.html', t: 'sign up' },
     ]},
     { key: 'admin', label: 'Station Admin', dir: 'pages/admin', landing: 'playlist.html', pages: [
       { f: 'playlist.html', t: 'playlist' },
@@ -58,6 +61,9 @@
       { f: 'events.html', t: 'events' },
       { f: 'airwaves.html', t: 'airwaves' },
       { f: 'post-editor.html', t: 'post editor' },
+      { f: 'users.html', t: 'users (auth)' },
+      { f: 'groups.html', t: 'groups (auth)' },
+      { f: 'profile.html', t: 'profile (auth)' },
     ]},
   ];
 

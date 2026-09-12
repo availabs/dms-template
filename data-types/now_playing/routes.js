@@ -28,6 +28,7 @@ const {
   eventToInsertParams,
   COLUMN_METADATA,
 } = require('./schema');
+const { resolveShowId } = require('./showResolver');
 
 const SOURCE_TYPE = 'now_playing_stream';
 const VIEW_SCHEMA_TAG = 'now_playing_detection_v1';
@@ -110,6 +111,29 @@ async function loadLatestView(db, sourceId) {
     [sourceId]
   );
   return rows[0] || null;
+}
+
+/**
+ * The schedule table this stream tags against, or null if none is configured.
+ *
+ * Stored on the SOURCE as `metadata.schedule = { source_id, view_id, tz }` rather than
+ * as a table name, because a table name pins the version: publishing a new schedule
+ * changes which VIEW is live, and the point of tagging at ingest is to follow that.
+ * The table is resolved from data_manager.views on each webhook — one cheap indexed
+ * lookup, and it means an admin repointing the schedule takes effect immediately with
+ * no restart and no cache to invalidate.
+ */
+async function loadScheduleTable(db, source) {
+  const meta = typeof source?.metadata === 'string' ? JSON.parse(source.metadata || '{}') : (source?.metadata || {});
+  const cfg = meta.schedule;
+  if (!cfg?.view_id) return null;
+  const table = db.type === 'postgres' ? 'data_manager.views' : 'views';
+  const { rows } = await db.query(
+    `SELECT table_schema, table_name FROM ${table} WHERE view_id = $1`, [Number(cfg.view_id)]
+  );
+  const v = rows[0];
+  if (!v?.table_name) return null;
+  return { table: `${v.table_schema}.${v.table_name}`, tz: cfg.tz || undefined };
 }
 
 function parseStatistics(raw) {
@@ -377,18 +401,35 @@ module.exports = function routes(router, helpers) {
       // we want to be quick and idempotent.
       await enrichEvents(events, { concurrency: 4 });
 
+      // Tag each detection with the show that was on air. Best-effort by design: a
+      // stream with no schedule configured, an unscheduled hour, or a failed lookup all
+      // yield null, and the track is still recorded. Losing the tag is recoverable —
+      // `backfillShowIds` re-runs it — losing the detection is not.
+      const schedule = await loadScheduleTable(db, source);
+      if (schedule) {
+        for (const ev of events) {
+          ev.show_id = await resolveShowId(db, {
+            scheduleTable: schedule.table,
+            timestampUtc: ev.timestamp_utc,
+            tz: schedule.tz,
+          });
+        }
+      }
+
       const insertSql = buildInsertSQL(view.data_table);
       let inserted = 0;
+      let tagged = 0;
       for (const ev of events) {
         try {
           await db.query(insertSql, eventToInsertParams(ev));
           inserted++;
+          if (ev.show_id != null) tagged++;
         } catch (insErr) {
           console.error(`[now_playing] insert failed for source=${sourceId}:`, insErr.message);
         }
       }
 
-      res.json({ ok: true, events: inserted });
+      res.json({ ok: true, events: inserted, tagged });
     } catch (err) {
       console.error('[now_playing] webhook failed:', err);
       res.status(500).json({ error: err.message });

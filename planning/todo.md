@@ -4,7 +4,7 @@ Every item belongs to a project section. See [`planning-rules.md`](./planning-ru
 project registry and the rules for this shared directory.
 
 Projects: [TransportNY](#transportny) · [MitigateNY](#mitigateny) · [Landbank](#landbank) ·
-[Tessera](#tessera) · [Shared](#shared)
+[Tessera](#tessera) · [WCDB](#wcdb) · [Shared](#shared)
 ## TransportNY
 
 ### themes
@@ -79,6 +79,16 @@ Projects: [TransportNY](#transportny) · [MitigateNY](#mitigateny) · [Landbank]
 ### content
 
 - [ ] [Set up tessera.so landing, features, and docs pages on design_system_v6](./tessera/tasks/current/tessera-v6-landing-pages.md) — all 3 pages built as drafts on `test|pages:pattern` (`app=tessera-test`, id 3) with `tessera_v6` theme applied, verified live in both light and dark. Left unchecked pending human review + `dms page publish`; also flags a docs SideNav follow-up and 2-3 minor content-fidelity gaps (editor illustration, invite form, one CTA-button-row layout nit).
+
+## WCDB
+
+### themes
+
+- [ ] [Auth pages on the WCDB theme — login first](./wcdb/tasks/current/auth-pages-wcdb-theme.md) — the auth pattern (1471742) has no theme, so `/auth/login` renders the library's blue defaults. Inventory done: 5 routed pages + a placeholder, only login has a mockup. Design the rest, add `auth.theme.js` + `field` + `auth`-named layout/layoutGroup/topnav styles, then set `selectedTheme: wcdb` on the pattern. 2026-09-12.
+
+### content
+
+- [ ] [WCDB public pages — playlist times/spacing, show-block navigator, home stats card](./wcdb/tasks/current/playlist-page-time-and-spacing.md) — `/playlist` showed UTC (SQL `to_char` on a timestamptz, server zone UTC); fix is `AT TIME ZONE 'America/New_York'` in the two calculated columns, plus a `spinRow` card style for the public list rhythm. Phase 1 (times + spacing) PUBLISHED 2026-09-12. Phase 2 (2026-09-12, draft): new theme section `ShowBlockNav` publishes `from`/`to` page variables for the show (or 2-hour automation) block, spins card filters on them with `gte`/`lt` leaves; prev/next verified live. Phase 3 (2026-09-12, draft): home Right now stats card — `comma` formatFn, auto-fit tracks + `statStrip` style, padding step fixed (step 5 is not a valid step). Phase 4 (2026-09-12, draft): the ADMIN playlist got the same treatment via `scripts/wcdb-admin/upgrade-playlist-log.mjs` (+ seed updated); navigator 1969285 on page 1964337. Phases 5–6 (same day): admin header/review-bar rework — title row removed, navigator (left half) + Add-a-song (right half) as the log card's top row, link removed, review bar below the list with padded pills; `ShowBlockNav` gained an `inset` display key. Phase 7: author-set section WIDTHS silently ignored on WCDB bands — library fix (section menu now resolves the band's `pages.sectionArray` style; see `src/dms/planning`). All three pages need a human publish (public Playlist, Home, admin Playlist).
 
 ## Shared
 

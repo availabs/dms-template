@@ -31,6 +31,9 @@ const PATTERN = 'wcdb_main';
 const COMPONENT_TYPE = `${PATTERN}|component`;
 const APP = process.env.DMS_APP || 'wcdb';
 const WIPE = process.env.WIPE === '1';
+// The blog has not launched: the home page's featured-dispatch block is seeded
+// only when `BLOG_LIVE=1` is in the environment. Set it at launch.
+const BLOG_LIVE = process.env.BLOG_LIVE === '1';
 const ONLY = (process.argv.find((a) => a.startsWith('--only='))?.split('=')[1]
   || (process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : ''))
   .split(',').filter(Boolean);
@@ -572,7 +575,11 @@ const pages = [
       // From the blog — ONE featured post given the room the design gives it:
       // a kicker, a 44px headline, the excerpt, and an artwork block down the
       // right. Not the three-row table this was.
-      {
+      //
+      // HELD BACK until the blog launches (decision 2026-09-12): the home page
+      // ships without a dispatches block, and the section stays here, one flag
+      // away, rather than being rebuilt from the design when it is time.
+      ...(BLOG_LIVE ? [{
         kind: 'Card',
         bg: 'white', border: { top: true, right: true, bottom: true, left: true },
         radius: { tl: true, tr: true, bl: true, br: true }, padding: { top: '8', bottom: '8' },
@@ -604,7 +611,7 @@ const pages = [
             cellsGridGap: 32, cellsRowGap: 14, cellsPadding: 0, cardBorder: false,
           },
         }),
-      },
+      }] : []),
 
       // What's on — a 3-up grid of event tiles led by a big day number, which
       // is how the design sets them. Was a 3-column table.

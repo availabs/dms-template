@@ -1,7 +1,7 @@
 import React from "react"
 import { ThemeContext, getComponentTheme } from "../../dms/packages/dms/src/ui/useTheme"
 import { ComponentContext, PageContext, CMSContext } from "../../dms/packages/dms/src/patterns/page/context"
-import { udaListViews, udaCreateView } from "../../dms/packages/dms/src/api"
+import { udaListViews, udaCreateView, udaUpdateSourceMetadata } from "../../dms/packages/dms/src/api"
 import { scheduleGridTheme } from "./ScheduleGrid.theme"
 import { HOURS, dayLabels, hourLabel, toBlocks } from "./ScheduleGrid.utils"
 
@@ -76,10 +76,10 @@ function NameVersionDialog({ t, open, mode, sourceLabel, copyFrom, rowCount, bus
   )
 }
 
-function PublishDialog({ t, open, onClose, incoming, outgoing, rowCount, canPublish, blockedReason, Icon }) {
+function PublishDialog({ t, open, onClose, onConfirm, busy, progress, incoming, outgoing, rowCount, canPublish, blockedReason, Icon }) {
   if (!open) return null
   return (
-    <div className={t.dialogOverlay} onClick={onClose}>
+    <div className={t.dialogOverlay} onClick={busy ? undefined : onClose}>
       <div className={t.dialogCard} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Publish schedule">
         <div className={t.dialogHead}>
           <div className={t.dialogEyebrow}>Go live</div>
@@ -114,8 +114,14 @@ function PublishDialog({ t, open, onClose, incoming, outgoing, rowCount, canPubl
           ) : null}
         </div>
         <div className={t.dialogFoot}>
-          <button type="button" className={t.dialogCancel} onClick={onClose}>Cancel</button>
-          <button type="button" className={rowCount === 0 || !canPublish ? t.dialogConfirmDisabled : t.dialogConfirm} disabled={rowCount === 0 || !canPublish}>
+          {progress ? <span className={t.dialogProgress}>{progress}</span> : null}
+          <button type="button" className={t.dialogCancel} onClick={onClose} disabled={busy}>Cancel</button>
+          <button
+            type="button"
+            className={busy || rowCount === 0 || !canPublish ? t.dialogConfirmDisabled : t.dialogConfirm}
+            disabled={busy || rowCount === 0 || !canPublish}
+            onClick={onConfirm}
+          >
             {Icon ? <Icon icon="Broadcast" className={t.dialogConfirmIcon} /> : null}
             {`Publish ${incoming.short}`}
           </button>
@@ -133,8 +139,8 @@ export const ScheduleGridView = ({ isEdit }) => {
   // a prop — a `state` prop is always undefined, which renders as a bound
   // section with no rows (every hour open, "unbound" version) rather than as an
   // error. Card.jsx reads it the same way.
-  const { state = {}, setState } = React.useContext(ComponentContext) || {}
-  const { setActionParam } = React.useContext(PageContext) || {}
+  const { state = {}, setState, apiLoad, apiUpdate } = React.useContext(ComponentContext) || {}
+  const { setActionParam, format } = React.useContext(PageContext) || {}
   const { falcor } = React.useContext(CMSContext) || {}
   const [publishOpen, setPublishOpen] = React.useState(false)
 
@@ -192,6 +198,28 @@ export const ScheduleGridView = ({ isEdit }) => {
       draft.data = []
     })
   }
+
+  /* Open on whatever is PUBLISHED, not on the saved binding.
+   *
+   * The section's stored `externalSource.view_id` is whichever version it was authored
+   * against, which drifts the first time anyone publishes; opening there shows the
+   * programme director a week the public site is not serving. `liveInfo` already carries
+   * the answer, so the grid just follows it — once per mount, guarded by a ref so it
+   * cannot fight a manual pick from the selector or bounce after a publish.
+   *
+   * Skipped when the public sections disagree with each other (`mixed`): there is no
+   * single published version to open on, and the chip says so. */
+  const didOpenOnLive = React.useRef(false)
+  React.useEffect(() => {
+    if (didOpenOnLive.current) return
+    if (!liveInfo || liveInfo === "none") return
+    didOpenOnLive.current = true
+    if (display.openOnPublishedVersion === false) return
+    if (liveInfo.mixed || !liveInfo.view_id) return
+    if (Number(liveInfo.view_id) === Number(viewId)) return
+    switchVersion(liveInfo.view_id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveInfo])
 
   const openNameDialog = (mode) => {
     setCreateError(null)
@@ -261,6 +289,193 @@ export const ScheduleGridView = ({ isEdit }) => {
 
   const openCount = 7 * 24 - occupied.size
 
+  /* ── publish: repoint the public page at this version ────────────────────
+   *
+   * "Publishing" a schedule is not a DMS page publish — it is rewriting
+   * `externalSource.view_id` on the PUBLIC page's schedule sections so they read
+   * this version's table instead of whichever one they were built against.
+   *
+   * The targets are DISCOVERED, not configured. The obvious design — an authored
+   * `liveTargetSectionId` — cannot work: the public schedule page has FOUR sections
+   * bound to the schedule source, and the seed mints new section ids on every run
+   * (a published page keeps a separate copy of every section from its draft), so
+   * any hand-recorded id is stale the next time anyone re-seeds. Instead we read
+   * the target page and match on `source_id`, which is stable.
+   *
+   * Both `sections` (what the public site serves) and `draft_sections` (what the
+   * page editor shows) are rewritten. They are SEPARATE ROWS, so leaving one
+   * behind would either strand the live site on the old version or make the next
+   * page-publish silently revert this one.
+   */
+  const targetPattern = display.liveTargetPattern || "wcdb_main"
+  /* Sources whose ingest tags rows with "what was on air" and therefore have to follow a
+   * publish. The playlist stream resolves each detection's show from a schedule VERSION
+   * recorded in `source.metadata.schedule.view_id`; leave that behind on a publish and
+   * new tracks keep being attributed to last semester's shows.
+   *
+   * Configured as ids rather than discovered, unlike the pages: a DAMA source id is
+   * stable for the life of the source, so there is nothing here to go stale. */
+  const taggingSourceIds = String(display.taggingSourceIds || "")
+    .split(",").map((x) => x.trim()).filter(Boolean)
+  // Optional restriction. Empty (the normal case) = every page in the pattern.
+  // Kept as the raw string so it can be a statically-checkable hook dependency; the
+  // array is derived inside readTargets.
+  const targetPageIdList = String(display.liveTargetPageIds || display.liveTargetPageId || "").trim()
+  const [liveInfo, setLiveInfo] = React.useState(null)   // {view_id, sections:[…]} | 'none'
+  const [publishing, setPublishing] = React.useState(false)
+  const [publishError, setPublishError] = React.useState(null)
+  const [publishedNote, setPublishedNote] = React.useState(null)
+  const [progress, setProgress] = React.useState(null)
+
+  /* Load ONE row by id.
+   *
+   * The shape matters and is not obvious: `action: 'view'` + `params.id` alone returns
+   * EVERY row of the type (all 8 pages, all 4005 sections, capped at 500) with no
+   * filtering, so `[0]` is an arbitrary row — which read as "no section is bound to this
+   * source" rather than as an error. `getActiveConfig` selects the child by PATH, so the
+   * id has to appear in the path passed as apiLoad's second argument as well as in
+   * `params`, and the `filter.options` id filter is what actually narrows the query.
+   * Copied from ExportPdf.jsx, the one place in the tree that already does this right. */
+  const loadById = React.useCallback(async (type, id) => {
+    const res = await apiLoad({
+      format: { app: format.app, type, attributes: [] },
+      children: [{
+        type: () => {},
+        action: "view",
+        filter: { stopFullDataLoad: true, options: JSON.stringify({ filter: { id: [id] } }) },
+        path: "view/:id",
+        params: { id },
+      }],
+    }, `/view/${id}`)
+    return (Array.isArray(res) ? res : [res]).find((r) => String(r?.id) === String(id)) || null
+  }, [apiLoad, format?.app])
+
+  /* Every section, on every public page, bound to this schedule source.
+   *
+   * WHY WALK THE PAGES rather than just listing the pattern's sections and filtering:
+   * `wcdb_main` has 4005 section rows of which 884 mention source 10, because a section
+   * row outlives the page that referenced it — most of those are orphans no page renders.
+   * Repointing them would be hundreds of pointless writes. A page's `sections` /
+   * `draft_sections` arrays are the only statement of what is actually live. (`action:
+   * 'list'` also caps at 500 rows, so a blanket scan could not see them all anyway.)
+   *
+   * The pages are DISCOVERED, not configured: the schedule feeds the home rail, the show
+   * page, station info, events, the playlist — eight pages at last count — and a hand-kept
+   * list of them goes stale the moment someone adds a ninth. One `list` call gets all the
+   * pages with their section arrays; the sections themselves need a by-id load each
+   * (~155), which is why this reports progress.
+   */
+  const readTargets = React.useCallback(async (onProgress) => {
+    if (!apiLoad || !format?.app) return null
+    const only = targetPageIdList.split(",").map((x) => x.trim()).filter(Boolean)
+    const res = await apiLoad({
+      format: { app: format.app, type: `${targetPattern}|page`, attributes: [] },
+      children: [{ type: () => {}, action: "list", path: "/" }],
+    })
+    const pages = (Array.isArray(res) ? res : [res]).filter(Boolean)
+      .filter((p) => !only.length || only.includes(String(p.id)))
+
+    const refs = []
+    for (const pg of pages) {
+      const seen = new Set()
+      for (const [list, arr] of [["published", pg.sections], ["draft", pg.draft_sections]]) {
+        for (const r of arr || []) {
+          if (!r?.id || seen.has(String(r.id))) continue
+          seen.add(String(r.id))
+          refs.push({ id: String(r.id), list, page: pg.url_slug || pg.id })
+        }
+      }
+    }
+
+    const out = []
+    let done = 0
+    for (const ref of refs) {
+      const row = await loadById(`${targetPattern}|component`, ref.id)
+      done++
+      if (onProgress) onProgress(done, refs.length)
+      const raw = row?.element?.["element-data"]
+      if (typeof raw !== "string") continue
+      let ed
+      try { ed = JSON.parse(raw) } catch { continue }
+      if (ed?.externalSource?.source_id !== state.externalSource?.source_id) continue
+      out.push({ ...ref, row, ed, view_id: ed.externalSource.view_id })
+    }
+    return out
+  }, [apiLoad, loadById, format?.app, targetPattern, targetPageIdList, state.externalSource?.source_id])
+
+  // What the public site is showing RIGHT NOW, read from the sections themselves rather
+  // than from a hand-authored `liveVersion` string that nothing keeps true.
+  React.useEffect(() => {
+    let alive = true
+    readTargets()
+      .then((t) => {
+        if (!alive) return
+        if (!t?.length) { setLiveInfo("none"); return }
+        const ids = [...new Set(t.map((x) => x.view_id))]
+        setLiveInfo({ view_id: ids.length === 1 ? ids[0] : null, mixed: ids.length > 1, sections: t })
+      })
+      .catch((e) => { if (alive) { console.error("[ScheduleGrid] could not read live targets:", e.message); setLiveInfo("none") } })
+    return () => { alive = false }
+  }, [readTargets, publishedNote])
+
+  const doPublish = async () => {
+    if (!apiUpdate || publishing || !viewId) return
+    setPublishing(true); setPublishError(null); setProgress(null)
+    try {
+      const targets = await readTargets((d, n) => setProgress(`reading ${d}/${n}`))
+      if (!targets?.length) throw new Error("Found no public section bound to this schedule source")
+      const label = versionLabel(versions.find((v) => v.view_id === Number(viewId))) || `Version ${viewId}`
+      const stale = targets.filter((t) => Number(t.view_id) !== Number(viewId))
+      let n = 0
+      for (const t of stale) {
+        const ed = { ...t.ed, externalSource: { ...t.ed.externalSource, view_id: Number(viewId), view_name: label } }
+        // `element-data` is a JSON STRING; the rest of the row must be written back
+        // untouched or the section loses its group, size, padding and title.
+        const data = { ...t.row, id: t.id, element: { ...t.row.element, "element-data": JSON.stringify(ed) } }
+        await apiUpdate({ data, config: { format: { app: format.app, type: `${targetPattern}|component` } } })
+        n++
+        setProgress(`writing ${n}/${stale.length}`)
+      }
+      // Repoint anything that TAGS with this schedule. Reported separately and never
+      // fatal: the sections are already live at this point, and failing the whole publish
+      // over the tag pointer would leave the site correct but the operator believing
+      // otherwise. A source the user cannot write (they differ per source) surfaces here.
+      let taggedNote = ""
+      if (taggingSourceIds.length && falcor) {
+        const okIds = [], failed = []
+        for (const sid of taggingSourceIds) {
+          setProgress(`tagging source ${sid}`)
+          try {
+            await udaUpdateSourceMetadata(falcor, {
+              env: srcEnv,
+              source_id: sid,
+              mutate: (m) => ({
+                ...m,
+                schedule: { ...(m.schedule || {}), source_id: state.externalSource?.source_id, view_id: Number(viewId) },
+              }),
+            })
+            okIds.push(sid)
+          } catch (e) {
+            failed.push(`${sid} (${e?.message || "failed"})`)
+          }
+        }
+        if (okIds.length) taggedNote = ` New playlist detections now tag against it.`
+        if (failed.length) taggedNote += ` Could NOT update tagging on source ${failed.join(", ")}.`
+      }
+
+      // Report by page — "8 sections" is meaningless, "schedule, home, show" is not.
+      const pages = [...new Set(stale.map((t) => t.page))]
+      setPublishedNote((n === 0
+        ? `Every public section already reads ${label}.`
+        : `${label} is live \u2014 ${n} section${n === 1 ? "" : "s"} on ${pages.length} page${pages.length === 1 ? "" : "s"}: ${pages.join(", ")}`) + taggedNote)
+      setPublishOpen(false)
+    } catch (e) {
+      setPublishError(e?.message || "Could not publish")
+    } finally {
+      setPublishing(false); setProgress(null)
+    }
+  }
+
   const publish = (key, value) => {
     // The page owns the URL; a section publishes through PageContext or not at
     // all. These are transient interaction params, so they are action params —
@@ -272,7 +487,23 @@ export const ScheduleGridView = ({ isEdit }) => {
     name: state.externalSource?.view_name ? `Version ${state.externalSource.view_name}` : "This version",
     short: state.externalSource?.view_id ? `v${state.externalSource.view_id}` : "",
   }
-  const live = display.liveVersion || null
+  /* What the public site is actually serving. `display.liveVersion` used to be a
+   * hand-typed string ("Version 1 · v10") that nothing kept in sync; the discovered
+   * view_id is the truth, and the authored string is only a fallback for when no
+   * target page is configured. */
+  const liveOutgoing = React.useMemo(() => {
+    if (liveInfo && liveInfo !== "none") {
+      if (liveInfo.mixed) {
+        const ids = [...new Set(liveInfo.sections.map((x) => x.view_id))]
+        return { name: `mixed \u2014 ${ids.map((i) => `v${i}`).join(", ")}`, rowCount: `${liveInfo.sections.length} sections` }
+      }
+      const v = versions.find((x) => x.view_id === Number(liveInfo.view_id))
+      return { name: versionLabel(v) || `Version ${liveInfo.view_id}`,
+               rowCount: `${liveInfo.sections.length} section${liveInfo.sections.length === 1 ? "" : "s"}` }
+    }
+    return display.liveVersion ? { name: display.liveVersion, rowCount: display.liveRowCount ?? "?" } : null
+  }, [liveInfo, versions, versionLabel, display.liveVersion, display.liveRowCount])
+  const live = liveOutgoing?.name || null
 
   return (
     <div className={t.wrapper}>
@@ -309,6 +540,7 @@ export const ScheduleGridView = ({ isEdit }) => {
             {live ? live : "not set"}
           </span>
         </div>
+        {publishedNote ? <span className={t.publishedNote}>{publishedNote}</span> : null}
         <div className={t.versionActions}>
           <button
             type="button"
@@ -428,13 +660,19 @@ export const ScheduleGridView = ({ isEdit }) => {
         open={publishOpen}
         onClose={() => setPublishOpen(false)}
         incoming={version}
-        outgoing={live ? { name: live, rowCount: display.liveRowCount ?? "?" } : null}
+        outgoing={liveOutgoing}
         rowCount={blocks.length}
-        canPublish={Boolean(display.liveTargetSectionId)}
+        onConfirm={doPublish}
+        busy={publishing}
+        canPublish={liveInfo !== null && liveInfo !== "none"}
+        progress={progress}
         blockedReason={
-          display.liveTargetSectionId
-            ? null
-            : "No public section is configured to receive this version yet, so publishing has nowhere to point. Set the target section in Settings once the public schedule page is bound to this source."
+          publishError ? publishError
+            : liveInfo === null
+              ? "Reading the public pages\u2026"
+              : liveInfo === "none"
+                ? `No section on any ${targetPattern} page is bound to this schedule source, so there is nothing to repoint.`
+                : null
         }
       />
     </div>
